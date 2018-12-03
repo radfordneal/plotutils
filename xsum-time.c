@@ -384,8 +384,8 @@ int main (int argc, char **argv)
   { printf("RESULTS DIFFER FOR DOUBLE AND LARGE ACCUMULATOR\n");
   }
 
-  xsum_small_init(&sacc); /* Get used counts half-way, before cancels to zero */
-  xsum_small_addv(&sacc,a,N/2);
+  xsum_small_init(&sacc);
+  xsum_small_addv(&sacc,a,N);
   used_small = xsum_small_chunks_used(&sacc);
 
   used_large = xsum_large_chunks_used(&lacc);
@@ -460,8 +460,8 @@ int main (int argc, char **argv)
   { printf("RESULTS DIFFER FOR DOUBLE AND LARGE ACCUMULATOR\n");
   }
 
-  xsum_small_init(&sacc); /* Get used counts half-way, before cancels to zero */
-  xsum_small_addv(&sacc,a,N/2);
+  xsum_small_init(&sacc);
+  xsum_small_addv(&sacc,a,N);
   used_small = xsum_small_chunks_used(&sacc);
 
   used_large = xsum_large_chunks_used(&lacc);

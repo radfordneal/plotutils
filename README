@@ -2,12 +2,13 @@ FUNCTIONS FOR EXACT SUMMATION.
 
 Written by Radford M. Neal, 2015.
 
-Version of 2015-05-20, license updated 2018-12-02.
+Version of 2015-05-20, minor fixes and license update 2018-12-02.
 
 
 These programs implement the methods described in the paper "Fast
 Exact Summation Using Small and Large Superaccumulators", by Radford
-M. Neal, and can be used to reproduce the results therein.
+M. Neal, available at https://arxiv.org/abs/1505.05571, and can be
+used to reproduce the results therein.
 
 The programs are licensed under the "MIT" license, which is in the
 file "LICENSE".
@@ -52,10 +53,3 @@ names of the form system-xxx, and the results are in corresponding
 files named results-xxx-ccc, where ccc is the compiler used.
 
 The plots in the paper were produced by the plots.r script.
-
-
-Note:  There's a bug in xsum-time.c that causes the display of the
-number of small accumulator chunks used to be incorrect for squared
-norm and dot product computations.  I have not fixed this in this
-version so that the source code will be identical to that used for the
-tests in the paper.  The bug has no effect on the results in the paper.
