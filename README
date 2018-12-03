@@ -45,11 +45,12 @@ The programs can be remade with the "compile" script, which removes .o
 files and then runs make.
 
 The checks and timing tests reported in the paper can be run with the
-run-tests script (except that the tests of sizes 10 and 100 were done
-with fewer repetitions on the Raspberry Pi, to avoid very long runs).
+run-tests-zhu script (except that the tests of sizes 10 and 100 were
+done with fewer repetitions on the Raspberry Pi, to avoid very long
+runs).
 
-The systems on which tests were done are described in the files with
-names of the form system-xxx, and the results are in corresponding
-files named results-xxx-ccc, where ccc is the compiler used.
-
-The plots in the paper were produced by the plots.r script.
+In the directory paper-results, the systems on which tests were done
+are described in the files with names of the form system-xxx, and the
+results are in corresponding files named results-xxx-ccc, where ccc is
+the compiler used.  The plots in the paper are also there, produced by
+the plots.r script.
