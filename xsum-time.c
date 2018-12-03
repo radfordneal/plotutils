@@ -385,7 +385,7 @@ int main (int argc, char **argv)
   }
 
   xsum_small_init(&sacc);
-  xsum_small_addv(&sacc,a,N);
+  xsum_small_add_sqnorm(&sacc,a,N);
   used_small = xsum_small_chunks_used(&sacc);
 
   used_large = xsum_large_chunks_used(&lacc);
@@ -461,7 +461,7 @@ int main (int argc, char **argv)
   }
 
   xsum_small_init(&sacc);
-  xsum_small_addv(&sacc,a,N);
+  xsum_small_add_dot(&sacc,a,a2,N);
   used_small = xsum_small_chunks_used(&sacc);
 
   used_large = xsum_large_chunks_used(&lacc);
