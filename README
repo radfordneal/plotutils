@@ -7,8 +7,8 @@ Version of 2015-05-20, minor fixes and license update 2018-12-02.
 
 These programs implement the methods described in the paper "Fast
 Exact Summation Using Small and Large Superaccumulators", by Radford
-M. Neal, available at https://arxiv.org/abs/1505.05571, and can be
-used to reproduce the results therein.
+M. Neal, available at https://arxiv.org/abs/1505.05571, and also here
+as xsum-paper.pdf, and can be used to reproduce the results therein.
 
 The programs are licensed under the "MIT" license, which is in the
 file "LICENSE".
