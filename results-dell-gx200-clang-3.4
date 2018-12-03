@@ -1,0 +1,285 @@
+
+CORRECTNESS TESTS
+
+A: ZERO TERM TEST
+
+B: ONE TERM TESTS
+
+C: ONE TERM TESTS TIMES 8388608
+
+D: TWO TERM TESTS
+
+E: THREE TERM TESTS
+
+F: TEN TERM TESTS
+
+G: TEN TERM TESTS TIMES 8192
+
+DONE
+
+
+TIMING TESTS
+
+N = 10, M = 1, R = 100000000
+
+VECTOR SUM
+
+Small accumulator:  +0.0000000000000000e+00  time: 110.930 s,  110.93 ns/term
+Large accumulator:  +0.0000000000000000e+00  time: 503.700 s,  503.70 ns/term
+iFastSum result:    +0.0000000000000000e+00  time: 112.160 s,  112.16 ns/term
+OnlineExact result: +0.0000000000000000e+00  time: -974.027 s, -974.03 ns/term
+Kahan sum result:   +7.5524440035223961e-08  time:  17.210 s,   17.21 ns/term
+Double result:      +7.5524440035223961e-08  time:   4.860 s,    4.86 ns/term
+Double not ordered: +0.0000000000000000e+00  time:   6.290 s,    6.29 ns/term
+
+Small accumulator chunks used: 2
+Large accumulator chunks used: 10
+
+VECTOR NORM
+
+Small accumulator:  +1.5824714359357110e+19  time: 131.770 s,  131.77 ns/term
+Large accumulator:  +1.5824714359357110e+19  time: 434.510 s,  434.51 ns/term
+Double result:      +1.5824714359357108e+19  time:   5.740 s,    5.74 ns/term
+Double not ordered: +1.5824714359357108e+19  time:   7.200 s,    7.20 ns/term
+
+Small accumulator chunks used: 2
+Large accumulator chunks used: 5
+
+VECTOR DOT PRODUCT
+
+Small accumulator:  +1.5824714359357110e+19  time: 135.830 s,  135.83 ns/term
+Large accumulator:  +1.5824714359357110e+19  time: 441.500 s,  441.50 ns/term
+Double result:      +1.5824714359357108e+19  time:   6.190 s,    6.19 ns/term
+Double not ordered: +1.5824714359357108e+19  time:   7.270 s,    7.27 ns/term
+
+Small accumulator chunks used: 2
+Large accumulator chunks used: 5
+
+
+TIMING TESTS
+
+N = 100, M = 1, R = 10000000
+
+VECTOR SUM
+
+Small accumulator:  +0.0000000000000000e+00  time:  54.370 s,   54.37 ns/term
+Large accumulator:  +0.0000000000000000e+00  time: 162.410 s,  162.41 ns/term
+iFastSum result:    +0.0000000000000000e+00  time:  73.050 s,   73.05 ns/term
+OnlineExact result: +0.0000000000000000e+00  time: 380.310 s,  380.31 ns/term
+Kahan sum result:   +4.6928328811191022e-04  time:  14.140 s,   14.14 ns/term
+Double result:      -5.0918656052090228e-04  time:   3.430 s,    3.43 ns/term
+Double not ordered: -1.9531250000000000e-03  time:   2.420 s,    2.42 ns/term
+
+Small accumulator chunks used: 4
+Large accumulator chunks used: 58
+
+VECTOR NORM
+
+Small accumulator:  +8.1112105447704140e+25  time:  59.740 s,   59.74 ns/term
+Large accumulator:  +8.1112105447704140e+25  time: 128.330 s,  128.33 ns/term
+Double result:      +8.1112105447704140e+25  time:   3.950 s,    3.95 ns/term
+Double not ordered: +8.1112105447704157e+25  time:   2.920 s,    2.92 ns/term
+
+Small accumulator chunks used: 4
+Large accumulator chunks used: 36
+
+VECTOR DOT PRODUCT
+
+Small accumulator:  +8.1112105447704140e+25  time:  63.770 s,   63.77 ns/term
+Large accumulator:  +8.1112105447704140e+25  time: 132.660 s,  132.66 ns/term
+Double result:      +8.1112105447704140e+25  time:   3.960 s,    3.96 ns/term
+Double not ordered: +8.1112105447704157e+25  time:   2.990 s,    2.99 ns/term
+
+Small accumulator chunks used: 4
+Large accumulator chunks used: 36
+
+
+TIMING TESTS
+
+N = 1000, M = 1, R = 1000000
+
+VECTOR SUM
+
+Small accumulator:  +0.0000000000000000e+00  time:  48.860 s,   48.86 ns/term
+Large accumulator:  +0.0000000000000000e+00  time:  42.470 s,   42.47 ns/term
+iFastSum result:    +0.0000000000000000e+00  time:  67.890 s,   67.89 ns/term
+OnlineExact result: +0.0000000000000000e+00  time:  74.430 s,   74.43 ns/term
+Kahan sum result:   +1.4458457881119102e-03  time:  13.880 s,   13.88 ns/term
+Double result:      -3.5665436560520902e-02  time:   3.080 s,    3.08 ns/term
+Double not ordered: -1.7578125000000000e-02  time:   2.060 s,    2.06 ns/term
+
+Small accumulator chunks used: 4
+Large accumulator chunks used: 96
+
+VECTOR NORM
+
+Small accumulator:  +7.1359296682780862e+26  time:  52.070 s,   52.07 ns/term
+Large accumulator:  +7.1359296682780862e+26  time:  45.500 s,   45.50 ns/term
+Double result:      +7.1359296682780890e+26  time:   3.590 s,    3.59 ns/term
+Double not ordered: +7.1359296682780821e+26  time:   2.520 s,    2.52 ns/term
+
+Small accumulator chunks used: 4
+Large accumulator chunks used: 93
+
+VECTOR DOT PRODUCT
+
+Small accumulator:  +7.1359296682780862e+26  time:  69.880 s,   69.88 ns/term
+Large accumulator:  +7.1359296682780862e+26  time:  47.250 s,   47.25 ns/term
+Double result:      +7.1359296682780890e+26  time:   3.590 s,    3.59 ns/term
+Double not ordered: +7.1359296682780821e+26  time:   2.630 s,    2.63 ns/term
+
+Small accumulator chunks used: 4
+Large accumulator chunks used: 93
+
+
+TIMING TESTS
+
+N = 10000, M = 1, R = 100000
+
+VECTOR SUM
+
+Small accumulator:  +0.0000000000000000e+00  time:  50.220 s,   50.22 ns/term
+Large accumulator:  +0.0000000000000000e+00  time:  37.040 s,   37.04 ns/term
+iFastSum result:    +0.0000000000000000e+00  time:  75.470 s,   75.47 ns/term
+OnlineExact result: +0.0000000000000000e+00  time:  51.390 s,   51.39 ns/term
+Kahan sum result:   +4.6928328811191022e-04  time:  14.180 s,   14.18 ns/term
+Double result:      +8.9334563439479098e-02  time:   3.080 s,    3.08 ns/term
+Double not ordered: +4.0625000000000000e-01  time:   2.060 s,    2.06 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 102
+
+VECTOR NORM
+
+Small accumulator:  +5.9109866443888589e+27  time:  53.640 s,   53.64 ns/term
+Large accumulator:  +5.9109866443888589e+27  time:  39.410 s,   39.41 ns/term
+Double result:      +5.9109866443888490e+27  time:   3.600 s,    3.60 ns/term
+Double not ordered: +5.9109866443888435e+27  time:   3.010 s,    3.01 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 100
+
+VECTOR DOT PRODUCT
+
+Small accumulator:  +5.9109866443888589e+27  time:  83.190 s,   83.19 ns/term
+Large accumulator:  +5.9109866443888589e+27  time:  41.890 s,   41.89 ns/term
+Double result:      +5.9109866443888490e+27  time:   9.400 s,    9.40 ns/term
+Double not ordered: +5.9109866443888435e+27  time:   9.750 s,    9.75 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 100
+
+
+TIMING TESTS
+
+N = 100000, M = 1, R = 10000
+
+VECTOR SUM
+
+Small accumulator:  +0.0000000000000000e+00  time:  81.970 s,   81.97 ns/term
+Large accumulator:  +0.0000000000000000e+00  time:  54.570 s,   54.57 ns/term
+iFastSum result:    +0.0000000000000000e+00  time: 175.720 s,  175.72 ns/term
+OnlineExact result: +0.0000000000000000e+00  time:  61.680 s,   61.68 ns/term
+Kahan sum result:   -2.2968216711888090e-02  time:  40.110 s,   40.11 ns/term
+Double result:      +8.3933456343947910e-01  time:  10.040 s,   10.04 ns/term
+Double not ordered: -6.2187500000000000e+00  time:  13.590 s,   13.59 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 112
+
+VECTOR NORM
+
+Small accumulator:  +6.3551473280289583e+28  time:  84.770 s,   84.77 ns/term
+Large accumulator:  +6.3551473280289583e+28  time:  56.250 s,   56.25 ns/term
+Double result:      +6.3551473280286144e+28  time:  13.440 s,   13.44 ns/term
+Double not ordered: +6.3551473280288132e+28  time:  17.610 s,   17.61 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 107
+
+VECTOR DOT PRODUCT
+
+Small accumulator:  +6.3551473280289583e+28  time:  98.900 s,   98.90 ns/term
+Large accumulator:  +6.3551473280289583e+28  time:  68.950 s,   68.95 ns/term
+Double result:      +6.3551473280286144e+28  time:  22.070 s,   22.07 ns/term
+Double not ordered: +6.3551473280288132e+28  time:  24.630 s,   24.63 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 107
+
+
+TIMING TESTS
+
+N = 1000000, M = 1, R = 1000
+
+VECTOR SUM
+
+Small accumulator:  +0.0000000000000000e+00  time:  81.690 s,   81.69 ns/term
+Large accumulator:  +0.0000000000000000e+00  time:  54.090 s,   54.09 ns/term
+iFastSum result:    +0.0000000000000000e+00  time: 192.850 s,  192.85 ns/term
+OnlineExact result: +0.0000000000000000e+00  time:  62.960 s,   62.96 ns/term
+Kahan sum result:   -1.7108841711888090e-02  time:  39.910 s,   39.91 ns/term
+Double result:      -1.3160665436560521e+01  time:   9.990 s,    9.99 ns/term
+Double not ordered: +1.9537500000000000e+02  time:  13.520 s,   13.52 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 118
+
+VECTOR NORM
+
+Small accumulator:  +6.2613064458699712e+29  time:  84.540 s,   84.54 ns/term
+Large accumulator:  +6.2613064458699712e+29  time:  55.720 s,   55.72 ns/term
+Double result:      +6.2613064458673211e+29  time:  13.410 s,   13.41 ns/term
+Double not ordered: +6.2613064458686778e+29  time:  17.560 s,   17.56 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 116
+
+VECTOR DOT PRODUCT
+
+Small accumulator:  +6.2613064458699712e+29  time: 112.140 s,  112.14 ns/term
+Large accumulator:  +6.2613064458699712e+29  time:  68.570 s,   68.57 ns/term
+Double result:      +6.2613064458673211e+29  time:  21.980 s,   21.98 ns/term
+Double not ordered: +6.2613064458686778e+29  time:  24.530 s,   24.53 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 116
+
+
+TIMING TESTS
+
+N = 10000000, M = 1, R = 100
+
+VECTOR SUM
+
+Small accumulator:  +0.0000000000000000e+00  time:  81.660 s,   81.66 ns/term
+Large accumulator:  +0.0000000000000000e+00  time:  53.950 s,   53.95 ns/term
+iFastSum result:    +0.0000000000000000e+00  time: 209.630 s,  209.63 ns/term
+OnlineExact result: +0.0000000000000000e+00  time:  62.780 s,   62.78 ns/term
+Kahan sum result:   +2.9766158288111910e-02  time:  39.860 s,   39.86 ns/term
+Double result:      -1.3160665436560521e+01  time:   9.960 s,    9.96 ns/term
+Double not ordered: +9.6900000000000000e+02  time:  13.470 s,   13.47 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 126
+
+VECTOR NORM
+
+Small accumulator:  +6.3372631808571056e+30  time:  84.460 s,   84.46 ns/term
+Large accumulator:  +6.3372631808571056e+30  time:  55.590 s,   55.59 ns/term
+Double result:      +6.3372631808277940e+30  time:  13.360 s,   13.36 ns/term
+Double not ordered: +6.3372631808414410e+30  time:  17.520 s,   17.52 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 122
+
+VECTOR DOT PRODUCT
+
+Small accumulator:  +6.3372631808571056e+30  time: 112.050 s,  112.05 ns/term
+Large accumulator:  +6.3372631808571056e+30  time:  68.410 s,   68.41 ns/term
+Double result:      +6.3372631808277940e+30  time:  21.730 s,   21.73 ns/term
+Double not ordered: +6.3372631808414410e+30  time:  24.290 s,   24.29 ns/term
+
+Small accumulator chunks used: 5
+Large accumulator chunks used: 122
+

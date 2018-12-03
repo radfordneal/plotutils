@@ -1,0 +1,12 @@
+Sun SPARC Enterprise T5140 server
+
+2 x Sun UltraSPARC T2 Plus processors, 1.2 GHz.  (launched 2008)
+Each processor with 8 cores (each with 8 threads, for 64 threads total)
+
+16 GBytes RAM, DDR2 667MHz
+16KB L1 instruction cache and 8KB L1 data cache per core
+4 MB L2 Cache per processor (64 byte lines)
+
+Solaris 11.2, Oracle Solaris Studio 12.4
+
+https://blogs.oracle.com/timc/entry/comparing_the_ultrasparc_t2_plus

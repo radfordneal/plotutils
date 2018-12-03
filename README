@@ -1,0 +1,61 @@
+FUNCTIONS FOR EXACT SUMMATION.
+
+Written by Radford M. Neal, 2015.
+
+Version of 2015-05-20, license updated 2018-12-02.
+
+
+These programs implement the methods described in the paper "Fast
+Exact Summation Using Small and Large Superaccumulators", by Radford
+M. Neal, and can be used to reproduce the results therein.
+
+The programs are licensed under the "MIT" license, which is in the
+file "LICENSE".
+
+
+The programs can be built using one of the several Makefiles included.
+For instance, the following should work on Linux systems with gcc
+installed:
+
+    make -f Makefile-gcc-intel
+
+See the documentation at the start of the Makefile-xxx files for more
+details.  For some systems, another Makefile may need to be created.
+Performance on a particular system may be improved by tuning compiler
+options, and perhaps the settings of the flags defined at the
+beginning of the xsum.c file.
+
+The xsum-check program does automatic correctness checks.  The
+xsum-test program can be used to test the functions manually.  The
+xsum-time program does timing tests. The xsum-time-perm program does
+the same timing tests but with data randomly permuted.
+
+The xsum-time-zhu and xsum-time-perm-zhu programs do timing tests that
+include times for the iFastSum and OnlineExact methods of Zhu and
+Hayes (ACM Transactions on Mathematical Software, Algorithm 908).
+Making this program requires their ExactSum.cpp and ExactSum.h source
+files, from the supplemental information for their paper.  A C++
+compiler is also needed.  Uncomment-out the xsum-time-zhu and
+xsum-time-perm-zhu targets in the list of program after "all:" in the
+Makefile you are using if you want to make these programs.
+
+
+The programs can be remade with the "compile" script, which removes .o
+files and then runs make.
+
+The checks and timing tests reported in the paper can be run with the
+run-tests script (except that the tests of sizes 10 and 100 were done
+with fewer repetitions on the Raspberry Pi, to avoid very long runs).
+
+The systems on which tests were done are described in the files with
+names of the form system-xxx, and the results are in corresponding
+files named results-xxx-ccc, where ccc is the compiler used.
+
+The plots in the paper were produced by the plots.r script.
+
+
+Note:  There's a bug in xsum-time.c that causes the display of the
+number of small accumulator chunks used to be incorrect for squared
+norm and dot product computations.  I have not fixed this in this
+version so that the source code will be identical to that used for the
+tests in the paper.  The bug has no effect on the results in the paper.

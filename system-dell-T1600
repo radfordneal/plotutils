@@ -1,0 +1,14 @@
+Dell Precision T1600 workstation.
+
+Intel Xeon E3-1225 processor, 3.1 GHz.
+Launched 2011.
+4 cores.
+
+4 GBytes ECC DDR3 RAM, 1333 MHz.
+
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              256K x 4
+L3 cache:              6144K
+
+Fedora 21, 64-bit.

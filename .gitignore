@@ -1,0 +1,14 @@
+*.o
+.R*
+core
+gmon.out
+*.gcda
+*.gcno
+*.gcov
+xsum-test
+xsum-check
+xsum-time
+xsum-time-zhu
+xsum-time-perm
+xsum-time-perm-zhu
+show

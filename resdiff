@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Compute result files, after removing times, and Kahan and Float 128
+# results.  Differences are seen on different systems, and with 32
+# vs. 64 bit, perhaps due to different decimal conversion routines for
+# floating point values (that don't produce exact result). 
+
+fgrep -v "Float 128" < $1 | fgrep -v "Double" | fgrep -v "Kahan" | \
+  sed "s/time:.*//" >/tmp/1
+fgrep -v "Float 128" < $2 | fgrep -v "Double" | fgrep -v "Kahan" | \
+  sed "s/time:.*//" >/tmp/2
+
+diff -u /tmp/1 /tmp/2

@@ -1,0 +1,9 @@
+Intel Xeon X5355, 2.66 GHz, launched 2006.
+
+4 cores, 2 threads each (hyperthreading).
+
+Running in 32-bit mode.
+
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              4096K

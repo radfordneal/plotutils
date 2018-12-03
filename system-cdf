@@ -1,0 +1,9 @@
+AMD Opteron(tm) Processor 6348, 1.4 GHz.
+Launched 2012.
+4 processors, each with 12 cores.
+64 GB RAM.
+
+L1d cache:             16K
+L1i cache:             64K
+L2 cache:              2048K x 6
+L3 cache:              6144K ? (other info says 8192K x 2)

@@ -1,0 +1,63 @@
+# Makefile for a Solaris SPARC system. 
+
+CFLAGS=-O3 -g -xtarget=native
+LDLIBS=-lm
+CC=cc -xc99
+LDC=$(CC)
+CPP=CC
+LDCPP=$(CPP)
+ZHUFLAGS=-DREV
+
+all:		xsum-test xsum-time xsum-check show xsum-time-perm \
+		# xsum-time-zhu xsum-time-perm-zhu
+
+pbinary.o:	pbinary.c pbinary.h
+show.o:		show.c pbinary.h
+
+xsum-test.o:	xsum-test.c xsum.h pbinary.h
+xsum-check.o:	xsum-check.c xsum.h pbinary.h
+xsum-time.o:	xsum-time.c xsum.h pbinary.h
+xsum-time-perm.o: xsum-time-perm.c xsum.h pbinary.h
+xsum.o:		xsum.c xsum.h pbinary.h
+
+ExactSum.o:	ExactSum.cpp ExactSum.h
+	$(CPP) $(CFLAGS) $(ZHUFLAGS) -c ExactSum.cpp
+
+xsum-time-zhu.o: xsum-time.c xsum.h pbinary.h
+	cp xsum-time.c xsum-time-zhu.cpp
+	$(CPP) $(CFLAGS) -DZHU -Drestrict="" -c xsum-time-zhu.cpp
+	rm xsum-time-zhu.cpp
+xsum-time-perm-zhu.o: xsum-time-perm.c xsum.h pbinary.h
+	cp xsum-time-perm.c xsum-time-perm-zhu.cpp
+	$(CPP) $(CFLAGS) -DZHU -Drestrict="" -c xsum-time-perm-zhu.cpp
+	rm xsum-time-perm-zhu.cpp
+xsum-zhu.o:	xsum.c xsum.h pbinary.h
+	cp xsum.c xsum-zhu.cpp
+	$(CPP) $(CFLAGS) -DZHU -Drestrict="" -c xsum-zhu.cpp
+	rm xsum-zhu.cpp
+pbinary-zhu.o:	pbinary.c pbinary.h
+	cp pbinary.c pbinary-zhu.cpp
+	$(CPP) $(CFLAGS) -DZHU -Drestrict="" -c pbinary-zhu.cpp
+	rm pbinary-zhu.cpp
+	
+xsum-debug.o:	xsum.c xsum.h pbinary.h
+	$(CC) $(CFLAGS) -DDEBUG -c xsum.c -o xsum-debug.o
+
+show:		show.o pbinary.o
+	$(LDC) show.o pbinary.o $(LDLIBS) -o show
+
+xsum-test:	xsum-test.o xsum-debug.o pbinary.o
+	$(LDC) xsum-test.o xsum-debug.o pbinary.o $(LDLIBS) -o xsum-test
+xsum-check:	xsum-check.o xsum-debug.o pbinary.o
+	$(LDC) xsum-check.o xsum-debug.o pbinary.o $(LDLIBS) -o xsum-check
+xsum-time:	xsum-time.o xsum.o pbinary.o
+	$(LDC) xsum-time.o xsum.o pbinary.o $(LDLIBS) -o xsum-time
+xsum-time-perm:	xsum-time-perm.o xsum.o pbinary.o
+	$(LDC) xsum-time-perm.o xsum.o pbinary.o $(LDLIBS) -o xsum-time-perm
+
+xsum-time-zhu:	xsum-time-zhu.o xsum-zhu.o pbinary-zhu.o ExactSum.o
+	$(LDCPP) xsum-time-zhu.o xsum-zhu.o pbinary-zhu.o ExactSum.o $(LDLIBS) \
+	          -o xsum-time-zhu
+xsum-time-perm-zhu:	xsum-time-perm-zhu.o xsum-zhu.o pbinary-zhu.o ExactSum.o
+	$(LDCPP) xsum-time-perm-zhu.o xsum-zhu.o pbinary-zhu.o ExactSum.o \
+	         $(LDLIBS) -o xsum-time-perm-zhu

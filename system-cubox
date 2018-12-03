@@ -1,0 +1,5 @@
+Cubox i.MX6 system with Quad ARM Cortex-A9 processor, four cores, at 1 GHz.
+1 MB L2 cache, 32 KB L1 I and D caches.
+2 GBytes of 64-bit DDR3 memory, 1066 MHz.
+
+Debian Linux, "trusty", kernel 3.14.14, gcc 4.8.2.
