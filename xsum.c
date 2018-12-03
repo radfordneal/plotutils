@@ -255,7 +255,10 @@ int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
      one fewer non-zero chunks. */
 
   while (sacc->chunk[uix] == -1 && uix > 0)
-  { sacc->chunk[uix-1] += ((xsum_schunk) -1) << XSUM_LOW_MANTISSA_BITS;
+  { /* A shift of a negative number is undefined according to the standard, so
+       do a multiply - it's all presumably constant-folded by the compiler. */
+    sacc->chunk[uix-1] += ((xsum_schunk) -1) 
+                             * (((xsum_schunk) 1) << XSUM_LOW_MANTISSA_BITS); 
     sacc->chunk[uix] = 0;
     uix -= 1;
   }
@@ -425,7 +428,7 @@ static inline void xsum_add1_no_carry (xsum_small_accumulator *restrict sacc,
      subtract from) this chunk and the next higher chunk (which always 
      exists since there are three extra ones at the top). */
 
-  low_mantissa = (mantissa << low_exp) & XSUM_LOW_MANTISSA_MASK;
+  low_mantissa = ((xsum_uint)mantissa << low_exp) & XSUM_LOW_MANTISSA_MASK;
   high_mantissa = mantissa >> (XSUM_LOW_MANTISSA_BITS - low_exp);
 
   /* Add or subtract to or from the two affected chunks. */
@@ -735,14 +738,14 @@ xsum_flt xsum_small_round (xsum_small_accumulator *restrict sacc)
     }
 
     /* Check if it is actually a denormalized number.  It always is if only
-       the lowest chunk is non-zero.  If the lowest non-zero low chunk is 
-       the next-to-lowest, we check the magnitude of the absolute value.  
+       the lowest chunk is non-zero.  If the highest non-zero chunk is the
+       next-to-lowest, we check the magnitude of the absolute value.  
        Note that the real exponent is 1 (not 0), so we need to shift right
        by 1 here, which also means there will be no overflow from the left 
        shift below (but must view absolute value as unsigned). */
 
     if (i == 0)
-    { u.intv = ivalue > 0 ? ivalue : -ivalue;
+    { u.intv = ivalue >= 0 ? ivalue : -ivalue;
       u.intv >>= 1;
       if (ivalue < 0) 
       { u.intv |= XSUM_SIGN_MASK;
@@ -750,13 +753,20 @@ xsum_flt xsum_small_round (xsum_small_accumulator *restrict sacc)
       return u.fltv;
     }
     else
-    { u.intv = (ivalue << (XSUM_LOW_MANTISSA_BITS-1)) + (sacc->chunk[0] >> 1);
-      if (u.intv < 0) u.intv = -u.intv;
-      if (u.uintv < (xsum_uint)1 << XSUM_MANTISSA_BITS)
-      { if (ivalue < 0) 
-        { u.intv |= XSUM_SIGN_MASK;
+    { /* Note: Left shift of -ve number is undefined, so do a multiply instead,
+               which is probably optimized to a shift. */
+      u.intv = ivalue * ((xsum_int)1 << (XSUM_LOW_MANTISSA_BITS-1))
+                 + (sacc->chunk[0] >> 1);
+      if (u.intv < 0)
+      { if (u.intv > - ((xsum_int)1 << XSUM_MANTISSA_BITS))
+        { u.intv = (-u.intv) | XSUM_SIGN_MASK;
+          return u.fltv;
         }
-        return u.fltv;
+      }
+      else
+      { if (u.uintv < (xsum_uint)1 << XSUM_MANTISSA_BITS)
+        { return u.fltv;
+        }
       }
       /* otherwise, it's not actually denormalized, so fall through to below */
     }
@@ -772,7 +782,7 @@ xsum_flt xsum_small_round (xsum_small_accumulator *restrict sacc)
      here, but not once more bits are shifted into the bottom later on. */
 
   u.fltv = (xsum_flt) ivalue;
-  e = (u.intv >> XSUM_MANTISSA_BITS) & XSUM_EXP_MASK;
+  e = (u.uintv >> XSUM_MANTISSA_BITS) & XSUM_EXP_MASK;
   more = 1 + XSUM_MANTISSA_BITS + XSUM_EXP_BIAS - e;
 
   if (xsum_debug)
@@ -786,7 +796,7 @@ xsum_flt xsum_small_round (xsum_small_accumulator *restrict sacc)
      we can later move into 'ivalue' if it turns out that one more bit is 
      needed. */
 
-  ivalue <<= more; 
+  ivalue *= (xsum_int)1 << more;  /* multiply, since << of negative undefined */
   if (xsum_debug) 
   { printf("after ivalue <<= more, ivalue: %016llx\n",(long long)ivalue);
   }
@@ -796,7 +806,8 @@ xsum_flt xsum_small_round (xsum_small_accumulator *restrict sacc)
   { more -= XSUM_LOW_MANTISSA_BITS;
     ivalue += lower << more;
     if (xsum_debug) 
-    { printf("after ivalue += lower << more, ivalue: %016llx\n",(long long)ivalue);
+    { printf("after ivalue += lower << more, ivalue: %016llx\n",
+              (long long)ivalue);
     }
     j -= 1;
     lower = j < 0 ? 0 : sacc->chunk[j];
@@ -806,7 +817,7 @@ xsum_flt xsum_small_round (xsum_small_accumulator *restrict sacc)
 
   if (xsum_debug)
   { printf("j: %d, new e: %d, new |ivalue|: %016llx, lower: %016llx\n",
-            j, e, (long long) (ivalue < 0 ? -ivalue : ivalue), (long long)lower);
+            j, e, (long long) (ivalue<0 ? -ivalue : ivalue), (long long)lower);
     
   }
 
@@ -818,7 +829,7 @@ xsum_flt xsum_small_round (xsum_small_accumulator *restrict sacc)
 
   if (ivalue < 0 && ((-ivalue) & ((xsum_int)1 << (XSUM_MANTISSA_BITS+1))) == 0)
   { int pos = (xsum_schunk)1 << (XSUM_LOW_MANTISSA_BITS - 1 - more);
-    ivalue <<= 1;
+    ivalue *= 2;  /* note that left shift undefined if ivalue is negative */
     if (lower & pos)
     { ivalue |= 1;
       lower &= ~pos;
@@ -828,7 +839,7 @@ xsum_flt xsum_small_round (xsum_small_accumulator *restrict sacc)
 
   if (xsum_debug)
   { printf("j: %d, new e: %d, new |ivalue|: %016llx, lower: %016llx\n",
-            j, e, (long long) (ivalue < 0 ? -ivalue : ivalue), (long long)lower);
+            j, e, (long long) (ivalue<0 ? -ivalue : ivalue), (long long)lower);
     
   }
 
