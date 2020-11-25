@@ -1802,7 +1802,7 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
   /* 7.  DRAW THE ABSCISSA LABEL */
 
       if ((multigrapher->grid_spec != NO_AXES)
-      && multigrapher->x_axis.label != NULL && multigrapher->x_axis.label != '\0')
+      && multigrapher->x_axis.label != NULL && *multigrapher->x_axis.label != '\0')
     {
       double x_axis_font_size;
       double xloc;

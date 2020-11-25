@@ -87,7 +87,7 @@ _pl_z_maybe_output_image (S___(Plotter *_plotter))
   int image_type, bit_depth, color_type;
   png_struct *png_ptr;
   png_info *info_ptr;
-  char time_buf[32], software_buf[64];
+  char time_buf[40], software_buf[64];
   png_text text_ptr[10];
   time_t clock;
   struct tm *tmsp;

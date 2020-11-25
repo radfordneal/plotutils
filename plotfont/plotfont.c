@@ -339,7 +339,7 @@ do_font (plPlotter *plotter, const char *name, bool upper_half, char *pen_color_
 {
   char buf[16];
   char numbuf[16];
-  char suffixbuf[16];
+  char suffixbuf[20];
   char *titlebuf;
   const char *suffix;
   double title_width;
