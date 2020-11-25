@@ -25,8 +25,7 @@ _g_pencolor (red, green, blue)
       return -1;
     }
 
-  if (_plotter->drawstate->PointsInLine > 0
-      || _plotter->drawstate->arc_stashed)
+  if (_plotter->drawstate->points_in_path > 0)
     _plotter->endpath(); /* flush polyline if any */
 
   if ((red > 0xffff) || (green > 0xffff) || (blue > 0xffff))

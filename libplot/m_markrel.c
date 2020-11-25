@@ -27,10 +27,10 @@ _m_markerrel (x, y, type, size)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d\n",
-		 MARKERREL, x, y, type, size);
+		 (int)O_MARKERREL, x, y, type, size);
       else
 	{
-	  putc (MARKERREL, _plotter->outstream);
+	  putc ((int)O_MARKERREL, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	  _emit_integer (type);
@@ -61,10 +61,10 @@ _m_fmarkerrel (x, y, type, size)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %d %g\n",
-		 MARKERREL, x, y, type, size);
+		 (int)O_MARKERREL, x, y, type, size);
       else
 	{
-	  putc (FMARKERREL, _plotter->outstream);
+	  putc ((int)O_FMARKERREL, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	  _emit_integer (type);

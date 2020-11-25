@@ -23,10 +23,10 @@ _m_point (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d\n", 
-		 POINT, x, y);
+		 (int)O_POINT, x, y);
       else
 	{
-	  putc (POINT, _plotter->outstream);
+	  putc ((int)O_POINT, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	}
@@ -53,10 +53,10 @@ _m_fpoint (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g\n", 
-		 POINT, x, y);
+		 (int)O_POINT, x, y);
       else
 	{
-	  putc (FPOINT, _plotter->outstream);
+	  putc ((int)O_FPOINT, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	}

@@ -37,8 +37,7 @@ _g_restorestate()
   /* Flush polyline if any.  We first check whether a polyline is under
      construction, because we don't want to emit a useless op code to a
      graphics metafile, if this is invoked on a MetaPlotter object. */
-  if (_plotter->drawstate->PointsInLine > 0
-      || _plotter->drawstate->arc_stashed)
+  if (_plotter->drawstate->points_in_path > 0)
     _plotter->endpath(); /* flush polyline if any */
 
   /* elements of current state that are strings are first freed */

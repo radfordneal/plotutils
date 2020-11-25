@@ -25,9 +25,9 @@ _m_restorestate()
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c\n", 
-		 RESTORESTATE);
+		 (int)O_RESTORESTATE);
       else
-	putc (RESTORESTATE, _plotter->outstream);
+	putc ((int)O_RESTORESTATE, _plotter->outstream);
     }
 
   /* invoke generic method */

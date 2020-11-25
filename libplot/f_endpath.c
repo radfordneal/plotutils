@@ -1,11 +1,15 @@
 /* This file contains the endpath() method, which is a GNU extension to
-   libplot.  A polyline object may be constructed incrementally, by
-   repeated invocation of the cont() routine.  (See the comments in
-   g_cont.c.)  The construction may be terminated, and the polyline object
-   finalized, by an explict invocation of endpath().
+   libplot.  A path object may be constructed incrementally, by repeated
+   invocation of such operations as cont(), arc(), etc.  The construction
+   may be terminated, and the path object finalized, by an explict
+   invocation of endpath().  If endpath() is invoked when no path is under
+   construction, it has no effect. */
 
-   If endpath() is invoked when no polyline is under construction, it has
-   no effect. */
+/* This version is for FigPlotters.  By construction, for FigPlotters our
+   path storage buffer always includes either (1) a sequence of line
+   segments, or (2) a single circular arc segment.  Those are the only two
+   sorts of path that xfig can handle.  (For the latter to be included,
+   the map from user to device coordinates must be uniform.) */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -17,13 +21,9 @@
 #define P_CLOSED 3
 
 /* Fig's line styles, indexed into by internal line number
-   (L_SOLID/L_DOTTED/ L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED.  Fig format
-   supports only dotted lines (isolated dots, with a specified inter-dot
-   distance) and dashed lines (on/off dashes, the lengths of the on and off
-   segments being equal).  We map our canonical five line types into Fig
-   line types as best we can. */
+   (L_SOLID/L_DOTTED/ L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED. */
 const int _fig_line_style[NUM_LINE_TYPES] =
-{ FIG_L_SOLID, FIG_L_DOTTED, FIG_L_DOTTED, FIG_L_DASHED, FIG_L_DASHED };
+{ FIG_L_SOLID, FIG_L_DOTTED, FIG_L_DASHDOTTED, FIG_L_DASHED, FIG_L_DASHED };
 
 /* Fig's `style value', i.e. inter-dot length or on-and-off segment length,
    indexed into by internal line number (L_SOLID/L_DOTTED/
@@ -31,7 +31,7 @@ const int _fig_line_style[NUM_LINE_TYPES] =
    L_SOLID).  Units are Fig display units.  We'll scale these values by the
    line width (in Fig display units). */
 const double _fig_dash_length[NUM_LINE_TYPES] =
-{ 0.0, 2.0, 4.0, 4.0, 8.0 };
+{ 0.0, 2.0, 6.0, 4.0, 8.0 };
 
 /* Fig join styles, indexed by internal join type number (miter/rd./bevel) */
 const int _fig_join_style[] =
@@ -40,6 +40,9 @@ const int _fig_join_style[] =
 /* Fig cap styles, indexed by internal cap type number (butt/rd./project) */
 const int _fig_cap_style[] =
 { FIG_CAP_BUTT, FIG_CAP_ROUND, FIG_CAP_PROJECT };
+
+/* forward references */
+static void _f_emit_arc __P((double xc, double yc, double x0, double y0, double x1, double y1));
 
 int
 #ifdef _HAVE_PROTOS
@@ -58,39 +61,42 @@ _f_endpath ()
       return -1;
     }
 
-  /* If a circular arc has been stashed rather than drawn, force it to be
-     drawn by invoking farc() with the `immediate' flag set.  Note that
-     if an arc is stashed, PointsInLine must be zero. */
-  if (_plotter->drawstate->arc_stashed) 
-    { 
-      double axc = _plotter->drawstate->axc;
-      double ayc = _plotter->drawstate->ayc;
-      double ax0 = _plotter->drawstate->ax0;
-      double ay0 = _plotter->drawstate->ay0;
-      double ax1 = _plotter->drawstate->ax1;
-      double ay1 = _plotter->drawstate->ay1;
-
-      _plotter->drawstate->arc_immediate = true; 
-      _plotter->drawstate->arc_polygonal = false; /* advisory only */
-      _plotter->farc (axc, ayc, ax0, ay0, ax1, ay1);
-      _plotter->drawstate->arc_immediate = false;
-      _plotter->drawstate->arc_stashed = false;
-    }
-
-  if (_plotter->drawstate->PointsInLine == 0)	/* nothing to do */
-    return 0;
-  if (_plotter->drawstate->PointsInLine == 1)	/* shouldn't happen */
+  if (_plotter->drawstate->points_in_path == 2
+      && _plotter->drawstate->datapoints[1].type == S_ARC)
+    /* path buffer contains a single arc, not a polyline */
     {
-      /* just reset polyline storage buffer */
+      double x0 = _plotter->drawstate->datapoints[0].x;
+      double y0 = _plotter->drawstate->datapoints[0].y;      
+      double x1 = _plotter->drawstate->datapoints[1].x;
+      double y1 = _plotter->drawstate->datapoints[1].y;      
+      double xc = _plotter->drawstate->datapoints[1].xc;
+      double yc = _plotter->drawstate->datapoints[1].yc;      
+
+      _f_emit_arc (xc, yc, x0, y0, x1, y1);
+
+      /* reset path storage buffer */
       free (_plotter->drawstate->datapoints);
       _plotter->drawstate->datapoints_len = 0;
-      _plotter->drawstate->PointsInLine = 0;
+      _plotter->drawstate->points_in_path = 0;
+      return 0;
+    }
+
+  /* path buffer contains a polyline, not an arc */
+
+  if (_plotter->drawstate->points_in_path == 0)	/* nothing to do */
+    return 0;
+  if (_plotter->drawstate->points_in_path == 1)	/* shouldn't happen */
+    {
+      /* reset path storage buffer */
+      free (_plotter->drawstate->datapoints);
+      _plotter->drawstate->datapoints_len = 0;
+      _plotter->drawstate->points_in_path = 0;
       return 0;
     }
   
-  if ((_plotter->drawstate->PointsInLine >= 3) /* check for closure */
-      && (_plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine - 1].x == _plotter->drawstate->datapoints[0].x)
-      && (_plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine - 1].y == _plotter->drawstate->datapoints[0].y))
+  if ((_plotter->drawstate->points_in_path >= 3) /* check for closure */
+      && (_plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].x == _plotter->drawstate->datapoints[0].x)
+      && (_plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].y == _plotter->drawstate->datapoints[0].y))
     closed = true;
   else
     closed = false;		/* 2-point ones should be open */
@@ -102,15 +108,15 @@ _f_endpath ()
   if (!_plotter->drawstate->points_are_connected)
     {
       Point saved_pos;
-      Point *saved_datapoints = _plotter->drawstate->datapoints;
+      GeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
       double radius = 0.5 * _plotter->drawstate->line_width;
-      int saved_PointsInLine = _plotter->drawstate->PointsInLine;
+      int saved_points_in_path = _plotter->drawstate->points_in_path;
       
       saved_pos = _plotter->drawstate->pos;
 
       _plotter->drawstate->datapoints = NULL;
       _plotter->drawstate->datapoints_len = 0;
-      _plotter->drawstate->PointsInLine = 0;
+      _plotter->drawstate->points_in_path = 0;
 
       _plotter->savestate();
       _plotter->fillcolor (_plotter->drawstate->fgcolor.red, 
@@ -120,7 +126,7 @@ _f_endpath ()
       _plotter->linewidth (0);
 
       _plotter->drawstate->points_are_connected = true;
-      for (i = 0; i < saved_PointsInLine - (closed ? 1 : 0); i++)
+      for (i = 0; i < saved_points_in_path - (closed ? 1 : 0); i++)
 	/* draw each point as a filled circle, diameter = line width */
 	_plotter->fcircle (saved_datapoints[i].x, saved_datapoints[i].y, 
 			   radius);
@@ -149,12 +155,9 @@ _f_endpath ()
   _plotter->set_pen_color();
   _plotter->set_fill_color();
   
-  /* recompute xfig's `depth' attribute, and keep track of the drawing
-     priority of the object we're drawing */
-  if (_plotter->fig_last_priority >= POLYLINE_PRIORITY)
+  /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
-  _plotter->fig_last_priority = POLYLINE_PRIORITY;
 
   /* we scale dash length by line width */
   dash_scale = _plotter->drawstate->quantized_device_line_width;
@@ -180,11 +183,11 @@ _f_endpath ()
 	  0,			/* radius (of arc boxes, ignored here) */
 	  0,			/* forward arrow */
 	  0,			/* backward arrow */
-	  _plotter->drawstate->PointsInLine	/* number of points in line */
+	  _plotter->drawstate->points_in_path	/* number of points in line */
 	  );
   _update_buffer (_plotter->page);
 
-  for (i=0; i<_plotter->drawstate->PointsInLine; i++)
+  for (i=0; i<_plotter->drawstate->points_in_path; i++)
     {
 
       if ((i%5) == 0)
@@ -204,10 +207,114 @@ _f_endpath ()
   sprintf (_plotter->page->point, "\n");
   _update_buffer (_plotter->page);
 
-  /* reset polyline storage buffer */
+  /* reset path storage buffer */
   free (_plotter->drawstate->datapoints);
   _plotter->drawstate->datapoints_len = 0;
-  _plotter->drawstate->PointsInLine = 0;
+  _plotter->drawstate->points_in_path = 0;
 
   return 0;
+}
+
+/* Emit Fig code for an arc.  This is called if the path buffer contains
+   not a polyline, but a single circular arc.  If an arc was placed there,
+   we can count on the map from the user frame to the device frame being
+   isotropic (so the arc will be circular in the device frame too), and we
+   can count on the arc not being of zero length.  See f_arc.c. */
+
+#define DIST(p1, p2) sqrt( ((p1).x - (p2).x) * ((p1).x - (p2).x) \
+			  + ((p1).y - (p2).y) * ((p1).y - (p2).y))
+
+static void
+#ifdef _HAVE_PROTOS
+_f_emit_arc (double xc, double yc, double x0, double y0, double x1, double y1)
+#else
+_f_emit_arc (xc, yc, x0, y0, x1, y1)
+     double xc, yc, x0, y0, x1, y1;
+#endif
+{
+  Point p0, p1, pc, pm, pb;
+  Vector v, v0, v1;
+  double cross, radius;
+  int orientation;
+
+  pc.x = xc, pc.y = yc;
+  p0.x = x0, p0.y = y0;
+  p1.x = x1, p1.y = y1;
+
+  /* vectors from pc to p0, and pc to p1 */
+  v0.x = p0.x - pc.x;
+  v0.y = p0.y - pc.y;
+  v1.x = p1.x - pc.x;
+  v1.y = p1.y - pc.y;
+
+  /* cross product, zero means points are collinear */
+  cross = v0.x * v1.y - v1.x * v0.y;
+
+  /* Compute orientation.  Note libplot convention: if p0, p1, pc are
+     collinear then arc goes counterclockwise from p0 to p1. */
+  orientation = (cross >= 0.0 ? 1 : -1);
+
+  radius = DIST(pc, p0);	/* radius is distance to p0 or p1 */
+
+  pm.x = 0.5 * (p0.x + p1.x);	/* midpoint of chord from p0 to p1 */
+  pm.y = 0.5 * (p0.y + p1.y);  
+
+  v.x = p1.x - p0.x;		/* chord vector from p0 to p1 */
+  v.y = p1.y - p0.y;
+      
+  _vscale(&v, radius);
+  pb.x = pc.x + orientation * v.y; /* bisection point of arc */
+  pb.y = pc.y - orientation * v.x;
+      
+  /* evaluate fig colors lazily, i.e. only when needed */
+  _plotter->set_pen_color();
+  _plotter->set_fill_color();
+  
+  /* update xfig's `depth' attribute */
+    if (_plotter->fig_drawing_depth > 0)
+      (_plotter->fig_drawing_depth)--;
+
+  /* compute orientation in device frame */
+  orientation *= (_plotter->drawstate->transform.nonreflection ? 1 : -1);
+
+  if (orientation == -1)
+    /* interchange p0, p1 (since xfig insists that p0, pb, p1 must appear
+       in counterclockwise order around the arc) */
+    {
+      Point ptmp;
+      
+      ptmp = p0;
+      p0 = p1;
+      p1 = ptmp;
+    }
+
+  sprintf(_plotter->page->point,
+	  "#ARC\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %.3f %.3f %d %d %d %d %d %d\n",
+	  5,			/* arc object */
+	  1,			/* open-ended arc subtype */
+	  _fig_line_style[_plotter->drawstate->line_type], /* style */
+	  			/* thickness, in Fig display units */
+	  _plotter->drawstate->quantized_device_line_width, 
+	  _plotter->drawstate->fig_fgcolor, /* pen color */
+	  _plotter->drawstate->fig_fillcolor, /* fill color */
+	  _plotter->fig_drawing_depth, /* depth */
+	  0,			/* pen style, ignored */
+	  _plotter->drawstate->fig_fill_level, /* area fill */
+	  			/* style val, in Fig display units (float) */
+	  _fig_dash_length[_plotter->drawstate->line_type], 
+	  _fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
+	  1,			/* counterclockwise */
+	  0,			/* no forward arrow */
+	  0,			/* no backward arrow */
+	  XD(pc.x, pc.y),	/* center_x (float) */
+	  YD(pc.x, pc.y),	/* center_y (float) */
+	  IROUND(XD(p0.x, p0.y)), /* 1st point user entered (p0) */
+	  IROUND(YD(p0.x, p0.y)), 
+	  IROUND(XD(pb.x, pb.y)), /* 2nd point user entered (bisection point)*/
+	  IROUND(YD(pb.x, pb.y)),
+	  IROUND(XD(p1.x, p1.y)), /* last point user entered (p1) */
+	  IROUND(YD(p1.x, p1.y)));
+  _update_buffer (_plotter->page);
+
+  return;
 }

@@ -33,5 +33,5 @@ _g_error (msg)
   else if (_plotter->errstream != NULL)
     fprintf (_plotter->errstream, "libplot: error: %s\n", msg);
 
-  exit (1);
+  exit (EXIT_FAILURE);
 }

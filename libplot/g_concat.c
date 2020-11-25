@@ -5,8 +5,8 @@
    device coordinates, by requiring that the transformation currently in
    effect be be preceded by a specified affine transformation. */
 
-/* Invoking concat causes the device-frame line width and the device-frame
-   size of the current font to be recomputed. */
+/* Invoking concat causes the device-frame line width to be recomputed; see
+   comment below. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -69,17 +69,23 @@ _g_fconcat (m0, m1, m2, m3, m4, m5)
   _plotter->drawstate->transform.nonreflection 
     = ((_plotter->flipped_y ? -1 : 1) * det >= 0) ? true : false;
 
-  /* This is a bit of a botch.  We recompute device-frame line width, which
-     incidentally calls `endpath'.  But we don't do so if the Plotter on
-     which this method is invoked is a MetaPlotter, since doing so would
-     cause a bogus LINEWIDTH op code to be emitted to the metafile, and a
-     MetaPlotter has no notion of device-frame line width anyway.  */
-
-  if (_plotter->type != PL_META)
+  /* recompute line width in device coordinates, being careful (if Plotter
+     is a MetaPlotter) not to cause a bogus LINEWIDTH op code to be emitted */
+  if (_plotter->type == PL_META)
+    _g_flinewidth (_plotter->drawstate->line_width);
+  else
     _plotter->flinewidth (_plotter->drawstate->line_width);
 
-  /* recompute font size in device coordinates */
-  _plotter->retrieve_font();
+  /* Even though we update the device-frame line width, we don't invoke the
+     retrieve_font operation to update the device-frame font size.  That is
+     because on X Plotters, it's not wise: the new device-frame font size
+     may be so small or large as to be unavailable on the X server, and the
+     user may in fact be planning to invoke fontsize() manually to select a
+     font of an appropriate size.
+
+     Even if the user doesn't plan on doing that, it's OK not to invoke
+     retrieve_font here, since it'll be invoked before rendering any string
+     (see g_alabel.c). */
 
   return 0;
 }

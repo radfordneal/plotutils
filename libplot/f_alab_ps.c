@@ -152,12 +152,9 @@ _f_falabel_ps (s, h_just)
     }
   *ptr = (unsigned char)'\0';
 
-  /* recompute xfig's `depth' attribute, and keep track of the drawing
-     priority of the object we're drawing */
-  if (_plotter->fig_last_priority >= TEXT_PRIORITY)
+  /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
-  _plotter->fig_last_priority = TEXT_PRIORITY;
 
   sprintf(_plotter->page->point,
 	  "#TEXT\n%d %d %d %d %d %d %.3f %.3f %d %.3f %.3f %d %d %s\\001\n",

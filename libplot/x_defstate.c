@@ -1,7 +1,7 @@
 /* Initialization for an X drawing state, which is one of the data members
    of any XPlotter object.  Its components include drawing attributes, and
-   the state of any uncompleted polyline object.  (At initialization, there
-   is none.) */
+   the state of any uncompleted path object.  (At initialization, there is
+   none.) */
    
 /* Two state variables (font size and line width in user coordinates) play
    an important role at later times, e.g. a bad font size resets the font
@@ -26,14 +26,10 @@ const State _X_default_drawstate = {
   },
 /* graphics cursor position */
   {0.0, 0.0},			/* graphics cursor position */
-/* the state of any uncompleted polyline object */
-  (Point *)NULL,		/* array of accumulated points [here NULL]*/
+/* the state of any uncompleted path object */
+  (GeneralizedPoint *)NULL,	/* array of accumulated points [here NULL]*/
   0,				/* number of accumulated points */
   0,				/* length of point storage buffer (bytes) */
-  false,			/* whether arc has been stored */
-  false,			/* whether to output stored arc immediately */
-  false,			/* whether to output as polyline (advisory) */
-  0.0,0.0,0.0,0.0,0.0,0.0,	/* stored arc parameters */
 /* modal drawing attributes */
   "solid",			/* line mode [must be valid] */
   L_SOLID,			/* line type, one of L_*, det'd by line mode */

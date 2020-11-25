@@ -31,7 +31,7 @@ _g_fbox (x0, y0, x1, y1)
   _plotter->fcont (x1, y0);
   _plotter->fcont (x0, y0);
 
-  /* move to center (libplot convention) */
+  /* move to center (libplot convention); this will invoke endpath() */
   xnew = 0.5 * (x0 + x1);
   ynew = 0.5 * (y0 + y1);
   _plotter->fmove (xnew, ynew);

@@ -306,7 +306,7 @@ _x_closepl ()
       XtAppMainLoop (_plotter->app_con); /* shouldn't return */
 
       /* NOTREACHED */
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   else				/* fork failed */
     {

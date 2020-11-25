@@ -27,13 +27,13 @@ _m_fconcat (m0, m1, m2, m3, m4, m5)
     {
       if (_plotter->portable_output)
 	{
-	  putc (FCONCAT, _plotter->outstream);
+	  putc ((int)O_FCONCAT, _plotter->outstream);
 	  fprintf (_plotter->outstream, " %g %g %g %g %g %g\n",
 		   m0, m1, m2, m3, m4, m5);
 	}
       else
 	{
-	  putc (FCONCAT, _plotter->outstream);
+	  putc ((int)O_FCONCAT, _plotter->outstream);
 	  _emit_float (m0);
 	  _emit_float (m1);
 	  _emit_float (m2);
@@ -43,6 +43,6 @@ _m_fconcat (m0, m1, m2, m3, m4, m5)
 	}  
     }
 
-  /* invoke generic method */
+  /* invoke generic method to update stored transformation matrix */
   return _g_fconcat (m0, m1, m2, m3, m4, m5);
 }

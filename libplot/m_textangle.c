@@ -33,10 +33,10 @@ _m_textangle (angle)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d\n", 
-		 TEXTANGLE, angle);
+		 (int)O_TEXTANGLE, angle);
       else
 	{
-	  putc (TEXTANGLE, _plotter->outstream);
+	  putc ((int)O_TEXTANGLE, _plotter->outstream);
 	  _emit_integer (angle);
 	}  
     }
@@ -66,10 +66,10 @@ _m_ftextangle (angle)
 
   if (_plotter->portable_output)
     fprintf (_plotter->outstream, "%c %g\n",
-	     TEXTANGLE, angle);
+	     (int)O_TEXTANGLE, angle);
   else
     {
-      putc (FTEXTANGLE, _plotter->outstream);
+      putc ((int)O_FTEXTANGLE, _plotter->outstream);
       _emit_float (angle);
     }  
 

@@ -32,7 +32,7 @@ _m_linemod (s)
 	*nl = '\0';		/* don't grok multiline arg strings */
       
       fprintf (_plotter->outstream, "%c%s\n", 
-	       LINEMOD, s);
+	       (int)O_LINEMOD, s);
     }
   
   /* invoke generic method */

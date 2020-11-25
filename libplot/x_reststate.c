@@ -31,8 +31,7 @@ _x_restorestate()
     }
 
   /* flush polyline if any */
-  if (_plotter->drawstate->PointsInLine > 0
-      || _plotter->drawstate->arc_stashed)
+  if (_plotter->drawstate->points_in_path > 0)
     _plotter->endpath(); /* flush polyline if any */
 
   /* elements of current state that are strings are first freed */

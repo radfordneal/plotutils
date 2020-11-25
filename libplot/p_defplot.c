@@ -24,9 +24,6 @@
 
 #include "p_header.h"		/* Idraw Postscript header */
 
-static void _get_document_bbox __P ((Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
-static void _get_page_bbox __P ((Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
-
 /* Note that we define the graphics display to be a square, centered on the
    printed page and occupying the full width of the page. */
 
@@ -68,18 +65,24 @@ const Plotter _ps_default_plotter =
   false,			/* open? */
   false,			/* opened? */
   0,				/* number of times opened */
+  false,			/* has space() been invoked on this page? */
   (FILE *)NULL,			/* input stream [not used] */
   (FILE *)NULL,			/* output stream (if any) */
   (FILE *)NULL,			/* error stream (if any) */
   /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
   { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL },
   /* capabilities */
 #ifdef USE_LJ_FONTS_IN_PS
-  1, 1, 0, 1, 1, 1, 0, 0, 0,	/* capability flags (see extern.h) */
+  1, 1, 0, 1, 1, 1, 0, 0,	/* capability flags (see extern.h) */
 #else
-  1, 1, 0, 1, 1, 0, 0, 0, 0,	/* capability flags (see extern.h) */
+  1, 1, 0, 1, 1, 0, 0, 0,	/* capability flags (see extern.h) */
 #endif
+  false,			/* display device can justify text? */
+  false,			/* can mix arcs and lines in stored paths? */
+  AS_NONE,			/* allowed scaling for circular arcs */
+  AS_NONE,			/* allowed scaling for elliptic arcs */
   INT_MAX,			/* hard polyline length limit */
   /* output buffers */
   NULL,				/* pointer to output buffer for current page */
@@ -94,7 +97,9 @@ const Plotter _ps_default_plotter =
   false,			/* bitmap display device? */
   0, 0, 0, 0,			/* range of coordinates (for a bitmap device)*/
   {0.25, 8.25, 1.5, 9.5, 0.0},	/* same, for a physical device (in inches) */
+  NULL,				/* page type, for a physical device */
   72.0,				/* units/inch for a physical device */
+  false,			/* whether display should be in metric */
   false,			/* y increases downward? */
   /* elements used by more than one device */
   MAX_UNFILLED_POLYLINE_LENGTH,	/* user-settable, for unfilled polylines */
@@ -120,6 +125,8 @@ const Plotter _ps_default_plotter =
   0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
   0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
   10668.0,			/* plot length (for HP-GL/2 roll plotters) */
+  false,			/* can construct a palette? (HP-GL/2 only) */
+  true,				/* pen marks sh'd be opaque? (HP-GL/2 only) */
   1,				/* current pen (initted in h_openpl.c) */
   false,			/* bad pen? (advisory, see h_color.c) */
   false,			/* pen down rather than up? */
@@ -130,8 +137,6 @@ const Plotter _ps_default_plotter =
   HPGL_FILL_SOLID_BI,		/* fill type */
   0.0,				/* percent shading (used if FILL_SHADING) */
   2,				/* pen to be assigned a color next */
-  false,			/* can construct a palette? (HP-GL/2 only) */
-  true,				/* pen marks sh'd be opaque? (HP-GL/2 only) */
   PCL_ROMAN_8,			/* encoding, 14=ISO-Latin-1,.. (HP-GL/2 only)*/
   0,				/* font spacing, 0=fixed, 1=not(HP-GL/2 only)*/
   0,				/* posture, 0=upright, 1=italic(HP-GL/2 only)*/
@@ -144,23 +149,29 @@ const Plotter _ps_default_plotter =
   0,				/* label rise, % of p2y-p1y (HP-GL/2 only) */
   0,				/* label run, % of p2x-p1x (HP-GL/2 only) */
   0,				/* tangent of character slant (HP-GL/2 only)*/
-  (unsigned char)3,		/* label terminator char (^C) */
   /* elements specific to the fig device driver */
-  false,			/* whether xfig display should be in metric */
   FIG_INITIAL_DEPTH,		/* fig's current value for `depth' attribute */
-  0,				/* drawing priority for last-drawn object */
   0,				/* number of colors currently defined */
   /* elements specific to the Postscript/idraw device driver */
+  /* elements specific to the Adobe Illustrator device driver */
+  AI_VERSION_5,			/* version of Illustrator file format */
+  0.0, 0.0, 0.0, 1.0,		/* pen color (subtractive, in CMYK space) */
+  0.0, 0.0, 0.0, 1.0,		/* fill color (subtractive, in CMYK space) */
+  false, false, false, false,	/* CMYK have been used? */
+  PS_CAP_BUTT,			/* PS cap style for lines */
+  PS_JOIN_MITER,		/* PS join style for lines */
+  L_SOLID,			/* AI's line type */
+  1.0,				/* line width in printer's points */
 #ifndef X_DISPLAY_MISSING
   /* elements specific to the X11 and X11 Drawable device drivers */
+  (Display *)NULL,		/* display */
   (Drawable)0,			/* an X drawable (e.g. a window) */
   (Drawable)0,			/* an X drawable (e.g. a pixmap) */
   (Drawable)0,			/* graphics buffer, if double buffering */
+  DBL_NONE,			/* double buffering type (if any) */
   (Fontrecord *)NULL,		/* head of list of retrieved X fonts */
   (Colorrecord *)NULL,		/* head of list of retrieved color cells */
-  (Display *)NULL,		/* display */
   (Colormap)0,			/* colormap */
-  DBL_NONE,			/* double buffering type (if any) */
   0,				/* number of frame in page */
   NULL,				/* label (hint to font retrieval routine) */
   /* elements specific to the X11 device driver */
@@ -168,15 +179,14 @@ const Plotter _ps_default_plotter =
   (Widget)NULL,			/* toplevel widget */
   (Widget)NULL,			/* Label widget */
   (Drawable)0,			/* used for server-side double buffering */
-  false,			/* using private colormap? */
   false,			/* window(s) disappear on Plotter deletion? */
+  false,			/* using private colormap? */
   false,			/* issued warning on color cell exhaustion? */
 #endif /* X_DISPLAY_MISSING */
 
   /* Long arrays are positioned at the end, and are not initialized */
   /* HP-GL driver: pen_color[] and pen_defined[] arrays */
   /* FIG: fig_usercolors[] array */
-  /* PS: ps_font_used[] array (and possible pcl_font_used[] array also) */
 };
 
 /* The internal `initialize' method, which is invoked when a Plotter is
@@ -200,7 +210,6 @@ _ps_init_plotter (plotter)
   const char *length_s, *pagesize;
   const Pagedata *pagedata;
   bool retval = true;
-  int i;
 
   /* initialize certain data members from values of relevant class
      variables */
@@ -229,14 +238,6 @@ _ps_init_plotter (plotter)
     }
   plotter->display_coors = pagedata->ps;
       
-  /* initialize `font used' array(s) for the document */
-  for (i = 0; i < NUM_PS_FONTS; i++)
-    plotter->ps_font_used[i] = false;
-#ifdef USE_LJ_FONTS_IN_PS
-  for (i = 0; i < NUM_PCL_FONTS; i++)
-    plotter->pcl_font_used[i] = false;
-#endif
-
   return retval;
 }
 
@@ -268,6 +269,10 @@ _ps_terminate_plotter (plotter)
   int i, n;
   time_t clock;
   Outbuf *page;
+  bool ps_font_used_in_doc[NUM_PS_FONTS];
+#ifdef USE_LJ_FONTS_IN_PS
+  bool pcl_font_used_in_doc[NUM_PCL_FONTS];	
+#endif
 
   if (plotter->outstream)
     {
@@ -282,23 +287,50 @@ _ps_terminate_plotter (plotter)
 %%!PS-Adobe-3.0\n");
 
       fprintf (plotter->outstream, "\
-%%%%Creator: GNU libplot drawing library\n\
-%%%%Title: PostScript plot file\n\
+%%%%Creator: GNU libplot drawing library %s\n\
+%%%%Title: PostScript plot\n\
 %%%%CreationDate: %s\
 %%%%DocumentData: Clean7Bit\n\
 %%%%LanguageLevel: 1\n\
 %%%%Pages: %d\n\
 %%%%PageOrder: Ascend\n\
 %%%%Orientation: Portrait\n",
-	       (time(&clock), ctime(&clock)), num_pages);
+	       LIBPLOT_VERSION, (time(&clock), ctime(&clock)), num_pages);
       
       /* emit the bounding box for the document */
-      _get_document_bbox (plotter->first_page, &xmin, &xmax, &ymin, &ymax);
-      fprintf (plotter->outstream, "\
+      _bbox_of_outbufs (plotter->first_page, &xmin, &xmax, &ymin, &ymax);
+      if (xmin > xmax || ymin > ymax) 
+	/* all pages empty */
+	fprintf (plotter->outstream, "\
+%%%%BoundingBox: 0 0 0 0\n");
+      else
+	fprintf (plotter->outstream, "\
 %%%%BoundingBox: %d %d %d %d\n",
-	       IROUND(xmin - 0.5), IROUND(ymin - 0.5),
-	       IROUND(xmax + 0.5), IROUND(ymax + 0.5));
+		 IROUND(xmin - 0.5), IROUND(ymin - 0.5),
+		 IROUND(xmax + 0.5), IROUND(ymax + 0.5));
       
+      /* determine fonts needed by document, by examining all pages */
+      {
+	Outbuf *page = plotter->first_page;
+	
+	for (i = 0; i < NUM_PS_FONTS; i++)
+	  ps_font_used_in_doc[i] = false;
+#ifdef USE_LJ_FONTS_IN_PS	
+	for (i = 0; i < NUM_PCL_FONTS; i++)
+	  pcl_font_used_in_doc[i] = false;
+#endif
+	while (page)
+	  {
+	    for (i = 0; i < NUM_PS_FONTS; i++)
+	      ps_font_used_in_doc[i] |= page->ps_font_used[i];
+#ifdef USE_LJ_FONTS_IN_PS
+	    for (i = 0; i < NUM_PCL_FONTS; i++)
+	      pcl_font_used_in_doc[i] |= page->pcl_font_used[i];
+#endif
+	    page = page->next;
+	  }
+      }
+
       /* write out list of fonts needed by the document */
       {
 	bool first_font = true;
@@ -307,7 +339,7 @@ _ps_terminate_plotter (plotter)
 %%DocumentNeededResources: ", plotter->outstream);
 	for (i = 0; i < NUM_PS_FONTS; i++)
 	  {
-	    if (plotter->ps_font_used[i])
+	    if (ps_font_used_in_doc[i])
 	      {
 		if (first_font == false)
 		  fputs ("%%+ ", plotter->outstream);
@@ -320,7 +352,7 @@ _ps_terminate_plotter (plotter)
 #ifdef USE_LJ_FONTS_IN_PS
 	for (i = 0; i < NUM_PCL_FONTS; i++)
 	  {
-	    if (plotter->pcl_font_used[i])
+	    if (pcl_font_used_in_doc[i])
 	      {
 		if (first_font == false)
 		  fputs ("%%+ ", plotter->outstream);
@@ -335,7 +367,7 @@ _ps_terminate_plotter (plotter)
 	      }
 	  }
 #endif
-	if (first_font)		/* no fonts needed */
+	if (first_font)		/* no fonts needed in document */
 	  fputs ("\n", plotter->outstream);
       }
 
@@ -346,6 +378,52 @@ _ps_terminate_plotter (plotter)
 		 PS_PROCSET_NAME, PS_PROCSET_VERSION);
       fputs ("\
 %%EndComments\n\n", plotter->outstream);
+
+      /* write out list of fonts needed by the document, all over again;
+	 this time it's interpreted as the default font list for each page */
+      {
+	bool first_font = true;
+
+	fputs ("\
+%%BeginDefaults\n", plotter->outstream);
+	fputs ("\
+%%PageResources: ", plotter->outstream);
+	for (i = 0; i < NUM_PS_FONTS; i++)
+	  {
+	    if (ps_font_used_in_doc[i])
+	      {
+		if (first_font == false)
+		  fputs ("%%+ ", plotter->outstream);
+		fputs ("font ", plotter->outstream);
+		fputs (_ps_font_info[i].ps_name, plotter->outstream);
+		fputs ("\n", plotter->outstream);
+		first_font = false;
+	      }
+	  }
+#ifdef USE_LJ_FONTS_IN_PS
+	for (i = 0; i < NUM_PCL_FONTS; i++)
+	  {
+	    if (pcl_font_used_in_doc[i])
+	      {
+		if (first_font == false)
+		  fputs ("%%+ ", plotter->outstream);
+		fputs ("font ", plotter->outstream);
+		if (_pcl_font_info[i].substitute_ps_name)
+		  /* this is to support the Tidbits-is-Wingdings botch */
+		  fputs (_pcl_font_info[i].substitute_ps_name, plotter->outstream);
+		else
+		  fputs (_pcl_font_info[i].ps_name, plotter->outstream);
+		fputs ("\n", plotter->outstream);
+		first_font = false;
+	      }
+	  }
+#endif
+	if (first_font)		/* no fonts needed in document */
+	  fputs ("\n", plotter->outstream);
+
+	fputs ("\
+%%EndDefaults\n\n", plotter->outstream);
+      }
 
       /* Document Prolog */
       fputs ("\
@@ -372,12 +450,12 @@ _ps_terminate_plotter (plotter)
 
       /* tell driver to include any PS [or PCL] fonts that are needed */
       for (i = 0; i < NUM_PS_FONTS; i++)
-	  if (plotter->ps_font_used[i])
+	  if (ps_font_used_in_doc[i])
 	    fprintf (plotter->outstream, "\
 %%%%IncludeResource: font %s\n", _ps_font_info[i].ps_name);
 #ifdef USE_LJ_FONTS_IN_PS
       for (i = 0; i < NUM_PCL_FONTS; i++)
-	  if (plotter->pcl_font_used[i])
+	  if (pcl_font_used_in_doc[i])
 	    {
 	      /* this is to support the Tidbits-is-Wingdings botch */
 	      if (_pcl_font_info[i].substitute_ps_name)
@@ -399,14 +477,14 @@ DrawDict begin\n");
 	bool need_to_reencode = false;
 
 	for (i = 0; i < NUM_PS_FONTS; i++)
-	  if (plotter->ps_font_used[i] && _ps_font_info[i].iso8859_1)
+	  if (ps_font_used_in_doc[i] && _ps_font_info[i].iso8859_1)
 	    {
 	      need_to_reencode = true;
 	      break;
 	    }
 #ifdef USE_LJ_FONTS_IN_PS
 	for (i = 0; i < NUM_PCL_FONTS; i++)
-	  if (plotter->pcl_font_used[i] && _pcl_font_info[i].iso8859_1)
+	  if (pcl_font_used_in_doc[i] && _pcl_font_info[i].iso8859_1)
 	    {
 	      need_to_reencode = true;
 	      break;
@@ -418,7 +496,7 @@ DrawDict begin\n");
 	    
 	    for (i = 0; i < NUM_PS_FONTS; i++)
 	      {
-		if (plotter->ps_font_used[i] && _ps_font_info[i].iso8859_1)
+		if (ps_font_used_in_doc[i] && _ps_font_info[i].iso8859_1)
 		  fprintf (plotter->outstream, "\
 /%s reencodeISO def\n",
 			   _ps_font_info[i].ps_name);
@@ -426,7 +504,7 @@ DrawDict begin\n");
 #ifdef USE_LJ_FONTS_IN_PS
 	    for (i = 0; i < NUM_PCL_FONTS; i++)
 	      {
-		if (plotter->pcl_font_used[i] && _pcl_font_info[i].iso8859_1)
+		if (pcl_font_used_in_doc[i] && _pcl_font_info[i].iso8859_1)
 		  fprintf (plotter->outstream, "\
 /%s reencodeISO def\n",
 			   _pcl_font_info[i].ps_name);
@@ -460,12 +538,58 @@ DrawDict begin\n");
 	    fprintf (plotter->outstream, "\
 %%%%Page: %d %d\n",
 		     n, n);
+
+	    /* write out list of fonts needed by the page */
+	    {
+	      bool first_font = true;
+
+	      fputs ("\
+%%PageResources: ", plotter->outstream);
+	      for (i = 0; i < NUM_PS_FONTS; i++)
+		{
+		  if (page->ps_font_used[i])
+		    {
+		      if (first_font == false)
+			fputs ("%%+ ", plotter->outstream);
+		      fputs ("font ", plotter->outstream);
+		      fputs (_ps_font_info[i].ps_name, plotter->outstream);
+		      fputs ("\n", plotter->outstream);
+		      first_font = false;
+		    }
+		}
+#ifdef USE_LJ_FONTS_IN_PS
+	      for (i = 0; i < NUM_PCL_FONTS; i++)
+		{
+		  if (page->pcl_font_used[i])
+		    {
+		      if (first_font == false)
+			fputs ("%%+ ", plotter->outstream);
+		      fputs ("font ", plotter->outstream);
+		      if (_pcl_font_info[i].substitute_ps_name)
+			/* this is to support the Tidbits-is-Wingdings botch */
+			fputs (_pcl_font_info[i].substitute_ps_name, plotter->outstream);
+		      else
+			fputs (_pcl_font_info[i].ps_name, plotter->outstream);
+		      fputs ("\n", plotter->outstream);
+		      first_font = false;
+		    }
+		}
+#endif
+	      if (first_font)	/* no fonts needed on page */
+		fputs ("\n", plotter->outstream);
+	    }
+
 	    /* emit the bounding box for the page */
-	    _get_page_bbox (page, &xmin, &xmax, &ymin, &ymax);
-	    fprintf (plotter->outstream, "\
+	    _bbox_of_outbuf (page, &xmin, &xmax, &ymin, &ymax);
+	    if (xmin > xmax || ymin > ymax)
+	      /* empty page */
+	      fprintf (plotter->outstream, "\
+%%%%PageBoundingBox: 0 0 0 0\n");
+	    else
+	      fprintf (plotter->outstream, "\
 %%%%PageBoundingBox: %d %d %d %d\n",
-		     IROUND(xmin - 0.5), IROUND(ymin - 0.5),
-		     IROUND(xmax + 0.5), IROUND(ymax + 0.5));
+		       IROUND(xmin - 0.5), IROUND(ymin - 0.5),
+		       IROUND(xmax + 0.5), IROUND(ymax + 0.5));
 	    /* Page Setup */
 	    fputs ("\
 %%BeginPageSetup\n", plotter->outstream);
@@ -529,97 +653,4 @@ end\n\
     }
   else
     return true;
-}
-
-/* compute bounding box information for an entire document, starting
-   with the page pointed to by BUFP */
-static void 
-#ifdef _HAVE_PROTOS
-_get_document_bbox (Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax)
-#else
-_get_document_bbox (bufp, xmin, xmax, ymin, ymax)
-     Outbuf *bufp;
-     double *xmin, *xmax, *ymin, *ymax;
-#endif
-{
-  double doc_x_min = DBL_MAX;
-  double doc_y_min = DBL_MAX;  
-  double doc_x_max = -(DBL_MAX);
-  double doc_y_max = -(DBL_MAX);  
-  double page_x_min, page_x_max, page_y_min, page_y_max;
-  Outbuf *page = bufp;
-
-  while (page)
-    {
-      page_x_max = page->xrange_max;
-      page_x_min = page->xrange_min;
-      page_y_max = page->yrange_max;
-      page_y_min = page->yrange_min;
-
-      if (!((page_x_max < page_x_min || page_y_max < page_y_min)))
-	/* nonempty page */
-	{
-	  if (page_x_max > doc_x_max) doc_x_max = page_x_max;
-	  if (page_y_max > doc_y_max) doc_y_max = page_y_max;
-	  if (page_x_min < doc_x_min) doc_x_min = page_x_min;
-	  if (page_y_min < doc_y_min) doc_y_min = page_y_min;
-	}
-      page = page->next;
-    }
-
-  if (doc_x_max < doc_x_min || doc_y_max < doc_y_min)
-    /* empty document or all pages empty, return silly values */
-    {
-      *xmin = 0.5;
-      *ymin = 0.5;
-      *xmax = -0.5;
-      *ymax = -0.5;
-    }
-  else
-    {
-      *xmin = doc_x_min;
-      *ymin = doc_y_min;
-      *xmax = doc_x_max;
-      *ymax = doc_y_max;
-    }
-}
-
-/* compute bounding box information for the page pointed to by BUFP */
-static void 
-#ifdef _HAVE_PROTOS
-_get_page_bbox (Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax)
-#else
-_get_page_bbox (bufp, xmin, xmax, ymin, ymax)
-     Outbuf *bufp;
-     double *xmin, *xmax, *ymin, *ymax;
-#endif
-{
-  double page_x_min = DBL_MAX;
-  double page_y_min = DBL_MAX;  
-  double page_x_max = -(DBL_MAX);
-  double page_y_max = -(DBL_MAX);  
-
-  if (bufp)
-    {
-      page_x_max = bufp->xrange_max;
-      page_x_min = bufp->xrange_min;
-      page_y_max = bufp->yrange_max;
-      page_y_min = bufp->yrange_min;
-    }
-
-  if (page_x_max < page_x_min || page_y_max < page_y_min)
-    /* empty page, return silly values */
-    {
-      *xmin = 0.5;
-      *ymin = 0.5;
-      *xmax = -0.5;
-      *ymax = -0.5;
-    }
-  else
-    {
-      *xmin = page_x_min;
-      *ymin = page_y_min;
-      *xmax = page_x_max;
-      *ymax = page_y_max;
-    }
 }

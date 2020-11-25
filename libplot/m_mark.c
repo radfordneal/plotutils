@@ -28,10 +28,10 @@ _m_marker (x, y, type, size)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d\n",
-		 MARKER, x, y, type, size);
+		 (int)O_MARKER, x, y, type, size);
       else
 	{
-	  putc (MARKER, _plotter->outstream);
+	  putc ((int)O_MARKER, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	  _emit_integer (type);
@@ -62,10 +62,10 @@ _m_fmarker (x, y, type, size)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %d %g\n",
-		 MARKER, x, y, type, size);
+		 (int)O_MARKER, x, y, type, size);
       else
 	{
-	  putc (FMARKER, _plotter->outstream);
+	  putc ((int)O_FMARKER, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	  _emit_integer (type);

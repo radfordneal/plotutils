@@ -17,7 +17,7 @@ _plot_xmalloc (size)
     {
       fprintf (stderr, "libplot: ");
       perror ("malloc failed");
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   return p;
 }
@@ -37,7 +37,7 @@ _plot_xcalloc (nmemb, size)
     {
       fprintf (stderr, "libplot: ");
       perror ("calloc failed");
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   return p;
 }
@@ -57,7 +57,7 @@ _plot_xrealloc (p, size)
     {
       fprintf (stderr, "libplot: ");
       perror ("realloc failed");
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   return p;
 }

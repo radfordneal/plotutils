@@ -10,7 +10,7 @@
 const Plotter _meta_default_plotter = 
 {
   /* methods */
-  _m_alabel, _m_arc, _m_arcrel, _m_bgcolor, _g_bgcolorname, _m_box, _m_boxrel, _m_capmod, _m_circle, _m_circlerel, _m_closepl, _g_color, _g_colorname, _m_cont, _m_contrel, _m_ellarc, _m_ellarcrel, _m_ellipse, _m_ellipserel, _m_endpath, _m_erase, _m_farc, _m_farcrel, _m_fbox, _m_fboxrel, _m_fcircle, _m_fcirclerel, _m_fconcat, _m_fcont, _m_fcontrel, _m_fellarc, _m_fellarcrel, _m_fellipse, _m_fellipserel, _m_ffontname, _m_ffontsize, _m_fillcolor, _g_fillcolorname, _m_filltype, _g_flabelwidth, _m_fline, _m_flinerel, _m_flinewidth, _g_flushpl, _m_fmarker, _m_fmarkerrel, _m_fmove, _m_fmoverel, _m_fontname, _m_fontsize, _m_fpoint, _m_fpointrel, _m_frotate, _m_fscale, _m_fspace, _m_fspace2, _m_ftextangle, _m_ftranslate, _g_havecap, _m_joinmod, _m_label, _g_labelwidth, _m_line, _m_linemod, _m_linerel, _m_linewidth, _m_marker, _m_markerrel, _m_move, _m_moverel, _m_openpl, _g_outfile, _m_pencolor, _g_pencolorname, _m_point, _m_pointrel, _m_restorestate, _m_savestate, _m_space, _m_space2, _m_textangle,
+  _m_alabel, _m_arc, _m_arcrel, _m_bgcolor, _g_bgcolorname, _m_box, _m_boxrel, _m_capmod, _m_circle, _m_circlerel, _m_closepl, _g_color, _g_colorname, _m_cont, _m_contrel, _m_ellarc, _m_ellarcrel, _m_ellipse, _m_ellipserel, _m_endpath, _m_erase, _m_farc, _m_farcrel, _m_fbox, _m_fboxrel, _m_fcircle, _m_fcirclerel, _m_fconcat, _m_fcont, _m_fcontrel, _m_fellarc, _m_fellarcrel, _m_fellipse, _m_fellipserel, _m_ffontname, _m_ffontsize, _m_fillcolor, _g_fillcolorname, _m_filltype, _g_flabelwidth, _m_fline, _m_flinerel, _m_flinewidth, _g_flushpl, _m_fmarker, _m_fmarkerrel, _m_fmove, _m_fmoverel, _m_fontname, _m_fontsize, _m_fpoint, _m_fpointrel, _g_frotate, _g_fscale, _m_fspace, _m_fspace2, _m_ftextangle, _g_ftranslate, _g_havecap, _m_joinmod, _m_label, _g_labelwidth, _m_line, _m_linemod, _m_linerel, _m_linewidth, _m_marker, _m_markerrel, _m_move, _m_moverel, _m_openpl, _g_outfile, _m_pencolor, _g_pencolorname, _m_point, _m_pointrel, _m_restorestate, _m_savestate, _m_space, _m_space2, _m_textangle,
   /* internal methods that plot strings in non-Hershey fonts */
   NULL, NULL, NULL, NULL,
   _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, NULL,
@@ -34,14 +34,20 @@ const Plotter _meta_default_plotter =
   false,			/* open? */
   false,			/* opened? */
   0,				/* number of times opened */
+  false,			/* has space() been invoked on this page? */
   (FILE *)NULL,			/* input stream [not used] */
   (FILE *)NULL,			/* output stream (if any) */
   (FILE *)NULL,			/* error stream (if any) */
   /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
   { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL },
   /* capabilities */
-  2, 2, 2, 1, 1, 1, 1, 1, 0,	/* capability flags (see extern.h) */
+  2, 2, 2, 1, 1, 1, 1, 1,	/* capability flags (see extern.h) */
+  true,				/* display device can justify text? */
+  false,			/* can mix arcs and lines in stored paths? */
+  AS_NONE,			/* allowed scaling for circular arcs */
+  AS_NONE,			/* allowed scaling for elliptic arcs */
   INT_MAX,			/* hard polyline length limit */
   /* output buffers */
   NULL,				/* pointer to output buffer for current page */
@@ -56,7 +62,9 @@ const Plotter _meta_default_plotter =
   false,			/* bitmap display device? */
   0, 0, 0, 0,			/* range of coordinates (for a bitmap device)*/
   {0.0, 0.0, 0.0, 0.0, 0.0},	/* same, for a physical device (in inches) */
+  NULL,				/* page type, for a physical device */
   0.0,				/* units/inch for a physical device */
+  false,			/* whether display should be in metric */
   false,			/* y increases downward? */
   /* elements used by more than one device */
   MAX_UNFILLED_POLYLINE_LENGTH,	/* user-settable, for unfilled polylines */
@@ -82,6 +90,8 @@ const Plotter _meta_default_plotter =
   0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
   0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
   10668.0,			/* plot length (for HP-GL/2 roll plotters) */
+  false,			/* can construct a palette? (HP-GL/2 only) */
+  true,				/* pen marks sh'd be opaque? (HP-GL/2 only) */
   1,				/* current pen (initted in h_openpl.c) */
   false,			/* bad pen? (advisory, see h_color.c) */
   false,			/* pen down rather than up? */
@@ -92,8 +102,6 @@ const Plotter _meta_default_plotter =
   HPGL_FILL_SOLID_BI,		/* fill type */
   0.0,				/* percent shading (used if FILL_SHADING) */
   2,				/* pen to be assigned a color next */
-  false,			/* can construct a palette? (HP-GL/2 only) */
-  true,				/* pen marks sh'd be opaque? (HP-GL/2 only) */
   PCL_ROMAN_8,			/* encoding, 14=ISO-Latin-1,.. (HP-GL/2 only)*/
   0,				/* font spacing, 0=fixed, 1=not(HP-GL/2 only)*/
   0,				/* posture, 0=upright, 1=italic(HP-GL/2 only)*/
@@ -106,23 +114,29 @@ const Plotter _meta_default_plotter =
   0,				/* label rise, % of p2y-p1y (HP-GL/2 only) */
   0,				/* label run, % of p2x-p1x (HP-GL/2 only) */
   0,				/* tangent of character slant (HP-GL/2 only)*/
-  (unsigned char)3,		/* label terminator char (^C) */
   /* elements specific to the fig device driver */
-  false,			/* whether xfig display should be in metric */
   FIG_INITIAL_DEPTH,		/* fig's current value for `depth' attribute */
-  0,				/* drawing priority for last-drawn object */
   0,				/* number of colors currently defined */
   /* elements specific to the Postscript/idraw device driver */
+  /* elements specific to the Adobe Illustrator device driver */
+  AI_VERSION_5,			/* version of Illustrator file format */
+  0.0, 0.0, 0.0, 1.0,		/* pen color (subtractive, in CMYK space) */
+  0.0, 0.0, 0.0, 1.0,		/* fill color (subtractive, in CMYK space) */
+  false, false, false, false,	/* CMYK have been used? */
+  PS_CAP_BUTT,			/* PS cap style for lines */
+  PS_JOIN_MITER,		/* PS join style for lines */
+  L_SOLID,			/* AI's line type */
+  1.0,				/* line width in printer's points */
 #ifndef X_DISPLAY_MISSING
   /* elements specific to the X11 and X11 Drawable device drivers */
+  (Display *)NULL,		/* display */
   (Drawable)0,			/* an X drawable (e.g. a window) */
   (Drawable)0,			/* an X drawable (e.g. a pixmap) */
   (Drawable)0,			/* graphics buffer, if double buffering */
+  DBL_NONE,			/* double buffering type (if any) */
   (Fontrecord *)NULL,		/* head of list of retrieved X fonts */
   (Colorrecord *)NULL,		/* head of list of retrieved color cells */
-  (Display *)NULL,		/* display */
   (Colormap)0,			/* colormap */
-  DBL_NONE,			/* double buffering type (if any) */
   0,				/* number of frame in page */
   NULL,				/* label (hint to font retrieval routine) */
   /* elements specific to the X11 device driver */
@@ -130,15 +144,14 @@ const Plotter _meta_default_plotter =
   (Widget)NULL,			/* toplevel widget */
   (Widget)NULL,			/* Label widget */
   (Drawable)0,			/* used for server-side double buffering */
-  false,			/* using private colormap? */
   false,			/* window(s) disappear on Plotter deletion? */
+  false,			/* using private colormap? */
   false,			/* issued warning on color cell exhaustion? */
 #endif /* X_DISPLAY_MISSING */
 
   /* Long arrays are positioned at the end, and are not initialized */
   /* HP-GL driver: pen_color[] and pen_defined[] arrays */
   /* FIG: fig_usercolors[] array */
-  /* PS: ps_font_used[] array */
 };
 
 /* The internal `initialize' method, which is invoked when a Plotter is

@@ -5,14 +5,14 @@ utilities.  A `graph' utility and various plot filters were present in the
 first releases of Unix from Bell Laboratories, going at least as far back
 as the Version 4 distribution (1973).  Most of the work on tying them
 together and breaking out device-dependent versions of `libplot' was
-performed by Lorinda Cherry <llc@research.att.com>.  By the time of Version
-7 Unix (1979) and the subsequent Berkeley releases, the package consisting
-of `graph', `plot', `spline', and several device-dependent versions of
-`libplot' was a standard Unix feature.  The first display device supported
-by the package was a Versatec storage scope.  By the early 1980's,
-supported devices included Tektronix storage scopes, 200 dpi electrostatic
-printer/plotters from Versatec and Varian, pen plotters from
-Hewlett-Packard, and early graphics terminals.
+performed by Lorinda Cherry <llc@research.att.com>.  By the time of 
+Version 7 Unix (1979) and the subsequent Berkeley releases, the package
+consisting of `graph', `plot', `spline', and several device-dependent
+versions of `libplot' was a standard Unix feature.  The first display
+device supported by the package was a Tektronix 611 storage scope.  By the
+early 1980's, supported devices included additional Tektronix storage
+scopes, 200 dpi electrostatic printer/plotters from Versatec and Varian,
+pen plotters from Hewlett-Packard, and early graphics terminals.
 
 In 1989, Rich Murphey <rich@lamprey.utmb.edu> wrote the first GNU versions
 of graph, plot, tek2plot, spline, double, and the documentation.  Richard
@@ -44,8 +44,8 @@ glyphs were taken from the freeware distribution of Thomas Wolff
 of 13 Hershey fonts was constructed.  After the Hershey fonts were added to
 `libplot', support for the 35 standard Postscript fonts was added as well.
 Work on this had begun with Rich Murphey's work on `libps' (the remote
-ancestor of `libplot').  At that point, the support for drawing text
-strings became completely device-independent.
+ancestor of the Postscript driver contained in `libplot').  At that point,
+the support for drawing text strings became completely device-independent.
 
 Robert also rewrote `spline', adding support for periodicity and tension,
 and added support for being a real-time filter (using cubic Bessel

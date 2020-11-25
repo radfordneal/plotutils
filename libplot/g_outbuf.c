@@ -56,14 +56,23 @@ _reset_outbuf (bufp)
      Outbuf *bufp;
 #endif
 {
+  int i;
+
   *(bufp->reset_point) = '\0';
   bufp->point = bufp->reset_point;
   bufp->contents = bufp->reset_contents;
 
+  /* initialize bounding box to an empty (self-contradictory) box */
   bufp->xrange_min = DBL_MAX;
   bufp->xrange_max = -(DBL_MAX);
   bufp->yrange_min = DBL_MAX;
   bufp->yrange_max = -(DBL_MAX);
+
+  /* initialize `font used' arrays for the page */
+  for (i = 0; i < NUM_PS_FONTS; i++)
+    bufp->ps_font_used[i] = false;
+  for (i = 0; i < NUM_PCL_FONTS; i++)
+    bufp->pcl_font_used[i] = false;
 }
 
 void
@@ -113,7 +122,7 @@ _update_buffer (bufp)
   if (bufp->contents + 1 > bufp->len) /* need room for NUL */
     {
       fprintf (stderr, "libplot: output buffer overrun\n");
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   if (bufp->contents > (bufp->len >> 1))
     /* expand buffer */
@@ -126,29 +135,13 @@ _update_buffer (bufp)
     }      
 }
 
-/* query bounding box information for the page */
+/* update bounding box information for an outbuf, to take account of a
+   point being plotted on the associated page */
 void 
 #ifdef _HAVE_PROTOS
-_get_range (Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax)
+_update_bbox (Outbuf *bufp, double x, double y)
 #else
-_get_range (bufp, xmin, xmax, ymin, ymax)
-     Outbuf *bufp;
-     double *xmin, *xmax, *ymin, *ymax;
-#endif
-{
-  *xmax = bufp->xrange_max;
-  *xmin = bufp->xrange_min;
-  *ymax = bufp->yrange_max;
-  *ymin = bufp->yrange_min;
-}
-
-/* update bounding box information for the page, to take account of a point
-   being plotted */
-void 
-#ifdef _HAVE_PROTOS
-_set_range (Outbuf *bufp, double x, double y)
-#else
-_set_range (bufp, x, y)
+_update_bbox (bufp, x, y)
      Outbuf *bufp;
      double x, y;
 #endif
@@ -157,4 +150,75 @@ _set_range (bufp, x, y)
   if (x < bufp->xrange_min) bufp->xrange_min = x;
   if (y > bufp->yrange_max) bufp->yrange_max = y;
   if (y < bufp->yrange_min) bufp->yrange_min = y;
+}
+
+/* return bounding box information for an outbuf */
+void 
+#ifdef _HAVE_PROTOS
+_bbox_of_outbuf (Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax)
+#else
+_bbox_of_outbuf (bufp, xmin, xmax, ymin, ymax)
+     Outbuf *bufp;
+     double *xmin, *xmax, *ymin, *ymax;
+#endif
+{
+  double page_x_min = DBL_MAX;
+  double page_y_min = DBL_MAX;  
+  double page_x_max = -(DBL_MAX);
+  double page_y_max = -(DBL_MAX);  
+
+  if (bufp)
+    {
+      page_x_max = bufp->xrange_max;
+      page_x_min = bufp->xrange_min;
+      page_y_max = bufp->yrange_max;
+      page_y_min = bufp->yrange_min;
+    }
+
+  *xmin = page_x_min;
+  *ymin = page_y_min;
+  *xmax = page_x_max;
+  *ymax = page_y_max;
+}
+
+/* compute bounding box information for a linked list of outbufs
+   (i.e. pages), starting with a specified outbuf (i.e., page) */
+void 
+#ifdef _HAVE_PROTOS
+_bbox_of_outbufs (Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax)
+#else
+_bbox_of_outbufs (bufp, xmin, xmax, ymin, ymax)
+     Outbuf *bufp;
+     double *xmin, *xmax, *ymin, *ymax;
+#endif
+{
+  double doc_x_min = DBL_MAX;
+  double doc_y_min = DBL_MAX;  
+  double doc_x_max = -(DBL_MAX);
+  double doc_y_max = -(DBL_MAX);  
+  double page_x_min, page_x_max, page_y_min, page_y_max;
+  Outbuf *page = bufp;
+
+  while (page)
+    {
+      page_x_max = page->xrange_max;
+      page_x_min = page->xrange_min;
+      page_y_max = page->yrange_max;
+      page_y_min = page->yrange_min;
+
+      if (!((page_x_max < page_x_min || page_y_max < page_y_min)))
+	/* nonempty page */
+	{
+	  if (page_x_max > doc_x_max) doc_x_max = page_x_max;
+	  if (page_y_max > doc_y_max) doc_y_max = page_y_max;
+	  if (page_x_min < doc_x_min) doc_x_min = page_x_min;
+	  if (page_y_min < doc_y_min) doc_y_min = page_y_min;
+	}
+      page = page->next;
+    }
+
+  *xmin = doc_x_min;
+  *ymin = doc_y_min;
+  *xmax = doc_x_max;
+  *ymax = doc_y_max;
 }

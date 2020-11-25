@@ -38,7 +38,7 @@ _m_ffontname (s)
 
   if (_plotter->outstream)
     fprintf (_plotter->outstream, "%c%s\n", 
-	     FONTNAME, _plotter->drawstate->font_name);
+	     (int)O_FONTNAME, _plotter->drawstate->font_name);
 
   return size;
 }

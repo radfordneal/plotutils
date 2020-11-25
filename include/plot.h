@@ -1,8 +1,5 @@
-/* This is plot.h, the user-level include file for release 2.0 of
-   GNU libplot, a shared library for 2-dimensional vector graphics.  
-
-   Release 1.5 of libplot, and this file, are distributed as part of
-   release 2.1.5 of the GNU plotting utilities ("plotutils") package. */
+/* This is plot.h, the user-level include file for GNU libplot, a shared
+   library for 2-dimensional vector graphics. */
 
 /* stdio.h must be included before this file is included. */
 
@@ -13,6 +10,9 @@
 
 #ifndef _PLOT_H_
 #define _PLOT_H_ 1
+
+/* This version of plot.h accompanies GNU libplot version 1.6. */
+#define LIBPLOT_VERSION "1.6"
 
 /* support C++ */
 #ifdef __BEGIN_DECLS
@@ -150,7 +150,7 @@ int fscale ___P ((double x, double y));
 int ftranslate ___P ((double x, double y));
 
 /* 4 functions specific to the C binding (for construction/destruction of
-   Plotters, and setting of Plotter parameters ) */
+   Plotters, and setting of Plotter parameters) */
 int newpl ___P((___const char *type, FILE *instream, FILE *outstream, FILE *errstream));
 int selectpl ___P ((int handle));
 int deletepl ___P ((int handle));
@@ -170,140 +170,115 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 #undef ___const
 #undef ___P
 
-/* A temporary kludge.  In plotutils-2.0, endpoly() and fill() were renamed
-   endpath() and filltype().  Also, falabel() and the undocumented function
-   dot() were dropped, and the return value for alabel() was changed.  We
-   can't do anything to work around the latter changes, but for the next
-   couple of releases we'll at least support the old names endpoly() and
-   fill() by including the following preprocessor definitions. */
+/* Symbol types for the marker() function, extending over the range 0..31
+   (1 through 5 are as in GKS).  
 
-#ifndef endpoly
-#define endpoly() endpath()
-#endif
-#ifndef fill
-#define fill(arg) filltype(arg)
-#endif
+   These are now defined as enums rather than ints.  Cast them to ints if
+   necessary. */
+enum 
+{ M_NONE, M_DOT, M_PLUS, M_ASTERISK, M_CIRCLE, M_CROSS, 
+  M_SQUARE, M_TRIANGLE, M_DIAMOND, M_STAR, M_INVERTED_TRIANGLE, 
+  M_STARBURST, M_FANCY_PLUS, M_FANCY_CROSS, M_FANCY_SQUARE, 
+  M_FANCY_DIAMOND, M_FILLED_CIRCLE, M_FILLED_SQUARE, M_FILLED_TRIANGLE, 
+  M_FILLED_DIAMOND, M_FILLED_INVERTED_TRIANGLE, M_FILLED_FANCY_SQUARE,
+  M_FILLED_FANCY_DIAMOND, M_HALF_FILLED_CIRCLE, M_HALF_FILLED_SQUARE,
+  M_HALF_FILLED_TRIANGLE, M_HALF_FILLED_DIAMOND,
+  M_HALF_FILLED_INVERTED_TRIANGLE, M_HALF_FILLED_FANCY_SQUARE,
+  M_HALF_FILLED_FANCY_DIAMOND, M_OCTAGON, M_FILLED_OCTAGON 
+};
 
-/* symbol types for the marker() function, 1 through 5 are as in GKS */
+/* ONE-BYTE OP CODES FOR GNU METAFILE FORMAT
+   These are now defined as enums rather than ints.  Cast them to ints if
+   necessary. */
 
-#define M_NONE 0
-#define M_DOT 1
-#define M_PLUS 2
-#define M_ASTERISK 3
-#define M_CIRCLE 4
-#define M_CROSS 5
-#define M_SQUARE 6
-#define M_TRIANGLE 7
-#define M_DIAMOND 8
-#define M_STAR 9
-#define M_INVERTED_TRIANGLE 10
-#define M_STARBURST 11
-#define M_FANCY_PLUS 12
-#define M_FANCY_CROSS 13
-#define M_FANCY_SQUARE 14
-#define M_FANCY_DIAMOND 15
-#define M_FILLED_CIRCLE 16
-#define M_FILLED_SQUARE 17
-#define M_FILLED_TRIANGLE 18
-#define M_FILLED_DIAMOND 19
-#define M_FILLED_INVERTED_TRIANGLE 20
-
-#define M_FILLED_FANCY_SQUARE 21
-#define M_FILLED_FANCY_DIAMOND 22
-#define M_HALF_FILLED_CIRCLE 23
-#define M_HALF_FILLED_SQUARE 24
-#define M_HALF_FILLED_TRIANGLE 25
-#define M_HALF_FILLED_DIAMOND 26
-#define M_HALF_FILLED_INVERTED_TRIANGLE 27
-#define M_HALF_FILLED_FANCY_SQUARE 28
-#define M_HALF_FILLED_FANCY_DIAMOND 29
-#define M_OCTAGON 30
-#define M_FILLED_OCTAGON 31
-
-
-/* ONE-BYTE OP CODES FOR GNU METAFILE FORMAT */
-/* There are currently 71, including 25 that are used only in binary
-   metafiles, not in portable metafiles. */
+/* There are 68 currently used op codes, including 25 that are used only in
+   binary metafiles, not in portable metafiles.  Several obsolete op codes
+   are listed below only because the `plot' filter still supports them. 
+   They will be removed in a later release. */
 
 /* 10 op codes for primitive graphics operations, as in Unix plot(5) format. */
-#define ARC		'a'
-#define CIRCLE		'c'
-#define CONT		'n'
-#define ERASE		'e'
-#define LABEL		't'
-#define LINEMOD		'f'
-#define LINE		'l'
-#define MOVE		'm'
-#define POINT		'p'
-#define SPACE		's'
-
-/* 32 op codes that are GNU extensions [plus an obsolete one] */
-#define ALABEL		'T'
-#define ARCREL		'A'
-#define BGCOLOR		'~'
-#define BOX		'B'	/* not a separate op code in Unix plot(5) */
-#define BOXREL		'H'
-#define CAPMOD		'K'
-#define CIRCLEREL	'G'
-#define CLOSEPL		'x'
-#define COLOR		'C'	/* obsolete, to be removed */
-#define COMMENT		'#'
-#define CONTREL		'N'
-#define ELLARC		'?'
-#define ELLARCREL	'/'
-#define ELLIPSE		'+'
-#define ELLIPSEREL	'='
-#define ENDPATH		'E'
-#define FILLTYPE	'L'
-#define FILLCOLOR	'D'
-#define FONTNAME	'F'
-#define FONTSIZE	'S'
-#define JOINMOD		'J'
-#define LINEREL		'I'
-#define LINEWIDTH	'W'
-#define MARKER		'Y'
-#define MARKERREL	'Z'
-#define MOVEREL		'M'
-#define OPENPL		'o'
-#define PENCOLOR	'-'
-#define POINTREL	'P'
-#define RESTORESTATE	'O'
-#define SAVESTATE	'U'
-#define SPACE2		':'
-#define TEXTANGLE	'R'
+enum
+{  
+  O_ARC		=	'a',  
+  O_CIRCLE	=	'c',  
+  O_CONT	=	'n',
+  O_ERASE	=	'e',
+  O_LABEL	=	't',
+  O_LINEMOD	=	'f',
+  O_LINE	=	'l',
+  O_MOVE	=	'm',
+  O_POINT	=	'p',
+  O_SPACE	=	's',
+  
+  /* 32 op codes that are GNU extensions [plus an obsolete one] */
+  O_ALABEL	=	'T',
+  O_ARCREL	=	'A',
+  O_BGCOLOR	=	'~',
+  O_BOX		=	'B',	/* not a separate op code in Unix plot(5) */
+  O_BOXREL	=	'H',
+  O_CAPMOD	=	'K',
+  O_CIRCLEREL	=	'G',
+  O_CLOSEPL	=	'x',
+  O_COLOR	=	'C',	/* obsolete, to be removed */
+  O_COMMENT	=	'#',
+  O_CONTREL	=	'N',
+  O_ELLARC	=	'?',
+  O_ELLARCREL	=	'/',
+  O_ELLIPSE	=	'+',
+  O_ELLIPSEREL	=	'=',
+  O_ENDPATH	=	'E',
+  O_FILLTYPE	=	'L',
+  O_FILLCOLOR	=	'D',
+  O_FONTNAME	=	'F',
+  O_FONTSIZE	=	'S',
+  O_JOINMOD	=	'J',
+  O_LINEREL	=	'I',
+  O_LINEWIDTH	=	'W',
+  O_MARKER	=	'Y',
+  O_MARKERREL	=	'Z',
+  O_MOVEREL	=	'M',
+  O_OPENPL	=	'o',
+  O_PENCOLOR	=	'-',
+  O_POINTREL	=	'P',
+  O_RESTORESTATE=	'O',
+  O_SAVESTATE	=	'U',
+  O_SPACE2	=	':',
+  O_TEXTANGLE	=	'R',
 
 /* 25 floating point counterparts to some of the above.  Used only in
-   binary GNU metafile format, not in portable GNU metafile format. */
-#define FARC		'1'
-#define FARCREL		'2'
-#define FBOX		'3'
-#define FBOXREL		'4'
-#define FCIRCLE		'5'
-#define FCIRCLEREL	'6'
-#define FCONT		')'
-#define FCONTREL	'_'
-#define FELLARC		'}'
-#define FELLARCREL	'|'
-#define FELLIPSE	'{'
-#define FELLIPSEREL	'['
-#define FFONTSIZE	'7'
-#define FLINE		'8'
-#define FLINEREL	'9'
-#define FLINEWIDTH	'0'
-#define FMARKER		'!'
-#define FMARKERREL	'@'
-#define FMOVE		'$'
-#define FMOVEREL	'%'
-#define FPOINT		'^'
-#define FPOINTREL	'&'
-#define FSPACE		'*'
-#define FSPACE2		';'
-#define FTEXTANGLE	'('
+     binary GNU metafile format, not in portable GNU metafile format. */
+  O_FARC	=	'1',
+  O_FARCREL	=	'2',
+  O_FBOX	=	'3',
+  O_FBOXREL	=	'4',
+  O_FCIRCLE	=	'5',
+  O_FCIRCLEREL	=	'6',
+  O_FCONT	=	')',
+  O_FCONTREL	=	'_',
+  O_FELLARC	=	'}',
+  O_FELLARCREL	=	'|',
+  O_FELLIPSE	=	'{',
+  O_FELLIPSEREL	=	'[',
+  O_FFONTSIZE	=	'7',
+  O_FLINE	=	'8',
+  O_FLINEREL	=	'9',
+  O_FLINEWIDTH	=	'0',
+  O_FMARKER	=	'!',
+  O_FMARKERREL	=	'@',
+  O_FMOVE	=	'$',
+  O_FMOVEREL	=	'%',
+  O_FPOINT	=	'^',
+  O_FPOINTREL	=	'&',
+  O_FSPACE	=	'*',
+  O_FSPACE2	=	';',
+  O_FTEXTANGLE	=	'(',
 
-/* 4 op codes for floating point operations with no integer counterpart */
-#define FCONCAT		'\\'
-#define FROTATE		'V'
-#define FSCALE		'X'
-#define FTRANSLATE	'Q'
+/* 1 op code for a floating point operation with no integer counterpart
+   [plus 3 obsolete ones] */
+  O_FCONCAT	=	'\\',
+  O_FROTATE	=	'V',	/* obsolete, to be removed */
+  O_FSCALE	=	'X',	/* obsolete, to be removed */
+  O_FTRANSLATE	=	'Q'	/* obsolete, to be removed */
+};
 
 #endif /* _PLOT_H_ */

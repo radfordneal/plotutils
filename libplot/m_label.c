@@ -32,7 +32,7 @@ _m_label (s)
       if ((nl = strchr (s, '\n')))
 	*nl = '\0';		/* don't grok multiline arg strings */
       
-      fprintf (_plotter->outstream, "%c%s\n", LABEL, s);
+      fprintf (_plotter->outstream, "%c%s\n", (int)O_LABEL, s);
     }
 
   return 0;

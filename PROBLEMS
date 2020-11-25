@@ -84,13 +84,13 @@ quantized too, since the width of a line in idraw must be an integer number
 of printer's points.
 
 No such quantizations will take place if the Postscript file is viewed with
-a Postscript interpreter such as Ghostscript, sent to a printer, or
-included in another document.
+a Postscript interpreter such as Ghostscript, sent directly to a printer,
+or included in another document.
 
 4. [Relevant only if configuration used the --enable-lj-fonts option.]
-If you use `idraw' to edit a Postscript file prepared with `graph -T ps' or
-libplot's PS driver that contains the Wingdings font, some of the Wingdings
-characters will be incorrectly interchanged.
+If you use `idraw' to edit a Postscript file prepared with `graph -T ps'
+or libplot's PS driver that contains text in the Wingdings font, some of
+the Wingdings characters will be incorrectly interchanged.
 
 This problem is due to idraw, which does not know that Wingdings is not an
 ISO-Latin-1 font.  The fix is to use a text editor to remove the line
@@ -105,18 +105,24 @@ Wingdings internally as `Tidbits'.)
 `graph -T fig' and libplot's xfig driver
 ----------------------------------------
 
-1. There is a bug in release 3.1 of the xfig graphics editor (and earlier
-versions), which is triggered by the output from `plotfont'.  If you do
-something like `plotfont -T fig Helvetica > map.fig' to get a character map
-of a font, and the backslash character of the font displays in xfig as
-garbage, you should upgrade to release 3.2 as soon as possible.
+1. At least as of release 3.2, the `fig2dev' program that xfig uses to
+export figures in Postscript format has a bug.  It incorrectly transforms
+minus signs to hyphens, and hyphens to en-dashes.
 
-2. There is another bug in release 3.1 of xfig (and earlier versions),
-which may be triggered under some circumstances.  If a printable `8-bit'
-(i.e. non-ascii) character in a label is immediately followed by a digit,
-xfig may not display it correctly.  The fix, again, is to upgrade to xfig 3.2.
+For example, if you do `plotfont -Tfig --box Helvetica' and 
+`plotfont -Tfig --box -2 Helvetica' to produce character maps of the two
+halves of the Helvetica font, and then use xfig 3.2 to export the two
+character maps in Postscript format, you will notice that in the exported
+character maps, the minus sign and hyphen do not fit properly within their
+boxes.  That is because they have been replaced by a hyphen and an en-dash,
+respectively.
 
-3. xfig supports rotation and uniform scaling of the 35 standard Postscript
+This is a problem with fig2dev, not libplot.  If you encounter this
+problem, a possible workaround is to change, with a text editor, the string
+"8#255 /endash" in the exported PS file to "8#255 /hyphen 8#055 /minus".
+The problem has been reported to the xfig maintainer.
+
+2. xfig supports rotation and uniform scaling of the 35 standard Postscript
 fonts, but not non-uniform scaling or shearing.  So libplot's xfig driver
 does not support them: it replaces anisotropically transformed Postscript
 fonts by a default Hershey font (HersheySerif).  Hershey fonts may always
@@ -130,64 +136,52 @@ frame to the device frame will involve a non-uniform scaling, and possibly
 even a shearing.  So in the device frame, any Postscript font will need to
 be anamorphically transformed.
 
-3. In libplot's xfig driver and in `graph -T fig', "dotdashed" lines
-(obtained e.g. with the "-m 3" option to `graph') are supported in a
-painful way.  xfig supports dotted lines (with user-specifiable inter-dot
-gap) and dashed lines (with user-specifiable length for the on and off
-segments).  So we can fully support the traditional libplot line modes
-"solid", "dotted", "shortdashed", and "longdashed".  But xfig doesn't
-support anything so exotic as "dotdashed" lines.  So we map them into
-dotted lines with a large inter-dot gap, to distinguish them for
-conventional dotted lines.
-
 ----------------------------------------------------------------------
 
 `graph -T pcl' and libplot's PCL 5 driver
 --------------------------------------------
 
-1. There are some small errors in the positioning of text strings when
-producing PCL 5 output that uses the Symbol font.  For example, if you do
-`plotfont -Tpcl --box Symbol > symbol.pcl' to get a PCL 5 file that is a
-character map of the Symbol font, you will notice that in the character
-map, some of the characters do not quite line up with their boxes.
-
-This problem is due to problems in HP's documentation.  HP has released
-useful information on its 45 PCL 5 fonts (i.e., "LaserJet fonts"),
-including Symbol.  (This includes font metrics, etc.; see ./INSTALL.fonts.)
-However, their information on the Symbol font appears to be incorrect.  As
-a consequence, horizontal positioning of text strings in the Symbol font is
-slightly in error.  This problem does not affect the other 44 PCL 5 fonts.
-
-`graph -T hpgl' and libplot's HP-GL/2 driver
---------------------------------------------
-
 1. Internally, the LaserJet 4L and 5L use a different number for the
 Wingdings font than other LaserJets.  (That is because they include an
 Intellifont version of the font, rather than a TrueType version.)  So if
-any HP-GL/2 output that uses the Wingdings font is sent to a 4L or a 5L
-from `graph -Thpgl' or any other of the plotting utilities, it won't print
+any PCL 5 output that uses the Wingdings font is sent to a 4L or a 5L from
+`graph -Tpcl' or any other of the plotting utilities, it won't print
 correctly.
 
 If you need to work around this problem, you can search for the number
-`31402' in the file libplot/g_fontdb.c, change it to `6826', and recompile.
-HP-GL/2 output will then use the typeface ID that is appropriate for 
-the 4L and 5L.
+`31402' in the file libplot/g_fontd2.c, change it to `6826', and recompile.
+PCL 5 output will then use the typeface ID that is appropriate for the 4L
+and 5L.
 
-A less drastic remedy is to do a search-and-replace on the HP-GL/2 output
-with a text editor, replacing each occurrence of the string "31402" by "6826".
+A less drastic remedy is to do a search-and-replace on the PCL 5 output
+with a text editor, replacing each occurrence of the string "31402" by
+"6826".
 
 2. There are some small errors in the positioning of text strings when
-producing HP-GL/2 output that uses the Symbol font.  For example, if you do
-`plotfont -Thpgl --box Symbol > symbol.plt' to get an HP-GL/2 file that is
+producing PCL 5 output that uses the Symbol font.  For example, if you do
+`plotfont -Tpcl --box Symbol > symbol.pcl' to get a PCL 5 file that is
 a character map of the Symbol font, you will notice that in the character
 map, some of the characters do not quite line up with their boxes.
 
 This problem is due to problems in HP's documentation.  HP has released
-useful information on its 45 LaserJet fonts, including Symbol.  (This
-includes font metrics, etc.; see ./INSTALL.fonts.)  However, their
-information on the Symbol font appears to be incorrect.  As a consequence,
-horizontal positioning of text strings in the Symbol font is slightly in
-error.  This problem does not affect the other 44 LaserJet fonts.
+useful information on its 45 LaserJet fonts.  (This includes font metrics,
+etc.; see ./INSTALL.fonts.)  However, their information on the Symbol font
+appears to be incorrect.  As a consequence, horizontal positioning of text
+strings in the Symbol font is slightly in error.  This problem does not
+affect the 44 other LaserJet fonts.
+
+----------------------------------------------------------------------
+
+`graph -T hpgl' and libplot's HP-GL/2 driver
+--------------------------------------------
+
+The same two problems mentioned above, for `graph -T pcl' and libplot's 
+PCL 5 driver, occur when producing HP-GL/2 output.  That is because PCL 5
+output produced by libplot and the plotting utilities is really HP-GL/2
+output, preceded by an escape sequence that switches the printer into
+HP-GL/2 mode.  (It is followed by an escape sequence that switches it back
+to PCL 5 mode.)
+
 
 ----------------------------------------------------------------------
 

@@ -461,7 +461,7 @@ scale1 (min, max, tick_spacing, tick_spacing_type)
     {
       fprintf(stderr, "%s: error: bad trial inter-tick spacing %g\n",
 	      progname, a);
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   nal = floor(log10(a));
   b = a * pow (10.0, -nal);	/* 1.0 <= b < 10.0 */
@@ -569,7 +569,7 @@ prepare_axis (axisp, trans,
     {
       fprintf(stderr, "%s: error: min > max for axis, not allowed\n",
 	      progname);
-      exit (1);
+      exit (EXIT_FAILURE);
     }
 
   if (min == max)		/* expand in a clever way */
@@ -879,7 +879,7 @@ initialize_plotter(display_type, save_screen, bg_color,
 	  fprintf (stderr, 
 		   "%s: error: zero spacing between ticks on an axis\n",
 		   progname);
-	  exit (1);
+	  exit (EXIT_FAILURE);
 	}
       x_spacing = fabs (x_spacing);
     }
@@ -890,7 +890,7 @@ initialize_plotter(display_type, save_screen, bg_color,
 	  fprintf (stderr, 
 		   "%s: error: zero spacing between ticks on an axis\n",
 		   progname);
-	  exit (1);
+	  exit (EXIT_FAILURE);
 	}
       y_spacing = fabs (y_spacing);
     }

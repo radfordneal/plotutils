@@ -95,7 +95,11 @@ _x_savestate()
 
 	  /* We do not retrieve a font from the X server here; not even a
 	     default font.  space(), when invoked (which we require after
-	     each invocation of openpl()), will do this. */
+	     each invocation of openpl()), will select a default size for
+	     the font.  A font will be retrieved from the X server only
+	     when fontname/fontsize/textangle is invoked to select a
+	     different font, or when alabel/labelwidth is invoked (see
+	     g_alabel.c). */
 	}
     }
   

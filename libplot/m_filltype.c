@@ -34,10 +34,10 @@ _m_filltype (level)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d\n", 
-		 FILLTYPE, level);
+		 (int)O_FILLTYPE, level);
       else
 	{
-	  putc (FILLTYPE, _plotter->outstream);
+	  putc ((int)O_FILLTYPE, _plotter->outstream);
 	  _emit_integer (level);
 	}
     }

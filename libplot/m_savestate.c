@@ -32,9 +32,9 @@ _m_savestate ()
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c\n", 
-		 SAVESTATE);
+		 (int)O_SAVESTATE);
       else
-	putc (SAVESTATE, _plotter->outstream);
+	putc ((int)O_SAVESTATE, _plotter->outstream);
     }
   
   /* invoke generic method */

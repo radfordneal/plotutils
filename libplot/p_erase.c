@@ -3,7 +3,7 @@
 
    A PSPlotter simply resets the output buffer, discarding all objects
    written to it, resets the bounding box, and marks all Postscript fonts
-   as unused. */
+   as unused on the current page. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -28,12 +28,12 @@ _p_erase ()
 
   _reset_outbuf (_plotter->page); /* discard all objects */
 
-  /* reinitialize `font used' array(s) */
+  /* reinitialize `font used' array(s) for this page */
   for (i = 0; i < NUM_PS_FONTS; i++)
-    _plotter->ps_font_used[i] = false;
+    _plotter->page->ps_font_used[i] = false;
 #ifdef USE_LJ_FONTS_IN_PS
   for (i = 0; i < NUM_PCL_FONTS; i++)
-    _plotter->pcl_font_used[i] = false;
+    _plotter->page->pcl_font_used[i] = false;
 #endif
 
   return 0;

@@ -31,9 +31,9 @@ _m_closepl ()
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c\n",
-		 CLOSEPL);
+		 (int)O_CLOSEPL);
       else
-	putc (CLOSEPL, _plotter->outstream);
+	putc ((int)O_CLOSEPL, _plotter->outstream);
     }
   
   if (_plotter->outstream && fflush (_plotter->outstream) < 0)

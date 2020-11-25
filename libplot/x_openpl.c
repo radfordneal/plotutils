@@ -82,7 +82,7 @@ Quit_if_closed (widget, event, params, num_params) /* an action */
     {
       XtDestroyWidget (_plotter->toplevel);
       XFlush (_plotter->dpy);	/* flush output buffer before exiting */
-      exit (0);
+      exit (EXIT_SUCCESS);
     }
 }
 
@@ -478,6 +478,9 @@ _x_openpl ()
   _plotter->open = true;
   _plotter->opened = true;
   (_plotter->page_number)++;
+
+  /* space() not invoked yet, to set the user frame->device frame map */
+  _plotter->space_invoked = false;
 
   /* this is initial frame of this page */
   _plotter->frame_number = 0;

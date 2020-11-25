@@ -29,6 +29,9 @@ _h_openpl ()
   _plotter->opened = true;
   (_plotter->page_number)++;
 
+  /* space() not invoked yet, to set the user frame->device frame map */
+  _plotter->space_invoked = false;
+
   if (_plotter->type == PL_PCL)
     {
       if (_plotter->page_number > 1) /* not first page */

@@ -31,6 +31,9 @@ _g_openpl ()
   _plotter->opened = true;
   (_plotter->page_number)++;
 
+  /* space() not invoked yet, to set the user frame->device frame map */
+  _plotter->space_invoked = false;
+
   /* create drawing state, add it as the first member of the linked list */
   _plotter->savestate();			
 
@@ -78,6 +81,9 @@ _g_openpl2 ()
   _plotter->open = true;
   _plotter->opened = true;
   (_plotter->page_number)++;
+
+  /* space() not invoked yet, to set the user frame->device frame map */
+  _plotter->space_invoked = false;
 
   /* create drawing state, add it as the first member of the linked list */
   _plotter->savestate();			

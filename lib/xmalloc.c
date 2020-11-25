@@ -19,7 +19,7 @@ xmalloc (length)
   if (p == (Voidptr) NULL)
     {
       perror ("malloc failed");
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   return p;
 }
@@ -38,7 +38,7 @@ xrealloc (p, length)
   if (p == (Voidptr) NULL)
     {
       perror ("realloc failed");
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   return p;
 }
@@ -57,7 +57,7 @@ xcalloc (nmemb, size)
   if (p == (Voidptr) NULL)
     {
       perror ("calloc failed");
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   return p;
 }

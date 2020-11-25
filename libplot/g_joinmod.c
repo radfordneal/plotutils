@@ -20,8 +20,7 @@ _g_joinmod (s)
       return -1;
     }
 
-  if (_plotter->drawstate->PointsInLine > 0
-      || _plotter->drawstate->arc_stashed)
+  if (_plotter->drawstate->points_in_path > 0)
     _plotter->endpath(); /* flush polyline if any */
 
   /* null pointer resets to default */

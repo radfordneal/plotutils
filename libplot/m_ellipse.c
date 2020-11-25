@@ -25,10 +25,10 @@ _m_ellipse (x, y, rx, ry, angle)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d %d\n", 
-		 ELLIPSE, x, y, rx, ry, angle);
+		 (int)O_ELLIPSE, x, y, rx, ry, angle);
       else
 	{
-	  putc (ELLIPSE, _plotter->outstream);
+	  putc ((int)O_ELLIPSE, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	  _emit_integer (rx);
@@ -58,10 +58,10 @@ _m_fellipse (x, y, rx, ry, angle)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %g %g %g\n", 
-		 ELLIPSE, x, y, rx, ry, angle);
+		 (int)O_ELLIPSE, x, y, rx, ry, angle);
       else
 	{
-	  putc (FELLIPSE, _plotter->outstream);
+	  putc ((int)O_FELLIPSE, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	  _emit_float (rx);

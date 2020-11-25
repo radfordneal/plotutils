@@ -1,12 +1,63 @@
+Version 2.1.6 released, 10/98.  [Includes libplot 1.6, interface age=1.]
+
+plot: new `-s' option, which merges together all displayed pages. This is
+	to assist people who are accustomed to concatenating Unix plot
+	files together (GNU metafiles can also be concatenated together,
+	but the resulting metafile does not merge pages).
+libplot: PS driver now correctly updates list of used PS fonts when erase()
+	is invoked.  This was causing ISO-Latin-1 fonts in multipage
+	documents not to be reencoded correctly.
+libplot: Fig driver now places each drawn object at its own depth level.
+	This is because fig2dev seems not to use xfig's own conventions
+	for layering objects within a single depth level.
+libplot: Japanese page size "B5" now supported.  So the `--page-size'
+	option to graph,plot,tek2plot,plotfont now supports "B5" too.
+libplot: Fig driver now properly supports "dotdashed" line type, since
+	it is supported in Fig 3.2 format.  So `graph -m 3 -T fig' now
+	works as it should.
+libplot: Fig driver now produces Fig 3.2 format, so xfig 3.2 is required to
+	view and edit it.  This affects output obtained with `-T fig'.
+plot.h: marker symbols and metafile op codes are now defined as enum's,
+	rather than via #define's.
+graph,plot,tek2plot,plotfont: `-T ai' option added, for Illustrator output.
+libplot: Adobe Illustrator driver added, outputting either Illustrator
+	file format version 3 or version 5 (latter is default).
+plot.h: old workarounds for change in 2.1 from `endpoly' to `endpath'
+	and from `fill' to `filltype' finally removed (they were
+	conflicting with a Debian package).
+libplot: in each Hershey font, stroke width increased by about 20%,
+	to remove white (i.e. unfilled) space in some characters.
+libplot: when space() is invoked, X Plotters no longer attempt 
+	immediately to retrieve a font from the X server (they wait
+	until fontname/fontsize/textangle is next invoked, or failing
+	that, until alabel/labelwidth is).  This reduces the chance of
+	failing to retrieve a too-small or too-large X font.
+libplot: in metafiles, separate op codes for frotate, fscale, ftranslate
+	operations now obsolete (they are mapped into fconcat, internally).
+libplot: fixed bug in Metafile Plotter support for convenience operations
+	frotate, fscale, franslate.
+libplot: fixed inelegance in Metafile Plotter portable output (a couple of 
+	op codes needed only for binary-format were being emitted).
+libplot: HP-GL and PCL Plotters now emit more compact code for any path
+	that contains more than a single circular arc (the HP-GL `AA'
+	instruction, rather than a polygonal approximation, is now used).
+libplot: new internal `path' structure now used (a linked list of elements).
+libplot: invocations of space() on a Plotter, after the first mandatory
+	invocation for each page, no longer affect the line width or font
+	size in terms of user coordinates.  This is for consistency with
+	fconcat() and for consistency with Postscript.  Postscript does not
+	change user-frame line widths or user-frame font sizes when the
+	affine map from user coordinates to device coordinates is updated.
+libplot: No more bogus warnings issued by Metafile Plotters if they're
+	asked to render a label in a non-builtin font, e.g. a non-PS X
+	font.  (This removes some bogus warning messages from raw `graph'.)
+graph/plot/tek2plot/plotfont and libplot: in code, exit(1) replaced by
+	exit(EXIT_FAILURE) to improve portability beyond Unix.
+
 Version 2.1.5 released, 8/98.  [Includes libplot 1.5, interface age=1.]
 
-libplot: if HPGL_VERSION=1.5, the 18 HP vector fonts are kerned.  This
-	agrees with what was done in the HP7550A graphics plotter and
-	other pre-HP-GL/2 devices.  In HP-GL/2, the HP vector fonts
-	are not kerned.
-texinfo documentation: full documentation supplied on the 18 supported
-	device-resident Hewlett-Packard vector fonts, also known as 
-	`stick fonts'.
+texinfo documentation: full explanation given of the 18 supported
+	Hewlett-Packard vector fonts, also known as `stick fonts'.
 libplot: escape sequences added for the 12 signs of the zodiac; they are
 	recognized in labels whenever the current font is a Hershey font.
 libplot: new escape sequences "\r^" and "\l^" added, for use in labels;
@@ -319,9 +370,9 @@ libplot: falabel() dropped from the API, and alabel() no longer returns
 	for a more object-oriented version of the library.  If you need
 	to get the width of a label, use flabelwidth() or labelwidth().
 libplot: undocumented dot() function dropped from the API.  Seems last
-	to have been used in Unix libplot on PDP-11's in the mid-'70s, 
-	driving Versatec storage scopes.  (Thanks Lorinda Cherry 
-	<llc@research.att.com> for background info!)
+	to have been used in Unix libplot on a Bell Labs PDP-11 in the 
+	mid-'70s, driving a Tektronix 611 ("Versitek") storage scope.
+	(Thanks Lorinda Cherry <llc@research.att.com> for background info!)
 graph,plot,tek2plot: --ascii-output option renamed --portable-output.
 libplot: all 45 fonts resident in PCL 5 devices such as recent HP LaserJets 
 	are now supported by the HP-GL/2 driver.  Traditional Stick and 

@@ -23,10 +23,10 @@ _m_circle (x, y, r)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d\n", 
-		 CIRCLE, x, y, r);
+		 (int)O_CIRCLE, x, y, r);
       else
 	{
-	  putc (CIRCLE, _plotter->outstream);
+	  putc ((int)O_CIRCLE, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	  _emit_integer (r);
@@ -54,10 +54,10 @@ _m_fcircle (x, y, r)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %g\n", 
-		 CIRCLE, x, y, r);
+		 (int)O_CIRCLE, x, y, r);
       else
 	{
-	  putc (FCIRCLE, _plotter->outstream);
+	  putc ((int)O_FCIRCLE, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	  _emit_float (r);

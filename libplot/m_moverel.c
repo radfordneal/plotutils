@@ -26,10 +26,10 @@ _m_moverel (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d\n", 
-		 MOVEREL, x, y);
+		 (int)O_MOVEREL, x, y);
       else
 	{
-	  putc (MOVEREL, _plotter->outstream);
+	  putc ((int)O_MOVEREL, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	}
@@ -56,13 +56,13 @@ _m_fmoverel (x, y)
     {
       if (_plotter->portable_output)
 	{
-	  putc (FMOVEREL, _plotter->outstream);	  
+	  putc ((int)O_MOVEREL, _plotter->outstream);	  
 	  fprintf (_plotter->outstream, " %g %g\n", 
 		   x, y);
 	}
       else
 	{
-	  putc (FMOVEREL, _plotter->outstream);
+	  putc ((int)O_FMOVEREL, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	}

@@ -24,10 +24,10 @@ _m_pointrel (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d\n", 
-		 POINTREL, x, y);
+		 (int)O_POINTREL, x, y);
       else
 	{
-	  putc (POINTREL, _plotter->outstream);
+	  putc ((int)O_POINTREL, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	}
@@ -54,10 +54,10 @@ _m_fpointrel (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g\n", 
-		 POINTREL, x, y);
+		 (int)O_POINTREL, x, y);
       else
 	{
-	  putc (FPOINTREL, _plotter->outstream);
+	  putc ((int)O_FPOINTREL, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	}

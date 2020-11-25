@@ -186,7 +186,7 @@ panic (s)
 #endif
 {
   fprintf (stderr, "%s panic: %s\n", progname, s);
-  exit (1);
+  exit (EXIT_FAILURE);
 }
 
 void
@@ -201,7 +201,7 @@ panicn (fmt, n)
   fprintf (stderr, "%s panic: ", progname);
   fprintf (stderr, fmt, n);
   fprintf (stderr, "\n");
-  exit (1);
+  exit (EXIT_FAILURE);
 }
 
 #define	LASTVAL (tstep>0 ? t>=tstop-0.0625*tstep : t<=tstop-0.0625*tstep)

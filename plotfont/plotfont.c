@@ -191,12 +191,12 @@ main (argc, argv)
   if (errcnt > 0)
     {
       fprintf (stderr, "Try `%s --help' for more information\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   if (show_version)
     {
       display_version (progname);
-      return 0;
+      return EXIT_SUCCESS;
     }
   if (do_list_fonts)
     {
@@ -204,9 +204,9 @@ main (argc, argv)
 
       success = list_fonts (display_type, progname);
       if (success)
-	return 0;
+	return EXIT_SUCCESS;
       else
-	return 1;
+	return EXIT_FAILURE;
     }
   if (show_fonts)
     {
@@ -214,20 +214,20 @@ main (argc, argv)
 
       success = display_fonts (display_type, progname);
       if (success)
-	return 0;
+	return EXIT_SUCCESS;
       else
-	return 1;
+	return EXIT_FAILURE;
     }
   if (show_usage)
     {
       display_usage (progname, hidden_options, usage_appendage, true);
-      return 0;
+      return EXIT_SUCCESS;
     }
 
   if (option_font_name == NULL && optind >= argc)
     {
       fprintf (stderr, "%s: no font(s) specified \n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
 
   if (do_jis_page)
@@ -238,7 +238,7 @@ main (argc, argv)
 	  || (!option_font_name && strcasecmp (argv[optind], "HersheyEUC") != 0))
 	{
 	  fprintf (stderr, "%s: JIS page can only be specified for HersheyEUC \n font", progname);
-	  return 1;
+	  return EXIT_FAILURE;
 	}	  
     }
 
@@ -249,7 +249,7 @@ main (argc, argv)
   if ((handle = newpl (display_type, NULL, stdout, stderr)) < 0)
     {
       fprintf (stderr, "%s: error: could not open plot device\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   else
     selectpl (handle);
@@ -258,7 +258,7 @@ main (argc, argv)
     /* user specifed a font with -F */
     {
       if (do_font (option_font_name, upper_half, pen_color, numbering_font_name, title_font_name, bearings, base, jis_page, do_jis_page) == false)
-	return 1;
+	return EXIT_FAILURE;
     }
   
   if (optind < argc)
@@ -270,7 +270,7 @@ main (argc, argv)
 
 	  font_name = argv[optind];
 	  if (do_font (font_name, upper_half, pen_color, numbering_font_name, title_font_name, bearings, base, jis_page, do_jis_page) == false)
-	    return 1;
+	    return EXIT_FAILURE;
 	}
     }
 
@@ -278,9 +278,9 @@ main (argc, argv)
   if (deletepl (handle) < 0)
     {
       fprintf (stderr, "%s: could not close plot device\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 #define NUM_ROWS 12

@@ -52,10 +52,10 @@ _m_space (x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d\n", 
-		 SPACE, x0, y0, x1, y1);
+		 (int)O_SPACE, x0, y0, x1, y1);
       else
 	{
-	  putc (SPACE, _plotter->outstream);
+	  putc ((int)O_SPACE, _plotter->outstream);
 	  _emit_integer (x0);
 	  _emit_integer (y0);
 	  _emit_integer (x1);
@@ -87,10 +87,10 @@ _m_fspace (x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %g %g\n", 
-		 SPACE, x0, y0, x1, y1);
+		 (int)O_SPACE, x0, y0, x1, y1);
       else
 	{
-	  putc (FSPACE, _plotter->outstream);
+	  putc ((int)O_FSPACE, _plotter->outstream);
 	  _emit_float (x0);
 	  _emit_float (y0);
 	  _emit_float (x1);
@@ -124,10 +124,10 @@ _m_space2 (x0, y0, x1, y1, x2, y2)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d %d %d\n", 
-		 SPACE2, x0, y0, x1, y1, x2, y2);
+		 (int)O_SPACE2, x0, y0, x1, y1, x2, y2);
       else
 	{
-	  putc (SPACE2, _plotter->outstream);
+	  putc ((int)O_SPACE2, _plotter->outstream);
 	  _emit_integer (x0);
 	  _emit_integer (y0);
 	  _emit_integer (x1);
@@ -161,10 +161,10 @@ _m_fspace2 (x0, y0, x1, y1, x2, y2)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %g %g %g %g\n", 
-		 FSPACE2, x0, y0, x1, y1, x2, y2);
+		 (int)O_SPACE2, x0, y0, x1, y1, x2, y2);
       else
 	{
-	  putc (FSPACE2, _plotter->outstream);
+	  putc ((int)O_FSPACE2, _plotter->outstream);
 	  _emit_float (x0);
 	  _emit_float (y0);
 	  _emit_float (x1);

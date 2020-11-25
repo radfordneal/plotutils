@@ -14,30 +14,28 @@ _m_linewidth (new_line_width)
      int new_line_width;
 #endif
 {
-  double retval;
-
   if (!_plotter->open)
     {
       _plotter->error ("linewidth: invalid operation");
       return -1;
     }
 
+  /* invoke generic method */
+  _g_flinewidth ((double)new_line_width);
+
   if (_plotter->outstream)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d\n", 
-		 LINEWIDTH, new_line_width);
+		 (int)O_LINEWIDTH, new_line_width);
       else
 	{
-	  putc (LINEWIDTH, _plotter->outstream);
+	  putc ((int)O_LINEWIDTH, _plotter->outstream);
 	  _emit_integer (new_line_width);
 	}
     }
   
-  /* invoke generic method */
-  retval = _g_flinewidth ((double)new_line_width);
-
-  return IROUND(retval);
+  return 0;
 }
 
 int
@@ -54,18 +52,20 @@ _m_flinewidth (new_line_width)
       return -1;
     }
 
+  /* invoke generic method */
+  _g_flinewidth (new_line_width);
+
   if (_plotter->outstream)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g\n", 
-		 LINEWIDTH, new_line_width);
+		 (int)O_LINEWIDTH, new_line_width);
       else
 	{
-	  putc (FLINEWIDTH, _plotter->outstream);
+	  putc ((int)O_FLINEWIDTH, _plotter->outstream);
 	  _emit_float (new_line_width);
 	}
     }
   
-  /* invoke generic method */
-  return _g_flinewidth (new_line_width);
+  return 0;
 }

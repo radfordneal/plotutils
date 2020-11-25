@@ -34,7 +34,8 @@
 	these numbers are encoded base 32, as a number and a letter.  E.g.,
 	621 is written as 19M since 19*32+13, and 'M' is letter #13.)
    (8) and (9) (normalized) font ascent and descent (from font bounding box),
-   (10) the font width information (an array, size 256),   
+   (10a) the font width information (an array, size 256),   
+   (10b) the `left edge of glyph' information (an array, size 256),   
    (11) a typeface id (an index into the _ps_typeface_info[] array below)
    (12) a font index (which font within the typeface this is)
    (13) a Fig font id, for use by FigPlotter methods

@@ -22,9 +22,9 @@ _m_erase ()
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c\n", 
-		 ERASE);
+		 (int)O_ERASE);
       else
-	putc (ERASE, _plotter->outstream);
+	putc ((int)O_ERASE, _plotter->outstream);
     }
 
   return 0;

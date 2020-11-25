@@ -1,11 +1,13 @@
 /* This file contains the endpath() method, which is a GNU extension to
-   libplot.  A polyline object may be constructed incrementally, by
-   repeated invocations of the cont() routine.  (See the comments in
-   g_cont.c.)  The construction may be terminated, and the polyline object
-   finalized, by an explicit invocation of endpath().
+   libplot.  A path object may be constructed incrementally, by repeated
+   invocation of such operations as cont(), arc(), etc.  The construction
+   may be terminated, and the path object finalized, by an explict
+   invocation of endpath().  If endpath() is invoked when no path is under
+   construction, it has no effect. */
 
-   If endpath() is invoked when no polyline is under construction, it has
-   no effect. */
+/* This version is for PSPlotters.  By construction, for PSPlotters our
+   path storage buffer includes a sequence of line segments (no other path
+   elements such as arcs). */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -57,39 +59,20 @@ _p_endpath ()
       return -1;
     }
 
-  /* If a circular arc has been stashed rather than drawn, force it to be
-     drawn by invoking farc() with the `immediate' flag set.  Note that
-     if an arc is stashed, PointsInLine must be zero. */
-  if (_plotter->drawstate->arc_stashed) 
-    { 
-      double axc = _plotter->drawstate->axc;
-      double ayc = _plotter->drawstate->ayc;
-      double ax0 = _plotter->drawstate->ax0;
-      double ay0 = _plotter->drawstate->ay0;
-      double ax1 = _plotter->drawstate->ax1;
-      double ay1 = _plotter->drawstate->ay1;
-
-      _plotter->drawstate->arc_immediate = true; 
-      _plotter->drawstate->arc_polygonal = false; /* advisory only */
-      _plotter->farc (axc, ayc, ax0, ay0, ax1, ay1);
-      _plotter->drawstate->arc_immediate = false;
-      _plotter->drawstate->arc_stashed = false;
-    }
-
-  if (_plotter->drawstate->PointsInLine == 0)	/* nothing to do */
+  if (_plotter->drawstate->points_in_path == 0)	/* nothing to do */
     return 0;
-  if (_plotter->drawstate->PointsInLine == 1)	/* shouldn't happen */
+  if (_plotter->drawstate->points_in_path == 1)	/* shouldn't happen */
     {
       /* just reset polyline storage buffer */
       free (_plotter->drawstate->datapoints);
       _plotter->drawstate->datapoints_len = 0;
-      _plotter->drawstate->PointsInLine = 0;
+      _plotter->drawstate->points_in_path = 0;
       return 0;
     }
   
-  if ((_plotter->drawstate->PointsInLine >= 3) /* check for closure */
-      && (_plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine - 1].x == _plotter->drawstate->datapoints[0].x)
-      && (_plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine - 1].y == _plotter->drawstate->datapoints[0].y))
+  if ((_plotter->drawstate->points_in_path >= 3) /* check for closure */
+      && (_plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].x == _plotter->drawstate->datapoints[0].x)
+      && (_plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].y == _plotter->drawstate->datapoints[0].y))
     closed = true;
   else
     closed = false;		/* 2-point ones should be open */
@@ -102,15 +85,15 @@ _p_endpath ()
   if (!_plotter->drawstate->points_are_connected)
     {
       Point saved_pos;
-      Point *saved_datapoints = _plotter->drawstate->datapoints;
+      GeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
       double radius = 0.5 * _plotter->drawstate->line_width;
-      int saved_PointsInLine = _plotter->drawstate->PointsInLine;
+      int saved_points_in_path = _plotter->drawstate->points_in_path;
       
       saved_pos = _plotter->drawstate->pos;
 
       _plotter->drawstate->datapoints = NULL;
       _plotter->drawstate->datapoints_len = 0;
-      _plotter->drawstate->PointsInLine = 0;
+      _plotter->drawstate->points_in_path = 0;
 
       _plotter->savestate();
       _plotter->fillcolor (_plotter->drawstate->fgcolor.red, 
@@ -120,7 +103,7 @@ _p_endpath ()
       _plotter->linewidth (0);
 
       _plotter->drawstate->points_are_connected = true;
-      for (i = 0; i < saved_PointsInLine - (closed ? 1 : 0); i++)
+      for (i = 0; i < saved_points_in_path - (closed ? 1 : 0); i++)
 	/* draw each point as a filled circle, diameter = line width */
 	_plotter->fcircle (saved_datapoints[i].x, saved_datapoints[i].y, 
 			   radius);
@@ -288,12 +271,12 @@ none SetP\n");
   /* idraw instruction: number of points in line */
   sprintf (_plotter->page->point, "\
 %%I %d\n", 
-	   _plotter->drawstate->PointsInLine - (closed ? 1 : 0));
+	   _plotter->drawstate->points_in_path - (closed ? 1 : 0));
   _update_buffer (_plotter->page);
 
   linewidth = _plotter->drawstate->line_width;
   /* number of points to be output */
-  numpoints = _plotter->drawstate->PointsInLine - (closed ? 1 : 0);
+  numpoints = _plotter->drawstate->points_in_path - (closed ? 1 : 0);
   for (i=0; i < numpoints; i++)
     {
       /* output the data point */
@@ -355,10 +338,10 @@ End\n\n", numpoints);
 End\n\n", numpoints);
   _update_buffer (_plotter->page);
   
-  /* reset polyline storage buffer */
+  /* reset path storage buffer */
   free (_plotter->drawstate->datapoints);
   _plotter->drawstate->datapoints_len = 0;
-  _plotter->drawstate->PointsInLine = 0;
+  _plotter->drawstate->points_in_path = 0;
 
   return 0;
 }

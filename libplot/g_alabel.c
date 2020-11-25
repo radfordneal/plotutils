@@ -65,7 +65,7 @@ _g_alabel (x_justify, y_justify, s)
       return -1;
     }
 
-  if (_plotter->drawstate->PointsInLine > 0)
+  if (_plotter->drawstate->points_in_path > 0)
     _plotter->endpath(); /* flush polyline if any */
 
   if (s == NULL)
@@ -84,6 +84,11 @@ _g_alabel (x_justify, y_justify, s)
       _plotter->warning ("ignoring control character (e.g. CR or LF) in label");
   }
   
+  /* Be sure user-specified font has been retrieved.  Font is changed by
+     fontname/fontsize/textangle, all of which perform the retrieve_font
+     operation, and by space/space2/concat, which may not. */
+  _plotter->retrieve_font();
+
   if (_plotter->drawstate->font_type == F_HERSHEY)
     /* call Hershey-specific routine, since controlification acts
        differently (there are more control codes for Hershey strings) */
@@ -129,6 +134,11 @@ _g_flabelwidth (s)
       _plotter->warning ("ignoring control character (e.g. CR or LF) in label");
   }
   
+  /* Be sure user-specified font has been retrieved.  Font is changed by
+     fontname/fontsize/textangle, all of which perform the retrieve_font
+     operation, and by space/space2/concat, which may not. */
+  _plotter->retrieve_font();
+
   if (_plotter->drawstate->font_type == F_HERSHEY)
     /* call Hershey-specific routine, since controlification acts
        differently (there are more control codes for Hershey strings) */

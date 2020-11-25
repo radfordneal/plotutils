@@ -1,6 +1,6 @@
 /* Initialization for a metafile drawing state, which is one of the data
    elements of any MetaPlotter object.  Its components include drawing
-   attributes, and the state of any uncompleted polyline object.
+   attributes, and the state of any uncompleted path object.
    
    This is almost totally ignored by the metafile driver, as far as the
    libplot API goes.  The chief reason we allow a MetaPlotter object to
@@ -30,14 +30,10 @@ const State _meta_default_drawstate = {
   },
 /* graphics cursor position */
   {0.0, 0.0},			/* graphics cursor position */
-/* the state of any uncompleted polyline object */
-  (Point *)NULL,		/* array of accumulated points [here NULL]*/
+/* the state of any uncompleted path object */
+  (GeneralizedPoint *)NULL,	/* array of accumulated points [here NULL]*/
   0,				/* number of accumulated points */
   0,				/* length of point storage buffer (bytes) */
-  false,			/* whether arc has been stored */
-  false,			/* whether to output stored arc immediately */
-  false,			/* whether to output as polyline (advisory) */
-  0.0,0.0,0.0,0.0,0.0,0.0,	/* stored arc parameters */
 /* modal drawing attributes */
   "solid",			/* line mode [must be valid] */
   L_SOLID,			/* line type, one of L_*, det'd by line mode */

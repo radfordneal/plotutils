@@ -1,15 +1,33 @@
 /* This file contains the endpath() method, which is a GNU extension to
-   libplot.  A polyline object may be constructed incrementally, by
-   repeated invocation of the cont() routine.  (See the comments in
-   g_cont.c.)  The construction may be terminated, and the polyline object
-   finalized, by an explict invocation of endpath().
+   libplot.  A path object may be constructed incrementally, by repeated
+   invocation of such operations as cont(), arc(), etc.  The construction
+   may be terminated, and the path object finalized, by an explict
+   invocation of endpath().  If endpath() is invoked when no path is under
+   construction, it has no effect. */
 
-   If endpath() is invoked when no polyline is under construction, it has
-   no effect. */
+/* This version is for HPGL and PCL Plotters.  By construction, for such
+   Plotters our path storage buffer may include an arbitrary sequence of
+   line and circular arc elements.  (For the latter to be included, the map
+   from user to device coordinates must be uniform, so that e.g. the angle
+   subtended by the arc will be the same in user and device coordinates.) */
 
 #include "sys-defines.h"
 #include "plot.h"
 #include "extern.h"
+
+#define DIST(p0,p1) (sqrt( ((p0).x - (p1).x)*((p0).x - (p1).x) \
+			  + ((p0).y - (p1).y)*((p0).y - (p1).y)))
+
+typedef struct
+{
+  int x, y;
+  int xc, yc;			/* used for arcs only */
+  double angle;			/* same */
+  path_segment_type type;	/* S_LINE or S_ARC */
+} GeneralizedIntPoint;
+
+/* forward references */
+static double _angle_of_arc __P((Point p0, Point p1, Point pc));
 
 int
 #ifdef _HAVE_PROTOS
@@ -18,29 +36,13 @@ _h_endpath (void)
 _h_endpath ()
 #endif
 {
-  IntPoint *xarray;
-  Point saved_pos;
+  GeneralizedIntPoint *xarray;
+  Point saved_pos, p0, p1, pc;
   bool closed, use_polygon_buffer;
+  double degrees;
+  double last_x, last_y;
   int i, polyline_len;
-
-  /* If a circular arc has been stashed rather than drawn, force it to be
-     drawn by invoking farc() with the `immediate' flag set.  Note that
-     if an arc is stashed, PointsInLine must be zero. */
-  if (_plotter->drawstate->arc_stashed) 
-    { 
-      double axc = _plotter->drawstate->axc;
-      double ayc = _plotter->drawstate->ayc;
-      double ax0 = _plotter->drawstate->ax0;
-      double ay0 = _plotter->drawstate->ay0;
-      double ax1 = _plotter->drawstate->ax1;
-      double ay1 = _plotter->drawstate->ay1;
-
-      _plotter->drawstate->arc_immediate = true; 
-      _plotter->drawstate->arc_polygonal = false; /* advisory only */
-      _plotter->farc (axc, ayc, ax0, ay0, ax1, ay1);
-      _plotter->drawstate->arc_immediate = false;
-      _plotter->drawstate->arc_stashed = false;
-    }
+  int int_degrees;
 
   saved_pos = _plotter->drawstate->pos; /* current graphics cursor position */
 
@@ -50,21 +52,21 @@ _h_endpath ()
       return -1;
     }
 
-  if (_plotter->drawstate->PointsInLine == 0)	/* nothing to do */
+  if (_plotter->drawstate->points_in_path == 0)	/* nothing to do */
     return 0;
-  if (_plotter->drawstate->PointsInLine == 1)	/* shouldn't happen */
+  if (_plotter->drawstate->points_in_path == 1)	/* shouldn't happen */
     {
-      /* just reset polyline storage buffer */
+      /* just reset path storage buffer */
       free (_plotter->drawstate->datapoints);
       _plotter->drawstate->datapoints_len = 0;
-      _plotter->drawstate->PointsInLine = 0;
+      _plotter->drawstate->points_in_path = 0;
 
       return 0;
     }
   
-  if ((_plotter->drawstate->PointsInLine >= 3) /* check for closure */
-      && (_plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine - 1].x == _plotter->drawstate->datapoints[0].x)
-      && (_plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine - 1].y == _plotter->drawstate->datapoints[0].y))
+  if ((_plotter->drawstate->points_in_path >= 3) /* check for closure */
+      && (_plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].x == _plotter->drawstate->datapoints[0].x)
+      && (_plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].y == _plotter->drawstate->datapoints[0].y))
     closed = true;
   else
     closed = false;		/* 2-point ones should be open */
@@ -75,13 +77,13 @@ _h_endpath ()
      real databuffer up. */
   if (!_plotter->drawstate->points_are_connected)
     {
-      Point *saved_datapoints = _plotter->drawstate->datapoints;
-      int saved_PointsInLine = _plotter->drawstate->PointsInLine;
+      GeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
+      int saved_points_in_path = _plotter->drawstate->points_in_path;
       double radius = 0.5 * _plotter->drawstate->line_width;
       
       _plotter->drawstate->datapoints = NULL;
       _plotter->drawstate->datapoints_len = 0;
-      _plotter->drawstate->PointsInLine = 0;
+      _plotter->drawstate->points_in_path = 0;
 
       _plotter->savestate();
       _plotter->fillcolor (_plotter->drawstate->fgcolor.red, 
@@ -91,12 +93,13 @@ _h_endpath ()
       _plotter->linewidth (0);
 
       _plotter->drawstate->points_are_connected = true;
-      for (i = 0; i < saved_PointsInLine - (closed ? 1 : 0); i++)
+      for (i = 0; i < saved_points_in_path - (closed ? 1 : 0); i++)
 	/* draw each point as a filled circle, diameter = line width */
 	_plotter->fcircle (saved_datapoints[i].x, saved_datapoints[i].y, 
 			   radius);
       _plotter->drawstate->points_are_connected = false;
       _plotter->restorestate();
+
       free (saved_datapoints);
       if (closed)
 	_plotter->drawstate->pos = saved_pos; /* restore graphics cursor */
@@ -104,12 +107,26 @@ _h_endpath ()
       return 0;
     }
   
-  /* General case: points are vertices of a polyline, >=2 points in all */
+  /* General case: points are vertices of a polyline, >=2 points in all;
+     the elements of the polyline may be circular arcs as well as line
+     segments. */
   
   /* convert vertices to integer device coordinates, removing runs */
-  xarray = (IntPoint *)_plot_xmalloc (_plotter->drawstate->PointsInLine * sizeof(IntPoint));
-  polyline_len = 0;
-  for (i = 0; i < _plotter->drawstate->PointsInLine; i++)
+
+  /* array for points, with positions expressed in integer device coors */
+  xarray = (GeneralizedIntPoint *)_plot_xmalloc (_plotter->drawstate->points_in_path * sizeof(GeneralizedIntPoint));
+
+  /* add first point of path to xarray[] (type field is meaningless) */
+  xarray[0].x = IROUND(XD(_plotter->drawstate->datapoints[0].x, 
+			  _plotter->drawstate->datapoints[0].y));
+  xarray[0].y = IROUND(YD(_plotter->drawstate->datapoints[0].x, 
+			  _plotter->drawstate->datapoints[0].y));
+  polyline_len = 1;
+  /* save user coors of last point added to xarray[] */
+  last_x = _plotter->drawstate->datapoints[0].x;
+  last_y = _plotter->drawstate->datapoints[0].y;  
+
+  for (i = 1; i < _plotter->drawstate->points_in_path; i++)
     {
       int device_x, device_y;
 	  
@@ -117,13 +134,39 @@ _h_endpath ()
 			   _plotter->drawstate->datapoints[i].y));
       device_y = IROUND(YD(_plotter->drawstate->datapoints[i].x, 
 			   _plotter->drawstate->datapoints[i].y));
-	  
-      if ((polyline_len == 0) 
-	  || (device_x != xarray[polyline_len-1].x) 
-	  || (device_y != xarray[polyline_len-1].y))
+      if (device_x != xarray[polyline_len-1].x
+	  || device_y != xarray[polyline_len-1].y)
+	/* integer device coor(s) changed, so stash point (incl. type field) */
 	{
+	  path_segment_type element_type;
+	  int device_xc, device_yc;
+
 	  xarray[polyline_len].x = device_x;
 	  xarray[polyline_len].y = device_y;
+	  element_type = _plotter->drawstate->datapoints[i].type;
+	  xarray[polyline_len].type = element_type;
+
+	  if (element_type == S_ARC)
+	    /* an arc element, so compute center, subtended angle too */
+	    {
+	      device_xc = IROUND(XD(_plotter->drawstate->datapoints[i].xc, 
+				    _plotter->drawstate->datapoints[i].yc));
+	      device_yc = IROUND(YD(_plotter->drawstate->datapoints[i].xc, 
+				    _plotter->drawstate->datapoints[i].yc));
+	      xarray[polyline_len].xc = device_xc;
+	      xarray[polyline_len].yc = device_yc;
+	      p0.x = last_x; 
+	      p0.y = last_y;
+	      p1.x = _plotter->drawstate->datapoints[i].x; 
+	      p1.y = _plotter->drawstate->datapoints[i].y; 
+	      pc.x = _plotter->drawstate->datapoints[i].xc; 
+	      pc.y = _plotter->drawstate->datapoints[i].yc; 
+	      xarray[polyline_len].angle = _angle_of_arc(p0, p1, pc);
+	    }
+
+	  /* save user coors of last point added to xarray[] */
+	  last_x = _plotter->drawstate->datapoints[i].x;
+	  last_y = _plotter->drawstate->datapoints[i].y;  
 	  polyline_len++;
 	}
     }
@@ -136,15 +179,15 @@ _h_endpath ()
   if (_plotter->drawstate->cap_type != CAP_BUTT)
     {
       /* if all points mapped to a single pixel... */
-      if (_plotter->drawstate->PointsInLine > 1 && polyline_len == 1)
+      if (_plotter->drawstate->points_in_path > 1 && polyline_len == 1)
 	{
-	  Point *saved_datapoints = _plotter->drawstate->datapoints;
+	  GeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
 	  double radius = 0.5 * _plotter->drawstate->line_width;
 	  
 	  /* switch to temporary points buffer (same reason as above) */
 	  _plotter->drawstate->datapoints = NULL;
 	  _plotter->drawstate->datapoints_len = 0;
-	  _plotter->drawstate->PointsInLine = 0;
+	  _plotter->drawstate->points_in_path = 0;
 
 	  _plotter->savestate();
 	  _plotter->fillcolor (_plotter->drawstate->fgcolor.red, 
@@ -168,7 +211,7 @@ _h_endpath ()
 	}
     }
 
-  /* will draw vectors into polygon buffer if appropriate */
+  /* will draw vectors (or arcs) into polygon buffer if appropriate */
   use_polygon_buffer = (_plotter->hpgl_version == 2
 			|| (_plotter->hpgl_version == 1 /* i.e. "1.5" */
 			    && (polyline_len > 2
@@ -191,22 +234,25 @@ _h_endpath ()
       /* free integer storage buffer */
       free (xarray);
       
-      /* move to end of polyline */
-      _plotter->drawstate->pos 
-	= _plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine - 1];
+      /* move to end of polyline (why aren't we there already??) */
+      _plotter->drawstate->pos.x
+	= _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].x;
+      _plotter->drawstate->pos.y
+	= _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].y;
 
-      /* reset polyline storage buffer */
+      /* reset path storage buffer */
       free (_plotter->drawstate->datapoints);
       _plotter->drawstate->datapoints_len = 0;
-      _plotter->drawstate->PointsInLine = 0;
+      _plotter->drawstate->points_in_path = 0;
 
       return 0;
     }
 
-  /* move pen to p0, sync attributes, incl. pen width if possible */
-  _plotter->drawstate->pos = _plotter->drawstate->datapoints[0];
-  _plotter->set_position();
+  /* sync attributes, incl. pen width if possible; move pen to p0 */
   _plotter->set_attributes();
+  _plotter->drawstate->pos.x = _plotter->drawstate->datapoints[0].x;
+  _plotter->drawstate->pos.y = _plotter->drawstate->datapoints[0].y;
+  _plotter->set_position();
 
   if (use_polygon_buffer)
     /* have a polygon buffer, and can use it to fill polyline */
@@ -224,22 +270,64 @@ _h_endpath ()
       _plotter->pendown = true;
     }
   
-  /* draw polyline as a sequence of >=1 pen advances */
-  strcpy (_plotter->page->point, "PA");
-  _update_buffer (_plotter->page);
-
-  for (i=1; i < polyline_len - 1; i++)
+  /* loop through points in xarray[], emitting HP-GL instructions */
+  i = 1;
+  while (i < polyline_len)
     {
-      sprintf (_plotter->page->point, "%d,%d,", xarray[i].x, xarray[i].y);
-      _update_buffer (_plotter->page);
+      switch (xarray[i].type)
+	{
+	case S_LINE:
+	  /* emit one or more pen advances */
+	  strcpy (_plotter->page->point, "PA");
+	  _update_buffer (_plotter->page);
+	  sprintf (_plotter->page->point, "%d,%d", xarray[i].x, xarray[i].y);
+	  _update_buffer (_plotter->page);
+	  i++;
+	  while (i < polyline_len && xarray[i].type == S_LINE)
+	    {
+	      sprintf (_plotter->page->point, 
+		       ",%d,%d", xarray[i].x, xarray[i].y);
+	      _update_buffer (_plotter->page);
+	      i++;
+	    }
+	  sprintf (_plotter->page->point, ";");
+	  _update_buffer (_plotter->page);	  
+	  break;
+
+	case S_ARC:
+	  /* emit an arc, using integer sweep angle if possible */
+	  degrees = 180.0 * xarray[i].angle / M_PI;
+	  int_degrees = IROUND (degrees);
+	  if (_plotter->hpgl_version > 0) 
+	    /* HPGL_VERSION = 1.5 or 2 */
+	    {
+	      if (degrees == (double)int_degrees)
+		sprintf (_plotter->page->point, "AA%d,%d,%d;",
+			 xarray[i].xc, xarray[i].yc,
+			 int_degrees);
+	      else
+		sprintf (_plotter->page->point, "AA%d,%d,%.3f;",
+			 xarray[i].xc, xarray[i].yc,
+			 degrees);
+	    }
+	  else
+	    /* HPGL_VERSION = 1, i.e. generic HP-GL */
+	    /* note: generic HP-GL can only handle integer sweep angles */
+	    sprintf (_plotter->page->point, "AA%d,%d,%d;",
+		     xarray[i].xc, xarray[i].yc,
+		     int_degrees);
+	  _update_buffer (_plotter->page);
+	  i++;
+	  break;
+
+	default:
+	  /* print error message, exit */
+	  break;
+	}
     }
-  /* final point ends with semicolon */
-  sprintf (_plotter->page->point, "%d,%d;", 
-	   xarray[polyline_len - 1].x, xarray[polyline_len - 1].y);
-  _update_buffer (_plotter->page);
-  
+
   if (use_polygon_buffer)
-    /* using polygon mode; will employ polygon buffer to do filling
+    /* using polygon mode; will now employ polygon buffer to do filling
        (possibly) and edging */
     {
       if (!closed)
@@ -265,9 +353,9 @@ _h_endpath ()
 	/* ideally, polyline should be filled */
 	{
 	  /* Sync fill color.  This may set the _plotter->bad_pen flag (if
-	     optimal pen is #0 and we're not allowed to use pen #0 to draw
-	     with).  So we test _plotter->bad_pen before using the pen to
-	     fill with. */
+	     optimal pen is #0 [white] and we're not allowed to use pen #0
+	     to draw with).  So we test _plotter->bad_pen before using the
+	     pen to fill with. */
 	  _plotter->set_fill_color ();
 	  if (_plotter->bad_pen == false)
 	    /* fill the polyline */
@@ -292,7 +380,7 @@ _h_endpath ()
   
   /* We know where the pen now is: if we used a polygon buffer, then
      _plotter->pos is now xarray[0].  If we didn't (as would be the case if
-     we're outputting generi HP-GL), then _plotter->pos is now
+     we're outputting generic HP-GL), then _plotter->pos is now
      xarray[polyline_len - 1].  Unfortunately we can't simply update
      _plotter->pos, because we want the generated HP-GL[/2] code to work
      properly on both HP-GL and HP-GL/2 devices.  So we punt. */
@@ -302,13 +390,64 @@ _h_endpath ()
   free (xarray);
 
   /* move to end of polyline */
-  _plotter->drawstate->pos 
-    = _plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine - 1];
+  _plotter->drawstate->pos.x
+    = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].x;
+  _plotter->drawstate->pos.y
+    = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].y;
 
-  /* reset polyline storage buffer */
+  /* reset path storage buffer */
   free (_plotter->drawstate->datapoints);
   _plotter->drawstate->datapoints_len = 0;
-  _plotter->drawstate->PointsInLine = 0;
+  _plotter->drawstate->points_in_path = 0;
 
   return 0;
+}
+
+static double
+#ifdef _HAVE_PROTOS
+_angle_of_arc(Point p0, Point p1, Point pc)
+#else
+_angle_of_arc(p0, p1, pc)
+     Point p0, p1, pc; 
+#endif
+{
+  Vector v0, v1;
+  double radius, cross, angle, angle0;
+
+  radius = DIST(pc, p0);	/* radius is distance to p0 or p1 */
+
+  /* vectors from pc to p0, and pc to p1 */
+  v0.x = p0.x - pc.x;
+  v0.y = p0.y - pc.y;
+  v1.x = p1.x - pc.x;
+  v1.y = p1.y - pc.y;
+
+  /* relative polar angle of p0 */
+  angle0 = _xatan2 (v0.y, v0.x);
+
+  /* cross product, zero means points are collinear */
+  cross = v0.x * v1.y - v1.x * v0.y;
+
+  if (cross == 0.0)
+    /* by libplot convention, sweep angle should be M_PI not -(M_PI), in
+       the collinear case */
+    angle = M_PI;
+  else
+    /* compute angle in range -(M_PI)..M_PI */
+    {
+      double angle1;
+
+      angle1 = _xatan2 (v1.y, v1.x);
+      angle = angle1 - angle0;
+      if (angle > M_PI)
+	angle -= (2.0 * M_PI);
+      else if (angle < -(M_PI))
+	angle += (2.0 * M_PI);
+    }
+  
+  /* if user coors -> device coors includes a reflection, flip sign */
+  if (!_plotter->drawstate->transform.nonreflection)
+    angle = -angle;
+
+  return angle;
 }

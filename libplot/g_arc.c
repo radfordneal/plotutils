@@ -1,16 +1,16 @@
 /* This file contains the arc method, which is a standard part of libplot.
    It draws an object: a circular arc from x0,y0 to x1,y1, with center at
    xc,yc.  If xc,yc does not lie on the perpendicular bisector between the
-   other two points as it should, it is adjusted so that it does. */
+   other two points as it should, it is adjusted so that it does.
 
-/* This file also contains the ellipse method, which is a GNU extension to
+   This file also contains the ellipse method, which is a GNU extension to
    libplot.  It draws an object: an ellipse with center xc,yc and semi-axes
    of length rx and ry (the former at a specified angle with the
-   x-axis). */
+   x-axis).
 
-/* This file contains as well the ellarc method, which is a GNU extension
-   to libplot.  It draws an object: an arc of an ellipse, from p0=(x0,y0)
-   to p1=(x1,y1).  The center of the ellipse will be at pc=(xc,yc).
+   This file also contains the ellarc method, which is a GNU extension to
+   libplot.  It draws an object: an arc of an ellipse, from p0=(x0,y0) to
+   p1=(x1,y1).  The center of the ellipse will be at pc=(xc,yc).
 
    These conditions do not uniquely determine the elliptic arc (or the
    ellipse of which it is an arc).  We choose the elliptic arc so that it
@@ -28,28 +28,35 @@
    affine transformation mapping (0,0) to pc, (0,1) to p0, (1,0) to p1, and
    (1,1) to the control point p0 + p1 - pc. */
 
-/* In the generic versions below, we call _fakearc() to draw inscribed
-   polylines as approximations, using move() and cont().  For an ellipse,
-   polygonal approximations to two half-ellipses are drawn in sequence. */
+/* In the arc and ellarc methods below, we either add the arc to our path
+   buffer as a single element, or we call _fakearc() to add an inscribed
+   polyline to the buffer, by repeatedly invoking fcont().  Similarly, in
+   the ellipse method we invoke _fakearc() twice, to draw polygonal
+   approximations to two half-ellipses in sequence.  
 
-/* Each inscribed polyline will contain no more than
-   2**MAX_ARC_SUBDIVISIONS line segments, since the subdividing stops when
-   MAX_ARC_SUBDIVISIONS have been made.  MAX_ARC_SUBDIVISIONS, defined in
-   extern.h, should be no greater than ARC_SUBDIVISIONS, defined in
-   fakearc.h as the size of a lookup table.  On a raster device, we also
+   _fakearc(), which draws polygonal approximations to arcs, is our basic
+   arc-drawing algorithm.  Each polygonal approximation will contain no
+   more than 2**MAX_ARC_SUBDIVISIONS line segments, since the subdividing
+   stops when MAX_ARC_SUBDIVISIONS have been made.  MAX_ARC_SUBDIVISIONS,
+   defined in extern.h, should be no greater than ARC_SUBDIVISIONS, defined
+   in g_arc.h as the size of a lookup table.  On a raster device, we also
    stop subdividing when the line segments become zero pixels long. */
 
 #include "sys-defines.h"
 #include "plot.h"
 #include "extern.h"
-#include "g_fakearc.h"
+#include "g_arc.h"
 
+/* initial path buffer size */
+#define DATAPOINTS_BUFSIZ MAX_UNFILLED_POLYLINE_LENGTH
 #define DIST(p0,p1) (sqrt( ((p0).x - (p1).x)*((p0).x - (p1).x) \
 			  + ((p0).y - (p1).y)*((p0).y - (p1).y)))
+#define COLLINEAR(p0, p1, p2) \
+	((p0.x * p1.y - p0.y * p1.x - p0.x * p2.y + \
+	  p0.y * p2.x + p1.x * p2.y - p1.y * p2.x) == 0.0)
 
 /* forward references */
 static void _draw_ellipse __P((double xc, double yc, double rx, double ry, double angle));
-static void _draw_elliptic_arc __P((Point p0, Point p1, Point pc));
 static void _fakearc __P ((Point p0, Point p1, int arc_type, const double m[4]));
 static void _prepare_chord_table __P ((double sagitta));
 
@@ -61,11 +68,7 @@ _g_farc (xc, yc, x0, y0, x1, y1)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  Point pc, p0, p1;
-
-  pc.x = xc, pc.y = yc;
-  p0.x = x0, p0.y = y0;
-  p1.x = x1, p1.y = y1;
+  Point p0, p1, pc; 
 
   if (!_plotter->open)
     {
@@ -73,59 +76,97 @@ _g_farc (xc, yc, x0, y0, x1, y1)
       return -1;
     }
 
-  /* Non-immediate case: an arc was previously stashed rather than drawn,
-     so flush it out by drawing a polygonal approximation to it.  We
-     arrange this by setting the `immediate' flag. */
-  if (!_plotter->drawstate->arc_immediate 
-      && _plotter->drawstate->arc_stashed)
-    {
-      double axc = _plotter->drawstate->axc;
-      double ayc = _plotter->drawstate->ayc;
-      double ax0 = _plotter->drawstate->ax0;
-      double ay0 = _plotter->drawstate->ay0;
-      double ax1 = _plotter->drawstate->ax1;
-      double ay1 = _plotter->drawstate->ay1;
+  /* Trivial case: if linemode is "disconnected", just plot a line segment
+     from (x0,y0) to (x1,y1).  Only the endpoints will appear on the
+     display. */
+  if (!_plotter->drawstate->points_are_connected)
+    return _plotter->fline (x0, y0, x1, y1);
 
-      _plotter->drawstate->arc_immediate = true;
-      _plotter->drawstate->arc_polygonal = true;
-      _plotter->farc (axc, ayc, ax0, ay0, ax1, ay1);
-      _plotter->drawstate->arc_immediate = false;
-      _plotter->drawstate->arc_stashed = false;
-    }
+  /* Another trivial case: treat a zero-length arc as a line segment */
+  if (x0 == x1 && y0 == y1)
+    return _plotter->fline (x0, y0, x1, y1);
 
-  /* Non-immediate case: if new arc not contiguous, move to its starting
-     point (thereby finalizing the path under construction, if any, since
-     the move() method invokes the endpath() method). */
-  if ((!_plotter->drawstate->arc_immediate)
-      && (x0 != _plotter->drawstate->pos.x 
-	  || y0 != _plotter->drawstate->pos.y))
+  /* If new arc not contiguous, move to its starting point (thereby ending
+     the path under construction, if any, since move() invokes the
+     endpath() method). */
+  if (x0 != _plotter->drawstate->pos.x 
+      || y0 != _plotter->drawstate->pos.y)
     _plotter->fmove (x0, y0);
   
-  if (!_plotter->drawstate->arc_immediate
-      && _plotter->drawstate->PointsInLine == 0)
-    /* Non-immediate case, with no polyline under construction:
-       don't actually draw the arc, just stash it for later drawing */
+  /* if path buffer exists and is occupied by a single arc, replace arc by
+     a polyline if that's called for */
+  if (_plotter->have_mixed_paths == false
+      && _plotter->drawstate->points_in_path == 2)
+    _maybe_replace_arc();
+
+  /* create or adjust size of path buffer, as needed */
+  if (_plotter->drawstate->datapoints_len == 0)
     {
-      _plotter->drawstate->axc = xc;
-      _plotter->drawstate->ayc = yc;      
-      _plotter->drawstate->ax0 = x0;
-      _plotter->drawstate->ay0 = y0;      
-      _plotter->drawstate->ax1 = x1;
-      _plotter->drawstate->ay1 = y1;      
-      _plotter->drawstate->arc_stashed = true;
-      return 0;
+      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints_len = DATAPOINTS_BUFSIZ;
     }
-  else
-    /* Immediate case, or non-immediate case with a polyline under
-       construction: draw a polygonal approximation to the arc by invoking
-       fcont() repeatedly.  We don't look at the advisory `arc_polygonal'
-       flag in the immediate case, because in this generic method,
-       polygonal approximations to arcs are the only kinds of arcs drawn */
+  if (_plotter->drawstate->points_in_path == _plotter->drawstate->datapoints_len)
     {
-      _plotter->drawstate->arc_stashed = false;	/* avoid infinite recursion */
-      _draw_circular_arc (p0, p1, pc);
+      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+	_plot_xrealloc (_plotter->drawstate->datapoints, 
+			2 * _plotter->drawstate->datapoints_len * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints_len *= 2;
     }
 
+  /* add new circular arc to the path buffer */
+
+  /* adjust location of pc if necessary, to place it on the bisector */
+  p0.x = x0; p0.y = y0;
+  p1.x = x1; p1.y = y1;      
+  pc.x = xc; pc.y = yc;      
+  pc = _truecenter (p0, p1, pc);
+  xc = pc.x; yc = pc.y;
+
+  if (((_plotter->have_mixed_paths == false
+	&& _plotter->drawstate->points_in_path == 0)
+       || _plotter->have_mixed_paths == true)
+      && ((_plotter->allowed_arc_scaling == AS_UNIFORM
+	   && _plotter->drawstate->transform.uniform)
+	  || (_plotter->allowed_arc_scaling == AS_AXES_PRESERVED
+	      && _plotter->drawstate->transform.axes_preserved)))
+      /* add circular arc as an arc element, since it's allowed */
+    {
+      if (_plotter->drawstate->points_in_path == 0)
+	/* no path in progress, so begin one (at start of arc) */
+	{
+	  _plotter->drawstate->datapoints[0].x = x0;
+	  _plotter->drawstate->datapoints[0].y = y0;
+	  _plotter->drawstate->points_in_path++;
+	}
+      
+      /* add new generalized point to path buffer, symbolizing circular arc */
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].x = x1;
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].y = y1;
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].xc = xc;
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].yc = yc;
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].type = S_ARC;
+      _plotter->drawstate->points_in_path++;
+
+      _plotter->drawstate->pos.x = x1; /* move to p1 (a libplot convention) */
+      _plotter->drawstate->pos.y = y1;
+    }
+  else
+    /* add circular arc as a polygonal approximation, by invoking
+       _fakearc(), i.e., by invoking fcont() repeatedly */
+    _draw_circular_arc (p0, p1, pc);
+
+  /* If path is getting too long (and it doesn't have to be filled), flush
+     it to output and begin a new one.  `Too long' is Plotter-dependent.
+     The `suppress polyline flushout' flag is set during the drawing of
+     polygonal approximations to ellipses (incl. circles), elliptic arcs,
+     and circular arcs; see g_arc.c.  Also for some Plotters, it may be
+     permanently set. */
+  if ((_plotter->drawstate->points_in_path >= _plotter->max_unfilled_polyline_length)
+      && !_plotter->drawstate->suppress_polyline_flushout
+      && (_plotter->drawstate->fill_level == 0))
+    _plotter->endpath();
+  
   return 0;
 }
 
@@ -151,9 +192,16 @@ _g_fellarc (xc, yc, x0, y0, x1, y1)
   if (!_plotter->drawstate->points_are_connected)
     return _plotter->fline (x0, y0, x1, y1);
 
-  pc.x = xc, pc.y = yc;
-  p0.x = x0, p0.y = y0;  
-  p1.x = x1, p1.y = y1;
+  /* Another trivial case: treat a zero-length arc as a line segment */
+  if (x0 == x1 && y0 == y1)
+    return _plotter->fline (x0, y0, x1, y1);
+
+  p0.x = x0; p0.y = y0;
+  p1.x = x1; p1.y = y1;      
+  pc.x = xc; pc.y = yc;      
+  if (COLLINEAR (p0, p1, pc))
+    /* collinear points, simply draw line segment from p0 to p1 */
+    return _plotter->fline (x0, y0, x1, y1);
 
   /* If new arc not contiguous, move to its starting point (thereby
      finalizing the path under construction, if any, since the move()
@@ -162,9 +210,76 @@ _g_fellarc (xc, yc, x0, y0, x1, y1)
       || y0 != _plotter->drawstate->pos.y)
     _plotter->fmove (x0, y0);
 
-  /* call fcont() repeatedly, to draw an inscribed polyline */
-  _draw_elliptic_arc (p0, p1, pc);
+  /* if path buffer exists and is occupied by a single arc, replace arc by
+     a polyline if that's called for */
+  if (_plotter->have_mixed_paths == false
+      && _plotter->drawstate->points_in_path == 2)
+    _maybe_replace_arc();
 
+  /* create or adjust size of path buffer, as needed */
+  if (_plotter->drawstate->datapoints_len == 0)
+    {
+      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints_len = DATAPOINTS_BUFSIZ;
+    }
+  if (_plotter->drawstate->points_in_path == _plotter->drawstate->datapoints_len)
+    {
+      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+	_plot_xrealloc (_plotter->drawstate->datapoints, 
+			2 * _plotter->drawstate->datapoints_len * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints_len *= 2;
+    }
+
+  /* add new elliptic arc to the path buffer */
+
+  if (((_plotter->have_mixed_paths == false
+       && _plotter->drawstate->points_in_path == 0)
+       || _plotter->have_mixed_paths == true)
+      && ((_plotter->allowed_ellarc_scaling == AS_UNIFORM
+	   && _plotter->drawstate->transform.uniform)
+	  || (_plotter->allowed_ellarc_scaling == AS_AXES_PRESERVED
+	      && _plotter->drawstate->transform.axes_preserved
+	      && ((y0 == yc && x1 == xc) || (x0 == xc && y1 == yc)))))
+    /* add elliptic arc as an arc element, since it's allowed (note that we
+       interpret the AS_AXES_PRESERVED constraint to require also that the
+       x and y coors for arc endpoints line up) */
+    {
+      if (_plotter->drawstate->points_in_path == 0)
+	/* no path in progress, so begin one (at start of arc) */
+	{
+	  _plotter->drawstate->datapoints[0].x = x0;
+	  _plotter->drawstate->datapoints[0].y = y0;
+	  _plotter->drawstate->points_in_path++;
+	}
+
+      /* add new generalized point to path buffer, symbolizing elliptic arc */
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].x = x1;
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].y = y1;
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].xc = xc;
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].yc = yc;
+      _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].type = S_ELLARC;
+      _plotter->drawstate->points_in_path++;
+
+      _plotter->drawstate->pos.x = x1; /* move to p1 (a libplot convention) */
+      _plotter->drawstate->pos.y = y1;
+    }
+  else
+    /* add elliptic arc as a polygonal approximation, by invoking
+       _fakearc(), i.e., by invoking fcont() repeatedly */
+    _draw_elliptic_arc (p0, p1, pc);
+
+  /* If path is getting too long (and it doesn't have to be filled), flush
+     it to output and begin a new one.  `Too long' is Plotter-dependent.
+     The `suppress polyline flushout' flag is set during the drawing of
+     polygonal approximations to ellipses (incl. circles), elliptic arcs,
+     and circular arcs; see g_arc.c.  Also for some Plotters, it may be
+     permanently set. */
+  if ((_plotter->drawstate->points_in_path >= _plotter->max_unfilled_polyline_length)
+      && !_plotter->drawstate->suppress_polyline_flushout
+      && (_plotter->drawstate->fill_level == 0))
+    _plotter->endpath();
+  
   return 0;
 }
 
@@ -182,7 +297,7 @@ _g_fellipse (xc, yc, rx, ry, angle)
       return -1;
     }
 
-  if (_plotter->drawstate->PointsInLine > 0)
+  if (_plotter->drawstate->points_in_path > 0)
     _plotter->endpath(); /* flush polyline if any */
 
   _draw_ellipse (xc, yc, rx, ry, angle);
@@ -191,12 +306,13 @@ _g_fellipse (xc, yc, rx, ry, angle)
 
   return 0;
 }
+
 /* _draw_circular_arc draws a polygonal approximation to the circular arc
-   from p0 to p1, with center pc, by invoking cont() repeatedly.  It is
-   assumed that p0 and p1 are distinct.  If pc is not on the perpendicular
-   bisector of the line segment joining them, it is adjusted so that it is.
-   When this function is called, it is assumed that the graphics cursor is
-   located at p0. */
+   from p0 to p1, with center pc, by calling _fakearc(), which in turn
+   invokes fcont() repeatedly.  It is assumed that p0 and p1 are distinct.
+   It is assumed that pc is on the perpendicular bisector of the line
+   segment joining them, and that the graphics cursor is initially located
+   at p0. */
 void
 #ifdef _HAVE_PROTOS
 _draw_circular_arc(Point p0, Point p1, Point pc)
@@ -216,7 +332,7 @@ _draw_circular_arc(p0, p1, pc)
   bool flushoutp;
   
   if (p0.x == p1.x && p0.y == p1.y)
-    /* zero-length arc */
+    /* zero-length arc, draw as zero-length line segment */
     _plotter->fcont (p0.x, p0.y);
 
   else
@@ -226,9 +342,6 @@ _draw_circular_arc(p0, p1, pc)
       flushoutp = _plotter->drawstate->suppress_polyline_flushout;
       _plotter->drawstate->suppress_polyline_flushout = true;
 
-      /* adjust location of pc */
-      pc = _truecenter (p0, p1, pc);
-      
       /* vectors from pc to p0, and pc to p1 */
       v0.x = p0.x - pc.x;
       v0.y = p0.y - pc.y;
@@ -273,16 +386,17 @@ _draw_circular_arc(p0, p1, pc)
 }
 
 /* _draw_elliptic_arc() draws a polygonal approximation to a
-   quarter-ellipse from p0 to p1, by invoking cont() repeatedly.  For this,
-   it calls _fakearc(), preserving drawing attributes.  pc is the center of
-   the arc, and p0, p1, pc are assumed not to be collinear.  It is assumed
-   that the graphics cursor is located at p0 when this function is called.
+   quarter-ellipse from p0 to p1, by calling _fakearc(), which in turn
+   invokes fcont() repeatedly.  For this, it calls _fakearc(), preserving
+   drawing attributes.  pc is the center of the arc, and p0, p1, pc are
+   assumed not to be collinear.  It is assumed that the graphics cursor is
+   located at p0 when this function is called.
 
    The control triangle for the elliptic arc will have vertices p0, p1, and
    K = p0 + (p1 - pc) = p1 + (p0 - pc).  The arc will pass through p0 and
    p1, and will be tangent at p0 to the edge from p0 to K, and at p1 to the
    edge from p1 to K. */
-static void 
+void 
 #ifdef _HAVE_PROTOS
 _draw_elliptic_arc (Point p0, Point p1, Point pc)
 #else
@@ -331,14 +445,14 @@ _draw_elliptic_arc (p0, p1, pc)
 
 /* _draw_ellipse() draws an inscribed polyline approximating an ellipse,
    with center (xc,yc) and semi-axes of length rx and ry (the former
-   inclined at a specified angle to the x-axis).  The join mode saved and
-   restored (it is changed to `round', to improve smoothness).
-
+   inclined at a specified angle to the x-axis).  The join mode is saved
+   and restored (it is changed to `round', to improve smoothness).
    This calls _fakearc() twice, to draw polygonal approximations to two
-   semi-ellipses.  If v0 = rx (cos theta, sin theta) and 
-   v1 = ry (-sin theta, cos theta) are the two semi-axes of the ellipse, 
-   the semi-ellipses go counterclockwise from p0 = pc + v0 to p1 = pc + v1,
-   and back. */
+   semi-ellipses.  _fakearc() in turn repeatedly invokes fcont().
+
+   If v0 = rx (cos theta, sin theta) and v1 = ry (-sin theta, cos theta)
+   are the two semi-axes of the ellipse, the semi-ellipses go
+   counterclockwise from p0 = pc + v0 to p1 = pc + v1, and back. */
 static void
 #ifdef _HAVE_PROTOS
 _draw_ellipse (double xc, double yc, double rx, double ry, double angle)
@@ -416,14 +530,14 @@ _draw_ellipse (xc, yc, rx, ry, angle)
   return;
 }
 
-/* The _fakearc() routine below contains our basic subdivision algorithm, a
-   remote descendent of the arc-drawing algorithm of Ken Turkowski
-   <turk@apple.com> described in Graphics Gems V.  His algorithm is a
-   recursive circle subdivision algorithm, which relies on the fact that if
-   s and s' are the (chordal deviation)/radius associated to (respectively)
-   an arc and a half-arc, then s' is approximately equal to s/4.  The exact
-   formula is s' = 1 - sqrt (1 - s/2), which applies for all s in the
-   meaningful range, i.e. 0 <= s <= 2.
+/* The _fakearc() subroutine below contains our basic subdivision
+   algorithm, a remote descendent of the arc-drawing algorithm of Ken
+   Turkowski <turk@apple.com> described in Graphics Gems V.  His algorithm
+   is a recursive circle subdivision algorithm, which relies on the fact
+   that if s and s' are the (chordal deviation)/radius associated to
+   (respectively) an arc and a half-arc, then s' is approximately equal to
+   s/4.  The exact formula is s' = 1 - sqrt (1 - s/2), which applies for
+   all s in the meaningful range, i.e. 0 <= s <= 2.
 
    Ken's algorithm rotates the chord of an arc by 90 degrees and scales it
    to have length s'.  The resulting vector will be the chordal deviation
@@ -456,7 +570,7 @@ _draw_ellipse (xc, yc, rx, ry, angle)
    consider is the one for a quarter-circle, which is 1-sqrt(1/2).  The
    successive values of s/2h that will be encountered, after each
    bisection, are pre-computed and stored in a lookup table, found in
-   fakearc.h.
+   g_arc.h.
 
    This approach lets us avoid, completely, any computation of square roots
    during the drawing of quarter-circles and quarter-ellipses.  The only

@@ -22,6 +22,9 @@ _x_fellipse (xc, yc, rx, ry, angle)
 #endif
 {
   int ninetymult = IROUND(angle / 90.0);
+  int x_orientation, y_orientation;
+  int xorigin, yorigin;
+  unsigned int squaresize_x, squaresize_y;
 
   if (!_plotter->open)
     {
@@ -64,78 +67,31 @@ _x_fellipse (xc, yc, rx, ry, angle)
   rx = (rx < 0.0 ? -rx : rx);	/* avoid obscure X problems */
   ry = (ry < 0.0 ? -ry : ry);  
 
-  {				/* use native X ellipse rendering  */
-    int x_orientation, y_orientation;
-    int xorigin, yorigin;
-    unsigned int squaresize_x, squaresize_y;
-    
-    /* axes flipped? (by default y-axis is, due to  X's flipped-y convention) */
-    x_orientation = (_plotter->drawstate->transform.m[0] >= 0 ? 1 : -1);
-    y_orientation = (_plotter->drawstate->transform.m[3] >= 0 ? 1 : -1);
-
-  /* location of `origin' (upper left corner of bounding rect. on display)
-     and width and height; X's flipped-y convention affects these values */
-    xorigin = IROUND(XD(xc - x_orientation * rx, 
-			yc - y_orientation * ry));
-    yorigin = IROUND(YD(xc - x_orientation * rx, 
-			yc - y_orientation * ry));
-    squaresize_x = (unsigned int)IROUND(XDV(2 * x_orientation * rx, 0.0));
-    squaresize_y = (unsigned int)IROUND(YDV(0.0, 2 * y_orientation * ry));  
-    
-    /* sanity check */
-    if (XOOB_INT(xorigin) || XOOB_INT(yorigin) || XOOB_UNSIGNED(squaresize_x)
-	|| XOOB_UNSIGNED(squaresize_y)) return -1;
-
-    /* don't use zero dimensions if user specified nonzero */
-    if (squaresize_x == 0 && rx > 0.0)
-      squaresize_x = 1;
-    if (squaresize_y == 0 && ry > 0.0)
-      squaresize_y = 1;
-    
-    /* place current line attributes in GC's used for drawing and filling */
-    _plotter->set_attributes();  
-
-    if (_plotter->drawstate->fill_level) /* not transparent */
-      {
-	/* select fill color as foreground color in GC used for filling */
-	_plotter->set_fill_color();
-
-	if (_plotter->double_buffering != DBL_NONE)
-	  XFillArc(_plotter->dpy, _plotter->drawable3,
-		   _plotter->drawstate->gc_fill, 
-		   xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
-	else
-	  {
-	    if (_plotter->drawable1)
-	      XFillArc(_plotter->dpy, _plotter->drawable1, 
-		       _plotter->drawstate->gc_fill, 
-		       xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
-	    if (_plotter->drawable2)
-	      XFillArc(_plotter->dpy, _plotter->drawable2, 
-		       _plotter->drawstate->gc_fill, 
-		       xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
-	  }
-      }
-    
-    /* select pen color as foreground color in GC used for drawing */
-    _plotter->set_pen_color();
-
-    if (_plotter->double_buffering != DBL_NONE)
-      XDrawArc(_plotter->dpy, _plotter->drawable3, 
-	       _plotter->drawstate->gc_fg,
-	       xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
-    else
-      {
-	if (_plotter->drawable1)
-	  XDrawArc(_plotter->dpy, _plotter->drawable1, 
-		   _plotter->drawstate->gc_fg,
-		   xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
-	if (_plotter->drawable2)
-	  XDrawArc(_plotter->dpy, _plotter->drawable2, 
-		   _plotter->drawstate->gc_fg,
-		   xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
-      }
-  }
+  /* axes flipped? (by default y-axis is, due to X's flipped-y convention) */
+  x_orientation = (_plotter->drawstate->transform.m[0] >= 0 ? 1 : -1);
+  y_orientation = (_plotter->drawstate->transform.m[3] >= 0 ? 1 : -1);
+  
+  /* location of `origin' (upper left corner of bounding rect. on
+     display) and width and height; X's flipped-y convention affects
+     these values */
+  xorigin = IROUND(XD(xc - x_orientation * rx, 
+		      yc - y_orientation * ry));
+  yorigin = IROUND(YD(xc - x_orientation * rx, 
+		      yc - y_orientation * ry));
+  squaresize_x = (unsigned int)IROUND(XDV(2 * x_orientation * rx, 0.0));
+  squaresize_y = (unsigned int)IROUND(YDV(0.0, 2 * y_orientation * ry));  
+  
+  /* don't use zero dimensions if user specified nonzero */
+  if (squaresize_x == 0 && rx > 0.0)
+    squaresize_x = 1;
+  if (squaresize_y == 0 && ry > 0.0)
+    squaresize_y = 1;
+  
+  /* draw ellipse (elliptic arc, arc range = 64*360 64'ths of a degree),
+     see x_endpath.c */
+  _draw_elliptic_X_arc_internal (xorigin, yorigin, 
+				 squaresize_x, squaresize_y, 
+				 0, 64 * 360);
   
   _plotter->drawstate->pos.x = xc; /* move to center (a libplot convention) */
   _plotter->drawstate->pos.y = yc;

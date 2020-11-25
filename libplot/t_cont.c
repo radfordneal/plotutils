@@ -2,15 +2,16 @@
    libplot.  It continues a line from the current position of the graphics
    cursor to the point specified by x and y.
 
-   This method is used in the construction of paths, i.e. of polylines.  By
-   repeatedly invoking cont(), the user may construct a polyline of
-   arbitrary length.  The polyline will terminate when the user either
+   This method is used in the construction of paths.  By repeatedly
+   invoking cont(), the user may construct a polyline of arbitrary length.
+   arc() and ellarc() may also be invoked, to add circular or elliptic arc
+   elements to the path.  The path will terminate when the user either
 
      (1) explicitly invokes the endpath() method, or 
      (2) changes the value of one of the relevant drawing attributes, 
           by invoking move(), linemod(), linewidth(), color(), fillcolor(),
           or filltype(), or 
-     (3) draws some non-polyline object, by invoking arc(), box(), 
+     (3) draws some non-path object, by invoking box(), 
            circle(), point(), label(), alabel(), etc., or 
      (4) invokes restorestate() to restore an earlier drawing state. */
 
@@ -46,10 +47,10 @@ _t_fcont (x, y)
 
   /* Invoke generic method.  This builds up the path by storing the point
      internally, with the storage deleted when endpath() is invoked.
-     Currently TekPlotters don't use the stored path for anything.  Note
-     that for TekPlotters, the `suppress_polyline_flushout' flag in the
-     drawing state is always set; see t_defstate.c.  This keeps the generic
-     method from calling endpath() when the stored polyline gets too long. */
+     Note that for TekPlotters, the `suppress_polyline_flushout' flag in
+     the drawing state is always set; see t_defstate.c.  This keeps the
+     generic method from calling endpath() when the stored polyline gets
+     too long. */
   retval = _g_fcont (x, y);
 
   /* Draw new line segment on Tektronix display, in real time */
@@ -65,7 +66,7 @@ _t_fcont (x, y)
 
   /* nominal starting point and ending point for new line segment, in
      floating point device coordinates */
-  oldindex = _plotter->drawstate->PointsInLine - 2;
+  oldindex = _plotter->drawstate->points_in_path - 2;
   newindex = oldindex + 1;
   start.x = XD(_plotter->drawstate->datapoints[oldindex].x,
 	       _plotter->drawstate->datapoints[oldindex].y);

@@ -39,18 +39,18 @@ _h_fcircle (x, y, r)
 
   radius = sqrt(XDV(r,0)*XDV(r,0)+YDV(r,0)*YDV(r,0));
   
-  /* move to center; set attributes, incl. pen width */
+  /* sync attributes, incl. pen width; move to center */
+  _plotter->set_attributes();
   (_plotter->drawstate->pos).x = x;
   (_plotter->drawstate->pos).y = y;
   _plotter->set_position();
-  _plotter->set_attributes();
   
   if (_plotter->drawstate->fill_level)
     /* ideally, circle should be filled */
     {
       /* Sync fill color.  This may set the _plotter->bad_pen flag (e.g. if
-	 optimal pen is #0 and we're not allowed to use pen #0 to draw
-	 with).  So we test _plotter->bad_pen before using the pen. */
+	 optimal pen is #0 [white] and we're not allowed to use pen #0 to
+	 draw with).  So we test _plotter->bad_pen before using the pen. */
       _plotter->set_fill_color ();
       if (_plotter->bad_pen == false)
 	/* fill the circle (360 degree wedge) */
@@ -61,8 +61,8 @@ _h_fcircle (x, y, r)
     }
 
   /* Sync pen color.  This may set the _plotter->bad_pen flag (e.g. if
-     optimal pen is #0 and we're not allowed to use pen #0 to draw with).
-     So we test _plotter->bad_pen before using the pen. */
+     optimal pen is #0 [white] and we're not allowed to use pen #0 to draw
+     with).  So we test _plotter->bad_pen before using the pen. */
   _plotter->set_pen_color ();
   if (_plotter->bad_pen == false)
     /* edge the circle */

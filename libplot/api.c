@@ -45,11 +45,11 @@ int (*libplot_error_handler)() = NULL;
 
 /* Known Plotter types, indexed into by a short mnemonic case-insensitive
    string: "meta"=metafile, "tek"=Tektronix, "hpgl"=HP-GL/2, "fig"=xfig,
-   "ps"=PS, "pcl"=PCL 5, "X"=X11, "Xdrawable"=X11 Drawable.  When a new
-   Plotter of any type is constructed, the appropriate `default_init'
-   structure is copied into it.  Also, the appropriate `initialize' routine
-   is invoked.  Before the Plotter is destroyed, the appropriate
-   `terminate' routine is invoked. */
+   "pcl"=PCL 5, "ps"=PS, "ai"="AI", "X"=X11, "Xdrawable"=X11 Drawable.
+   When a new Plotter of any type is constructed, the appropriate
+   `default_init' structure is copied into it.  Also, the appropriate
+   `initialize' routine is invoked.  Before the Plotter is destroyed, the
+   appropriate `terminate' routine is invoked. */
 
 typedef struct 
 {
@@ -85,6 +85,8 @@ static const Plotter_data _plotter_data[] =
      _fig_init_plotter, _fig_terminate_plotter},
   {"ps", PL_PS, &_ps_default_plotter, 
      _ps_init_plotter, _ps_terminate_plotter},
+  {"ai", PL_AI, &_ai_default_plotter, 
+     _ai_init_plotter, _ai_terminate_plotter},
 #ifndef X_DISPLAY_MISSING
   {"X", PL_X11, &_X_default_plotter, 
      _X_init_plotter, _X_terminate_plotter},    
@@ -438,8 +440,12 @@ deletepl (handle)
    the C counterpart of class variables (see g_params.h). */
 int
 #ifdef _HAVE_PROTOS
-parampl (const char *parameter, void *value)
+#ifdef NO_VOID_SUPPORT
+parampl (const char *parameter, char *value)
 #else
+parampl (const char *parameter, void *value)
+#endif
+#else  /* not _HAVE_PROTOS */
 #ifdef NO_VOID_SUPPORT
 parampl (parameter, value)
      const char *parameter;
@@ -448,7 +454,7 @@ parampl (parameter, value)
 parampl (parameter, value)
      const char *parameter;
      void *value;
-#endif /* NO_VOID_SUPPORT */
+#endif /* not NO_VOID_SUPPORT */
 #endif
 {
   int j;
@@ -616,7 +622,7 @@ _api_error (msg)
   else
     {
       fprintf (stderr, "libplot: error: %s\n", msg);
-      exit (1);
+      exit (EXIT_FAILURE);
     }
 }
 

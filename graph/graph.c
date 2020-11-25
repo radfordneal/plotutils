@@ -794,21 +794,21 @@ main (argc, argv)
 	      fprintf (stderr,
 		       "%s: error: x repositioning must be a number, was `%s'\n",
 		       progname, optarg);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  if (optind >= argc)
 	    {
 	      fprintf (stderr,
 		       "%s: error: missing arg[s] to --reposition option\n",
 		       progname);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  if (sscanf (argv[optind], "%lf", &reposition_trans_y) <= 0)
 	    {
 	      fprintf (stderr,
 		       "%s: error: y repositioning must be a number, was `%s'\n",
 		       progname, argv[optind]);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  optind++;		/* tell getopt we recognized trans_y */
 	  if (optind >= argc)
@@ -816,20 +816,20 @@ main (argc, argv)
 	      fprintf (stderr,
 		       "%s: error: missing arg[s] to --reposition option\n",
 		       progname);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  if (sscanf (argv[optind], "%lf", &reposition_scale) <= 0)
 	    {
 	      fprintf (stderr,
 		       "%s: error: reposition scale factor must be a number, was `%s'\n",
 		       progname, optarg);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  if (reposition_scale == 0.0)
 	    {
 	      fprintf (stderr,
 		       "%s: error: reposition scale factor cannot be zero\n", progname);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  optind++;		/* tell getopt we recognized trans_x */
 
@@ -891,7 +891,7 @@ main (argc, argv)
 			{
 			  fprintf (stderr, 
 				   "%s: error: couldn't open plot device\n", progname);
-			  return 1;
+			  return EXIT_FAILURE;
 			}
 		    }
 		  
@@ -959,7 +959,7 @@ main (argc, argv)
 			  fprintf(stderr, 
 				  "%s: error: nonpositive limit %g on logarithmic axis\n", 
 				  progname, min_x);
-			  return 1;
+			  return EXIT_FAILURE;
 			}
 		    }
 		  if (spec_max_x)
@@ -971,7 +971,7 @@ main (argc, argv)
 			  fprintf(stderr, 
 				  "%s: error: nonpositive limit %g on logarithmic axis\n", 
 				  progname, max_x);
-			  return 1;
+			  return EXIT_FAILURE;
 			}
 		    }
 		}
@@ -987,7 +987,7 @@ main (argc, argv)
 			  fprintf(stderr, 
 				  "%s: error: nonpositive limit %g on logarithmic axis\n", 
 				  progname, min_y);
-			  return 1;
+			  return EXIT_FAILURE;
 			}
 		    }
 		  if (spec_max_y)
@@ -999,7 +999,7 @@ main (argc, argv)
 			  fprintf(stderr, 
 				  "%s: error: nonpositive limit %g on logarithmic axis\n", 
 				  progname, max_y);
-			  return 1;
+			  return EXIT_FAILURE;
 			}
 		    }
 		}
@@ -1101,7 +1101,7 @@ main (argc, argv)
 			  fprintf (stderr, 
 				   "%s: error: couldn't open plot device\n", 
 				   progname);
-			  return 1;
+			  return EXIT_FAILURE;
 			}
 		    }
 		  
@@ -1243,12 +1243,12 @@ main (argc, argv)
   if (errcnt > 0)
     {
       fprintf (stderr, "Try `%s --help' for more information\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   if (show_version)
     {
       display_version (progname);
-      return 0;
+      return EXIT_SUCCESS;
     }
   if (do_list_fonts)
     {
@@ -1256,9 +1256,9 @@ main (argc, argv)
 
       success = list_fonts (display_type, progname);
       if (success)
-	return 0;
+	return EXIT_SUCCESS;
       else
-	return 1;
+	return EXIT_FAILURE;
     }
   if (show_fonts)
     {
@@ -1266,14 +1266,14 @@ main (argc, argv)
 
       success = display_fonts (display_type, progname);
       if (success)
-	return 0;
+	return EXIT_SUCCESS;
       else
-	return 1;
+	return EXIT_FAILURE;
     }
   if (show_usage)
     {
       display_usage (progname, hidden_options, usage_appendage, true);
-      return 0;
+      return EXIT_SUCCESS;
     }
 
   /* At this point, we need to terminate the plot currently in progress, if
@@ -1333,7 +1333,7 @@ main (argc, argv)
 		{
 		  fprintf (stderr, 
 			   "%s: error: couldn't open plot device\n", progname);
-		  return 1;
+		  return EXIT_FAILURE;
 		}
 	    }
 	  
@@ -1370,10 +1370,10 @@ main (argc, argv)
     {
       fprintf (stderr, "%s: error: could not close plot device\n", 
 	       progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 
@@ -1392,7 +1392,7 @@ open_file_for_reading (filename, input)
   if (data_file == NULL)
     {
       fprintf (stderr, "%s: %s: %s\n", progname, filename, strerror(errno));
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   else
     *input = data_file;

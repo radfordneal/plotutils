@@ -25,10 +25,10 @@ _m_ellarcrel (xc, yc, x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d %d %d\n", 
-		 ELLARCREL, xc, yc, x0, y0, x1, y1);
+		 (int)O_ELLARCREL, xc, yc, x0, y0, x1, y1);
       else
 	{
-	  putc (ELLARCREL, _plotter->outstream);
+	  putc ((int)O_ELLARCREL, _plotter->outstream);
 	  _emit_integer (xc);
 	  _emit_integer (yc);
 	  _emit_integer (x0);
@@ -59,10 +59,10 @@ _m_fellarcrel (xc, yc, x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %g %g %g %g\n", 
-	     ELLARCREL, xc, yc, x0, y0, x1, y1);
+	     (int)O_ELLARCREL, xc, yc, x0, y0, x1, y1);
       else
 	{
-	  putc (FELLARCREL, _plotter->outstream);
+	  putc ((int)O_FELLARCREL, _plotter->outstream);
 	  _emit_float (xc);
 	  _emit_float (yc);
 	  _emit_float (x0);

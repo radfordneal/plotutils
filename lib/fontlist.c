@@ -109,8 +109,13 @@ extern const struct stick_font_info_struct _stick_font_info[];
 
 /* List of Plotter types we support getting font information from,
    NULL-terminated.  This list also appears in the program text below. */
+#ifndef X_DISPLAY_MISSING
 static char *_known_devices[] =
-{ "X", "ps", "fig", "pcl", "hpgl", "tek", "meta", NULL };
+{ "X", "ai", "ps", "fig", "pcl", "hpgl", "tek", "meta", NULL };
+#else
+static char *_known_devices[] =
+{ "ai", "ps", "fig", "pcl", "hpgl", "tek", "meta", NULL };
+#endif
 
 bool
 #ifdef _HAVE_PROTOS
@@ -133,10 +138,17 @@ display_fonts (display_type, progname)
 
   if (found == false || strcmp (display_type, "meta") == 0)
     {
+#ifndef X_DISPLAY_MISSING
       fprintf (stderr, "\
-To list available fonts, type `%s -T \"device\" --help-fonts',\n\
-where \"device\" is the display device: X, ps, fig, pcl, hpgl, or tek.\n",
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format: X, ai, ps, fig, pcl, hpgl, or tek.\n",
 	       progname);
+#else
+      fprintf (stderr, "\
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format: ai, ps, fig, pcl, hpgl, or tek.\n",
+	       progname);
+#endif
       return false;
     }
 

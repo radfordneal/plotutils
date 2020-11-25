@@ -45,7 +45,7 @@ _m_alabel (x_justify, y_justify, s)
 	*nl = '\0';		/* don't grok multiline arg strings */
       
       fprintf(_plotter->outstream, "%c%c%c%s\n", 
-	      ALABEL, x_justify_c, y_justify_c, s);
+	      (int)O_ALABEL, x_justify_c, y_justify_c, s);
     }
   
   return 0;

@@ -1,6 +1,6 @@
 /* Initialization for an HP-GL/2 drawing state, which is one of the data
    elements of any HPGLPlotter object.  Its components include drawing
-   attributes, and the state of any uncompleted polyline object.  (At
+   attributes, and the state of any uncompleted path object.  (At
    initialization, there is none.) */
    
 /* Since not all HP-GL or HP-GL/2 devices support PCL fonts, the default
@@ -29,14 +29,10 @@ const State _hpgl_default_drawstate = {
   },
 /* graphics cursor position */
   {0.0, 0.0},			/* graphics cursor position */
-/* the state of any uncompleted polyline object */
-  (Point *)NULL,		/* array of accumulated points [here NULL]*/
+/* the state of any uncompleted path object */
+  (GeneralizedPoint *)NULL,	/* array of accumulated points [here NULL]*/
   0,				/* number of accumulated points */
   0,				/* length of point storage buffer (bytes) */
-  false,			/* whether arc has been stored */
-  false,			/* whether to output stored arc immediately */
-  false,			/* whether to output as polyline (advisory) */
-  0.0,0.0,0.0,0.0,0.0,0.0,	/* stored arc parameters */
 /* modal drawing attributes */
   "solid",			/* line mode [must be valid] */
   L_SOLID,			/* line type, one of L_*, det'd by line mode */

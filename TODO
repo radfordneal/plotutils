@@ -7,8 +7,8 @@ for compound objects and much else).
 libplot: support copying graphics from one Plotter to another (via display
 list)
 
-libplot: Support Adobe Illustrator format (-T ai), and CGM format.
-Check that CGM is importable into Corel Draw as well as AI.
+libplot: Support CGM format.  Check that CGM is importable into Corel Draw
+as well as Illustrator.
 
 libsciplot: new library.  Incorporate all functionality of VOGLE, PGPLOT,
 and PLPLOT libraries; check into GLE and PLOTPLUS, XYPLOT.  Think about
@@ -19,8 +19,8 @@ graph: librarify the plotting routines, and incorporate them in libsciplot.
 N.B. need better clipping for filled regions (present gnuplot-style
 clipping scheme is right for unfilled regions but wrong for filled ones)
 
-libsciplot: note when plotting a curve containing data points, symbols 
-should be plotted _last_, after endpath() is called.
+libsciplot: when plotting a curve containing data points, symbols should be
+plotted _last_, after endpath() is called.
 
 libplot: support object-level clipping
 
@@ -50,10 +50,13 @@ i.e. gnuplot-style `key'.  Maybe arbitrarily positioned arrows, text
 strings also.  See how NCAR Graphics does it.
 
 Internationalization: think about removing strcasecmp (what if user called
-setlocale i.e. set LOCALE env var)?  Similarly worry about . vs ,
-everywhere, e.g. in PS files.
+setlocale i.e. set LOCALE env var)?  Similarly worry about . vs , everywhere, 
+e.g. in PS files.
 
 graph: fix positioning of top labels, especially at large sizes
+
+ode: add atan2() function
+
 
 Major Enhancements (Possible, Probable, or Certain)
 ---------------------------------------------------
@@ -110,8 +113,9 @@ Low-priority items (may be done someday)
 
 libplot: spline the Hershey fonts, use new spline primitive to draw them.
 
-old HP-GL pen plotters can't handle full range of coordinates (current
-range, taken from AutoCAD, may not be good)
+old HP-GL pen plotters can't handle full range of coordinates in many of
+our page types [see libplot/g_pagetype.h; our current page sizes, taken
+from AutoCAD, may not be appropriate for older plotters?]
 
 Improve libplot error reporting: change libplot error handler to use name
 of executable

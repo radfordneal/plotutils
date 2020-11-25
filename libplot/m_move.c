@@ -25,10 +25,10 @@ _m_move (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d\n", 
-		 MOVE, x, y);
+		 (int)O_MOVE, x, y);
       else
 	{
-	  putc (MOVE, _plotter->outstream);
+	  putc ((int)O_MOVE, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	}
@@ -55,10 +55,10 @@ _m_fmove (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g\n", 
-		 MOVE, x, y);
+		 (int)O_MOVE, x, y);
       else
 	{
-	  putc (FMOVE, _plotter->outstream);
+	  putc ((int)O_FMOVE, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	}

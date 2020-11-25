@@ -291,15 +291,15 @@ main (argc, argv)
 	case 'P':		/* precision */
 	  if (sscanf (optarg, "%d", &local_precision) <= 0)
 	    {
-	      fprintf (stderr, "%s: error: bad requested precision `%s' (must be nonnegative integer)\n", 
+	      fprintf (stderr, "%s: error: bad requested precision `%s' (must be positive integer)\n", 
 		       progname, optarg);
 	      errcnt++;
 	    }
 	  else
 	    {
-	      if (local_precision < 0)
+	      if (local_precision <= 0)
 		fprintf (stderr, 
-			 "%s: ignoring bad precision value `%s' (must be nonnegative integer)\n",
+			 "%s: ignoring bad precision value `%s' (must be positive integer)\n",
 			 progname, optarg);
 	      else
 		precision = local_precision;
@@ -365,17 +365,17 @@ main (argc, argv)
   if (errcnt > 0)
     {
       fprintf (stderr, "Try `%s --help' for more information\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   if (show_version)
     {
       display_version (progname);
-      return 0;
+      return EXIT_SUCCESS;
     }
   if (show_usage)
     {
       display_usage (progname, hidden_options, usage_appendage, false);
-      return 0;
+      return EXIT_SUCCESS;
     }
 
   /* Some sanity checks on user-supplied options. */
@@ -385,7 +385,7 @@ main (argc, argv)
       fprintf (stderr, 
 	       "%s: error: cannot subdivide abscissa range into %d intervals\n", 
 	       progname, no_of_intervals);
-      return 1;
+      return EXIT_FAILURE;
     }
 
   if (periodic)
@@ -405,7 +405,7 @@ main (argc, argv)
 	  fprintf (stderr,
 		   "%s: error: acting as filter, must specify abscissa range with -t option\n",
 		   progname);
-	  return 1;
+	  return EXIT_FAILURE;
 	}
 
       if (!spec_spacing_t) 
@@ -456,7 +456,7 @@ main (argc, argv)
 		  if (data_file == NULL)
 		    {
 		      fprintf (stderr, "%s: %s: %s\n", progname, argv[optind], strerror(errno));
-		      return 1;
+		      return EXIT_FAILURE;
 		    }
 		}		
 
@@ -482,7 +482,7 @@ main (argc, argv)
 		      fprintf (stderr, 
 			       "%s: error: couldn't close input file `%s'\n",
 			       progname, argv[optind]);
-		      return 1;
+		      return EXIT_FAILURE;
 		    }
 		}
 	    }
@@ -528,7 +528,7 @@ main (argc, argv)
 		    {
 		      fprintf (stderr, "%s: error: couldn't open file `%s'\n",
 			       progname, argv[optind]);
-		      return 1;
+		      return EXIT_FAILURE;
 		    }
 		}
 	      
@@ -580,7 +580,7 @@ main (argc, argv)
 		      fprintf (stderr, 
 			       "%s: error: couldn't close input file `%s'\n",
 			       progname, argv[optind]);
-		      return 1;
+		      return EXIT_FAILURE;
 		    }
 		}
 	    }
@@ -632,7 +632,7 @@ main (argc, argv)
       
     }
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 
@@ -667,7 +667,7 @@ set_format_type (s, typep)
       {
 	fprintf (stderr, "%s: error: invalid data format type `%s'\n",
 		 progname, s);
-	exit (1);
+	exit (EXIT_FAILURE);
       }
       break;
     }
@@ -741,7 +741,7 @@ fit (n, t, y, z, k, tension, periodic)
 	if (sin (tension * h[i]) == 0.0)
 	  {
 	    fprintf (stderr, "%s: error: specified negative tension value is singular\n", progname);
-	    exit (1);
+	    exit (EXIT_FAILURE);
 	  }
     }
   if (tension == 0.0)
@@ -808,7 +808,7 @@ fit (n, t, y, z, k, tension, periodic)
       fprintf (stderr, 
 	       "%s: error: as posed, problem of computing spline is singular\n",
 	       progname);
-      exit (1);
+      exit (EXIT_FAILURE);
     }
 
   if (periodic)
@@ -829,7 +829,7 @@ fit (n, t, y, z, k, tension, periodic)
 	  fprintf (stderr, 
 		   "%s: error: as posed, problem of computing spline is singular\n",
 		   progname);
-	  exit (1);
+	  exit (EXIT_FAILURE);
 	}
 
 
@@ -1736,7 +1736,7 @@ non_monotonic_error ()
 {
   fprintf (stderr, "%s: error: abscissa values not monotonic\n",
 	   progname);
-  exit (1);
+  exit (EXIT_FAILURE);
 }
 
 
@@ -1822,7 +1822,7 @@ do_bessel_range (abscissa0, abscissa1, value0, value1, slope0, slope1,
 	      fprintf (stderr, 
 		       "%s: error: unable to write to standard output\n",
 		       progname);
-	      exit (1);
+	      exit (EXIT_FAILURE);
 	    }
 	  free (y);
 	}	  

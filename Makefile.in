@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# graph, plot, and tek2plot are linked with libplot.
+# plot, tek2plot, plotfont, and graph are linked with libplot.
 # spline, double, and ode are not, however.  All use the routines in lib.
 
 

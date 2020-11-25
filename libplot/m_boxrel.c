@@ -25,10 +25,10 @@ _m_boxrel (x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d\n", 
-		 BOXREL, x0, y0, x1, y1);
+		 (int)O_BOXREL, x0, y0, x1, y1);
       else
 	{
-	  putc (BOXREL, _plotter->outstream);
+	  putc ((int)O_BOXREL, _plotter->outstream);
 	  _emit_integer (x0);
 	  _emit_integer (y0);
 	  _emit_integer (x1);
@@ -57,10 +57,10 @@ _m_fboxrel (x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %g %g\n", 
-		 BOXREL, x0, y0, x1, y1);
+		 (int)O_BOXREL, x0, y0, x1, y1);
       else
 	{
-	  putc (FBOXREL, _plotter->outstream);
+	  putc ((int)O_FBOXREL, _plotter->outstream);
 	  _emit_float (x0);
 	  _emit_float (y0);
 	  _emit_float (x1);

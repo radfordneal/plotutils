@@ -6,7 +6,7 @@ typedef void *Voidptr;
 #define NO_VOID_SUPPORT
 typedef char *Voidptr;
 #define void int
-#endif /* HAVE_VOID */
+#endif /* not HAVE_VOID */
 
 #ifdef const			/* may be defined to empty in config.h */
 #define NO_CONST_SUPPORT
@@ -65,12 +65,16 @@ extern char * strerror __P((int errnum));
 #include <stdlib.h>		/* for getenv, atoi, atof, etc. */
 #include <string.h>		/* for memcpy, strchr etc. */
 
-#else
+#else  /* not STC_HEADERS */
 
 /* functions in stdlib.h */
 extern char *getenv __P((const char *name));
 extern int atoi __P((const char *nptr));
 extern double atof __P((const char *nptr));
+
+/* definitions in stdlib.h */
+#define	EXIT_FAILURE	1	/* Failing exit status.  */
+#define	EXIT_SUCCESS	0	/* Successful exit status.  */
 
 #ifdef HAVE_STRCHR
 #ifdef HAVE_STRING_H
@@ -90,7 +94,7 @@ extern double atof __P((const char *nptr));
 #endif
 #define strchr index
 #define strrchr rindex
-#endif /* HAVE_STRCHR */
+#endif /* not HAVE_STRCHR */
 
 #ifndef HAVE_MEMCPY
 #define memcpy(d, s, n) bcopy ((s), (d), (n))
@@ -107,21 +111,15 @@ extern Voidptr malloc();
 extern Voidptr realloc();
 extern Voidptr calloc();
 extern void free __P((void));
-#endif /* HAVE_MALLOC_H */
+#endif /* not HAVE_MALLOC_H */
 
-#endif	/* STDC_HEADERS */
+#endif /* not STC_HEADERS */
 
 #ifdef HAVE_UNISTD_H
 #include <sys/types.h>
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
           
-/* <sys/param.h> on DEC Alphas gratuitously defines this; undefine it 
-   since it's defined in plot.h */
-#ifdef FSCALE
-#undef FSCALE
-#endif
-
 /* we are logical */
 #ifndef __cplusplus
 #ifdef __STDC__
@@ -194,7 +192,7 @@ typedef int bool;
 #define NO_SYSTEM_GAMMA
 #endif
 #endif
-#endif /* NO_SYSTEM_GAMMA */
+#endif /* not NO_SYSTEM_GAMMA */
 
 /* IBM's definition of INT_MAX is bizarre, in AIX 4.1 at least, and using
    IROUND() below will yield a warning message unless we repair it */

@@ -23,6 +23,7 @@ struct param_record
 
 static struct param_record _plot_params[NUM_DEVICE_DRIVER_PARAMETERS] =
 {
+  {"AI_VERSION", "5", NULL, true}, /* ai */
   {"BG_COLOR", NULL, NULL, true}, /* X */
   {"BITMAPSIZE", NULL, NULL, true}, /* X */
   {"DISPLAY", NULL, NULL, true}, /* X, XDrawable */
@@ -35,7 +36,7 @@ static struct param_record _plot_params[NUM_DEVICE_DRIVER_PARAMETERS] =
   {"HPGL_YOFFSET", "0 cm", NULL, true}, /* hpgl */
   {"MAX_LINE_LENGTH", MAX_UNFILLED_POLYLINE_LENGTH_STRING, NULL, true}, /* all but tek and meta */
   {"META_PORTABLE", "no", NULL, true}, /* raw  */
-  {"PAGESIZE", "letter", NULL, true}, /* hpgl, pcl, fig, ps */
+  {"PAGESIZE", "letter", NULL, true}, /* hpgl, pcl, fig, ps, ai */
   {"PCL_ASSIGN_COLORS", "no", NULL, true}, /* pcl */
   {"PCL_ROTATE", "no", NULL, true},	/* pcl */
   {"PCL_XOFFSET", "0 cm", NULL, true}, /* pcl */

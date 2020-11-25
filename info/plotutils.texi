@@ -20,12 +20,12 @@
 @end direntry
 
 @iftex
-@hyphenation{Zapf-Ding-bats}
+@hyphenation{Zapf-Ding-bats Hershey-Serif-Symbol Hershey-Sans-Symbol}
 @end iftex
 
 @ifinfo
-This file documents version 2.1.5 of the GNU plotting
-utilities package, including GNU libplot 1.5
+This file documents version 2.1.6 of the GNU plotting
+utilities package, including GNU libplot 1.6
 
 Copyright @copyright{} 1989--1998 Free Software Foundation, Inc.
 
@@ -47,7 +47,7 @@ by the Foundation.
 @titlepage
 @title The GNU Plotting Utilities
 @subtitle Programs and functions for drawing and data plotting
-@subtitle Version 2.1.5
+@subtitle Version 2.1.6
 @author Robert S. Maier and Nicholas B. Tufillaro
 @page
 @vskip 0pt plus 1filll
@@ -71,8 +71,8 @@ by the Foundation.
 
 @node Top, Plotutils Intro, (dir), (dir)
 @ifnottex
-This is the documentation for version 2.1.5 of the GNU plotting
-utilities package, including GNU libplot 1.5.  The package consists of
+This is the documentation for version 2.1.6 of the GNU plotting
+utilities package, including GNU libplot 1.6.  The package consists of
 programs and functions for data plotting and vector graphics.
 @end ifnottex
 
@@ -101,12 +101,15 @@ two-dimensional vector graphics, including vector graphics animations
 under the @w{X Window} System.
 
 The graphics programs and @code{libplot} can produce output in the
-following seven formats.
+following eight formats.
 
 @table @asis
 @item X
 If this output option is selected, there is no output file.  Output is
 directed to a popped-up window on an @w{X Window} System display.
+@item AI
+This is the format used by Adobe Illustrator.  Files in this format may
+be edited with Adobe Illustrator or other applications.
 @item PS
 This is @code{idraw}-editable Postscript format.  Files in this format
 may be sent to a Postscript printer, imported into another document, or
@@ -117,7 +120,7 @@ This is a graphics format that may be displayed or edited with the free
 @item PCL 5
 This is a powerful version of Hewlett--Packard's Printer Control
 Language.  Files in this format may be sent to a LaserJet printer or
-DesignJet plotter.
+compatible device (note that most inkjets do not support @w{PCL 5}).
 @item HP-GL
 This is Hewlett--Packard's Graphics Language (HP-GL/2 is also
 supported).  Files in this format may be imported into a document or
@@ -127,18 +130,19 @@ This is the graphics format understood by Tektronix 4014 terminals and
 emulators, including the emulators built into the @code{xterm} program
 and some versions of @code{kermit}.
 @item Metafile
-This is device-independent GNU metafile format.  The @code{plot} program
-can translate it to any of the preceding formats.
+This is device-independent GNU graphics metafile format.  The
+@code{plot} program can translate it to any of the preceding formats.
 @end table
 
 Of the graphics programs, the most powerful is @code{graph}, which is an
 application for plotting two-dimensional scientific data.  It reads one
 or more data files containing datasets, and outputs a plot.  The above
 output formats are supported.  The corresponding commands are
-@code{graph @w{-T X}}, @code{graph -T ps}, @code{graph -T fig},
-@code{graph -T pcl}, @code{graph -T hpgl}, @code{graph -T tek}, and
-@code{graph}.  @code{graph} without a @samp{-T} option (referred to as
-`raw @code{graph}') produces output in GNU metafile format.
+@code{graph @w{-T X}}, @code{graph -T ai}, @code{graph -T ps},
+@code{graph -T fig}, @code{graph -T pcl}, @code{graph -T hpgl},
+@code{graph -T tek}, and @code{graph}.  @code{graph} without a @samp{-T}
+option (referred to as `raw @code{graph}') produces output in GNU
+metafile format.
 
 @code{graph} can read datasets in both ASCII and binary format, and
 datasets in the `table' format produced by the plotting program
@@ -164,32 +168,34 @@ need to wait until the end of the input before determining them.
 The @code{plot} program is a so-called plot filter.  It can translate
 GNU graphics metafiles (produced for example by raw @code{graph}) into
 any supported output format.  The corresponding commands are @code{plot
-@w{-T X}}, @code{plot -T ps}, @code{plot -T fig}, @code{plot -T pcl},
-@code{plot -T hpgl}, @code{plot -T tek}, and @code{plot}.  The
-@code{plot} program is useful if you wish to produce output in several
-different formats while invoking @code{graph} only once.  @w{It is} also
-useful if you wish to translate files in the traditional `plot(5)'
-format produced by, e.g., the non-GNU versions of @code{graph} provided
-with some operating systems.  GNU metafile format is compatible with
-plot(5) format.
+@w{-T X}}, @code{plot -T ai}, @code{plot -T ps}, @code{plot -T fig},
+@code{plot -T pcl}, @code{plot -T hpgl}, @code{plot -T tek}, and
+@code{plot}.  The @code{plot} program is useful if you wish to produce
+output in several different formats while invoking @code{graph} only
+once.  @w{It is} also useful if you wish to translate files in the
+traditional `plot(5)' format produced by, e.g., the non-GNU versions of
+@code{graph} provided with some operating systems.  GNU metafile format
+is compatible with plot(5) format.
 
 The @code{tek2plot} program can translate from Tektronix format to any
 of the abovementioned output formats.  The corresponding commands are
-@code{tek2plot @w{-T X}}, @code{tek2plot -T ps}, @code{tek2plot -T fig},
-@code{tek2plot -T pcl}, @code{tek2plot -T hpgl}, and @code{tek2plot}.
-@code{tek2plot} is useful if you have a legacy application that produces
-drawings in Tektronix format.
+@code{tek2plot @w{-T X}}, @code{tek2plot -T ai}, @code{tek2plot -T ps},
+@code{tek2plot -T fig}, @code{tek2plot -T pcl}, @code{tek2plot -T hpgl},
+and @code{tek2plot}.  @code{tek2plot} is useful if you have a legacy
+application that produces drawings in Tektronix format.
 
 The @code{plotfont} program is a simple utility that displays a
 character map for any font that is available to @code{graph},
-@code{plot}, or @code{tek2plot}.  If the @code{-T X}, @code{-T ps}, or
-@code{-T fig} options are used, the 35 standard Postscript fonts are
-available, and if the @code{-T pcl} or @code{-T hpgl} options are used,
-the 45 standard @w{PCL 5} fonts are available, as are a number of
-Hewlett--Packard vector fonts.  @w{A set} of 22 Hershey vector fonts,
-including Cyrillic fonts and a Japanese font, is always available.  When
-producing output for an @w{X Window System} display, any of the graphics
-programs can use scalable @w{X fonts}.
+@code{plot}, or @code{tek2plot}.  The 35 standard Postscript fonts are
+available if the @code{-T X}, @code{-T ai}, @code{-T ps}, or @code{-T
+fig} options are used.  The 45 standard @w{PCL 5} fonts (i.e.,
+``LaserJet'' fonts) are available if the @code{-T ai}, @code{-T pcl} or
+@code{-T hpgl} options are used.  In the latter two cases (@code{-T pcl}
+and @code{-T hpgl}), @w{a number} of Hewlett--Packard vector fonts are
+available @w{as well}.  @w{A set} of 22 Hershey vector fonts, including
+Cyrillic fonts and a Japanese font, is always available.  When producing
+output for an @w{X Window System} display, any of the graphics programs
+can use scalable @w{X fonts}.
 
 Of the mathematical programs, @code{spline} does spline interpolation of
 scalar or vector-valued data.  It normally uses either cubic spline
@@ -212,10 +218,11 @@ polylines, arcs (both circular and elliptic), circles and ellipses,
 points, marker symbols, and text strings.  The filling of objects other
 than points, marker symbols, and text strings is supported (fill color,
 @w{as well} as pen color, can be set arbitrarily).  The support for
-drawing text strings is extensive.  The @w{X Window} System, Postscript,
-and @code{xfig} drivers support the 35 standard Postscript fonts, and
-the @w{PCL 5} and HP-GL/2 drivers support both the 45 standard @w{PCL 5}
-fonts and a number of Hewlett--Packard vector fonts.  All drivers,
+drawing text strings is extensive.  The 35 standard Postscript fonts are
+supported by the @w{X Window} System, Illustrator, Postscript, and
+@code{xfig} drivers, and the 45 standard @w{PCL 5} fonts are supported
+by the Illustrator, @w{PCL 5} and HP-GL/2 drivers.  The latter two also
+support a number of Hewlett--Packard vector fonts.  All drivers,
 including the Tektronix and metafile drivers, support a set of 22
 Hershey vector fonts.  Text strings may include subscripts and
 superscripts, and may include characters chosen from more than one font
@@ -306,17 +313,25 @@ graph -T fig < ascii_data_file > plot.fig
 
 @noindent
 to produce a file @code{plot.fig} that you may edit with the the
-@code{xfig} drawing editor, or
+free @code{xfig} drawing editor, or
+
+@example
+graph -T ai < ascii_data_file > plot.ai
+@end example
+
+@noindent
+to produce a file @code{plot.ai} that you may edit with Adobe
+Illustrator.  If you do
 
 @example
 graph -T hpgl < ascii_data_file > plot.plt
 @end example
 
 @noindent
-to produce a file @code{plot.plt} in the Hewlett--Packard Graphics
+you will produce a file @code{plot.plt} in the Hewlett--Packard Graphics
 Language (HP-GL/2) that you may send to a Hewlett--Packard plotter.
-Similarly, @code{graph -T pcl} will produce a file in @w{PCL 5} format
-that you may print on a LaserJet or other laser printer.
+Similarly, you may use @code{graph -T pcl} to produce a file in @w{PCL
+5} format that may be printed on a LaserJet or other laser printer.
 
 You may use @code{graph @w{-T X}} to @w{pop up} a window on an @w{X
 Window} System display, and display the plot @w{in it}.  For that, you
@@ -350,16 +365,16 @@ emulate a Tektronix 4014 terminal is the MS-DOS version of @code{kermit}.
 
 @code{graph} may behave differently depending on the environment in
 which it is invoked.  We have already mentioned the @code{PAGESIZE}
-environment variable, which affects the operation of @code{graph -T ps},
-@code{graph -T fig}, @code{graph -T pcl}, and @code{graph -T hpgl}.  The
-@code{DISPLAY} and @code{BITMAPSIZE} environment variables affect the
-operation of @code{graph @w{-T X}}, and the @code{TERM} environment
-variable affects the operation of @code{graph -T tek}.  There are also
-several environment variables that affect the operation of @code{graph
--T pcl} and @code{graph -T hpgl}.  For a complete discussion of the
-effects of the environment on @code{graph}, see @ref{graph Environment}.
-The following remarks apply irrespective of which display type is
-specified.
+environment variable, which affects the operation of @code{graph -T ai},
+@code{graph -T ps}, @code{graph -T fig}, @code{graph -T pcl}, and
+@code{graph -T hpgl}.  The @code{DISPLAY} and @code{BITMAPSIZE}
+environment variables affect the operation of @code{graph @w{-T X}}, and
+the @code{TERM} environment variable affects the operation of
+@code{graph -T tek}.  There are also several environment variables that
+affect the operation of @code{graph -T pcl} and @code{graph -T hpgl}.
+For a complete discussion of the effects of the environment on
+@code{graph}, see @ref{graph Environment}.  The following remarks apply
+irrespective of which display type is specified.
 
 By default, successive points in the dataset are joined by solid line
 segments, which form a polygonal line or polyline that we call simply a
@@ -371,13 +386,13 @@ graph -T ps -m 2 < ascii_data_file > plot.ps
 @end example
 
 @noindent
-Here @samp{-m 2} indicates that linemode #2 should be used.  If the
+Here @samp{-m 2} indicates that linemode #2 should be used.  @w{If the}
 dataset is rendered in monochrome, which is the default, the line can be
 drawn in one of five distinct styles.  Linemodes #1 through #5 signify
 solid, dotted, dotdashed, shortdashed, and longdashed; thereafter the
-sequence repeats.  If the @samp{-C} option is used, the dataset will be
-rendered in color.  For colored datasets, the line can be drawn in one
-of 25 distinct styles.  Linemodes #1 through #5 signify red, green,
+sequence repeats.  @w{If the} @samp{-C} option is used, the dataset will
+be rendered in color.  For colored datasets, the line can be drawn in
+one of 25 distinct styles.  Linemodes #1 through #5 signify red, green,
 blue, magenta, and cyan; all are solid.  Linemodes #6 through #10
 signify the same five colors, but dotted rather than solid.  Linemodes
 #11 through #16 signify the same five colors, but dotdashed, and so
@@ -553,7 +568,8 @@ in Times-Roman instead of the default font (which is Helvetica, unless
 names are case-insensitive, so @samp{-F times-roman} will work equally
 well.  The available fonts include 35 Postscript fonts (for all variants
 of @code{graph} other than @code{graph -T pcl}, @code{graph -T hpgl} and
-@code{graph -T tek}), 45 @w{PCL 5} fonts and a number of
+@code{graph -T tek}), 45 @w{PCL 5} fonts (for @code{graph -T ai},
+@code{graph -T pcl} and @code{graph -T hpgl}), a number of
 Hewlett--Packard vector fonts (for @code{graph -T pcl} and @code{graph
 -T hpgl}), and 22 Hershey vector fonts.  The Hershey fonts include
 HersheyCyrillic, for Russian, and HersheyEUC, for Japanese.  For a
@@ -608,20 +624,21 @@ abstraction.  For @code{graph @w{-T X}}, it is a square window on an
 @code{--bitmap-size} option, or by setting the @code{BITMAPSIZE}
 environment variable.  For @code{graph -T tek}, it is a square region
 occupying the central part of a Tektronix display.  (Tektronix displays
-are 4/3 times as wide as they are high.)  For @code{graph -T ps}, @w{by
-default} it is a square region centered on an 8.5@dmn{in} by 11@dmn{in}
-page (@w{US letter} size), occupying the full width of the page with
-allowance being made for margins.  For @code{graph -T fig}, @w{by
-default} it is a square region of the same size, positioned in the upper
-left corner of an @code{xfig} display.  For @code{graph -T pcl} and
-@code{graph -T hpgl}, @w{by default} it is a square region of the same
-size, with position and orientation on the page being controlled by
-environment variables.  The page size used by @code{graph -T ps},
-@code{graph -T fig}, @code{graph -T pcl}, and @code{graph -T hpgl} can
-be set by using the @code{--page-size} option, or by setting the
-environment variable @code{PAGESIZE}.  For example, setting
-@code{PAGESIZE} to "a4" would position the graphics display
-appropriately on an A4-size page (21@dmn{cm} by 29.7@dmn{cm}).
+are 4/3 times as wide as they are high.)  For @code{graph -T ai} and
+@code{graph -T ps}, @w{by default} it is a square region centered on an
+8.5@dmn{in} by 11@dmn{in} page (@w{US letter} size), occupying the full
+width of the page with allowance being made for margins.  For
+@code{graph -T fig}, @w{by default} it is a square region of the same
+size, positioned in the upper left corner of an @code{xfig} display.
+For @code{graph -T pcl} and @code{graph -T hpgl}, @w{by default} it is a
+square region of the same size, with position and orientation on the
+page being controlled by environment variables.  The page size used by
+@code{graph -T ai}, @code{graph -T ps}, @code{graph -T fig}, @code{graph
+-T pcl}, and @code{graph -T hpgl} can be set by using the
+@code{--page-size} option, or by setting the environment variable
+@code{PAGESIZE}.  For example, setting @code{PAGESIZE} to "a4" would
+position the graphics display appropriately on an A4-size page
+(21@dmn{cm} by 29.7@dmn{cm}).
 
 Changing the width of the plotting box may have unforeseen consequences.
 @w{A number} of command-line options specify sizes or dimensions as
@@ -878,7 +895,7 @@ successive datasets should be separated by a single occurrence of the
 the largest possible number.  For single precision datasets this is the
 quantity @code{FLT_MAX}, for double precision datasets it is the
 quantity @code{DBL_MAX}, and for integer datasets it is the quantity
-@code{INT_MAX}.  On most machines @code{FLT_MAX} is approximately
+@code{INT_MAX}.  @w{On most} machines @code{FLT_MAX} is approximately
 3.4x10^38, @code{DBL_MAX} is approximately 1.8x10^308, and
 @code{INT_MAX} is 2^32-1.
 @end ifnottex
@@ -890,9 +907,9 @@ successive datasets should be separated by a single occurrence of the
 the largest possible number.  For single precision datasets this is the
 quantity @code{FLT_MAX}, for double precision datasets it is the
 quantity @code{DBL_MAX}, and for integer datasets it is the quantity
-@code{INT_MAX}.  On most machines @code{FLT_MAX} is approximately
-$3.4\times10^{38}$, @code{DBL_MAX} is approximately
-$1.8\times10^{308}$, and @code{INT_MAX} is $2^{31}-1$.
+@code{INT_MAX}.  @w{On most} machines @code{FLT_MAX} is approximately
+$3.4\times10^{38}$, @code{DBL_MAX} is approximately $1.8\times10^{308}$,
+and @code{INT_MAX} is $2^{31}-1$.
 @end tex
 
 If you are reading datasets from more than one file, it is not required
@@ -996,12 +1013,13 @@ immediately after each @samp{--reposition @var{x} @var{y}} option.
 @item -T @var{type}
 @itemx --display-type @var{type}
 (String, default "meta".)  Select a display type or output format of
-@var{type}, which may be one of the strings "X", "ps", "fig", "pcl",
-"hpgl", "tek", and "meta".  These refer respectively to the @w{X Window
-System}, @code{idraw}-editable Postscript, the format used by the
-@code{xfig} drawing editor, the Hewlett-Packard @w{PCL 5} printer
-language, the Hewlett--Packard Graphics Language, Tektronix format, and
-device-independent GNU metafile format.
+type @var{type}, which may be one of the strings "X", "ai", "ps", "fig",
+"pcl", "hpgl", "tek", and "meta".  These refer respectively to the @w{X
+Window System}, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the format used by the @code{xfig}
+drawing editor, the Hewlett--Packard @w{PCL 5} printer language, the
+Hewlett--Packard Graphics Language, Tektronix format, and
+device-independent GNU graphics metafile format.
 
 @item -f @var{font_size}
 @itemx --font-size @var{font_size}
@@ -1016,11 +1034,11 @@ that frames the plot), to be @var{font_size}.
 default.)  Set the font used for the axis and tick labels, and for the
 plot title @w{(if any)}, to be @var{font_name}.  The choice of font for
 the plot title may be overridden with the @samp{--title-font-name}
-option (see below).  Font names are case-insensitive.  If the specified
-font is not available, the default font will be used.  Which fonts are
-available depends on which @samp{-T} option is used.  For a list of all
-fonts, see @ref{Text Fonts}.  The @code{plotfont} utility will produce a
-character map of any available font.  @xref{plotfont}.
+option (see below).  Font names are case-insensitive.  @w{If the}
+specified font is not available, the default font will be used.  Which
+fonts are available depends on which @samp{-T} option is used.  For a
+list of all fonts, see @ref{Text Fonts}.  The @code{plotfont} utility
+will produce a character map of any available font.  @xref{plotfont}.
 
 @item -g @var{grid_style}
 @itemx --grid-style @var{grid_style}
@@ -1098,10 +1116,12 @@ labels are drawn in the margin.
 @item -s
 @itemx --save-screen
 Save the screen.  This option requests that @code{graph} not erase the
-display device before it begins to plot.  This is relevant only to
-@code{graph -T tek}.  @w{It may} be employed to perform a crude sort of
-multiplotting, since Tektronix displays and emulators are persistent, in
-the sense that previously drawn graphics remain visible.
+display device before it begins to plot.  
+
+This option is relevant only to @code{graph -T tek} and raw
+@code{graph}.  Tektronix displays and emulators are persistent, in the
+sense that previously drawn graphics remain visible.  So by repeatedly
+using @code{graph -T tek -s}, you can @w{build up} a multiplot.
 
 @item -T @var{tick_size}
 @itemx --tick-size @var{tick_size}
@@ -1117,10 +1137,10 @@ Transpose the abscissa and ordinate.  This causes the axes to be
 interchanged, and the options that apply to each axis to be applied to
 the opposite axis.  That is, data points are read in as @math{(y, x)}
 pairs, and such options as @samp{-x} and @samp{-X} apply to the
-@w{@math{y} axis} rather than the @w{@math{x} axis}.  If the @samp{-I e}
-option is in force, so that the data points are read with error bars,
-the orientation of the error bars will be switched between vertical and
-horizontal.
+@w{@math{y} axis} rather than the @w{@math{x} axis}.  @w{If the}
+@samp{-I e} option is in force, so that the data points are read with
+error bars, the orientation of the error bars will be switched between
+vertical and horizontal.
 
 @item -u @var{up}
 @itemx --upward-shift @var{up}
@@ -1238,22 +1258,22 @@ real time and have no buffer limitations.
 
 @item --page-size @var{pagesize}
 (String, default "letter".)  Set the size of the page on which the plot
-will be positioned.  This is relevant only to @code{graph -T ps},
-@code{graph -T fig}, @code{graph -T pcl}, and @code{graph -T hpgl}.
-"letter" means an 8.5@dmn{in} by 11@dmn{in} page.  Any ISO page size in
-the range "a0"@dots{}"a4" or ANSI page size in the range "a"@dots{}"e"
-may be specified ("letter" is an alias @w{for "a"} and "tabloid" is an
-alias @w{for "b"}).  "legal" and "ledger" are recognized page sizes
-also.  The environment variable @code{PAGESIZE} can equally well be used
-to specify the page size.
+will be positioned.  This is relevant only to @code{graph -T ai},
+@code{graph -T ps}, @code{graph -T fig}, @code{graph -T pcl}, and
+@code{graph -T hpgl}.  "letter" means an 8.5@dmn{in} by 11@dmn{in} page.
+Any ISO page size in the range "a0"@dots{}"a4" or ANSI page size in the
+range "a"@dots{}"e" may be specified ("letter" is an alias @w{for "a"}
+and "tabloid" is an alias @w{for "b"}).  "legal", "ledger", @w{and "b5"}
+are recognized page sizes also.  The environment variable
+@code{PAGESIZE} can equally well be used to specify the page size.
 
-For @code{graph -T ps}, the graphics display within which the plot is
-drawn will be a square region centered on the specified page and
-occupying its full width.  For @code{graph -T fig}, the graphics display
-will be a square region located in the upper left corner of an
-@code{xfig} display, with width equal to the width of the specified
-page.  For @code{graph -T pcl} and @code{graph -T hpgl}, fine control
-over the positioning of the graphics display on the page can be
+For @code{graph -T ai} and @code{graph -T ps}, the graphics display
+within which the plot is drawn will be a square region centered on the
+specified page and occupying its full width.  For @code{graph -T fig},
+the graphics display will be a square region located in the upper left
+corner of an @code{xfig} display, with width equal to the width of the
+specified page.  For @code{graph -T pcl} and @code{graph -T hpgl}, fine
+control over the positioning of the graphics display on the page can be
 accomplished by setting certain environment variables (@pxref{graph
 Environment}).
 
@@ -1341,17 +1361,17 @@ The ASCII `table' format produced by the @code{gnuplot} plotting program.
 Single precision binary format.  Each input file is a sequence of single
 precision floating point numbers, interpreted as forming pairs
 (@math{x},@math{y}).  Successive datasets are separated by a single
-occurrence of the quantity @code{FLT_MAX}, which is the largest
-possible single precision floating point number.  On most machines this
-is approximately 3.4x10^38.
+occurrence of the quantity @code{FLT_MAX}, which is the largest possible
+single precision floating point number.  @w{On most} machines this is
+approximately 3.4x10^38.
 @end ifnottex
 @tex
 Single precision binary format.  Each input file is a sequence of single
 precision floating point numbers, interpreted as forming pairs
 (@math{x},@math{y}).  Successive datasets are separated by a single
-occurrence of the quantity @code{FLT_MAX}, which is the largest
-possible single precision floating point number.  On most machines this
-is approximately $3.4\times10^{38}$.
+occurrence of the quantity @code{FLT_MAX}, which is the largest possible
+single precision floating point number.  @w{On most} machines this is
+approximately $3.4\times10^{38}$.
 @end tex
 
 @item d
@@ -1359,17 +1379,17 @@ is approximately $3.4\times10^{38}$.
 Double precision binary format.  Each input file is a sequence of double
 precision floating point numbers, interpreted as forming pairs
 (@math{x},@math{y}).  Successive datasets are separated by a single
-occurrence of the quantity @code{DBL_MAX}, which is the largest
-possible double precision floating point number.  On most machines this
-is approximately 1.8x10^308.
+occurrence of the quantity @code{DBL_MAX}, which is the largest possible
+double precision floating point number.  @w{On most} machines this is
+approximately 1.8x10^308.
 @end ifnottex
 @tex
 Double precision binary format.  Each input file is a sequence of double
 precision floating point numbers, interpreted as forming pairs
 (@math{x},@math{y}).  Successive datasets are separated by a single
-occurrence of the quantity @code{DBL_MAX}, which is the largest
-possible double precision floating point number.  On most machines this
-is approximately $1.8\times10^{308}$.
+occurrence of the quantity @code{DBL_MAX}, which is the largest possible
+double precision floating point number.  @w{On most} machines this is
+approximately $1.8\times10^{308}$.
 @end tex
 
 @item i
@@ -1377,13 +1397,14 @@ is approximately $1.8\times10^{308}$.
 Integer binary format.  Each input file is a sequence of integers,
 interpreted as forming pairs (@math{x},@math{y}).  Successive datasets
 are separated by a single occurrence of the quantity @code{INT_MAX},
-which is the largest possible integer.  On most machines this is 2^31-1.
+which is the largest possible integer.  @w{On most} machines this is
+2^31-1.
 @end ifnottex
 @tex
 Integer binary format.  Each input file is a sequence of integers,
 interpreted as forming pairs (@math{x},@math{y}).  Successive datasets
 are separated by a single occurrence of the quantity @code{INT_MAX},
-which is the largest possible integer.  On most machines this is
+which is the largest possible integer.  @w{On most} machines this is
 $2^{31}-1$.
 @end tex
 @end table
@@ -1459,12 +1480,12 @@ corresponding positive linemode.
 (Integer and float, defaults 0 and 0.03.) Draw a marker symbol at each
 data point.  @var{symbol_number} specifies the symbol type, and
 @var{symbol_size} specifies the fractional size of the symbol with
-respect to the width of the plotting box.  If the dataset is being
+respect to the width of the plotting box.  @w{If the} dataset is being
 rendered in color, the symbol will have the color of the line that is
 being drawn to connect the data points.  You may request that symbols be
 drawn without any line connecting them by using the @samp{-m} option to
 specify a negative linemode (see above).  The following table lists the
-first few marker symbols (by convention, @w{symbol #0} means no symbol 
+first few marker symbols (by convention, @w{symbol #0} means no symbol
 @w{at all}).
 
 @enumerate
@@ -1514,13 +1535,18 @@ polygon (i.e., one filled with the `pen color' used for drawing the line
 segments) is obtained by choosing @var{fill_fraction}=1.0.  The interior
 of the polygon will be white if @var{fill_fraction}=0.0.  The polygon
 will be unfilled (transparent) if @var{fill_fraction} is negative.
-@w{If the} polygon intersects itself, the `even-odd rule' will be used
-to determine which points are inside and outside, i.e., to determine
-which portions of the polygon should be shaded.  The even-odd rule is
-explained in the @cite{Postscript Language Reference Manual}.  The
-@samp{-q} option has no effect in @code{graph -T tek}, and it is only
-partly effective in @code{graph -T hpgl} if the environment variable
-@code{HPGL_VERSION} is set @w{to "1"}.
+
+@w{If the} polygon intersects itself, the `even-odd rule' will normally
+be used to determine which points are inside and outside, i.e., to
+determine which portions of the polygon should be shaded.  The even-odd
+rule is explained in the @cite{Postscript Language Reference Manual}.
+@code{graph -T ai} uses a different rule (the so-called nonzero winding
+number rule) if the environment variable @code{@w{AI_VERSION}} is set
+@w{to "3"}.
+
+The @samp{-q} option has no effect in @code{graph -T tek}, and it is
+only partly effective in @code{graph -T hpgl} if the environment
+variable @code{HPGL_VERSION} is set @w{to "1"}.
 
 @item -C
 @itemx --toggle-use-color
@@ -1533,13 +1559,13 @@ performed in color or monochrome; see the @samp{-m} option above.
 @code{-T tek} is specified, in which case it is "HersheySerif".)  Set
 the symbol font, from which plotting symbols numbered 32 and higher are
 selected, to be @var{symbol_font_name}.  Font names are
-case-insensitive.  If the specified font is not available, the default
-font will be used.  Which fonts are available depends on which @samp{-T}
-option is used.  For example, if the @code{-T pcl} or @code{-T hpgl}
-option is used then normally the Wingdings font, which is an alternative
-source of symbols, becomes available.  For a list of all fonts, see
-@ref{Text Fonts}.  The @code{plotfont} utility will produce a character
-map of any available font.  @xref{plotfont}.
+case-insensitive.  @w{If the} specified font is not available, the
+default font will be used.  Which fonts are available depends on which
+@samp{-T} option is used.  For example, if the @code{-T pcl} or @code{-T
+hpgl} option is used then normally the Wingdings font, which is an
+alternative source of symbols, becomes available.  For a list of all
+fonts, see @ref{Text Fonts}.  The @code{plotfont} utility will produce a
+character map of any available font.  @xref{plotfont}.
 
 @end table
 
@@ -1606,15 +1632,16 @@ Print a list of command-line options, and then exit.
 @item --help-fonts
 Print a table of available fonts, and then exit.  The table will depend
 on which display type or output format is specified with the @samp{-T}
-option.  @code{graph @w{-T X}}, @code{graph -T ps}, and @code{graph -T
-fig} each support the 35 standard Postscript fonts.  @code{graph -T pcl}
-and @code{graph -T hpgl} support the 45 standard @w{PCL 5} fonts and a
-number of Hewlett--Packard vector fonts.  All five, together with
-@code{graph -Ttek}, support a set of 22 Hershey vector fonts.  Raw
-@code{graph} @w{in principle} supports any of these fonts, since its
-output must be translated to other formats with @code{plot}.  The
-@code{plotfont} utility will produce a character map of any available
-font.  @xref{plotfont}.
+option.  @code{graph @w{-T X}}, @code{graph -T ai}, @code{graph -T ps},
+and @code{graph -T fig} each support the 35 standard Postscript fonts.
+@code{graph -T ai}, @code{graph -T pcl}, and @code{graph -T hpgl}
+support the 45 standard @w{PCL 5} fonts, and @code{graph -T pcl} and
+@code{graph -T hpgl} support a number of Hewlett--Packard vector fonts.
+All of the preceding, together with @code{graph -Ttek}, support a set of
+22 Hershey vector fonts.  Raw @code{graph} @w{in principle} supports any
+of these fonts, since its output must be translated to other formats
+with @code{plot}.  The @code{plotfont} utility will produce a character
+map of any available font.  @xref{plotfont}.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
@@ -1644,6 +1671,12 @@ display and draws graphics @w{in it}, checks the @code{DISPLAY}
 environment variable.  The value of this variable determines the display
 on which the window will be @w{popped up}.
 
+@code{graph -T ai}, which produces output in Adobe Illustrator format,
+is affected by the @code{@w{AI_VERSION}} environment variable.  Recognized
+values for this variable are "5" (the default) @w{and "3"}.  By default,
+output will be in the format produced by Illustrator @w{version 5}.  If
+the value is "3", the @w{version 3} format will be produced instead.
+
 @code{graph -T pcl}, which produces @w{PCL 5} output for
 Hewlett--Packard printers and plotters, is affected by several
 environment variables.  The position of the graphics display on the page
@@ -1667,15 +1700,15 @@ which are much more common than colored ones, must use shading to
 emulate color.
 
 @code{graph -T hpgl}, which produces Hewlett--Packard Graphics Language
-output, is affected by several environment variables.  The most
+output, is also affected by several environment variables.  The most
 important is @code{HPGL_VERSION}, which may be set to "1", "1.5", @w{or
 "2"} (the default).  @w{"1" means} that the output should be generic
 HP-GL, @w{"1.5" means} that the output should be suitable for the
 HP7550A graphics plotter and the HP758x, HP7595A and HP7596A drafting
 plotters (HP-GL with some HP-GL/2 extensions), and @w{"2" means} that
-the output should be modern HP-GL/2.  If the version is "1" @w{or "1.5"}
-then the only available fonts will be vector fonts, and all lines will
-be drawn with a default width (the @samp{-W} option will not work).
+the output should be modern HP-GL/2.  @w{If the} version is "1" @w{or
+"1.5"} then the only available fonts will be vector fonts, and all lines
+will be drawn with a default width (the @samp{-W} option will not work).
 Additionally, if the version @w{is "1"} then the filling of arbitrary
 curves with solid color will not be supported (the @samp{-q} option may
 be used to fill circles and rectangles aligned with the coordinate axes,
@@ -1694,14 +1727,14 @@ and} "yes" are equivalent to @w{"0" and "90"}, respectively.  "180" and
 default).
 
 @emph{Opaque} filling and the drawing of visible white lines are
-supported only if @code{HPGL_VERSION} is "2" and the environment
-variable @code{HPGL_OPAQUE_MODE} is "yes" (the default).  If the value
-is "no" then opaque filling will not be used, and white lines (@w{if
-any}), which are normally drawn with @w{pen #0}, will not be drawn.
-This feature is to accommodate older HP-GL/2 devices.  HP-GL/2 pen
-plotters, for example, do not support opacity or the use of @w{pen #0}
-to draw visible white lines.  Some older HP-GL/2 devices reportedly
-malfunction if asked to draw opaque objects.
+supported only if @code{HPGL_VERSION} is "2" (the default) and the
+environment variable @code{HPGL_OPAQUE_MODE} is "yes" (the default).
+@w{If the} value is "no" then opaque filling will not be used, and white
+lines (@w{if any}), which are normally drawn with @w{pen #0}, will not
+be drawn.  This feature is to accommodate older HP-GL/2 devices.
+HP-GL/2 pen plotters, for example, do not support opacity or the use of
+@w{pen #0} to draw visible white lines.  Some older HP-GL/2 devices
+reportedly malfunction if asked to draw opaque objects.
 
 @w{By default}, @code{graph -T hpgl} will draw with a fixed set of pens.
 Which pens are present may be specified by setting the @code{HPGL_PENS}
@@ -1716,9 +1749,9 @@ must always be present, though it need not be black. Any other pen in
 the range #1@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{graph -T hpgl} will also be
-affected by the environment variable @code{HPGL_ASSIGN_COLORS}.  If the
-value of this variable is "yes", then @code{graph -T hpgl} will not be
-restricted to the palette specified in @code{HPGL_PENS}: @w{it will}
+affected by the environment variable @code{HPGL_ASSIGN_COLORS}.  @w{If
+the} value of this variable is "yes", then @code{graph -T hpgl} will not
+be restricted to the palette specified in @code{HPGL_PENS}: @w{it will}
 assign colors to ``logical pens'' in the range #1@dots{}#31, @w{as
 needed}.  The default value is "no" because other than color LaserJet
 printers and DesignJet plotters, not many HP-GL/2 devices allow the
@@ -1726,28 +1759,27 @@ assignment of colors to logical pens.
 
 @code{graph -T tek}, which produces output for a Tektronix terminal or
 emulator, checks the @code{TERM} environment variable.  @w{If the} value
-of @code{TERM} is @code{xterm}, @code{xterms}, or @code{kterm}, @w{it
-is} taken as a sign that the current application is running in an @w{X
-Window} System VT100 terminal emulator: @w{an @code{xterm}}.  Before
-drawing graphics, @code{graph -T tek} will emit an escape sequence that
-causes the terminal emulator's auxiliary Tektronix window, which is
-normally hidden, to @w{pop up}.  After the graphics are drawn, an escape
-sequence that returns control to the original VT100 window will be
-emitted.  The Tektronix window will remain on the screen.
+of @code{TERM} is "xterm", "xterms", or "kterm", @w{it is} taken as a
+sign that the current application is running in an @w{X Window} System
+VT100 terminal emulator: @w{an @code{xterm}}.  Before drawing graphics,
+@code{graph -T tek} will emit an escape sequence that causes the
+terminal emulator's auxiliary Tektronix window, which is normally
+hidden, to @w{pop up}.  After the graphics are drawn, an escape sequence
+that returns control to the original VT100 window will be emitted.  The
+Tektronix window will remain on the screen.
 
-If the value of @code{TERM} is @code{kermit}, @code{ansi.sys},
-@code{ansissys}, @code{ansi.sysk}, or @code{ansisysk}, @w{it is} taken
-as a sign that the current application is running in the VT100 terminal
-emulator provided by the MS-DOS version of @code{kermit}.  Before drawing
-graphics, @code{graph -T tek} will emit an escape sequence that switches
-the terminal emulator to Tektronix mode.  Also, some of the Tektronix
-control codes emitted by @code{graph -T tek} will be
-@code{kermit}-specific.  There will be a limited amount of color
-support, which is not normally the case (the 16 @code{ansi.sys} colors
-will be supported).  After drawing graphics, @code{graph -T tek} will emit
-an escape sequence that returns the emulator to VT100 mode.  The key
-sequence `@w{ALT minus}' can be employed manually within @code{kermit}
-to switch between the two modes.
+If the value of @code{TERM} is "kermit", "ansi.sys", "ansissys",
+"ansi.sysk", or "ansisysk", @w{it is} taken as a sign that the current
+application is running in the VT100 terminal emulator provided by the
+MS-DOS version of @code{kermit}.  Before drawing graphics, @code{graph
+-T tek} will emit an escape sequence that switches the terminal emulator
+to Tektronix mode.  Also, some of the Tektronix control codes emitted by
+@code{graph -T tek} will be @code{kermit}-specific.  There will be a
+limited amount of color support, which is not normally the case (the 16
+@code{ansi.sys} colors will be supported).  After drawing graphics,
+@code{graph -T tek} will emit an escape sequence that returns the
+emulator to VT100 mode.  The key sequence `@w{ALT minus}' can be
+employed manually within @code{kermit} to switch between the two modes.
 
 @node plot, tek2plot, graph, Top
 @chapter The @code{plot} Program
@@ -1761,33 +1793,40 @@ to switch between the two modes.
 @node plot Examples, plot Invocation, plot, plot
 @section How to use @code{plot}
 
-The GNU plot filter @code{plot} displays GNU graphics metafiles, or
-translates them to other formats.  The @samp{-T} option is used to
-specify the display type or output format.
+The GNU plot filter @code{plot} displays GNU graphics metafiles or
+translates them to other formats.  @w{It will} take input from files
+specified on the command line or from standard input.  The @samp{-T}
+option is used to specify the desired output format.  Supported output
+formats include "X", "ai", "ps", "fig", "pcl", "hpgl", "tek", and "meta"
+(the default).
 
-Graphics metafiles are produced by the @code{graph} utility if no
-@samp{-T} option is specified on its command line, and can also be
-produced by the @code{libplot} library.  The metafile format is a
-device-independent format for storage of graphic data.  By default, it
-is a binary rather than an human-readable format (@pxref{Metafiles}).
+The metafile format is a device-independent format for storage of vector
+graphics.  By default, it is a binary rather than a human-readable
+format (@pxref{Metafiles}).  Each of the @code{graph}, @code{tek2plot},
+and @code{plotfont} utilities will write a graphics metafile to standard
+output if no @samp{-T} option is specified on its command line.  The
+@code{libplot} graphics library may also be used to produce metafiles.
+Metafiles may contain arbitrarily many pages of graphics, but each
+metafile produced by @code{graph} contains only a single page.
 
 @code{plot}, like the metafile format itself, is useful if you wish to
-preserve a plot that is to be displayed or edited on more than one type
-of display.  The following illustrate how this is done.
+preserve a vector graphics file, and display or edit it with more than
+one drawing editor.  The following example shows how you may do this.
 
 To produce a plot of data arranged as alternating @math{x} and @math{y}
-coordinates in an ASCII file, you may use raw @code{graph} as follows:
+coordinates in an ASCII file, you may use @code{graph} as follows:
 
 @example
-graph < ascii_data_file > test.plot
+graph < ascii_data_file > test.meta
 @end example
 
 @noindent
-The file @file{test.plot} will be a GNU graphics metafile.  Similarly,
-to create a plot consisting of a simple figure, you may do:
+The file @file{test.meta} will be a single-page graphics metafile.
+Similarly, to create in metafile format a plot consisting of a simple
+figure, you may do:
 
 @example
-echo 0 0 1 1 2 0 | spline | graph > test.plot
+echo 0 0 1 1 2 0 | spline | graph > test.meta
 @end example
 
 @noindent
@@ -1795,14 +1834,14 @@ To display any such plot on an @w{X Window} System display, you
 would do
 
 @example
-plot -T X test.plot
+plot -T X test.meta
 @end example
 
 @noindent 
 or
 
 @example
-plot -T X < test.plot
+plot -T X < test.meta
 @end example
 
 @noindent
@@ -1810,40 +1849,52 @@ To print the plot on a Postscript printer, you would do something
 like
 
 @example
-plot -T ps < test.plot | lpr
+plot -T ps < test.meta | lpr
 @end example
 
 @noindent
-To edit it with the @code{idraw} drawing editor, you would do
+To edit it with the free @code{idraw} drawing editor, you would do
 
 @example
 @group
-plot -T ps < test.plot > test.ps
+plot -T ps < test.meta > test.ps
 idraw test.ps
 @end group
 @end example
 
 @noindent
-And to produce a plot that can be edited with the @code{xfig} drawing
-editor, you would do
+To produce a version of the plot that can be edited with Adobe
+Illustrator, you would do
+
+@example
+plot -T ai < test.meta > test.ai
+@end example
+
+@noindent
+and to produce a version that can be edited with the free @code{xfig}
+drawing editor, you would do
 
 @example
 @group
-plot -T fig < test.plot > test.fig
+plot -T fig < test.meta > test.fig
 xfig test.fig
 @end group
 @end example
 
+@noindent
+Other formats may be obtained by using @code{plot -T pcl}, @code{plot -T
+hpgl}, and @code{plot -T tek}.
+
 @code{plot} may behave differently depending on the environment in which
-it is invoked.  In particular, @code{plot -T ps}, @code{plot -T fig},
-@code{plot -T pcl}, and @code{plot -T hpgl} are affected by the
-environment variable @code{PAGESIZE}.  @code{plot @w{-T X}} is affected
-by the environment variables @code{DISPLAY} and @code{BITMAPSIZE}, and
-@code{plot -T tek} is affected by the environment variable @code{TERM}.
-There are also several environment variables that affect the operation
-of @code{plot -T pcl} and @code{plot -T hpgl}.  For a complete
-discussion of the effects of the environment on @code{plot}, see
-@ref{plot Environment}.
+it is invoked.  In particular, @code{plot -T ai}, @code{plot -T ps},
+@code{plot -T fig}, @code{plot -T pcl}, and @code{plot -T hpgl} are
+affected by the environment variable @code{PAGESIZE}.  @code{plot @w{-T
+X}} is affected by the environment variables @code{DISPLAY} and
+@code{BITMAPSIZE}, and @code{plot -T tek} is affected by the environment
+variable @code{TERM}.  There are also several environment variables that
+affect the operation of @code{plot -T pcl} and @code{plot -T hpgl}.  For
+a complete discussion of the effects of the environment on @code{plot},
+see @ref{plot Environment}.
 
 @node plot Invocation, plot Environment, plot Examples, plot
 @section @code{plot} command-line options
@@ -1851,9 +1902,9 @@ discussion of the effects of the environment on @code{plot}, see
 The plot filter @code{plot} translates GNU graphics metafiles to other
 formats.  The @samp{-T} option is used to specify the display type or
 output format.  Files in metafile format are produced by GNU
-@code{graph} and other applications that use the GNU @code{libplot}
-graphics library.  For technical details on the metafile format, see
-@ref{Metafiles}.
+@code{graph}, @code{tek2plot}, @code{plotfont}, and other applications
+that use the GNU @code{libplot} graphics library.  For technical details
+on the metafile format, see @ref{Metafiles}.
 
 Input file names may be specified anywhere on the command line.  That
 is, the relative order of file names and command-line options does not
@@ -1886,27 +1937,47 @@ The following options set the values of drawing parameters.
 @item -T @var{type}
 @itemx --display-type @var{type}
 (String, default "meta".)  Select a display type or output format of
-@var{type}, which may be one of the strings "X", "ps", "fig", "pcl",
-"hpgl", "tek", and "meta".  These refer respectively to the @w{X Window
-System}, @code{idraw}-editable Postscript, the format used by the
-@code{xfig} drawing editor, the Hewlett-Packard @w{PCL 5} printer
-language, the Hewlett--Packard Graphics Language, Tektronix format, and
-device-independent GNU metafile format.
+type @var{type}, which may be one of the strings "X", "ai", "ps", "fig",
+"pcl", "hpgl", "tek", and "meta".  These refer respectively to the @w{X
+Window System}, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the format used by the @code{xfig}
+drawing editor, the Hewlett--Packard @w{PCL 5} printer language, the
+Hewlett--Packard Graphics Language, Tektronix format, and the
+device-independent GNU graphics metafile format itself.
 
 @item -p @var{n}
 @itemx --page-number @var{n}
 (Positive integer.) Display only page number @var{n}, within the
-metafile or sequence of metafiles that is being translated.  Metafiles
-may consist of one or more pages, numbered beginning @w{with 1}.  
+metafile or sequence of metafiles that is being translated.  
+
+Metafiles may consist of one or more pages, numbered beginning @w{with
+1}.  Also, each page may contain multiple `frames'.  @code{plot @w{-T
+X}} or @code{plot -T tek}, which plot in real time, will separate
+successive frames by screen erasures.  @code{plot -T ai}, @code{plot -T
+ps}, @code{plot -T fig}, @code{plot -T pcl}, and @code{plot -T hpgl},
+which do not plot in real time, will display only the last frame of any
+multi-frame page.
 
 The default behavior, if @samp{-p} is not used, is to display all pages.
 For example, @code{plot @w{-T X}} displays each page in its own @w{X
-window}.  If the @code{-T fig} option is used, the default behavior is
-to display only the first page, since files to be edited by @code{xfig}
-may contain only a single page of graphics.
+window}.  @w{If the} @code{-T ai} option or the @code{-T fig} option is
+used, the default behavior is to display only the first page, since
+files to be edited by Adobe Illustrator or @code{xfig} may contain only
+a single page of graphics.
 
 Most metafiles produced by the GNU plotting utilities (e.g., by raw
-@code{graph}) contain only a single page.
+@code{graph}) contain only a single page, consisting of two frames: an
+empty one to clear the display, and a second one containing graphics.
+
+@item -s
+@itemx --merge-pages
+Merge all displayed pages into a single page, and also merge all
+`frames' within each displayed page.
+
+This option is useful when merging together single-page plots from
+different sources.  For example, it can be used to merge together plots
+obtained from separate invocations of @code{graph}.  This is an
+alternative form of multiplotting (@pxref{Multiplotting}).
 
 @item --bitmap-size @var{bitmap_size}
 (String, default "570x570".)  Set the size of the graphics display in
@@ -1941,23 +2012,24 @@ real time and have no buffer limitations.
 
 @item --page-size @var{pagesize}
 (String, default "letter".) Set the size of the page on which the plot
-will be positioned.  This is relevant only to @code{plot -T ps},
-@code{plot -T fig}, @code{plot -T pcl}, and @code{plot -T hpgl}.
-"letter" means an 8.5@dmn{in} by 11@dmn{in} page.  Any ISO page size in
-the range "a0"@dots{}"a4" or ANSI page size in the range "a"@dots{}"e"
-may be specified ("letter" is an alias @w{for "a"} and "tabloid" is an
-alias @w{for "b"}).  "legal" and "ledger" are recognized page sizes
-also.  The environment variable @code{PAGESIZE} can equally well be used
-to specify the page size.
+will be positioned.  This is relevant only to @code{plot -T ai},
+@code{plot -T ps}, @code{plot -T fig}, @code{plot -T pcl}, and
+@code{plot -T hpgl}.  "letter" means an 8.5@dmn{in} by 11@dmn{in} page.
+Any ISO page size in the range "a0"@dots{}"a4" or ANSI page size in the
+range "a"@dots{}"e" may be specified ("letter" is an alias @w{for "a"}
+and "tabloid" is an alias @w{for "b"}).  "legal", "ledger", @w{and "b5"}
+are recognized page sizes also.  The environment variable
+@code{PAGESIZE} can equally well be used to specify the page size.
 
-For @code{plot -T ps}, the graphics display within which the plot is
-drawn will be a square region centered on the specified page and
-occupying its full width.  For @code{plot -T fig}, the graphics display
-will be a square region located in the upper left corner of an
-@code{xfig} display, with width equal to the width of the specified
-page.  For @code{plot -T pcl} and @code{plot -T hpgl}, fine control over
-the positioning of the graphics display on the page may be accomplished
-by setting certain environment variables (@pxref{plot Environment}).
+For @code{plot -T ai} and @code{plot -T ps}, the graphics display within
+which the plot is drawn will be a square region centered on the
+specified page and occupying its full width.  For @code{plot -T fig},
+the graphics display will be a square region located in the upper left
+corner of an @code{xfig} display, with width equal to the width of the
+specified page.  For @code{plot -T pcl} and @code{plot -T hpgl}, fine
+control over the positioning of the graphics display on the page may be
+accomplished by setting certain environment variables (@pxref{plot
+Environment}).
 @end table
 
 The following options set the initial values of additional drawing
@@ -1986,7 +2058,7 @@ for rendering text, as a fraction of the width of the display device, to
 (String, default "Helvetica" except for @code{plot -T pcl}, @code{plot
 -T hpgl} and @code{plot -T tek}, for which "HersheySerif" is the
 default.)  Set the font initially used for text (i.e., for `labels') to
-@var{font_name}.  Font names are case-insensitive.  If the specified
+@var{font_name}.  Font names are case-insensitive.  @w{If the} specified
 font is not available, the default font will be used.  Which fonts are
 available depends on which @samp{-T} option is used.  For a list of all
 fonts, see @ref{Text Fonts}.  The @code{plotfont} utility will produce a
@@ -2033,15 +2105,15 @@ and portable (human-readable).  The binary format is machine-dependent.
 For compatibility with older plotting software, the reading of input
 files in the pre-GNU `plot(5)' format is also supported.  This is
 normally a binary format, with each integer in the metafile represented
-as a pair of bytes.  You may specify that input file(s) are in plot(5)
-format rather than ordinary GNU metafile format by using the @samp{-l}
-option (``low byte first'') or the @samp{-h} option (``high byte
-first'').  The former variant of plot(5) format is far more common than
-the latter.  Some non-GNU systems support an ASCII (human-readable)
-variant of plot(5) format.  You may specify that the input is in the
-ASCII variant of plot(5) format by using the @samp{-A} option.
-Irrespective of the variant, a file in plot(5) format includes only one
-page of graphics.
+as a pair of bytes.  The order of the two bytes is machine dependent.
+You may specify that input file(s) are in plot(5) format rather than
+ordinary GNU metafile format by using either the @samp{-h} option
+(``high byte first'') or the @samp{-l} option (``low byte first''),
+whichever is appropriate.  Some non-GNU systems support an ASCII
+(human-readable) variant of plot(5) format.  You may specify that the
+input is in this format by using the @samp{-A} option.  Irrespective of
+the variant, a file in plot(5) format includes only one page of
+graphics.
 
 @table @samp
 @item -h
@@ -2069,13 +2141,16 @@ Print a list of command-line options, and then exit.
 @item --help-fonts
 Print a table of available fonts, and then exit.  The table will depend
 on which display type or output format is specified with the @samp{-T}
-option.  @code{plot -T X}, @code{plot -T ps}, and @code{plot -T fig}
-each support the 35 standard Postscript fonts.  @code{plot -T pcl} and
-@code{plot -T hpgl} support the 45 standard @w{PCL 5} fonts and a number
-of Hewlett--Packard vector fonts.  All five, together with @code{plot -T
-tek}, support a set of 22 Hershey vector fonts.  Raw @code{plot} @w{in
-principle} supports any of these fonts, since its output may be
-translated to any other format by a later invocation of @code{plot}.
+option.  @code{plot @w{-T X}}, @code{plot -T ai}, @code{plot -T ps}, and
+@code{plot -T fig} each support the 35 standard Postscript fonts.
+@code{plot -T ai}, @code{plot -T pcl}, and @code{plot -T hpgl} support
+the 45 standard @w{PCL 5} fonts, and @code{plot -T pcl} and @code{plot
+-T hpgl} support a number of Hewlett--Packard vector fonts.  All of the
+preceding, together with @code{plot -Ttek}, support a set of 22 Hershey
+vector fonts.  Raw @code{plot} @w{in principle} supports any of these
+fonts, since its output must be translated to other formats with
+@code{plot}.  The @code{plotfont} utility will produce a character map
+of any available font.  @xref{plotfont}.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
@@ -2105,6 +2180,12 @@ display and draws graphics @w{in it}, checks the @code{DISPLAY}
 environment variable.  The value of this variable determines the display
 on which the window will be @w{popped up}.
 
+@code{plot -T ai}, which produces output in Adobe Illustrator format, is
+affected by the @code{@w{AI_VERSION}} environment variable.  Recognized
+values for this variable are "5" (the default) @w{and "3"}.  By default,
+output will be in the format produced by Illustrator @w{version 5}.  If
+the value is "3", the @w{version 3} format will be produced instead.
+
 @code{plot -T pcl}, which produces @w{PCL 5} output for
 Hewlett--Packard printers and plotters, is affected by several
 environment variables.  The position of the graphics display on the page
@@ -2128,15 +2209,15 @@ which are much more common than colored ones, must use shading to
 emulate color.
 
 @code{plot -T hpgl}, which produces Hewlett--Packard Graphics Language
-output, is affected by several environment variables.  The most
+output, is also affected by several environment variables.  The most
 important is @code{HPGL_VERSION}, which may be set to "1", "1.5", @w{or
 "2"} (the default).  @w{"1" means} that the output should be generic
 HP-GL, @w{"1.5" means} that the output should be suitable for the
 HP7550A graphics plotter and the HP758x, HP7595A and HP7596A drafting
 plotters (HP-GL with some HP-GL/2 extensions), and @w{"2" means} that
-the output should be modern HP-GL/2.  If the version is "1" @w{or "1.5"}
-then the only available fonts will be vector fonts, and all lines will
-be drawn with a default width (the @samp{-W} option will not work).
+the output should be modern HP-GL/2.  @w{If the} version is "1" @w{or
+"1.5"} then the only available fonts will be vector fonts, and all lines
+will be drawn with a default width (the @samp{-W} option will not work).
 Additionally, if the version @w{is "1"} then the filling of arbitrary
 curves with solid color will not be supported (circles and rectangles
 aligned with the coordinate axes may be filled, though).
@@ -2154,14 +2235,14 @@ and} "yes" are equivalent to @w{"0" and "90"}, respectively.  "180" and
 default).
 
 @emph{Opaque} filling and the drawing of visible white lines are
-supported only if @code{HPGL_VERSION} is "2" and the environment
-variable @code{HPGL_OPAQUE_MODE} is "yes" (the default).  If the value
-is "no" then opaque filling will not be used, and white lines (@w{if
-any}), which are normally drawn with @w{pen #0}, will not be drawn.
-This feature is to accommodate older HP-GL/2 devices.  HP-GL/2 pen
-plotters, for example, do not support opacity or the use of @w{pen #0}
-to draw visible white lines.  Some older HP-GL/2 devices reportedly
-malfunction if asked to draw opaque objects.
+supported only if @code{HPGL_VERSION} is "2" (the default) and the
+environment variable @code{HPGL_OPAQUE_MODE} is "yes" (the default).
+@w{If the} value is "no" then opaque filling will not be used, and white
+lines (@w{if any}), which are normally drawn with @w{pen #0}, will not
+be drawn.  This feature is to accommodate older HP-GL/2 devices.
+HP-GL/2 pen plotters, for example, do not support opacity or the use of
+@w{pen #0} to draw visible white lines.  Some older HP-GL/2 devices
+reportedly malfunction if asked to draw opaque objects.
 
 @w{By default}, @code{plot -T hpgl} will draw with a fixed set of pens.
 Which pens are present may be specified by setting the @code{HPGL_PENS}
@@ -2176,9 +2257,9 @@ must always be present, though it need not be black. Any other pen in
 the range #1@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{plot -T hpgl} will also be
-affected by the environment variable @code{HPGL_ASSIGN_COLORS}.  If the
-value of this variable is "yes", then @code{plot -T hpgl} will not be
-restricted to the palette specified in @code{HPGL_PENS}: @w{it will}
+affected by the environment variable @code{HPGL_ASSIGN_COLORS}.  @w{If
+the} value of this variable is "yes", then @code{plot -T hpgl} will not
+be restricted to the palette specified in @code{HPGL_PENS}: @w{it will}
 assign colors to ``logical pens'' in the range #1@dots{}#31, @w{as
 needed}.  The default value is "no" because other than color LaserJet
 printers and DesignJet plotters, not many HP-GL/2 devices allow the
@@ -2186,28 +2267,27 @@ assignment of colors to logical pens.
 
 @code{plot -T tek}, which produces output for a Tektronix terminal or
 emulator, checks the @code{TERM} environment variable.  @w{If the} value
-of @code{TERM} is @code{xterm}, @code{xterms}, or @code{kterm}, @w{it
-is} taken as a sign that the current application is running in an @w{X
-Window} System VT100 terminal emulator: @w{an @code{xterm}}.  Before
-drawing graphics, @code{plot -T tek} will emit an escape sequence that
-causes the terminal emulator's auxiliary Tektronix window, which is
-normally hidden, to @w{pop up}.  After the graphics are drawn, an escape
-sequence that returns control to the original VT100 window will be
-emitted.  The Tektronix window will remain on the screen.
+of @code{TERM} is "xterm", "xterms", or "kterm", @w{it is} taken as a
+sign that the current application is running in an @w{X Window} System
+VT100 terminal emulator: @w{an @code{xterm}}.  Before drawing graphics,
+@code{plot -T tek} will emit an escape sequence that causes the terminal
+emulator's auxiliary Tektronix window, which is normally hidden, to
+@w{pop up}.  After the graphics are drawn, an escape sequence that
+returns control to the original VT100 window will be emitted.  The
+Tektronix window will remain on the screen.
 
-If the value of @code{TERM} is @code{kermit}, @code{ansi.sys},
-@code{ansissys}, @code{ansi.sysk}, or @code{ansisysk}, @w{it is} taken
-as a sign that the current application is running in the VT100 terminal
-emulator provided by the MS-DOS version of @code{kermit}.  Before drawing
-graphics, @code{plot -T tek} will emit an escape sequence that switches
-the terminal emulator to Tektronix mode.  Also, some of the Tektronix
-control codes emitted by @code{plot -T tek} will be
-@code{kermit}-specific.  There will be a limited amount of color
-support, which is not normally the case (the 16 @code{ansi.sys} colors
-will be supported).  After drawing graphics, @code{plot -T tek} will
-emit an escape sequence that returns the emulator to VT100 mode.  The
-key sequence `@w{ALT minus}' can be employed manually within
-@code{kermit} to switch between the two modes.
+If the value of @code{TERM} is "kermit", "ansi.sys", "ansissys",
+"ansi.sysk", or "ansisysk", @w{it is} taken as a sign that the current
+application is running in the VT100 terminal emulator provided by the
+MS-DOS version of @code{kermit}.  Before drawing graphics, @code{plot -T
+tek} will emit an escape sequence that switches the terminal emulator to
+Tektronix mode.  Also, some of the Tektronix control codes emitted by
+@code{plot -T tek} will be @code{kermit}-specific.  There will be a
+limited amount of color support, which is not normally the case (the 16
+@code{ansi.sys} colors will be supported).  After drawing graphics,
+@code{plot -T tek} will emit an escape sequence that returns the
+emulator to VT100 mode.  The key sequence `@w{ALT minus}' can be
+employed manually within @code{kermit} to switch between the two modes.
 
 @node tek2plot, plotfont, plot, Top
 @chapter The @code{tek2plot} Program
@@ -2223,10 +2303,12 @@ key sequence `@w{ALT minus}' can be employed manually within
 
 GNU @code{tek2plot} is a command-line Tektronix translator.  It displays
 Tektronix graphics files, or translates them to other formats.  The
-supported output formats are the same formats that are supported by the
-GNU @code{graph} and @code{plot} utilities.  @code{tek2plot} will take
-input from a file specified on the command line or from standard input,
-just as the plot filter @code{plot} does.
+@samp{-T} option is used to specify the display type or output format.
+Supported output formats include "X", "ai", "ps", "fig", "pcl", "hpgl",
+"tek", and "meta" (the default).  These are the same formats that are
+supported by the GNU @code{graph} and @code{plot} utilities.
+@code{tek2plot} will take input from a file specified on the command
+line or from standard input, just as the plot filter @code{plot} does.
 
 Tektronix graphics files are produced by many legacy applications.  @w{A
 directory} containing sample Tektronix files, which you may experiment
@@ -2249,7 +2331,7 @@ MS-DOS version of @code{kermit}.
 The @code{tek2plot} program translates the Tektronix graphics files
 produced by many legacy applications to other formats.  The output
 format or display type is specified with the @samp{-T} option.  The
-possible output formats are the same seven formats that are supported by
+possible output formats are the same eight formats that are supported by
 the GNU @code{graph} and @code{plot} programs.
 
 Input file names may be specified anywhere on the command line.  That
@@ -2280,12 +2362,13 @@ The following are general options.
 @item -T @var{type}
 @itemx --display-type @var{type}
 (String, default "meta".)  Select a display type or output format of
-@var{type}, which may be one of the strings "X", "ps", "fig", "pcl",
-"hpgl", "tek", and "meta".  These refer respectively to the @w{X Window
-System}, @code{idraw}-editable Postscript, the format used by the
-@code{xfig} drawing editor, the Hewlett-Packard @w{PCL 5} printer
-language, the Hewlett--Packard Graphics Language, Tektronix format, and
-device-independent GNU metafile format.
+type @var{type}, which may be one of the strings "X", "ai", "ps", "fig",
+"pcl", "hpgl", "tek", and "meta".  These refer respectively to the @w{X
+Window System}, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the format used by the @code{xfig}
+drawing editor, the Hewlett--Packard @w{PCL 5} printer language, the
+Hewlett--Packard Graphics Language, Tektronix format, and
+device-independent GNU graphics metafile format.
 
 @item -p @var{n}
 @itemx --page-number @var{n}
@@ -2296,10 +2379,11 @@ with zero.
 
 The default behavior, if the @samp{-p} option is not used, is to display
 all nonempty pages in succession.  For example, @code{tek2plot @w{-T X}}
-displays each page in its own @w{X window}.  If the @code{-T fig} option
-is used, the default behavior is to display only the first nonempty
-Tektronix page, since files to be edited by @code{xfig} may contain only
-a single page of graphics.
+displays each page in its own @w{X window}.  @w{If the} @code{-T ai}
+option or the @code{-T fig} option is used, the default behavior is to
+display only the first nonempty Tektronix page, since files to be edited
+by Adobe Illustrator or @code{xfig} may contain only a single page of
+graphics.
 
 Most Tektronix files consist of either one page (page #0) or
 two pages (@w{an empty} @w{page #0}, and @w{page #1}).  Tektronix files
@@ -2313,8 +2397,8 @@ are normally of the latter sort.
 the font used for text to @var{font_name}.  Font names are
 case-insensitive.  @w{If a} font outside the Courier family is chosen,
 the @samp{--position-chars} option (see below) should probably be used.
-For a list of all fonts, see @ref{Text Fonts}.  If the specified font is
-not available, the default font will be used.
+For a list of all fonts, see @ref{Text Fonts}.  @w{If the} specified
+font is not available, the default font will be used.
 
 @item -W @var{line_width}
 @itemx --line-width @var{line_width}
@@ -2370,24 +2454,25 @@ buffer limitations.
 
 @item --page-size @var{pagesize}
 (String, default "letter".) Set the size of the page on which the plot
-will be positioned.  This is relevant only to @code{tek2plot -T ps},
-@code{tek2plot -T fig}, @code{tek2plot -T pcl}, and @code{tek2plot -T
-hpgl}.  "letter" means an 8.5@dmn{in} by 11@dmn{in} page.  Any ISO page
-size in the range "a0"@dots{}"a4" or ANSI page size in the range
-"a"@dots{}"e" may be specified ("letter" is an alias @w{for "a"} and
-"tabloid" is an alias @w{for "b"}).  "legal" and "ledger" are recognized
-page sizes also.  The environment variable @code{PAGESIZE} can equally
-well be used to specify the page size.
+will be positioned.  This is relevant only to @code{tek2plot -T ai},
+@code{tek2plot -T ps}, @code{tek2plot -T fig}, @code{tek2plot -T pcl},
+and @code{tek2plot -T hpgl}.  "letter" means an 8.5@dmn{in} by
+11@dmn{in} page.  Any ISO page size in the range "a0"@dots{}"a4" or ANSI
+page size in the range "a"@dots{}"e" may be specified ("letter" is an
+alias @w{for "a"} and "tabloid" is an alias @w{for "b"}).  "legal",
+"ledger", @w{and "b5"} are recognized page sizes also.  The environment
+variable @code{PAGESIZE} can equally well be used to specify the page
+size.
 
-For @code{tek2plot -T ps}, the graphics display within which the plot is
-drawn will be a square region centered on the specified page and
-occupying its full width.  For @code{tek2plot -T fig}, the graphics
-display will be a square region located in the upper left corner of an
-@code{xfig} display, with width equal to the width of the specified
-page.  For @code{tek2plot -T pcl} and @code{tek2plot -T hpgl}, fine
-control over the positioning of the graphics display on the page can be
-accomplished by setting certain environment variables (@pxref{tek2plot
-Environment}).
+For @code{tek2plot -T ai} and @code{tek2plot -T ps}, the graphics
+display within which the plot is drawn will be a square region centered
+on the specified page and occupying its full width.  For @code{tek2plot
+-T fig}, the graphics display will be a square region located in the
+upper left corner of an @code{xfig} display, with width equal to the
+width of the specified page.  For @code{tek2plot -T pcl} and
+@code{tek2plot -T hpgl}, fine control over the positioning of the
+graphics display on the page can be accomplished by setting certain
+environment variables (@pxref{tek2plot Environment}).
 
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
@@ -2443,13 +2528,17 @@ Print a list of command-line options, and then exit.
 @item --help-fonts
 Print a table of available fonts, and then exit.  The table will depend
 on which display type or output format is specified with the @samp{-T}
-option.  @code{tek2plot @w{-T X}}, @code{tek2plot -T ps}, and
-@code{tek2plot -T fig} each support the 35 standard Postscript fonts.
-@code{tek2plot -T pcl} and @code{tek2plot -T hpgl} support the 45
-standard @w{PCL 5} fonts and a number of Hewlett--Packard vector fonts.
-All five support a set of 22 Hershey vector fonts.  Raw @code{tek2plot}
-@w{in principle} supports any of these fonts, since its output must be
-translated to other formats with @code{plot}.
+option.  @code{tek2plot @w{-T X}}, @code{tek2plot -T ai}, @code{tek2plot
+-T ps}, and @code{tek2plot -T fig} each support the 35 standard
+Postscript fonts.  @code{tek2plot -T ai}, @code{tek2plot -T pcl}, and
+@code{tek2plot -T hpgl} support the 45 standard @w{PCL 5} fonts, and
+@code{tek2plot -T pcl} and @code{tek2plot -T hpgl} support a number of
+Hewlett--Packard vector fonts.  All of the preceding, together with
+@code{tek2plot -Ttek}, support a set of 22 Hershey vector fonts.  Raw
+@code{tek2plot} @w{in principle} supports any of these fonts, since its
+output must be translated to other formats with @code{plot}.  The
+@code{plotfont} utility will produce a character map of any available
+font.  @xref{plotfont}.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
@@ -2481,6 +2570,13 @@ System display and draws graphics @w{in it}, checks the @code{DISPLAY}
 environment variable.  The value of this variable determines the display
 on which the window will be @w{popped up}.
 
+@code{tek2plot -T ai}, which produces output in Adobe Illustrator
+format, is affected by the @code{@w{AI_VERSION}} environment variable.
+Recognized values for this variable are "5" (the default) @w{and "3"}.
+By default, output will be in the format produced by Illustrator
+@w{version 5}.  @w{If the} value is "3", the @w{version 3} format will
+be produced instead.
+
 @code{tek2plot -T pcl}, which produces @w{PCL 5} output for
 Hewlett--Packard printers and plotters, is affected by several
 environment variables.  The position of the graphics display on the page
@@ -2504,15 +2600,16 @@ which are much more common than colored ones, must use shading to
 emulate color.
 
 @code{tek2plot -T hpgl}, which produces Hewlett--Packard Graphics
-Language output, is affected by several environment variables.  The most
-important is @code{HPGL_VERSION}, which may be set to "1", "1.5", @w{or
-"2"} (the default).  @w{"1" means} that the output should be generic
-HP-GL, @w{"1.5" means} that the output should be suitable for the
-HP7550A graphics plotter and the HP758x, HP7595A and HP7596A drafting
-plotters (HP-GL with some HP-GL/2 extensions), and @w{"2" means} that
-the output should be modern HP-GL/2.  If the version is "1" @w{or "1.5"}
-then the only available fonts will be vector fonts, and all lines will
-be drawn with a default width (the @samp{-W} option will not work).
+Language output, is also affected by several environment variables.  The
+most important is @code{HPGL_VERSION}, which may be set to "1", "1.5",
+@w{or "2"} (the default).  @w{"1" means} that the output should be
+generic HP-GL, @w{"1.5" means} that the output should be suitable for
+the HP7550A graphics plotter and the HP758x, HP7595A and HP7596A
+drafting plotters (HP-GL with some HP-GL/2 extensions), and @w{"2"
+means} that the output should be modern HP-GL/2.  @w{If the} version is
+"1" @w{or "1.5"} then the only available fonts will be vector fonts, and
+all lines will be drawn with a default width (the @samp{-W} option will
+not work).
 
 The position of the @code{tek2plot -T hpgl} graphics display on the page
 can be adjusted by setting the @code{HPGL_XOFFSET} and
@@ -2528,9 +2625,9 @@ default).
 
 The drawing of visible white lines is supported only if
 @code{HPGL_VERSION} is "2" and the environment variable
-@code{HPGL_OPAQUE_MODE} is "yes" (the default).  If the value is "no"
-then white lines (@w{if any}), which are normally drawn with @w{pen #0},
-will not be drawn.  This feature is to accommodate older HP-GL/2
+@code{HPGL_OPAQUE_MODE} is "yes" (the default).  @w{If the} value is
+"no" then white lines (@w{if any}), which are normally drawn with @w{pen
+#0}, will not be drawn.  This feature is to accommodate older HP-GL/2
 devices.  HP-GL/2 pen plotters, for example, do not support the use of
 @w{pen #0} to draw visible white lines.  Some older HP-GL/2 devices may,
 @w{in fact}, malfunction if asked to draw opaque objects.
@@ -2549,10 +2646,10 @@ must always be present, though it need not be black. Any other pen in
 the range #1@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{tek2plot -T hpgl} will also be
-affected by the environment variable @code{HPGL_ASSIGN_COLORS}.  If the
-value of this variable is "yes", then @code{tek2plot -T hpgl} will not
-be restricted to the palette specified in @code{HPGL_PENS}: @w{it will}
-assign colors to ``logical pens'' in the range #1@dots{}#31, @w{as
+affected by the environment variable @code{HPGL_ASSIGN_COLORS}.  @w{If
+the} value of this variable is "yes", then @code{tek2plot -T hpgl} will
+not be restricted to the palette specified in @code{HPGL_PENS}: @w{it
+will} assign colors to ``logical pens'' in the range #1@dots{}#31, @w{as
 needed}.  The default value is "no" because other than color LaserJet
 printers and DesignJet plotters, not many HP-GL/2 devices allow the
 assignment of colors to logical pens.
@@ -2573,7 +2670,10 @@ GNU @code{plotfont} is a simple utility that will produce a character
 map for any font available to the GNU plotting utilities @code{graph},
 @code{plot}, and @code{tek2plot}, and the GNU @code{libplot} graphics
 library on which they are based.  The map may be displayed on an @w{X
-Window} System display, or produced in any of five output formats.
+Window} System display, or produced in any of several output formats.
+The @samp{-T} option is used to specify the desired output format.
+Supported output formats include "X", "ai", "ps", "fig", "pcl", "hpgl",
+"tek", and "meta" (the default).
 
 Which fonts are available depends on the choice of display or output
 format.  @w{To get} a list of the available fonts, use the
@@ -2607,13 +2707,13 @@ plotfont -T ps -2 HersheyCyrillic > map.ps
 
 @noindent
 you will get a map that illustrates its arrangment, which is called
-KOI8-R.  The KOI8-R arrangement is the standard for Unix and networking
-applications in the former Soviet Union.  So-called dingbats fonts, such
-as "ZapfDingbats" and "Wingdings", also have an individualistic layout.
-In most installations of the plotting utilities, the Wingdings font is
-not available when producing Postscript output.  However, it is
-available when producing output in @w{PCL 5} or HP-GL/2 format.  If you
-do
+@w{KOI8-R}@.  The @w{KOI8-R} arrangement is the standard for Unix and
+networking applications in the former Soviet Union.  So-called dingbats
+fonts, such as "ZapfDingbats" and "Wingdings", also have an
+individualistic layout.  In most installations of the plotting
+utilities, the Wingdings font is not available when producing Postscript
+output.  However, it is available when producing output in @w{PCL 5} or
+HP-GL/2 format.  If you do
 
 @example
 plotfont -T hpgl Wingdings > map.plt
@@ -2740,12 +2840,13 @@ above.
 @item -T @var{type}
 @itemx --display-type @var{type}
 (String, default "meta".)  Select a display type or output format of
-@var{type}, which may be one of the strings "X", "ps", "fig", "pcl",
-"hpgl", "tek", and "meta".  These refer respectively to the @w{X Window
-System}, @code{idraw}-editable Postscript, the format used by the
-@code{xfig} drawing editor, the Hewlett-Packard @w{PCL 5} printer
-language, the Hewlett--Packard Graphics Language, Tektronix format, and
-device-independent GNU metafile format.
+type @var{type}, which may be one of the strings "X", "ai", "ps", "fig",
+"pcl", "hpgl", "tek", and "meta".  These refer respectively to the @w{X
+Window System}, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the format used by the @code{xfig}
+drawing editor, the Hewlett--Packard @w{PCL 5} printer language, the
+Hewlett--Packard Graphics Language, Tektronix format, and
+device-independent GNU graphics metafile format.
 
 Files to be edited by @code{xfig} may contain only a single page of
 graphics.  So if the @code{-T fig} option is used, a character map will
@@ -2762,7 +2863,7 @@ the background color.
 @item --bitmap-size @var{bitmap_size}
 (String, default "570x570".)  Set the size of the graphics display in
 which a character map is drawn, in terms of pixels, to be
-@var{bitmap_size}.  This is relevant only to @code{plot2font @w{-T X}},
+@var{bitmap_size}.  This is relevant only to @code{plotfont @w{-T X}},
 for which the graphics display is an @w{X window}.  If you choose a
 rectangular (non-square) window size, the font in the character map will
 be scaled anisotropically, i.e., by different factors in the horizontal
@@ -2784,23 +2885,24 @@ the characters in the character map(s) to be @var{font_name}.
 @item --page-size @var{pagesize}
 (String, default "letter".) Set the size of the page for which the
 character map(s) will be produced.  This is relevant only to
-@code{plotfont -T ps}, @code{plotfont -T fig}, @code{plotfont -T pcl}
-and @code{plotfont -T hpgl}.  "letter" means an 8.5@dmn{in} by
-11@dmn{in} page.  Any ISO page size in the range "a0"@dots{}"a4" or ANSI
-page size in the range "a"@dots{}"e" may be specified ("letter" is an
-alias @w{for "a"} and "tabloid" is an alias @w{for "b"}).  "legal" and
-"ledger" are recognized page sizes also.  The environment variable
-@code{PAGESIZE} can equally well be used to specify the page size.
+@code{plotfont -T ai}, @code{plotfont -T ps}, @code{plotfont -T fig},
+@code{plotfont -T pcl} and @code{plotfont -T hpgl}.  "letter" means an
+8.5@dmn{in} by 11@dmn{in} page.  Any ISO page size in the range
+"a0"@dots{}"a4" or ANSI page size in the range "a"@dots{}"e" may be
+specified ("letter" is an alias @w{for "a"} and "tabloid" is an alias
+@w{for "b"}).  "legal", "ledger", @w{and "b5"} are recognized page sizes
+also.  The environment variable @code{PAGESIZE} can equally well be used
+to specify the page size.
 
-For @code{plotfont -T ps}, the graphics display within which each
-character map is drawn will be a square region centered on the page, and
-occupying its full width.  For @code{plotfont -T fig}, the graphics
-display will be a square region located in the upper left corner of an
-@code{xfig} display, with width equal to the width of the specified
-page.  For @code{plotfont -T pcl}, @code{plotfont -T hpgl}, fine control
-over the positioning of the graphics display on the page can be
-accomplished by setting certain environment variables (@pxref{plotfont
-Environment}).
+For @code{plotfont -T ai} and @code{plotfont -T ps}, the graphics
+display within which each character map is drawn will be a square region
+centered on the page, and occupying its full width.  For @code{plotfont
+-T fig}, the graphics display will be a square region located in the
+upper left corner of an @code{xfig} display, with width equal to the
+width of the specified page.  For @code{plotfont -T pcl}, @code{plotfont
+-T hpgl}, fine control over the positioning of the graphics display on
+the page can be accomplished by setting certain environment variables
+(@pxref{plotfont Environment}).
 
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
@@ -2837,14 +2939,15 @@ Print a list of command-line options, and then exit.
 @item --help-fonts
 Print a table of available fonts, and then exit.  The table will depend
 on which display type or output format is specified with the @samp{-T}
-option.  @code{plotfont @w{-T X}}, @code{plotfont -T ps}, and
-@code{plotfont -T fig} each support the 35 standard Postscript fonts.
-@code{plotfont -T pcl} and @code{plotfont -T hpgl} support the 45
-standard @w{PCL 5} fonts and a number of Hewlett--Packard vector fonts.
-All five, together with @code{plotfont -T tek}, support a set of 22
-Hershey vector fonts.  Raw @code{plotfont} @w{in principle} supports any
-of these fonts, since its output must be translated to other formats
-with @code{plot}.
+option.  @code{plotfont @w{-T X}}, @code{plotfont -T ai}, @code{plotfont
+-T ps}, and @code{plotfont -T fig} each support the 35 standard
+Postscript fonts.  @code{plotfont -T ai}, @code{plotfont -T pcl}, and
+@code{plotfont -T hpgl} support the 45 standard @w{PCL 5} fonts, and
+@code{plotfont -T pcl} and @code{plotfont -T hpgl} support a number of
+Hewlett--Packard vector fonts.  All of the preceding, together with
+@code{plotfont -Ttek}, support a set of 22 Hershey vector fonts.  Raw
+@code{plotfont} @w{in principle} supports any of these fonts, since its
+output must be translated to other formats with @code{plot}.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
@@ -2875,6 +2978,13 @@ System display and draws a character map @w{in it}, checks the
 @code{DISPLAY} environment variable.  The value of this variable
 determines the display on which the window will be @w{popped up}.
 
+@code{plotfont -T ai}, which produces output in Adobe Illustrator
+format, is affected by the @code{@w{AI_VERSION}} environment variable.
+Recognized values for this variable are "5" (the default) @w{and "3"}.
+By default, output will be in the format produced by Illustrator
+@w{version 5}.  @w{If the} value is "3", the @w{version 3} format will
+be produced instead.
+
 @code{plotfont -T pcl}, which produces @w{PCL 5} output for
 Hewlett--Packard printers and plotters, is affected by several
 environment variables.  The position of the graphics display on the page
@@ -2898,14 +3008,14 @@ which are much more common than colored ones, must use shading to
 emulate color.
 
 @code{plotfont -T hpgl}, which produces Hewlett--Packard Graphics
-Language output, is affected by several environment variables.  The most
-important is @code{HPGL_VERSION}, which may be set to "1", "1.5", @w{or
-"2"} (the default).  @w{"1" means} that the output should be generic
-HP-GL, @w{"1.5" means} that the output should be suitable for the
-HP7550A graphics plotter and the HP758x, HP7595A and HP7596A drafting
-plotters (HP-GL with some HP-GL/2 extensions), and @w{"2" means} that
-the output should be modern HP-GL/2.  If the version is "1" @w{or "1.5"}
-then the only available fonts will be vector fonts.
+Language output, is also affected by several environment variables.  The
+most important is @code{HPGL_VERSION}, which may be set to "1", "1.5",
+@w{or "2"} (the default).  @w{"1" means} that the output should be
+generic HP-GL, @w{"1.5" means} that the output should be suitable for
+the HP7550A graphics plotter and the HP758x, HP7595A and HP7596A
+drafting plotters (HP-GL with some HP-GL/2 extensions), and @w{"2"
+means} that the output should be modern HP-GL/2.  @w{If the} version is
+"1" @w{or "1.5"} then the only available fonts will be vector fonts.
 
 The position of the @code{plotfont -T hpgl} character map on the page
 can be adjusted by setting the @code{HPGL_XOFFSET} and
@@ -2933,32 +3043,32 @@ must always be present, though it need not be black. Any other pen in
 the range #1@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{plotfont -T hpgl} will also be
-affected by the environment variable @code{HPGL_ASSIGN_COLORS}.  If the
-value of this variable is "yes", then @code{plotfont -T hpgl} will not
-be restricted to the palette specified in @code{HPGL_PENS}: @w{it will}
-assign colors to ``logical pens'' in the range #1@dots{}#31, @w{as
+affected by the environment variable @code{HPGL_ASSIGN_COLORS}.  @w{If
+the} value of this variable is "yes", then @code{plotfont -T hpgl} will
+not be restricted to the palette specified in @code{HPGL_PENS}: @w{it
+will} assign colors to ``logical pens'' in the range #1@dots{}#31, @w{as
 needed}.  The default value is "no" because other than color LaserJet
 printers and DesignJet plotters, not many HP-GL/2 devices allow the
 assignment of colors to logical pens.
 
 @code{plotfont -T tek}, which produces output for a Tektronix terminal
 or emulator, checks the @code{TERM} environment variable.  @w{If the}
-value of @code{TERM} is @code{xterm}, @code{xterms}, or @code{kterm},
-@w{it is} taken as a sign that the current application is running in an
-@w{X Window} System VT100 terminal emulator: @w{an @code{xterm}}.
-Before drawing graphics, @code{plotfont -T tek} will emit an escape
-sequence that causes the terminal emulator's auxiliary Tektronix window,
-which is normally hidden, to @w{pop up}.  After the graphics are drawn,
-an escape sequence that returns control to the original VT100 window
-will be emitted.  The Tektronix window will remain on the screen.
+value of @code{TERM} is "xterm", "xterms", or "kterm", @w{it is} taken
+as a sign that the current application is running in an @w{X Window}
+System VT100 terminal emulator: @w{an @code{xterm}}.  Before drawing
+graphics, @code{plotfont -T tek} will emit an escape sequence that
+causes the terminal emulator's auxiliary Tektronix window, which is
+normally hidden, to @w{pop up}.  After the graphics are drawn, an escape
+sequence that returns control to the original VT100 window will be
+emitted.  The Tektronix window will remain on the screen.
 
-If the value of @code{TERM} is @code{kermit}, @code{ansi.sys},
-@code{ansissys}, @code{ansi.sysk}, or @code{ansisysk}, @w{it is} taken
-as a sign that the current application is running in the VT100 terminal
-emulator provided by the MS-DOS version of @code{kermit}.  Before
-drawing graphics, @code{plotfont -T tek} will emit an escape sequence
-that switches the terminal emulator to Tektronix mode.  Also, some of
-the Tektronix control codes emitted by @code{plotfont -T tek} will be
+If the value of @code{TERM} is "kermit", "ansi.sys", "ansissys",
+"ansi.sysk", or "ansisysk", @w{it is} taken as a sign that the current
+application is running in the VT100 terminal emulator provided by the
+MS-DOS version of @code{kermit}.  Before drawing graphics,
+@code{plotfont -T tek} will emit an escape sequence that switches the
+terminal emulator to Tektronix mode.  Also, some of the Tektronix
+control codes emitted by @code{plotfont -T tek} will be
 @code{kermit}-specific.  There will be a limited amount of color
 support, which is not normally the case (the 16 @code{ansi.sys} colors
 will be supported).  After drawing graphics, @code{plotfont -T tek} will
@@ -3045,10 +3155,10 @@ along a curve that interpolates between the points in the dataset.  If
 there is more than one dataset in the input (separated by blank lines),
 each dataset is interpolated separately.
 
-You may use the @samp{-n} option to replace `100' by any other integer.
-You may also use the @samp{-t} option to specify an interpolation
-interval that differs from the default (the interval over which the
-independent variable ranges).  For example, the command
+You may use the @samp{-n} option to replace `100' by any other positive
+integer.  You may also use the @samp{-t} option to specify an
+interpolation interval that differs from the default (the interval over
+which the independent variable ranges).  For example, the command
 
 @example
 echo 0 0 1 1 2 0 | spline -n 20 -t 1.0 1.5 > output_file
@@ -3091,12 +3201,12 @@ the independent @w{variable @math{t}} over which the spline will `like
 to curve'.  Increasing the tension far above zero will accordingly force
 the spline to consist of short curved sections, centered on the data
 points, and sections that are almost straight.  It follows that tension
-is a `dimensionful' quantity.  If the tension is nonzero, then when the
-values of the independent variable are multiplied by some common
+is a `dimensionful' quantity.  @w{If the} tension is nonzero, then when
+the values of the independent variable are multiplied by some common
 positive factor, the tension should be divided by the same factor to
-obtain a scaled version of the original spline.  If the tension is zero
-(the default, or cubic spline case), then the computation of the spline
-will be unaffected by linear scaling of the data.
+obtain a scaled version of the original spline.  @w{If the} tension is
+zero (the default, or cubic spline case), then the computation of the
+spline will be unaffected by linear scaling of the data.
 
 In mathematical terms, a spline under tension will satisfy the
 differential equation 
@@ -3134,7 +3244,7 @@ interpolation, which is local rather than global) will be used.  @w{If
 option.
 
 Cubic Bessel interpolation is inherently less smooth than the
-construction of a global cubic spline.  If the @samp{-f} option is
+construction of a global cubic spline.  @w{If the} @samp{-f} option is
 specified, the slope of the spline at each knot will be chosen by
 fitting a parabola through that knot, and the two adjacent knots.  The
 slopes of the two interpolating segments to either side of each interior
@@ -3236,13 +3346,13 @@ When splining a curve, whether open or closed, you may wish to
 substitute the @samp{-A} option for the @samp{-a} option.  Like the
 @samp{-a} option, the @samp{-A} option specifies that @w{@math{t}
 values} are missing from the input and should be automatically
-generated.  However, the first @w{@math{t} value} will be zero, and the
-increment from one @w{@math{t} value} to the next will be the distance
-between the corresponding values @w{of @math{y}}.  This scheme for
-generating @w{@math{t} values}, when constructing a curve through a
-sequence of points, is the scheme that is used in the @w{well known}
-FITPACK subroutine library.  @w{It is} probably the best approach when
-the distances between successive points fluctuate considerably.
+generated.  However, the increment from one @w{@math{t} value} to the
+next will be the distance between the corresponding values @w{of
+@math{y}}.  This scheme for generating @w{@math{t} values}, when
+constructing a curve through a sequence of points, is the scheme that is
+used in the @w{well known} FITPACK subroutine library.  @w{It is}
+probably the best approach when the distances between successive points
+fluctuate considerably.
 
 A curve through a sequence of points in the plane, whether open or
 closed, may cross itself.  Some interesting visual effects can be
@@ -3337,9 +3447,9 @@ may not be used if @samp{-f} or @samp{-p} is specified.
 
 @item -n @var{n}
 @itemx --number-of-intervals @var{n}
-(Integer, default 100.)  Subdivide the interval over which interpolation
-occurs into @var{n} subintervals.  The number of data points computed,
-and written to the output, will be @math{n+1}.
+(Positive integer, default 100.)  Subdivide the interval over which
+interpolation occurs into @var{n} subintervals.  The number of data
+points computed, and written to the output, will be @math{n+1}.
 
 @item -p
 @itemx --periodic
@@ -3369,11 +3479,11 @@ option may not be used if @samp{-f} is specified.
 For each dataset, set the interval over which interpolation occurs to be
 the interval between @var{tmin} @w{and @var{tmax}}.  If @var{tspacing}
 is not specified, the interval will be divided into the number of
-subintervals specified by the @samp{-n} option.  If the @samp{-t} option
-is not used, the interval over which interpolation occurs will be the
-entire range of the independent variable in the dataset.  The @samp{-t}
-option must always be used if the @samp{-f} option is used to request
-filter-like behavior (see above).
+subintervals specified by the @samp{-n} option.  @w{If the} @samp{-t}
+option is not used, the interval over which interpolation occurs will be
+the entire range of the independent variable in the dataset.  The
+@samp{-t} option must always be used if the @samp{-f} option is used to
+request filter-like behavior (see above).
 @end table
 
 @noindent
@@ -3410,7 +3520,7 @@ of the successive data points in a dataset.  If @math{y} is
 @math{d}-dimensional, there will be @math{d+1} numbers for each point.
 Successive datasets are separated by a single occurrence of the quantity
 @code{FLT_MAX}, which is the largest possible single precision floating
-point number.  On most machines this is approximately 3.4x10^38.
+point number.  @w{On most} machines this is approximately 3.4x10^38.
 @end ifnottex
 @tex
 Single precision binary format.  Each file is a sequence of floating
@@ -3419,7 +3529,7 @@ of the successive data points in a dataset.  If @math{y} is
 @math{d}-dimensional, there will be @math{d+1} numbers for each point.
 Successive datasets are separated by a single occurrence of the quantity
 @code{FLT_MAX}, which is the largest possible single precision floating
-point number.  On most machines this is approximately
+point number.  @w{On most} machines this is approximately
 $3.4\times10^{38}$.
 @end tex
 
@@ -3431,8 +3541,8 @@ precision floating point numbers, interpreted as the @math{t} @w{and
 @math{y} is @math{d}-dimensional, there will be @math{d+1} numbers for
 each point.  Successive datasets are separated by a single occurrence of
 the quantity @code{DBL_MAX}, which is the largest possible double
-precision floating point number.  On most machines this is approximately
-1.8x10^308.
+precision floating point number.  @w{On most} machines this is
+approximately 1.8x10^308.
 @end ifnottex
 @tex
 Double precision binary format.  Each file is a sequence of double
@@ -3441,8 +3551,8 @@ precision floating point numbers, interpreted as the @math{t} @w{and
 @math{y} is @math{d}-dimensional, there will be @math{d+1} numbers for
 each point.  Successive datasets are separated by a single occurrence of
 the quantity @code{DBL_MAX}, which is the largest possible double
-precision floating point number.  On most machines this is approximately
-$1.8\times10^{308}$.
+precision floating point number.  @w{On most} machines this is
+approximately $1.8\times10^{308}$.
 @end tex
 
 @item i
@@ -3452,7 +3562,7 @@ as the @math{t} @w{and @math{y}} coordinates of the successive data
 points in a dataset.  If @math{y} is @math{d}-dimensional, there will be
 @math{d+1} numbers for each point.  Successive datasets are separated by
 a single occurrence of the quantity @code{INT_MAX}, which is the largest
-possible integer.  On most machines this is 2^31-1.
+possible integer.  @w{On most} machines this is 2^31-1.
 @end ifnottex
 @tex
 Integer binary format.  Each file is a sequence of integers, interpreted
@@ -3460,7 +3570,7 @@ as the @math{t} @w{and @math{y}} coordinates of the successive data
 points in a dataset.  If @math{y} is @math{d}-dimensional, there will be
 @math{d+1} numbers for each point.  Successive datasets are separated by
 a single occurrence of the quantity @code{INT_MAX}, which is the largest
-possible integer.  On most machines this is $2^{31}-1$.
+possible integer.  @w{On most} machines this is $2^{31}-1$.
 @end tex
 @end table
 
@@ -3494,10 +3604,10 @@ argument is the same as for the @samp{-I} option.
 
 @item -P @var{significant-digits}
 @itemx --precision @var{significant-digits}
-(Integer, default 6.)  Set the numerical precision for the @math{t} and
-@math{y} values in the output file to be @var{significant-digits}.  This
-takes effect only if the output file is written in @samp{a} format,
-i.e., in ASCII@.
+(Positive integer, default 6.)  Set the numerical precision for the
+@math{t} and @math{y} values in the output file to be
+@var{significant-digits}.  This takes effect only if the output file is
+written in @samp{a} format, i.e., in ASCII@.
 
 @item -s
 @itemx --suppress-abscissa
@@ -3764,7 +3874,7 @@ to increase rather than @w{decrease @math{t}}.  @w{To exit} @code{ode},
 you would type a line containing only @samp{.}, i.e.@: @w{a single} period,
 and tap `return'.  @code{ode} will also exit if it sees an end-of-file
 indicator in its input stream, which you may send from your terminal by
-typing control-D.
+typing control-D@.
 
 Each line of the preceding example should be self-explanatory.  @w{A
 @samp{step}} statement sets the beginning and the end of an interval
@@ -3953,7 +4063,7 @@ different dataset.  If you are using a color display, each of the three
 sections will be plotted in a different color.  This is a feature
 provided by @code{graph}, which normally changes its linemode after each
 dataset it reads.  If you do not like this feature, you may turn it off
-by using @samp{graph -T X -B} instead of @samp{graph -T X}.
+by using @code{graph -T X -B} instead of @code{graph @w{-T X}}.
 
 In the above examples, you could use any of the other variants of
 @code{graph} instead of @code{graph @w{-T X}}.  For example, you could use
@@ -3969,14 +4079,14 @@ step 0, 2*PI
 @end example
 
 @noindent
-You should note that of the seven variants of @code{graph}, @code{graph
--T ps}, @code{graph -T fig}, @code{graph -T pcl} and @code{graph -T
-hpgl} do not produce output in real time, even when the axis bounds are
-specified with the @samp{-x} @w{and @samp{-y}} options.  So if
-@code{graph -T ps}, @code{graph -T fig}, @code{graph -T pcl}, or
-@code{graph -T hpgl} is used, the plot will be produced only when input
-from @code{ode} is terminated, which will occur when you @w{type
-@samp{.}}.
+You should note that of the eight variants of @code{graph}, @code{graph
+-T ai}, @code{graph -T ps}, @code{graph -T fig}, @code{graph -T pcl} and
+@code{graph -T hpgl} do not produce output in real time, even when the
+axis bounds are specified with the @samp{-x} @w{and @samp{-y}} options.
+@w{So if} @code{graph -T ai}, @code{graph -T ps}, @code{graph -T fig},
+@code{graph -T pcl}, or @code{graph -T hpgl} is used, the plot will be
+produced only when input from @code{ode} is terminated, which will occur
+when you @w{type @samp{.}}.
 
 In the preceding examples, the derivatives of the dependent variables
 were specified by comparatively simple expressions.  They are allowed to
@@ -4002,9 +4112,9 @@ alphanumeric characters starting with an alphabetic character may be
 used; the first 32 characters are significant.  @w{It is} worth noting
 that @code{ode} identifies the independent variable by the fact that it
 is (or should be) the only variable that has not appeared on the left
-side of a differential equation or an initial value assignment.  If
-there is more than than one such variable then no stepping takes place;
-instead, an error message is printed.  If there is no such variable,
+side of a differential equation or an initial value assignment.  @w{If
+there} is more than than one such variable then no stepping takes place;
+instead, an error message is printed.  @w{If there} is no such variable,
 @w{a dummy} independent variable is invented and given the name
 @samp{(indep)}, internally.
 
@@ -4128,8 +4238,8 @@ will be periodic; this periodicity is similar to the fluctuations
 between predator and prey populations that occur in real-world
 ecosystems.  @w{On a} color display the curves will appear in different
 colors, since @w{by default}, @code{graph} changes the linemode between
-datasets.  That feature may be @w{turned off} by using @samp{graph -T X
--B} rather than @samp{graph @w{-T X}}.
+datasets.  That feature may be @w{turned off} by using @code{graph -T X
+-B} rather than @code{graph @w{-T X}}.
 
 It is sometimes useful to use @code{ode} and @code{graph} to plot
 discrete points, which are not joined by line segments to form a curve.
@@ -4257,16 +4367,16 @@ Read input from @var{filename} before reading from standard input.
 The following options affect the output format.
 
 @table @samp
-@item -p @var{precision}
-@itemx --precision @var{precision}
-When printing numerical results, use @var{precision} significant
-figures.  If this option is given, all output will be in scientific
-notation.
+@item -p @var{significant-digits}
+@itemx --precision @var{significant-digits}
+(Positive integer, default 6.)  When printing numerical results, use a
+precision specified by @var{significant-digits}.  @w{If this} option is
+given, all output will be in scientific notation.
 
 @item -t
 @itemx --title
-Print a title line at the head of the output, naming the columns.  If
-this option is given, the default print format will be scientific
+Print a title line at the head of the output, naming the columns.  @w{If
+this} option is given, the default print format will be scientific
 notation.
 @end table
 
@@ -4322,9 +4432,9 @@ The @samp{-r} option sets an upper bound on the relative single-step
 error.  If the @samp{-r} option is used, the relative single-step error
 in any dependent variable will never exceed @var{rmax} (the default for
 which is @math{10^(-9)}).  If this should occur, the solution will be
-abandoned and an error message will be printed.  If the stepsize is not
-constant, the stepsize will be decreased `adaptively', so that the upper
-bound on the single-step error is not violated.  Thus, choosing a
+abandoned and an error message will be printed.  @w{If the} stepsize is
+not constant, the stepsize will be decreased `adaptively', so that the
+upper bound on the single-step error is not violated.  Thus, choosing a
 smaller upper bound on the single-step error will cause smaller
 stepsizes to be chosen.  @w{A lower} bound @var{rmin} may optionally be
 specified, to suggest when the stepsize should be increased (the default
@@ -4337,9 +4447,9 @@ The @samp{-r} option sets an upper bound on the relative single-step
 error.  If the @samp{-r} option is used, the relative single-step error
 in any dependent variable will never exceed @var{rmax} (the default for
 which is $10^{-9}$).  If this should occur, the solution will be
-abandoned and an error message will be printed.  If the stepsize is not
-constant, the stepsize will be decreased `adaptively', so that the upper
-bound on the single-step error is not violated.  Thus, choosing a
+abandoned and an error message will be printed.  @w{If the} stepsize is
+not constant, the stepsize will be decreased `adaptively', so that the
+upper bound on the single-step error is not violated.  Thus, choosing a
 smaller upper bound on the single-step error will cause smaller
 stepsizes to be chosen.  @w{A lower} bound @var{rmin} may optionally be
 specified, to suggest when the stepsize should be increased (the default
@@ -4845,13 +4955,13 @@ the solution.
 
 A rough idea of how error is propagated is obtained by viewing a family
 of solution curves about the numerical solution in question, obtained by
-varying the initial conditions.  If they diverge sharply---@w{that is},
-if two solutions which start out very close nonetheless @w{end up} far
-apart---then the quality of the numerical solution is dubious.  On the
-other hand, if the curves do not diverge sharply then any error that is
-present will in all likelihood not increase by more than an order of
-magnitude @w{or so} over the interval.  Problems exhibiting no sharp
-divergence of neighboring solution curves are sometimes called
+varying the initial conditions.  @w{If they} diverge sharply---@w{that
+is}, if two solutions which start out very close nonetheless @w{end up}
+far apart---then the quality of the numerical solution is dubious.
+@w{On the} other hand, if the curves do not diverge sharply then any
+error that is present will in all likelihood not increase by more than
+an order of magnitude @w{or so} over the interval.  Problems exhibiting
+no sharp divergence of neighboring solution curves are sometimes called
 @emph{well-conditioned}.
 @end enumerate
 
@@ -5009,11 +5119,11 @@ denoting the derivative, or @samp{?}, denoting the relative single-step
 error, or @samp{!}, denoting the absolute single-step error, or
 @samp{~}, denoting the accumulated error (not currently implemented).
 The specified values are printed in the order they are found.  Both the
-@samp{every} clause and the @samp{from} clause are optional.  If the
+@samp{every} clause and the @samp{from} clause are optional.  @w{If the}
 @samp{every} clause is present, a printing occurs every @t{<const>}
 iterations of the numerical algorithm.  The default is to print on every
 iteration (i.e.@: @samp{every 1}).  The first and last values are always
-printed.  If the @samp{from} clause is present, it means to begin
+printed.  @w{If the} @samp{from} clause is present, it means to begin
 printing when the independent variable reaches or exceeds @t{<const>}.
 The default is to begin printing immediately.
 
@@ -5221,6 +5331,12 @@ specified drawables associated with an @w{X Window System} display.
 @w{A `drawable'} is either a window or a pixmap.  The drawables must be
 passed to the Plotter as parameters.  (@xref{Driver Parameters}.)
 
+@item
+Illustrator Plotters.  An Illustrator Plotter produces a single page of
+output in the format used by Adobe Illustrator, and directs it to a file
+or other specified output stream.  The file may be edited with Adobe
+Illustrator or other applications.
+
 @item 
 Postscript Plotters.  A Postscript Plotter produces Postscript output
 and directs it to a file or other specified output stream.  If only a
@@ -5229,17 +5345,18 @@ EPS (encapsulated Postscript) format, so it may be included in another
 document.  It may also be edited with the @code{idraw} drawing editor.
 
 @item 
-Fig Plotters.  A Fig Plotter produces output in Fig format and directs
-it to a file or other specified output stream.  The output may be edited
-with the @code{xfig} drawing editor.  The @code{xfig} editor will export
-drawings in various other formats for inclusion in documents.
+Fig Plotters.  A Fig Plotter produces a single page of output in Fig
+format and directs it to a file or other specified output stream.  The
+output may be edited with the @code{xfig} drawing editor.  The
+@code{xfig} editor will export drawings in various other formats for
+inclusion in documents.
 
 @item 
 PCL Plotters.  A PCL Plotter produces output in @w{PCL 5} format and
 directs it to a file or other specified output stream.  @w{PCL 5} is a
 powerful version of Hewlett--Packard's Printer Control Language, which
 supports vector graphics.  The output may be sent to a @w{PCL 5} device
-such as a LaserJet printer, DesignJet plotter, or high-end inkjet.
+such as a LaserJet printer or high-end inkjet.
 
 @item
 HP-GL Plotters.  An HP-GL Plotter produces output in the
@@ -5256,11 +5373,12 @@ emulation program.  The MS-DOS version of @code{kermit} also includes
 such an emulator.
 
 @item
-Metafile Plotters.  A Metafile Plotter produces output in GNU metafile
-format and directs it to a file or other specified output stream.  This
-format is an extended version of the `plot(5)' format found on some
-other operating systems.  (@xref{Metafiles}.)  @w{It may} be translated
-to other formats by an invocation of GNU @code{plot}.  (@xref{plot}.)
+Metafile Plotters.  A Metafile Plotter produces output in GNU graphics
+metafile format and directs it to a file or other specified output
+stream.  This format is an extended version of the `plot(5)' format
+found on some other operating systems.  (@xref{Metafiles}.)  @w{It may}
+be translated to other formats by an invocation of GNU @code{plot}.
+(@xref{plot}.)
 @end itemize
 
 A distinction among these types of Plotter is that all except X and @w{X
@@ -5271,11 +5389,12 @@ draws graphics in one or two @w{X drawables}.
 Another distinction is that X, X Drawable, Tektronix and Metafile
 Plotters are real-time.  This means that they draw graphics or write to
 an output stream as the drawing operations are invoked on them.
-Postscript, Fig and HP-GL Plotters are not real-time, since their output
-streams can only be emitted after all functions have been called.  For a
-Postscript Plotter this is because a `bounding box' line must be placed
-at the head of the output file.  For a Fig Plotter it is because color
-definitions must be placed at the head of the output file.
+Illustrator, Postscript, Fig and HP-GL Plotters are not real-time, since
+their output streams can only be emitted after all functions have been
+called.  For Illustrator and Postscript Plotters this is because a
+`bounding box' line must be placed at the head of the output file.  For
+a Fig Plotter it is because color definitions must be placed at the head
+of the output file.
 
 The most important operations supported by any Plotter are @code{openpl}
 and @code{closepl}, which open and @w{close it}.  Graphics may be drawn,
@@ -5287,24 +5406,26 @@ An @w{X Plotter} displays each page in a separate @w{X window}, and
 Postscript, PCL, and HP-GL Plotters render each page as a separate
 physical page.  @w{X Drawable} Plotters and Tektronix Plotters
 manipulate a single drawable or display, on which pages are displayed in
-succession.  Plotters that do not draw in real time (Postscript, Fig,
-PCL, and HP-GL Plotters) may wait until their existence comes to an end
-(i.e., until they are deleted) before outputting their pages of
-graphics.
+succession.  Plotters that do not draw in real time (Illustrator,
+Postscript, Fig, PCL, and HP-GL Plotters) may wait until their existence
+comes to an end (i.e., until they are deleted) before outputting their
+pages of graphics.
 
 In the current release of @code{libplot}, Postscript Plotters delay
 outputting graphics in this way, but PCL and HP-GL Plotters output each
 page of graphics individually, i.e., when @code{closepl} is invoked.
-Fig Plotters are similar, but output at most one page of graphics.  That
-is because Fig format currently supports only a single page.  @w{On
-account} of this potential problem with Fig Plotters, all Plotters
-support an additional operation: @code{outfile}.  The output stream for
-a Plotter, if it has one, may be altered by invoking @code{outfile}
-@w{on it}.  @code{outfile} may only be invoked outside an
+Illustrator and Fig Plotters are similar, but output at most one page of
+graphics.  That is because Illustrator format and Fig format currently
+support only a single page.  @w{On account} of this potential problem
+with Illustrator and Fig Plotters, all Plotters support an additional
+operation: @code{outfile}.  The output stream for a Plotter, if it has
+one, may be altered by invoking @code{outfile} @w{on it}.
+@code{outfile} may only be invoked outside an
 @code{openpl}@dots{}@code{closepl} pair.  By using @code{outfile}, a
-programmer may produce multipage graphics output from Fig Plotters by
-directing output to a sequence of output streams, one per page.  The use
-of @code{outfile} in other contexts is strongly deprecated.
+programmer may produce multipage graphics output from any Illustrator or
+Fig Plotter by directing output to a sequence of output streams, one per
+page.  The use of @code{outfile} in other contexts is strongly
+deprecated.
 
 There are several other basic operations which any Plotter supports.
 The `graphics display' @w{drawn in} by a Plotter is a square or
@@ -5346,11 +5467,11 @@ Metafile Plotter), this erases all plotted objects from the graphics
 display, allowing a new frame to be drawn.  Displaying a sequence of
 frames in succession creates the illusion of smooth animation.
 
-@w{On a} Plotter that does not do real-time plotting (i.e., a
-Postscript, Fig, PCL or HP-GL Plotter), invoking @code{erase} deletes
-all plotted objects from an internal buffer.  For this reason, Plotters
-that do not do real-time plotting will display only the last frame of
-any multiframe page.
+@w{On a} Plotter that does not do real-time plotting (i.e., an
+Illustrator, Postscript, Fig, PCL or HP-GL Plotter), invoking
+@code{erase} deletes all plotted objects from an internal buffer.  For
+this reason, Plotters that do not do real-time plotting will display
+only the last frame of any multiframe page.
 
 @node C Programming, Functions, libplot Overview, libplot
 @section C Programming with @code{libplot}
@@ -5380,10 +5501,10 @@ this: @code{newpl}, @code{selectpl}, @code{deletepl}, and the
 parameter-setting function @code{parampl}.
 
 The @code{newpl} function will create a Plotter of specified type.  Its
-first argument may be "X", "Xdrawable", "ps", "fig", "pcl", "hpgl",
-"tek", or "meta".  It returns an integer (@w{a ``handle''}) that may be
-used to refer to the Plotter.  Before using a Plotter that you have
-created (i.e., before invoking any of the @code{libplot} operations
+first argument may be "X", "Xdrawable", "ai", "ps", "fig", "pcl",
+"hpgl", "tek", or "meta".  It returns an integer (@w{a ``handle''}) that
+may be used to refer to the Plotter.  Before using a Plotter that you
+have created (i.e., before invoking any of the @code{libplot} operations
 @w{on it}), you must select the Plotter @w{for use} by calling
 @code{selectpl}.  Only one Plotter may be selected at a time, but by
 calling @code{selectpl} you may switch from Plotter to Plotter at any
@@ -5411,17 +5532,17 @@ The following table summarizes the action of the four functions in the
 @table @asis
 @item int @t{newpl} (const char *@var{type}, FILE *@var{in}, FILE *@var{out}, FILE *@var{err});
 @t{newpl} creates a Plotter of type @var{type}, where @var{type} may be
-"X", "Xdrawable", "ps", "fig", "pcl", "hpgl", "tek", or "meta".  The
-Plotter will have input stream @var{in}, output stream @var{out}, and
-error stream @var{err}.  Currently, all Plotters are write-only and
+"X", "Xdrawable", "ai", "ps", "fig", "pcl", "hpgl", "tek", or "meta".
+The Plotter will have input stream @var{in}, output stream @var{out},
+and error stream @var{err}.  Currently, all Plotters are write-only and
 @var{in} is ignored.  @w{X Plotters} and @w{X Drawable} Plotters write
 graphics to an @w{X Window} System display rather than to an output
 stream, so if @var{type} is "X" or "Xdrawable" then @var{out} is ignored
 @w{as well}.  Error messages (@w{if any}) are written to the stream
-@var{err}, unless @var{err} is NULL.  The return value from @t{newpl} is
-a `handle': @w{a nonnegative} integer by which the newly created Plotter
-is @w{referred to}.  @w{A negative} return value indicates the Plotter
-could not be created.
+@var{err}, unless @var{err} is NULL@.  The return value from @t{newpl}
+is a `handle': @w{a nonnegative} integer by which the newly created
+Plotter is @w{referred to}.  @w{A negative} return value indicates the
+Plotter could not be created.
 
 @item int @t{selectpl} (int @var{handle});
 @t{selectpl} selects a Plotter, referred to by its handle, for use.  If
@@ -5468,7 +5589,7 @@ in which case the value of that environment variable will be used.  This
 rule increases run-time flexibility: @w{an application} programmer may
 allow non-critical driver parameters to be specified by the user via
 environment variables.  Once set, @w{a parameter} may be unset by the
-programmer by calling @code{parampl} with a value argument of NULL.
+programmer by calling @code{parampl} with a value argument of NULL@.
 This further increases flexibility.
 
 @node C Compiling and Linking, Sample C Drawings, The C API, C Programming
@@ -5632,15 +5753,16 @@ i.e., as an offset from the previous point.  After the @w{``C'' curve}
 is drawn, the Plotter is closed.  @w{A Postscript} file is written to
 standard output when @code{deletepl} is called to delete the Plotter.
 
-Specifying "fig", "pcl", "hpgl", "tek", or "meta" as the first argument
-in the call to @code{newpl}, instead of "ps", would yield a Plotter that
-would write graphics to standard output in the specified format, instead
-of Postscript.  The @code{PAGESIZE} parameter is relevant to the first
-three of these output formats, but is ignored for the latter two.
-Specifying "meta" as the Plotter type may be useful if you wish to avoid
-recompilation for different output devices.  Metafile output may be
-piped to the @code{plot} utility and converted to any other supported
-output format, or displayed in an @w{X window}.  @xref{plot}.
+Specifying "ai", "fig", "pcl", "hpgl", "tek", or "meta" as the first
+argument in the call to @code{newpl}, instead of "ps", would yield a
+Plotter that would write graphics to standard output in the specified
+format, instead of Postscript.  The @code{PAGESIZE} parameter is
+relevant to the first four of these output formats, but is ignored for
+the latter two.  Specifying "meta" as the Plotter type may be useful if
+you wish to avoid recompilation for different output devices.  Graphics
+metafile output may be piped to the @code{plot} utility and converted to
+any other supported output format, or displayed in an @w{X window}.
+@xref{plot}.
 
 @w{If "X"} were specified as the first argument of @code{newpl}, the
 curve would be drawn in a popped-up @w{X window}, and the output stream
@@ -5775,8 +5897,8 @@ rather than a Postscript Plotter will be used, and the spiral will be
 drawn in a popped-up @w{X window}.  If your @w{X display} does not
 support the "NewCenturySchlbk-Roman" font, you may substitute any other
 scalable font, such as the widely available "utopia-medium-r-normal".
-For the format of font names, see @ref{Text Fonts in X}.  If the @w{X
-Plotter} is unable to retrieve the font you specify, it will first
+For the format of font names, see @ref{Text Fonts in X}.  @w{If the}
+@w{X Plotter} is unable to retrieve the font you specify, it will first
 attempt to use a default scalable font ("Helvetica"), and if that fails,
 use a default Hershey vector font ("HersheySerif") instead.  Hershey
 fonts are constructed from line segments, so each built-in Hershey font
@@ -5884,7 +6006,7 @@ As you can see, this application begins by calling @code{parampl}
 several times to set device driver parameters, and then calls
 @code{newpl} to create an @w{X Plotter}.  The @w{X Plotter} window will
 have size 300x150 pixels.  This window will vanish when the Plotter is
-deleted.  If the @code{VANISH_ON_DELETE} parameter were not set to
+deleted.  @w{If the} @code{VANISH_ON_DELETE} parameter were not set to
 "yes", the window would remain on the screen until removed by the user
 (@w{by typing} @samp{q} @w{in it}, or by clicking with a mouse).
 
@@ -5895,11 +6017,11 @@ and erases the window when @code{erase} is called.  But if double
 buffering is used, each frame of graphics is written into an off-screen
 buffer, and copied into the window, pixel by pixel, when @code{erase} is
 called or the Plotter is closed.  This is a bit counterintuitive, but is
-exactly what is needed for smooth animation.  On some high-end display
-devices you may be able to do even better, by specifying "fast" rather
-than "yes".  This requests that the @w{X Plotter} take advantage of
-special hardware support for double buffering.  @w{If no} such support
-is available, "fast" means the same as "yes".
+exactly what is needed for smooth animation.  @w{On some} high-end
+display devices you may be able to do even better, by specifying "fast"
+rather than "yes".  This requests that the @w{X Plotter} take advantage
+of special hardware support for double buffering.  @w{If no} such
+support is available, "fast" means the same as "yes".
 
 After the Plotter is created, it is selected for use and opened.  When
 @code{openpl} is called, the window @w{pops up}, and the animation
@@ -6229,8 +6351,8 @@ user coordinates to device coordinates.
 Many functions come in two versions: integer and double precision
 floating point.  Internally, @code{libplot} uses double precision
 floating point.  The integer versions are provided for backward
-compatibility.  If there are two versions of a function, the name of the
-floating point version begins with the @w{letter @samp{f}}.
+compatibility.  @w{If there} are two versions of a function, the name of
+the floating point version begins with the @w{letter @samp{f}}.
 
 Many functions come in both absolute and relative versions, also.  The
 latter use relative coordinates (i.e., coordinates relative to the
@@ -6369,10 +6491,10 @@ pair, redirects all graphics output from a Plotter to the stream
 @var{fp}.  The previous output stream is returned.
 
 This operation is useful on Plotters that are designed to be opened only
-once; in particular, on Fig Plotters.  @w{On other} Plotters its use is
-strongly deprecated.  @w{On Plotters} that do not have an output stream
-in the conventional sense, i.e., on @w{X Plotters} and @w{X Drawable}
-Plotters, it has no effect.
+once; in particular, on Illustrator and Fig Plotters.  @w{On other}
+Plotters its use is strongly deprecated.  @w{On Plotters} that do not
+have an output stream in the conventional sense, i.e., on @w{X Plotters}
+and @w{X Drawable} Plotters, it has no effect.
 @end table
 
 @node Drawing Functions, Attribute Functions, Setup Functions, Functions
@@ -6413,11 +6535,11 @@ been called.
 @itemx int @t{farcrel} (double @var{xc}, double @var{yc}, double @var{x0}, double @var{y0}, double @var{x1}, double @var{y1});
 @t{arc} and @t{farc} take six arguments specifying the beginning
 (@var{x0}, @var{y0}), end (@var{x1}, @var{y1}), and center (@var{xc},
-@var{yc}) of a circular arc.  If the graphics cursor is at (@var{x0},
-@var{y0}) and a path is under construction, then the arc is added to the
-path.  Otherwise the current path (@w{if any}) is ended, and the arc
-begins a new path.  In all cases the graphics cursor is moved to
-(@var{x1}, @var{y1}).
+@var{yc}) of a circular arc.  @w{If the} graphics cursor is at
+(@var{x0}, @var{y0}) and a path is under construction, then the arc is
+added to the path.  Otherwise the current path (@w{if any}) is ended,
+and the arc begins a new path.  In all cases the graphics cursor is
+moved to (@var{x1}, @var{y1}).
 
 The direction of the arc (clockwise or counterclockwise) is determined
 by the convention that the arc, centered at (@var{xc}, @var{yc}), sweep
@@ -6473,11 +6595,11 @@ new path.  In all cases the graphics cursor is moved to (@var{x},
 points @code{pc}=(@var{xc},@var{yc}), @code{p0}=(@var{x0},@var{y0}), and
 @code{p1}=(@var{x1},@var{y1}) that define a so-called quarter ellipse.
 This is an elliptic arc from @code{p0} to @code{p1} with @w{center
-@code{pc}}.  If the graphics cursor is at point @code{p0} and a path is
-under construction, the quarter-ellipse is added to it.  Otherwise the
-path under construction (@w{if any}) is ended, and the quarter-ellipse
-begins a new path.  @w{In all} cases the graphics cursor is moved to
-@code{p1}.
+@code{pc}}.  @w{If the} graphics cursor is at point @code{p0} and a path
+is under construction, the quarter-ellipse is added to it.  Otherwise
+the path under construction (@w{if any}) is ended, and the
+quarter-ellipse begins a new path.  @w{In all} cases the graphics cursor
+is moved to @code{p1}.
 
 The quarter-ellipse is an affinely transformed version of a quarter
 circle.  @w{It is} drawn so as to have control points @code{p0},
@@ -6487,7 +6609,7 @@ is tangent at @code{p0} to the line segment joining @code{p0} to
 line segment joining @code{p1} to @math{@code{p0}+@code{p1}-@code{pc}}.
 @w{So it} fits snugly into a triangle with these three control points as
 vertices.  Notice that the third control point is the reflection of
-@code{pc }through the line joining @code{p0} @w{and @code{p1}}.
+@code{pc} through the line joining @code{p0} @w{and @code{p1}}.
 @t{ellarcrel} and @t{fellarcrel} are similar to @t{ellarc} and
 @t{fellarc}, but use cursor-relative coordinates.
 
@@ -6532,9 +6654,9 @@ is not plotted.
 @itemx int @t{flinerel} (double @var{x1}, double y@var{1}, double @var{x2}, double @var{y2});
 @t{line} and @t{fline} take four arguments specifying the start point
 (@var{x1}, @var{y1}) and end point (@var{x2}, @var{y2}) of a line
-segment.  If the graphics cursor is at (@var{x1}, @var{y1}) and a path
-is under construction, the line segment is added to it.  Otherwise the
-path under construction (@w{if any}) is ended, and the line segment
+segment.  @w{If the} graphics cursor is at (@var{x1}, @var{y1}) and a
+path is under construction, the line segment is added to it.  Otherwise
+the path under construction (@w{if any}) is ended, and the line segment
 begins a new path.  @w{In all} cases the graphics cursor is moved to
 (@var{x2}, @var{y2}).  @t{linerel} and @t{flinerel} are similar to
 @t{line} and @t{fline}, but use cursor-relative coordinates.
@@ -6636,6 +6758,8 @@ If the object to be filled is a self-intersecting path, the `even-odd
 rule' will be applied to determine which points are inside, i.e., which
 of the regions bounded by the path should be filled.  The even-odd rule
 is explained in the @cite{Postscript Language Reference Manual}.
+Illustrator Plotters use a different rule if the parameter
+@code{@w{AI_VERSION}} @w{is "3"}.  @xref{Driver Parameters}.
 
 Tektronix Plotters do not support filling, and HP-GL Plotters support
 filling of arbitrary paths only if the parameter @code{HPGL_VERSION} is
@@ -6671,9 +6795,9 @@ for all text strings subsequently drawn on the graphics display.  (The
 font for plotting strings is fully specified by calling @t{fontname},
 @t{fontsize}, and @t{textangle}.)  The default font name depends on the
 type of Plotter.  @w{It is} "Helvetica" for all Plotters except
-Tektronix and HP-GL Plotters, for which it is "HersheySerif".  If the
-argument @var{font_name} is NULL or the empty string, or the font is not
-available, the default font name will be used.  Which fonts are
+Tektronix and HP-GL Plotters, for which it is "HersheySerif".  @w{If
+the} argument @var{font_name} is NULL or the empty string, or the font
+is not available, the default font name will be used.  Which fonts are
 available also depends on the type of Plotter; for a list of all
 available fonts, see @ref{Text Fonts}.  The size of the font in user
 coordinates is returned.
@@ -6694,7 +6818,7 @@ subsequently drawn on the graphics display.  Recognized styles are
 "miter" (the default), "round", and "bevel".  This function has no
 effect on Tektronix Plotters.  Also, it has no effect on HP-GL Plotters
 if the parameter @code{HPGL_VERSION} is set to a value less @w{than "2"}
-(the default). @xref{Driver Parameters}.
+(the default).  @xref{Driver Parameters}.
 
 @item int @t{linemod} (const char *@var{s});
 @t{linemod} sets the linemode (i.e., line style) for all paths, circles,
@@ -6858,7 +6982,7 @@ effect when the Plotter was created.  Each driver parameter has a value
 that is allowed to be a generic pointer (@w{a @code{void *}}).  For most
 parameters, this value should be a string (@w{a @code{char *}}).
 @code{parampl} may be called any number of times.  @w{A parameter} may
-be unset by calling @code{parampl} with a value argument of NULL.
+be unset by calling @code{parampl} with a value argument of NULL@.
 
 If at Plotter creation time a parameter is @emph{not} set, its default
 value will be used, unless there is an environment variable of the same
@@ -6870,14 +6994,14 @@ environment variables.
 The following are the currently recognized parameters (unrecognized ones
 are ignored).  The most important ones are @code{DISPLAY} and
 @code{BITMAPSIZE}, which affect @w{X Plotters}, and @code{PAGESIZE},
-which affects Postscript, Fig, and HP-GL Plotters.  These three
-parameters are listed first and the others alphabetically.  Many of the
-parameters, such as the several whose names begin with "HPGL", affect
-only a single type of Plotter.
+which affects Illustrator, Postscript, Fig, and HP-GL Plotters.  These
+three parameters are listed first and the others alphabetically.  Many
+of the parameters, such as the several whose names begin with "HPGL",
+affect only a single type of Plotter.
 
 @table @code
 @item @t{DISPLAY}
-(Default NULL.)  The X Window System display on which the graphics
+(Default NULL@.)  The X Window System display on which the graphics
 display will be @w{popped up}, as an @w{X window}.  This is relevant
 only to @w{X Plotters}.
 
@@ -6889,22 +7013,34 @@ resource} @code{Xplot.geometry}.  This is for backward compatibility.
 
 @item PAGESIZE
 (Default "letter".)  The size of the page on which the graphics display
-will be positioned.  This is relevant only to Postscript, Fig, PCL, and
-HP-GL Plotters.  "letter" means an 8.5@dmn{in} by 11@dmn{in} page.  Any
-ISO page size in the range "a0"@dots{}"a4" or ANSI page size in the
-range "a"@dots{}"e" may be specified ("letter" is an alias @w{for "a"}
-and "tabloid" is an alias @w{for "b"}).  "legal" and "ledger" are
-recognized page sizes also.
+will be positioned.  This is relevant only to Illustrator, Postscript,
+Fig, PCL, and HP-GL Plotters.  "letter" means an 8.5@dmn{in} by
+11@dmn{in} page.  Any ISO page size in the range "a0"@dots{}"a4" or ANSI
+page size in the range "a"@dots{}"e" may be specified ("letter" is an
+alias @w{for "a"} and "tabloid" is an alias @w{for "b"}).  "legal",
+"ledger", @w{and "b5"} are recognized page sizes also.
 
-For Postscript Plotters, the graphics display will be a square region
-centered on the specified page and occupying its full width.  For Fig
-Plotters, the graphics display will be a square region located in the
-upper left corner of an @code{xfig} display, with width equal to the
-width of the specified page.  For PCL Plotters, fine control over the
-positioning of the graphics display on the page may be accomplished by
-setting the @code{PCL_XOFFSET} and @code{PCL_YOFFSET} parameters.  For
-HP-GL Plotters, @code{HPGL_XOFFSET} and @code{HPGL_YOFFSET} are used
-similarly.
+For Illustrator and Postscript Plotters, the graphics display will be a
+square region centered on the specified page and occupying its full
+width.  For Fig Plotters, the graphics display will be a square region
+located in the upper left corner of an @code{xfig} display, with width
+equal to the width of the specified page.  For PCL Plotters, fine
+control over the positioning of the graphics display on the page may be
+accomplished by setting the @code{PCL_XOFFSET} and @code{PCL_YOFFSET}
+parameters.  For HP-GL Plotters, @code{HPGL_XOFFSET} and
+@code{HPGL_YOFFSET} are used similarly.
+
+@item AI_VERSION
+(Default "5".)  Relevant only to Illustrator Plotters.  Recognized
+values are "5" @w{and "3"}.  @w{"5" means} that the output should be in
+the format used by @w{version 5} of Adobe Illustrator, which is
+recognized by all later versions.  @w{"3" means} that the output should
+be in the format used by @w{version 3}, which is recognized by all later
+versions.  @w{If the} version is "3", the nonzero winding number rule,
+rather than the even-odd rule that @code{libplot} normally uses, will be
+employed to determine which of the regions bounded by any
+self-intersecting path are `inside'.  For the distinction, see the
+@cite{Postscript Language Reference Manual}.
 
 @item BG_COLOR
 (Default "white".)  The initial background color of the graphics
@@ -6967,12 +7103,12 @@ default portrait orientation.  "180" and "270" are supported only if
 output should be generic HP-GL, @w{"1.5" means} that the output should
 be suitable for the HP7550A graphics plotter and the HP758x, HP7595A and
 HP7596A drafting plotters (HP-GL with some HP-GL/2 extensions), and
-@w{"2" means} that the output should be modern HP-GL/2.  If the version
-is "1" @w{or "1.5"} then the only available fonts will be vector fonts,
-and all paths will be drawn with a default width.  Additionally, if the
-version @w{is "1"} then the filling of arbitrary paths will not be
-supported (circles and rectangles aligned with the coordinate axes may
-be filled).
+@w{"2" means} that the output should be modern HP-GL/2.  @w{If the}
+version is "1" @w{or "1.5"} then the only available fonts will be vector
+fonts, and all paths will be drawn with a default width.  Additionally,
+if the version @w{is "1"} then the filling of arbitrary paths will not
+be supported (circles and rectangles aligned with the coordinate axes
+may be filled).
 
 @item HPGL_XOFFSET, HPGL_YOFFSET
 (Defaults "0.0cm" and "0.0cm".)  Relevant only to HP-GL Plotters.
@@ -6988,12 +7124,12 @@ the path will be split into two or more sub-paths, though the splitting
 should not be noticeable.  Splitting will not be performed if the path
 is filled.
 
-This parameter is relevant to X, X Drawable, Postscript, Fig, PCL, and
-HP-GL Plotters.  The reason for splitting long paths is that some
-display devices (e.g., old Postscript printers and HP-GL plotters) have
-limited buffer sizes.  @w{It is} not relevant to Tektronix or Metafile
-Plotters, since they draw paths in real time and have no buffer
-limitations.
+This parameter is relevant to X, X Drawable, Illustrator, Postscript,
+Fig, PCL, and HP-GL Plotters.  The reason for splitting long paths is
+that some display devices (e.g., old Postscript printers and HP-GL
+plotters) have limited buffer sizes.  @w{It is} not relevant to
+Tektronix or Metafile Plotters, since they draw paths in real time and
+have no buffer limitations.
 
 @item META_PORTABLE
 (Default "no".)  Relevant only to Metafile Plotters.  "yes" means that
@@ -7005,9 +7141,9 @@ metafile format, rather than the default (binary) version.
 (Default "no".)  Relevant only to PCL Plotters.  @w{"no" means} to draw
 with a fixed set of pens.  "yes" means that pen colors will not
 restricted to this palette: colors will be assigned to ``logical pens'',
-@w{as needed}.  Other than color LaserJet printers and DesignJet
-plotters, not many @w{PCL 5} devices allow the assignment of colors to
-logical pens.  @w{So this} parameter should be used with caution.
+@w{as needed}.  Other than color LaserJet printers, not many @w{PCL 5}
+devices allow the assignment of colors to logical pens.  @w{So this}
+parameter should be used with caution.
 
 @item PCL_ROTATE
 (Default "0".)  Relevant only to PCL Plotters.  The angle, in degrees,
@@ -7028,28 +7164,28 @@ centimeters, millimeters, or inches.  For example, an offset could be
 specified as "2cm" or "1.2in".
 
 @item TERM
-(Default NULL.)  Relevant only to Tektronix Plotters.  If the value is
-@code{xterm}, @code{xterms}, or @code{kterm}, @w{it is} taken as a sign
-that the current application is running in an @w{X Window} System VT100
-terminal emulator: @w{an @code{xterm}}.  Before drawing graphics, a
-Tektronix Plotter will emit an escape sequence that causes the terminal
-emulator's auxiliary Tektronix window, which is normally hidden, to
-@w{pop up}.  After the graphics are drawn, an escape sequence that
-returns control to the original VT100 window will be emitted.  The
-Tektronix window will remain on the screen.
+(Default NULL@.)  Relevant only to Tektronix Plotters.  If the value is
+"xterm", "xterms", or "kterm", @w{it is} taken as a sign that the
+current application is running in an @w{X Window} System VT100 terminal
+emulator: @w{an @code{xterm}}.  Before drawing graphics, a Tektronix
+Plotter will emit an escape sequence that causes the terminal emulator's
+auxiliary Tektronix window, which is normally hidden, to @w{pop up}.
+After the graphics are drawn, an escape sequence that returns control to
+the original VT100 window will be emitted.  The Tektronix window will
+remain on the screen.
 
-If the value of is @code{kermit}, @code{ansi.sys}, @code{ansissys},
-@code{ansi.sysk}, or @code{ansisysk}, @w{it is} taken as a sign that the
-current application is running in the VT100 terminal emulator provided
-by the MS-DOS version of @code{kermit}.  Before drawing graphics, a
-Tektronix Plotter will emit an escape sequence that switches the
-terminal emulator to Tektronix mode.  Also, some of the Tektronix
-control codes emitted by the Plotter will be @code{kermit}-specific.
-There will be a limited amount of color support, which is not normally
-the case (the 16 @code{ansi.sys} colors will be supported).  After
-drawing graphics, the Plotter will emit an escape sequence that returns
-the emulator to VT100 mode.  The key sequence `@w{ALT minus}' may be
-employed manually within @code{kermit} to switch between the two modes.
+If the value is "kermit", "ansi.sys", "ansissys", "ansi.sysk", or
+"ansisysk", @w{it is} taken as a sign that the current application is
+running in the VT100 terminal emulator provided by the MS-DOS version of
+@code{kermit}.  Before drawing graphics, a Tektronix Plotter will emit
+an escape sequence that switches the terminal emulator to Tektronix
+mode.  Also, some of the Tektronix control codes emitted by the Plotter
+will be @code{kermit}-specific.  There will be a limited amount of color
+support, which is not normally the case (the 16 @code{ansi.sys} colors
+will be supported).  After drawing graphics, the Plotter will emit an
+escape sequence that returns the emulator to VT100 mode.  The key
+sequence `@w{ALT minus}' may be employed manually within @code{kermit}
+to switch between the two modes.
 
 @item USE_DOUBLE_BUFFERING
 (Default "no".)  Relevant only to X Plotters and X Drawable Plotters.
@@ -7075,20 +7211,20 @@ until it is removed by the user (by typing @samp{q} @w{in it}, or by
 clicking with a mouse).
 
 @item XDRAWABLE_COLORMAP
-(Default NULL.)  Relevant only to @w{X Drawable Plotters}.  If the value
-is non-NULL, it should be a @code{Colormap *}, @w{a pointer} to a
+(Default NULL@.)  Relevant only to @w{X Drawable Plotters}.  If the
+value is non-NULL, it should be a @code{Colormap *}, @w{a pointer} to a
 colormap from which colors should be allocated.  NULL indicates that the
 colormap to be used should be the default colormap of the default screen
 of the @w{X display}.
 
 @item XDRAWABLE_DISPLAY
-(Default NULL.)  Relevant only to X Drawable Plotters.  The value should
-be a @code{Display *}, @w{a pointer} to the @w{X display} with which the
-drawable(s) to be @w{drawn in} are associated.
+(Default NULL@.)  Relevant only to X Drawable Plotters.  The value
+should be a @code{Display *}, @w{a pointer} to the @w{X display} with
+which the drawable(s) to be @w{drawn in} are associated.
 
 @item XDRAWABLE_DRAWABLE1
 @itemx XDRAWABLE_DRAWABLE2
-(Default NULL.)  Relevant only to X Drawable Plotters.  If set, the
+(Default NULL@.)  Relevant only to X Drawable Plotters.  If set, the
 value of each of these parameters should be a @code{Drawable *}, a
 pointer to a drawable to be @w{drawn in}.  @w{A `drawable'} is either a
 window or a pixmap.  At the time an @w{X Drawable} Plotter is created,
@@ -7142,26 +7278,27 @@ Hershey vector fonts, 35 Postscript fonts, 45 @w{PCL 5} fonts, and 18
 Hewlett--Packard vector fonts.  @w{We call} these 120 fonts the
 `built-in' fonts.  The Hershey fonts are constructed from stroked
 characters digitized @w{c.@: 1967} by Dr.@: @w{Allen V.} Hershey at the
-U.S. Naval Surface Weapons Center in @w{Dahlgren, VA}.  The 35
+U.S. Naval Surface Weapons Center in @w{Dahlgren, VA}@.  The 35
 Postscript fonts are the outline fonts resident in all modern Postscript
-printers and plotter, and the 45 @w{PCL 5} fonts are the outline fonts
-resident in most modern Hewlett--Packard LaserJet printers.  (The old
+printers, and the 45 @w{PCL 5} fonts are the outline fonts resident in
+modern Hewlett--Packard LaserJet printers and plotters.  (The old
 LaserJet III, which was Hewlett--Packard's first @w{PCL 5} printer,
-supported only 8 of @w{the 45}; most Hewlett-Packard plotters do not
-support @w{PCL 5} @w{at all}.)  The 18 Hewlett--Packard vector fonts are
-fonts that are resident in Hewlett--Packard printers and plotters
-(mostly the latter).
+supported only 8 of @w{the 45}.)  The 18 Hewlett--Packard vector fonts
+are fonts that are resident in Hewlett--Packard printers and plotters
+(mostly the latter).  
 
-The Hershey fonts can be used by all types of Plotter object supported
-by @code{libplot}, and the Postscript fonts can be used by all types of
-Plotter object except PCL, HP-GL and Tektronix.  So all variants of
+The Hershey fonts can be used by all types of Plotter supported by
+@code{libplot}, and the Postscript fonts can be used by all types of
+Plotter except PCL, HP-GL and Tektronix.  So all variants of
 @code{graph} can use the Hershey fonts, and all variants of @code{graph}
 except @code{graph -T pcl}, @code{graph -T hpgl} and @code{graph -T tek}
-can use the Postscript fonts.  The @w{PCL 5} and Hewlett--Packard vector
-fonts can be used by PCL and HP-GL Plotters, and by @code{graph -T pcl}
-and @code{graph -T hpgl}.  @w{X Plotters} and @code{graph @w{-T X}} are
-not restricted to the built-in fonts.  They can use any @w{X Window}
-System font.
+can use the Postscript fonts.  The @w{PCL 5} fonts can be used by by
+Illustrator, PCL, and HP-GL Plotters, and by @code{graph -T ai},
+@code{graph -T pcl}, and @code{graph -T hpgl}.  The Hewlett--Packard
+vector fonts can be used by by PCL and HP-GL Plotters, and by
+@code{graph -T pcl} and @code{graph -T hpgl}.  @w{X Plotters} and
+@code{graph @w{-T X}} are not restricted to the built-in fonts.  They
+can use any @w{X Window} System font.
 
 The @code{plotfont} utility, which accepts the @samp{-T} option, will
 print a character map of any font that is available in the specified
@@ -7490,14 +7627,12 @@ follows.
 
 @noindent 
 The Hewlett--Packard vector fonts with an asterisk (the ANK and Symbol
-fonts) are not available when producing output in @w{PCL 5} or HP-GL/2
-format.  They are only available when producing HP-GL output for the
-HP7550A graphics plotter and the HP758x, HP7595A and HP7596A drafting
-plotters, which used HP-GL with some HP-GL/2 extensions.  @w{To ensure}
-that these fonts are available, you must set the environment variable or
-driver parameter @code{HPGL_VERSION} @w{to "1.5"}.  The ANK fonts are
-Japanese fonts (@pxref{Cyrillic and Japanese}), and the Symbol fonts
-contain a few miscellaneous mathematical symbols.
+fonts) are only available when producing HP-GL output for the HP7550A
+graphics plotter and the HP758x, HP7595A and HP7596A drafting plotters.
+The ANK fonts are Japanese fonts (@pxref{Cyrillic and Japanese}), and
+the Symbol fonts contain a few miscellaneous mathematical symbols.
+@w{To ensure} that these fonts are available, you must set the
+environment variable or driver parameter @code{HPGL_VERSION} @w{to "1.5"}.
 
 All Hewlett--Packard vector fonts except the ANK and Symbol fonts use
 the ISO-Latin-1 encoding.  The Arc fonts are proportional
@@ -7508,7 +7643,7 @@ Apparently Hewlett--Packard dropped support for device-resident kerning
 tables when moving from HP-GL to modern HP-GL/2 and @w{PCL 5}.  For
 information about Hewlett--Packard vector fonts and the way in which
 they are kerned (@w{in pen} plotters, @w{at least}), see the article by
-@w{L@. W@.} Hennessee @w{et al@.} in the Nov.@: 1981 issue of the
+@w{L@. W@.}  Hennessee @w{et al@.} in the Nov.@: 1981 issue of the
 @cite{Hewlett--Packard Journal}.
 
 To what extent do the fonts supported by @code{libplot} contain
@@ -7537,7 +7672,7 @@ the @code{plotfont} utility to display the character map for any font,
 including the Cyrillic and Japanese vector fonts.  @xref{plotfont}.
 
 The HersheyCyrillic and HersheyCyrillic-Oblique fonts use an encoding
-called KOI8-R, a superset of ASCII that has become the @w{de facto}
+called @w{KOI8-R}, a superset of ASCII that has become the @w{de facto}
 standard for Unix and networking applications in the former Soviet
 Union.  Insofar as printable ASCII characters go, they resemble the
 HersheySerif vector font.  But their upper halves are different.  The
@@ -7595,7 +7730,7 @@ ANK stands for Alphabet, Numerals, and Katakana.  The ANK fonts use the
 `Kana-8' encoding.  The lower half of each font uses the JIS Roman
 encoding, and the upper half contains half-width Katakana.  Half-width
 Katakana are simplified Katakana that may need to be equipped with
-diacritical marks.  The diacritical marks are included in the encoding
+diacritical marks.  The diacritical marks are included in the encoding,
 as separate characters.
 
 @node Text Fonts in X, Text String Format, Cyrillic and Japanese, Text and Markers
@@ -7608,7 +7743,7 @@ includes the 22 built-in Hershey vector fonts.  They can use the 35
 built-in Postscript fonts too, if those fonts are available on the @w{X
 display}.  Most releases of the plotting utilities include freely
 distributable versions of the 35 Postscript fonts, in @w{Type 1} format,
-which are easily installed on any @w{X display}.
+that are easily installed on any @w{X display}.
 
 In fact, the plotting utilities can use most fonts that are available on
 the current @w{X display}.  This includes all scalable fonts that have a
@@ -7750,11 +7885,11 @@ For example, if the "HersheySerif" font were used,
 Besides the preceding escape sequences, there are also escape sequences
 for the printable non-ASCII characters in each of the built-in
 ISO-Latin-1 fonts (which means in every built-in font, except for the
-symbol fonts, ZapfDingbats, and the Cyrillic and Japanese fonts).  The
-useful non-ASCII characters include accented characters, among others.
-Such `8-bit' characters, in the @t{0xa0}@dots{}@t{0xff} byte range, may
-be included directly in a text string.  But if your terminal does not
-permit this, you may use the escape sequences for them instead.
+symbol fonts, the HersheyCyrillic fonts, HersheyEUC, and ZapfDingbats).
+The useful non-ASCII characters include accented characters among
+others.  Such `8-bit' characters, in the @t{0xa0}@dots{}@t{0xff} byte
+range, may be included directly in a text string.  But if your terminal
+does not permit this, you may use the escape sequences for them instead.
 
 There are escape sequences for the mathematical symbols and Greek
 characters in the symbol fonts, @w{as well}.  This is how the symbol
@@ -8528,7 +8663,7 @@ font selected with the @samp{--symbol-font-name} option.  By default,
 this is the ZapfDingbats font except in @code{graph -T pcl}, @code{graph
 -T hpgl} and @code{graph -T tek}.  These three variants of @code{graph}
 normally have no access to Postscript fonts, so they use the
-@code{HersheySerif} font instead.
+HersheySerif font instead.
 
 Many of the characters in the ZapfDingbats font are suitable for use as
 marker symbols.  For example, character #74 is the Texas star.  Doing
@@ -8563,8 +8698,8 @@ Postscript plot.  The Wingdings font has the Texas star in location
 Many of the plotting utilities allow colors to be specified by name.
 For example, @code{graph} supports the @samp{--frame-color} option.
 @code{plot -T hpgl} checks the value of the @code{HPGL_PENS} environment
-variable, as do the HP-GL Plotter objects available in the
-@code{libplot} library.  Also, the @code{libplot} library includes the
+variable, as do the HP-GL Plotters available in the @code{libplot}
+library.  Also, the @code{libplot} library includes the
 @code{pencolorname}, @code{fillcolorname}, and @code{bgcolorname}
 functions.
 
@@ -8587,7 +8722,7 @@ containing "grey" has been included.  For example, both "dark slate gray
 @node Metafiles, Auxiliary Software, Color Names, Appendices
 @appendix The Graphics Metafile Format
 
-GNU metafile format is produced by the raw variants of @code{graph},
+GNU graphics metafiles are produced by the raw variants of @code{graph},
 @code{plot}, @code{tek2plot}, and @code{plotfont}, and by any other
 graphics application that uses the Metafile Plotter support contained in
 GNU @code{libplot}.  @w{A file} in this format is a sort of audit trail:
@@ -8596,15 +8731,15 @@ data.  Each plotting command is an @w{`op code'}: @w{a single} ASCII
 character, indicating a Plotter operation.  The data following the
 command are the arguments passed to the operation, @w{if any}.
 
-There are two sorts of GNU metafile: binary (the default) and portable
-(human-readable).  Binary metafiles begin with the magic string 
-"#PLOT 1\n", and portable metafiles with the magic string "#PLOT 2\n".  
-@w{If you} wish to transfer metafiles between machines of different types, 
-you should use portable rather than binary format.  Portable metafiles are
-produced by GNU @code{graph} and the other plotting utilities if the
-@samp{-O} option is specified, and by Metafile Plotters if the
-@code{META_PORTABLE} parameter is set to "yes".  Both binary and
-portable metafiles can be translated to other formats by GNU
+There are two sorts of GNU graphics metafile: binary (the default) and
+portable (human-readable).  Binary metafiles begin with the magic string
+@w{"#PLOT 1\n"}, and portable metafiles with the magic string 
+@w{"#PLOT 2\n"}.  @w{If you} wish to transfer metafiles between machines
+of different types, you should use portable rather than binary format.
+Portable metafiles are produced by GNU @code{graph} and the other
+plotting utilities if the @samp{-O} option is specified, and by Metafile
+Plotters if the @code{META_PORTABLE} parameter is set to "yes".  Both
+binary and portable metafiles can be translated to other formats by GNU
 @code{plot}.
 
 In the portable format, the arguments of each operation (integers,
@@ -8619,20 +8754,26 @@ string must come last among the arguments.
 
 The @code{openpl} and @code{closepl} operations open and close a
 Plotter, i.e., begin and end a page of graphics.  They are represented
-by the @w{op codes} @w{@samp{o} and @samp{x}}, respectively.  Each of
-the other 79 Plotter operations has a corresponding @w{op code}, with 10
-exceptions.  These exceptions include @w{(1) the} setup operations
+by the @w{op codes} @w{@samp{o} and @samp{x}}, respectively.  The
+@code{erase} operation, if present, separates frames within a page.  On
+real-time display devices, it is interpreted as a screen erasure.  @w{It
+is} represented by the @w{op code @samp{e}}.
+
+Each of the 78 other Plotter operations has a corresponding @w{op code},
+with 13 exceptions.  These exceptions are @w{(1) the} setup operations
 @code{flushpl} and @code{outfile}, @w{(2) the} operations
 @code{havecap}, @code{labelwidth}, and @code{flabelwidth}, which merely
-return information, and @w{(3) the} @code{colorname},
-@code{pencolorname}, @code{fillcolorname}, and @code{bgcolorname}
-operations, which are internally mapped to @code{pencolor},
-@code{fillcolor}, and @code{bgcolor}, and @w{(4) the} @code{ffontname}
-operation, which in a metafile would be indistinguishable from
-@code{fontname}.  @w{So besides} @w{@samp{o} and @samp{x}}, there are 69
-possible @w{op codes}, for a total @w{of 71}.  The following table lists
-10 of the @w{op codes} other than @w{@samp{o} and @samp{x}}, followed by
-the name of the @code{libplot} operation they @w{stand for}.
+return information, @w{(3) the} @code{colorname}, @code{pencolorname},
+@code{fillcolorname}, and @code{bgcolorname} operations, which are
+internally mapped to @code{pencolor}, @code{fillcolor}, and
+@code{bgcolor}, @w{(4) the} @code{frotate}, @code{fscale}, and
+@code{ftranslate} operations, which are internally mapped to
+@code{fconcat}, and @w{(5) the} @code{ffontname} operation, which in a
+metafile would be indistinguishable from @code{fontname}.  @w{So
+besides} @w{@samp{o} and @samp{x}}, there are 66 possible @w{op codes},
+for a total @w{of 68}.  The following table lists 10 of the @w{op codes}
+other than @w{@samp{o} and @samp{x}}, followed by the name of the
+@code{libplot} operation they @w{stand for}.
 
 @table @asis
 @item Op Code
@@ -8660,12 +8801,12 @@ Operation
 @end table
 
 @noindent
-The full set of 71 @w{op codes} is listed in the header file
+The full set of 68 @w{op codes} is listed in the header file
 @file{plot.h}, which is distributed along with the plotting utilities.
 @w{On most} systems it is installed in @file{/usr/include} or
 @file{/usr/local/include}.
 
-@w{It is} worth noting that of the 71 @w{op codes}, only 46 are used in
+@w{It is} worth noting that of the 68 @w{op codes}, only 43 are used in
 portable metafiles.  That is because in ASCII format, there is no point
 in distinguishing the floating point @code{libplot} operations from
 their integer counterparts.
@@ -8737,17 +8878,18 @@ interoperate with @code{xfig}.
 Several of the GNU plotting utilities were inspired by Unix plotting
 utilities.  A @code{graph} utility and various plot filters were present
 in the first releases of Unix from Bell Laboratories, going @w{at least}
-as far back as the @w{Version 4} distribution (1973).  Most of the work
-on tying them together and breaking out device-dependent versions of
-@code{libplot} was performed by @email{llc@@research.att.com, Lorinda
-Cherry}.  By the time of @w{Version 7} Unix (1979) and the subsequent
-Berkeley releases, the package consisting of @code{graph}, @code{plot},
-@code{spline}, and several device-dependent versions of @code{libplot}
-was a standard Unix feature.  The first display device supported by the
-package was a Versatec storage scope.  By the early 1980's, supported
-devices included Tektronix storage scopes, 200@dmn{dpi} electrostatic
-printer/plotters from Versatec and Varian, pen plotters from
-Hewlett--Packard, and early graphics terminals.
+as far back as the @w{Version 4} distribution (1973).  The first
+supported display device was a Tektronix 611 storage scope.  Most of the
+work on tying the plot filters together and breaking out
+device-dependent versions of @code{libplot} was performed by
+@email{llc@@research.att.com, Lorinda Cherry}.  @w{By the} time of
+@w{Version 7} Unix (1979) and the subsequent Berkeley releases, the
+package consisting of @code{graph}, @code{plot}, @code{spline}, and
+several device-dependent versions of @code{libplot} was a standard Unix
+feature.  Supported devices by the early 1980's included Tektronix
+storage scopes, early graphics terminals, 200@dmn{dpi} electrostatic
+printer/plotters from Versatec and Varian, and pen plotters from
+Hewlett--Packard.
 
 In 1989, @email{rich@@freebsd.org, Rich Murphey} wrote the first GNU
 versions of @code{graph}, @code{plot}, and @code{spline}, and the
@@ -8756,7 +8898,8 @@ of the programs and provided editorial support for the documentation.
 @email{interran@@uluru.stanford.edu, John Interrante}, of the InterViews
 team at Stanford, generously provided the @code{idraw} Postscript
 prologue now included in @code{libplot}, and helpful comments.  The
-package as it stood in 1991 was distributed under the name `GNU graphics'.
+package as it stood in 1991 was distributed under the name `GNU
+graphics'.
 
 In 1995 @email{rsm@@math.arizona.edu, Robert Maier} took over
 development of the package, and designed and wrote the current,
@@ -8785,16 +8928,16 @@ mid-1970's, and from the fonts designed by
 interpolation algorithms used in @code{spline} are based on the
 algorithms of @email{cline@@cs.utexas.edu, @w{Alan K.} Cline}, as
 described in his papers in the Apr.@: 1974 issue of @cite{Communications
-of the ACM}.  The table-driven parser used in @code{tek2plot} was
+of the ACM}@.  The table-driven parser used in @code{tek2plot} was
 written at Berkeley in the mid-1980's by @email{moy@@parc.xerox.com,
 Edward Moy}.  The `sagitta' algorithm used in an extended form in
 @code{libplot} for drawing circular and elliptic arcs was developed by
 Peter Karnow of URW and @email{turk@@apple.com, Ken Turkowski} of Apple.
-@email{toy@@rtp.ericsson.se, Ray Toy} helped with the tick mark spacing
-code in @code{graph} and was the first to incorporate GNU @code{getopt}.
-Arthur Smith, formerly of LASSP at Cornell, provided code for his
-@code{xplot} utility.  @email{beebe@@math.utah.edu, Nelson Beebe}
-exhaustively tested the package installation process.
+@email{toy@@rtp.ericsson.se, Raymond Toy} helped with the tick mark
+spacing code in @code{graph} and was the first to incorporate GNU
+@code{getopt}.  Arthur Smith, formerly of LASSP at Cornell, provided
+code for his @code{xplot} utility.  @email{beebe@@math.utah.edu, Nelson
+Beebe} exhaustively tested the package installation process.
 
 Robert Maier wrote the documentation, which now incorporates Nick
 Tufillaro's @code{ode} manual.  Julie Sussmann checked over the

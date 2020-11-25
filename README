@@ -1,7 +1,7 @@
-This is release 2.1.5 of the GNU plotutils (plotting utilities) package,
-including release 1.5 of GNU libplot: a function library for
+This is release 2.1.6 of the GNU plotutils (plotting utilities) package,
+including release 1.6 of GNU libplot: a function library for
 two-dimensional device-independent vector graphics, including vector
-graphics animations under the X Window System.  The package has its own 
+graphics animations under the X Window System.  The package has its own
 Web page: http://www.gnu.org/software/plotutils/plotutils.html .
 
 In the top-level source directory, the file INSTALL contains generic
@@ -19,10 +19,10 @@ author and current maintainer, Robert Maier <rsm@math.arizona.edu>.
 The contents of the plotutils package are:
 
 1. libplot.     This is the function library for device-independent
-		two-dimensional vector graphics that the programs `graph',
-		`plot', `tek2plot', and `plotfont' (see below) are based on.  
-		On systems that support DLL's (dynamically linked
-		libraries), it is installed as a DLL.
+		two-dimensional vector graphics that the command-line
+		programs `graph', `plot', `tek2plot', and `plotfont' (see
+		below) are based on.  On systems that support DLL's
+		(dynamically linked libraries), it is installed as a DLL.
 
 		If you are a programmer, you may use this library yourself,
 		to create vector graphics in many output formats.  You may
@@ -35,32 +35,36 @@ The contents of the plotutils package are:
 		`paths' may be drawn.  There is support for color (both pen
 		color and fill color for objects).
 
-		Output formats include X11, Postscript (editable with the
-		idraw drawing editor), Fig (editable with the xfig drawing
-		editor), PCL 5, HP-GL and HP-GL/2, Tektronix, and
-		GNU metafile format.  GNU metafile format may be translated
-		into any of the other formats with the `plot' utility 
-		(see below).
+		Output formats include X11, Adobe Illustrator, Postscript
+		and Encapsulated Postscript (editable with the idraw
+		drawing editor), Fig (editable with the xfig drawing
+		editor), PCL 5, HP-GL and HP-GL/2, Tektronix, and GNU
+		metafile format.  GNU metafile format may be translated
+		into any of the other formats with the `plot' utility (see
+		below).
 
 		libplot includes extensive support for accurate sizing and
 		positioning of text.  This includes the placement of
 		subscripts and superscripts.  Its X11, Postscript, and Fig
 		drivers all support the 35 standard Postscript fonts, and
 		its PCL 5 and HP-GL/2 drivers support the 45 standard
-		LaserJet fonts.  In addition, all five, together with its
-		Tektronix driver, support a set of 22 Hershey vector fonts.
-		All supported fonts may be arbitrarily rotated and scaled.
-		All fonts, except for symbol and dingbat fonts, use the
-		ISO-Latin-1 encoding (a superset of ascii; the ISO-Latin-1
-		support in the Hershey fonts is extensive but not quite
-		complete).
+		LaserJet fonts.  In addition, all of these, together with
+		its Tektronix driver, support a set of 22 Hershey vector
+		fonts.  The Hershey fonts include HersheyCyrillic and
+		HersheyEUC (for Japanese).  All supported fonts may be
+		arbitrarily rotated and scaled.  All fonts, except for
+		symbol and dingbat fonts, and the Cyrillic and Japenese
+		fonts, use the ISO-Latin-1 encoding (a superset of ASCII;
+		the ISO-Latin-1 support in the Hershey fonts is extensive
+		but not quite complete).
 		
 		(Clones of the 35 standard Postscript fonts, in Type 1
 		format, have been contributed by URW GmbH and are
 		distributed under the GNU General Public License as part of
 		this package.  Installation instructions are in the file
 		./INSTALL.fonts.  Instructions for obtaining and installing
-		45 standard LaserJet fonts, as well, are included.)
+		Type 1 versions of the 45 standard LaserJet fonts, as well,
+		are included.)
 
 		Similarly to Postscript, libplot has the nice feature that
 		user coordinates (in terms of which you express the
@@ -69,7 +73,7 @@ The contents of the plotutils package are:
 		of drawing states (i.e., graphics contexts) is supported too.
 
 		
-2. Programs based on libplot, including the following.
+2. Command-line programs based on libplot, including the following.
 
 	graph.  A full-featured scientific plotting program for plotting
 		XY (i.e. 2-dimensional) data.  It plots a stream of
@@ -90,52 +94,57 @@ The contents of the plotutils package are:
 	
 		Which display device is driven, or output format is
 		produced, is specified by the `-T' option.  There are
-		effectively six distinct variants of `graph', distinguished
-		by the intended display device.
+		effectively eight distinct variants of `graph',
+		distinguished by the intended display device.
 
-		graph -T X	A variant that pops up an X window on
-				an X display, and draws the plot in it.  It
-				is most useful on modern (X11R6+) displays,
+		graph -T X      A variant that pops up an X window on an X
+				display, and draws the plot in it.  It is
+				most useful on modern (X11R6) displays,
 				which can rotate and scale text
 				arbitrarily.  It uses the 35 standard
 				Postscript fonts.
 
+		graph -T ai	A variant that produces output in a
+				format that can be viewed or edited
+				with Adobe Illustrator.
+
 		graph -T ps	A variant that produces EPS (encapsulated
 				Postscript) output, which can be printed,
 				displayed, or encapsulated in other
-				documents.  Any standard page
-				size is supported (letter, legal, ANSI
-				sizes, ISO sizes such as a4 and a3, etc.)
-				The EPS output includes annotations that 
-				permit it to be edited with the freeware 
-				`idraw' drawing editor, or its successor 
-				`drawtool'.  
+				documents.  Any standard page size is
+				supported (letter, legal, ANSI sizes, ISO
+				sizes such as a4 and a3, etc.)  The EPS
+				output includes annotations that permit it
+				to be edited with the freeware `idraw'
+				drawing editor, or its successor
+				`drawtool'.
 
 		graph -T fig	A variant that produces a plot that
-				the freeware `xfig' drawing editor can edit.  
-				xfig can export the plot in numerous formats,
-				such as GIF, X11 bitmap, and EPS.
+				the freeware `xfig' drawing editor can
+				edit.  xfig can export the plot in numerous
+				formats, such as GIF, X11 bitmap, and EPS.
 
-		graph -T pcl	A variant that produces PCL 5, a powerful
-				version of Hewlett-Packard's Printer
-				Control Language, which is supported by
-				LaserJets and other high-end printers.  Any
-				standard page size is supported (letter,
-				legal, ANSI sizes, ISO sizes such as 
-				a4 and a3, etc.)  This variant supports
-				the 45 standard PCL 5 fonts that are 
-				built into many non-Postscript printers,
-				such as recent LaserJets.
+		graph -T pcl    A variant that produces a plot in PCL 5
+				format, which is a sophisticated version of
+				Hewlett-Packard's Printer Control Language.
+				You may send the plot to a non-Postscript
+				LaserJet or a high-end inkjet.  (Most
+				inkjets do not support PCL 5.)  This
+				variant supports the 45 standard PCL 5
+				fonts that are built into many
+				non-Postscript printers, such as LaserJets.
 
 		graph -T hpgl	A variant that produces HP-GL (or by
 				default, HP-GL/2) output.  HP-GL is the
-				Hewlett-Packard Graphics Language, and
-				may be printed out or plotted on a
-				Hewlett-Packard LaserJet printer or plotter.
-				Also many applications, e.g. CAD applications,
-				can import HP-GL or HP-GL/2 figures.
-				This variant supports the 45 standard PCL 5
-				fonts.
+				Hewlett-Packard Graphics Language, and may
+				be printed out or plotted on a
+				Hewlett-Packard LaserJet printer or
+				plotter.  Also many applications, e.g. CAD
+				applications, can import HP-GL or HP-GL/2
+				figures.  This variant supports the 45
+				standard PCL 5 fonts that are built into
+				many non-Postscript printers, such as
+				LaserJets.
 
 		graph -T tek	A variant that produces Tektronix output,
 				suitable for viewing, e.g., on an X Windows
@@ -151,11 +160,11 @@ The contents of the plotutils package are:
 				enhanced version of the traditional plot(5)
 				format found on some operating systems.
 				The `plot' program (see below) must be used
-				to convert this to another format, or
-				to drive a display device.
+				to convert this to another format, or to
+				drive a display device.
 
-		Of these six variants, `graph -T X', `graph -T tek', and raw
-		`graph' are real-time.  That means that under some
+		Of these eight variants, `graph -T X', `graph -T tek', and
+		raw `graph' are real-time.  That means that under some
 		circumstances, they act as filters: they read data points
 		from the standard input, and plot them as they are read.
 		For this to happen, the abscissa and ordinate ranges of the
@@ -166,7 +175,7 @@ The contents of the plotutils package are:
 
 		where `program' generates a stream of data points.)
 		
-		All variants of `graph' will accept ascii input (the
+		All variants of `graph' will accept ASCII input (the
 		default), or unformatted binary input (i.e., a stream of
 		floating point numbers or integers), or input in the
 		`table' format produced by the program `gnuplot' (which you
@@ -183,31 +192,34 @@ The contents of the plotutils package are:
 		graphics metafile format, and either translates it to
 		another format or uses it to drive a display device.
 
-		Since this distribution includes `graph -T X', `graph -T
-		ps', `graph -T fig', `graph -T pcl', `graph -T hpgl', and
-		`graph -T tek', all of which can drive display devices
-		directly, `plot' is only occasionally useful.  It may be
-		used, though, to produce graphical output in more than one
-		format at once.  To do this, you would pipe the output of a
-		datapoint-generating program to the raw variant of `graph',
-		and then use the `tee' command to direct the output of raw
-		`graph', which is in metafile format, to two separate
-		invocations of `plot'.
+		Since this distribution includes `graph -T X', 
+		`graph -T ai', `graph -T ps', `graph -T fig', `graph -T pcl', 
+		`graph -T hpgl', and `graph -T tek', all of which can drive
+		display devices directly, `plot' is only occasionally
+		useful.  It may be used, though, to produce graphical
+		output in more than one format at once.  To do this, you
+		would pipe the output of a datapoint-generating program to
+		the raw variant of `graph', and then use the `tee' command
+		to direct the output of raw `graph', which is in metafile
+		format, to two separate invocations of `plot'.
 	
 		`plot' may also be useful as a post-processor for older
 		programs that produce output in the traditional plot(5)
-		graphics format.
+		graphics format.  GNU metafile format is an enhanced version
+		of plot(5) format.
 
 	tek2plot.  This is a utility program that emulates a Tektronix 4014
 		terminal in the sense that it reads Tektronix commands, and
-		drives any of the five sorts of graphic display device
-		mentioned above, or (alternatively) produces GNU graphics
-		metafile format.  It acts as a filter.
+		produces an output file in any of the eight graphics file
+		formats mentioned above.  It acts as a filter.
 
-		tek2plot is useful only if you have a legacy program that
-		is intended to drive a Tektronix terminal or emulator.  The
-		directory ./tek2plot/teksamples includes a few files in
-		Tektronix format which you may experiment with.  You may
+		tek2plot is useful if you have a legacy program that was
+		designed to to drive a Tektronix terminal or emulator, or
+		if you have files in Tektronix format that need to be
+		translated to a modern format, or edited.
+
+		The directory ./tek2plot/teksamples includes a few files in
+		Tektronix format that you may experiment with.  You may
 		also experiment by piping the output of `gnuplot', if you
 		have configured it to produce Tektronix-format plots, to
 		these filters (the gnuplot terminal types `kc_tek40xx',
@@ -221,11 +233,11 @@ The contents of the plotutils package are:
 	plotfont. This is a simple utility that prints out a character
 		chart for any font available to the above three utilities
 		(graph, plot, tek2plot).  The same output formats are
-		supported.  Which fonts are available depends on the
-		`-T' option that is specified, i.e., on the output format.
+		supported.  Which fonts are available depends on the `-T'
+		option that is specified, i.e., on the output format.
 
 		
-3. Programs not based on libplot, including the following.
+3. Command-line programs not based on libplot, including the following.
 
 	spline. This program does spline interpolation of input data, which
 		may be of arbitrary dimensionality.  That is, it takes a
@@ -267,6 +279,6 @@ The contents of the plotutils package are:
 		package.
 
 	double. This is a filter for converting, scaling and cutting
-		unformatted (binary) or ascii data streams.  It is still
+		unformatted (binary) or ASCII data streams.  It is still
 		under development and is not yet documented.
 	

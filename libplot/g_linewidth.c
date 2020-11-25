@@ -27,8 +27,7 @@ _g_flinewidth(new_line_width)
       return -1;
     }
 
-  if (_plotter->drawstate->PointsInLine > 0
-      || _plotter->drawstate->arc_stashed)
+  if (_plotter->drawstate->points_in_path > 0)
     _plotter->endpath(); /* flush polyline if any */
 
   if (new_line_width < 0.0)	/* reset to default */

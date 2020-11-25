@@ -82,10 +82,10 @@ _set_ellipse_bbox (bufp, x, y, rx, ry, costheta, sintheta, linewidth)
 		     + ry_device * ry_device * costheta_device * costheta_device);
 
   /* record these displacements, for bounding box */
-  _set_range (bufp, XD(x,y) + xdeviation, YD(x,y) + ydeviation);
-  _set_range (bufp, XD(x,y) + xdeviation, YD(x,y) - ydeviation);
-  _set_range (bufp, XD(x,y) - xdeviation, YD(x,y) + ydeviation);
-  _set_range (bufp, XD(x,y) - xdeviation, YD(x,y) - ydeviation);
+  _update_bbox (bufp, XD(x,y) + xdeviation, YD(x,y) + ydeviation);
+  _update_bbox (bufp, XD(x,y) + xdeviation, YD(x,y) - ydeviation);
+  _update_bbox (bufp, XD(x,y) - xdeviation, YD(x,y) + ydeviation);
+  _update_bbox (bufp, XD(x,y) - xdeviation, YD(x,y) - ydeviation);
 }
 
 /* update bounding box due to drawing of a line end (args are in user coors) */
@@ -112,10 +112,10 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle)
       _vscale (&vrot, halfwidth);
       xs = x + vrot.x;
       ys = y + vrot.y;
-      _set_range (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
       xs = x - vrot.x;
       ys = y - vrot.y;
-      _set_range (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
       break;
     case CAP_PROJECT:
       v.x = xother - x;
@@ -126,10 +126,10 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle)
       _vscale (&vrot, halfwidth);
       xs = x - v.x + vrot.x;
       ys = y - v.y + vrot.y;
-      _set_range (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
       xs = x - v.x - vrot.x;
       ys = y - v.y - vrot.y;
-      _set_range (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
       break;
     case CAP_ROUND:
       _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
@@ -163,7 +163,7 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
       v1len = VLENGTH(v1);
       v2len = VLENGTH(v2);
       if (v1len == 0.0 || v2len == 0.0)
-	_set_range (bufp, XD(x,y), YD(x,y));
+	_update_bbox (bufp, XD(x,y), YD(x,y));
       else
 	{
 	  double cosphi;
@@ -186,7 +186,7 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 	      _vscale (&vsum, mitrelen);
 	      x -= vsum.x;
 	      y -= vsum.y;
-	      _set_range (bufp, XD(x,y), YD(x,y));
+	      _update_bbox (bufp, XD(x,y), YD(x,y));
 	    }
 	}
       break;

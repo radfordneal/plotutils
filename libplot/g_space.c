@@ -17,7 +17,9 @@
    default font size, as expressed in user units, to be recomputed.  That
    is because those two quantities are specified as a fraction of the size
    of the physical display: in device terms, rather than in terms of user
-   units. */
+   units.  The idea is that no matter what the arguments of space (etc.)
+   were, switching to the default line width or default font size should
+   yield something reasonable. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -157,27 +159,43 @@ _g_fspace2 (x0, y0, x1, y1, x2, y2)
      map from the user frame to the NCD frame. */
   norm = _matrix_norm (s);
 
-  /* We want to maintain backwards compatibility with traditional libplot,
-     where the user is not required to make initial calls to linewidth()
-     and fontsize(), but is required to make a single initial call to
-     space().  So when the user calls space() [or space2() or fspace() or
-     fspace2()], we set the line width and font size to something reasonable.
-
-     We also set the default line width and font size to something
-     reasonable.  The default values stored there are used if the user
-     calls linewidth() or fontsize() with out-of-bound arguments. */
-
-  /* Incidentally, invoking ffontsize will invoke the internal
-     retrieve_font() method.  So e.g. if the Plotter is an XPlotter then
-     invoking ffontsize() will retrieve an X font from the X server. */
+  /* First, compute default line width and font size.  The default values
+     will later be switched to if the user calls linewidth() or fontsize()
+     with out-of-bound arguments. */
 
   _plotter->drawstate->default_line_width 
     = DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_WIDTH / norm;
   _plotter->drawstate->default_font_size
     = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_WIDTH / norm;
 
-  _plotter->flinewidth (_plotter->drawstate->default_line_width);
-  _plotter->ffontsize (_plotter->drawstate->default_font_size);
+  /* We want to maintain backwards compatibility with traditional libplot,
+     where the user is not required to make initial calls to linewidth()
+     and fontsize(), but is required to make a single initial call to
+     space().  So when the user first calls space() [or space2() or
+     fspace() or fspace2()], we set the line width and font size to the
+     default values.
+
+     On later invocations, we update the device-frame line width, but we
+     don't invoke the retrieve_font operation to update the device-frame
+     font size.  That is because on X Plotters, it's not wise: the new
+     device-frame font size may be so small or large as to be unavailable
+     on the X server, and the user may in fact be planning to invoke
+     fontsize() manually to select a font of an appropriate size.
+
+     Even if the user doesn't plan on doing that, it's OK not to invoke
+     retrieve_font here, since it'll be invoked before rendering any string
+     (see g_alabel.c). */
+
+  if (_plotter->space_invoked == false)
+    /* first invocation of space() on page, so set defaults */
+    {
+      _plotter->space_invoked = true;
+      _plotter->flinewidth (_plotter->drawstate->default_line_width);
+      _plotter->drawstate->font_size = _plotter->drawstate->default_font_size;
+    }
+  else
+    /* a later invocation, just update line width in device coors */
+    _plotter->flinewidth (_plotter->drawstate->line_width);
 
   return 0;
 }

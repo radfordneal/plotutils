@@ -32,7 +32,7 @@ _m_joinmod (s)
 	*nl = '\0';		/* don't grok multiline arg strings */
       
       fprintf (_plotter->outstream, "%c%s\n", 
-	       JOINMOD, s);
+	       (int)O_JOINMOD, s);
     }
   
   /* invoke generic method */

@@ -332,20 +332,20 @@ _h_falabel_pcl (s, h_just)
   _plotter->set_position();
 
   /* Sync pen color.  This may set the _plotter->bad_pen flag (if optimal
-     pen is #0 and we're not allowed to use pen #0 to draw with).  So we
-     test _plotter->bad_pen before drawing the label (see below). */
+     pen is #0 [white] and we're not allowed to use pen #0 to draw with).
+     So we test _plotter->bad_pen before drawing the label (see below). */
   _plotter->set_pen_color ();
 
   if (t[0] != '\0' /* i.e. label nonempty */
       && _plotter->bad_pen == false)
-    /* output the label via an `LB' instruction, including terminator;
-       don't use sprintf to avoid having to escape % and \ */
+    /* output the label via an `LB' instruction, including label
+       terminator; don't use sprintf to avoid having to escape % and \ */
     {
       strcpy (_plotter->page->point, "LB");
       _update_buffer (_plotter->page);
       strcpy (_plotter->page->point, (const char *)t);
       _update_buffer (_plotter->page);      
-      instruction_buf[0] = _plotter->label_terminator;
+      instruction_buf[0] = (unsigned char)3; /* ^C = default label terminator*/
       instruction_buf[1] = ';';
       instruction_buf[2] = '\0';
       strcpy (_plotter->page->point, (const char *)instruction_buf);

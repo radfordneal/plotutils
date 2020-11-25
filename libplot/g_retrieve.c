@@ -124,7 +124,10 @@ _g_retrieve_font()
 	}
     }
 
-  if (!_plotter->font_warning_issued)
+  /* Squawk if a substitution will be made, unless this is a Metafile
+     Plotter (in which case we'll substitute silently, and hope that string
+     widths won't be too far off). */
+  if (_plotter->type != PL_META && !_plotter->font_warning_issued)
     {
       char *buf;
       

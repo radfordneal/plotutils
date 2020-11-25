@@ -28,19 +28,18 @@ _h_fbox (x0, y0, x1, y1)
 
   /* otherwise use HP-GL's native rectangle-drawing facility, as follows */
 
-  /* move to lower left corner, sync pen position */
-  _plotter->fmove (x0, y0);
+  /* sync line attributes, incl. pen width; move to lower left corner */
+  _plotter->set_attributes();
+  _plotter->drawstate->pos.x = x0;
+  _plotter->drawstate->pos.y = y0;
   _plotter->set_position();
 
-  /* sync line attributes, incl. pen width */
-  _plotter->set_attributes();
-  
   if (_plotter->drawstate->fill_level)
     /* ideally, rectangle should be filled */
     {
       /* Sync fill color.  This may set the _plotter->bad_pen flag (e.g. if
-	 optimal pen is #0 and we're not allowed to use pen #0 to draw
-	 with).  So we test _plotter->bad_pen before using the pen. */
+	 optimal pen is #0 [white] and we're not allowed to use pen #0 to
+	 draw with).  So we test _plotter->bad_pen before using the pen. */
       _plotter->set_fill_color ();
       if (_plotter->bad_pen == false)
 	/* fill the rectangle */
@@ -52,8 +51,8 @@ _h_fbox (x0, y0, x1, y1)
     }	  
   
   /* Sync pen color.  This may set the _plotter->bad_pen flag (e.g. if
-     optimal pen is #0 and we're not allowed to use pen #0 to draw with).
-     So we test _plotter->bad_pen before using the pen. */
+     optimal pen is #0 [white] and we're not allowed to use pen #0 to draw
+     with).  So we test _plotter->bad_pen before using the pen. */
   _plotter->set_pen_color ();
   if (_plotter->bad_pen == false)
     /* edge the rectangle */

@@ -26,6 +26,9 @@ _t_openpl ()
   _plotter->opened = true;
   (_plotter->page_number)++;
 
+  /* space() not invoked yet, to set the user frame->device frame map */
+  _plotter->space_invoked = false;
+
   /* send graphics initialization commands to output stream if necessary */
 
   if (_plotter->outstream)

@@ -26,10 +26,10 @@ _m_bgcolor (red, green, blue)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d\n", 
-		 BGCOLOR, red, green, blue);
+		 (int)O_BGCOLOR, red, green, blue);
       else
 	{
-	  putc (BGCOLOR, _plotter->outstream);
+	  putc ((int)O_BGCOLOR, _plotter->outstream);
 	  _emit_integer (red);
 	  _emit_integer (green);
 	  _emit_integer (blue);

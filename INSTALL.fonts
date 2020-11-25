@@ -45,6 +45,11 @@ it.  Then, while in that directory, run the `mkfontdir' program.  The
 server will read.  If the X server is currently running, you should also do
 `xset fp rehash' to make the server re-scan the directory.
 
+[On Solaris machines, the preceding installation instructions may or may
+not work.  Some versions of Solaris contain a Sun demo program called
+`fontadmin' that can install Type1 fonts.  If it is available, it is
+located in `/usr/openwin/demos'.]
+
 Once you have installed the 35 Postscript fonts, if you have a copy of the
 `xfig' drawing editor and are using it, you should recompile it to take
 advantage of the entire suite of fonts.  As distributed, recently releases
@@ -113,6 +118,11 @@ in that directory, run the `mkfontdir' program.  The `mkfontdir' program
 creates a file called `fonts.dir', which is what the X server will read.
 If the X server is currently running, you should also do `xset fp rehash'
 to make the server re-scan the directory.
+
+[On Solaris machines, the preceding installation instructions may or may
+not work.  Some versions of Solaris contain a Sun demo program called
+`fontadmin' that can install Type1 fonts.  If it is available, it is
+located in `/usr/openwin/demos'.]
 
 C. After steps (A) and (B) are followed, the plotting utilities will be
 able to use the 45 LaserJet fonts when producing X output.  For example,

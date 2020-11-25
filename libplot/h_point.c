@@ -34,8 +34,8 @@ _h_fpoint (x, y)
   _plotter->drawstate->pos.y = y;
 
   /* Sync pen color.  This may set the _plotter->bad_pen flag (if optimal
-     pen is #0 and we're not allowed to use pen #0 to draw with).  So we
-     test _plotter->bad_pen before drawing the point (see below). */
+     pen is #0 [white] and we're not allowed to use pen #0 to draw with).
+     So we test _plotter->bad_pen before drawing the point (see below). */
   _plotter->set_pen_color ();
 
   /* temporarily store pen width and line attributes */
@@ -46,9 +46,9 @@ _h_fpoint (x, y)
   _plotter->drawstate->join_type = JOIN_ROUND;
   _plotter->drawstate->cap_type = CAP_ROUND;  
 
-  /* sync pen position and line attributes, incl. pen width */
-  _plotter->set_position();
+  /* sync line attributes, incl. pen width, and sync pen position */
   _plotter->set_attributes();
+  _plotter->set_position();
 
   if (_plotter->pendown == false && _plotter->bad_pen == false)
     /* if pen were down, point would be invisible */

@@ -108,6 +108,9 @@ _y_openpl ()
   _plotter->opened = true;
   (_plotter->page_number)++;
 
+  /* space() not invoked yet, to set the user frame->device frame map */
+  _plotter->space_invoked = false;
+
   /* Note: we do _not_ reset _plotter->frame_number to zero here, unlike
      what we do for an X Plotter.  Frames for an X Drawable Plotter are
      (currently) numbered consecutively throughout the lifetime of the

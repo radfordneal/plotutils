@@ -40,10 +40,10 @@ _m_fontsize (size)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d\n", 
-		 FONTSIZE, size);
+		 (int)O_FONTSIZE, size);
       else
 	{
-	  putc (FONTSIZE, _plotter->outstream);
+	  putc ((int)O_FONTSIZE, _plotter->outstream);
 	  _emit_integer (size);
 	}
     }
@@ -73,10 +73,10 @@ _m_ffontsize (size)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g\n", 
-		 FONTSIZE, size);
+		 (int)O_FONTSIZE, size);
       else
 	{
-	  putc (FFONTSIZE, _plotter->outstream);
+	  putc ((int)O_FFONTSIZE, _plotter->outstream);
 	  _emit_float (size);
 	}
     }

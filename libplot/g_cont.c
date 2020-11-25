@@ -2,15 +2,16 @@
    libplot.  It continues a line from the current position of the graphics
    cursor to the point specified by x and y.
 
-   This method is used in the construction of paths, i.e. of polylines.  By
-   repeatedly invoking cont(), the user may construct a polyline of
-   arbitrary length.  The polyline will terminate when the user either
+   This method is used in the construction of paths.  By repeatedly
+   invoking cont(), the user may construct a polyline of arbitrary length.
+   arc() and ellarc() may also be invoked, to add circular or elliptic arc
+   elements to the path.  The path will terminate when the user either
 
      (1) explicitly invokes the endpath() method, or 
      (2) changes the value of one of the relevant drawing attributes, 
           by invoking move(), linemod(), linewidth(), color(), fillcolor(),
           or filltype(), or 
-     (3) draws some non-polyline object, by invoking arc(), box(), 
+     (3) draws some non-path object, by invoking box(), 
            circle(), point(), label(), alabel(), etc., or 
      (4) invokes restorestate() to restore an earlier drawing state. */
 
@@ -35,54 +36,43 @@ _g_fcont (x, y)
       return -1;
     }
 
-  /* If a circular arc has been stashed rather than drawn, force the
-     immediate drawing of a polygonal approximation to it, by repeated
-     invocation of fcont() */
-  if (_plotter->drawstate->arc_stashed) 
-    { 
-      double axc = _plotter->drawstate->axc;
-      double ayc = _plotter->drawstate->ayc;
-      double ax0 = _plotter->drawstate->ax0;
-      double ay0 = _plotter->drawstate->ay0;
-      double ax1 = _plotter->drawstate->ax1;
-      double ay1 = _plotter->drawstate->ay1;
+  /* if path buffer exists and is occupied by a single arc, replace arc by
+     a polyline if that's called for */
+  if (_plotter->have_mixed_paths == false
+      && _plotter->drawstate->points_in_path == 2)
+    _maybe_replace_arc();
 
-      _plotter->drawstate->arc_immediate = true; 
-      _plotter->drawstate->arc_polygonal = true;
-      _plotter->farc (axc, ayc, ax0, ay0, ax1, ay1);
-      _plotter->drawstate->arc_immediate = false;
-      _plotter->drawstate->arc_stashed = false;
-    }
-
-  /* create or adjust size of polyline buffer, as needed */
+  /* create or adjust size of path buffer, as needed */
   if (_plotter->drawstate->datapoints_len == 0)
     {
-      _plotter->drawstate->datapoints = (Point *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(Point));
+      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(GeneralizedPoint));
       _plotter->drawstate->datapoints_len = DATAPOINTS_BUFSIZ;
     }
-  if (_plotter->drawstate->PointsInLine == _plotter->drawstate->datapoints_len)
+  if (_plotter->drawstate->points_in_path == _plotter->drawstate->datapoints_len)
     {
-      _plotter->drawstate->datapoints = (Point *) 
+      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
 	_plot_xrealloc (_plotter->drawstate->datapoints, 
-			2 * _plotter->drawstate->datapoints_len * sizeof(Point));
+			2 * _plotter->drawstate->datapoints_len * sizeof(GeneralizedPoint));
       _plotter->drawstate->datapoints_len *= 2;
     }
   
   /* analyse the present situation */
 
-  if (_plotter->drawstate->PointsInLine == 0)
-    /* no polyline in progress, so begin one (at current position) */
+  if (_plotter->drawstate->points_in_path == 0)
+    /* no path in progress, so begin one (at current position) */
     {
       _plotter->drawstate->datapoints[0].x = (_plotter->drawstate->pos).x;
       _plotter->drawstate->datapoints[0].y = (_plotter->drawstate->pos).y;
-      _plotter->drawstate->PointsInLine++;
+      _plotter->drawstate->points_in_path++;
     }
 
-  /* add new point to internal polyline buffer, so that PointsInLine >=2 */
-  _plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine].x = x;
-  _plotter->drawstate->datapoints[_plotter->drawstate->PointsInLine].y = y;
-  _plotter->drawstate->PointsInLine++;
+  /* add new point to path buffer, so that points_in_path >=2 */
+  _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].x = x;
+  _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].y = y;
+  _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path].type 
+    = S_LINE;
+  _plotter->drawstate->points_in_path++;
 
   /* update our notion of position */
   _plotter->drawstate->pos.x = x;
@@ -90,13 +80,13 @@ _g_fcont (x, y)
 
   /* now conduct some tests on length; may invoke endpath() method */
 
-  /* If polyline is getting too long (and it doesn't have to be filled),
-     flush it to output and begin a new one.  `Too long' is library
-     dependent.  The `suppress polyline flushout' flag is set during the
-     drawing of polygonal approximations to ellipses (incl. circles),
-     elliptic arcs, and circular arcs; see g_fakearc.c.  Also for some
-     Plotters, it may be permanently set. */
-  if ((_plotter->drawstate->PointsInLine >= _plotter->max_unfilled_polyline_length)
+  /* If path is getting too long (and it doesn't have to be filled), flush
+     it to output and begin a new one.  `Too long' is Plotter-dependent.
+     The `suppress polyline flushout' flag is set during the drawing of
+     polygonal approximations to ellipses (incl. circles), elliptic arcs,
+     and circular arcs; see g_arc.c.  Also for some Plotters, it may be
+     permanently set. */
+  if ((_plotter->drawstate->points_in_path >= _plotter->max_unfilled_polyline_length)
       && !_plotter->drawstate->suppress_polyline_flushout
       && (_plotter->drawstate->fill_level == 0))
     _plotter->endpath();
@@ -105,11 +95,91 @@ _g_fcont (x, y)
      polylines.  (Such a limit is imposed is imposed in an XPlotter,
      because of the X protocol restrictions; for other Plotters they length
      limit is typically INT_MAX.) */
-  if (_plotter->drawstate->PointsInLine >= _plotter->hard_polyline_length_limit)
+  if (_plotter->drawstate->points_in_path >= _plotter->hard_polyline_length_limit)
     {
-      _plotter->warning ("breaking an overly long polyline");
+      _plotter->warning ("breaking an overly long path");
       _plotter->endpath();
     }
 
   return 0;
+}
+
+/* Some Plotters don't allow mixed paths to appear in the path storage
+   buffer, because endpath() doesn't know how to handle them.  `Mixed
+   paths' are arcs interspersed with line segments, or a path consisting of
+   more than a single arc.  For such Plotters, this may be invoked by
+   fcont() or farc() or fellarc(), to delete a single arc from the buffer
+   and replace it by its polygonal approximation, i.e. by a polyline.  
+   The replacement is generated by repeatedly calling fcont(). */
+void
+#ifdef _HAVE_PROTOS
+_maybe_replace_arc (void)
+#else
+_maybe_replace_arc ()
+#endif
+{
+  if (_plotter->have_mixed_paths == false
+      && _plotter->drawstate->points_in_path >= 2
+      && _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].type == S_ARC)
+    /* path storage buffer contains a circular arc, so replace it */
+    { 
+      double axc = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].xc;
+      double ayc = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].yc;
+      double ax0 = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 2].x;
+      double ay0 = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 2].y;
+      double ax1 = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].x;
+      double ay1 = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].y;
+      Point pc, p0, p1;
+
+      _plotter->drawstate->points_in_path -= 1;
+      /* back up (i.e. adjust our notion of position) */
+      _plotter->drawstate->pos.x = ax0;
+      _plotter->drawstate->pos.y = ay0;
+      /* add polygonal approximation to circular arc to the path buffer, by
+	 invoking _fakearc(), i.e., by invoking fcont() repeatedly */
+      p0.x = ax0; p0.y = ay0;
+      p1.x = ax1; p1.y = ay1;      
+      pc.x = axc; pc.y = ayc;      
+      _draw_circular_arc (p0, p1, pc);
+    }
+
+  /* exactly the same, for an elliptic rather than a circular arc */
+
+  if (_plotter->have_mixed_paths == false
+      && _plotter->drawstate->points_in_path >= 2
+      && _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].type == S_ELLARC)
+    /* path storage buffer contains an elliptic arc, so replace it */
+    { 
+      double axc = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].xc;
+      double ayc = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].yc;
+      double ax0 = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 2].x;
+      double ay0 = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 2].y;
+      double ax1 = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].x;
+      double ay1 = _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].y;
+      Point pc, p0, p1;
+
+      _plotter->drawstate->points_in_path -= 1;
+      /* back up (i.e. adjust our notion of position) */
+      _plotter->drawstate->pos.x = ax0;
+      _plotter->drawstate->pos.y = ay0;
+      /* add polygonal approximation to elliptic arc to the path buffer, by
+	 invoking _fakearc(), i.e., by invoking fcont() repeatedly */
+      p0.x = ax0; p0.y = ay0;
+      p1.x = ax1; p1.y = ay1;      
+      pc.x = axc; pc.y = ayc;      
+      _draw_elliptic_arc (p0, p1, pc);
+    }
+
+  /* If path is getting too long (and it doesn't have to be filled), flush
+     it to output and begin a new one.  `Too long' is Plotter-dependent.
+     The `suppress polyline flushout' flag is set during the drawing of
+     polygonal approximations to ellipses (incl. circles), elliptic arcs,
+     and circular arcs; see g_arc.c.  Also for some Plotters, it may be
+     permanently set. */
+  if ((_plotter->drawstate->points_in_path >= _plotter->max_unfilled_polyline_length)
+      && !_plotter->drawstate->suppress_polyline_flushout
+      && (_plotter->drawstate->fill_level == 0))
+    _plotter->endpath();
+  
+  return;
 }

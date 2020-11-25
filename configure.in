@@ -3,7 +3,7 @@ dnl Copyright (C) 1989-98 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(graph/graph.c)
-AM_INIT_AUTOMAKE(plotutils, 2.1.5)
+AM_INIT_AUTOMAKE(plotutils, 2.1.6)
 AM_CONFIG_HEADER(config.h)
 
 dnl Determine extension (e.g. ".exe") on executables, if any.

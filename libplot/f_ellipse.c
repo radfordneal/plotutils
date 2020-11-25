@@ -83,12 +83,9 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
   _plotter->set_pen_color();
   _plotter->set_fill_color();
   
-  /* recompute xfig's `depth' attribute, and keep track of the drawing
-     priority of the object we're drawing */
-  if (_plotter->fig_last_priority >= ELLIPSE_PRIORITY)
+  /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
-  _plotter->fig_last_priority = ELLIPSE_PRIORITY;
 
   if (subtype == SUBTYPE_CIRCLE)
     format = "#ELLIPSE [CIRCLE]\n%d %d %d %d %d %d %d %d %d %.3f %d %.3f %d %d %d %d %d %d %d %d\n";

@@ -26,10 +26,10 @@ _m_linerel (x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf(_plotter->outstream, "%c %d %d %d %d\n", 
-		LINEREL, x0, y0, x1, y1);
+		(int)O_LINEREL, x0, y0, x1, y1);
       else
 	{
-	  putc (LINEREL, _plotter->outstream);
+	  putc ((int)O_LINEREL, _plotter->outstream);
 	  _emit_integer (x0);
 	  _emit_integer (y0);
 	  _emit_integer (x1);
@@ -58,10 +58,10 @@ _m_flinerel (x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf(_plotter->outstream, "%c %g %g %g %g\n", 
-		LINEREL, x0, y0, x1, y1);
+		(int)O_LINEREL, x0, y0, x1, y1);
       else
 	{
-	  putc (FLINEREL, _plotter->outstream);
+	  putc ((int)O_FLINEREL, _plotter->outstream);
 	  _emit_float (x0);
 	  _emit_float (y0);
 	  _emit_float (x1);

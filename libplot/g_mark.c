@@ -88,20 +88,20 @@ _g_fmarker (x, y, type, size)
       switch (type)
 	/* N.B. 5-pointed star should be added some day */
 	{
-	case M_NONE:		/* no-op */
+	case (int)M_NONE:		/* no-op */
 	default:
 	  break;
-	case M_DOT:		/* dot, GKS 1 */
+	case (int)M_DOT:		/* dot, GKS 1 */
 	  _plotter->fpointrel (0.0, 0.0);
 	  break;
-	case M_PLUS:		/* plus, GKS 2 */
+	case (int)M_PLUS:		/* plus, GKS 2 */
 	  _plotter->fmoverel (-size, 0.0);
 	  _plotter->fcontrel (2 * size, 0.0);
 	  _plotter->fmoverel (-size, -size);
 	  _plotter->fcontrel (0.0, 2 * size);
 	  _plotter->fmoverel (0.0, -size);
 	  break;
-	case M_ASTERISK:	/* asterisk, GKS 3 */
+	case (int)M_ASTERISK:	/* asterisk, GKS 3 */
 	  {
 	    double vert = 0.5 * size;
 	    double hori = 0.5 * M_SQRT3 * size;
@@ -120,18 +120,18 @@ _g_fmarker (x, y, type, size)
 	    _plotter->fmoverel (hori, -vert);
 	  }
 	  break;
-	case M_CIRCLE:		/* circle, GKS 4 */
+	case (int)M_CIRCLE:		/* circle, GKS 4 */
 	  _plotter->filltype (0);
 	  _plotter->fcirclerel (0.0, 0.0, size);
 	  break;
-	case M_CROSS:		/* cross, GKS 5 */
+	case (int)M_CROSS:		/* cross, GKS 5 */
 	  _plotter->fmoverel (-size, -size);
 	  _plotter->fcontrel (2 * size, 2 * size);
 	  _plotter->fmoverel (0.0, - 2 * size);
 	  _plotter->fcontrel (-2 * size, 2 * size);
 	  _plotter->fmoverel (size, -size);
 	  break;
-	case M_STAR:			/* star */
+	case (int)M_STAR:			/* star */
 	  _plotter->fmoverel (-size, 0.0);
 	  _plotter->fcontrel (2 * size, 0.0);
 	  _plotter->fmoverel (-size, -size);
@@ -146,12 +146,12 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (-size, -size);
 	  _plotter->fmoverel (size, size);
 	  break;
-	case M_SQUARE:	/* square */
+	case (int)M_SQUARE:	/* square */
 	  _plotter->filltype (0);
 	  _plotter->fboxrel (-size, -size, size, size);
 	  _plotter->fmoverel (-size, -size);
 	  break;
-	case M_DIAMOND:	/* diamond */
+	case (int)M_DIAMOND:	/* diamond */
 	  _plotter->filltype (0);
 	  _plotter->fmoverel (size, 0.0);
 	  _plotter->fcontrel (-size, size);
@@ -160,7 +160,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (size, size);
 	  _plotter->fmoverel (-size, 0.0);
 	  break;
-	case M_TRIANGLE:	/* triangle */
+	case (int)M_TRIANGLE:	/* triangle */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
@@ -172,7 +172,7 @@ _g_fmarker (x, y, type, size)
 	    _plotter->fmoverel (0.0, -size);
 	  }	  
 	  break;
-	case M_INVERTED_TRIANGLE: /* triangle, vertex down */
+	case (int)M_INVERTED_TRIANGLE: /* triangle, vertex down */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
@@ -184,12 +184,12 @@ _g_fmarker (x, y, type, size)
 	    _plotter->fmoverel (0.0, size);
 	  }	  
 	  break;
-	case M_FILLED_SQUARE:	/* filled square */
+	case (int)M_FILLED_SQUARE:	/* filled square */
 	  _plotter->filltype (1);
 	  _plotter->fboxrel (-size, -size, size, size);
 	  _plotter->fmoverel (-size, -size);
 	  break;
-	case M_FILLED_DIAMOND:	/* filled diamond */
+	case (int)M_FILLED_DIAMOND:	/* filled diamond */
 	  _plotter->filltype (1);
 	  _plotter->fmoverel (0.0, -size);
 	  _plotter->fcontrel (size, size);
@@ -198,7 +198,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (size, -size);
 	  _plotter->fmoverel (0.0, size);
 	  break;
-	case M_FILLED_TRIANGLE: /* filled triangle */
+	case (int)M_FILLED_TRIANGLE: /* filled triangle */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
@@ -210,7 +210,7 @@ _g_fmarker (x, y, type, size)
 	    _plotter->fmoverel (0.0, -size);
 	  }	  
 	  break;
-	case M_FILLED_INVERTED_TRIANGLE: /* filled triangle, vertex down */
+	case (int)M_FILLED_INVERTED_TRIANGLE: /* filled triangle, vertex down */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
@@ -222,11 +222,11 @@ _g_fmarker (x, y, type, size)
 	    _plotter->fmoverel (0.0, size);
 	  }	  
 	  break;
-	case M_FILLED_CIRCLE:	/* filled circle */
+	case (int)M_FILLED_CIRCLE:	/* filled circle */
 	  _plotter->filltype (1);
 	  fcirclerel (0.0, 0.0, size);
 	  break;
-	case M_STARBURST:	/* starburst */
+	case (int)M_STARBURST:	/* starburst */
 	  _plotter->fmoverel (-0.5 * size, 0.0);
 	  _plotter->fcontrel (-0.5 * size, 0.0);
 	  _plotter->fmoverel (0.0, -size);
@@ -245,7 +245,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (0.5 * size, -0.5 * size);
 	  _plotter->fmoverel (0.5 * size, -0.5 * size);
 	  break;
-	case M_FANCY_PLUS:	/* ornate plus */
+	case (int)M_FANCY_PLUS:	/* ornate plus */
 	  _plotter->fmoverel (-size, 0.0);
 	  _plotter->fcontrel (2 * size, 0.0);
 	  _plotter->fmoverel (-size, -size);
@@ -260,7 +260,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (0.0, size);
 	  _plotter->fmoverel (-size, 0.0);
 	  break;
-	case M_FANCY_CROSS:	/* ornate cross */
+	case (int)M_FANCY_CROSS:	/* ornate cross */
 	  _plotter->fmoverel (-size, -size);
 	  _plotter->fcontrel (2 * size, 2 * size);
 	  _plotter->fmoverel (0.0, -2 * size);
@@ -275,7 +275,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (0.5 * size, 0.5 * size);
 	  _plotter->fmoverel (-size, 0.5 * size);
 	  break;
-	case M_FANCY_SQUARE:	/* ornate square */
+	case (int)M_FANCY_SQUARE:	/* ornate square */
 	  _plotter->filltype (0);
 	  fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
 	  _plotter->fcontrel (0.5 * size, 0.5 * size);
@@ -287,7 +287,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (-0.5 * size, 0.5 * size);
 	  _plotter->fmoverel (1.5 * size, -1.5 * size);	  
 	  break;
-	case M_FANCY_DIAMOND:	/* diamond */
+	case (int)M_FANCY_DIAMOND:	/* diamond */
 	  _plotter->filltype (0);
 	  _plotter->fmoverel (0.5 * size, 0.0);
 	  _plotter->fcontrel (-0.5 * size, 0.5 * size);
@@ -304,7 +304,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (0.0, -0.5 * size);
 	  _plotter->fmoverel (0.0, size);
 	  break;
-	case M_FILLED_FANCY_SQUARE:	/* filled ornate square */
+	case (int)M_FILLED_FANCY_SQUARE:	/* filled ornate square */
 	  _plotter->filltype (1);
 	  fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
 	  _plotter->fcontrel (0.5 * size, 0.5 * size);
@@ -316,7 +316,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (-0.5 * size, 0.5 * size);
 	  _plotter->fmoverel (1.5 * size, -1.5 * size);	  
 	  break;
-	case M_FILLED_FANCY_DIAMOND: /* filled ornate diamond */
+	case (int)M_FILLED_FANCY_DIAMOND: /* filled ornate diamond */
 	  _plotter->filltype (1);
 	  _plotter->fmoverel (0.5 * size, 0.0);
 	  _plotter->fcontrel (-0.5 * size, 0.5 * size);
@@ -333,12 +333,12 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (0.0, -0.5 * size);
 	  _plotter->fmoverel (0.0, size);
 	  break;
-	case M_HALF_FILLED_SQUARE:	/* half_filled square */
+	case (int)M_HALF_FILLED_SQUARE:	/* half_filled square */
 	  _plotter->filltype (NOMINAL_HALF);
 	  fboxrel (-size, -size, size, size);
 	  _plotter->fmoverel (-size, -size);
 	  break;
-	case M_HALF_FILLED_DIAMOND:	/* half_filled diamond */
+	case (int)M_HALF_FILLED_DIAMOND:	/* half_filled diamond */
 	  _plotter->filltype (NOMINAL_HALF);
 	  _plotter->fmoverel (0.0, -size);
 	  _plotter->fcontrel (size, size);
@@ -347,7 +347,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (size, -size);
 	  _plotter->fmoverel (0.0, size);
 	  break;
-	case M_HALF_FILLED_TRIANGLE: /* half_filled triangle */
+	case (int)M_HALF_FILLED_TRIANGLE: /* half_filled triangle */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
@@ -359,7 +359,7 @@ _g_fmarker (x, y, type, size)
 	    _plotter->fmoverel (0.0, -size);
 	  }	  
 	  break;
-	case M_HALF_FILLED_INVERTED_TRIANGLE: /* half_filled triangle, vertex down */
+	case (int)M_HALF_FILLED_INVERTED_TRIANGLE: /* half_filled triangle, vertex down */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
@@ -371,11 +371,11 @@ _g_fmarker (x, y, type, size)
 	    _plotter->fmoverel (0.0, size);
 	  }	  
 	  break;
-	case M_HALF_FILLED_CIRCLE:	/* half_filled circle */
+	case (int)M_HALF_FILLED_CIRCLE:	/* half_filled circle */
 	  _plotter->filltype (NOMINAL_HALF);
 	  fcirclerel (0.0, 0.0, size);
 	  break;
-	case M_HALF_FILLED_FANCY_SQUARE:  /* half-filled ornate square */
+	case (int)M_HALF_FILLED_FANCY_SQUARE:  /* half-filled ornate square */
 	  _plotter->filltype (NOMINAL_HALF);
 	  fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
 	  _plotter->fcontrel (0.5 * size, 0.5 * size);
@@ -387,7 +387,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (-0.5 * size, 0.5 * size);
 	  _plotter->fmoverel (1.5 * size, -1.5 * size);	  
 	  break;
-	case M_HALF_FILLED_FANCY_DIAMOND: /* half-filled ornate diamond */
+	case (int)M_HALF_FILLED_FANCY_DIAMOND: /* half-filled ornate diamond */
 	  _plotter->filltype (NOMINAL_HALF);
 	  _plotter->fmoverel (0.5 * size, 0.0);
 	  _plotter->fcontrel (-0.5 * size, 0.5 * size);
@@ -404,7 +404,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (0.0, -0.5 * size);
 	  _plotter->fmoverel (0.0, size);
 	  break;
-	case M_OCTAGON:		/* octagon */
+	case (int)M_OCTAGON:		/* octagon */
 	  _plotter->filltype (0);
 	  _plotter->fmoverel (-2.0 * size, size);
 	  _plotter->fcontrel (0.0, -2.0 * size);
@@ -417,7 +417,7 @@ _g_fmarker (x, y, type, size)
 	  _plotter->fcontrel (-size, -size);
 	  _plotter->fmoverel (2.0 * size, -size);
 	  break;
-	case M_FILLED_OCTAGON:	/* filled octagon */
+	case (int)M_FILLED_OCTAGON:	/* filled octagon */
 	  _plotter->filltype (1);
 	  _plotter->fmoverel (-2.0 * size, size);
 	  _plotter->fcontrel (0.0, -2.0 * size);

@@ -1,7 +1,7 @@
 /* This file contains the PS-driver-specific version of the low-level
-   falabel_ps() method, which is called to plot a label in the current PS
-   font, at the current fontsize and textangle.  The label is just a
-   string: no control codes (font switching or sub/superscripts).
+   falabel_ps() method, which is called to plot a label in the current font
+   (eithr PS or PCL), at the current fontsize and textangle.  The label is
+   just a string: no control codes (font switching or sub/superscripts).
 
    The width of the string in user units is returned.  On exit, the
    graphics cursor position is repositioned to the end of the string.
@@ -47,6 +47,7 @@ _p_falabel_ps (s, h_just)
     return 0.0;
 
   if (h_just != JUST_LEFT)
+    /* shouldn't happen */
     {
       _plotter->warning ("ignoring request to use non-default justification for a label");
       return 0.0;
@@ -64,7 +65,7 @@ _p_falabel_ps (s, h_just)
   pcl_font = (_plotter->drawstate->font_type == F_PCL ? true : false);
 
   /* compute index of font in master table of PS [or PCL] fonts, in g_fontdb.c */
-  if (pcl_font)
+  if (pcl_font)			/* one of the 45 standard PCL fonts */
     master_font_index =
       (_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
   else				/* one of the 35 standard PS fonts */
@@ -152,7 +153,7 @@ _p_falabel_ps (s, h_just)
   /* Now scale the text transformation matrix so that the linear
      transformation contained in it has unit norm (if there is no shearing,
      it will just be a rotation; if there is no rotation either, it will be
-     the identity matrix. */
+     the identity matrix). */
   for (i = 0; i < 4; i++)
     text_transformation_matrix[i] /= norm;
 
@@ -247,15 +248,15 @@ _p_falabel_ps (s, h_just)
   dx3 = costheta * width - sintheta * up;
   dy3 = sintheta * width + costheta * up;
 
-  /* record that we're using all four vertices (args of _set_range() are in
+  /* record that we're using all four vertices (args of _update_bbox() are in
      device units, not user units) */
-  _set_range (_plotter->page, XD ((_plotter->drawstate->pos).x + dx0, (_plotter->drawstate->pos).y + dy0),
+  _update_bbox (_plotter->page, XD ((_plotter->drawstate->pos).x + dx0, (_plotter->drawstate->pos).y + dy0),
 	      YD ((_plotter->drawstate->pos).x + dx0, (_plotter->drawstate->pos).y + dy0));
-  _set_range (_plotter->page, XD ((_plotter->drawstate->pos).x + dx1, (_plotter->drawstate->pos).y + dy1), 
+  _update_bbox (_plotter->page, XD ((_plotter->drawstate->pos).x + dx1, (_plotter->drawstate->pos).y + dy1), 
 	      YD ((_plotter->drawstate->pos).x + dx1, (_plotter->drawstate->pos).y + dy1));
-  _set_range (_plotter->page, XD ((_plotter->drawstate->pos).x + dx2, (_plotter->drawstate->pos).y + dy2), 
+  _update_bbox (_plotter->page, XD ((_plotter->drawstate->pos).x + dx2, (_plotter->drawstate->pos).y + dy2), 
 	      YD ((_plotter->drawstate->pos).x + dx2, (_plotter->drawstate->pos).y + dy2));
-  _set_range (_plotter->page, XD ((_plotter->drawstate->pos).x + dx3, (_plotter->drawstate->pos).y + dy3), 
+  _update_bbox (_plotter->page, XD ((_plotter->drawstate->pos).x + dx3, (_plotter->drawstate->pos).y + dy3), 
 	      YD ((_plotter->drawstate->pos).x + dx3, (_plotter->drawstate->pos).y + dy3));
 
   /* Finish outputting transformation matrix; begin outputting string. */
@@ -299,19 +300,19 @@ End\n\
 \n");
   _update_buffer (_plotter->page);
 
-  /* reposition after printing substring */
+  /* reposition after printing string */
   _plotter->drawstate->pos.x += costheta * width;
   _plotter->drawstate->pos.y += sintheta * width;
 
-  /* flag current PS or PCL font as used */
+  /* flag current PS or PCL font as used on this page */
 #ifdef USE_LJ_FONTS_IN_PS
   if (pcl_font)
-    _plotter->pcl_font_used[master_font_index] = true;
+    _plotter->page->pcl_font_used[master_font_index] = true;
 
   else
-    _plotter->ps_font_used[master_font_index] = true;
+    _plotter->page->ps_font_used[master_font_index] = true;
 #else
-    _plotter->ps_font_used[master_font_index] = true;
+    _plotter->page->ps_font_used[master_font_index] = true;
 #endif
 
   return width;

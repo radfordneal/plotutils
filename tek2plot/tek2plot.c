@@ -330,12 +330,12 @@ main (argc, argv)
   if (errcnt > 0)
     {
       fprintf (stderr, "Try `%s --help' for more information\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   if (show_version)
     {
       display_version (progname);
-      return 0;
+      return EXIT_SUCCESS;
     }
   if (do_list_fonts)
     {
@@ -343,9 +343,9 @@ main (argc, argv)
 
       success = list_fonts (display_type, progname);
       if (success)
-	return 0;
+	return EXIT_SUCCESS;
       else
-	return 1;
+	return EXIT_FAILURE;
     }
   if (show_fonts)
     {
@@ -353,14 +353,14 @@ main (argc, argv)
 
       success = display_fonts (display_type, progname);
       if (success)
-	return 0;
+	return EXIT_SUCCESS;
       else
-	return 1;
+	return EXIT_FAILURE;
     }
   if (show_usage)
     {
       display_usage (progname, hidden_options, usage_appendage, true);
-      return 0;
+      return EXIT_SUCCESS;
     }
 
   parampl ("USE_DOUBLE_BUFFERING", "no");
@@ -371,12 +371,12 @@ main (argc, argv)
   if ((handle = newpl (display_type, NULL, stdout, stderr)) < 0)
     {
       fprintf (stderr, "%s: error: could not open plot device\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   else
     selectpl (handle);
 
-  retval = 0;
+  retval = EXIT_SUCCESS;
   if (optind < argc)
     /* input files (or stdin) named explicitly on the command line */
     {
@@ -394,7 +394,7 @@ main (argc, argv)
 		  fprintf (stderr, "%s: %s: %s\n", progname, argv[optind], strerror(errno));
 		  fprintf (stderr, "%s: ignoring this file\n", progname);
 		  errno = 0;	/* not quite fatal */
-		  retval = 1;
+		  retval = EXIT_FAILURE;
 		  continue;	/* back to top of for loop */
 		}
 	    }
@@ -402,7 +402,7 @@ main (argc, argv)
 	    {
 		  fprintf (stderr, "%s: could not parse input file `%s'\n",
 			   progname, argv[optind]);
-		  retval = 1;
+		  retval = EXIT_FAILURE;
 		  continue;	/* back to top of for loop */
 	    }
 
@@ -412,7 +412,7 @@ main (argc, argv)
 		fprintf (stderr, 
 			 "%s: error: could not close input file `%s'\n",
 			 progname, argv[optind]);
-		return 1;	/* exit immediately */
+		return EXIT_FAILURE; /* exit immediately */
 	      }
 	}
     } /* endfor */
@@ -422,7 +422,7 @@ main (argc, argv)
       if (read_plot (stdin) == false)
 	{
 	  fprintf (stderr, "%s: could not parse input\n", progname);
-	  retval = 1;
+	  retval = EXIT_FAILURE;
 	}
     }
 
@@ -440,7 +440,7 @@ main (argc, argv)
 	  if (requested_page >= current_page)
 	    {
 	      fprintf (stderr, "%s: requested page does not exist\n", progname);
-	      retval = 1;
+	      retval = EXIT_FAILURE;
 	    }
 	  else
 	    /* page must have been seen, but was empty; output a blank page */
@@ -455,7 +455,7 @@ main (argc, argv)
   if (deletepl (handle) < 0)
     {
       fprintf (stderr, "%s: error: could not close plot device\n", progname);
-      retval = 1;
+      retval = EXIT_FAILURE;
     }
 
   return retval;
@@ -1337,7 +1337,7 @@ begin_page ()
       fprintf (stderr, 
 	       "%s: error: could not open plot device\n", 
 	       progname);
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   plotter_open = true;
   plotter_opened = true;
@@ -1392,7 +1392,7 @@ end_page ()
       fprintf (stderr, 
 	       "%s: error: could not close plot device\n",
 	       progname);
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   plotter_open = false;
 }

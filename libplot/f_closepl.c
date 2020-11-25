@@ -45,11 +45,15 @@ _f_closepl ()
     {
       const char *units;
 
-      units = (_plotter->fig_use_metric ? "Metric" : "Inches");
-      fprintf(_plotter->outstream, "#FIG 3.1\n%s\n%s\n%s\n%d %d\n",
+      units = (_plotter->use_metric ? "Metric" : "Inches");
+      fprintf(_plotter->outstream, "#FIG 3.2\n%s\n%s\n%s\n%s\n%.2f\n%s\n%d\n%d %d\n",
 	      "Portrait",	/* portrait mode */
 	      "Center",		/* justification */
 	      units,
+	      _plotter->page_type,
+	      100.00,
+	      "Single",
+	      -2,
 	      IROUND(FIG_UNITS_PER_INCH), /* Fig units per inch */
 	      2			/* origin in lower left corner (ignored) */
 	      );
@@ -86,9 +90,9 @@ _f_closepl ()
   free (_plotter->drawstate);
   _plotter->drawstate = NULL;
 
-  /* reset our knowledge of xfig's internal state */
+  /* reset our knowledge of xfig's internal state (necessary only if user
+     calls outfile() to reuse the Plotter) */
   _plotter->fig_drawing_depth = FIG_INITIAL_DEPTH;
-  _plotter->fig_last_priority = 0;
   _plotter->fig_num_usercolors = 0;
 
   _plotter->open = false;	/* flag device as closed */

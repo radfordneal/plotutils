@@ -24,10 +24,10 @@ _m_box (x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d\n", 
-		 BOX, x0, y0, x1, y1);
+		 (int)O_BOX, x0, y0, x1, y1);
       else
 	{
-	  putc (BOX, _plotter->outstream);
+	  putc ((int)O_BOX, _plotter->outstream);
 	  _emit_integer (x0);
 	  _emit_integer (y0);
 	  _emit_integer (x1);
@@ -56,10 +56,10 @@ _m_fbox (x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g %g %g\n", 
-		 BOX, x0, y0, x1, y1);
+		 (int)O_BOX, x0, y0, x1, y1);
       else
 	{
-	  putc (FBOX, _plotter->outstream);
+	  putc ((int)O_FBOX, _plotter->outstream);
 	  _emit_float (x0);
 	  _emit_float (y0);
 	  _emit_float (x1);

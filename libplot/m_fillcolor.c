@@ -30,10 +30,10 @@ _m_fillcolor (red, green, blue)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d\n", 
-		 FILLCOLOR, red, green, blue);
+		 (int)O_FILLCOLOR, red, green, blue);
       else
 	{
-	  putc (FILLCOLOR, _plotter->outstream);
+	  putc ((int)O_FILLCOLOR, _plotter->outstream);
 	  _emit_integer (red);
 	  _emit_integer (green);
 	  _emit_integer (blue);

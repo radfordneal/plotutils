@@ -57,7 +57,7 @@ _g_savestate()
      drawing attributes.  So we knock it out, to start afresh */
 
   _plotter->drawstate->datapoints = NULL;
-  _plotter->drawstate->PointsInLine = 0;
+  _plotter->drawstate->points_in_path = 0;
   _plotter->drawstate->datapoints_len = 0;
 
   /* install new state at head of the state list */

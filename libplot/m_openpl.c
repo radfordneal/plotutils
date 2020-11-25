@@ -26,6 +26,9 @@ _m_openpl ()
   _plotter->opened = true;
   (_plotter->page_number)++;
 
+  /* space() not invoked yet, to set the user frame->device frame map */
+  _plotter->space_invoked = false;
+
   if (_plotter->outstream)
     {
       /* format type 0 = pre-GNU, type 1 = GNU binary, type 2 = GNU portable */
@@ -41,9 +44,9 @@ _m_openpl ()
       
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c\n",
-		 OPENPL);
+		 (int)O_OPENPL);
       else
-	putc (OPENPL, _plotter->outstream);
+	putc ((int)O_OPENPL, _plotter->outstream);
     }
   
   /* create drawing state, add it as the first member of the linked list;

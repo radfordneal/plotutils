@@ -1,7 +1,7 @@
 /* The following Postscript procset defines a set of macros and constants
    that libplot uses when rendering graphics.  It is split into several
    shorter pieces, because some compilers have difficulty with strings that
-   are too long.  It is #included by p_writeout.c.
+   are too long.  It is #included by p_defplot.c.
 
    The procset was largely written by John Interrante
    <interran@uluru.stanford.edu>, formerly of the InterViews team.  (Thanks

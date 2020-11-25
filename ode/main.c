@@ -68,7 +68,7 @@ fatal (s)
 #endif
 {
   fprintf (stderr, "%s: %s\n", progname, s);
-  exit (1);
+  exit (EXIT_FAILURE);
 }
 
 int
@@ -127,7 +127,7 @@ main (argc, argv)
 	    fatal ("-p: bad argument");
 	  prec--;
 	  if (prec <= 0 || prec > 18)
-	    fatal ("-p: argument out of range");
+	    fatal ("-p: argument must be in the range 2..19");
 	  fwd = prec + 7;
 	  if (fwd < 9)
 	    fwd = 9;
@@ -244,17 +244,17 @@ main (argc, argv)
   if (errcnt > 0)
     {
       fprintf (stderr, "Try `%s --help' for more information\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   if (show_version)
     {
       display_version (progname);
-      return 0;
+      return EXIT_SUCCESS;
     }
   if (show_usage)
     {
       display_usage (progname, hidden_options, NULL, false);
-      return 0;
+      return EXIT_SUCCESS;
     }
 
   /* Some sanity checks on user-supplied options. */
@@ -270,7 +270,7 @@ main (argc, argv)
       if (infile == NULL)
 	{
 	  fprintf (stderr, "%s: %s: %s\n", progname, filename, strerror(errno));
-	  return 1;
+	  return EXIT_FAILURE;
 	}
       yyin = infile;
       /* will switch later to stdin, in yywrap() */
@@ -282,5 +282,5 @@ main (argc, argv)
     }
   
   yyparse();
-  return 0;
+  return EXIT_SUCCESS;
 }

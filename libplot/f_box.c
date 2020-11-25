@@ -43,12 +43,9 @@ _f_fbox (x0, y0, x1, y1)
   _plotter->set_pen_color();
   _plotter->set_fill_color();
   
-  /* recompute xfig's `depth' attribute, and keep track of the drawing
-     priority of the object we're drawing */
-  if (_plotter->fig_last_priority >= POLYLINE_PRIORITY)
+  /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
-  _plotter->fig_last_priority = POLYLINE_PRIORITY;
 
   sprintf(_plotter->page->point,
 	  "#POLYLINE [BOX]\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %d %d\n",

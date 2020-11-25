@@ -25,10 +25,10 @@ _m_arcrel (xc, yc, x0, y0, x1, y1)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d %d %d %d\n", 
-		 ARCREL, xc, yc, x0, y0, x1, y1);
+		 (int)O_ARCREL, xc, yc, x0, y0, x1, y1);
       else
 	{
-	  putc (ARCREL, _plotter->outstream);
+	  putc ((int)O_ARCREL, _plotter->outstream);
 	  _emit_integer (xc);
 	  _emit_integer (yc);
 	  _emit_integer (x0);
@@ -60,10 +60,10 @@ _m_farcrel (xc, yc, x0, y0, x1, y1)
 
   if (_plotter->portable_output)
     fprintf (_plotter->outstream, "%c %g %g %g %g %g %g\n", 
-	     ARCREL, xc, yc, x0, y0, x1, y1);
+	     (int)O_ARCREL, xc, yc, x0, y0, x1, y1);
   else
     {
-      putc (FARCREL, _plotter->outstream);
+      putc ((int)O_FARCREL, _plotter->outstream);
       _emit_float (xc);
       _emit_float (yc);
       _emit_float (x0);

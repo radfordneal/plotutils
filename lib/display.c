@@ -97,10 +97,17 @@ display_usage (progname, omit_vals, appendage, fonts)
     fputs ("\n", stdout);
 
   if (fonts)
+#ifndef X_DISPLAY_MISSING
     fprintf (stdout, "\n\
-To list available fonts, type `%s -T \"device\" --help-fonts',\n\
-where \"device\" is the display device: X, ps, fig, hpgl, or tek.\n",
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format: X, ai, ps, fig, pcl, hpgl, or tek.\n",
 	     progname);
+#else
+    fprintf (stdout, "\n\
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format: ai, ps, fig, pcl, hpgl, or tek.\n",
+	     progname);
+#endif
 
   if ((appendage != NULL) || fonts)
     fputs ("\n", stdout);

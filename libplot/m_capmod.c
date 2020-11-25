@@ -32,7 +32,7 @@ _m_capmod (s)
 	*nl = '\0';		/* don't grok multiline arg strings */
       
       fprintf (_plotter->outstream, "%c%s\n", 
-	       CAPMOD, s);
+	       (int)O_CAPMOD, s);
     }
   
   /* invoke generic method */

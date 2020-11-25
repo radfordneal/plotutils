@@ -1,7 +1,7 @@
-/* This header file specifies HP's Roman-8 encoding (used by HP's Stick
-   fonts, including variable-width arc fonts).  In particular, it gives a
-   mapping from the upper half of the ISO-Latin-1 character set to
-   Roman-8. */
+/* This header file specifies HP's Roman-8 encoding (used by HP's vector
+   fonts [`stick fonts'], including both fixed-width stick fonts and
+   variable-width arc fonts).  In particular, it gives a mapping from the
+   upper half of the ISO-Latin-1 character set to Roman-8. */
 
 /* ISO-Latin-1 characters not included in Roman-8; we map each of them to
    040, i.e., to the space character. */

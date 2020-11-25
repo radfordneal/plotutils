@@ -8,9 +8,6 @@
 #include "plot.h"
 #include "extern.h"
 
-#define POINT_PS_SIZE 0.5  /* em size (in printer's points) for a font in
-			      which a `point' could appear as a symbol */
-
 int
 #ifdef _HAVE_PROTOS
 _p_fpoint (double x, double y)
@@ -36,7 +33,7 @@ _p_fpoint (x, y)
       double user_size;
 
       user_size = POINT_PS_SIZE / _matrix_norm (_plotter->drawstate->transform.m);
-      _plotter->fmarker (x, y, M_FILLED_CIRCLE, user_size);
+      _plotter->fmarker (x, y, (int)M_FILLED_CIRCLE, user_size);
     }
 
   return 0;

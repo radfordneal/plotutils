@@ -24,10 +24,10 @@ _m_contrel (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d\n", 
-		 CONTREL, x, y);
+		 (int)O_CONTREL, x, y);
       else
 	{
-	  putc (CONTREL, _plotter->outstream);
+	  putc ((int)O_CONTREL, _plotter->outstream);
 	  _emit_integer (x);
 	  _emit_integer (y);
 	}
@@ -54,10 +54,10 @@ _m_fcontrel (x, y)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %g %g\n", 
-		 CONTREL, x, y);
+		 (int)O_CONTREL, x, y);
       else
 	{
-	  putc (FCONTREL, _plotter->outstream);
+	  putc ((int)O_FCONTREL, _plotter->outstream);
 	  _emit_float (x);
 	  _emit_float (y);
 	}

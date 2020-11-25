@@ -644,7 +644,7 @@ _x_select_font_carefully (name, is_zero, s)
    true_font_size, font_pixmatrix, font_ascent, font_descent,
    native_positioning, and font_is_iso8859_1 fields of the drawing state.
    We don't set the font in the GC used for drawing though (for that, see
-   x_alab_X.c). */
+   x_alab_x.c). */
 static bool
 #ifdef _HAVE_PROTOS
 _x_select_font (const char *name, bool is_zero[4], const unsigned char *s)
@@ -904,7 +904,7 @@ _set_x_font_dimensions(is_zero)
 	       XFontStruct, instead.
 
 	       These two fields are used only for computing vertical
-	       offsets when writing label strings (see x_alab_X.c). */
+	       offsets when writing label strings (see x_alab_x.c). */
 	  {
 	    Atom raw_descent_atom, raw_ascent_atom;
 	    bool descent_success, ascent_success;

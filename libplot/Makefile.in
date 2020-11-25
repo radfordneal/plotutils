@@ -84,9 +84,9 @@ lib_LTLIBRARIES = libplot.la
 
 INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include
 
-GSRC = g_affine.c g_alabel.c g_alab_her.c g_bgcolor.c g_box.c g_capmod.c \
-g_circ.c g_clipper.c g_closepl.c g_colors.c g_colorname.c g_concat.c \
-g_cont.c g_cntrlify.c g_endpath.c g_error.c g_erase.c g_fakearc.c \
+GSRC = g_affine.c g_alabel.c g_alab_her.c g_arc.c g_bgcolor.c g_box.c \
+g_capmod.c g_circ.c g_clipper.c g_closepl.c g_colors.c g_colorname.c \
+g_concat.c g_cont.c g_cntrlify.c g_endpath.c g_error.c g_erase.c \
 g_filltype.c g_fillcolor.c g_flushpl.c g_fontdb.c g_fontd2.c g_fontname.c \
 g_fontsize.c g_havecap.c g_her_glyph.c g_integer.c g_iso.c g_joinmod.c \
 g_label.c g_line.c g_linemod.c g_linewidth.c g_mark.c g_matrix.c g_move.c \
@@ -94,53 +94,54 @@ g_openpl.c g_outbuf.c g_outfile.c g_pagetype.c g_pencolor.c g_relative.c \
 g_range.c g_reststate.c g_retrieve.c g_savestate.c g_space.c g_textangle.c \
 g_vector.c g_xmalloc.c g_xstring.c
 
-MSRC = m_affine.c m_alabel.c m_arc.c m_arcrel.c m_bgcolor.c m_box.c \
-m_boxrel.c m_capmod.c m_circ.c m_circrel.c m_closepl.c m_concat.c m_cont.c \
-m_contrel.c m_defplot.c m_defstate.c m_earc.c m_earcrel.c m_ellipse.c \
-m_emit.c m_endpath.c m_erase.c m_filltype.c m_fillcolor.c m_fontname.c \
-m_fontsize.c m_joinmod.c m_label.c m_line.c m_linemod.c m_linerel.c \
-m_linewidth.c m_mark.c m_markrel.c m_move.c m_moverel.c m_openpl.c \
-m_pencolor.c m_point.c m_pointrel.c m_reststate.c m_savestate.c m_space.c \
-m_textangle.c
+MSRC = m_alabel.c m_arc.c m_arcrel.c m_bgcolor.c m_box.c m_boxrel.c \
+m_capmod.c m_circ.c m_circrel.c m_closepl.c m_concat.c m_cont.c m_contrel.c \
+m_defplot.c m_defstate.c m_earc.c m_earcrel.c m_ellipse.c m_emit.c \
+m_endpath.c m_erase.c m_filltype.c m_fillcolor.c m_fontname.c m_fontsize.c \
+m_joinmod.c m_label.c m_line.c m_linemod.c m_linerel.c m_linewidth.c \
+m_mark.c m_markrel.c m_move.c m_moverel.c m_openpl.c m_pencolor.c m_point.c \
+m_pointrel.c m_reststate.c m_savestate.c m_space.c m_textangle.c
 
 TSRC = t_attribs.c t_closepl.c t_color.c t_color2.c t_cont.c t_defplot.c \
 t_defstate.c t_erase.c t_openpl.c t_point.c t_tek_md.c t_tek_mv.c \
 t_tek_vec.c
 
-HSRC = h_alab_pcl.c h_arc.c h_attribs.c h_circ.c h_closepl.c h_color.c \
-h_defplot.c h_defstate.c h_endpath.c h_box.c h_font.c h_openpl.c \
-h_position.c h_linewidth.c h_point.c
+HSRC = h_alab_pcl.c h_attribs.c h_circ.c h_closepl.c h_color.c h_defplot.c \
+h_defstate.c h_endpath.c h_box.c h_font.c h_openpl.c h_position.c \
+h_linewidth.c h_point.c
 
-FSRC = f_alab_ps.c f_arc.c f_box.c f_closepl.c f_color.c f_color2.c \
-f_defplot.c f_defstate.c f_ellipse.c f_endpath.c f_erase.c f_linewidth.c \
-f_point.c f_retrieve.c
+FSRC = f_alab_ps.c f_box.c f_closepl.c f_color.c f_color2.c f_defplot.c \
+f_defstate.c f_ellipse.c f_endpath.c f_erase.c f_linewidth.c f_point.c \
+f_retrieve.c
 
 PSRC = p_alab_ps.c p_color.c p_color2.c p_defplot.c p_defstate.c \
 p_ellipse.c p_endpath.c p_erase.c p_point.c
 
-XSRC = x_alab_X.c x_arc.c x_attribs.c x_box.c x_closepl.c x_color.c \
-x_defplot.c x_defstate.c x_earc.c x_ellipse.c x_endpath.c x_erase.c \
-x_flushpl.c x_openpl.c x_point.c x_reststate.c x_retrieve.c x_savestate.c \
-x_xevents.c
+ASRC = a_alab_ps.c a_attribs.c a_color.c a_closepl.c a_defplot.c \
+a_defstate.c a_endpath.c a_point.c
+
+XSRC = x_alab_x.c x_attribs.c x_box.c x_closepl.c x_color.c x_defplot.c \
+x_defstate.c x_ellipse.c x_endpath.c x_erase.c x_flushpl.c x_openpl.c \
+x_point.c x_reststate.c x_retrieve.c x_savestate.c x_xevents.c
 
 YSRC = y_closepl.c y_defplot.c y_openpl.c
 
-@NO_X_TRUE@ALLSRC = api.c $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC)
-@NO_X_FALSE@ALLSRC = api.c $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(XSRC) $(YSRC)
+@NO_X_TRUE@ALLSRC = api.c $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(ASRC)
+@NO_X_FALSE@ALLSRC = api.c $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(ASRC) \
+@NO_X_FALSE@$(XSRC) $(YSRC)
 libplot_la_SOURCES = $(ALLSRC)
 
-libplot_la_LDFLAGS = -version-info 1:5:1
+libplot_la_LDFLAGS = -version-info 1:6:1
 
-noinst_HEADERS = extern.h g_colorname.h g_control.h g_cntrlify.h \
-g_fakearc.h g_her_metr.h g_jis.h g_pagetype.h g_params.h h_stick.h \
-p_header.h
+noinst_HEADERS = extern.h g_arc.h g_colorname.h g_control.h g_cntrlify.h \
+g_her_metr.h g_jis.h g_pagetype.h g_params.h h_stick.h p_header.h
 
-EXTRA_libplot_la_SOURCES = x_alab_X.c x_arc.c x_attribs.c x_box.c \
-x_closepl.c x_color.c x_defplot.c x_defstate.c x_earc.c x_ellipse.c \
-x_endpath.c x_erase.c x_flushpl.c x_openpl.c x_point.c x_reststate.c \
-x_retrieve.c x_savestate.c x_xevents.c y_closepl.c y_defplot.c y_openpl.c
+EXTRA_libplot_la_SOURCES = x_alab_x.c x_attribs.c x_box.c x_closepl.c \
+x_color.c x_defplot.c x_defstate.c x_ellipse.c x_endpath.c x_erase.c \
+x_flushpl.c x_openpl.c x_point.c x_reststate.c x_retrieve.c x_savestate.c \
+x_xevents.c y_closepl.c y_defplot.c y_openpl.c
 
-EXTRA_DIST = DEDICATION HUMOR README.fig README.hpgl README.tek VERSION
+EXTRA_DIST = DEDICATION HUMOR README.hpgl README.tek VERSION
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -153,18 +154,18 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libplot_la_LIBADD = 
 @NO_X_TRUE@cond0libplot_la_OBJECTS =  api.lo g_affine.lo g_alabel.lo \
-@NO_X_TRUE@g_alab_her.lo g_bgcolor.lo g_box.lo g_capmod.lo g_circ.lo \
-@NO_X_TRUE@g_clipper.lo g_closepl.lo g_colors.lo g_colorname.lo \
-@NO_X_TRUE@g_concat.lo g_cont.lo g_cntrlify.lo g_endpath.lo g_error.lo \
-@NO_X_TRUE@g_erase.lo g_fakearc.lo g_filltype.lo g_fillcolor.lo \
-@NO_X_TRUE@g_flushpl.lo g_fontdb.lo g_fontd2.lo g_fontname.lo \
-@NO_X_TRUE@g_fontsize.lo g_havecap.lo g_her_glyph.lo g_integer.lo \
-@NO_X_TRUE@g_iso.lo g_joinmod.lo g_label.lo g_line.lo g_linemod.lo \
-@NO_X_TRUE@g_linewidth.lo g_mark.lo g_matrix.lo g_move.lo g_openpl.lo \
-@NO_X_TRUE@g_outbuf.lo g_outfile.lo g_pagetype.lo g_pencolor.lo \
-@NO_X_TRUE@g_relative.lo g_range.lo g_reststate.lo g_retrieve.lo \
-@NO_X_TRUE@g_savestate.lo g_space.lo g_textangle.lo g_vector.lo \
-@NO_X_TRUE@g_xmalloc.lo g_xstring.lo m_affine.lo m_alabel.lo m_arc.lo \
+@NO_X_TRUE@g_alab_her.lo g_arc.lo g_bgcolor.lo g_box.lo g_capmod.lo \
+@NO_X_TRUE@g_circ.lo g_clipper.lo g_closepl.lo g_colors.lo \
+@NO_X_TRUE@g_colorname.lo g_concat.lo g_cont.lo g_cntrlify.lo \
+@NO_X_TRUE@g_endpath.lo g_error.lo g_erase.lo g_filltype.lo \
+@NO_X_TRUE@g_fillcolor.lo g_flushpl.lo g_fontdb.lo g_fontd2.lo \
+@NO_X_TRUE@g_fontname.lo g_fontsize.lo g_havecap.lo g_her_glyph.lo \
+@NO_X_TRUE@g_integer.lo g_iso.lo g_joinmod.lo g_label.lo g_line.lo \
+@NO_X_TRUE@g_linemod.lo g_linewidth.lo g_mark.lo g_matrix.lo g_move.lo \
+@NO_X_TRUE@g_openpl.lo g_outbuf.lo g_outfile.lo g_pagetype.lo \
+@NO_X_TRUE@g_pencolor.lo g_relative.lo g_range.lo g_reststate.lo \
+@NO_X_TRUE@g_retrieve.lo g_savestate.lo g_space.lo g_textangle.lo \
+@NO_X_TRUE@g_vector.lo g_xmalloc.lo g_xstring.lo m_alabel.lo m_arc.lo \
 @NO_X_TRUE@m_arcrel.lo m_bgcolor.lo m_box.lo m_boxrel.lo m_capmod.lo \
 @NO_X_TRUE@m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo m_cont.lo \
 @NO_X_TRUE@m_contrel.lo m_defplot.lo m_defstate.lo m_earc.lo \
@@ -176,29 +177,30 @@ libplot_la_LIBADD =
 @NO_X_TRUE@m_reststate.lo m_savestate.lo m_space.lo m_textangle.lo \
 @NO_X_TRUE@t_attribs.lo t_closepl.lo t_color.lo t_color2.lo t_cont.lo \
 @NO_X_TRUE@t_defplot.lo t_defstate.lo t_erase.lo t_openpl.lo t_point.lo \
-@NO_X_TRUE@t_tek_md.lo t_tek_mv.lo t_tek_vec.lo h_alab_pcl.lo h_arc.lo \
+@NO_X_TRUE@t_tek_md.lo t_tek_mv.lo t_tek_vec.lo h_alab_pcl.lo \
 @NO_X_TRUE@h_attribs.lo h_circ.lo h_closepl.lo h_color.lo h_defplot.lo \
 @NO_X_TRUE@h_defstate.lo h_endpath.lo h_box.lo h_font.lo h_openpl.lo \
 @NO_X_TRUE@h_position.lo h_linewidth.lo h_point.lo f_alab_ps.lo \
-@NO_X_TRUE@f_arc.lo f_box.lo f_closepl.lo f_color.lo f_color2.lo \
-@NO_X_TRUE@f_defplot.lo f_defstate.lo f_ellipse.lo f_endpath.lo \
-@NO_X_TRUE@f_erase.lo f_linewidth.lo f_point.lo f_retrieve.lo \
-@NO_X_TRUE@p_alab_ps.lo p_color.lo p_color2.lo p_defplot.lo \
-@NO_X_TRUE@p_defstate.lo p_ellipse.lo p_endpath.lo p_erase.lo \
-@NO_X_TRUE@p_point.lo
+@NO_X_TRUE@f_box.lo f_closepl.lo f_color.lo f_color2.lo f_defplot.lo \
+@NO_X_TRUE@f_defstate.lo f_ellipse.lo f_endpath.lo f_erase.lo \
+@NO_X_TRUE@f_linewidth.lo f_point.lo f_retrieve.lo p_alab_ps.lo \
+@NO_X_TRUE@p_color.lo p_color2.lo p_defplot.lo p_defstate.lo \
+@NO_X_TRUE@p_ellipse.lo p_endpath.lo p_erase.lo p_point.lo a_alab_ps.lo \
+@NO_X_TRUE@a_attribs.lo a_color.lo a_closepl.lo a_defplot.lo \
+@NO_X_TRUE@a_defstate.lo a_endpath.lo a_point.lo
 @NO_X_FALSE@cond1libplot_la_OBJECTS =  api.lo g_affine.lo g_alabel.lo \
-@NO_X_FALSE@g_alab_her.lo g_bgcolor.lo g_box.lo g_capmod.lo g_circ.lo \
-@NO_X_FALSE@g_clipper.lo g_closepl.lo g_colors.lo g_colorname.lo \
-@NO_X_FALSE@g_concat.lo g_cont.lo g_cntrlify.lo g_endpath.lo g_error.lo \
-@NO_X_FALSE@g_erase.lo g_fakearc.lo g_filltype.lo g_fillcolor.lo \
-@NO_X_FALSE@g_flushpl.lo g_fontdb.lo g_fontd2.lo g_fontname.lo \
-@NO_X_FALSE@g_fontsize.lo g_havecap.lo g_her_glyph.lo g_integer.lo \
-@NO_X_FALSE@g_iso.lo g_joinmod.lo g_label.lo g_line.lo g_linemod.lo \
-@NO_X_FALSE@g_linewidth.lo g_mark.lo g_matrix.lo g_move.lo g_openpl.lo \
-@NO_X_FALSE@g_outbuf.lo g_outfile.lo g_pagetype.lo g_pencolor.lo \
-@NO_X_FALSE@g_relative.lo g_range.lo g_reststate.lo g_retrieve.lo \
-@NO_X_FALSE@g_savestate.lo g_space.lo g_textangle.lo g_vector.lo \
-@NO_X_FALSE@g_xmalloc.lo g_xstring.lo m_affine.lo m_alabel.lo m_arc.lo \
+@NO_X_FALSE@g_alab_her.lo g_arc.lo g_bgcolor.lo g_box.lo g_capmod.lo \
+@NO_X_FALSE@g_circ.lo g_clipper.lo g_closepl.lo g_colors.lo \
+@NO_X_FALSE@g_colorname.lo g_concat.lo g_cont.lo g_cntrlify.lo \
+@NO_X_FALSE@g_endpath.lo g_error.lo g_erase.lo g_filltype.lo \
+@NO_X_FALSE@g_fillcolor.lo g_flushpl.lo g_fontdb.lo g_fontd2.lo \
+@NO_X_FALSE@g_fontname.lo g_fontsize.lo g_havecap.lo g_her_glyph.lo \
+@NO_X_FALSE@g_integer.lo g_iso.lo g_joinmod.lo g_label.lo g_line.lo \
+@NO_X_FALSE@g_linemod.lo g_linewidth.lo g_mark.lo g_matrix.lo g_move.lo \
+@NO_X_FALSE@g_openpl.lo g_outbuf.lo g_outfile.lo g_pagetype.lo \
+@NO_X_FALSE@g_pencolor.lo g_relative.lo g_range.lo g_reststate.lo \
+@NO_X_FALSE@g_retrieve.lo g_savestate.lo g_space.lo g_textangle.lo \
+@NO_X_FALSE@g_vector.lo g_xmalloc.lo g_xstring.lo m_alabel.lo m_arc.lo \
 @NO_X_FALSE@m_arcrel.lo m_bgcolor.lo m_box.lo m_boxrel.lo m_capmod.lo \
 @NO_X_FALSE@m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo m_cont.lo \
 @NO_X_FALSE@m_contrel.lo m_defplot.lo m_defstate.lo m_earc.lo \
@@ -211,18 +213,19 @@ libplot_la_LIBADD =
 @NO_X_FALSE@m_textangle.lo t_attribs.lo t_closepl.lo t_color.lo \
 @NO_X_FALSE@t_color2.lo t_cont.lo t_defplot.lo t_defstate.lo t_erase.lo \
 @NO_X_FALSE@t_openpl.lo t_point.lo t_tek_md.lo t_tek_mv.lo t_tek_vec.lo \
-@NO_X_FALSE@h_alab_pcl.lo h_arc.lo h_attribs.lo h_circ.lo h_closepl.lo \
+@NO_X_FALSE@h_alab_pcl.lo h_attribs.lo h_circ.lo h_closepl.lo \
 @NO_X_FALSE@h_color.lo h_defplot.lo h_defstate.lo h_endpath.lo h_box.lo \
 @NO_X_FALSE@h_font.lo h_openpl.lo h_position.lo h_linewidth.lo \
-@NO_X_FALSE@h_point.lo f_alab_ps.lo f_arc.lo f_box.lo f_closepl.lo \
-@NO_X_FALSE@f_color.lo f_color2.lo f_defplot.lo f_defstate.lo \
-@NO_X_FALSE@f_ellipse.lo f_endpath.lo f_erase.lo f_linewidth.lo \
-@NO_X_FALSE@f_point.lo f_retrieve.lo p_alab_ps.lo p_color.lo \
-@NO_X_FALSE@p_color2.lo p_defplot.lo p_defstate.lo p_ellipse.lo \
-@NO_X_FALSE@p_endpath.lo p_erase.lo p_point.lo x_alab_X.lo x_arc.lo \
-@NO_X_FALSE@x_attribs.lo x_box.lo x_closepl.lo x_color.lo x_defplot.lo \
-@NO_X_FALSE@x_defstate.lo x_earc.lo x_ellipse.lo x_endpath.lo \
-@NO_X_FALSE@x_erase.lo x_flushpl.lo x_openpl.lo x_point.lo \
+@NO_X_FALSE@h_point.lo f_alab_ps.lo f_box.lo f_closepl.lo f_color.lo \
+@NO_X_FALSE@f_color2.lo f_defplot.lo f_defstate.lo f_ellipse.lo \
+@NO_X_FALSE@f_endpath.lo f_erase.lo f_linewidth.lo f_point.lo \
+@NO_X_FALSE@f_retrieve.lo p_alab_ps.lo p_color.lo p_color2.lo \
+@NO_X_FALSE@p_defplot.lo p_defstate.lo p_ellipse.lo p_endpath.lo \
+@NO_X_FALSE@p_erase.lo p_point.lo a_alab_ps.lo a_attribs.lo a_color.lo \
+@NO_X_FALSE@a_closepl.lo a_defplot.lo a_defstate.lo a_endpath.lo \
+@NO_X_FALSE@a_point.lo x_alab_x.lo x_attribs.lo x_box.lo x_closepl.lo \
+@NO_X_FALSE@x_color.lo x_defplot.lo x_defstate.lo x_ellipse.lo \
+@NO_X_FALSE@x_endpath.lo x_erase.lo x_flushpl.lo x_openpl.lo x_point.lo \
 @NO_X_FALSE@x_reststate.lo x_retrieve.lo x_savestate.lo x_xevents.lo \
 @NO_X_FALSE@y_closepl.lo y_defplot.lo y_openpl.lo
 libplot_la_OBJECTS =  $(cond0libplot_la_OBJECTS) \
@@ -357,6 +360,22 @@ distdir: $(DISTFILES)
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
+a_alab_ps.lo a_alab_ps.o: a_alab_ps.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+a_attribs.lo a_attribs.o: a_attribs.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+a_closepl.lo a_closepl.o: a_closepl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+a_color.lo a_color.o: a_color.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+a_defplot.lo a_defplot.o: a_defplot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h p_header.h
+a_defstate.lo a_defstate.o: a_defstate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+a_endpath.lo a_endpath.o: a_endpath.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+a_point.lo a_point.o: a_point.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
 api.lo api.o: api.c ./../include/sys-defines.h ../config.h \
 	./../include/plot.h extern.h g_params.h
 f_alab_ps.lo f_alab_ps.o: f_alab_ps.c ./../include/sys-defines.h \
@@ -399,6 +418,8 @@ g_alab_her.lo g_alab_her.o: g_alab_her.c ./../include/sys-defines.h \
 	g_her_metr.h
 g_alabel.lo g_alabel.o: g_alabel.c ./../include/sys-defines.h \
 	../config.h ./../include/plot.h extern.h g_control.h
+g_arc.lo g_arc.o: g_arc.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h g_arc.h
 g_bgcolor.lo g_bgcolor.o: g_bgcolor.c ./../include/sys-defines.h \
 	../config.h ./../include/plot.h extern.h
 g_box.lo g_box.o: g_box.c ./../include/sys-defines.h ../config.h \
@@ -536,8 +557,6 @@ h_openpl.lo h_openpl.o: h_openpl.c ./../include/sys-defines.h \
 h_point.lo h_point.o: h_point.c ./../include/sys-defines.h ../config.h \
 	./../include/plot.h extern.h
 h_position.lo h_position.o: h_position.c ./../include/sys-defines.h \
-	../config.h ./../include/plot.h extern.h
-m_affine.lo m_affine.o: m_affine.c ./../include/sys-defines.h \
 	../config.h ./../include/plot.h extern.h
 m_alabel.lo m_alabel.o: m_alabel.c ./../include/sys-defines.h \
 	../config.h ./../include/plot.h extern.h
@@ -691,6 +710,8 @@ t_tek_mv.lo t_tek_mv.o: t_tek_mv.c ./../include/sys-defines.h \
 t_tek_vec.lo t_tek_vec.o: t_tek_vec.c ./../include/sys-defines.h \
 	../config.h ./../include/plot.h extern.h
 x_alab_X.lo x_alab_X.o: x_alab_X.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_alab_x.lo x_alab_x.o: x_alab_x.c ./../include/sys-defines.h \
 	../config.h ./../include/plot.h extern.h
 x_arc.lo x_arc.o: x_arc.c ./../include/sys-defines.h ../config.h \
 	./../include/plot.h extern.h

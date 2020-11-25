@@ -3338,7 +3338,7 @@ const struct typeface_info_struct _pcl_typeface_info[] =
    `first ink' for the character, i.e., at the left edge of the bounding
    box, _not_ at the left edge of the character cell for the character (as
    in PS).  This is an old pen plotter convention.  The bounding box width
-   is the distance between first ink and left ink.
+   is the distance between first ink and last ink.
 
    There is a separate `offset' field, measured in the same units, which
    measures the offset from the left edge of the character cell to the left
@@ -3423,10 +3423,7 @@ const struct typeface_info_struct _pcl_typeface_info[] =
 
 
 /* NOTE: do NOT change the ordering of the fonts in this table.
-   Fonts may be referred to elsewhere by our internal numbering.
-   See in particular the code in g_alabel.c, h_alab_pcl.c for handling 
-   marker symbols in the ArcSymbol and StickSymbol fonts. */
-
+   Fonts may be referred to elsewhere by our internal numbering. */
 const struct stick_font_info_struct _stick_font_info[] = {
 {
   "Arc",			/* #0 (our numbering) */
@@ -4332,8 +4329,8 @@ const struct stick_font_info_struct _stick_font_info[] = {
 }
 };
 
-/* Known non-Hershey vector typefaces.  Each typeface_info_struct contains
-   the following information:
+/* Known HP vector typefaces.  Each typeface_info_struct contains the
+   following information:
    
    (1) number of valid fonts [should be >= 2, since every typeface
        should include a symbol font (the zeroth font, the 1st listed)]

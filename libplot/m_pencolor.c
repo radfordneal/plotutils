@@ -29,10 +29,10 @@ _m_pencolor (red, green, blue)
     {
       if (_plotter->portable_output)
 	fprintf (_plotter->outstream, "%c %d %d %d\n", 
-		 PENCOLOR, red, green, blue);
+		 (int)O_PENCOLOR, red, green, blue);
       else
 	{
-	  putc (PENCOLOR, _plotter->outstream);
+	  putc ((int)O_PENCOLOR, _plotter->outstream);
 	  _emit_integer (red);
 	  _emit_integer (green);
 	  _emit_integer (blue);

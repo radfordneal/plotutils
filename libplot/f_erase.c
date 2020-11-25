@@ -27,7 +27,6 @@ _f_erase ()
 
   /* reset our knowledge of xfig's internal state */
   _plotter->fig_drawing_depth = FIG_INITIAL_DEPTH;
-  _plotter->fig_last_priority = 0;
   _plotter->fig_num_usercolors = 0;
 
   return 0;

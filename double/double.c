@@ -184,7 +184,7 @@ main (argc, argv)
 	      fprintf (stderr, 
 		       "%s: error: bad multiplicative constant `%s'\n", 
 		       progname, optarg);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  break;
 	case 'p':		/* Plus (add. constant), ARG REQUIRED */
@@ -193,7 +193,7 @@ main (argc, argv)
 	      fprintf (stderr, 
 		       "%s: error: bad additive constant `%s'\n", 
 		       progname, optarg);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  break;
 	case 'q':		/* Precision, ARG REQUIRED 	*/
@@ -203,7 +203,7 @@ main (argc, argv)
 	      fprintf (stderr,
 		       "%s: error: bad precision `%s', must be integer >= 1\n",
 		       progname, optarg);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  break;
 
@@ -214,7 +214,7 @@ main (argc, argv)
 	      fprintf (stderr,
 		       "%s: error: bad record length `%s', must be integer >= 1\n",
 		       progname, optarg);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	  break;
 
@@ -275,7 +275,7 @@ main (argc, argv)
 		{
 		  fprintf (stderr, "%s: error: bad field index `%d', must be >= 0\n",
 			   progname, field_index);
-		  return 1;
+		  return EXIT_FAILURE;
 		}
 	      if (field_array_len == 0)
 		field_array = 
@@ -306,17 +306,17 @@ main (argc, argv)
   if (errcnt > 0)
     {
       fprintf (stderr, "Try `%s --help' for more information\n", progname);
-      return 1;
+      return EXIT_FAILURE;
     }
   if (show_version)
     {
       display_version (progname);
-      return 0;
+      return EXIT_SUCCESS;
     }
   if (show_usage)
     {
       display_usage (progname, hidden_options, usage_appendage, false);
-      return 0;
+      return EXIT_SUCCESS;
     }
 
   /* Sanity checks on user-supplied options */
@@ -325,14 +325,14 @@ main (argc, argv)
     {
       fprintf (stderr, "%s: error: bad dataset spacing `%d' (must be > 0)\n",
 	       progname, dataset_spacing);
-      return 1;
+      return EXIT_FAILURE;
     }
 
   if (record_spacing < 1)
     {
       fprintf (stderr, "%s: error: bad record spacing `%d' (must be > 0)\n",
 	       progname, record_spacing);
-      return 1;
+      return EXIT_FAILURE;
     }
 
   for (i = 0; i < field_array_len; i++)
@@ -340,7 +340,7 @@ main (argc, argv)
       {
 	fprintf (stderr, 
 		 "%s: error: at least one field index out of bounds\n", progname);
-	return 1;
+	return EXIT_FAILURE;
       }
 
   /* default if no `-R' option seen: extract all fields of each record */
@@ -411,7 +411,7 @@ main (argc, argv)
 	    {
 	      fprintf (stderr, "%s: error: couldn't close input file\n", 
 		       progname);
-	      return 1;
+	      return EXIT_FAILURE;
 	    }
 	}
     }
@@ -444,7 +444,7 @@ main (argc, argv)
       }
     while (more_points);	/* keep going if no EOF yet */
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 /* read_float reads a single floating point quantity from an input file
@@ -646,7 +646,7 @@ open_file (name, fpp)
   if (fp == NULL)
     {
       fprintf (stderr, "%s: %s: %s\n", progname, name, strerror(errno));
-      exit (1);
+      exit (EXIT_FAILURE);
     }
   *fpp = fp;
 }
@@ -690,7 +690,7 @@ set_format_type (s, typep)
       {
 	fprintf (stderr, "%s: error: invalid data format type `%s'\n",
 		 progname, s);
-	exit (1);
+	exit (EXIT_FAILURE);
       }
       break;
     }
