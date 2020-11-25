@@ -717,7 +717,7 @@ write_svg_path_style (plOutbuf *page, const plDrawState *drawstate, bool need_ca
 	    {
 	      sprintf (page->point, "%.5g%s",
 		       dashbuf[i],
-		       i < num_dashes - 1 ? ", " : "\"");
+		       i < num_dashes - 1 ? ", " : "\" ");
 	      _update_buffer (page);
 	    }
 
