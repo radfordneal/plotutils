@@ -1,4 +1,4 @@
-This is plotutils.info, produced by makeinfo version 4.7 from
+This is plotutils.info, produced by makeinfo version 4.8 from
 plotutils.texi.
 
 INFO-DIR-SECTION GNU Plotting Utilities
@@ -15,11 +15,11 @@ START-INFO-DIR-ENTRY
 * Appendices: (plotutils)Appendices.    More info on the plotting utilities.
 END-INFO-DIR-ENTRY
 
-   This file documents version 2.5 of the GNU plotting utilities
-package, including GNU libplot 4.2.
+   This file documents version 2.6 of the GNU plotting utilities
+package, including GNU libplot 4.4
 
    Copyright (C) 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000,
-2005 Free Software Foundation, Inc.
+2005, 2008, 2009 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this manual
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -31,8 +31,8 @@ Documentation License".
 
 File: plotutils.info,  Node: Top,  Next: Plotutils Intro,  Prev: (dir),  Up: (dir)
 
-   This is the documentation for version 2.5 of the GNU plotting
-utilities package, including GNU libplot 4.2.  The package consists of
+   This is the documentation for version 2.6 of the GNU plotting
+utilities package, including GNU libplot 4.4.  The package consists of
 programs and functions for vector graphics and data plotting.
 
 * Menu:
@@ -1821,8 +1821,8 @@ default value of `HPGL_PENS' is
 should be self-explanatory.  By setting `HPGL_PENS', you may specify a
 color for any pen in the range #1...#31.  For information on what color
 names are recognized, see *Note Color Names::.  Pen #1 must always be
-present, though it need not be black. Any other pen in the range
-#1...#31 may be omitted.
+present, though it need not be black. Any pen in the range #2...#31 may
+be omitted.
 
    If `HPGL_VERSION' is "2" then `graph -T hpgl' will also be affected
 by the environment variable `HPGL_ASSIGN_COLORS'.  If the value of this
@@ -2391,8 +2391,8 @@ default value of `HPGL_PENS' is
 should be self-explanatory.  By setting `HPGL_PENS', you may specify a
 color for any pen in the range #1...#31.  For information on what color
 names are recognized, see *Note Color Names::.  Pen #1 must always be
-present, though it need not be black. Any other pen in the range
-#1...#31 may be omitted.
+present, though it need not be black. Any pen in the range #2...#31 may
+be omitted.
 
    If `HPGL_VERSION' is "2" then `plot -T hpgl' will also be affected
 by the environment variable `HPGL_ASSIGN_COLORS'.  If the value of this
@@ -2931,8 +2931,8 @@ default value of `HPGL_PENS' is
 should be self-explanatory.  By setting `HPGL_PENS', you may specify a
 color for any pen in the range #1...#31.  For information on what color
 names are recognized, see *Note Color Names::.  Pen #1 must always be
-present, though it need not be black. Any other pen in the range
-#1...#31 may be omitted.
+present, though it need not be black. Any pen in the range #2...#31 may
+be omitted.
 
    If `HPGL_VERSION' is "2" then `pic2plot -T hpgl' will also be
 affected by the environment variable `HPGL_ASSIGN_COLORS'.  If the
@@ -3412,8 +3412,8 @@ default value of `HPGL_PENS' is
 should be self-explanatory.  By setting `HPGL_PENS', you may specify a
 color for any pen in the range #1...#31.  For information on what color
 names are recognized, see *Note Color Names::.  Pen #1 must always be
-present, though it need not be black. Any other pen in the range
-#1...#31 may be omitted.
+present, though it need not be black. Any pen in the range #2...#31 may
+be omitted.
 
    If `HPGL_VERSION' is "2" then `tek2plot -T hpgl' will also be
 affected by the environment variable `HPGL_ASSIGN_COLORS'.  If the
@@ -3485,8 +3485,8 @@ available when producing output in PCL 5 or HP-GL/2 format.  If you do
 
 you will get a Wingdings character map, in HP-GL/2 format, that may be
 imported into any application that understands HP-GL/2.  Similarly,
-`plot -T pcl Wingdings' will produce a Wingdings character map in PCL 5
-format, which may be printed on a LaserJet or other PCL 5 device.
+`plotfont -T pcl Wingdings' will produce a Wingdings character map in
+PCL 5 format, which may be printed on a LaserJet or other PCL 5 device.
 
    In all, more than a hundred fonts are built into the plotting
 utilities.  *Note Text Fonts::.  Actually, if you are using the
@@ -3879,8 +3879,8 @@ default value of `HPGL_PENS' is
 should be self-explanatory.  By setting `HPGL_PENS', you may specify a
 color for any pen in the range #1...#31.  For information on what color
 names are recognized, see *Note Color Names::.  Pen #1 must always be
-present, though it need not be black. Any other pen in the range
-#1...#31 may be omitted.
+present, though it need not be black. Any pen in the range #2...#31 may
+be omitted.
 
    If `HPGL_VERSION' is "2" then `plotfont -T hpgl' will also be
 affected by the environment variable `HPGL_ASSIGN_COLORS'.  If the
@@ -5462,7 +5462,7 @@ We now explain the effects (the `semantics') of each type, in turn.
      derivative is assumed to be zero.  That is, it is a symbolic
      constant.
 
-  2. IDENTIFIER = <const>
+  2. IDENTIFIER = <expression>
 
      This sets the value of IDENTIFIER to the current value of
      <expression>.  Dynamic variables that have not been initialized in
@@ -5622,7 +5622,7 @@ File: plotutils.info,  Node: libplot,  Next: Appendices,  Prev: ode,  Up: Top
 9 `libplot', a 2-D Vector Graphics Library
 ******************************************
 
-This is the documentation for version 4.2 of GNU libplot, which is a
+This is the documentation for version 4.4 of GNU libplot, which is a
 free function library for drawing two-dimensional vector graphics.
 
 * Menu:
@@ -5639,7 +5639,7 @@ File: plotutils.info,  Node: libplot Overview,  Next: C Programming,  Prev: libp
 9.1 Programming with `libplot': An overview
 ===========================================
 
-GNU `libplot' 4.2 is a free function library for drawing
+GNU `libplot' 4.4 is a free function library for drawing
 two-dimensional vector graphics.  It can produce smooth,
 double-buffered animations for the X Window System, and can export
 graphics files in many file formats.  It is `device-independent' in the
@@ -8617,7 +8617,7 @@ only a single type of Plotter.
      The color for any pen in the range #1...#31 may be specified.  For
      information on what color names are recognized, see *Note Color
      Names::.  Pen #1 must always be present, though it need not be
-     black.  Any other pen in the range #1...#31 may be omitted.
+     black.  Any pen in the range #2...#31 may be omitted.
 
 `HPGL_ROTATE'
      (Default "0".)  Relevant only to HP-GL Plotters.  The angle, in
@@ -11045,7 +11045,7 @@ Appendix H GNU Free Documentation License
                       Version 1.2, November 2002
 
      Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
-     59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
+     51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
      Everyone is permitted to copy and distribute verbatim copies
      of this license document, but changing it is not allowed.
@@ -11471,88 +11471,88 @@ permit their use in free software.
 
 
 Tag Table:
-Node: Top1500
-Node: Plotutils Intro2441
-Node: graph13641
-Node: Simple Examples14465
-Node: Non-Square Plots29137
-Node: Multiple Datasets34257
-Node: Multiplotting39912
-Node: Data Formats43535
-Node: graph Invocation46256
-Node: Plot Options48027
-Node: Dataset Options69316
-Node: Multiplot Options79013
-Node: Raw graph Options80905
-Node: Info Options81709
-Node: graph Environment83271
-Node: plot90988
-Node: plot Examples91259
-Node: plot Invocation94979
-Node: plot Environment111089
-Node: pic2plot118761
-Node: pic2plot Introduction119062
-Node: pic2plot Invocation125228
-Node: pic2plot Environment139033
-Node: tek2plot146782
-Node: tek2plot Introduction147087
-Node: tek2plot Invocation148787
-Node: tek2plot Environment163957
-Node: plotfont170082
-Node: plotfont Examples170379
-Node: plotfont Invocation174158
-Node: plotfont Environment187188
-Node: spline194170
-Node: spline Examples194452
-Node: Advanced Use of spline201587
-Node: spline Invocation206100
-Node: ode215618
-Node: Basic Math216953
-Node: Simple ode Examples219840
-Node: Additional ode Examples228999
-Node: ode Invocation235986
-Node: Diagnostics240204
-Node: Numerical Error244320
-Node: Running Time256071
-Node: Input Language257405
-Node: ODE Bibliography265694
-Node: libplot266626
-Node: libplot Overview267218
-Node: C Programming282335
-Node: The C API283047
-Node: Older C APIs287597
-Node: C Compiling and Linking290615
-Node: Sample C Drawings293952
-Node: Paths and Subpaths304997
-Node: Drawing on a Page311513
-Node: Animated GIFs317316
-Node: X Animations322091
-Node: X Programming330281
-Node: C++ Programming336955
-Node: The Plotter Class337307
-Node: C++ Compiling and Linking341673
-Node: Sample C++ Drawings344020
-Node: Functions346309
-Node: Control Functions348225
-Node: Drawing Functions357361
-Node: Attribute Functions374377
-Node: Mapping Functions399140
-Node: Plotter Parameters403443
-Node: Appendices425789
-Node: Fonts and Markers426494
-Node: Text Fonts427410
-Node: Cyrillic and Japanese437376
-Node: Text Fonts in X441633
-Node: Text String Format445602
-Node: Marker Symbols464586
-Node: Color Names467518
-Node: Page and Viewport Sizes469425
-Node: Metafiles474717
-Node: Auxiliary Software478892
-Node: idraw479207
-Node: xfig480497
-Node: History and Acknowledgements481492
-Node: Reporting Bugs486416
-Node: GNU Free Documentation License487088
+Node: Top1511
+Node: Plotutils Intro2452
+Node: graph13652
+Node: Simple Examples14476
+Node: Non-Square Plots29148
+Node: Multiple Datasets34268
+Node: Multiplotting39923
+Node: Data Formats43546
+Node: graph Invocation46267
+Node: Plot Options48038
+Node: Dataset Options69327
+Node: Multiplot Options79024
+Node: Raw graph Options80916
+Node: Info Options81720
+Node: graph Environment83282
+Node: plot90993
+Node: plot Examples91264
+Node: plot Invocation94984
+Node: plot Environment111094
+Node: pic2plot118760
+Node: pic2plot Introduction119061
+Node: pic2plot Invocation125227
+Node: pic2plot Environment139032
+Node: tek2plot146775
+Node: tek2plot Introduction147080
+Node: tek2plot Invocation148780
+Node: tek2plot Environment163950
+Node: plotfont170069
+Node: plotfont Examples170366
+Node: plotfont Invocation174149
+Node: plotfont Environment187179
+Node: spline194155
+Node: spline Examples194437
+Node: Advanced Use of spline201572
+Node: spline Invocation206085
+Node: ode215603
+Node: Basic Math216938
+Node: Simple ode Examples219825
+Node: Additional ode Examples228984
+Node: ode Invocation235971
+Node: Diagnostics240189
+Node: Numerical Error244305
+Node: Running Time256056
+Node: Input Language257390
+Node: ODE Bibliography265684
+Node: libplot266616
+Node: libplot Overview267208
+Node: C Programming282325
+Node: The C API283037
+Node: Older C APIs287587
+Node: C Compiling and Linking290605
+Node: Sample C Drawings293942
+Node: Paths and Subpaths304987
+Node: Drawing on a Page311503
+Node: Animated GIFs317306
+Node: X Animations322081
+Node: X Programming330271
+Node: C++ Programming336945
+Node: The Plotter Class337297
+Node: C++ Compiling and Linking341663
+Node: Sample C++ Drawings344010
+Node: Functions346299
+Node: Control Functions348215
+Node: Drawing Functions357351
+Node: Attribute Functions374367
+Node: Mapping Functions399130
+Node: Plotter Parameters403433
+Node: Appendices425773
+Node: Fonts and Markers426478
+Node: Text Fonts427394
+Node: Cyrillic and Japanese437360
+Node: Text Fonts in X441617
+Node: Text String Format445586
+Node: Marker Symbols464570
+Node: Color Names467502
+Node: Page and Viewport Sizes469409
+Node: Metafiles474701
+Node: Auxiliary Software478876
+Node: idraw479191
+Node: xfig480481
+Node: History and Acknowledgements481476
+Node: Reporting Bugs486400
+Node: GNU Free Documentation License487072
 
 End Tag Table

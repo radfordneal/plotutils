@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -27,7 +28,7 @@
 
 const char *progname = "plotfont"; /* name of this program */
 const char *written = "Written by Robert S. Maier.";
-const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
+const char *copyright = "Copyright (C) 2009 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " FONT...\n";
 
@@ -182,7 +183,7 @@ main (int argc, char *argv[])
 	      || (jis_page < 33) || (jis_page > 126))
 	    {
 	      fprintf (stderr,
-		       "%s: bad JIS page, must be in the range 33..126\n",
+		       "%s: the JIS page number is bad (it should be in the range 33..126)\n",
 		       progname);
 	      errcnt++;
 	    }
@@ -194,7 +195,7 @@ main (int argc, char *argv[])
 	      || (jis_page < 1) || (jis_page > 94))
 	    {
 	      fprintf (stderr,
-		       "%s: bad JIS row, must be in the range 1..94\n",
+		       "%s: the JIS row number is bad (it should be in the range 1..94)\n",
 		       progname);
 	      errcnt++;
 	    }
@@ -246,13 +247,13 @@ main (int argc, char *argv[])
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, usage_appendage, true);
+      display_usage (progname, hidden_options, usage_appendage, 2);
       return EXIT_SUCCESS;
     }
 
   if (option_font_name == NULL && optind >= argc)
     {
-      fprintf (stderr, "%s: no font(s) specified \n", progname);
+      fprintf (stderr, "%s: no font or fonts are specified\n", progname);
       return EXIT_FAILURE;
     }
 
@@ -263,7 +264,7 @@ main (int argc, char *argv[])
 	  || (option_font_name && strcasecmp (option_font_name, "HersheyEUC") != 0)
 	  || (!option_font_name && strcasecmp (argv[optind], "HersheyEUC") != 0))
 	{
-	  fprintf (stderr, "%s: JIS page can only be specified for HersheyEUC \n font", progname);
+	  fprintf (stderr, "%s: a JIS page can only be specified for the HersheyEUC font\n", progname);
 	  return EXIT_FAILURE;
 	}	  
     }
@@ -271,7 +272,7 @@ main (int argc, char *argv[])
   if ((plotter = pl_newpl_r (output_format, NULL, stdout, stderr, 
 			     plotter_params)) == NULL)
     {
-      fprintf (stderr, "%s: error: could not create plot device\n", progname);
+      fprintf (stderr, "%s: error: the plot device could not be created\n", progname);
       return EXIT_FAILURE;
     }
 
@@ -299,7 +300,7 @@ main (int argc, char *argv[])
   retval = EXIT_SUCCESS;
   if (pl_deletepl_r (plotter) < 0)
     {
-      fprintf (stderr, "%s: error: could not delete plot device\n", progname);
+      fprintf (stderr, "%s: error: the plot device could not be deleted\n", progname);
       retval = EXIT_FAILURE;
     }
   pl_deleteplparams (plotter_params);
@@ -369,7 +370,7 @@ do_font (plPlotter *plotter, const char *name, bool upper_half, char *pen_color_
 
   if (pl_openpl_r (plotter) < 0)
     {
-      fprintf (stderr, "%s: error: could not open plot device\n", progname);
+      fprintf (stderr, "%s: error: the plot device could not be opened\n", progname);
       return false;
     }
 
@@ -545,7 +546,7 @@ do_font (plPlotter *plotter, const char *name, bool upper_half, char *pen_color_
   
   if (pl_closepl_r (plotter) < 0)
     {
-      fprintf (stderr, "%s: error: could not close plot device\n", progname);
+      fprintf (stderr, "%s: error: the plot device could not be closed\n", progname);
       return false;
     }
   return true;

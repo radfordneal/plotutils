@@ -1,6 +1,47 @@
 These are some release notes that deal with new features and backward
 compatibility of the plotutils package, on both user and programmer levels.
 
+Release 2.6, dated 9/2009
+-------------------------
+
+This release fixes a problem lurking in ode/specfun.c for a long time:
+copyrighted code, dating to the days when that file was a modified version
+of the file specfun.c in the gnuplot distribution.  The gnuplot folks have
+since rewritten their specfun.c to remove most of the copyright notices.
+(At the cost of introducing new ones, dealing with the Cephes
+library... but I digress.)  The plotutils ode/specfun.c has been totally
+rewritten: it is based on published algorithms, cited in the code, and
+contains no non-GNU copyrights.
+
+The SVG compatibility problems mentioned below seem to be going away.  In
+the past, outline fonts in libplot's SVG output have not been rendered
+correctly by many SVG viewers, mostly because they are drawn by libplot in
+an intricate way, involving a coordinate reflection.  But firefox and
+svgdisplay (part of KDE) now render reflected fonts correctly.  The GIMP
+SVG plugin may not yet, but then it has problems with fonts in general.
+inkscape may be improving as well (slowly).  Rewriting libplot's SVG export
+code to work around such problems no longer seems necessary.  (Horizontal
+and especially vertical justification of text strings are not yet widely
+supported, but when exporting SVG, libplot now does its own justification.)
+
+Release 2.5.1, dated 7/2008
+---------------------------
+
+This release fixes a few bugs.  However, there are persistent problems with
+text-strings in the SVG output format.  Many applications that can view or
+edit SVG files (in particular, inkscape) do not correctly implement the SVG
+1.1 specification.  So, they may position text strings incorrectly, and
+even position incorrectly individual characters within a text string.
+
+If you encounter this problem, the fix is to specify a stroked ("Hershey")
+font, such as HersheySerif or HersheySerif-Bold.  A list of available
+fonts, in SVG output, is obtained by doing `graph -Tsvg --help-fonts'.
+Each character in any Hershey font is made up of stroked line segments, and
+most SVG viewers can display line segments correctly.
+
+This problem may be worked around in future releases of the SVG output
+driver.
+
 Release 2.5, dated 12/2005
 --------------------------
 

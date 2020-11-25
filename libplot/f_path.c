@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -116,11 +117,36 @@ _pl_f_paint_path (S___(Plotter *_plotter))
 	_pl_f_set_pen_color (S___(_plotter));
 	_pl_f_set_fill_color (S___(_plotter));
 	
-	/* xfig expresses line widths in terms of `Fig display units', so
-	   scale appropriately */
+	/* In a .fig file, the width of a line is expressed as a
+	   non-negative integer (a positive integer, if the line is to be
+	   visible).  Originally, the width, if positive, was interpreted
+	   as a multiple of a fundamental `Fig display unit', namely 1/80
+	   inch.  However, the interpretation of the in-file line width was
+	   subsequently changed, thus:
+
+	   Width in .fig file 		Width as actually displayed by xfig
+	   1				0.5
+	   2				1
+	   3				2
+	   4				3
+	   etc.
+
+	   In consequence, our line width in terms of Fig display units
+	   usually needs to be adjusted upward, before we round it to the
+	   closest integer.  Thanks to Wolfgang Glunz and Bart De Schutter
+	   for pointing this out.  (See the addition of 0.75 below, which
+	   is what they recommend.)
+	*/
+
 	device_line_width =
 	  FIG_UNITS_TO_FIG_DISPLAY_UNITS(_plotter->drawstate->device_line_width);
-	/* don't use 0-width lines if user specified nonzero width */
+	if (device_line_width > 0.75)
+	  device_line_width += 1.0;
+
+	/* round xfig's notion of the line width to the closest integer;
+	   but never round it down to 0 (which would yield an invisible
+	   line) if the line width in user coordinates is positive;
+	   instead, round it upward to 1  */
 	quantized_device_line_width = IROUND(device_line_width);
 	if (quantized_device_line_width == 0 && device_line_width > 0.0)
 	  quantized_device_line_width = 1;
@@ -136,7 +162,7 @@ _pl_f_paint_path (S___(Plotter *_plotter))
 	sprintf(_plotter->data->page->point,
 		format,
 		2,		/* polyline object */
-		polyline_subtype,	/* polyline subtype */
+		polyline_subtype, /* polyline subtype */
 		line_style,	/* Fig line style */
 	  			/* thickness, in Fig display units */
 		(_plotter->drawstate->pen_type == 0 ? 0 :
@@ -273,11 +299,21 @@ _pl_f_draw_arc_internal (R___(Plotter *_plotter) double xc, double yc, double x0
   _pl_f_set_pen_color (S___(_plotter));
   _pl_f_set_fill_color (S___(_plotter));
   
-  /* xfig expresses line widths in terms of `Fig display units', so
-     scale appropriately */
+  /* xfig expresses the width of a line as an integer number of `Fig
+     display units', so convert the width to those units */
   device_line_width =
     FIG_UNITS_TO_FIG_DISPLAY_UNITS(_plotter->drawstate->device_line_width);
-  /* don't use 0-width lines if user specified nonzero width */
+
+  /* the interpretation of line width in a .fig file is now more
+     complicated (see comments in _pl_f_paint_path() above), so this value
+     must usually be incremented */
+  if (device_line_width > 0.75)
+    device_line_width += 1.0;
+
+  /* round xfig's notion of the line width to the closest integer; but
+     never round it down to 0 (which would yield an invisible line) if the
+     line width in user coordinates is positive; instead, round it upward
+     to 1  */
   quantized_device_line_width = IROUND(device_line_width);
   if (quantized_device_line_width == 0 && device_line_width > 0.0)
     quantized_device_line_width = 1;
@@ -345,11 +381,21 @@ _pl_f_draw_box_internal (R___(Plotter *_plotter) plPoint p0, plPoint p1)
   _pl_f_set_pen_color (S___(_plotter));
   _pl_f_set_fill_color (S___(_plotter));
   
-  /* xfig expresses line widths in terms of `Fig display units', so
-     scale appropriately */
+  /* xfig expresses the width of a line as an integer number of `Fig
+     display units', so convert the width to those units */
   device_line_width =
     FIG_UNITS_TO_FIG_DISPLAY_UNITS(_plotter->drawstate->device_line_width);
-  /* don't use 0-width lines if user specified nonzero width */
+
+  /* the interpretation of line width in a .fig file is now more
+     complicated (see comments in _pl_f_paint_path() above), so this value
+     must usually be incremented */
+  if (device_line_width > 0.75)
+    device_line_width += 1.0;
+
+  /* round xfig's notion of the line width to the closest integer; but
+     never round it down to 0 (which would yield an invisible line) if the
+     line width in user coordinates is positive; instead, round it upward
+     to 1  */
   quantized_device_line_width = IROUND(device_line_width);
   if (quantized_device_line_width == 0 && device_line_width > 0.0)
     quantized_device_line_width = 1;
@@ -363,9 +409,9 @@ _pl_f_draw_box_internal (R___(Plotter *_plotter) plPoint p0, plPoint p1)
   
   sprintf(_plotter->data->page->point,
 	  "#POLYLINE [BOX]\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %d %d\n",
-	  2,		/* polyline object */
+	  2,			/* polyline object */
 	  P_BOX,		/* polyline subtype */
-	  line_style,	/* Fig line style */
+	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
 	  (_plotter->drawstate->pen_type == 0 ? 0 :
 	  quantized_device_line_width), 
@@ -466,11 +512,21 @@ _pl_f_draw_ellipse_internal (R___(Plotter *_plotter) double x, double y, double 
   _pl_f_set_pen_color (S___(_plotter));
   _pl_f_set_fill_color (S___(_plotter));
   
-  /* xfig expresses line widths in terms of `Fig display units', so
-     scale appropriately */
+  /* xfig expresses the width of a line as an integer number of `Fig
+     display units', so convert the width to those units */
   device_line_width =
     FIG_UNITS_TO_FIG_DISPLAY_UNITS(_plotter->drawstate->device_line_width);
-  /* don't use 0-width lines if user specified nonzero width */
+
+  /* the interpretation of line width in a .fig file is now more
+     complicated (see comments in _pl_f_paint_path() above), so this value
+     must usually be incremented */
+  if (device_line_width > 0.75)
+    device_line_width += 1.0;
+
+  /* round xfig's notion of the line width to the closest integer; but
+     never round it down to 0 (which would yield an invisible line) if the
+     line width in user coordinates is positive; instead, round it upward
+     to 1  */
   quantized_device_line_width = IROUND(device_line_width);
   if (quantized_device_line_width == 0 && device_line_width > 0.0)
     quantized_device_line_width = 1;

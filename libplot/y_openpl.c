@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -184,7 +184,7 @@ _pl_y_begin_page (S___(Plotter *_plotter))
   _plotter->y_app_con = XtCreateApplicationContext();
   if (_plotter->y_app_con == (XtAppContext)NULL)
     {
-      _plotter->error (R___(_plotter) "can't create X application context");
+      _plotter->error (R___(_plotter) "an X application context could not be created");
       return false;
     }
   /* set fallback resources to be used by canvas widget (currently, only
@@ -210,7 +210,7 @@ _pl_y_begin_page (S___(Plotter *_plotter))
     if (display_s == NULL || *display_s == '\0')
       {
 	_plotter->error (R___(_plotter)
-			 "can't open Plotter, DISPLAY parameter is null");
+			 "the Plotter could not be opened, as the DISPLAY parameter is null");
 	return false;
       }
     fake_argv[fake_argc++] = (String)"-display";
@@ -307,13 +307,13 @@ _pl_y_begin_page (S___(Plotter *_plotter))
       display_s = (char *)_get_plot_param (_plotter->data, "DISPLAY");
       if (display_s == NULL)	/* shouldn't happen */
 	_plotter->error (R___(_plotter)
-			 "can't open null X Window System display");
+			 "the X Window System display could not be opened, as it is null");
       else
 	{
 	  char *buf;
 
 	  buf = (char *)_pl_xmalloc(strlen(display_s) + 1 + 50);
-	  sprintf (buf, "can't open X Window System display \"%s\"", 
+	  sprintf (buf, "the X Window System display \"%s\" could not be opened", 
 		   display_s);
 	  _plotter->error (R___(_plotter) buf);
 	  free (buf);

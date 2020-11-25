@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -202,6 +203,7 @@ struct plPSFontInfoStruct
   const char *css_style;	/* CSS font style */
   const char *css_weight;	/* CSS font weight */
   const char *css_stretch;	/* CSS font stretch */
+  const char *css_panose;	/* CSS font Panose */
   int pcl_typeface;		/* the PCL typeface number */
   int hpgl_spacing;		/* 0=fixed width, 1=variable */
   int hpgl_posture;		/* 0=upright, 1=italic, etc. */
@@ -237,6 +239,7 @@ struct plPCLFontInfoStruct
   const char *css_style;	/* CSS font style */
   const char *css_weight;	/* CSS font weight */
   const char *css_stretch;	/* CSS font stretch */
+  const char *css_panose;	/* CSS font Panose */
   int pcl_typeface;		/* the PCL typeface number */
   int hpgl_spacing;		/* 0=fixed width, 1=variable */
   int hpgl_posture;		/* 0=upright, 1=italic, etc. */

@@ -1,7 +1,7 @@
 /* This file is part of the GNU plotutils package. */
 
 /*
- * Copyright (C) 1996, 1997, 2005, Free Software Foundation, Inc.
+ * Copyright (C) 1996, 1997, 2005, 2008, Free Software Foundation, Inc.
  */
 
 /*

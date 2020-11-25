@@ -1,5 +1,5 @@
 %!PS-Adobe-3.0 EPSF-3.0
-%%Creator: GNU libplot drawing library 4.2
+%%Creator: GNU libplot drawing library 4.4
 %%Title: PostScript plot
 %%CreationDate: Fri Dec  9 13:09:44 2005
 %%DocumentData: Clean7Bit
@@ -61,7 +61,7 @@ dup dup findfont dup length dict begin
 currentdict end definefont
 } def
 /Times-Roman reencodeISO def
-%%BeginResource procset GNU_libplot 1.1 0
+%%BeginResource: procset GNU_libplot 1.1 0
 /none null def
 /numGraphicParameters 17 def
 /stringLimit 65535 def

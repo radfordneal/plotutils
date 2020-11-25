@@ -19,9 +19,9 @@ Consortium's Web pages on SVG ( http://www.w3.org/Graphics/SVG ) for more
 information.  In this release, the SVG produced by libplot's SVG driver
 complies with the SVG 1.1 specification.
 
-However, as of this writing, many SVG viewers fail to implement crucial
-parts of the specification (those dealing with text, in particular).  So
-the following sorts of problem may be encountered when viewing SVG output.
+However, as of this writing, some SVG viewers fail to implement crucial
+parts of the specification (especially, those dealing with text).  So, the
+following sorts of problem may be encountered when viewing SVG output.
 
 1. The font used for a text string may not be the one you have selected.
 libplot's SVG driver attempts to give the SVG viewer enough information to
@@ -41,8 +41,10 @@ different, will be supplied in the SVG output.  In nearly all cases, a
 viewers have been observed to fail to retrieve a matching font, or any font
 at all (!), even when they are helped out in this way.
 
-The fix is to use one of the builtin Hershey fonts, such as HersheySerif.
-For more information, see the file ./COMPAT.
+One workaround for this problem is to use a builtin Hershey (stroked) font,
+such as HersheySerif or HersheySans.  (For more information on this, see
+the file ./COMPAT.)  Type `graph -Tsvg --help-fonts' to get a complete list
+of fonts available to you, when producing SVG output.
 
 2. If you switch fonts in the middle of a text string, the substrings may
 not line up properly.  If this occurs, it is because your SVG viewer is

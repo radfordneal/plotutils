@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -219,12 +219,18 @@ _set_line_join_bbox (plOutbuf *bufp, double xleft, double yleft, double x, doubl
       break;
     case PL_JOIN_TRIANGULAR:
       /* add a miter vertex, and same vertices as when bevelling */
+      v1.x = xleft - x;
+      v1.y = yleft - y;
+      v2.x = xright - x;
+      v2.y = yright - y;
       vsum.x = v1.x + v2.x;
       vsum.y = v1.y + v2.y;
       _vscale (&vsum, 0.5 * linewidth);
       x -= vsum.x;
       y -= vsum.y;
       _update_bbox (bufp, XD_INTERNAL(x,y,m), YD_INTERNAL(x,y,m));
+      x += vsum.x;
+      y += vsum.y;
       /* fall through */
     case PL_JOIN_BEVEL:
       _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, PL_CAP_BUTT, m);

@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -27,7 +28,7 @@
 
 const char *progname = "pic2plot"; // name of this program
 const char *written = "Written by Robert S. Maier.";
-const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
+const char *copyright = "Copyright (C) 2009 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " FILE...\n";
 

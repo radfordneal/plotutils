@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -97,7 +98,7 @@ _pl_s_initialize (S___(Plotter *_plotter))
      anyway) */
   _plotter->data->default_font_type = PL_F_POSTSCRIPT;
   _plotter->data->pcl_before_ps = false;
-  _plotter->data->have_horizontal_justification = true;
+  _plotter->data->have_horizontal_justification = false;
   _plotter->data->have_vertical_justification = false;
   _plotter->data->issue_font_warning = true;
 

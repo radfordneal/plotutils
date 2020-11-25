@@ -1,9 +1,9 @@
 Libplot has its own versioning scheme, independent of the scheme used for
 numbering the releases of the plotutils package.  The version of libplot in
-this directory is 4.2, age=2.  That means
+this directory is 4.4, age=2.  That means
 
 	interface number = 4
-	revision = 2
+	revision = 4
 	
 	Support for interfaces extending backward by 2 unit from current
 	interface number, i.e., support for the interfaces supplied by

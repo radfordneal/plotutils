@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -43,7 +44,8 @@
    (2a) X name, (2b) alternative X name if any (may be NULL)
    	(2c) 2nd alternative X name if any (may be NULL)
    	(2d) 3rd alternative X name if any (may be NULL)
-   (2.5abcde) CSS font properties.
+   (2.5abcdef) CSS font properties:
+   	family, generic family, style, weight, stretch, panose
    (3) PCL typeface number.
    (4) PCL info: fixedwidth(0) / proportional(1).
    (5) PCL info: upright(0) / italic(1) / condensed(4) / cond. italic(5) /
@@ -82,6 +84,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus sans l-regular-r-normal", /* URW, for Debian */
   NULL,
   "Helvetica", "sans-serif", "normal", "normal", "normal",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Helv. family? */
   24580, 1, 0, 0, 14,
   931, 225,
   718, 0,
@@ -159,6 +162,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus sans l-regular-i-normal",
   NULL,
   "Helvetica", "sans-serif", "oblique", "normal", "normal",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Helv. family? */
   24580, 1, 1, 0, 14,
   931, 225,
   718, 0,
@@ -236,6 +240,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus sans l-bold-r-normal",
   NULL,
   "Helvetica", "sans-serif", "normal", "bold", "normal",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Helv. family? */
   24580, 1, 0, 3, 14,
   962, 228,
   718, 0,
@@ -313,6 +318,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus sans l-bold-i-normal",
   NULL,
   "Helvetica", "sans-serif", "oblique", "bold", "normal",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Helv. family? */
   24580, 1, 1, 3, 14,
   962, 228,
   718, 0,
@@ -390,6 +396,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus sans l-regular-r-condensed",
   NULL,
   "Helvetica", "sans-serif", "normal", "normal", "condensed",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Helv. family? */
   24580, 1, 4, 0, 14,
   931, 225,
   718, 0,
@@ -467,6 +474,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus sans l-regular-i-condensed",
   NULL,
   "Helvetica", "sans-serif", "oblique", "normal", "condensed",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Helv. family? */
   24580, 1, 5, 0, 14,
   931, 225,
   718, 0,
@@ -544,6 +552,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus sans l-bold-r-condensed",
   NULL,
   "Helvetica", "sans-serif", "normal", "bold", "condensed",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Helv. family? */
   24580, 1, 4, 3, 14,
   962, 228,
   718, 0,
@@ -621,6 +630,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus sans l-bold-i-condensed",
   NULL,
   "Helvetica", "sans-serif", "oblique", "bold", "condensed",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Helv. family? */
   24580, 1, 5, 3, 14,
   962, 228,
   718, 0,
@@ -698,6 +708,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus roman no9 l-medium-r-normal",	/* URW, for SuSE */
   NULL,
   "Times", "serif", "normal", "normal", "normal",
+  "2 2 6 3 4 5 5 2 3 4",	/* Panose for entire Times family? */
   25093, 1, 0, 0, 14,
   898, 218,
   662, 0,
@@ -775,6 +786,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus roman no9 l-medium-i-normal",
   NULL,
   "Times", "serif", "italic", "normal", "normal",
+  "2 2 6 3 4 5 5 2 3 4",	/* Panose for entire Times family? */
   25093, 1, 1, 0, 14,
   883, 217,
   653, 0,
@@ -852,6 +864,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus roman no9 l-bold-r-normal",
   NULL,
   "Times", "serif", "normal", "bold", "normal",
+  "2 2 6 3 4 5 5 2 3 4",	/* Panose for entire Times family? */
   25093, 1, 0, 3, 14,
   935, 218,
   676, 0,
@@ -929,6 +942,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus roman no9 l-bold-i-normal",
   NULL,
   "Times", "serif", "italic", "bold", "normal",
+  "2 2 6 3 4 5 5 2 3 4",	/* Panose for entire Times family? */
   25093, 1, 1, 3, 14,
   921, 218,
   669, 0,
@@ -1006,6 +1020,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw gothic l-medium-r-normal", /* URW, for SuSE */
   NULL,
   "Avant Garde", "sans-serif", "normal", "normal", "normal",
+  "2 11 4 2 2 2 3 2 3 4",	/* Panose for entire AvantGarde family? */
   24607, 1, 0, 0, 14,
   955, 222,
   740, 0,
@@ -1083,6 +1098,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw gothic l-medium-o-normal",
   NULL,
   "Avant Garde", "sans-serif", "oblique", "normal", "normal",
+  "2 11 4 2 2 2 3 2 3 4",	/* Panose for entire AvantGarde family? */
   24607, 1, 1, 0, 14,
   955, 222,
   740, 0,
@@ -1160,6 +1176,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw gothic l-semibold-r-normal",
   NULL,
   "Avant Garde", "sans-serif", "normal", "bold", "normal",
+  "2 11 4 2 2 2 3 2 3 4",	/* Panose for entire AvantGarde family? */
   24607, 1, 0, 2, 14,
   1021, 251,
   740, 0,
@@ -1237,6 +1254,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw gothic l-semibold-o-normal",
   NULL,
   "Avant Garde", "sans-serif", "oblique", "bold", "normal",
+  "2 11 4 2 2 2 3 2 3 4",	/* Panose for entire AvantGarde family? */
   24607, 1, 1, 2, 14,
   1021, 251,
   740, 0,
@@ -1314,6 +1332,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw bookman l-medium-r-normal", /* URW, for SuSE */
   NULL,
   "Bookman", "serif", "normal", "300", "normal",
+  "2 5 6 4 5 5 5 2 2 4",	/* Panose for entire Bookman family? */
   24623, 1, 0, -3, 14,
   908, 251,
   681, 0,
@@ -1391,6 +1410,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw bookman l-medium-i-normal",
   NULL,
   "Bookman", "serif", "italic", "300", "normal",
+  "2 5 6 4 5 5 5 2 2 4",	/* Panose for entire Bookman family? */
   24623, 1, 1, -3, 14,
   883, 250,
   681, 0,
@@ -1468,6 +1488,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw bookman l-bold-r-normal",
   NULL,
   "Bookman", "serif", "normal", "bold", "normal",
+  "2 5 6 4 5 5 5 2 2 4",	/* Panose for entire Bookman family? */
   24623, 1, 0, 2, 14,
   934, 250,
   681, 0,
@@ -1545,6 +1566,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw bookman l-bold-i-normal",
   NULL,
   "Bookman", "serif", "italic", "bold", "normal",
+  "2 5 6 4 5 5 5 2 2 4",	/* Panose for entire Bookman family? */
   24623, 1, 1, 2, 14,
   941, 250,
   681, 0,
@@ -1622,6 +1644,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus mono l-regular-r-normal", /* URW, for Debian */
   NULL,
   "Courier", "monospace", "normal", "normal", "normal",
+  "2 7 4 9 2 2 5 2 4 4", 	/* Panose for entire Courier family? */
   24579, 0, 0, 0, 14,
   805, 250,
   562, 0,
@@ -1703,6 +1726,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus mono l-regular-o-normal",
   NULL,
   "Courier", "monospace", "oblique", "normal", "normal",
+  "2 7 4 9 2 2 5 2 4 4", 	/* Panose for entire Courier family? */
   24579, 0, 1, 0, 14,
   805, 250,
   562, 0,
@@ -1780,6 +1804,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus mono l-bold-r-normal",
   NULL,
   "Courier", "monospace", "normal", "bold", "normal",
+  "2 7 4 9 2 2 5 2 4 4", 	/* Panose for entire Courier family? */
   24579, 0, 0, 3, 14,
   801, 250,
   562, 0,
@@ -1861,6 +1886,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "nimbus mono l-bold-o-normal",
   NULL,
   "Courier", "monospace", "oblique", "bold", "normal",
+  "2 7 4 9 2 2 5 2 4 4", 	/* Panose for entire Courier family? */
   24579, 0, 1, 3, 14,
   801, 250,
   562, 0,
@@ -1938,6 +1964,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "century schoolbook l-medium-r-normal", /* URW, for SuSE and Debian */
   NULL,
   "New Century Schoolbook", "serif", "normal", "normal", "normal",
+  "2 4 6 4 5 5 5 2 3 4",	/* Panose for entire NCS family? */
   24703, 1, 0, 0, 14,
   965, 250,
   722, 0,
@@ -2015,6 +2042,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "century schoolbook l-medium-i-normal",
   NULL,
   "New Century Schoolbook", "serif", "italic", "normal", "normal",
+  "2 4 6 4 5 5 5 2 3 4",	/* Panose for entire NCS family? */
   24703, 1, 1, 0, 14,
   958, 250,
   722, 0,
@@ -2092,6 +2120,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "century schoolbook l-bold-r-normal",
   NULL,
   "New Century Schoolbook", "serif", "normal", "bold", "normal",
+  "2 4 6 4 5 5 5 2 3 4",	/* Panose for entire NCS family? */
   24703, 1, 0, 3, 14,
   988, 250,
   722, 0,
@@ -2169,6 +2198,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "century schoolbook l-bold-i-normal",
   NULL,
   "New Century Schoolbook", "serif", "italic", "bold", "normal",
+  "2 4 6 4 5 5 5 2 3 4",	/* Panose for entire NCS family? */
   24703, 1, 1, 3, 14,
   991, 250,
   722, 0,
@@ -2246,6 +2276,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw palladio l-regular-r-normal", /* URW, for Debian */
   NULL,
   "Palatino", "serif", "normal", "normal", "normal",
+  "2 4 5 2 5 5 5 3 3 4",	/* Panose for entire Palatino family? */
   24591, 1, 0, 0, 14,
   927, 283,
   692, 0,
@@ -2323,6 +2354,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw palladio l-regular-i-normal",
   NULL,
   "Palatino", "serif", "italic", "normal", "normal",
+  "2 4 5 2 5 5 5 3 3 4",	/* Panose for entire Palatino family? */
   24591, 1, 1, 0, 14,
   918, 276,
   692, 0,
@@ -2400,6 +2432,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw palladio l-bold-r-normal",
   NULL,
   "Palatino", "serif", "normal", "bold", "normal",
+  "2 4 5 2 5 5 5 3 3 4",	/* Panose for entire Palatino family? */
   24591, 1, 0, 3, 14,
   924, 266,
   681, 0,
@@ -2477,6 +2510,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "urw palladio l-bold-i-normal",
   NULL,
   "Palatino", "serif", "italic", "bold", "normal",
+  "2 4 5 2 5 5 5 3 3 4",	/* Panose for entire Palatino family? */
   24591, 1, 1, 3, 14,
   926, 271,
   681, 0,
@@ -2554,6 +2588,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "zapfchancery-medium-i-normal", /* Adobe, for SunOS etc.*/
   "urw chancery l-medium-i-normal", /* URW, for SuSE */
   "Zapf Chancery", "cursive", "italic", "normal", "normal",
+  "0 0 0 0 0 0 0 0 0 0",	/* no Panose known */
   45099, 1, 1, 0, 14,
   831, 314,
   708, 0,
@@ -2631,6 +2666,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "zapfdingbats-medium-r-normal", /* Adobe, for SunOS etc. */
   "dingbats-medium-r-normal",	/* URW, for SuSE */
   "Zapf Dingbats", NULL, "normal", "normal", "normal",
+  "0 4 0 0 0 0 0 0 0 0",	/* no better Panose known */
   45101, 1, 0, 0, 460,
   820, 143,
   662, 0,	/* cap height not in AFM file; this is Times-Roman value */
@@ -2708,6 +2744,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   "standard symbols l-regular-r-normal", /* URW, for Debian */
   NULL,
   "Symbol", NULL, "normal", "normal", "normal",
+  "5 5 1 2 1 7 6 2 5 7",	/* Panose for Symbol font */
   45358, 1, 0, 0, 621,
   1010, 293,
   662, 0,	/* cap height not in AFM file; this is Times-Roman value */
@@ -2785,6 +2822,7 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   NULL,
   NULL,
   NULL, NULL, NULL, NULL, NULL,
+  NULL,
   0, 0, 0, 0, 0,
   0, 0,
   0, 0,
@@ -2851,6 +2889,63 @@ const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
   0, 0, 0,
   false}
 };
+
+/* Each of the 35 PS fonts above (and also each of the 45 PCL fonts)
+   includes a 10-digit PANOSE classification number, for use by the PANOSE
+   Typeface Matching System.  It consists of 10 digits, each in the range
+   0..15, with `0' meaning that no information is available.  The PANOSE
+   system is for classifying Latin fonts, and the digits, if given a
+   nonzero value, are interpreted thus:
+
+   Latin Text:
+   1. Family Kind (= 2 for Latin Text)
+   2. Serif Style
+   3. Weight
+   4. Proportion
+   5. Contrast
+   6. Stroke Variation
+   7. Arm Style
+   8. Letterform
+   9. Midline
+   10. X-height
+   
+   Latin Hand Written:
+   1. Family Kind (= 3 for Latin Hand Written)
+   2. Tool Kind
+   3. Weight
+   4. Spacing
+   5. Aspect Ratio
+   6. Contrast
+   7. Topology
+   8. Form
+   9. Finials
+   10. X-ascent
+   
+   Latin Decoratives:
+   1. Family Kind (= 4 for Latin Decorative)
+   2. Class
+   3. Weight
+   4. Aspect
+   5. Contrast
+   6. Serif Variant
+   7. Treatment
+   8. Lining
+   9. Topology
+   10. Range of Characters
+   
+   Latin Symbol:
+   1. Family Kind (= 5 for Latin Symbol)
+   2. Kind
+   3. Weight 
+   4. Spacing
+   5. Aspect Ratio & Contrast
+   6. Aspect Ratio of Character 94
+   7. Aspect Ratio of Character 119
+   8. Aspect Ratio of Character 157
+   9. Aspect Ratio of Character 163
+   10. Aspect Ratio of Character 211  
+*/
+
 
 /* The array _pl_g_ps_font_to_cgm_font_id[] performs a map from internal PS
    font number, i.e. location in the preceding list of 35 fonts, to CGM
@@ -3055,12 +3150,8 @@ const int _pl_g_cgm_font_id_to_ps_font[PL_NUM_PS_FONTS] =
     9541 classification, but is less fine-grained.  The IBM Class/Subclass
     for a TrueType or OpenType font are stored in the 2-byte `sFamilyClass'
     field of its so-called OS/2 table.  The OS/2 table contains miscellaneous
-    metrics, including the 10-byte Panose font classification.  
-
-    (For Panose, see http://www.fonts.com/hp/panose .  In Panose, each byte
-    can take on a value in the range 0..15.  Windows uses the Panose bytes
-    bFamilyType, bSerifStyle, and bProportion when matching fonts; other
-    bytes include bWeight and bStrokeVariation.)
+    metrics, including the 10-byte Panose font classification.   For Panose,
+    see above.
 
     Apparently, it is IBM that assigns each font to an IBM Font
     Class/Subclass.  The following table of registered values, giving
@@ -3174,7 +3265,8 @@ const int _pl_g_cgm_font_id_to_ps_font[PL_NUM_PS_FONTS] =
    12.15       Misc.
 
    13        Reserved
-   14 Reserved */
+   14 	     Reserved 
+*/
 
 const plCGMFontProperties _pl_g_cgm_font_properties[PL_NUM_PS_FONTS] = {
   /* family, extrastyle, style, posture, weight, width, design_group, struct */

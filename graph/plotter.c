@@ -1,6 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1989,
-   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
-   Foundation, Inc.
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, Free
+   Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -471,7 +471,7 @@ scale1 (double min, double max, double *tick_spacing, int *tick_spacing_type)
   a *= (max > min) ? 1.0 : -1.0; /* paranoia, max>min always */
   if (a <= 0.0)			
     {
-      fprintf(stderr, "%s: error: bad trial inter-tick spacing %g\n",
+      fprintf(stderr, "%s: error: the trial inter-tick spacing '%g' is bad\n",
 	      progname, a);
       exit (EXIT_FAILURE);
     }
@@ -551,7 +551,7 @@ prepare_axis (Axis *axisp, Transform *trans, double min, double max, double spac
   if (min > max)
     /* paranoia, max < min is swapped at top level */
     {
-      fprintf(stderr, "%s: error: min > max for axis, not allowed\n",
+      fprintf(stderr, "%s: error: min > max for an axis, which is not allowed\n",
 	      progname);
       exit (EXIT_FAILURE);
     }
@@ -864,7 +864,7 @@ set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const
   if (x_max == x_min)
     {
       fprintf (stderr, 
-	       "%s: separating identical upper and lower x limits\n",
+	       "%s: identical upper and lower x limits are separated\n",
 	       progname);
       /* separate them */
       x_max += 1.0;
@@ -885,7 +885,7 @@ set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const
   if (y_max == y_min)
     {
       fprintf (stderr, 
-	       "%s: separating identical upper and lower y limits\n",
+	       "%s: identical upper and lower y limits are separated\n",
 	       progname);
       /* separate them */
       y_max += 1.0;
@@ -902,7 +902,7 @@ set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const
       if (x_spacing == 0.0)
 	{
 	  fprintf (stderr, 
-		   "%s: error: zero spacing between ticks on an axis\n",
+		   "%s: error: the spacing between ticks on an axis is zero\n",
 		   progname);
 	  exit (EXIT_FAILURE);
 	}
@@ -913,7 +913,7 @@ set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const
       if (y_spacing == 0.0)
 	{
 	  fprintf (stderr, 
-		   "%s: error: zero spacing between ticks on an axis\n",
+		   "%s: error: the spacing between ticks on an axis is zero\n",
 		   progname);
 	  exit (EXIT_FAILURE);
 	}
@@ -1961,7 +1961,7 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 	   || (!multigrapher->y_axis.omit_ticks && multigrapher->y_axis.labelled_ticks <= 2)))
 	{
 	  fprintf (stderr,
-		   "%s: too few labelled axis ticks, adjust tick spacing manually\n",
+		   "%s: the tick spacing is adjusted, as there were too few labelled axis ticks\n",
 		   progname);
 	  tick_warning_printed = true;
 	}

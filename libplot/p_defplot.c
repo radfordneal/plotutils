@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -464,7 +465,7 @@ _pl_p_terminate (S___(Plotter *_plotter))
 	/* PS [not EPS] file, include procset in document prolog */
 	{
 	  sprintf (doc_header->point, "\
-%%%%BeginResource procset %s %s 0\n", 
+%%%%BeginResource: procset %s %s 0\n", 
 		   PS_PROCSET_NAME, PS_PROCSET_VERSION);
 	  _update_buffer (doc_header);
 	  /* write out idraw-derived PS prologue (makes many definitions) */
@@ -568,7 +569,7 @@ DrawDict begin\n");
 	   so that it will modify only the private dictionary */
 	{
 	  sprintf (doc_header->point, "\
-%%%%BeginResource procset %s %s 0\n", 
+%%%%BeginResource: procset %s %s 0\n", 
 		   PS_PROCSET_NAME, PS_PROCSET_VERSION);
 	  _update_buffer (doc_header);
 
@@ -760,14 +761,14 @@ showpage\n\n");
 	  || fsync (_plotter->data->outfp) < 0
 #endif
 	  )
-	_plotter->error (R___(_plotter) "output stream jammed");
+	_plotter->error (R___(_plotter) "the output stream is jammed");
     }
 #ifdef LIBPLOTTER
   else if (_plotter->data->outstream)
     {
       _plotter->data->outstream->flush ();
       if (!(*(_plotter->data->outstream)))
-	_plotter->error (R___(_plotter) "output stream jammed");
+	_plotter->error (R___(_plotter) "the output stream is jammed");
     }
 #endif
 

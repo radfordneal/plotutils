@@ -25,11 +25,10 @@
 @end iftex
 
 @ifinfo
-This file documents version 2.5 of the GNU plotting utilities package,
-including GNU libplot 4.2.
+This file documents version 2.6 of the GNU plotting utilities package,
+including GNU libplot 4.4
 
-Copyright @copyright{} 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999,
-2000, 2005 Free Software Foundation, Inc.
+Copyright @copyright{} 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this manual
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -42,12 +41,12 @@ Documentation License''.
 @titlepage
 @title The GNU Plotting Utilities
 @subtitle Programs and functions for vector graphics and data plotting
-@subtitle Version 2.5
+@subtitle Version 2.6
 @author Robert S. Maier
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999,
-2000, 2005 Free Software Foundation, Inc.
+2000, 2005, 2008, 2009 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this manual
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -60,8 +59,8 @@ Free Documentation License''.
 
 @node Top, Plotutils Intro, (dir), (dir)
 @ifnottex
-This is the documentation for version 2.5 of the GNU plotting
-utilities package, including GNU libplot 4.2.  The package consists of
+This is the documentation for version 2.6 of the GNU plotting
+utilities package, including GNU libplot 4.4.  The package consists of
 programs and functions for vector graphics and data plotting.
 @end ifnottex
 
@@ -2013,8 +2012,8 @@ value of @code{HPGL_PENS} is "1=black"; if @code{HPGL_VERSION} is
 should be self-explanatory.  By setting @code{HPGL_PENS}, you may
 specify a color for any pen in the range #1@dots{}#31.  For information
 on what color names are recognized, see @ref{Color Names}.  @w{Pen #1}
-must always be present, though it need not be black. Any other pen in
-the range #1@dots{}#31 may be omitted.
+must always be present, though it need not be black. Any pen in
+the range #2@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{graph -T hpgl} will also be
 affected by the environment variable @code{HPGL_ASSIGN_COLORS}@.  @w{If
@@ -2635,8 +2634,8 @@ value of @code{HPGL_PENS} is "1=black"; if @code{HPGL_VERSION} is
 should be self-explanatory.  By setting @code{HPGL_PENS}, you may
 specify a color for any pen in the range #1@dots{}#31.  For information
 on what color names are recognized, see @ref{Color Names}.  @w{Pen #1}
-must always be present, though it need not be black. Any other pen in
-the range #1@dots{}#31 may be omitted.
+must always be present, though it need not be black. Any pen in
+the range #2@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{plot -T hpgl} will also be
 affected by the environment variable @code{HPGL_ASSIGN_COLORS}@.  @w{If
@@ -3185,8 +3184,8 @@ pens.  Which pens are present may be specified by setting the
 should be self-explanatory.  By setting @code{HPGL_PENS}, you may
 specify a color for any pen in the range #1@dots{}#31.  For information
 on what color names are recognized, see @ref{Color Names}.  @w{Pen #1}
-must always be present, though it need not be black. Any other pen in
-the range #1@dots{}#31 may be omitted.
+must always be present, though it need not be black. Any pen in
+the range #2@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{pic2plot -T hpgl} will also be
 affected by the environment variable @code{HPGL_ASSIGN_COLORS}@.  @w{If
@@ -3673,8 +3672,8 @@ pens.  Which pens are present may be specified by setting the
 should be self-explanatory.  By setting @code{HPGL_PENS}, you may
 specify a color for any pen in the range #1@dots{}#31.  For information
 on what color names are recognized, see @ref{Color Names}.  @w{Pen #1}
-must always be present, though it need not be black. Any other pen in
-the range #1@dots{}#31 may be omitted.
+must always be present, though it need not be black. Any pen in
+the range #2@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{tek2plot -T hpgl} will also be
 affected by the environment variable @code{HPGL_ASSIGN_COLORS}@.  @w{If
@@ -3755,9 +3754,9 @@ plotfont -T hpgl Wingdings > map.plt
 @noindent
 you will get a Wingdings character map, in HP-GL/2 format, that may be
 imported into any application that understands HP-GL/2.  Similarly,
-@code{plot -T pcl Wingdings} will produce a Wingdings character map in
-@w{PCL 5} format, which may be printed on a LaserJet or other @w{PCL 5}
-device.  
+@code{plotfont -T pcl Wingdings} will produce a Wingdings character
+map in @w{PCL 5} format, which may be printed on a LaserJet or other
+@w{PCL 5} device.
 
 In all, more than a hundred fonts are built into the plotting utilities.
 @xref{Text Fonts}.  Actually, if you are using the plotting utilities to
@@ -4162,8 +4161,8 @@ pens.  Which pens are present may be specified by setting the
 should be self-explanatory.  By setting @code{HPGL_PENS}, you may
 specify a color for any pen in the range #1@dots{}#31.  For information
 on what color names are recognized, see @ref{Color Names}.  @w{Pen #1}
-must always be present, though it need not be black. Any other pen in
-the range #1@dots{}#31 may be omitted.
+must always be present, though it need not be black. Any pen in
+the range #2@dots{}#31 may be omitted.
 
 If @code{HPGL_VERSION} is "2" then @code{plotfont -T hpgl} will also be
 affected by the environment variable @code{HPGL_ASSIGN_COLORS}@.  @w{If
@@ -6218,7 +6217,7 @@ form, its derivative is assumed to be zero.  That is, @w{it is} a
 symbolic constant.
 
 @item 
-@t{IDENTIFIER = <const>}
+@t{IDENTIFIER = <expression>}
 
 @noindent
 This sets the value of @t{IDENTIFIER} to the current value of
@@ -6401,7 +6400,7 @@ Physics Instruction}, Addison--Wesley, 1990.
 @chapter @code{libplot}, a 2-D Vector Graphics Library
 
 @ifnottex
-This is the documentation for version 4.2 of GNU libplot, which is
+This is the documentation for version 4.4 of GNU libplot, which is
 a free function library for drawing two-dimensional vector graphics.
 @end ifnottex
 
@@ -6416,7 +6415,7 @@ a free function library for drawing two-dimensional vector graphics.
 @node libplot Overview, C Programming, libplot, libplot
 @section Programming with @code{libplot}: An overview
 
-GNU @code{libplot} 4.2 is a free function library for drawing
+GNU @code{libplot} 4.4 is a free function library for drawing
 two-dimensional vector graphics.  It can produce smooth,
 double-buffered animations for the @w{X Window} System, and can export
 graphics files in many file formats.  @w{It is} `device-independent'
@@ -9669,7 +9668,7 @@ Plotters.  The set of available pens; the format should be
 self-explanatory.  The color for any pen in the range #1@dots{}#31 may
 be specified.  For information on what color names are recognized, see
 @ref{Color Names}.  @w{Pen #1} must always be present, though it need
-not be black.  Any other pen in the range #1@dots{}#31 may be omitted.
+not be black.  Any pen in the range #2@dots{}#31 may be omitted.
 
 @item HPGL_ROTATE
 (Default "0".)  Relevant only to HP-GL Plotters.  The angle, in degrees,
@@ -11779,7 +11778,7 @@ installation-related, be sure to give all relevant information.
 
 @display
 Copyright @copyright{} 2000, 2001, 2002 Free Software Foundation, Inc.
-59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
+51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.

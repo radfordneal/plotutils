@@ -1,17 +1,16 @@
 Greater priority
 ----------------
 
-libplot: decide whether to provide a workaround for a font problem in
-recent releases of XFree86: the Type 1 versions of the Symbol and
-ZapfDingbats font use an erroneous coding scheme (character codes are
-offset by 0x20 = 32).
+libplot: take account of the fact that many versions of the Symbol font
+(in PS output, at least) now have the Euro symbol in position #160 of the
+ISO-Latin-1 encoding, rather than having a (nonbreakable) space.
 
 libplot: enhance the SVG driver to keep track of whether the output is
 consistent with the `Full' or `Tiny' SVG profile.  The only relevant
 differences appear to be that in SVGT, "all numbers must be limited in
 range between -32,767.9999 to +32,767.9999 or the scientific notation
 equivalent", and that when drawing paths, the elliptical arc commands 
-A (absolute ell. arc) and a (relative ell. arc) are not available.
+`A' (absolute ell. arc) and `a' (relative ell. arc) are not available.
 
 libplot: enhance the SVG driver to use SVG's <tspan>..</tspan> construct
 for styling and positioning substrings.  Our present scheme for changing
@@ -24,6 +23,11 @@ needed.  Note: SVGT does not support tspans.
 libplot: enhance the SVG driver to adjust the width of text strings to be
 what it should be, according to our internal font database.  This is
 important if a requested font is unavailable.
+
+libplot: decide whether to provide a workaround for a font problem in
+recent releases of XFree86: the Type 1 versions of the Symbol and
+ZapfDingbats font use an erroneous coding scheme (character codes are
+offset by 0x20 = 32).
 
 libplot: improve the handling of compound paths to support non-nested
 subpaths, i.e. multiple simple paths that may intersect each other, as well

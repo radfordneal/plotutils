@@ -94,23 +94,41 @@ Postscript fonts even when in PCL 5 or HP-GL/2 mode, such as a 2100-series,
 4000-series, or 8000-series HP LaserJet, you may wish to add the
 `--enable-ps-fonts-in-pcl' option to `./configure'.  No additional actions
 on your part, such as installing fonts, are required, since the Postscript
-fonts, if present, are internal to the printer.  It is recommended that you
-add this option, since it is innocuous.
+fonts, if present, are internal to the printer.  
 
-B.3. By default, the 45 fonts that are built into recent HP LaserJets are
-available to the plotting utilities when you produce PCL 5 or HP-GL/2
-output, e.g., when you do `graph -T pcl' or `graph -T hpgl'.  You may wish
-to have these 45 fonts available when you produce X or Postscript output,
-also.  To arrange this, you would add the `--enable-lj-fonts-in-x' option
-and/or the `--enable-lj-fonts-in-ps' option to `./configure'.  Of course
-you would also need to acquire the fonts and install them.  This is fairly
+*** It is recommended that you add this option, since it is innocuous. ***
+
+B.3. By default, the standard 45 `HP LaserJet' fonts, such as Arial,
+Univers, etc., which are built into recent HP LaserJets, are available to
+the plotting utilities when you produce PCL 5 or HP-GL/2 output, e.g., when
+you do `graph -T pcl' or `graph -T hpgl'.
+
+But there are many Postscript viewers that can display these fonts; and
+also, in modern LaserJets, which understand both Postscript and PCL, the
+fonts are available on the Postscript side as well as the PCL side.  Hence,
+you may wish to have these 45 fonts available when you produce Postscript
+output.  To arrange this, you would add the `--enable-lj-fonts-in-ps'
+option to `./configure'.  
+
+*** It is recommended that you add this option, since it is innocuous. ***
+
+Of course you may well need to acquire the 45 fonts and install them, so
+that your Postscript previewer will be able to use them.  This is fairly
 easy.  Instructions are in the file INSTALL.fonts.
 
+You may also wish to add these 45 fonts to your X Window System display, so
+that, e.g., when you use `graph -T X', you will be able to use them.  This
+is possible (instructions are in the file INSTALL.fonts).  To make these
+fonts available when producing X output, e.g., by `graph -T X', you would 
+add the `--enable-lj-fonts-in-x' option to `./configure'.
+
+*** It is recommended that you add this option, since it is innocuous. ***
+
 B.4. As part of the installation process, the header file ./include/plot.h
-is installed in a place on your system where the gcc C compiler will find
-it.  If you wish to use cc as well as (or instead of) gcc, you should copy
-plot.h manually to the directory `/usr/include', where cc will find it.
-plot.h is not installed in `/usr/include' by default, since many
+will be installed in a place on your system where the gcc C compiler will
+find it.  If you wish to use cc as well as (or instead of) gcc, you should
+copy plot.h manually to the directory `/usr/include', where cc will find
+it.  plot.h is not installed in `/usr/include' by default, since many
 administrators prefer not to add files to that directory.
 
 B.5. If you are installing this package with DJGPP under MS-DOS, the very
@@ -185,8 +203,8 @@ instead of just `./configure'.  If these directories do not exist on your
 system, you do not have the Athena widgets: you must use `--with-motif'
 instead.
 
-Very old HP/UX 10.xx systems may have X11R5 instead of X11R6, in which case
-you should modify the directory name appropriately.
+Extremely old HP/UX 10.xx systems may have X11R5 instead of X11R6, in which
+case you should modify the directory name appropriately.
 
 C.3.b. It is also possible that you have only Motif widgets, but the
 autoconfigure process is unable to find the Motif files.  In such a
@@ -198,10 +216,11 @@ header files, such as X11/Xm/Label.h.
 
 C.3.c. There are a very few systems where the widget files must be
 specified manually by an even more complicated procedure.  An example would
-be ancient Hewlett-Packard systems that are running HP/UX 9.xx or earlier.
-They have Motif widgets, but the Motif files are stored in unusual places.
-If you have an HP/UX 9.xx system that X11R6 was installed on, besides doing
-`./configure' (or possibly `./configure --with-motif'), you may need to do
+be truly ancient Hewlett-Packard systems that are running HP/UX 9.xx or
+earlier.  They have Motif widgets, but the Motif files are stored in
+unusual places.  If you have an HP/UX 9.xx system that X11R6 was installed
+on, besides doing `./configure' (or possibly `./configure --with-motif'),
+you may need to do
 
 	make CFLAGS="-O -I/usr/include/Motif1.2 -L/usr/lib/Motif1.2"
 

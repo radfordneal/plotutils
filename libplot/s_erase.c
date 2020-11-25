@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -22,6 +23,14 @@
 bool
 _pl_s_erase_page (S___(Plotter *_plotter))
 {
+  int i;
+
+  /* reinitialize `font used' array(s) for this page */
+  for (i = 0; i < PL_NUM_PS_FONTS; i++)
+    _plotter->data->page->ps_font_used[i] = false;
+  for (i = 0; i < PL_NUM_PCL_FONTS; i++)
+    _plotter->data->page->pcl_font_used[i] = false;
+
   /* reset page-specific SVGPlotter variables, as if the page had just been
      opened */
   _plotter->s_matrix[0] = 1.0;/* dummy matrix values */

@@ -1,6 +1,6 @@
 This directory contains sample input files for `ode', originally written by
 Nicholas B. Tufillaro 1982-1994 <nbt@reed.edu>.  GNU enhancements by 
-Robert S. Maier <rsm@math.arizona.edu>, copyright (C) 1996-1998
+Robert S. Maier <rsm@math.arizona.edu>, copyright (C) 1996-2008
 Free Software Foundation, Inc.
 
 Documentation, and instructions on how to run `ode' and display the

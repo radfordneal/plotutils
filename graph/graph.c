@@ -1,6 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1989,
-   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
-   Foundation, Inc.
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free
+   Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -101,7 +101,7 @@ const int hidden_options[] = { (int)('T' << 8), 0 };
 
 const char *progname = "graph";	/* name of this program */
 const char *written = "Written by Robert S. Maier.";
-const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
+const char *copyright = "Copyright (C) 2009 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
@@ -325,7 +325,7 @@ main (int argc, char *argv[])
 	 from getopt, or a fake (a `1', indicating that a filename has been
 	 seen by getopt, or that filename has been seen on the command line
 	 after all genuine options have been processed, or that stdin
-	 should be read because no filenames have been seen). */
+	 must be read because no filenames have been seen). */
 
       switch (option)
 	{
@@ -418,7 +418,7 @@ main (int argc, char *argv[])
 	      break;
 	    default:
 	      fprintf (stderr,
-		       "%s: error: unrecognized data option `%s'\n",
+		       "%s: error: `%s' is an unrecognized data option\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -427,17 +427,17 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &local_font_size) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: font size must be a number, was `%s'\n",
+		       "%s: error: the font size should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
 	  else
 	    {
 	      if (local_font_size >= 1.0)
-		fprintf (stderr, "%s: ignoring too-large font size `%f' (must be < 1.0)\n",
+		fprintf (stderr, "%s: the too-large font size `%f' is disregarded (it should be less than 1.0)\n",
 			 progname, local_font_size);
 	      else if (local_font_size < 0.0)
-		fprintf (stderr, "%s: ignoring negative font size `%f'\n",
+		fprintf (stderr, "%s: the negative font size `%f' is disregarded\n",
 			 progname, local_font_size);
 	      else
 		font_size = local_font_size;
@@ -447,7 +447,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%d", &local_grid_style) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: grid style must be a (small) integer, was `%s'\n",
+		       "%s: error: the grid style should be a (small) integer, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	      break;
@@ -477,7 +477,7 @@ main (int argc, char *argv[])
 	      break;
 	    default:
 	      fprintf (stderr,
-		       "%s: error: grid style number `%s' out of bounds\n",
+		       "%s: error: the grid style number `%s' is out of bounds\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -486,7 +486,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &plot_height) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: plot height must be a number, was `%s'\n",
+		       "%s: error: the plot height should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -495,7 +495,7 @@ main (int argc, char *argv[])
 	  if ((sscanf (optarg, "%d", &local_clip_mode) <= 0)
 	      || local_clip_mode < 0 || local_clip_mode > 2)
 	    fprintf (stderr,
-		     "%s: ignoring bad clip mode `%s' (must be 0, 1, or 2)\n",
+		     "%s: the bad clip mode `%s' is disregarded (it should be 0, 1, or 2)\n",
 		     progname, optarg);
 	  else
 	    clip_mode = local_clip_mode;
@@ -513,7 +513,7 @@ main (int argc, char *argv[])
 	      break;
 	    default:
 	      fprintf (stderr, 
-		       "%s: ignoring unrecognized axis specification `%s'\n", 
+		       "%s: the unrecognized axis specification `%s' is disregarded\n",
 		       progname, optarg);
 	      break;
 	    }
@@ -531,7 +531,7 @@ main (int argc, char *argv[])
 	      break;
 	    default:
 	      fprintf (stderr, 
-		       "%s: ignoring unrecognized axis specification `%s'\n", 
+		       "%s: the unrecognized axis specification `%s' is disregarded\n", 
 		       progname, optarg);
 	      break;
 	    }
@@ -541,7 +541,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%d", &linemode_index) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: linemode must be a (small) integer, was `%s'.\n",
+		       "%s: error: the linemode should be a (small) integer, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -550,7 +550,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &local_fill_fraction) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: fill fraction must be a number, was `%s'\n",
+		       "%s: error: the fill fraction should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -558,7 +558,7 @@ main (int argc, char *argv[])
 	    {
 	      if (local_fill_fraction > 1.0)
 		fprintf (stderr, 
-			 "%s: ignoring bad region fill fraction `%f' (must be <=1.0)\n",
+			 "%s: the region fill fraction `%f' was disregarded (it should be less than or equal to 1.0)\n",
 			 progname, local_fill_fraction);
 	      else
 		{
@@ -571,7 +571,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &margin_left) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: plot rightward displacement must be a number, was `%s'.\n",
+		       "%s: error: the rightward displacement for the plot should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -580,7 +580,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &margin_below) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: plot upward displacement must be a number, was `%s'\n",
+		       "%s: error: the upward displacement for the plot should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -589,7 +589,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &plot_width) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: plot width must be a number, was `%s'\n",
+		       "%s: error: the plot width should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -624,7 +624,7 @@ main (int argc, char *argv[])
 	      break;
 	    default:
 	      fprintf (stderr, 
-		       "%s: ignoring unrecognized axis specification `%s'\n", 
+		       "%s: the unrecognized axis specification `%s' is disregarded\n",
 		       progname, optarg);
 	      break;
 	    }
@@ -636,7 +636,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &tick_size) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: tick size must be a number, was `%s'\n",
+		       "%s: error: the tick size should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -645,12 +645,12 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &local_plot_line_width) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: plot line thickness must be a number, was `%s'\n",
+		       "%s: error: the line thickness for the plot should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
 	  if (local_plot_line_width < 0.0)
-	    fprintf (stderr, "%s: ignoring negative plot line thickness `%f'\n",
+	    fprintf (stderr, "%s: the negative plot line thickness `%f' is disregarded\n",
 		     progname, local_plot_line_width);
 	  else
 	    {
@@ -678,7 +678,7 @@ main (int argc, char *argv[])
 	      break;
 	    default:
 	      fprintf (stderr, 
-		       "%s: ignoring unrecognized axis specification `%s'\n", 
+		       "%s: the unrecognized axis specification `%s' is disregarded\n", 
 		       progname, optarg);
 	      break;
 	    }
@@ -687,7 +687,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &blankout_fraction) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: fractional blankout must be a number, was `%s'\n",
+		       "%s: error: the fractional blankout should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -699,18 +699,18 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &local_title_font_size) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: title font size must be a number, was `%s'\n",
+		       "%s: error: the font size for the title should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
 	  else if (local_title_font_size >= 1.0)
-	    fprintf (stderr, "%s: ignoring too-large title font size `%f' (must be < 1.0)\n",
+	    fprintf (stderr, "%s: the too-large title font size `%f' is disregarded (it should be less than 1.0)\n",
 		     progname, local_title_font_size);
 	  else if (local_title_font_size < 0.0)
-	    fprintf (stderr, "%s: ignoring negative title font size `%f'\n",
+	    fprintf (stderr, "%s: the negative title font size `%f' is disregarded\n",
 		     progname, local_title_font_size);
 	  if (local_title_font_size == 0.0)
-	    fprintf (stderr, "%s: ignoring zero title font size\n",
+	    fprintf (stderr, "%s: the request for a zero title font size is disregarded\n",
 		     progname);
 	  else
 	    title_font_size = local_title_font_size;
@@ -719,12 +719,12 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &local_frame_line_width) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: frame line thickness must be a number, was `%s'\n",
+		       "%s: error: the line thickness for the frame should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
 	  if (local_frame_line_width < 0.0)
-	    fprintf (stderr, "%s: ignoring negative frame line thickness `%f'\n",
+	    fprintf (stderr, "%s: the negative frame line thickness `%f' is disregarded\n",
 		     progname, local_frame_line_width);
 	  else
 	    frame_line_width = local_frame_line_width;
@@ -738,7 +738,7 @@ main (int argc, char *argv[])
 	case 'p' << 8:		/* Pen color string, ARG REQUIRED      */
 	  if (parse_pen_string (optarg) == false)
 	    {
-	      fprintf (stderr, "%s: ignoring unparseable pen string `%s'\n",
+	      fprintf (stderr, "%s: the unparseable pen string `%s' is disregarded\n",
 		       progname, optarg);
 	    }
 	  break;
@@ -893,7 +893,7 @@ main (int argc, char *argv[])
 	  if (sscanf (argv[optind], "%d", &local_symbol_index) <= 0)
 	    break;
 	  if (local_symbol_index < 0 || local_symbol_index > 255)
-	    fprintf (stderr, "%s: ignoring symbol type `%d' (must be in range 0..255)\n",
+	    fprintf (stderr, "%s: the symbol type `%d' is disregarded (it should be in the range 0..255)\n",
 		     progname, local_symbol_index);
 	  else
 	    symbol_index = local_symbol_index;
@@ -903,10 +903,10 @@ main (int argc, char *argv[])
 	  if (sscanf (argv[optind], "%lf", &local_symbol_size) <= 0)
 	    break;
 	  if (local_symbol_size < 0.0)
-	    fprintf (stderr, "%s: ignoring negative symbol size `%f'\n",
+	    fprintf (stderr, "%s: the negative symbol size `%f' is disregarded\n",
 		     progname, local_symbol_size);
 	  else if (local_symbol_size == 0.0)
-	    fprintf (stderr, "%s: ignoring zero symbol size\n",
+	    fprintf (stderr, "%s: the request for a zero symbol size is disregarded\n",
 		     progname);
 	  else
 	    {
@@ -926,21 +926,21 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &reposition_trans_x) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: x repositioning must be a number, was `%s'\n",
+		       "%s: error: the x repositioning should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      return EXIT_FAILURE;
 	    }
 	  if (optind >= argc)
 	    {
 	      fprintf (stderr,
-		       "%s: error: missing arg[s] to --reposition option\n",
+		       "%s: error: one or more arguments to the --reposition option were missing\n",
 		       progname);
 	      return EXIT_FAILURE;
 	    }
 	  if (sscanf (argv[optind], "%lf", &reposition_trans_y) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: y repositioning must be a number, was `%s'\n",
+		       "%s: error: the y repositioning should be a number, but it was `%s'\n",
 		       progname, argv[optind]);
 	      return EXIT_FAILURE;
 	    }
@@ -948,21 +948,21 @@ main (int argc, char *argv[])
 	  if (optind >= argc)
 	    {
 	      fprintf (stderr,
-		       "%s: error: missing arg[s] to --reposition option\n",
+		       "%s: error: one or more arguments to the --reposition option were missing\n",
 		       progname);
 	      return EXIT_FAILURE;
 	    }
 	  if (sscanf (argv[optind], "%lf", &reposition_scale) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: reposition scale factor must be a number, was `%s'\n",
+		       "%s: error: the reposition scale factor should be a number, but it was `%s'\n",
 		       progname, optarg);
 	      return EXIT_FAILURE;
 	    }
 	  if (reposition_scale == 0.0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: reposition scale factor cannot be zero\n", progname);
+		       "%s: error: the reposition scale factor should not be zero\n", progname);
 	      return EXIT_FAILURE;
 	    }
 	  optind++;		/* tell getopt we recognized trans_x */
@@ -994,7 +994,7 @@ main (int argc, char *argv[])
 		      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 			{
 			  fprintf (stderr, 
-				   "%s: error: couldn't open graphing device\n", progname);
+				   "%s: error: the graphing device could not be opened\n", progname);
 			  return EXIT_FAILURE;
 			}
 		    }
@@ -1101,7 +1101,7 @@ main (int argc, char *argv[])
 		      else
 			{
 			  fprintf(stderr, 
-				  "%s: error: nonpositive limit %g on logarithmic axis\n", 
+				  "%s: error: the limit %g on a logarithmic axis is nonpositive\n", 
 				  progname, min_x);
 			  return EXIT_FAILURE;
 			}
@@ -1113,7 +1113,7 @@ main (int argc, char *argv[])
 		      else
 			{
 			  fprintf(stderr, 
-				  "%s: error: nonpositive limit %g on logarithmic axis\n", 
+				  "%s: error: the limit %g on a logarithmic axis is nonpositive\n", 
 				  progname, max_x);
 			  return EXIT_FAILURE;
 			}
@@ -1129,7 +1129,7 @@ main (int argc, char *argv[])
 		      else
 			{
 			  fprintf(stderr, 
-				  "%s: error: nonpositive limit %g on logarithmic axis\n", 
+				  "%s: error: the limit %g on a logarithmic axis is nonpositive\n", 
 				  progname, min_y);
 			  return EXIT_FAILURE;
 			}
@@ -1141,7 +1141,7 @@ main (int argc, char *argv[])
 		      else
 			{
 			  fprintf(stderr, 
-				  "%s: error: nonpositive limit %g on logarithmic axis\n", 
+				  "%s: error: the limit %g on a logarithmic axis is nonpositive\n", 
 				  progname, max_y);
 			  return EXIT_FAILURE;
 			}
@@ -1210,7 +1210,7 @@ main (int argc, char *argv[])
 		      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 			{
 			  fprintf (stderr, 
-				   "%s: error: couldn't open graphing device\n", 
+				   "%s: error: the graphing device could not be opened\n", 
 				   progname);
 			  return EXIT_FAILURE;
 			}
@@ -1417,7 +1417,7 @@ main (int argc, char *argv[])
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, usage_appendage, true);
+      display_usage (progname, hidden_options, usage_appendage, 2);
       return EXIT_SUCCESS;
     }
 
@@ -1450,7 +1450,7 @@ main (int argc, char *argv[])
 	      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 		{
 		  fprintf (stderr, 
-			   "%s: error: couldn't open graphing device\n", progname);
+			   "%s: error: the graphing device could not be opened\n", progname);
 		  return EXIT_FAILURE;
 		}
 	    }
@@ -1524,7 +1524,7 @@ main (int argc, char *argv[])
      since we always read at least stdin) */
   if (delete_multigrapher (multigrapher) < 0)
     {
-      fprintf (stderr, "%s: error: could not close graphing device\n", 
+      fprintf (stderr, "%s: error: the graphing device could not be closed\n", 
 	       progname);
       return EXIT_FAILURE;
     }
@@ -1553,7 +1553,7 @@ close_file (char *filename, FILE *stream)
 {
   if (fclose (stream) < 0)
     fprintf (stderr, 
-	     "%s: could not close input file `%s'\n", 
+	     "%s: the input file `%s' could not be closed\n", 
 	     progname, filename);
 }
 

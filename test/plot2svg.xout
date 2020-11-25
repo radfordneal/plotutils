@@ -2,10 +2,10 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" baseProfile="full" id="body" width="8in" height="8in" viewBox="0 0 1 1" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events">
 <title>SVG drawing</title>
-<desc>This was produced by version 4.2 of GNU libplot, a free library for exporting 2-D vector graphics.</desc>
+<desc>This was produced by version 4.4 of GNU libplot, a free library for exporting 2-D vector graphics.</desc>
 <rect id="background" x="0" y="0" width="1" height="1" stroke="none" fill="white"/>
-<g id="content" transform="translate(0,1) scale(1,-1) scale(0.00024414) " xml:space="preserve" stroke="black" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10.433" stroke-dasharray="none" stroke-dashoffset="0" stroke-opacity="1" fill="none" fill-rule="even-odd" fill-opacity="1" font-style="normal" font-variant="normal" font-weight="normal" font-stretch="normal" font-size-adjust="none" letter-spacing="normal" word-spacing="normal" text-anchor="start">
-<text transform="translate(2048,3222.5) scale(1,-1) " font-family="Times-Roman,Times,serif" font-size="184.32px" text-anchor="middle" alignment-baseline="text-after-edge" stroke="none" fill="black" >A Sample Plot</text>
+<g id="content" transform="translate(0,1) scale(1,-1) scale(0.00024414) " xml:space="preserve" stroke="black" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10.433" stroke-dasharray="none" stroke-dashoffset="0" stroke-opacity="1" fill="none" fill-rule="evenodd" fill-opacity="1" font-style="normal" font-variant="normal" font-weight="normal" font-stretch="normal" font-size-adjust="none" letter-spacing="normal" word-spacing="normal" text-anchor="start">
+<text transform="translate(1510.3,3262.7) scale(1,-1) scale(9.216) " font-family="Times-Roman,Times,serif" font-size="20px" stroke="none" fill="black" >A Sample Plot</text>
 <rect x="1024" y="1024" width="2048" height="2048" stroke-width="4.8188" />
 <polyline points="1001.7,946.04 1001.7,886.46 994.21,882.73 " stroke-width="5.2876" stroke-linecap="round" stroke-linejoin="round" />
 <polyline points="1005.4,942.31 1005.4,886.46 1016.6,879.01 " stroke-width="5.2876" stroke-linecap="round" stroke-linejoin="round" />
@@ -351,7 +351,7 @@
 <line x1="1024" y1="2944" x2="1011.7" y2="2944" stroke-width="4.8188" />
 <line x1="3072" y1="3072" x2="3084.3" y2="3072" stroke-width="4.8188" />
 <line x1="1024" y1="3072" x2="1011.7" y2="3072" stroke-width="4.8188" />
-<line x1="1024" y1="1536" x2="3072" y2="1536" stroke-width="4.8188" stroke-dasharray="4.8188 14.456"/>
+<line x1="1024" y1="1536" x2="3072" y2="1536" stroke-width="4.8188" stroke-dasharray="4.8188, 14.456"/>
 <polygon points="1364.7,794.51 1357.3,787.06 1364.7,783.34 1372.2,787.06 " stroke-width="5.2876" stroke-linejoin="round" />
 <polyline points="1364.7,790.78 1361,787.06 1368.4,787.06 1364.7,790.78 " stroke-width="5.2876" stroke-linecap="round" stroke-linejoin="round" />
 <polyline points="1364.7,768.44 1361,764.72 1353.5,760.99 1361,757.27 1361,723.76 1368.4,716.31 1375.9,723.76 " stroke-width="5.2876" stroke-linecap="round" stroke-linejoin="round" />

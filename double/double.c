@@ -1,6 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1989,
-   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
-   Foundation, Inc.
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free
+   Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -79,7 +79,7 @@ data_type output_type = T_ASCII;
 
 const char *progname = "double"; /* name of this program */
 const char *written = "Written by Robert S. Maier and Rich Murphey.";
-const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
+const char *copyright = "Copyright (C) 2009 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
@@ -194,7 +194,7 @@ main (int argc, char **argv)
 	  if (sscanf (optarg, "%lf", &scale) <= 0)
 	    {
 	      fprintf (stderr, 
-		       "%s: error: bad multiplicative constant `%s'\n", 
+		       "%s: error: the multiplicative constant `%s' is bad\n",
 		       progname, optarg);
 	      return EXIT_FAILURE;
 	    }
@@ -203,7 +203,7 @@ main (int argc, char **argv)
 	  if (sscanf (optarg, "%lf", &baseline) <= 0)
 	    {
 	      fprintf (stderr, 
-		       "%s: error: bad additive constant `%s'\n", 
+		       "%s: error: the additive constant `%s' is bad\n", 
 		       progname, optarg);
 	      return EXIT_FAILURE;
 	    }
@@ -213,7 +213,7 @@ main (int argc, char **argv)
 	      || (precision < 1))
 	    {
 	      fprintf (stderr,
-		       "%s: error: bad precision `%s', must be integer >= 1\n",
+		       "%s: error: the precision `%s' is bad (it should be an integer greater than or equal to 1)\n",
 		       progname, optarg);
 	      return EXIT_FAILURE;
 	    }
@@ -224,7 +224,7 @@ main (int argc, char **argv)
 	      || (record_length < 1))
 	    {
 	      fprintf (stderr,
-		       "%s: error: bad record length `%s', must be integer >= 1\n",
+		       "%s: error: the record length `%s' is bad (it should be an integer greater than or equal to 1)\n",
 		       progname, optarg);
 	      return EXIT_FAILURE;
 	    }
@@ -264,7 +264,7 @@ main (int argc, char **argv)
 		break;
 	      if (field_index < 0)
 		{
-		  fprintf (stderr, "%s: error: bad field index `%d', must be >= 0\n",
+		  fprintf (stderr, "%s: error: the field index `%d' is bad (it should be greater than or equal to 0)\n",
 			   progname, field_index);
 		  return EXIT_FAILURE;
 		}
@@ -306,7 +306,7 @@ main (int argc, char **argv)
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, usage_appendage, false);
+      display_usage (progname, hidden_options, usage_appendage, 0);
       return EXIT_SUCCESS;
     }
 
@@ -314,7 +314,7 @@ main (int argc, char **argv)
 
   if (dataset_spacing < 1)
     {
-      fprintf (stderr, "%s: error: bad dataset spacing `%d' (must be > 0)\n",
+      fprintf (stderr, "%s: error: the dataset spacing `%d' is bad (it should be positive)\n",
 	       progname, dataset_spacing);
       return EXIT_FAILURE;
     }
@@ -323,7 +323,7 @@ main (int argc, char **argv)
     if (field_array[i] >= record_length)
       {
 	fprintf (stderr, 
-		 "%s: error: at least one field index out of bounds\n", progname);
+		 "%s: error: at least one field index is out of bounds\n", progname);
 	return EXIT_FAILURE;
       }
 
@@ -393,7 +393,7 @@ main (int argc, char **argv)
 	  /* close file (but don't close stdin) */
 	  if (data_fp != stdin && fclose (data_fp) < 0)
 	    {
-	      fprintf (stderr, "%s: error: couldn't close input file\n", 
+	      fprintf (stderr, "%s: error: the input file could not be closed\n", 
 		       progname);
 	      return EXIT_FAILURE;
 	    }
@@ -465,7 +465,7 @@ read_float (FILE *input, double *dptr)
     return false;
   if (dval != dval)
     {
-      fprintf (stderr, "%s: encountered a NaN (not-a-number) in binary input file\n",
+      fprintf (stderr, "%s: a NaN (not-a-number) was encountered in a binary-format input file\n",
 	       progname);
       return false;
     }
@@ -540,7 +540,7 @@ get_record (FILE *input, double *record, int record_length)
       if (!success)		/* EOF or garbage */
 	{
 	  if (i > 0)
-	    fprintf (stderr, "%s: input file terminated prematurely\n",
+	    fprintf (stderr, "%s: the input file terminated prematurely\n",
 		     progname);
 	  return 1;
 	}
@@ -641,7 +641,7 @@ set_format_type (char *s, data_type *typep)
       break;
     default:
       {
-	fprintf (stderr, "%s: error: invalid data format type `%s'\n",
+	fprintf (stderr, "%s: error: the data format type `%s' is invalid\n",
 		 progname, s);
 	exit (EXIT_FAILURE);
       }
@@ -810,7 +810,7 @@ maybe_emit_oob_warning (void)
 
   if (!warning_written)
     {
-      fprintf (stderr, "%s: approximating one or more out-of-bounds output values\n", progname);
+      fprintf (stderr, "%s: one or more out-of-bounds output values are approximated\n", progname);
       warning_written = true;
     }
 }

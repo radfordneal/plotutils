@@ -3,7 +3,7 @@
 /*
  * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
  *
- * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999, 2005, Free
+ * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999, 2005, 2008, Free
  * Software Foundation, Inc.
  */
 

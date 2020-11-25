@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -43,7 +43,7 @@ _pl_x_begin_page (S___(Plotter *_plotter))
   if (_plotter->x_dpy == (Display *)NULL)
     /* pathological: user didn't set XDRAWABLE_DISPLAY parameter */
     {
-      _plotter->error (R___(_plotter) "can't open Plotter, XDRAWABLE_DISPLAY parameter is null");
+      _plotter->error (R___(_plotter) "the Plotter cannot be opened, as the XDRAWABLE_DISPLAY parameter is null");
       return false;
     }
 
@@ -64,7 +64,7 @@ _pl_x_begin_page (S___(Plotter *_plotter))
       if (width1 != width2 || height1 != height2 
 	  || depth1 != depth2 || root1 != root2)
 	{
-	  _plotter->error(R___(_plotter) "can't open Plotter, X drawables have unequal parameters");
+	  _plotter->error(R___(_plotter) "the Plotter cannot be opened, as the X drawables have unequal parameters");
 	  return false;
 	}
     }

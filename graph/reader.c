@@ -1,6 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1989,
-   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
-   Foundation, Inc.
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, Free
+   Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -304,7 +304,7 @@ read_point (Reader *reader, Point *point)
 	  
 	  if (bad_point)
 	    {
-	      fprintf (stderr, "%s: log plot, dropping inappropriate point (%g,%g)\n",
+	      fprintf (stderr, "%s: the inappropriate point (%g,%g) is dropped, as this is a log plot\n",
 		       progname, point->x, point->y);
 	      reader->need_break = true;
 	      goto head;		/* on to next point */
@@ -331,7 +331,7 @@ read_point (Reader *reader, Point *point)
 	  
 	  if (bad_point)
 	    {
-	      fprintf (stderr, "%s: log plot, dropping inappropriate point (%g,%g)\n",
+	      fprintf (stderr, "%s: the inappropriate point (%g,%g) is dropped, as this is a log plot\n",
 		       progname, point->x, point->y);
 	      reader->need_break = true;
 	      goto head;		/* on to next point */
@@ -437,7 +437,7 @@ read_point_ascii (Reader *reader, Point *point)
   else 
     {
       if (!reader->auto_abscissa)
-	fprintf (stderr, "%s: input file terminated prematurely\n", progname);
+	fprintf (stderr, "%s: an input file terminated prematurely\n", progname);
       return ENDED_BY_EOF;	/* couldn't get y coor, effectively EOF */
     }
 }
@@ -508,14 +508,14 @@ read_point_ascii_errorbar (Reader *reader, Point *point)
   if (items_read != 1)
     {
       if (!reader->auto_abscissa)
-	fprintf (stderr, "%s: errorbar-format input file terminated prematurely\n", progname);
+	fprintf (stderr, "%s: an input file (in errorbar format) terminated prematurely\n", progname);
       return ENDED_BY_EOF;	/* couldn't get y coor, effectively EOF */
     }
 
   items_read = fscanf (input, "%lf", &error_size);
   if (items_read != 1)
     {
-      fprintf (stderr, "%s: errorbar-format input file terminated prematurely\n", progname);
+      fprintf (stderr, "%s: an input file (in errorbar format) terminated prematurely\n", progname);
       return ENDED_BY_EOF;	/* couldn't get y coor, effectively EOF */
     }
 
@@ -609,12 +609,12 @@ read_point_binary (Reader *reader, Point *point)
   if (items_read != 1)		/* didn't get a pair of floats */
     {
       if (!reader->auto_abscissa)
-	fprintf (stderr, "%s: binary input file terminated prematurely\n", progname);
+	fprintf (stderr, "%s: an input file (in binary format) terminated prematurely\n", progname);
       return ENDED_BY_EOF;	/* effectively */
     }
   else if (point->x != point->x || point->y != point->y)
     {
-      fprintf (stderr, "%s: encountered a NaN (not-a-number) in binary input file\n",
+      fprintf (stderr, "%s: a NaN (not-a-number) was encountered in a binary input file\n",
 	       progname);
       return ENDED_BY_EOF;	/* effectively */
     }
@@ -680,7 +680,7 @@ read_point_gnuplot (Reader *reader, Point *point)
       else
 	{
 	  fprintf (stderr, 
-		   "%s: cannot parse gnuplot-format input file\n", 
+		   "%s: an input file in gnuplot format could not be parsed\n", 
 		   progname);
 	  return ENDED_BY_EOF; /* effectively */
 	}
@@ -693,7 +693,7 @@ read_point_gnuplot (Reader *reader, Point *point)
 	  if (items_read <= 0)
 	    {
 	      fprintf (stderr, 
-		       "%s: cannot parse gnuplot-format input file\n", 
+		       "%s: an input file in gnuplot format could not be parsed\n", 
 		       progname);
 	    return ENDED_BY_EOF; /* effectively */
 	    }
@@ -727,7 +727,7 @@ read_point_gnuplot (Reader *reader, Point *point)
       else
 	{
 	  fprintf (stderr, 
-		   "%s: cannot parse gnuplot-format input file\n", 
+		   "%s: an input file in gnuplot format could not be parsed\n", 
 		   progname);
 	  return ENDED_BY_EOF; /* effectively */
 	}

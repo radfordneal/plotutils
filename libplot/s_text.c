@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -205,6 +205,10 @@ write_svg_text_style (plOutbuf *page, const plDrawState *drawstate, int h_just, 
       css_style = _pl_g_ps_font_info[master_font_index].css_style;
       css_weight = _pl_g_ps_font_info[master_font_index].css_weight;
       css_stretch = _pl_g_ps_font_info[master_font_index].css_stretch;
+
+      /* flag this font as used */
+      page->ps_font_used[master_font_index] = true;
+
       break;
     case PL_F_PCL:
       master_font_index =
@@ -215,6 +219,10 @@ write_svg_text_style (plOutbuf *page, const plDrawState *drawstate, int h_just, 
       css_style = _pl_g_pcl_font_info[master_font_index].css_style;
       css_weight = _pl_g_pcl_font_info[master_font_index].css_weight;
       css_stretch = _pl_g_pcl_font_info[master_font_index].css_stretch;
+
+      /* flag this font as used */
+      page->pcl_font_used[master_font_index] = true;
+
       break;
     default:			/* shouldn't happen */
       return;

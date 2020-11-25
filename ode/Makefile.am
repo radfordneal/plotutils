@@ -6,7 +6,7 @@ ode_SOURCES = am.c ama.c bessel.c eu.c expr.c float.c global.c main.c misc.c prt
 noinst_HEADERS = extern.h num.h ode.h
 ode_LDADD = ../lib/libcommon.a @LEXLIB@
 
-YFLAGS = -d
+AM_YFLAGS = -d
 
 INCLUDES = -I$(srcdir)/../include
 

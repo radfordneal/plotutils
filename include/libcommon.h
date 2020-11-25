@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -47,7 +47,7 @@ ___BEGIN_DECLS
 extern char * xstrdup (const char *s);
 extern int display_fonts (const char *output_format, const char *progname);
 extern int list_fonts (const char *output_format, const char *progname);
-extern void display_usage (const char *progname, const int *omit_vals, const char *appendage, bool fonts);
+extern void display_usage (const char *progname, const int *omit_vals, const char *appendage, int info);
 extern void display_version (const char *progname, const char *written, const char *copyright);
 extern void * xmalloc (size_t length);
 extern void * xrealloc (void *p, size_t length);

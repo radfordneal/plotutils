@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -106,8 +106,7 @@ _API_fspace2 (R___(Plotter *_plotter) double x0, double y0, double x1, double y1
 
   if (cross == 0.0) 
     {
-      _plotter->error (R___(_plotter) 
-		       "cannot perform singular affine transformation");
+      _plotter->error (R___(_plotter) "the requested singular affine transformation cannot be performed");
       return -1;
     }
 

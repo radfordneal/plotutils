@@ -1,26 +1,27 @@
 /* This file is part of the GNU plotutils package. */
 
-/* Copyright (C) 1992 by Jos van der Woude.  Permission granted to
-   distribute freely for non-commercial purposes only.
-
-   GNU enhancements Copyright (C) 1997, 1998, 1998, 2005, Free Software
+/* Copyright (C) 1997, 1998, 1998, 2005, 2008, 2009, Free Software
    Foundation, Inc. */
 
-/* Special function approximations by Jos van der Woude <jvdwoude@hut.nl>,
-   Extracted from the file specfun.c in the gnuplot 3.5 distribution.
+/* This file contains the five functions
 
-   This file contains the functions
+   ibeta, igamma, norm, invnorm, inverf
 
-   ibeta, igamma, inverf, invnorm, norm
+   and versions of lgamma, erf, erfc for machines without them. */
 
-   and versions of erf, erfc, lgamma for machines without them. */
+/* The inspiration for this file was the file specfun.c that has long been
+   a part of the gnuplot distribution.  However, the current version of the
+   present file has been rewritten, largely from scratch, on the basis of
+   published algorithms.  It is not dependent on the gnuplot specfun.c
+   (which has included, and still includes, copyrighted code). */
 
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
 #include <errno.h>
 
-#define ITMAX   100
+#define ITERMAX 200
+
 #ifdef FLT_EPSILON
 #define MACHEPS FLT_EPSILON /* 1.0E-08 */
 #else
@@ -30,6 +31,11 @@
 #define MINEXP  FLT_MIN_EXP /* -88.0 */
 #else
 #define MINEXP  -88.0
+#endif
+#ifdef FLT_MAX_EXP
+#define MAXEXP  FLT_MAX_EXP /* +88.0 */
+#else
+#define MAXEXP  88.0
 #endif
 #ifdef FLT_MAX
 #define OFLOW   FLT_MAX /* 1.0E+37 */
@@ -60,12 +66,11 @@
 #ifdef M_PI
 #undef M_PI
 #endif
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846264338327950288
 #ifdef M_SQRT2
 #undef M_SQRT2
 #endif
-#define M_SQRT2 1.41421356237309504880168872420969809   /* JG */
-#define M_LNPI 1.14472988584940016
+#define M_SQRT2 1.41421356237309504880168872420969809
 #define M_LNSQRT2PI 0.9189385332046727
 
 /* Forward references */
@@ -83,8 +88,8 @@
 #define SIGNGAM our_signgam
 static int SIGNGAM;
 double f_lgamma (double x);
-static double lgamneg (double x);
-static double lgampos (double x);
+static double lgamma_neg (double x);
+static double lgamma_pos (double x);
 #else  /* not NO_SYSTEM_GAMMA, we link in vendor code */
 #define SIGNGAM signgam
 extern int SIGNGAM;
@@ -97,15 +102,21 @@ double erfc (double x);
 #endif
 double ibeta (double a, double b, double x);
 double igamma (double a, double x);
-double inverf (double p);
-double invnorm (double p);
+double inverf (double x);
+double invnorm (double x);
 double norm (double x);
-static double confrac (double a, double b, double x);
+static double ibeta_internal (double a, double b, double x);
+
+
+/*****************************************************************/
+/************ Functions related to gamma function ****************/
+/*****************************************************************/
 
 /* Our gamma function.  F_LGAMMA(), which this calls, computes the log of
    the gamma function, with the sign being returned in SIGNGAM.  F_LGAMMA()
    is defined in include/sys-defines.h.  It may be a vendor-supplied
    lgamma(), a vendor-supplied gamma(), or our own f_lgamma (see below). */
+
 double
 f_gamma (double x)
 {
@@ -118,17 +129,17 @@ f_gamma (double x)
 #endif
 
   double y = F_LGAMMA(x);
-  
-  if (y > 88.0) 
+
+  if (y > MAXEXP)
     {
 #ifdef HAVE_MATHERR
-      exc.name = (char *)"lgamma";
+      exc.name = (char *)"gamma";
       exc.arg1 = x;
       exc.retval = HUGE_VAL;
       exc.type = OVERFLOW;
       if (!matherr (&exc))
 	{
-	  fprintf (stderr, "lgamma: OVERFLOW error\n");
+	  fprintf (stderr, "gamma: OVERFLOW error\n");
 	  errno = ERANGE;
 	}
       return exc.retval;
@@ -138,66 +149,37 @@ f_gamma (double x)
 #endif
     }
   else
-    return SIGNGAM * exp(y);
+    return SIGNGAM * exp (y);
 }
 
 #ifdef NO_SYSTEM_GAMMA
-/**
- * from statlib, Thu Jan 23 15:02:27 EST 1992 ***
- *
- * This file contains two algorithms for the logarithm of the gamma
- * function.  Algorithm AS 245 is the faster (but longer) and gives an
- * accuracy of about 10-12 significant decimal digits except for small
- * regions around z = 1 and z = 2, where the function goes to zero.  
- * 
- * The second algorithm (used below) is not part of the AS algorithms.
- * It is slower but gives 14 or more significant decimal digits accuracy,
- * except around z = 1 and z = 2.  The Lanczos series from which this
- * algorithm is derived is interesting in that it is a convergent series
- * approximation for the gamma function, whereas the familiar series due to
- * De Moivre (and usually wrongly called Stirling's approximation) is only
- * an asymptotic approximation, as is the true and preferable approximation
- * due to Stirling.
+/*
+  Define our own lgamma(): compute log(Gamma(z)) for positive z as the sum
+  of a suitably generated and truncated Lanczos series.  Lanczos series
+  resemble Stirling (i.e. DeMoivre) asymptotic approximations, but unlike
+  them are not asymptotic series; rather, they are convergent in the entire
+  right half plane, on which a uniform bound on the error can be obtained.
+  See C. Lanczos, "A Precision Approximation of the Gamma Function", SIAM
+  J. Numerical Analysis 1B (1964), 86--96. */
 
- * Uses Lanczos-type approximation to log(gamma(z)) for z > 0. 
- * 
- * Reference: C. Lanczos, `A precision approximation of the 
- * 	      gamma function', SIAM J. Numer. Anal., B, 1, 86-96, 1964.  
- * Accuracy: about 14 significant digits except for small regions in 
- * 	     the vicinity of 1 and 2.
- *
- * Programmer: Alan Miller, CSIRO Division of Mathematics & Statistics
- * 
- * Latest revision: 17 April 1988
- * 
- * Additions: Translated from Fortran to C, code added to handle values z < 0.
- * The global variable SIGNGAM contains the sign of the gamma function.
- * 
- * IMPORTANT: The SIGNGAM variable contains garbage until AFTER the call to
- * lgamma().
- * 
- * Permission granted to distribute freely for non-commercial purposes only
- * Copyright (c) 1992 Jos van der Woude <jvdwoude@hut.nl>
- */
-
-/* high-precision values from Ray Toy <toy@rtp.ericsson.se> */
-static const double a[] = 
+double
+f_lgamma (double z)
 {
-       .99999999999980993227684700473478296744476168282198,
-    676.52036812188509856700919044401903816411251975244084,
-  -1259.13921672240287047156078755282840836424300664868028,
-    771.32342877765307884865282588943070775227268469602500,
-   -176.61502916214059906584551353999392943274507608117860,
-     12.50734327868690481445893685327104972970563021816420,
-      -.13857109526572011689554706984971501358032683492780,
-       .00000998436957801957085956266828104544089848531228,
-       .00000015056327351493115583383579667028994545044040,
-};
+  SIGNGAM = 1;		      /* will return sign of Gamma(z) in SIGNGAM */
 
-static double   
-lgamneg (double z)
+  if (z <= 0.0)
+    return lgamma_neg (z);
+  else
+    return lgamma_pos (z);
+}
+
+/* Case I. z<=0 (if z < 0, reducible to z>0 case by reflection formula) */
+
+static double
+lgamma_neg (double z)
 {
-  double tmp, result;
+  double intpart, trigfac, retval;
+
 #ifdef HAVE_MATHERR
 #ifdef __cplusplus
   struct __exception exc;
@@ -206,15 +188,15 @@ lgamneg (double z)
 #endif
 #endif
 
-  if (!modf (z = -z, &tmp)) 
-    /* SING if z is negative integer */
+  if (modf (-z, &intpart) == 0.0)
+    /* z is nonpositive integer, so SING error */
     {
 #ifdef HAVE_MATHERR
       exc.name = "lgamma";
-      exc.arg1 = -z;
+      exc.arg1 = z;
       exc.retval = HUGE_VAL;
       exc.type = SING;
-      if (!matherr (&exc)) 
+      if (!matherr (&exc))
 	{
 	  fprintf (stderr, "lgamma: SING error\n");
 	  errno = EDOM;
@@ -226,20 +208,19 @@ lgamneg (double z)
 #endif /* HAVE_MATHERR */
     }
 
-  /* Use reflection formula, then call lgampos() */
-  tmp = sin(z * M_PI);
-  
-  if (tmp < 0.0) 
+  /* use Euler's reflection formula, and call lgamma_pos() */
+  trigfac = sin (M_PI * z) / M_PI;
+  if (trigfac < 0.0)
     {
-      tmp = -tmp;
+      trigfac = - trigfac;
       SIGNGAM = -1;
     }
-  result = M_LNPI - lgampos(1.0 - z) - log(tmp);
+  retval = - lgamma_pos (1.0 - z) - log (trigfac);
 
-  if (fabs (result) == HUGE_VAL)
+  if (fabs (retval) == HUGE_VAL)
     {
 #ifdef HAVE_MATHERR
-      exc.name = "gamma";
+      exc.name = "lgamma";
       exc.arg1 = z;
       exc.retval = HUGE_VAL;
       exc.type = OVERFLOW;
@@ -252,16 +233,42 @@ lgamneg (double z)
 #endif
     }
 
-  return result;
+  return retval;
 }
 
-static double   
-lgampos (double z)
+/* Case II. z>0, the primary case */
+
+/* Lanczos parameter G (called lower-case gamma by him). "[A] large value
+   of G is advocated if very high accuracy is demanded, but then the
+   required number of terms will also be larger." */
+#define LANCZOS_G 6
+
+/* Values for coeffs of as many terms in the Lanczos expansion as are
+   needed for this value of G, computed by Ray Toy <toy@rtp.ericsson.se>.
+   (In his 1964 paper, Lanczos only went up to G=5.)  It is claimed (see
+   gnuplot's specfun.c) that this value of G (i.e., 6) and number of terms
+   will yield 14-digit accuracy everywhere except near z=1 and z=2. */
+
+#define NUM_LANCZOS_TERMS 9
+static const double lanczos[NUM_LANCZOS_TERMS] =
 {
-  double          sum;
-  double          tmp;
-  double          result;
-  int             i;
+       .99999999999980993227684700473478296744476168282198,
+    676.52036812188509856700919044401903816411251975244084,
+  -1259.13921672240287047156078755282840836424300664868028,
+    771.32342877765307884865282588943070775227268469602500,
+   -176.61502916214059906584551353999392943274507608117860,
+     12.50734327868690481445893685327104972970563021816420,
+      -.13857109526572011689554706984971501358032683492780,
+       .00000998436957801957085956266828104544089848531228,
+       .00000015056327351493115583383579667028994545044040
+};
+
+static double
+lgamma_pos (double z)
+{
+  double accum, retval;
+  int i;
+
 #ifdef HAVE_MATHERR
 #ifdef __cplusplus
   struct __exception exc;
@@ -269,16 +276,15 @@ lgampos (double z)
   struct exception exc;
 #endif
 #endif
-  
-  sum = a[0];
-  for (i = 1, tmp = z; i < 9; i++) 
-    {
-      sum += a[i] / tmp;
-      tmp++;
-    }
-  result = log(sum) + M_LNSQRT2PI - z - 6.5 + (z - 0.5) * log(z + 6.5);
 
-  if (result == HUGE_VAL)
+  accum = lanczos[0];
+  for (i = 1; i < NUM_LANCZOS_TERMS; i++)
+    accum += lanczos[i] / (z + i - 1);
+
+  retval = (log (accum) + M_LNSQRT2PI - z - LANCZOS_G - 0.5
+	    + (z - 0.5) * log (z + LANCZOS_G + 0.5));
+
+  if (retval == HUGE_VAL)
     {
 #ifdef HAVE_MATHERR
       exc.name = "lgamma";
@@ -297,428 +303,560 @@ lgampos (double z)
 #endif
     }
 
-  return result;
-}
-
-/* Our log-of-gamma function, which we use if the vendor doesn't supply
-   one, or if the vendor's version is buggy. */
-double 
-f_lgamma (double z)
-{
-  SIGNGAM = 1;
-  
-  if (z <= 0.0)
-    return lgamneg(z);
-  else
-    return lgampos(z);
+  return retval;
 }
 #endif /* NO_SYSTEM_GAMMA */
+
+
+
+/*****************************************************************/
+/************ Functions related to inverse beta function *********/
+/*****************************************************************/
+
+/* Our incomplete beta function, I_x(a,b).  Here a,b>0 and x is in [0,1].
+   Returned value is in [0,1].  Note: this normalization convention is not
+   universal.
+
+   The formula given in Abramowitz & Stegun (Eq. 26.5.8) is used.  It
+   includes a continued fraction expansion.  They say, "Best results are
+   obtained when x < (a-1)/(a+b-2)."  We use it when x <= a/(a+b).
+
+   This calls F_LGAMMA (e.g., lgamma()) to compute the prefactor in the
+   formula. */
+
+double
+ibeta (double a, double b, double x)
+{
+  double retval;
+
+#ifdef HAVE_MATHERR
+#ifdef __cplusplus
+  struct __exception exc;
+#else
+  struct exception exc;
+#endif
+#endif
+
+  if (x < 0.0 || x > 1.0 || a <= 0.0 || b <= 0.0) /* DOMAIN error */
+    {
+#ifdef HAVE_MATHERR
+      exc.name = (char *)"ibeta";
+      exc.arg1 = a;
+      exc.arg2 = b;		/* have no arg3, can't return x (!) */
+      exc.retval = HUGE_VAL;
+      exc.type = DOMAIN;
+      if (!matherr (&exc))
+	{
+	  fprintf (stderr, "ibeta: DOMAIN error\n");
+	  errno = EDOM;
+	}
+      return exc.retval;
+#else
+      errno = EDOM;
+      return HUGE_VAL;
+#endif
+    }
+
+  if (x == 0.0 || x == 1.0)
+    return x;
+
+  if (a < x * (a + b))
+    /* interchange */
+    retval = 1.0 - ibeta_internal (b, a, 1.0 - x);
+  else
+    retval = ibeta_internal (a, b, x);
+
+  if (retval < 0.0)		/* error: failure of convergence */
+    {
+#ifdef HAVE_MATHERR
+      exc.name = (char *)"ibeta";
+      exc.arg1 = a;
+      exc.arg2 = b;		/* have no arg3, can't return x (!) */
+      exc.retval = HUGE_VAL;
+      exc.type = TLOSS;
+      if (!matherr (&exc))
+	{
+	  fprintf (stderr, "ibeta: TLOSS error\n");
+	  errno = EDOM;
+	}
+      return exc.retval;
+#else
+      errno = EDOM;
+      return HUGE_VAL;
+#endif
+    }
+
+  return retval;
+}
+
+/* Evaluate convergents of the continued fraction by Wallis's method;
+   return value will be positive, except that -1.0 is returned if there is
+   no convergence. */
+
+static double
+ibeta_internal (double a, double b, double x)
+{
+  double A0, B0;
+  double A2 = 1.0;
+  double B2 = 0.0;
+  double A1 = 1.0;
+  double B1 = 1.0;
+  double prefactor;
+  double f0 = 0.0, f1 = 1.0;	/* f0 initted to quiet compiler */
+  int goodf0, goodf1 = 1;
+  int j;
+
+  prefactor = exp (a * log (x) + b * log (1.0 - x)
+		   + F_LGAMMA(a + b) - F_LGAMMA(a + 1.0) - F_LGAMMA(b));
+
+  for (j = 1; j <= ITERMAX; j++)
+    {
+      double aj;
+      int m;
+
+      if (j % 2)		/* j odd, j = 2m + 1 */
+	{
+	  m = (j - 1)/2;
+	  aj = - (a + m) * (a + b + m) * x / ((a + 2 * m) * (a + 2 * m + 1));
+	}
+      else			/* j even, j = 2m */
+	{
+	  m = j/2;
+	  aj = m * (b - m) * x / ((a + 2 * m - 1) * (a + 2 * m));
+	}
+
+      A0 = 1.0 * A1 + aj * A2;
+      B0 = 1.0 * B1 + aj * B2;
+      
+      if (B0 != 0.0)
+	{
+	  double ren;
+	  
+	  /* renormalize; don't really need to do this on each pass */
+	  ren = 1.0 / B0;
+
+	  A0 *= ren;
+	  B0 = 1.0;
+	  A1 *= ren;
+	  B1 *= ren;
+
+	  f0 = A0;
+	  goodf0 = 1;
+	  
+	  /* test f0 = A0/B0 = A0 for exit */
+
+	  if (goodf1 && fabs (f0 - f1) <= DMIN(MACHEPS, fabs (f0) * MACHEPS))
+	    return (prefactor / f0);
+	}
+      else
+	goodf0 = 0;
+
+      /* shift down */
+      A2 = A1;
+      B2 = B1;
+      A1 = A0;
+      B1 = B0;
+      f1 = f0;
+      goodf1 = goodf0;
+    }
+  
+  /* if we reached here, convergence failed */
+
+  return -1.0;
+}
+
+
+/*****************************************************************/
+/************ Functions related to incomplete gamma function *****/
+/*****************************************************************/
+
+/* Our incomplete gamma function, igamma(a,x) with a>0.0, x>=0.0.  Return
+   value is in [0,1].  The algorithm is AS 239, documented in B. L. Shea,
+   "Chi-Squared and Incomplete Gamma Integral", Applied Statistics 37
+   (1988), 466-473.
+   
+   There have been claims that if 0<=x<=1, in which case Shea's algorithm
+   uses Pearson's series rather than a continued fraction representation,
+   an inaccurate value may result.  This has not been verified.  There have
+   also been claims that the continued fraction representation is reliable
+   only if x >= a+2, rather than x >= a (the latter being Shea's
+   condition).  For safety, we use it only if x >= a+2. */
+
+double
+igamma (double a, double x)
+{
+  double arg, prefactor;
+  int i;
+
+#ifdef HAVE_MATHERR
+#ifdef __cplusplus
+  struct __exception exc;
+#else
+  struct exception exc;
+#endif
+#endif
+
+  if (x < 0.0 || a <= 0.0)	/* DOMAIN error */
+    {
+#ifdef HAVE_MATHERR
+      exc.name = (char *)"igamma";
+      exc.arg1 = a;
+      exc.arg2 = x;
+      exc.retval = HUGE_VAL;
+      exc.type = DOMAIN;
+      if (!matherr (&exc))
+	{
+	  fprintf (stderr, "igamma: DOMAIN error\n");
+	  errno = EDOM;
+	}
+      return exc.retval;
+#else
+      errno = EDOM;
+      return HUGE_VAL;
+#endif
+    }
+
+  if (x > XBIG)			/* TLOSS error */
+    {
+#ifdef HAVE_MATHERR
+      exc.name = (char *)"igamma";
+      exc.arg1 = a;
+      exc.arg2 = x;
+      exc.retval = 1.0;
+      exc.type = TLOSS;
+      if (!matherr (&exc))
+	{
+	  fprintf (stderr, "igamma: TLOSS error\n");
+	  errno = EDOM;
+	}
+      return exc.retval;
+#else
+      errno = EDOM;
+      return 1.0;
+#endif
+    }
+
+  if (x == 0.0)
+    return 0.0;
+
+  /* check exponentiation in prefactor */
+  arg = a * log (x) - x - F_LGAMMA(a + 1.0);
+  if (arg < MINEXP)
+    {
+#ifdef HAVE_MATHERR
+      exc.name = (char *)"igamma";
+      exc.arg1 = a;
+      exc.arg2 = x;
+      exc.retval = 0.0;
+      exc.type = TLOSS;
+      if (!matherr (&exc))
+	{
+	  fprintf (stderr, "ibeta: TLOSS error\n");
+	  errno = EDOM;
+	}
+      return exc.retval;
+#else
+      errno = EDOM;
+      return 0.0;
+#endif
+    }
+
+  prefactor = exp (arg);
+
+  if ((x > 1.0) && (x >= a + 2.0))
+    /* use the continued fraction, not Pearson's series; generate its
+       convergents by Wallis's method */
+    {
+      double A0, B0, A1, B1, A2, B2;
+      double f0 = 0.0, f1;	/* f0 initted to quiet compiler */
+      double aa, bb;
+      int goodf0, goodf1 = 1;
+
+      aa = 1.0 - a;
+      bb = aa + x + 1.0;
+
+      A2 = 1.0;
+      B2 = x;
+      A1 = x + 1.0;
+      B1 = x * bb;
+      f1 = A1 / B1;
+
+      for (i = 1; i <= ITERMAX; i++)
+	{
+	  aa++;
+	  bb += 2.0;
+	
+	  A0 = bb * A1 - i * aa * A2;
+	  B0 = bb * B1 - i * aa * B2;
+	
+	  if (B0 != 0.0)
+	    {
+	      f0 = A0 / B0;
+	      if (goodf1 && 
+		  fabs (f0 - f1) <= DMIN(MACHEPS, fabs (f0) * MACHEPS))
+		return (1.0 - prefactor * a * f0);
+
+	      goodf0 = 1;
+	    }
+	  else
+	    goodf0 = 0;
+
+	  /* shift down */
+	  A2 = A1;
+	  B2 = B1;
+	  A1 = A0;
+	  B1 = B0;
+	  f1 = f0;
+	  goodf1 = goodf0;
+	
+	  if (fabs(A0) >= OFLOW)
+	    /* renormalize */
+	    {
+	      A2 /= OFLOW;
+	      B2 /= OFLOW;
+	      A1 /= OFLOW;
+	      B1 /= OFLOW;
+	    }
+	}
+    }
+  else
+    /* use Pearson's series, not the continued fraction */
+    {
+      double aa, bb, cc;
+
+      aa = a;
+      bb = 1.0;
+      cc = 1.0;
+
+      for (i = 0; i <= ITERMAX; i++)
+	{
+	  aa++;
+	  cc *= (x / aa);
+	  bb += cc;
+	  if (cc < bb * MACHEPS)
+	    return prefactor * bb;
+	}
+    }
+
+  /* if we reached here, convergence failed */
+
+#ifdef HAVE_MATHERR
+  exc.name = (char *)"igamma";
+  exc.arg1 = a;
+  exc.arg2 = x;
+  exc.retval = HUGE_VAL;
+  exc.type = TLOSS;
+  if (!matherr (&exc))
+    {
+      fprintf (stderr, "ibeta: TLOSS error\n");
+      errno = EDOM;
+    }
+  return exc.retval;
+#else
+  errno = EDOM;
+  return HUGE_VAL;
+#endif
+}
 
 #ifndef HAVE_ERF
 double
 erf (double x)
 {
-  x = x < 0.0 ? -igamma(0.5, x * x) : igamma(0.5, x * x);
-
-  return x;
+  return x < 0.0 ? -igamma (0.5, x * x) : igamma (0.5, x * x);
 }
 
 double
 erfc (double x)
 {
-  x = x < 0.0 ? 1.0 + igamma(0.5, x * x) : 1.0 - igamma(0.5, x * x);
-
-  return x;
+  return x < 0.0 ? 1.0 + igamma (0.5, x * x) : 1.0 - igamma (0.5, x * x);
 }
 #endif /* not HAVE_ERF */
 
-/** ibeta.c
- *
- *   DESCRIB   Approximate the incomplete beta function Ix(a, b).
- *
- *                           
- *                     gamma(a + b)      /x  (a-1)         (b-1)
- *      Ix(a, b) = ------------------- * |  t     * (1 - t)     dt (a,b > 0)
- *                 gamma(a) * gamma(b)   /0
- *
- *
- *
- *   CALL      p = ibeta(a, b, x)
- *
- *             double    a    > 0
- *             double    b    > 0
- *             double    x    [0, 1]
- *
- *   WARNING   none
- *
- *   RETURN    double    p    [0, 1]
- *                            -1.0 on error condition
- *
- *   XREF      lgamma()
- *
- *   BUGS      none
- *
- *   REFERENCE The continued fraction expansion as given by
- *             Abramowitz and Stegun (1964) is used.
- *
- * Permission granted to distribute freely for non-commercial purposes only
- * Copyright (c) 1992 Jos van der Woude <jvdwoude@hut.nl>
- */
-
 double
-ibeta (double a, double b, double x)
+norm (double x)
 {
-  /* Test for admissibility of arguments */
-  if (a <= 0.0 || b <= 0.0 || x < 0.0 || x > 1.0)
-    return -1.0;		/* DOMAIN error */
-  
-  /* If x equals 0 or 1, return x as prob */
-  if (x == 0.0 || x == 1.0)
-    return x;
-  
-  /* Swap a, b if necessarry for more efficient evaluation */
-  return a < x * (a + b) ? 1.0 - confrac(b, a, 1.0 - x) : confrac(a, b, x);
+  return 0.5 * (1.0 + erf (0.5 * M_SQRT2 * x));
 }
 
-static double   
-confrac (double a, double b, double x)
-{
-  double          Alo = 0.0;
-  double          Ahi;
-  double          Aev;
-  double          Aod;
-  double          Blo = 1.0;
-  double          Bhi = 1.0;
-  double          Bod = 1.0;
-  double          Bev = 1.0;
-  double          f;
-  double          fold;
-  double          Apb = a + b;
-  double          d;
-  int             i;
-  int             j;
+
+/*****************************************************************/
+/************ Functions related to inverse error function ********/
+/*****************************************************************/
 
-  /* Set up continued fraction expansion evaluation. */
-  Ahi = exp(F_LGAMMA(Apb) + a * log(x) + b * log(1.0 - x) -
-	    F_LGAMMA(a + 1.0) - F_LGAMMA(b));
+/* Our inverse error function, inverf(x) with -1.0<x<1.0.  It approximates
+   this (odd) function by four distinct degree-3 rational functions, each
+   applying in a sub-interval of the right half-interval 0.0<x<1.0. */
 
-  /*
-   * Continued fraction loop begins here. Evaluation continues until
-   * maximum iterations are exceeded, or convergence achieved.
-   */
-  for (i = 0, j = 1, f = Ahi; i <= ITMAX; i++, j++) 
-    {
-      d = a + j + i;
-      Aev = -(a + i) * (Apb + i) * x / d / (d - 1.0);
-      Aod = j * (b - j) * x / d / (d + 1.0);
-      Alo = Bev * Ahi + Aev * Alo;
-      Blo = Bev * Bhi + Aev * Blo;
-      Ahi = Bod * Alo + Aod * Ahi;
-      Bhi = Bod * Blo + Aod * Bhi;
-      
-      if (fabs (Bhi) < MACHEPS)
-	    Bhi = 0.0;
-      
-      if (Bhi != 0.0) 
-	{
-	  fold = f;
-	  f = Ahi / Bhi;
-	  if (fabs(f - fold) < fabs(f) * MACHEPS)
-	    return f;
-	}
-    }
-  
-  return -1.0;
-}
+/* rational function R0(x) */
+static const double n0[4] =
+  {
+    -6.075593, 9.577584, -4.026908, 0.3110567
+  };
+static const double d0[4] =
+  {
+    -6.855572, 12.601905, -6.855985, 1.0
+  };
 
-/* igamma.c
- *
- *   DESCRIB   Approximate the incomplete gamma function P(a, x).
- *
- *                           1      /x  -t   (a-1)
- *             P(a, x) = -------- * |  e  * t     dt      (a > 0)
- *                       gamma(a)   /0
- *
- *   CALL      p = igamma(a, x)
- *
- *             double    a    >  0
- *             double    x    >= 0
- *
- *   WARNING   none
- *
- *   RETURN    double    p    [0, 1]
- *                            -1.0 on error condition
- *
- *   XREF      lgamma()
- *
- *   BUGS      Values 0 <= x <= 1 may lead to inaccurate results.
- *
- *   REFERENCE ALGORITHM AS239  APPL. STATIST. (1988) VOL. 37, NO. 3
- *
- * Permission granted to distribute freely for non-commercial purposes only
- * Copyright (c) 1992 Jos van der Woude <jvdwoude@hut.nl>
- */
+/* rational function R1(w) */
+static const double n1[4] =
+  {
+    -39.202359, 19.332985, -6.953050, 0.9360732
+  };
+static const double d1[4] =
+  {
+    -44.27977, 21.98546, -7.586103, 1.0
+  };
+
+/* rational function R2(w) */
+static const double n2[4] =
+  {
+    -5.911558, 4.795462, -3.111584, 1.005405
+  };
+static const double d2[4] =
+  {
+    -6.266786, 4.666263, -2.962883, 1.0
+  };
+
+/* rational function R3(1/w) */
+static const double n3[4] =
+  {
+    0.09952975, 0.51914515, -0.2187214, 1.0107864
+  };
+static const double d3[4] =
+  {
+    0.09952975, 0.5211733, -0.06888301, 1.0
+  };
+
 
 double
-igamma (double a, double x)
+inverf (double x)
 {
-  double          arg;
-  double          aa;
-  double          an;
-  double          b;
-  double          pn1, pn2, pn3, pn4, pn5, pn6;
-  int             i;
-  
-  /* Check that we have valid values for a and x */
-  if (x < 0.0 || a <= 0.0)
-    return -1.0;		/* DOMAIN error */
-  
-  /* Deal with special cases */
-  if (x == 0.0)
-    return 0.0;			/* SING error */
-  if (x > XBIG)
-    return 1.0;			/* loss of significance? */
-  
-  /* Check value of factor arg */
-  arg = a * log(x) - x - F_LGAMMA(a + 1.0);
-  if (arg < MINEXP)
-    return -1.0;
-  arg = exp(arg);
-  
-  /* Choose infinite series or continued fraction. */
-  
-  if ((x > 1.0) && (x >= a + 2.0)) 
-    /* Use a continued fraction expansion */
-    {
-      double          rn, rnold;
-      
-      aa = 1.0 - a;
-      b = aa + x + 1.0;
-      pn1 = 1.0;
-      pn2 = x;
-      pn3 = x + 1.0;
-      pn4 = x * b;
-      rnold = pn3 / pn4;
-      
-      for (i = 1; i <= ITMAX; i++) 
-	{
-	  aa++;
-	  b += 2.0;
-	  an = aa * (double) i;
-	  
-	  pn5 = b * pn3 - an * pn1;
-	  pn6 = b * pn4 - an * pn2;
-	  
-	  if (pn6 != 0.0) 
-	    {
-	      rn = pn5 / pn6;
-	      if (fabs(rnold - rn) <= DMIN(MACHEPS, MACHEPS * rn))
-		return 1.0 - arg * rn * a;
-	      rnold = rn;
-	    }
-	  pn1 = pn3;
-	  pn2 = pn4;
-	  pn3 = pn5;
-	  pn4 = pn6;
-	  
-	  if (fabs(pn5) >= OFLOW) 
-	    /* re-scale terms in continued fraction since terms are large */
-	    {
-	      pn1 /= OFLOW;
-	      pn2 /= OFLOW;
-	      pn3 /= OFLOW;
-	      pn4 /= OFLOW;
-	    }
-	}
-    } 
-  else				/* x < max (1, a+2) */
-    {
-      /* Use Pearson's series expansion. */
-      for (i = 0, aa = a, an = b = 1.0; i <= ITMAX; i++) 
-	{
-	  aa++;
-	  an *= x / aa;
-	  b += an;
-	  if (an < b * MACHEPS)
-	    return arg * b;
-	}
-    }
-  return -1.0;
-}
+  static double num, den, retval;
+  static int xsign;
 
-/* ----------------------------------------------------------------
-   Following additions to specfun.c made by John Grosh <jgrosh@arl.mil>
-   on 28 OCT 1992.
-   ---------------------------------------------------------------- */
-
-double
-norm (double x)			/* Normal or Gaussian Probability Function */
-{
-  /* Ref.: Abramowitz and Stegun 1964, "Handbook of Mathematical
-     Functions", Applied Mathematics Series, vol. 55, Chapter 26, page 934,
-     Eqn. 26.2.29 and Jos van der Woude code found above */
-  
-#ifndef ERF
-  x = 0.5 * M_SQRT2 * x;
-  x = 0.5 * (1.0 + (x < 0.0 ? -igamma(0.5, x * x) : igamma(0.5, x * x)));
+#ifdef HAVE_MATHERR
+#ifdef __cplusplus
+  struct __exception exc;
 #else
-  x = 0.5 * (1.0 + erf(0.5 * M_SQRT2 * x));
+  struct exception exc;
 #endif
-  
-  return x;
+#endif
+
+  if (x <= -1.0 || x >= 1.0)	/* DOMAIN error */
+    {
+#ifdef HAVE_MATHERR
+      exc.name = (char *)"inverf";
+      exc.arg1 = x;
+      exc.retval = (x < 0.0 ? -HUGE_VAL : HUGE_VAL);
+      exc.type = DOMAIN;
+      if (!matherr (&exc))
+	{
+	  fprintf (stderr, "inverf: DOMAIN error\n");
+	  errno = EDOM;
+	}
+      return exc.retval;
+#else
+      errno = EDOM;
+      return (x < 0.0 ? -HUGE_VAL : HUGE_VAL);
+#endif
+    }
+
+  /* exploit oddness in x */
+  xsign = (x >= 0.0 ? 1 : -1);
+  x = (xsign > 0 ? x : -x);
+
+  /* N.B. The numerator and denominator of each of these four rational
+   approximants should really be written in nested polynomial form. */
+
+  if (x <= 0.85)
+    /* 0.0 <= x <= 0.85; use f = x R0(x**2), where R0 is degree-3 rational */
+    {
+      double y;
+      
+      y = x * x;
+      num = n0[0] + n0[1]*y + n0[2]*y*y + n0[3]*y*y*y;
+      den = d0[0] + d0[1]*y + d0[2]*y*y + d0[3]*y*y*y;
+
+      retval = x * num / den;
+    }
+  else	/* x > 0.85 */
+    {
+      double w;
+
+      w = sqrt (- log (1 - x * x)); /* w > 1.132 */
+      
+      /* note that as x->1-, i.e., w->infinity, retval is asymptotic to w,
+	 to leading order */ 
+
+      if (w <= 2.5)
+	/* 1.132 < w <= 2.5; use f = w R1(w), where R1 is degree-3 rational */
+	{
+	  num = n1[0] + n1[1]*w + n1[2]*w*w + n1[3]*w*w*w;
+	  den = d1[0] + d1[1]*w + d1[2]*w*w + d1[3]*w*w*w;
+	  
+	  retval = w * num / den;
+	}
+      
+      else if (w <= 4.0)
+	/* 2.5 < w <= 4.0; use f = w R2(w), where R2 is degree-3 rational */
+	{
+	  num = n2[0] + n2[1]*w + n2[2]*w*w + n2[3]*w*w*w;
+	  den = d2[0] + d2[1]*w + d2[2]*w*w + d2[3]*w*w*w;
+	  
+	  retval = w * num / den;
+	}
+      
+      else
+	/* w > 4.0; use f = w R3(1/w), where R3 is degree-3 rational
+	   with equal constant terms in numerator and denominator */
+	{
+	  double w1;
+	  
+	  w1 = 1.0 / w;
+
+	  num = n3[0] + n3[1]*w1 + n3[2]*w1*w1 + n3[3]*w1*w1*w1;
+	  den = d3[0] + d3[1]*w1 + d3[2]*w1*w1 + d3[3]*w1*w1*w1;
+	  
+	  retval = w * num / den;
+	}
+    }
+
+  return (xsign > 0 ? retval : -retval);
 }
 
-double 
-invnorm (double p)		/* Inverse Normal Probability Function */
-{
-  /* Source: This routine was derived (using f2c) from the Fortran
-   * subroutine MDNRIS found in ACM Algorithm 602, obtained from netlib.
-   *
-   * MDNRIS code is copyright 1978 by IMSL, Inc.  Since MDNRIS has been
-   * submitted to netlib it may be used with the restrictions that it may
-   * only be used for noncommercial purposes, and that IMSL be acknowledged
-   * as the copyright-holder of the code.
-   */
+/* Our inverse normal function (i.e., inverse Gaussian probability
+   function), invnorm(x) with 0.0<x<1.0.  Trivially expressed in terms of
+   inverf(), just as erf() can be expressed in terms of erfc().  */
 
-  /* Initialized data */
-  static double eps = 1e-10;
-  static double g0 = 1.851159e-4;
-  static double g1 = -.002028152;
-  static double g2 = -.1498384;
-  static double g3 = .01078639;
-  static double h0 = .09952975;
-  static double h1 = .5211733;
-  static double h2 = -.06888301;
-  
-  /* Local variables */
-  static double a, w, x;
-  static double sd, wi, sn, y;
-  
-  /* Note: 0.0 < p < 1.0 */
-  
-  if (p <= eps) 
-    /* p too small, compute y directly */
+double
+invnorm (double x)
+{
+#ifdef HAVE_MATHERR
+#ifdef __cplusplus
+  struct __exception exc;
+#else
+  struct exception exc;
+#endif
+#endif
+
+  if (x <= 0.0 || x >= 1.0)	/* DOMAIN error */
     {
-      a = p + p;
-      w = sqrt(-(double)log(a + (a - a * a)));
-      
-      /* use a rational function in 1.0 / w */
-      wi = 1.0 / w;
-      sn = ((g3 * wi + g2) * wi + g1) * wi;
-      sd = ((wi + h2) * wi + h1) * wi + h0;
-      y = w + w * (g0 + sn / sd);
-      y = - y * M_SQRT2;
-    } 
-  else 
-    {
-      x = 1.0 - (p + p);
-      y = inverf(x);
-      y = - M_SQRT2 * y;
+#ifdef HAVE_MATHERR
+      exc.name = (char *)"invnorm";
+      exc.arg1 = x;
+      exc.retval = HUGE_VAL;
+      exc.type = DOMAIN;
+      if (!matherr (&exc))
+	{
+	  fprintf (stderr, "invnorm: DOMAIN error\n");
+	  errno = EDOM;
+	}
+      return exc.retval;
+#else
+      errno = EDOM;
+      return HUGE_VAL;
+#endif
     }
-  return y;
-} 
 
-double 
-inverf (double p)		/* Inverse Error Function */
-{
-  /* 
-   * Source: This routine was derived (using f2c) from the Fortran
-   * subroutine MERFI found in ACM Algorithm 602, obtained from netlib.
-   * 
-   * MDNRIS code is copyright 1978 by IMSL, Inc.  Since MERFI has been
-   * submitted to netlib, it may be used with the restrictions that it may
-   * only be used for noncommercial purposes, and that IMSL be acknowledged
-   * as the copyright-holder of the code.
-   */
-
-  /* Initialized data */
-  static double a1 = -.5751703;
-  static double a2 = -1.896513;
-  static double a3 = -.05496261;
-  static double b0 = -.113773;
-  static double b1 = -3.293474;
-  static double b2 = -2.374996;
-  static double b3 = -1.187515;
-  static double c0 = -.1146666;
-  static double c1 = -.1314774;
-  static double c2 = -.2368201;
-  static double c3 = .05073975;
-  static double d0 = -44.27977;
-  static double d1 = 21.98546;
-  static double d2 = -7.586103;
-  static double e0 = -.05668422;
-  static double e1 = .3937021;
-  static double e2 = -.3166501;
-  static double e3 = .06208963;
-  static double f0 = -6.266786;
-  static double f1 = 4.666263;
-  static double f2 = -2.962883;
-  static double g0 = 1.851159e-4;
-  static double g1 = -.002028152;
-  static double g2 = -.1498384;
-  static double g3 = .01078639;
-  static double h0 = .09952975;
-  static double h1 = .5211733;
-  static double h2 = -.06888301;
-
-  /* Local variables */
-  static double a, b, f, w, x, y, z, sigma, z2, sd, wi, sn;
-  
-  x = p;
-  
-  /* determine sign of x */
-  sigma = (x > 0 ? 1.0 : -1.0);
-  
-  /* Note: -1.0 < x < 1.0 */
-  
-  z = fabs(x);
-  
-  /* z between 0.0 and 0.85, approx. f by a 
-     rational function in z  */
-  
-  if (z <= 0.85) 
-    {
-      z2 = z * z;
-      f = z + z * (b0 + a1 * z2 / (b1 + z2 + a2 
-				   / (b2 + z2 + a3 / (b3 + z2))));
-    } 
-  else	/* z greater than 0.85 */
-    {
-    a = 1.0 - z;
-    b = z;
-    
-    /* reduced argument is in (0.85,1.0), obtain the transformed variable */
-    
-    w = sqrt(-(double)log(a + a * b));
-    
-    if (w >= 4.0) 
-      /* w greater than 4.0, approx. f by a rational function in 1.0 / w */
-      {
-	wi = 1.0 / w;
-	sn = ((g3 * wi + g2) * wi + g1) * wi;
-	sd = ((wi + h2) * wi + h1) * wi + h0;
-	f = w + w * (g0 + sn / sd);
-	
-	
-    } 
-    else if (w < 4.0 && w > 2.5) 
-      /* w between 2.5 and 4.0, approx.  f by a rational function in w */
-      {
-	sn = ((e3 * w + e2) * w + e1) * w;
-	sd = ((w + f2) * w + f1) * w + f0;
-	f = w + w * (e0 + sn / sd);
-	
-	/* w between 1.13222 and 2.5, approx. f by 
-	   a rational function in w */
-      } 
-    else if (w <= 2.5 && w > 1.13222) 
-      {
-	sn = ((c3 * w + c2) * w + c1) * w;
-	sd = ((w + d2) * w + d1) * w + d0;
-	f = w + w * (c0 + sn / sd);
-      }
-  }
-  y = sigma * f;
-
-  return y;
+  return -M_SQRT2 * inverf (1.0 - 2 * x);
 }

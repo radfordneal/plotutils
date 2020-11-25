@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -154,7 +154,7 @@ _pl_s_end_page (S___(Plotter *_plotter))
   _update_buffer (svg_header);
 
   sprintf (svg_header->point, "fill-rule=\"%s\" ",
-	   "even-odd");
+	   "evenodd");
   _update_buffer (svg_header);
 
   sprintf (svg_header->point, "fill-opacity=\"%.5g\" ",

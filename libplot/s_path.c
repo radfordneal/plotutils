@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -37,7 +38,7 @@ static const char * const svg_cap_style[PL_NUM_CAP_TYPES] =
 { "butt", "round", "square", "round" };
 
 /* SVG fill rule styles, i.e., fill-rule attribute, indexed by internal
-   number (even-odd/nonzero winding number) */
+   number (evenodd/nonzero winding number) */
 static const char * const svg_fill_style[PL_NUM_FILL_RULES] =
 { "evenodd", "nonzero" };
 
@@ -716,7 +717,7 @@ write_svg_path_style (plOutbuf *page, const plDrawState *drawstate, bool need_ca
 	    {
 	      sprintf (page->point, "%.5g%s",
 		       dashbuf[i],
-		       i < num_dashes - 1 ? " " : "\"");
+		       i < num_dashes - 1 ? ", " : "\"");
 	      _update_buffer (page);
 	    }
 

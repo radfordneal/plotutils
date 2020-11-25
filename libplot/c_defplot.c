@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -1663,14 +1663,14 @@ _pl_c_terminate (S___(Plotter *_plotter))
 	  || fsync (_plotter->data->outfp) < 0
 #endif
 	  )
-	_plotter->error (R___(_plotter) "output stream jammed");
+	_plotter->error (R___(_plotter) "the output stream is jammed");
     }
 #ifdef LIBPLOTTER
   else if (_plotter->data->outstream)
     {
       _plotter->data->outstream->flush ();
       if (!(*(_plotter->data->outstream)))
-	_plotter->error (R___(_plotter) "output stream jammed");
+	_plotter->error (R___(_plotter) "the output stream is jammed");
     }
 #endif
 

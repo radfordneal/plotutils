@@ -399,7 +399,7 @@ _getopt_internal (int argc, char *const *argv, const char *optstring,
       if (ambig && !exact)
 	{
 	  if (opterr)
-	    fprintf (stderr, "%s: option `%s' is ambiguous\n",
+	    fprintf (stderr, "%s: the option `%s' is ambiguous\n",
 		     progname, argv[optind]);
 	  nextchar += strlen (nextchar);
 	  optind++;
@@ -423,12 +423,12 @@ _getopt_internal (int argc, char *const *argv, const char *optstring,
 		      if (argv[optind - 1][1] == '-')
 			/* --option */
 			fprintf (stderr,
-				 "%s: option `--%s' doesn't allow an argument\n",
+				 "%s: the option `--%s' doesn't allow an argument\n",
 				 progname, pfound->name);
 		      else
 			/* +option or -option */
 			fprintf (stderr,
-			     "%s: option `%c%s' doesn't allow an argument\n",
+			     "%s: the option `%c%s' doesn't allow an argument\n",
 			     progname, argv[optind - 1][0], pfound->name);
 		    }
 		  nextchar += strlen (nextchar);
@@ -442,7 +442,7 @@ _getopt_internal (int argc, char *const *argv, const char *optstring,
 	      else
 		{
 		  if (opterr)
-		    fprintf (stderr, "%s: option `%s' requires an argument\n",
+		    fprintf (stderr, "%s: the option `%s' requires an argument\n",
 			     progname, argv[optind - 1]);
 		  nextchar += strlen (nextchar);
 		  return optstring[0] == ':' ? ':' : '?';
@@ -470,11 +470,11 @@ _getopt_internal (int argc, char *const *argv, const char *optstring,
 	    {
 	      if (argv[optind][1] == '-')
 		/* --option */
-		fprintf (stderr, "%s: unrecognized option `--%s'\n",
+		fprintf (stderr, "%s: the option `--%s' is unrecognized\n",
 			 progname, nextchar);
 	      else
 		/* +option or -option */
-		fprintf (stderr, "%s: unrecognized option `%c%s'\n",
+		fprintf (stderr, "%s: the option `%c%s' is unrecognized\n",
 			 progname, argv[optind][0], nextchar);
 	    }
 	  nextchar = (char *) "";

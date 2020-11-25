@@ -1,5 +1,5 @@
-This is release 2.5 of the GNU plotutils (plotting utilities) package,
-including release 4.2 of GNU libplot: a thread-safe function library for
+This is release 2.6 of the GNU plotutils (plotting utilities) package,
+including release 4.4 of GNU libplot: a thread-safe function library for
 exporting two-dimensional vector graphics files, and for displaying
 animated vector graphics under the X Window System.  The Web page for the
 package is http://www.gnu.org/software/plotutils/plotutils.html .
@@ -78,15 +78,19 @@ The contents of the plotutils package are:
 		Postscript, CGM, and Fig drivers all support the 35
 		standard Postscript fonts, and its PCL 5 and HP-GL/2
 		drivers support the 45 standard LaserJet fonts.  In
-		addition, all of these, together with the other drivers,
-		support a set of 22 Hershey vector fonts.  The Hershey
-		fonts include HersheyCyrillic and HersheyEUC (for
-		Japanese).  All supported fonts may be arbitrarily rotated
-		and scaled.  All fonts, except for symbol and dingbat
-		fonts, and the Cyrillic and Japenese fonts, use the
-		ISO-Latin-1 encoding (a superset of ASCII; the ISO-Latin-1
-		support in the Hershey fonts is extensive but not quite
-		complete).
+		addition, all of these, together with the other (bitmap)
+		drivers, support a set of 22 Hershey vector fonts.  The
+		Hershey fonts include HersheyCyrillic and HersheyEUC (for
+		Japanese).  Note that the Hershey fonts are not
+		anti-aliased, so they will look much better in vector
+		output, than in bitmap output.
+
+		All supported fonts may be arbitrarily rotated and scaled.
+		All fonts, except for symbol and dingbat fonts, and the
+		Hershey Cyrillic and Japanese fonts, use the ISO-Latin-1
+		encoding (a superset of ASCII; the ISO-Latin-1 support in
+		the 20 non-Cyrillic, non-Japanese Hershey fonts is
+		extensive but not quite complete).
 		
 		(Clones of the 35 standard Postscript fonts, in Type 1
 		format, have been contributed by URW GmbH for distribution
@@ -177,6 +181,9 @@ The contents of the plotutils package are:
                                 has been endorsed by the W3 Consortium
 				for Web use.  See 
 				http://www.w3.org/Graphics .
+				For comments on compatibility with other
+				software that can edit or display
+				SVG files, see the file ./COMPAT.
 
 		graph -T ai	A variant that produces output in a
 				format that can be viewed or edited
@@ -285,16 +292,17 @@ The contents of the plotutils package are:
 		another format or uses it to drive a display device.
 
 		Since this distribution includes `graph -T X', `graph -T
-		png', `graph -T pnm', `graph -T gif', `graph -T ai', `graph
-		-T ps', `graph -T cgm', `graph -T fig', `graph -T pcl',
-		`graph -T hpgl', `graph -T regis', and `graph -T tek', all
-		of which can drive display devices directly, `plot' is only
-		occasionally useful.  It may be used, though, to produce
-		graphical output in more than one format at once.  To do
-		this, you would pipe the output of a datapoint-generating
-		program to the raw variant of `graph', and then use the
-		`tee' command to direct the output of raw `graph', which is
-		in metafile format, to two separate invocations of `plot'.
+		png', `graph -T pnm', `graph -T gif', `graph -T svg',
+		`graph -T ai', `graph -T ps', `graph -T cgm', `graph -T
+		fig', `graph -T pcl', `graph -T hpgl', `graph -T regis',
+		and `graph -T tek', all of which can drive display devices
+		directly, `plot' is only occasionally useful.  It may be
+		used, though, to produce graphical output in more than one
+		format at once.  To do this, you would pipe the output of a
+		datapoint-generating program to the raw variant of `graph',
+		and then use the `tee' command to direct the output of raw
+		`graph', which is in metafile format, to two separate
+		invocations of `plot'.
 	
 		`plot' may also be useful as a post-processor for older
 		programs that produce output in the traditional plot(5)
@@ -352,7 +360,21 @@ The contents of the plotutils package are:
 		fonts are available depends on the `-T' option that is
 		specified, i.e., on the output format.
 
-		
+	hersheydemo.  This is a demo program for the Hershey vector fonts,
+		as implemented in the libplot library.  It outputs a demo
+		page, designed by Dr. Hershey himself.  The page is taken
+		from his 1972 article "A computer system for scientific
+		typography", published in Computer Graphics and Image
+		Processing (vol. 1, no. 4, pp. 373-385).
+
+		Note that the Hershey vector fonts look much better in
+		vector output formats, than they do in bitmap formats.
+		That is because libplot does not currently do anti-aliasing
+		of fonts (or more accurately the libxmi rasterization
+		library, which it relies on, does not).  You would do
+		`hersheydemo -T ps > demo.ps' to produce PS output,
+		`hersheydemo -T svg > demo.svg' to produce SVG output, etc.
+
 4. Command-line mathematical programs not based on libplot, including the
    following.
 

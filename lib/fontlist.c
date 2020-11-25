@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -71,6 +72,7 @@ struct plPSFontInfoStruct
   const char *css_style;	/* CSS font style */
   const char *css_weight;	/* CSS font weight */
   const char *css_stretch;	/* CSS font stretch */
+  const char *css_panose;	/* CSS font Panose */
   int pcl_typeface;		/* the PCL typeface number */
   int hpgl_spacing;		/* 0=fixed width, 1=variable */
   int hpgl_posture;		/* 0=upright, 1=italic, etc. */
@@ -99,6 +101,7 @@ struct plPCLFontInfoStruct
   const char *css_style;	/* CSS font style */
   const char *css_weight;	/* CSS font weight */
   const char *css_stretch;	/* CSS font stretch */
+  const char *css_panose;	/* CSS font Panose */
   int pcl_typeface;		/* the PCL typeface number */
   int hpgl_spacing;		/* 0=fixed width, 1=variable */
   int hpgl_posture;		/* 0=upright, 1=italic, etc. */
@@ -184,28 +187,32 @@ display_fonts (const char *output_format, const char *progname)
 #ifndef X_DISPLAY_MISSING
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format:\n\
-X, png, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+where \"format\" is the output format, and is one of:\n\
+X, png, pnm, gif (bitmap formats), or\n\
+svg, ps, ai, cgm, fig, pcl, hpgl, regis, tek (vector formats).\n",
 	       progname);
 #else  /* X_DISPLAY_MISSING */
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format:\n\
-png, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+where \"format\" is the output format, and is one of:\n\
+png, pnm, gif (bitmap formats), or\n\
+svg, ps, ai, cgm, fig, pcl, hpgl, regis, tek (vector formats).\n",
 	       progname);
 #endif /* X_DISPLAY_MISSING */
 #else  /* not INCLUDE_PNG_SUPPORT */
 #ifndef X_DISPLAY_MISSING
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format:\n\
-X, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+where \"format\" is the output format, and is one of:\n\
+X, pnm, or gif (bitmap formats), or\n\
+svg, ps, ai, cgm, fig, pcl, hpgl, regis, tek (vector formats).\n",
 	       progname);
 #else  /* X_DISPLAY_MISSING */
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format:\n\
-pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+where \"format\" is the output format, and is one of:\n\
+pnm or gif (bitmap formats), or\n\
+svg, ps, ai, cgm, fig, pcl, hpgl, regis, tek (vector formats).\n",
 	       progname);
 #endif /* X_DISPLAY_MISSING */
 #endif /* not INCLUDE_PNG_SUPPORT */

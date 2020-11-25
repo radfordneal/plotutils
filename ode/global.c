@@ -3,7 +3,7 @@
 /*
  * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
  *
- * GNU enhancements Copyright (C) 1996, 1997, 2005, Free Software
+ * GNU enhancements Copyright (C) 1996, 1997, 2005, 2008, 2009, Free Software
  * Foundation, Inc.
  */
 
@@ -19,7 +19,7 @@
 
 const char    *progname	= "ode"; /* name of this program */
 const char    *written =  "Written by Nicholas B. Tufillaro and Robert S. Maier.";
-const char    *copyright = "Copyright (C) 1994 Nicholas B. Tufillaro,\nCopyright (C) 2005 Free Software Foundation, Inc.";
+const char    *copyright = "Copyright (C) 1994 Nicholas B. Tufillaro,\nCopyright (C) 2009 Free Software Foundation, Inc.";
 
 int	prec	= -1;
 long	it	= 0;

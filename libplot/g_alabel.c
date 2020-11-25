@@ -1,5 +1,5 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -76,7 +76,8 @@ _API_alabel (R___(Plotter *_plotter) int x_justify, int y_justify, const char *s
 
   if (!_plotter->data->open)
     {
-      _plotter->error (R___(_plotter) "alabel: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "alabel: invalid operation");
       return -1;
     }
 

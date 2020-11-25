@@ -1,6 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1989,
-   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
-   Foundation, Inc.
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free
+   Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -64,7 +64,7 @@ typedef enum
 
 const char *progname = "plot";	/* name of this program */
 const char *written = "Written by Robert S. Maier.";
-const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
+const char *copyright = "Copyright (C) 2009 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
@@ -208,16 +208,16 @@ main (int argc, char *argv[])
 	    if (sscanf (optarg, "%lf", &local_font_size) <= 0)
 	      {
 		fprintf (stderr,
-			 "%s: error: initial font size must be a number, was `%s'\n",
+			 "%s: error: the initial font size `%s' is bad (it should be a number)\n",
 			 progname, optarg);
 		errcnt++;
 		break;
 	      }
 	    if (local_font_size > 1.0)
-	      fprintf (stderr, "%s: ignoring too-large initial font size `%f' (must be < 1.0)\n", 
+	      fprintf (stderr, "%s: the too-large initial font size `%f' is disregarded (it should be less than 1.0)\n", 
 		       progname, local_font_size);
 	    else if (local_font_size < 0.0)
-	      fprintf (stderr, "%s: ignoring negative initial font size `%f'\n",
+	      fprintf (stderr, "%s: the negative initial font size `%f' is disregarded\n",
 		       progname, local_font_size);
 	    else
 	      font_size = local_font_size;
@@ -228,7 +228,7 @@ main (int argc, char *argv[])
 	      || local_page_number < 1)
 	    {
 	      fprintf (stderr,
-		       "%s: error: page number must be a positive integer, was `%s'\n",
+		       "%s: error: the page number `%s' is bad (it should be a positive integer)\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -245,13 +245,13 @@ main (int argc, char *argv[])
 	    if (sscanf (optarg, "%lf", &local_line_width) <= 0)
 	      {
 		fprintf (stderr,
-			 "%s: error: initial line thickness must be a number, was `%s'\n",
+			 "%s: error: the initial line thickness `%s' is bad (it should be a number)\n",
 			 progname, optarg);
 		errcnt++;
 		break;
 	      }
 	    if (local_line_width < 0.0)
-	      fprintf (stderr, "%s: ignoring negative initial line thickness `%f'\n",
+	      fprintf (stderr, "%s: the negative initial line thickness `%f' is ignored\n",
 		       progname, local_line_width);
 	    else
 	      line_width = local_line_width;
@@ -328,7 +328,7 @@ main (int argc, char *argv[])
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, usage_appendage, true);
+      display_usage (progname, hidden_options, usage_appendage, 2);
       return EXIT_SUCCESS;
     }
 
@@ -339,7 +339,7 @@ main (int argc, char *argv[])
   if ((plotter = pl_newpl_r (output_format, NULL, stdout, stderr,
 			     plotter_params)) == NULL)
     {
-      fprintf (stderr, "%s: error: could not create plot device\n", progname);
+      fprintf (stderr, "%s: error: the plot device could not be created\n", progname);
       return EXIT_FAILURE;
     }
 
@@ -347,7 +347,7 @@ main (int argc, char *argv[])
     /* we do just one openpl..closepl, wrapped around everything */
     if (pl_openpl_r (plotter) < 0)
       {
-	fprintf (stderr, "%s: error: could not open plot device\n",
+	fprintf (stderr, "%s: error: the plot device could not be opened\n",
 		 progname);
 	return EXIT_FAILURE;
       }
@@ -376,7 +376,7 @@ main (int argc, char *argv[])
 	    }
 	  if (read_plot (plotter, data_file) == false)
 	    {
-		  fprintf (stderr, "%s: could not parse input file `%s'\n",
+		  fprintf (stderr, "%s: the input file `%s' could not be parsed\n",
 			   progname, argv[optind]);
 		  retval = EXIT_FAILURE;
 		  break;	/* break out of for loop */
@@ -386,7 +386,7 @@ main (int argc, char *argv[])
 	    if (fclose (data_file) < 0)
 	      {
 		fprintf (stderr, 
-			 "%s: could not close input file `%s'\n",
+			 "%s: the input file `%s' could not be closed\n",
 			 progname, argv[optind]);
 		retval = EXIT_FAILURE;
 		continue;	/* back to top of for loop */
@@ -398,7 +398,7 @@ main (int argc, char *argv[])
     {
       if (read_plot (plotter, stdin) == false)
 	{
-	  fprintf (stderr, "%s: could not parse input\n", progname);
+	  fprintf (stderr, "%s: the input could not be parsed\n", progname);
 	  retval = EXIT_FAILURE;
 	}
     }
@@ -407,14 +407,14 @@ main (int argc, char *argv[])
     /* we do just one openpl..closepl, wrapped around everything */
     if (pl_closepl_r (plotter) < 0)
       {
-	fprintf (stderr, "%s: error: could not close plot device\n",
+	fprintf (stderr, "%s: error: the plot device could not be closed\n",
 		 progname);
 	return EXIT_FAILURE;
       }
 
   if (pl_deletepl_r (plotter) < 0)
     {
-      fprintf (stderr, "%s: error: could not delete plot device\n", progname);
+      fprintf (stderr, "%s: error: the plot device could not be deleted\n", progname);
       retval = EXIT_FAILURE;
     }
   pl_deleteplparams (plotter_params);
@@ -478,7 +478,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 	  {
 	    if (maybe_openpl (plotter) < 0)
 	      {
-		fprintf (stderr, "%s: error: could not open plot device\n", 
+		fprintf (stderr, "%s: error: the plot device could not be opened\n", 
 			 progname);
 		exit (EXIT_FAILURE);
 	      }
@@ -643,7 +643,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 	    {
 	      if (display_open && maybe_closepl (plotter) < 0)
 		{
-		  fprintf (stderr, "%s: error: could not close plot device\n",
+		  fprintf (stderr, "%s: error: the plot device could not be closed\n",
 			   progname);
 		  exit (EXIT_FAILURE);
 		}
@@ -668,7 +668,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 		      if (maybe_closepl (plotter) < 0)
 			{
 			  fprintf (stderr, 
-				   "%s: error: could not close plot device\n", 
+				   "%s: error: the plot device could not be closed\n", 
 				   progname);
 			  exit (EXIT_FAILURE);
 			}
@@ -700,7 +700,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 		    break;		
 		  default:
 		    fprintf (stderr, 
-			     "%s: input file is of an unrecognized metafile type\n",
+			     "%s: the input file is of an unrecognized metafile type\n",
 			     progname);
 		    break;
 		  }
@@ -929,7 +929,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 	    {
 	      if (display_open && maybe_closepl (plotter) < 0)
 		{
-		  fprintf (stderr, "%s: error: could not close plot device\n",
+		  fprintf (stderr, "%s: error: the plot device could not be closed\n",
 			   progname);
 		  exit (EXIT_FAILURE);
 		}
@@ -945,7 +945,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 		  if (display_open && maybe_closepl (plotter) < 0)
 		    {
 		      fprintf (stderr, 
-			       "%s: error: could not close plot device\n",
+			       "%s: error: the plot device could not be closed\n",
 			       progname);
 		      exit (EXIT_FAILURE);
 		    }
@@ -959,7 +959,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 		  if (maybe_openpl (plotter) < 0)
 		    {
 		      fprintf (stderr, 
-			       "%s: error: could not open plot device\n", 
+			       "%s: error: the plot device could not be opened\n", 
 			       progname);
 		      exit (EXIT_FAILURE);
 		    }
@@ -1500,7 +1500,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 
       if (unrec)
 	{
-	  fprintf (stderr, "%s: unrecognized command `0x%x' encountered in input\n",
+	  fprintf (stderr, "%s: an unrecognized command `0x%x' was encountered in the input\n",
 		   progname, instruction);
 	  break;		/* break out of while loop */
 	}
@@ -1509,10 +1509,10 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 	  int eof = feof (in_stream);
 	  
 	  if (eof)
-	    fprintf (stderr, "%s: input terminated prematurely\n",
+	    fprintf (stderr, "%s: the input terminated prematurely\n",
 		     progname);
 	  else
-	    fprintf (stderr, "%s: unable to parse argument of command `0x%x' in input\n",
+	    fprintf (stderr, "%s: the argument of the command `0x%x' in the input could not be parsed\n",
 		     progname, instruction);
 	  break;		/* break out of while loop */
 	}
@@ -1526,7 +1526,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
       /* close display device at EOF, if it was ever opened */
       if (display_open && maybe_closepl (plotter) < 0)
 	{
-	  fprintf (stderr, "%s: error: could not close plot device\n",
+	  fprintf (stderr, "%s: error: the plot device could not be closed\n",
 		   progname);
 	  exit (EXIT_FAILURE);
 	}
@@ -1541,7 +1541,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 	{
 	  if (display_open && maybe_closepl (plotter) < 0)
 	    {
-	      fprintf (stderr, "%s: error: could not close plot device\n",
+	      fprintf (stderr, "%s: error: the plot device could not be closed\n",
 		       progname);
 	      exit (EXIT_FAILURE);
 	    }

@@ -1,11 +1,11 @@
 # Configure template for the GNU plotutils package.
-# Copyright (C) 1989-2005 Free Software Foundation, Inc.
+# Copyright (C) 1989-2009 Free Software Foundation, Inc.
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU plotutils],[2.5],[bug-plotutils@gnu.org])
+AC_INIT([GNU plotutils],[2.6],[bug-plotutils@gnu.org])
 AC_PREREQ(2.59)
 AC_CONFIG_SRCDIR(graph/graph.c)
-AM_INIT_AUTOMAKE([plotutils],[2.5])
+AM_INIT_AUTOMAKE([plotutils],[2.6])
 AM_CONFIG_HEADER(config.h:config.hin)
 
 # The following will be defined in config.h, if appropriate.
@@ -392,5 +392,5 @@ int main()
   fi
 fi
 
-AC_CONFIG_FILES([Makefile double/Makefile graph/Makefile pic2plot/Makefile pic2plot/doc/Makefile pic2plot/libgroff/Makefile pic2plot/include/Makefile info/Makefile lib/Makefile libplot/Makefile libplotter/Makefile libxmi/Makefile libxmi/info/Makefile plot/Makefile tek2plot/Makefile tek2plot/teksamples/Makefile plotfont/Makefile spline/Makefile ode/Makefile ode-examples/Makefile include/Makefile doc/Makefile fonts/Makefile fonts/bdf/Makefile fonts/pcf/Makefile fonts/pfb/Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile double/Makefile graph/Makefile hersheydemo/Makefile pic2plot/Makefile pic2plot/doc/Makefile pic2plot/libgroff/Makefile pic2plot/include/Makefile info/Makefile lib/Makefile libplot/Makefile libplotter/Makefile libxmi/Makefile libxmi/info/Makefile plot/Makefile tek2plot/Makefile tek2plot/teksamples/Makefile plotfont/Makefile spline/Makefile ode/Makefile ode-examples/Makefile include/Makefile doc/Makefile fonts/Makefile fonts/bdf/Makefile fonts/pcf/Makefile fonts/pfb/Makefile test/Makefile])
 AC_OUTPUT

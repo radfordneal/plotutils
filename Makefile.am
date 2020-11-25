@@ -1,7 +1,7 @@
 ## Makefile.am for plotutils.
 ## Process this file with automake to produce Makefile.in in all directories.
 
-# plot, tek2plot, plotfont, and graph are linked with libplot.
+# plot, tek2plot, plotfont, graph, and hersheydemo are linked with libplot.
 # spline, double, and ode are not, however.  All use the routines in lib.
 #
 # pic2plot is written in C++ but is currently linked with libplot, not
@@ -25,7 +25,7 @@ else
 ADD_LIBXMI = libxmi
 endif
 
-SUBDIRS = lib spline double ode ode-examples libplot $(ADD_LIBXMI) plot tek2plot plotfont graph $(ADD_LIBPLOTTER) include info doc fonts test
+SUBDIRS = lib spline double ode ode-examples libplot $(ADD_LIBXMI) plot tek2plot plotfont graph hersheydemo $(ADD_LIBPLOTTER) include info doc fonts test
 
 # files with nonstandard names in this directory
 EXTRA_DIST = COMPAT INSTALL.pkg INSTALL.fonts KNOWN_BUGS ONEWS PROBLEMS

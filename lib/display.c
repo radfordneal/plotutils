@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -34,7 +35,7 @@ extern struct option long_options[];
 
 /* forward references */
 bool elementp (int item, const int *list);
-void display_usage (const char *progname, const int *omit_vals, const char *appendage, bool fonts);
+void display_usage (const char *progname, const int *omit_vals, const char *appendage, int info);
 void display_version (const char *progname, const char *written, const char *copyright);
 
 /* ARGS: list = null-terminated list of integers */
@@ -51,8 +52,23 @@ elementp (int item, const int *list)
   return false;
 }
 
+/* final arg of display_usage below is 0/1/2, meaning:
+
+   0.  Print no info on output formats, because it is not relevant.
+       (This is used by `spline' and `ode'.) 
+   1.  Print info on output formats, specified by a `-T format' option,
+       but not on the existence of a `--help-fonts' option, which returns 
+       info specific to the choice of an output format.
+       (This is used by `hersheydemo', which has a -T option but
+       no user-specified fonts.)
+   2.  Print info on output formats, specified by a `-T format' option,
+       and also on the existence of a `--help-fonts' option, which returns 
+       info on fonts that is specific to the choice of an output format.
+       (This is used by `graph', `plot', 'tek2plot', `plotfont'.)
+*/       
+
 void
-display_usage (const char *progname, const int *omit_vals, const char *appendage, bool fonts)
+display_usage (const char *progname, const int *omit_vals, const char *appendage, int info)
 {
   int i;
   int col = 0;
@@ -101,42 +117,47 @@ display_usage (const char *progname, const int *omit_vals, const char *appendage
   else
     fputs ("\n", stdout);
 
-  if (fonts)
+  if (info == 1)
+    {
+    fprintf (stdout, "\n\
+To specify an output format, type `%s -T \"format\"',\n\
+where \"format\" is one of:\n", progname);
+    }
+  else if (info == 2)
+    {
+    fprintf (stdout, "\n\
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format, and is one of:\n", progname);
+    }
+  
+  if (info == 1 || info == 2)
+    {
 #ifdef INCLUDE_PNG_SUPPORT
 #ifndef X_DISPLAY_MISSING
-    fprintf (stdout, "\n\
-To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the intended output format:\n\
+    fprintf (stdout, "\
 X, png, pnm, or gif (bitmap formats), or\n\
-svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n",
-	     progname);
+svg, ps, ai, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n");
 #else  /* X_DISPLAY_MISSING */
-    fprintf (stdout, "\n\
-To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the intended output format:\n\
+    fprintf (stdout, "\
 png, pnm, or gif (bitmap formats), or\n\
-svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n",
-	     progname);
+svg, ps, ai, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n");
 #endif /* X_DISPLAY_MISSING */
 #else  /* not INCLUDE_PNG_SUPPORT */
 #ifndef X_DISPLAY_MISSING
-    fprintf (stdout, "\n\
-To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the intended output format:\n\
+    fprintf (stdout, "\
 X, pnm, or gif (bitmap formats), or\n\
-svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n",
-	     progname);
+svg, ps, ai, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n");
 #else  /* X_DISPLAY_MISSING */
-    fprintf (stdout, "\n\
-To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the intended output format:\n\
+    fprintf (stdout, "\
 pnm or gif (bitmap formats), or\n\
-svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n",
-	     progname);
+svg, ps, ai, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n");
 #endif /* X_DISPLAY_MISSING */
 #endif
-
-  if ((appendage != NULL) || fonts)
+    fprintf (stdout, "\
+The default format is \"meta\", which is probably not what you want.\n");
+    }
+  
+  if ((appendage != NULL) || info == 1 || info == 2)
     fputs ("\n", stdout);
   fprintf (stdout, "\
 Report bugs to %s.\n", PACKAGE_BUGREPORT);

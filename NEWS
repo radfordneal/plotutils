@@ -1,3 +1,51 @@
+Version 2.6 released, 9/2009.  [Includes libplot 4.4, interface age=2.]
+
+ode:	 File ode/specfun.c now heavily rewritten to remove all non-GNU
+	 copyrights.  For details, see the file ./COMPAT.
+libplot: Several bugfixes to the SVG and PS drivers.  (Thanks to Diomidis
+	 Spinellis, James Anderson, and others, for pointing out that
+	 several apps that import SVG or PS were choking on libplot's
+	 output.  Some still choke on its SVG output, but that's no longer
+	 libplot's fault; see ./COMPAT.)
+libplot: The SVG driver now no longer assumes that the application that
+	 imports or displays SVG can do _any_ justification of text strings
+	 (not even horizontal justification, e.g., position a string in a
+	 right-justified way, with its right edge at a given point).  Many
+	 SVG viewers still get this wrong.
+libplot: Fig plotters now slightly increase the width of drawn lines,
+	 in .fig output, to agree with the interpretation of `line width'
+	 in recent releases of xfig.  (Thanks to Wolfgang Glunz and
+	 Bart De Schutter for pointing out the need for this.)  This
+	 affects executables built with libplot, such as `graph -Tfig'.
+graph,plot,tek2plot,plotfont,pic2plot,hersheydemo: The output of the
+         `--help' option now cautions that if a `-T' or `--output-format'
+         command-line option is not included, the output will by default
+         be in the `metafile' format, which is probably not what the user
+         expects or wants (by default, it is in binary).
+hersheydemo: New executable, generating a single demo page that serves
+	 as an advertisement for the Hershey vector fonts.  (It replaces
+         the file doc/h-demo.c.)  Invoke it by doing, e.g., 
+	 `hersheydemo -Tsvg > demo.svg' , or `hersheydemo -Tps | lpr' .
+         It supports the usual libplot options such as --bg-color,
+	 --pen-color, and --page-size.  Also --bitmap-size, if a bitmap
+	 output format is requested; but note that the Hershey fonts, not
+	 being anti-aliased, do not look their best in low-resolution
+	 (i.e., small-size) bitmap output.
+
+Version 2.5.1 released, 7/2008.  [Includes libplot 4.3, interface age=2.]
+
+package: license for the package (and for libplot) upgraded to GNU GPL v3.
+libplot: SVG output format slightly tweaked, to ensure compatability with
+	 SVG 1.1 syntax, as tested for by validator.w3.org.
+	 Note: a few SVG editing tools, such as inkscape, currently fail
+	 to agree with libplot's SVG semantics, in positioning text.
+	 That appears to be their fault (they do not comply with the
+	 handling of reflected text, as specified in the SVG 1.1 standard).
+libplot: Fixed a bug in bounding box computatations when triangular 
+	 line-joins are used.
+executables: Changed nearly all warning and error messages to complete
+         sentences, to smooth the upcoming transition to gettext.
+
 Version 2.5 released, 12/2005.  [Includes libplot 4.2, interface age=2.]
 
 package: bug reporting address has changed to bug-plotutils@gnu.org.

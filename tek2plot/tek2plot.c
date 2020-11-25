@@ -1,6 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1989,
-   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
-   Foundation, Inc.
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free
+   Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -52,7 +52,7 @@
 
 const char *progname = "tek2plot"; /* name of this program */
 const char *written = "Written by Robert S. Maier.";
-const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
+const char *copyright = "Copyright (C) 2009 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
@@ -281,7 +281,7 @@ main (int argc, char *argv[])
 	      || local_page_number < 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: page number must be a nonnegative integer, was `%s'\n",
+		       "%s: error: the page number `%s' is bad (it should be a nonnegative integer)\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -295,13 +295,13 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &local_line_width) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: line thickness must be a number, was `%s'\n",
+		       "%s: error: the line thickness `%s' is bad (it should be a number)\n",
 		       progname, optarg);
 	      errcnt++;
 	      break;
 	    }
 	  if (local_line_width < 0.0)
-	    fprintf (stderr, "%s: ignoring negative line thickness `%f'\n",
+	    fprintf (stderr, "%s: the request for a negative line thickness `%f' is disregarded\n",
 		     progname, local_line_width);
 	  else
 	    line_width = local_line_width;
@@ -392,7 +392,7 @@ main (int argc, char *argv[])
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, usage_appendage, true);
+      display_usage (progname, hidden_options, usage_appendage, 2);
       return EXIT_SUCCESS;
     }
 
@@ -402,7 +402,7 @@ main (int argc, char *argv[])
   if ((plotter = pl_newpl_r (output_format, NULL, stdout, stderr,
 			     plotter_params)) == NULL)
     {
-      fprintf (stderr, "%s: error: could not create plot device\n", progname);
+      fprintf (stderr, "%s: error: the plot device could not be created\n", progname);
       return EXIT_FAILURE;
     }
 
@@ -422,7 +422,7 @@ main (int argc, char *argv[])
 	      if (data_file == NULL)
 		{
 		  fprintf (stderr, "%s: %s: %s\n", progname, argv[optind], strerror(errno));
-		  fprintf (stderr, "%s: ignoring this file\n", progname);
+		  fprintf (stderr, "%s: this file is ignored.\n", progname);
 		  errno = 0;	/* not quite fatal */
 		  retval = EXIT_FAILURE;
 		  continue;	/* back to top of for loop */
@@ -430,7 +430,7 @@ main (int argc, char *argv[])
 	    }
 	  if (read_plot (plotter, data_file) == false)
 	    {
-		  fprintf (stderr, "%s: could not parse input file `%s'\n",
+		  fprintf (stderr, "%s: the input file `%s' could not be parsed\n",
 			   progname, argv[optind]);
 		  retval = EXIT_FAILURE;
 		  continue;	/* back to top of for loop */
@@ -440,7 +440,7 @@ main (int argc, char *argv[])
 	    if (fclose (data_file) < 0)
 	      {
 		fprintf (stderr, 
-			 "%s: error: could not close input file `%s'\n",
+			 "%s: error: the input file `%s' could not be closed\n",
 			 progname, argv[optind]);
 		return EXIT_FAILURE; /* exit immediately */
 	      }
@@ -451,7 +451,7 @@ main (int argc, char *argv[])
     {
       if (read_plot (plotter, stdin) == false)
 	{
-	  fprintf (stderr, "%s: could not parse input\n", progname);
+	  fprintf (stderr, "%s: the input could not be parsed\n", progname);
 	  retval = EXIT_FAILURE;
 	}
     }
@@ -469,7 +469,7 @@ main (int argc, char *argv[])
 	{
 	  if (requested_page >= current_page)
 	    {
-	      fprintf (stderr, "%s: requested page does not exist\n", progname);
+	      fprintf (stderr, "%s: the requested page does not exist\n", progname);
 	      retval = EXIT_FAILURE;
 	    }
 	  else
@@ -483,7 +483,7 @@ main (int argc, char *argv[])
 
   if (pl_deletepl_r (plotter) < 0)
     {
-      fprintf (stderr, "%s: error: could not delete plot device\n", progname);
+      fprintf (stderr, "%s: error: the plot device could not be deleted\n", progname);
       retval = EXIT_FAILURE;
     }
   pl_deleteplparams (plotter_params);
@@ -593,7 +593,7 @@ getpoint (int *xcoor, int *ycoor, FILE *in_stream, int *badstatus, int *margin)
 	{
 	case 0:			/* interruption of point-reading (parse error?) */
 	  fprintf (stderr, 
-		   "%s: ignoring incomplete point in input\n",
+		   "%s: an incomplete point in the input is ignored\n",
 		   progname);
 	  if (byte_read == '\n' || byte_read == '\r' || byte_read == '\0')
 	    continue;		/* discard, on to next byte */
@@ -629,7 +629,7 @@ getpoint (int *xcoor, int *ycoor, FILE *in_stream, int *badstatus, int *margin)
 	      if (status_three == 0)
 		{
 		  fprintf (stderr, 
-			   "%s: error: point in input has Hi_Y, Hi_X bytes with no Lo_Y between\n",
+			   "%s: error: a point in the input has Hi_Y, Hi_X bytes with no Lo_Y between\n",
 			   progname);
 		  *badstatus = 1; /* parse error */
 		  return false;
@@ -647,7 +647,7 @@ getpoint (int *xcoor, int *ycoor, FILE *in_stream, int *badstatus, int *margin)
 	      break;
 	    case 2:
 	      fprintf (stderr, 
-		       "%s: error: point in input contains too many Hi_Y/Hi_X bytes\n",
+		       "%s: error: a point in the input contains too many Hi_Y/Hi_X bytes\n",
 		       progname);
 	      *badstatus = 1; /* parse error */
 	      return false;
@@ -660,7 +660,7 @@ getpoint (int *xcoor, int *ycoor, FILE *in_stream, int *badstatus, int *margin)
 	      if (status_one == 2)
 		{
 		  fprintf (stderr, 
-			   "%s: error: point in input has EGM/Lo_Y byte after 2 Hi_X/Hi_Y bytes\n",
+			   "%s: error: a point in the input has an EGM/Lo_Y byte after 2 Hi_X/Hi_Y bytes\n",
 			   progname);
 		  *badstatus = 1; /* parse error */
 		  return false;
@@ -675,7 +675,7 @@ getpoint (int *xcoor, int *ycoor, FILE *in_stream, int *badstatus, int *margin)
 	      if (status_one == 2)
 		{
 		  fprintf (stderr, 
-			   "%s: error: point in input has EGM/Lo_Y byte after 2 Hi_X/Hi_Y bytes\n",
+			   "%s: error: a point in the input has an EGM/Lo_Y byte after 2 Hi_X/Hi_Y bytes\n",
 			   progname);
 		  *badstatus = 1; /* parse error */
 		  return false;
@@ -688,7 +688,7 @@ getpoint (int *xcoor, int *ycoor, FILE *in_stream, int *badstatus, int *margin)
 	      break;
 	    case 2:
 	      fprintf (stderr, 
-		       "%s: error: point in input has too many EGM/Lo_Y bytes\n",
+		       "%s: error: a point in the input has too many EGM/Lo_Y bytes\n",
 		       progname);
 	      *badstatus = 1; /* parse error */
 	      return false;
@@ -721,7 +721,7 @@ getpoint (int *xcoor, int *ycoor, FILE *in_stream, int *badstatus, int *margin)
 		*margin = MARGIN2;
 		if (margin_reset == false)
 		  fprintf (stderr,
-			   "%s: Tektronix left margin reset by input file(s)\n",
+			   "%s: the left margin of the Tektronix was reset by the input\n",
 			   progname);
 		margin_reset = true;
 	      }
@@ -1221,7 +1221,7 @@ read_plot (plPlotter *plotter, FILE *in_stream)
 		if (i == BUFFER_SIZE)
 		  {
 		    fprintf (stderr, 
-			     "%s: error: overly long ANSI escape sequence\n",
+			     "%s: error: an overly long ANSI escape sequence was encountered\n",
 			     progname);
 		    badstatus = 1; /* parse error */
 		    break;
@@ -1336,7 +1336,7 @@ begin_page (plPlotter *plotter)
   if (pl_openpl_r (plotter) < 0)
     {
       fprintf (stderr, 
-	       "%s: error: could not open plot device\n", 
+	       "%s: error: the plot device could not be opened\n", 
 	       progname);
       exit (EXIT_FAILURE);
     }
@@ -1395,7 +1395,7 @@ end_page (plPlotter *plotter)
   if (pl_closepl_r (plotter) < 0)
     {
       fprintf (stderr, 
-	       "%s: error: could not close plot device\n",
+	       "%s: error: the plot device could not be closed\n",
 	       progname);
       exit (EXIT_FAILURE);
     }

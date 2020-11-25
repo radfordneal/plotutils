@@ -1,9 +1,9 @@
-The 22 Hershey fonts now supported by GNU libplot and the GNU plotting
+The 22 Hershey fonts supported by GNU libplot and executables based on it
 utilities are enhanced versions of the Hershey fonts that have been
 incorporated in many software packages over the years.  They have been
 extended, by the addition of accented and other special characters, to
-provide virtually full support for the ISO-Latin-1 character set.
-They have been given new, modern-style names.
+provide virtually full support for the ISO-Latin-1 character set.  They
+have been given new, modern-style names.
 
 The following table lists the modern names and the traditional names.
 
@@ -46,14 +46,15 @@ adaptations of the alphabets to be observed in newspapers, text books, and
 dictionaries. (1,2)"
 
 "[The HersheyScript fonts] been adapted from a Headliner Typemaster of the
-Varityper Corporation.  [HersheyGothicEnglish] has been adapted from a Le
-Roy lettering set for Old English...  [HersheyGothicItalian] represents a
-large family of alphabets for which there does not seem to be a consistent
-nomenclature.  Some writers refer to it as Gothic uncial while others call
-it Lombardic Gothic.  It seems to have been developed in Lombardy while the
-best examples (3,4) come from Spain.  The present version is an adaptation
-of a font [the `Missal Initials' font] of the American Type Founders
-Company (5)...  [HersheyGothicGerman] is an adaptation of Fraktur (6)."
+Varityper Corporation.  [HersheyGothicEnglish] has been adapted from a 
+Le Roy lettering set for Old English...  [HersheyGothicItalian] represents
+a large family of alphabets for which there does not seem to be a
+consistent nomenclature.  Some writers refer to it as Gothic uncial while
+others call it Lombardic Gothic.  It seems to have been developed in
+Lombardy while the best examples (3,4) come from Spain.  The present
+version is an adaptation of a font [the `Missal Initials' font] of the
+American Type Founders Company (5)...  [HersheyGothicGerman] is an
+adaptation of Fraktur (6)."
 
 Notes:
 

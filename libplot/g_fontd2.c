@@ -1,5 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
-   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free Software
+   Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -45,7 +46,8 @@
         if non-NULL.  This feature is used only to support the 
 	Tidbits-is-Wingdings botch.
    (1c) X name.
-   (1.5abcde) CSS font properties.
+   (1.5abcdef) CSS font properties:
+   	family, generic family, style, weight, stretch, panose
    (2) PCL typeface number.
    (3) PCL info: fixedwidth(0) / proportional(1).
    (4) PCL info: upright(0) / italic(1) / condensed(4) / cond. italic(5) /
@@ -86,6 +88,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "univers-medium-r-normal",
   "Univers", "sans-serif", "normal", "normal", "normal",
+  "2 11 6 3 2 2 2 3 2 4",	/* Panose for entire Univers family? */
   4148, 1, 0, 0, 277,
   987, 250,
   688, 0,
@@ -159,6 +162,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "univers-medium-o-normal",
   "Univers", "sans-serif", "oblique", "normal", "normal",
+  "2 11 6 3 2 2 2 3 2 4",	/* Panose for entire Univers family? */
   4148, 1, 1, 0, 277,
   989, 250,
   688, 0,
@@ -232,6 +236,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "univers-bold-r-normal",
   "Univers", "sans-serif", "normal", "bold", "normal",
+  "2 11 6 3 2 2 2 3 2 4",	/* Panose for entire Univers family? */
   4148, 1, 0, 3, 277,
   976, 250,
   688, 0,
@@ -305,6 +310,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "univers-bold-o-normal",
   "Univers", "sans-serif", "oblique", "bold", "normal",
+  "2 11 6 3 2 2 2 3 2 4",	/* Panose for entire Univers family? */
   4148, 1, 1, 3, 277,
   976, 250,
   688, 0,
@@ -378,6 +384,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "univers-medium-r-condensed",
   "Univers", "sans-serif", "normal", "normal", "condensed",
+  "2 11 6 3 2 2 2 3 2 4",	/* Panose for entire Univers family? */
   4148, 1, 4, 0, 277,
   932, 250,
   688, 0,
@@ -451,6 +458,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "univers-medium-o-condensed",
   "Univers", "sans-serif", "oblique", "normal", "condensed",
+  "2 11 6 3 2 2 2 3 2 4",	/* Panose for entire Univers family? */
   4148, 1, 5, 0, 277,
   933, 250,
   688, 0,
@@ -524,6 +532,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "univers-bold-r-condensed",
   "Univers", "sans-serif", "normal", "bold", "condensed",
+  "2 11 6 3 2 2 2 3 2 4",	/* Panose for entire Univers family? */
   4148, 1, 4, 3, 277,
   950, 250,
   688, 0,
@@ -597,6 +606,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "univers-bold-o-condensed",
   "Univers", "sans-serif", "oblique", "bold", "condensed",
+  "2 11 6 3 2 2 2 3 2 4",	/* Panose for entire Univers family? */
   4148, 1, 5, 3, 277,
   950, 250,
   688, 0,
@@ -670,6 +680,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "cg times-medium-r-normal",
   "CG Times", "serif", "normal", "normal", "normal",
+  "2 2 6 3 5 4 5 2 3 4",	/* Panose for entire CGTimes family? */
   4101, 1, 0, 0, 277,
   910, 250,
   679, 0,
@@ -743,6 +754,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "cg times-medium-i-normal",
   "CG Times", "serif", "italic", "normal", "normal",
+  "2 2 6 3 5 4 5 2 3 4",	/* Panose for entire CGTimes family? */
   4101, 1, 1, 0, 277,
   910, 250,
   679, 0,
@@ -816,6 +828,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "cg times-bold-r-normal",
   "CG Times", "serif", "normal", "bold", "normal",
+  "2 2 6 3 5 4 5 2 3 4",	/* Panose for entire CGTimes family? */
   4101, 1, 0, 3, 277,
   944, 250,
   685, 0,
@@ -889,6 +902,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "cg times-bold-i-normal",
   "CG Times", "serif", "italic", "bold", "normal",
+  "2 2 6 3 5 4 5 2 3 4",	/* Panose for entire CGTimes family? */
   4101, 1, 1, 3, 277,
   944, 250,
   685, 0,
@@ -962,6 +976,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "albertus-semibold-r-normal",
   "Albertus", "serif", "normal", "600", "normal",
+  "2 14 6 2 3 3 4 2 3 4",	/* Panose for AlbertusMedium font */
   4362, 1, 0, 1, 277,
   997, 250,
   764, 0,
@@ -1041,6 +1056,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "albertus-extrabold-r-normal",
   "Albertus", "serif", "normal", "800", "normal",
+  "2 14 8 2 4 3 4 2 2 4",	/* Panose for AlbertusExtraBold font */
   4362, 1, 0, 4, 277,
   1017, 260,
   764, 0,
@@ -1120,6 +1136,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "antique olive-medium-r-normal",
   "Antique Olive", "sans-serif", "normal", "normal", "normal",
+  "0 0 0 0 0 0 0 0 0 0",	/* no Panose known */
   4168, 1, 0, 0, 277,
   1038, 250,
   750, 0,
@@ -1193,6 +1210,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "antique olive-medium-i-normal",
   "Antique Olive", "sans-serif", "oblique", "normal", "normal",
+  "0 0 0 0 0 0 0 0 0 0",	/* no Panose known */
   4168, 1, 1, 0, 277,
   1035, 250,
   750, 0,
@@ -1266,6 +1284,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "antique olive-bold-r-normal",
   "Antique Olive", "sans-serif", "normal", "bold", "normal",
+  "0 0 0 0 0 0 0 0 0 0",	/* no Panose known */
   4168, 1, 0, 3, 277,
   1055, 250,
   750, 0,
@@ -1339,6 +1358,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "arial-medium-r-normal",
   "Arial", "sans-serif", "normal", "normal", "normal",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Arial font? */
   16602, 1, 0, 0, 277,
   913, 216,
   715, 0,
@@ -1412,6 +1432,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "arial-medium-i-normal",
   "Arial", "sans-serif", "oblique", "normal", "normal",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Arial font? */
   16602, 1, 1, 0, 277,
   913, 213,
   715, 0,
@@ -1485,6 +1506,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "arial-bold-r-normal",
   "Arial", "sans-serif", "normal", "bold", "normal",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Arial font? */
   16602, 1, 0, 3, 277,
   924, 211,
   715, 0,
@@ -1558,6 +1580,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "arial-bold-i-normal",
   "Arial", "sans-serif", "oblique", "bold", "normal",
+  "2 11 6 4 2 2 2 2 2 4",	/* Panose for entire Arial font? */
   16602, 1, 1, 3, 277,
   924, 221,
   715, 0,
@@ -1631,6 +1654,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "clarendon-medium-r-condensed",
   "Clarendon", "serif", "normal", "normal", "condensed",
+  "2 4 7 6 4 7 5 4 2 4",	/* Panose for ClarendonCondensed font */
   4140, 1, 4, 3, 277,
   970, 261,
   694, 0,
@@ -1704,6 +1728,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "coronet-medium-r-normal",
   "Coronet", "cursive", "normal", "normal", "normal",
+  "3 3 5 2 4 4 6 7 6 5",	/* Panose for Coronet font */
   4116, 1, 1, 0, 277,
   898, 257,
   744, 0,
@@ -1777,6 +1802,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "courier-medium-r-normal",
   "Courier", "monospace", "normal", "normal", "normal",
+  "2 7 4 9 2 2 5 2 4 4", 	/* Panose for entire Courier family? */
   4099, 0, 0, 0, 277,
   856, 253,
   560, 0,
@@ -1854,6 +1880,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "courier-medium-o-normal",
   "Courier", "monospace", "oblique", "normal", "normal",
+  "2 7 4 9 2 2 5 2 4 4", 	/* Panose for entire Courier family? */
   4099, 0, 1, 0, 277,
   856, 253,
   560, 0,
@@ -1927,6 +1954,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "courier-bold-r-normal",
   "Courier", "monospace", "normal", "bold", "normal",
+  "2 7 4 9 2 2 5 2 4 4", 	/* Panose for entire Courier family? */
   4099, 0, 0, 3, 277,
   856, 237,
   560, 0,
@@ -2004,6 +2032,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "courier-bold-o-normal",
   "Courier", "monospace", "oblique", "bold", "normal",
+  "2 7 4 9 2 2 5 2 4 4", 	/* Panose for entire Courier family? */
   4099, 0, 1, 3, 277,
   856, 237,
   560, 0,
@@ -2077,6 +2106,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "garamond-medium-r-normal",
   "Garamond", "serif", "normal", "normal", "normal",
+  "2 2 4 4 3 3 1 1 8 3",	/* Panose for entire Garamond family? */
   4197, 1, 0, 0, 277,		/* Garamond Antiqua */
   1023, 260,
   695, 0,
@@ -2150,6 +2180,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "garamond-medium-i-normal",
   "Garamond", "serif", "italic", "normal", "normal",
+  "2 2 4 4 3 3 1 1 8 3",	/* Panose for entire Garamond family? */
   4197, 1, 1, 0, 277,		/* Garamond Kursiv */
   984, 261,
   695, 0,
@@ -2223,6 +2254,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "garamond-bold-r-normal",
   "Garamond", "serif", "normal", "bold", "normal",
+  "2 2 4 4 3 3 1 1 8 3",	/* Panose for entire Garamond family? */
   4197, 1, 0, 3, 277,		/* Garamond Halbfett */
   1010, 261,
   695, 0,
@@ -2296,6 +2328,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "garamond-bold-i-normal",
   "Garamond", "serif", "italic", "bold", "normal",
+  "2 2 4 4 3 3 1 1 8 3",	/* Panose for entire Garamond family? */
   4197, 1, 1, 3, 277,		/* Garamond Kursiv Halbfett */
   1016, 264,
   697, 0,
@@ -2369,6 +2402,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "letter gothic-medium-r-normal",
   "Letter Gothic", "monospace", "normal", "normal", "normal",
+  "0 0 0 0 0 0 0 0 0 0",	/* no Panose known */
   4102, 0, 0, 0, 277,
   946, 308,
   721, 0,
@@ -2442,6 +2476,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "letter gothic-medium-i-normal",
   "Letter Gothic", "monospace", "oblique", "normal", "normal",
+  "0 0 0 0 0 0 0 0 0 0",	/* no Panose known */
   4102, 0, 1, 0, 277,
   947, 308,
   721, 0,
@@ -2515,6 +2550,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "letter gothic-bold-r-normal",
   "Letter Gothic", "monospace", "normal", "bold", "normal",
+  "0 0 0 0 0 0 0 0 0 0",	/* no Panose known */
   4102, 0, 0, 3, 277,
   988, 308,
   721, 0,
@@ -2588,6 +2624,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "marigold-medium-r-normal",
   "Marigold", NULL, "normal", "normal", "normal",
+  "3 2 7 2 4 4 2 2 5 4",	/* Panose for Marigold font */
   4297, 1, 0, 0, 277,
   770, 302,
   450, 0,
@@ -2661,6 +2698,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "cg omega-medium-r-normal",
   "CG Omega", "serif", "normal", "normal", "normal",
+  "2 11 5 2 5 5 8 2 3 4",	/* Panose for entire CG Omega family? */
   4113, 1, 0, 0, 277,
   895, 250,
   683, 0,
@@ -2734,6 +2772,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "cg omega-medium-i-normal",
   "CG Omega", "serif", "oblique", "normal", "normal",
+  "2 11 5 2 5 5 8 2 3 4",	/* Panose for entire CG Omega family? */
   4113, 1, 1, 0, 277,
   911, 250,
   683, 0,
@@ -2807,6 +2846,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "cg omega-bold-r-normal",
   "CG Omega", "serif", "normal", "bold", "normal",
+  "2 11 5 2 5 5 8 2 3 4",	/* Panose for entire CG Omega family? */
   4113, 1, 0, 3, 277,
   924, 250,
   686, 0,
@@ -2880,6 +2920,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "cg omega-bold-i-normal",
   "CG Omega", "serif", "oblique", "bold", "normal",
+  "2 11 5 2 5 5 8 2 3 4",	/* Panose for entire CG Omega family? */
   4113, 1, 1, 3, 277,
   923, 250,
   686, 0,
@@ -2953,6 +2994,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "times new roman-medium-r-normal",
   "Times New Roman", "serif", "normal", "normal", "normal",
+  "2 2 6 3 5 4 5 2 3 4",	/* Panose for entire TNR family? */
   16901, 1, 0, 0, 277,
   913, 219,
   662, 0,
@@ -3026,6 +3068,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "times new roman-medium-i-normal",
   "Times New Roman", "serif", "italic", "normal", "normal",
+  "2 2 6 3 5 4 5 2 3 4",	/* Panose for entire TNR family? */
   16901, 1, 1, 0, 277,
   913, 216,
   662, 0,
@@ -3099,6 +3142,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "times new roman-bold-r-normal",
   "Times New Roman", "serif", "normal", "bold", "normal",
+  "2 2 6 3 5 4 5 2 3 4",	/* Panose for entire TNR family? */
   16901, 1, 0, 3, 277,
   913, 226,
   662, 0,
@@ -3172,6 +3216,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "times new roman-bold-i-normal",
   "Times New Roman", "serif", "italic", "bold", "normal",
+  "2 2 6 3 5 4 5 2 3 4",	/* Panose for entire TNR family? */
   16901, 1, 1, 3, 277,
   913, 216,
   662, 0,
@@ -3246,6 +3291,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   "Tidbits",			/* use "Tidbits" in any output PS file */
   "wingdings-medium-r-normal",
   "Wingdings", NULL, "normal", "normal", "normal",
+  "5 2 1 2 1 8 4 8 7 8",	/* Panose for Wingdings font */
   31402, 1, 0, 0, 18540,	
   895, 210,
   723, 0,
@@ -3322,6 +3368,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   "symbol-medium-r-normal",
   "Symbol", NULL, "normal", "normal", "normal",
+  "5 5 1 2 1 7 6 2 5 7", 	/* Panose for Symbol font */
   16686, 1, 0, 0, 621,
   945, 284,
   685, 0,
@@ -3398,6 +3445,7 @@ const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
   NULL,
   NULL,
   NULL, NULL, NULL, NULL, NULL,
+  NULL,
   0, 0, 0, 0, 0,
   0, 0,
   0, 0,

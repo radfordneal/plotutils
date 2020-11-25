@@ -1,7 +1,7 @@
 /* This file is part of the GNU plotutils package. */
 
 /* This file is part of the GNU plotutils package.  Copyright (C) 1989,
-   1996, 1997, 1998, 1999, 2005, Free Software Foundation, Inc.
+   1996, 1997, 1998, 1999, 2005, 2008, 2009, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -227,7 +227,7 @@ main (int argc, char *argv[])
 
   if (optind < argc)		/* too many arguments */
     {
-      fprintf (stderr, "%s: too many arguments\n", progname);
+      fprintf (stderr, "%s: there are too many arguments\n", progname);
       errcnt++;
     }
   
@@ -243,7 +243,7 @@ main (int argc, char *argv[])
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, NULL, false);
+      display_usage (progname, hidden_options, NULL, 0);
       return EXIT_SUCCESS;
     }
 

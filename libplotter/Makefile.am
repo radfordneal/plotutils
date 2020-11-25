@@ -2,7 +2,7 @@
 
 lib_LTLIBRARIES = libplotter.la
 
-libplotter_la_LDFLAGS = -version-info 4:2:2
+libplotter_la_LDFLAGS = -version-info 4:4:2
 
 INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT -DLIBPLOTTER
 

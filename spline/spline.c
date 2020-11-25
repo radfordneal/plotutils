@@ -1,6 +1,6 @@
 /* This file is part of the GNU plotutils package.  Copyright (C) 1989,
-   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
-   Foundation, Inc.
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free
+   Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -165,7 +165,7 @@ data_type output_type = T_ASCII;
 
 const char *progname = "spline"; /* name of this program */
 const char *written = "Written by Robert S. Maier and Rich Murphey.";
-const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
+const char *copyright = "Copyright (C) 2009 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
@@ -268,7 +268,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%d", &ydimension) <= 0 || ydimension < 1)
 	    {
 	      fprintf (stderr, 
-		       "%s: error: bad ordinate dimension `%s' (must be positive integer)\n", 
+		       "%s: error: the ordinate dimension `%s' is bad (it should be a positive integer)\n", 
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -277,7 +277,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &boundary_condition) <= 0)
 	    {
 	      fprintf (stderr, 
-		       "%s: error: bad boundary condition argument `%s'\n",
+		       "%s: error: the boundary condition argument `%s' is bad\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -288,7 +288,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%lf", &tension) <= 0)
 	    {
 	      fprintf (stderr, 
-		       "%s: error: bad tension argument `%s'\n",
+		       "%s: error: the tension argument `%s' is bad\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -297,7 +297,7 @@ main (int argc, char *argv[])
 	  if (sscanf (optarg, "%d", &no_of_intervals) <= 0)
 	    {
 	      fprintf (stderr, 
-		       "%s: error: bad requested number of intervals `%s'\n", 
+		       "%s: error: the requested number of intervals `%s' is bad\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -307,7 +307,7 @@ main (int argc, char *argv[])
 	case 'P':		/* precision */
 	  if (sscanf (optarg, "%d", &local_precision) <= 0)
 	    {
-	      fprintf (stderr, "%s: error: bad requested precision `%s' (must be positive integer)\n", 
+	      fprintf (stderr, "%s: error: the requested precision `%s' is bad (it should be a positive integer)\n", 
 		       progname, optarg);
 	      errcnt++;
 	    }
@@ -315,7 +315,7 @@ main (int argc, char *argv[])
 	    {
 	      if (local_precision <= 0)
 		fprintf (stderr, 
-			 "%s: ignoring bad precision value `%s' (must be positive integer)\n",
+			 "%s: the precision value `%s' is disregarded (it should be a positive integer)\n",
 			 progname, optarg);
 	      else
 		precision = local_precision;
@@ -390,7 +390,7 @@ main (int argc, char *argv[])
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, usage_appendage, false);
+      display_usage (progname, hidden_options, usage_appendage, 0);
       return EXIT_SUCCESS;
     }
 
@@ -399,7 +399,7 @@ main (int argc, char *argv[])
   if (no_of_intervals < 1)
     {
       fprintf (stderr, 
-	       "%s: error: cannot subdivide abscissa range into %d intervals\n", 
+	       "%s: error: the abscissa range cannot be subdivided into %d intervals\n", 
 	       progname, no_of_intervals);
       return EXIT_FAILURE;
     }
@@ -408,7 +408,7 @@ main (int argc, char *argv[])
     {
       if (spec_boundary_condition)
 	fprintf (stderr, 
-		 "%s: for periodic splines, setting of boundary condition not supported\n", 
+		 "%s: the setting of a boundary condition is not supported for a periodic spline\n", 
 		 progname);
       boundary_condition = 0.0;
     }
@@ -419,7 +419,7 @@ main (int argc, char *argv[])
       if (!spec_first_t || !spec_last_t)
 	{
 	  fprintf (stderr,
-		   "%s: error: acting as filter, must specify abscissa range with -t option\n",
+		   "%s: error: acting as a filter, so the abscissa range should be specified with the -t option\n",
 		   progname);
 	  return EXIT_FAILURE;
 	}
@@ -429,11 +429,11 @@ main (int argc, char *argv[])
       else			/* user specified spacing */
 	{
 	  if (spec_no_of_intervals)
-	    fprintf (stderr, "%s: ignoring specified number of intervals\n",
+	    fprintf (stderr, "%s: the requested number of intervals is disregarded\n",
 		     progname);
 	  if ((last_t - first_t) * spacing_t < 0.0)
 	    {
-	      fprintf (stderr, "%s: specified spacing is of wrong sign, corrected\n",
+	      fprintf (stderr, "%s: the requested spacing was of the wrong sign, so it has been corrected\n",
 		       progname);
 	      spacing_t = -spacing_t;
 	    }
@@ -444,15 +444,15 @@ main (int argc, char *argv[])
       
       if (spec_boundary_condition)
 	fprintf (stderr, 
-		 "%s: acting as filter, so setting of boundary condition not supported\n",
+		 "%s: acting as a filter, so the setting of a boundary condition is not supported\n",
 		 progname);
       if (tension != 0.0)
 	fprintf (stderr, 
-		 "%s: acting as filter, so nonzero tension not supported\n",
+		 "%s: acting as a filter, so nonzero tension is not supported\n",
 		 progname);
       if (periodic)
 	fprintf (stderr, 
-		 "%s: acting as filter, so periodicity not supported\n",
+		 "%s: acting as a filter, so periodicity is not supported\n",
 		 progname);
 
       if (optind < argc)
@@ -496,7 +496,7 @@ main (int argc, char *argv[])
 		  if (fclose (data_file) < 0)
 		    {
 		      fprintf (stderr, 
-			       "%s: error: couldn't close input file `%s'\n",
+			       "%s: error: the input file `%s' could not be closed\n",
 			       progname, argv[optind]);
 		      return EXIT_FAILURE;
 		    }
@@ -542,7 +542,7 @@ main (int argc, char *argv[])
 		  data_file = fopen (argv[optind], "r");
 		  if (data_file == NULL)
 		    {
-		      fprintf (stderr, "%s: error: couldn't open file `%s'\n",
+		      fprintf (stderr, "%s: error: the file `%s' could not be opened\n",
 			       progname, argv[optind]);
 		      return EXIT_FAILURE;
 		    }
@@ -594,7 +594,7 @@ main (int argc, char *argv[])
 		  if (fclose (data_file) < 0)
 		    {
 		      fprintf (stderr, 
-			       "%s: error: couldn't close input file `%s'\n",
+			       "%s: error: the input file `%s' could not be closed\n",
 			       progname, argv[optind]);
 		      return EXIT_FAILURE;
 		    }
@@ -675,7 +675,7 @@ set_format_type (char *s, data_type *typep)
       break;
     default:
       {
-	fprintf (stderr, "%s: error: invalid data format type `%s'\n",
+	fprintf (stderr, "%s: error: the data format type `%s' is invalid\n",
 		 progname, s);
 	exit (EXIT_FAILURE);
       }
@@ -742,7 +742,7 @@ fit (int n, double *t, double *y, double *z, double k, double tension,
       for (i = 0; i <= n - 1 ; ++i)
 	if (sin (tension * h[i]) == 0.0)
 	  {
-	    fprintf (stderr, "%s: error: specified negative tension value is singular\n", progname);
+	    fprintf (stderr, "%s: error: the specified negative tension value is singular\n", progname);
 	    exit (EXIT_FAILURE);
 	  }
     }
@@ -826,7 +826,7 @@ fit (int n, double *t, double *y, double *z, double k, double tension,
   if (u[1] == 0.0)
     {
       fprintf (stderr, 
-	       "%s: error: as posed, problem of computing spline is singular\n",
+	       "%s: error: as posed, the problem of computing a spline is singular\n",
 	       progname);
       exit (EXIT_FAILURE);
     }
@@ -847,7 +847,7 @@ fit (int n, double *t, double *y, double *z, double k, double tension,
       if (u[i] == 0.0)
 	{
 	  fprintf (stderr, 
-		   "%s: error: as posed, problem of computing spline is singular\n",
+		   "%s: error: as posed, the problem of computing a spline is singular\n",
 		   progname);
 	  exit (EXIT_FAILURE);
 	}
@@ -1064,7 +1064,7 @@ read_float (FILE *input, double *dptr)
     return false;
   if (dval != dval)
     {
-      fprintf (stderr, "%s: encountered a NaN (not-a-number) in binary input file, treating as EOF\n",
+      fprintf (stderr, "%s: a NaN (not-a-number) was encountered in a binary input file (it is treated as EOF)\n",
 	       progname);
       return false;		/* effectively eof */
     }
@@ -1223,7 +1223,7 @@ read_point (FILE *input, double *t, double *y, int ydimension,
 	  success = read_float (input, &(y[i]));
 	  if (!success)		/* effectively EOF (could be garbage) */
 	    {
-	      fprintf (stderr, "%s: input file terminated prematurely\n",
+	      fprintf (stderr, "%s: an input file terminated prematurely\n",
 		       progname);
 	      return 1;
 	    }
@@ -1276,7 +1276,7 @@ read_point (FILE *input, double *t, double *y, int ydimension,
 	  success = read_float (input, &(y[i]));
 	  if (!success)		/* effectively EOF (could be garbage) */
 	    {
-	      fprintf (stderr, "%s: input file terminated prematurely\n",
+	      fprintf (stderr, "%s: an input file terminated prematurely\n",
 		       progname);
 	      return 1;
 	    }
@@ -1386,7 +1386,7 @@ do_spline (int used, int len, double **t, int ydimension, double **y, double **z
   if (used+1 == 1)		/* a single data point in array */
     {
       fprintf (stderr, 
-	       "%s: cannot construct a spline from a single data point\n", 
+	       "%s: a spline cannot be constructed from a single data point\n", 
 	       progname);
       /* don't output anything (i.e. effectively output a null dataset) */
       return;
@@ -1396,7 +1396,7 @@ do_spline (int used, int len, double **t, int ydimension, double **y, double **z
     {
       if (spec_boundary_condition)
 	fprintf (stderr, 
-		 "%s: only 2 data points, so ignoring specified boundary condition\n", 
+		 "%s: the specified boundary condition is ignored, as there are only 2 data points\n", 
 		 progname);
       k = 0.0;
     }
@@ -1415,7 +1415,7 @@ do_spline (int used, int len, double **t, int ydimension, double **y, double **z
 	  y[i][used] = y[i][0];
 	}
       if (print_warning == true)
-	fprintf (stderr, "%s: setting final y value equal to initial to ensure periodicity\n", 
+	fprintf (stderr, "%s: the final y value is set equal to the initial value, to ensure periodicity\n", 
 		 progname); 
 
       /* add pseudo-point at end (to accord with periodicity) */
@@ -1454,12 +1454,12 @@ do_spline (int used, int len, double **t, int ydimension, double **y, double **z
     {
       if ((last_t - first_t) * spacing_t < 0.0)
 	{
-	  fprintf (stderr, "%s: specified spacing is of wrong sign, corrected\n",
+	  fprintf (stderr, "%s: the requested spacing is of the wrong sign, so it has been corrected\n",
 		   progname);
 	  spacing_t = -spacing_t;
 	}
       if (spec_no_of_intervals)
-	fprintf (stderr, "%s: ignoring specified number of intervals\n",
+	fprintf (stderr, "%s: the requested number of intervals is disregarded\n",
 		 progname);
       no_of_intervals = (int)(fabs((last_t - first_t) / spacing_t) + FUZZ);
     }
@@ -1506,12 +1506,12 @@ do_spline (int used, int len, double **t, int ydimension, double **y, double **z
       break;
     case 1:
       fprintf (stderr, 
-	       "%s: one requested point could not be computed (out of data range)\n", 
+	       "%s: one requested point could not be computed (as it was out of the data range)\n", 
 	       progname);
       break;
     default:
       fprintf (stderr, 
-	       "%s: %d requested points could not be computed (out of data range)\n", 
+	       "%s: %d requested points could not be computed (as they were out of the data range)\n", 
 	       progname, range_count);
       break;
     }
@@ -1641,7 +1641,7 @@ do_bessel (FILE *input, int ydimension, int auto_abscissa, double auto_t,
 	      /* silently output a null dataset (i.e., don't output anything) */
 	      break;
 	    case STATE_ONE:
-	      fprintf (stderr, "%s: cannot construct a spline from a single data point\n", 
+	      fprintf (stderr, "%s: a spline cannot be constructed from a single data point\n", 
 		       progname);
 	      /* output a null dataset (i.e., don't output anything) */
 	      break;
@@ -1690,7 +1690,7 @@ do_bessel (FILE *input, int ydimension, int auto_abscissa, double auto_t,
 void
 non_monotonic_error (void)
 {
-  fprintf (stderr, "%s: error: abscissa values not monotonic\n",
+  fprintf (stderr, "%s: error: the abscissa values are not monotonic\n",
 	   progname);
   exit (EXIT_FAILURE);
 }
@@ -1765,7 +1765,7 @@ do_bessel_range (double abscissa0, double abscissa1, double *value0,
 	  if (!success)
 	    {
 	      fprintf (stderr, 
-		       "%s: error: unable to write to standard output\n",
+		       "%s: error: standard output cannot be written to\n",
 		       progname);
 	      exit (EXIT_FAILURE);
 	    }
@@ -1843,7 +1843,7 @@ maybe_emit_oob_warning (void)
 
   if (!warning_written)
     {
-      fprintf (stderr, "%s: approximating one or more out-of-bounds output values\n", progname);
+      fprintf (stderr, "%s: one or more out-of-bounds output values are approximated\n", progname);
       warning_written = true;
     }
 }
