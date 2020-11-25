@@ -70,7 +70,7 @@ _x_fbox (x0, y0, x1, y1)
       /* select fill color as foreground color in GC used for filling */
       _plotter->set_fill_color();
 
-      if (_plotter->double_buffering)
+      if (_plotter->double_buffering != DBL_NONE)
 	XFillRectangle (_plotter->dpy, _plotter->drawable3,
 			_plotter->drawstate->gc_fill, 
 			xdmin, ydmin, width, height);
@@ -90,7 +90,7 @@ _x_fbox (x0, y0, x1, y1)
   /* select pen color as foreground color in GC used for drawing */
   _plotter->set_pen_color();
 
-  if (_plotter->double_buffering)
+  if (_plotter->double_buffering != DBL_NONE)
     XDrawRectangle (_plotter->dpy, _plotter->drawable3,
 		    _plotter->drawstate->gc_fg, 
 		    xdmin, ydmin, width, height);

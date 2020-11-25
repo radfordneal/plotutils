@@ -64,6 +64,15 @@
 /* Define to signal that Motif should be used, if X11 is used */
 #undef USE_MOTIF
 
+/* Define to signal support in -lXext for the DBE X11 protocol extension */
+#undef HAVE_DBE_SUPPORT
+
+/* Define to signal support in -lXext for the MBX X11 protocol extension */
+#undef HAVE_MBX_SUPPORT
+
+/* Define to enable support for the 45 LaserJet fonts in PS and X output */
+#undef USE_LJ_FONTS
+
 /* Define if you have the erf function.  */
 #undef HAVE_ERF
 
@@ -87,6 +96,21 @@
 
 /* Define if you have the strchr function.  */
 #undef HAVE_STRCHR
+
+/* Define if you have the strerror function.  */
+#undef HAVE_STRERROR
+
+/* Define if you have the <X11/extensions/Xdbe.h> header file.  */
+#undef HAVE_X11_EXTENSIONS_XDBE_H
+
+/* Define if you have the <X11/extensions/multibuf.h> header file.  */
+#undef HAVE_X11_EXTENSIONS_MULTIBUF_H
+
+/* Define if you have the <float.h> header file.  */
+#undef HAVE_FLOAT_H
+
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
 
 /* Define if you have the <malloc.h> header file.  */
 #undef HAVE_MALLOC_H

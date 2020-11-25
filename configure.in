@@ -3,8 +3,11 @@ dnl Copyright (C) 1989-98 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(graph/graph.c)
-AM_INIT_AUTOMAKE(plotutils, 2.1.1)
+AM_INIT_AUTOMAKE(plotutils, 2.1.4)
 AM_CONFIG_HEADER(config.h)
+
+dnl Determine extension (e.g. ".exe") on executables, if any.
+AM_EXEEXT
 
 dnl We now use libtool to make and installed a shared library.
 AM_PROG_LIBTOOL
@@ -19,7 +22,7 @@ dnl We now have automake use a replacement for lex if lex is missing.
 AM_PROG_LEX
 
 dnl Checks for header files.
-AC_CHECK_HEADERS(malloc.h string.h strings.h sys/time.h unistd.h values.h)
+AC_CHECK_HEADERS(malloc.h string.h strings.h sys/time.h unistd.h limits.h float.h values.h)
 AC_HEADER_STDC
 
 dnl X-specific headers and libraries (by default, we support X but not Motif)
@@ -31,8 +34,12 @@ AC_SUBST(X_PRE_LIBS)
 AC_SUBST(X_BASIC_LIBS)
 AC_SUBST(X_EXTRA_LIBS)
 AC_ARG_WITH(x, [  --with-x                use the X Window System], if test "$withval" != "no"; then X_BASIC_LIBS="-lXext -lX11"; X_TOOLKIT_LIBS="-lXt"; else X_BASIC_LIBS=""; X_TOOLKIT_LIBS=""; fi, X_BASIC_LIBS="-lXext -lX11"; X_TOOLKIT_LIBS="-lXt")
-AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], if test "$X_TOOLKIT_LIBS" = ""; then X_TOOLKIT_LIBS=""; else X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"; fi; AC_DEFINE(USE_MOTIF), if test "$X_TOOLKIT_LIBS" = ""; then X_TOOLKIT_LIBS=""; else X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS"; fi;)
+AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], if test "$X_TOOLKIT_LIBS" = ""; then X_TOOLKIT_LIBS=""; else X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"; AC_CHECK_LIB(Xp, XpQueryExtension, X_BASIC_LIBS="-lXp $X_BASIC_LIBS", , -lXext -lX11) fi; AC_DEFINE(USE_MOTIF), if test "$X_TOOLKIT_LIBS" = ""; then X_TOOLKIT_LIBS=""; else X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS"; fi;)
 AM_CONDITIONAL(NO_X, test "$no_x" = yes)
+dnl Check in -lXext for double buffering extensions to X11.
+AC_CHECK_LIB(Xext, XdbeQueryExtension, AC_DEFINE(HAVE_DBE_SUPPORT), , -lX11)
+AC_CHECK_LIB(Xext, XmbufQueryExtension, AC_DEFINE(HAVE_MBX_SUPPORT), , -lX11)
+AC_CHECK_HEADERS(X11/extensions/Xdbe.h X11/extensions/multibuf.h)
 
 dnl Typedefs, structures, and compiler characteristics.
 AC_MSG_CHECKING(for void)
@@ -46,12 +53,11 @@ AC_TYPE_PID_T
 dnl Override default "-g -O2", for libplot especially.
 CFLAGS="-O"
 
-dnl Library functions and auxiliary libraries.
+dnl Non-X library functions and auxiliary libraries.
 dnl 
 dnl SGI's have matherr in libmx.a, not libm.a
 AC_CHECK_LIB(mx, matherr, LIBS="$LIBS -lmx", LIBS="$LIBS -lm")
-AC_CHECK_FUNCS(memcpy strchr strcasecmp matherr j0 erf)
-dnl
+AC_CHECK_FUNCS(memcpy strchr strcasecmp strerror matherr j0 erf)
 dnl lgamma() and gamma() both compute the log of the gamma function.  There
 dnl are old systems out there which do not have lgamma (the name was
 dnl introduced after BSD 4.2), but which do have gamma.  Also some systems,
@@ -71,6 +77,7 @@ dnl Sui generis.
 AC_FUNC_ALLOCA
 
 dnl Check whether fflush(NULL) works
+AC_MSG_CHECKING(whether fflushing a null FILE pointer works)
 AC_TRY_RUN([
 #include <stdio.h>
 main()
@@ -86,10 +93,12 @@ main()
     exit (1);
   else
     exit(0); }], 
-AC_DEFINE(HAVE_NULL_FLUSH), AC_DEFINE(DONT_HAVE_NULL_FLUSH), AC_DEFINE(DONT_HAVE_NULL_FLUSH))
+[AC_MSG_RESULT(yes); AC_DEFINE(HAVE_NULL_FLUSH)], [AC_MSG_RESULT(no); AC_DEFINE(DONT_HAVE_NULL_FLUSH)], [AC_MSG_RESULT(no); AC_DEFINE(DONT_HAVE_NULL_FLUSH)])
 
 dnl Necessitated by lack of support in autoconf for libtool.
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/.lo/g'`
 AC_SUBST(LTALLOCA)
 
-AC_OUTPUT(Makefile double/Makefile graph/Makefile info/Makefile lib/Makefile libplot/Makefile plot/Makefile tek2plot/Makefile tek2plot/teksamples/Makefile spline/Makefile ode/Makefile ode-examples/Makefile include/Makefile doc/Makefile fonts/Makefile fonts/bdf/Makefile fonts/pcf/Makefile fonts/pfb/Makefile test/Makefile)
+AC_ARG_ENABLE(lj-fonts, [  --enable-lj-fonts       enable the use of LaserJet fonts in X and PS output], echo enabling support for LaserJet fonts in X and PS output; AC_DEFINE(USE_LJ_FONTS))
+
+AC_OUTPUT(Makefile double/Makefile graph/Makefile info/Makefile lib/Makefile libplot/Makefile plot/Makefile tek2plot/Makefile tek2plot/teksamples/Makefile plotfont/Makefile spline/Makefile ode/Makefile ode-examples/Makefile include/Makefile doc/Makefile fonts/Makefile fonts/bdf/Makefile fonts/pcf/Makefile fonts/pfb/Makefile test/Makefile)

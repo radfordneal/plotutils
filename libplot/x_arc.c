@@ -219,7 +219,7 @@ _draw_elliptic_X_arc (p0, p1, pc)
       /* select fill color as foreground color in GC used for filling */
       _plotter->set_fill_color();
 
-      if (_plotter->double_buffering)
+      if (_plotter->double_buffering != DBL_NONE)
 	XFillArc (_plotter->dpy, _plotter->drawable3, 
 		  _plotter->drawstate->gc_fill, 
 		  xorigin, yorigin, squaresize_x, squaresize_y, 
@@ -242,8 +242,7 @@ _draw_elliptic_X_arc (p0, p1, pc)
   /* select pen color as foreground color in GC used for drawing */
   _plotter->set_pen_color();
 
-  if (_plotter->double_buffering)
-  if (_plotter->drawable1)
+  if (_plotter->double_buffering != DBL_NONE)
     XDrawArc (_plotter->dpy, _plotter->drawable3, 
 	      _plotter->drawstate->gc_fg, 
 	      xorigin, yorigin, squaresize_x, squaresize_y, 

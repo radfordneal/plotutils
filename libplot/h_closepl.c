@@ -1,10 +1,10 @@
 /* This file contains the closepl method, which is a standard part of
    libplot.  It closes a Plotter object.
 
-   For HPGLPlotter objects, we first output the HP-GL or HP-GL/2 header.
-   We then output all plotted objects, which we have saved in the resizable
-   outbuf structure.  We fflush the _plotter->outstream and reset all
-   datastructures. */
+   For HPGL Plotter objects, we first output the HP-GL or HP-GL/2 header.
+   We then output all plotted objects, which we have saved in a resizable
+   outbuf structure for the current page.  We fflush the
+   _plotter->outstream and reset all datastructures. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -81,26 +81,37 @@ _h_closepl ()
 	 allows it.  It should always be opaque to agree with libplot
 	 conventions, but on some HP-GL/2 devices (mostly pen plotters) the
 	 `TR' command does not NOP gracefully. */
-      if (_plotter->hpgl_version == 2 && _plotter->opaque_white)
+      if (_plotter->hpgl_version == 2 && _plotter->opaque_mode)
 	fprintf (_plotter->outstream, "TR0;");
       
       /* output cached HP-GL or HP-GL/2 */
-      if (_plotter->outbuf.len > 0)
-	fputs (_plotter->outbuf.base, _plotter->outstream); 
+      if (_plotter->page->len > 0)
+	fputs (_plotter->page->base, _plotter->outstream); 
       
       /* output HP-GL epilogue */
       if (_plotter->pendown == true)
-	{
-	  fprintf (_plotter->outstream, "PU;");
-	}
+	/* lift pen */
+	fprintf (_plotter->outstream, "PU;");
+      fprintf (_plotter->outstream, "PA0,0;");
       if (_plotter->pen != 0)
+	/* select pen zero, i.e. return pen to carousel */
 	fprintf (_plotter->outstream, "SP0;");
       if (_plotter->hpgl_version >= 1)
-	fprintf (_plotter->outstream, "PG;");
+	/* have a `page advance' command, so use it */
+	fprintf (_plotter->outstream, "PG0;");
+
       fprintf (_plotter->outstream, "\n");
     }
   
-  free (_plotter->outbuf.base);		/* free output buffer */
+  /* set this, so that no drawing on the next page will take place without
+     a pen advance */
+  _plotter->position_is_unknown = true;
+
+  /* Delete the page buffer, since HP-GL Plotters don't need to maintain a
+     linked list of pages.  Each page is output individually, when its
+     closepl() is invoked. */
+  _delete_outbuf (_plotter->page);
+  _plotter->page = NULL;
 
   /* remove the zeroth drawing state too, so we can start afresh */
 
@@ -115,11 +126,6 @@ _h_closepl ()
 
   _plotter->pendown = false;
   _plotter->open = false;	/* flag device as closed */
-
-  /* reset the two capabilities that depend on the version
-     of HP-GL to their initial `maybe' values */
-  _plotter->have_wide_lines = 2;
-  _plotter->have_solid_fill = 2;
 
   if (_plotter->outstream && fflush(_plotter->outstream) < 0)
     {

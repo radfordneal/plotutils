@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -78,7 +79,7 @@ X_PRE_LIBS = @X_PRE_LIBS@
 X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
 
-EXTRA_DIST = README fonts.append u_fonts.c
+EXTRA_DIST = README fonts.append fonts2.append fonts3.append u_fonts.c
 
 SUBDIRS = bdf pcf pfb
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs

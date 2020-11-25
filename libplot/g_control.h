@@ -23,7 +23,8 @@
 
 #define C_RIGHT_RADICAL_SHIFT 254	/* for \rn in PS and PCL fonts */
 #define C_LEFT_RADICAL_SHIFT 255
-#define PS_RADICAL_WIDTH 0.515
+#define PS_RADICAL_WIDTH 0.515	/* shifts to make radical, radicalex line up */
+#define PCL_RADICAL_WIDTH 0.080
 #define RADICALEX 96
 
 /* flags in each unsigned short in a `controlified' text string (mutually

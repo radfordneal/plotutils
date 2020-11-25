@@ -1,10 +1,10 @@
 # You may run this example by doing:
 #
-#    <henon.ode ode | graph -TX -C
+#    ode < henon.ode | graph -T X -C
 # 
 # or alternatively, to get a real-time plot,
 #
-#    <henon.ode ode | graph -TX -C -x -0.6 0.6 -y -0.6 0.6
+#    ode < henon.ode | graph -T X -C -x -0.6 0.6 -y -0.6 0.6
 #
 
 # This example shows a simple center with complicated orbits:

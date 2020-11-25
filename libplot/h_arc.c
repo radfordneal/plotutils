@@ -155,124 +155,120 @@ _h_farc (xc, yc, x0, y0, x1, y1)
   if (!_plotter->drawstate->transform.nonreflection)
     angle = -angle;
 
-  if (_plotter->hpgl_version >= 1)
-    /* have a polygon buffer, so will use it for filling */
-    {
-      /* move pen to p0, sync line attributes, incl. pen width */
-      _plotter->drawstate->pos = p0;
-      _plotter->set_position();
-      _plotter->set_attributes();
+  /* Sync pen color.  This is needed here only if HPGL_VERSION is 1, but we
+     always do it here so that HP-GL/2 output that draws an arc, if sent
+     erroneously to a generic HP-GL device, will yield an arc in the
+     correct color, so long as the color isn't white. */
+  _plotter->set_pen_color ();
 
+  /* set_pen_color() sets the advisory bad_pen flag if white pen (pen #0)
+     would have been selected, and we can't use pen #0 to draw with.  Such
+     a situation isn't fatal if HPGL_VERSION is "1.5" or "2", since we may
+     be filling the arc with a nonwhite color, as well as using a white pen
+     to draw it.  But if HPGL_VERSION is "1", we don't fill arcs, so we
+     might as well punt right now. */
+  if (_plotter->bad_pen && _plotter->hpgl_version == 1)
+    {
+      _plotter->drawstate->pos = p1; /* move to p1 (a libplot convention) */
+      return 0;
+    }
+
+  /* move pen to p0, sync attributes, incl. pen width if possible */
+  _plotter->drawstate->pos = p0;
+  _plotter->set_position();
+  _plotter->set_attributes();
+
+  if (_plotter->hpgl_version >= 1)
+    /* have a polygon buffer, and will use it */
+    {
       /* enter polygon mode */
-      strcpy (_plotter->outbuf.current, "PM0;");
-      _update_buffer (&_plotter->outbuf);
+      strcpy (_plotter->page->point, "PM0;");
+      _update_buffer (_plotter->page);
       /* ensure that pen is down for drawing */
       if (_plotter->pendown == false)
 	{
-	  strcpy (_plotter->outbuf.current, "PD;");
-	  _update_buffer (&_plotter->outbuf);
+	  strcpy (_plotter->page->point, "PD;");
+	  _update_buffer (_plotter->page);
 	  _plotter->pendown = true;
 	}
+
+      /* draw arc, specify integer sweep angle if possible */
       degrees = 180.0 * angle / M_PI;
       int_degrees = IROUND (degrees);
-      if (_plotter->hpgl_version == 1)
-	/* use default chord angle */
-	{
-	  if (degrees == (double)int_degrees)
-	    /* draw arc, specify integer sweep angle if possible */
-	    sprintf (_plotter->outbuf.current, "AA%d,%d,%d;",
-		     IROUND(XD(pc.x,pc.y)), IROUND(YD(pc.x,pc.y)),
-		     int_degrees);
-	  else
-	    sprintf (_plotter->outbuf.current, "AA%d,%d,%.3f;",
-		     IROUND(XD(pc.x,pc.y)), IROUND(YD(pc.x,pc.y)),
-		     degrees);
-	}
+      if (degrees == (double)int_degrees)
+	sprintf (_plotter->page->point, "AA%d,%d,%d;",
+		 IROUND(XD(pc.x,pc.y)), IROUND(YD(pc.x,pc.y)),
+		 int_degrees);
       else
-	/* HP-GL/2 device, use a reduced chord angle */
-	{
-	  if (degrees == (double)int_degrees)
-	    /* draw arc, specify integer sweep angle if possible */
-	    sprintf (_plotter->outbuf.current, "AA%d,%d,%d,2;",
-		     IROUND(XD(pc.x,pc.y)), IROUND(YD(pc.x,pc.y)),
-		     int_degrees);
-	  else
-	    sprintf (_plotter->outbuf.current, "AA%d,%d,%.3f,2;",
-		     IROUND(XD(pc.x,pc.y)), IROUND(YD(pc.x,pc.y)),
-		     degrees);
-	}
-      _update_buffer (&_plotter->outbuf);
+	sprintf (_plotter->page->point, "AA%d,%d,%.3f;",
+		 IROUND(XD(pc.x,pc.y)), IROUND(YD(pc.x,pc.y)),
+		 degrees);
+      _update_buffer (_plotter->page);
       
       /* lift pen and exit polygon mode */
-      strcpy (_plotter->outbuf.current, "PU;");
-      _update_buffer (&_plotter->outbuf);
+      strcpy (_plotter->page->point, "PU;");
+      _update_buffer (_plotter->page);
       _plotter->pendown = false;
-      strcpy (_plotter->outbuf.current, "PM2;");
-      _update_buffer (&_plotter->outbuf);
+      strcpy (_plotter->page->point, "PM2;");
+      _update_buffer (_plotter->page);
 
-      /* select appropriate pen and fill the arc */
       if (_plotter->drawstate->fill_level)
+	/* ideally, arc should be filled */
 	{
-	  _plotter->set_fill_color();
-	  strcpy (_plotter->outbuf.current, "FP;");
-	  _update_buffer (&_plotter->outbuf);
+	  /* Sync fill color.  This may set the _plotter->bad_pen flag (if
+	     optimal pen is #0 and we're not allowed to use pen #0 to draw
+	     with).  So we test _plotter->bad_pen before using the pen to
+	     fill with. */
+	  _plotter->set_fill_color ();
+	  if (_plotter->bad_pen == false)
+	    /* fill the arc */
+	    {
+	      strcpy (_plotter->page->point, "FP;");
+	      _update_buffer (_plotter->page);
+	    }
 	}
 
-      /* select appropriate pen and edge the arc */
-      _plotter->set_pen_color();
-      strcpy (_plotter->outbuf.current, "EP;");
-      _update_buffer (&_plotter->outbuf);
+      /* Sync pen color.  This may set the _plotter->bad_pen flag (if
+	 optimal pen is #0 and we're not allowed to use pen #0 to draw
+	 with).  So we test _plotter->bad_pen before using the pen. */
+      _plotter->set_pen_color ();
+      if (_plotter->bad_pen == false)
+	/* select appropriate pen for edging, and edge the arc */
+	{
+	  _plotter->set_pen_color ();
+	  strcpy (_plotter->page->point, "EP;");
+	  _update_buffer (_plotter->page);
+	}
     }
   else
-    /* no polygon buffer */
+    /* generic HP-GL, don't have a polygon buffer, won't do filling */
     {
-      /* move pen to p0, sync attributes */
-      _plotter->drawstate->pos = p0;
-      _plotter->set_position();
-      _plotter->set_attributes();
-
-      /* select appropriate pen */
-      _plotter->set_pen_color();
-      
       /* ensure that pen is down for drawing */
       if (_plotter->pendown == false)
 	{
-	  strcpy (_plotter->outbuf.current, "PD;");
-	  _update_buffer (&_plotter->outbuf);
+	  strcpy (_plotter->page->point, "PD;");
+	  _update_buffer (_plotter->page);
 	  _plotter->pendown = true;
 	}
       degrees = 180.0 * angle / M_PI;
       int_degrees = IROUND (degrees);
       /* note: generic HP-GL can only handle integer sweep angles */
-      sprintf (_plotter->outbuf.current, "AA%d,%d,%d;",
+      sprintf (_plotter->page->point, "AA%d,%d,%d;",
 	       IROUND(XD(pc.x,pc.y)), IROUND(YD(pc.x,pc.y)),
 	       int_degrees);
-      _update_buffer (&_plotter->outbuf);
+      _update_buffer (_plotter->page);
     }
   
-  /* update our knowledge of pen position */
-  if (_plotter->hpgl_version == 0)
-    /* due to integer quantization of sweep angle in generic HP-GL, pen may
-       be slightly offset afterwards from where it should be */
-    {
-      double quantized_angle, quantized_angle1;
-      double quantized_x1, quantized_y1;
-      
-      quantized_angle = M_PI * int_degrees / 180.0;
-      quantized_angle1 = angle0 + quantized_angle;
-      quantized_x1 = pc.x + radius * cos (quantized_angle1);
-      quantized_y1 = pc.y + radius * sin (quantized_angle1);      
+  /* We know where the pen now is.  If hpgl_version>=1 (i.e. HP7550A or
+     HP-GL/2), we used a polygon buffer, so _plotter->pos is now
+     (IROUND(XD(x0,y0)), IROUND(YD(x0,y0))).  In generic HP-GL, pen would
+     be at the endpoint (IROUND(XD(x1,y1)), IROUND(YD(x1,y1))) except it
+     may be slightly offset due to quantization of sweep angle.
+     Unfortunately we can't simply update _plotter->pos, because we want
+     the generated HP-GL[/2] code to work properly on both HP-GL and
+     HP-GL/2 devices.  So we punt. */
+  _plotter->position_is_unknown = true;
 
-      _plotter->pos.x = IROUND(XD(quantized_x1,quantized_y1));
-      _plotter->pos.y = IROUND(YD(quantized_x1,quantized_y1));
-    }
-  else
-    /* use of polygon buffer implies pen is now at initial point */
-    {
-      _plotter->pos.x = IROUND(XD(x0,y0));
-      _plotter->pos.y = IROUND(YD(x0,y0));
-    }
-  
   _plotter->drawstate->pos = p1;	/* move to p1 (a libplot convention) */
 
   return 0;

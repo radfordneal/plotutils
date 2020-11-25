@@ -170,7 +170,7 @@ _f_farc (xc, yc, x0, y0, x1, y1)
       p1 = ptmp;
     }
 
-  sprintf(_plotter->outbuf.current,
+  sprintf(_plotter->page->point,
 	  "#ARC\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %.3f %.3f %d %d %d %d %d %d\n",
 	  5,			/* arc object */
 	  1,			/* open-ended arc subtype */
@@ -196,7 +196,7 @@ _f_farc (xc, yc, x0, y0, x1, y1)
 	  IROUND(YD(pb.x, pb.y)),
 	  IROUND(XD(p1.x, p1.y)), /* last point user entered (p1) */
 	  IROUND(YD(p1.x, p1.y)));
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
 
   _plotter->drawstate->pos = p1; /* move to p1 (a libplot convention) */
 

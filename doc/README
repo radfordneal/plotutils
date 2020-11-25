@@ -16,8 +16,8 @@ are based.
 		  is represented as an 8-bit quantity, i.e., an integer
 		  in the range 0..255.
 
-The following files are relevant to the 16 Hershey fonts built into GNU
-libplot.  
+The following files are relevant to the 21 Hershey fonts built into GNU
+libplot, and accessible to the plotting utilities.
 
     ./demo-page: A sample page, in portable GNU metafile format, 
 		 illustrating many of the Hershey fonts.  The page is 
@@ -33,20 +33,20 @@ libplot.
 		 version of the page that can be edited with the `xfig'
 		 drawing editor, etc.
 	
-    ./hershey-demo.c:  The program that was used to generate `./demo-page'.
+    ./h-demo.c:  The program that was used to generate `./demo-page'.
 		 You may compile this program and link it with GNU libplot 
 		 (the instructions are at the head of the file).  It will
 		 send the sample page to standard output, in portable 
 		 GNU metafile format.  This program illustrates how to 
 		 write a C program that invokes GNU libplot functions.
 
-    ./hershey-fonts: Excerpts from Allen Hershey's `Calligraphy for
-		 Computers', explaining the origin of the Hershey fonts.
+    ./h-fonts: Excerpts from Allen Hershey's `Calligraphy for Computers',
+	explaining the origin of the Hershey fonts.
 
 When specifying to the plotting utilities that a Hershey font should be
 used, you would usually specify it by name, e.g., `graph --font-name
-HersheyGothic-English'.  However, the Hershey fonts are assembled from a
-large collection of vector glyphs (`Hershey glyphs'), including many
+HersheyGothicEnglish'.  However, the Hershey fonts are assembled from a
+large collection of glyphs (`Hershey glyphs'), including many
 symbols in addition to occidental and Japanese characters.  If the current
 font is a Hershey font, you may access any glyph by its number, even if it
 is not a character in the font. For example, the command
@@ -56,23 +56,22 @@ is not a character in the font. For example, the command
 would label the graph being drawn with a title line consisting of
 two fleurs-de-lys.  That is because the fleur-de-lys is Hershey glyph #745.
 
-    ./hershey-number: A history of the various public distributions of the 
-	Hershey glyphs, and their schemes for indexing glyphs.
+    ./h-glyphs: A breakdown of the `occidental' Hershey glyphs,
+        by number.  Includes an extensive comparison with earlier
+	(pre-GNU) distributions of the Hershey glyphs, and an explanation
+	of how the glyph array was assembled.
     
     ./hershey.bib: A bibliography, in BibTeX format, of publications
         dealing with the Hershey glyphs and with Allen Hershey's system for
         scientific typography, which was designed to use them.  Most cited
         items are technical reports that are available from the
-        U.S. National Technical Information Service (+1 703 487 4650);
-        stock numbers are given.
-    
-    ./hershey.doc: A breakdown of the `occidental' Hershey glyphs,
-        by number.
+        U.S. National Technical Information Service (+1 703 487 4650).
+        Stock numbers are given.
     
     ./kana.doc: The encodings used for the Hershey Hiragana and Katakana
         (syllabic Japanese characters).  These are part of the HersheyEUC
-	font, but may be accessed by number.
+	font, but may also be accessed by number.
     
     ./kanji.doc: The encoding of the 603 available Japanese Kanji
         (ideographic characters), and their meaning.  These are part of the
-	HersheyEUC font, but may be accessed by number.
+	HersheyEUC font, but may also be accessed by number.

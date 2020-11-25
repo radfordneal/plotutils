@@ -11,17 +11,25 @@
 #include "plot.h"
 #include "extern.h"
 
-/* 16-bit brush patterns for idraw (1 = on, 0 = off): */
-const long _ps_line_type_bit_vector[] = 
+/* 16-bit brush patterns for idraw (1 = on, 0 = off), indexed by line type */
+const long _idraw_brush_pattern[NUM_LINE_TYPES] = 
 /* solid, dotted, dotdashed, shortdashed, longdashed */
 { 0xffff, 0x8888, 0xc3f0, 0xf0f0, 0xffc0 };
 
-/* corresponding dash arrays for PS (cylically used, on/off/on/off... */
-const char * const _ps_line_type_setdash[] =
+/* Corresponding dash arrays for PS (cylically used, on/off/on/off...).
+   PS_DASH_ARRAY_LEN is defined in extern.h as 4; do not change it without
+   checking the code below (it depends on this value). */
+const char _ps_dash_array[NUM_LINE_TYPES][PS_DASH_ARRAY_LEN] =
 /* these on/off bit patterns are those used by our X11 driver, and also by
    the xterm Tektronix emulator, except that the emulator seems incorrectly
    to have on and off interchanged */
-{ "", "1 3", "1 3 4 3", "4 4", "7 4" };
+{
+  {0, 0, 0, 0},			/* solid (dummy) */
+  {1, 3, 1, 3},			/* dotted */
+  {1, 3, 4, 3},			/* dotdashed */
+  {4, 4, 4, 4},			/* shortdashed */
+  {7, 4, 7, 4}			/* longdashed */
+};
 
 /* PS join styles, indexed by internal join type number (miter/rd./bevel) */
 const int _ps_join_style[] =
@@ -38,9 +46,10 @@ _p_endpath (void)
 _p_endpath ()
 #endif
 {
-  int i, capstyle, joinstyle, numpoints;
+  int i, numpoints;
   bool closed, singular_map;
   double linewidth, invnorm = 0.0, granularity = 1.0;
+  double dashbuf[PS_DASH_ARRAY_LEN], scale;
 
   if (!_plotter->open)
     {
@@ -87,12 +96,14 @@ _p_endpath ()
   
   /* Special case: disconnected points, no real polyline.  We switch to a
      temporary datapoints buffer for this.  This is a hack, needed because
-     (in this library) point() calls endpath(), which would mess the real
-     databuffer up, if we didn't do something like this. */
+     the fcircle() method calls endpath(), which would otherwise mess the
+     real databuffer up. */
+
   if (!_plotter->drawstate->points_are_connected)
     {
       Point saved_pos;
       Point *saved_datapoints = _plotter->drawstate->datapoints;
+      double radius = 0.5 * _plotter->drawstate->line_width;
       int saved_PointsInLine = _plotter->drawstate->PointsInLine;
       
       saved_pos = _plotter->drawstate->pos;
@@ -100,15 +111,25 @@ _p_endpath ()
       _plotter->drawstate->datapoints = NULL;
       _plotter->drawstate->datapoints_len = 0;
       _plotter->drawstate->PointsInLine = 0;
-      _plotter->drawstate->points_are_connected = true; /* for duration */
 
+      _plotter->savestate();
+      _plotter->fillcolor (_plotter->drawstate->fgcolor.red, 
+			   _plotter->drawstate->fgcolor.green, 
+			   _plotter->drawstate->fgcolor.blue);
+      _plotter->filltype (1);
+      _plotter->linewidth (0);
+
+      _plotter->drawstate->points_are_connected = true;
       for (i = 0; i < saved_PointsInLine - (closed ? 1 : 0); i++)
-	_plotter->fpoint (saved_datapoints[i].x,
-			  saved_datapoints[i].y);
-
-      free (saved_datapoints);
+	/* draw each point as a filled circle, diameter = line width */
+	_plotter->fcircle (saved_datapoints[i].x, saved_datapoints[i].y, 
+			   radius);
       _plotter->drawstate->points_are_connected = false;
-      _plotter->drawstate->pos = saved_pos; /* restore graphics cursor */
+
+      _plotter->restorestate();
+      free (saved_datapoints);
+      if (closed)
+	_plotter->drawstate->pos = saved_pos; /* restore graphics cursor */
       return 0;
     }
   
@@ -138,10 +159,12 @@ _p_endpath ()
 
   /* includes idraw instruction: start of MLine or Poly */
   if (closed)
-    strcpy (_plotter->outbuf.current, "Begin %I Poly\n");
+    strcpy (_plotter->page->point, "\
+Begin %I Poly\n");
   else
-    strcpy (_plotter->outbuf.current, "Begin %I MLine\n");
-  _update_buffer (&_plotter->outbuf);
+    strcpy (_plotter->page->point, "\
+Begin %I MLine\n");
+  _update_buffer (_plotter->page);
 
   /* redefine `originalCTM' matrix, which is the CTM applied when the
      polyline is stroked (as opposed to drawn).  We define it to be the
@@ -158,97 +181,127 @@ _p_endpath ()
       else
 	linewidth_adjust = 1.0;
 
-      sprintf (_plotter->outbuf.current, "[");
-      _update_buffer (&_plotter->outbuf);
+      strcpy (_plotter->page->point, "\
+[");
+      _update_buffer (_plotter->page);
 
       for (i = 0; i < 4; i++)
 	{
-	  sprintf (_plotter->outbuf.current, "%.7g ", 
+	  sprintf (_plotter->page->point, "%.7g ", 
 		   linewidth_adjust * invnorm * _plotter->drawstate->transform.m[i]);
-	  _update_buffer (&_plotter->outbuf);
+	  _update_buffer (_plotter->page);
 	}
-      _update_buffer (&_plotter->outbuf);
-      sprintf (_plotter->outbuf.current, 
-	       "0 0 ] trueoriginalCTM originalCTM\n concatmatrix pop\n");
-      _update_buffer (&_plotter->outbuf);
+      _update_buffer (_plotter->page);
+      strcpy (_plotter->page->point, "\
+0 0 ] trueoriginalCTM originalCTM\n\
+concatmatrix pop\n");
+      _update_buffer (_plotter->page);
     }
 
   /* specify cap style and join style */
-  sprintf (_plotter->outbuf.current, "%d setlinecap %d setlinejoin\n",
+  sprintf (_plotter->page->point, "\
+%d setlinecap %d setlinejoin\n",
 	   _ps_cap_style[_plotter->drawstate->cap_type], 
 	   _ps_join_style[_plotter->drawstate->join_type]);
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
 
-  /* idraw instruction: line type bit vector */
-  sprintf (_plotter->outbuf.current, "%%I b %ld\n", 
-	   _ps_line_type_bit_vector[_plotter->drawstate->line_type]);
-  _update_buffer (&_plotter->outbuf);
+  /* idraw instruction: brush type (spec'd as bit vector) */
+  sprintf (_plotter->page->point, "\
+%%I b %ld\n", 
+	   _idraw_brush_pattern[_plotter->drawstate->line_type]);
+  _update_buffer (_plotter->page);
+
+  /* compute PS dash array for this line type (scale by line width
+     if larger than 1 device unit, i.e., 1 point) */
+  scale = _plotter->drawstate->device_line_width;
+  if (scale < 1.0)
+    scale = 1.0;
+  for (i = 0; i < PS_DASH_ARRAY_LEN; i++)
+    dashbuf[i] = scale * _ps_dash_array[_plotter->drawstate->line_type][i];
 
   /* PS instruction: SetB (i.e. setbrush), with args
      LineWidth, LeftArrow, RightArrow, DashArray, DashOffset. */
   /* Note LineWidth must be an integer for idraw compatibility. */
-  sprintf (_plotter->outbuf.current, "%d 0 0 [ %s ] 0 SetB\n", 
-	   _plotter->drawstate->quantized_device_line_width,
-	   _ps_line_type_setdash[_plotter->drawstate->line_type]);
-  _update_buffer (&_plotter->outbuf);
+  if (_plotter->drawstate->line_type == L_SOLID)
+    sprintf (_plotter->page->point, "\
+%d 0 0 [ ] 0 SetB\n", 
+  	     _plotter->drawstate->quantized_device_line_width);
+  else
+    /* emit dash array.  THIS ASSUMES PS_DASH_ARRAY_LEN = 4. */
+    sprintf (_plotter->page->point, "\
+%d 0 0 [ %.3g %.3g %.3g %.3g ] 0 SetB\n", 
+  	     _plotter->drawstate->quantized_device_line_width,
+             dashbuf[0], dashbuf[1], dashbuf[2], dashbuf[3]);
+  _update_buffer (_plotter->page);
   
   /* idraw instruction: set foreground color */
   _plotter->set_pen_color();  /* invoked lazily, i.e. when needed */
-  sprintf (_plotter->outbuf.current, "%%I cfg %s\n%g %g %g SetCFg\n",
+  sprintf (_plotter->page->point, "\
+%%I cfg %s\n\
+%g %g %g SetCFg\n",
 	   _idraw_stdcolornames[_plotter->drawstate->idraw_fgcolor],
 	   _plotter->drawstate->ps_fgcolor_red, 
 	   _plotter->drawstate->ps_fgcolor_green, 
 	   _plotter->drawstate->ps_fgcolor_blue);
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
   
   /* idraw instruction: set background color */
   _plotter->set_fill_color();  /* invoked lazily, i.e. when needed */
-  sprintf (_plotter->outbuf.current, "%%I cbg %s\n%g %g %g SetCBg\n",
+  sprintf (_plotter->page->point, "\
+%%I cbg %s\n\
+%g %g %g SetCBg\n",
 	   _idraw_stdcolornames[_plotter->drawstate->idraw_bgcolor],
 	   _plotter->drawstate->ps_fillcolor_red, 
 	   _plotter->drawstate->ps_fillcolor_green, 
 	   _plotter->drawstate->ps_fillcolor_blue);
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
   
   /* includes idraw instruction: set fill pattern */
   if (_plotter->drawstate->fill_level == 0)	/* transparent */
-    sprintf (_plotter->outbuf.current, "%%I p\nnone SetP\n");
+    sprintf (_plotter->page->point, "\
+%%I p\n\
+none SetP\n");
   else	/* filled, i.e. shaded, in the sense of idraw */
-    sprintf (_plotter->outbuf.current, "%%I p\n%f SetP\n", 
+    sprintf (_plotter->page->point, "\
+%%I p\n\
+%f SetP\n", 
 	     _idraw_stdshadings[_plotter->drawstate->idraw_shading]);
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
   
   /* includes idraw instruction: transformation matrix (all 6 elements) */
-  sprintf (_plotter->outbuf.current, "%%I t\n[");
-  _update_buffer (&_plotter->outbuf);
+  strcpy (_plotter->page->point, "\
+%I t\n\
+["); 
+  _update_buffer (_plotter->page);
   for (i = 0; i < 6; i++)
     {
       if ((i==0) || (i==1) || (i==2) || (i==3))
-	sprintf (_plotter->outbuf.current, "%.7g ", _plotter->drawstate->transform.m[i] / granularity);
+	sprintf (_plotter->page->point, "%.7g ", _plotter->drawstate->transform.m[i] / granularity);
       else
-	sprintf (_plotter->outbuf.current, "%.7g ", _plotter->drawstate->transform.m[i]);
-      _update_buffer (&_plotter->outbuf);
+	sprintf (_plotter->page->point, "%.7g ", _plotter->drawstate->transform.m[i]);
+      _update_buffer (_plotter->page);
     }
-  sprintf (_plotter->outbuf.current, "] concat\n");
-  _update_buffer (&_plotter->outbuf);
+  strcpy (_plotter->page->point, "\
+] concat\n");
+  _update_buffer (_plotter->page);
   
   /* idraw instruction: number of points in line */
-  sprintf (_plotter->outbuf.current, "%%I %d\n", 
+  sprintf (_plotter->page->point, "\
+%%I %d\n", 
 	   _plotter->drawstate->PointsInLine - (closed ? 1 : 0));
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
 
   linewidth = _plotter->drawstate->line_width;
-  capstyle = _ps_cap_style[_plotter->drawstate->cap_type];
-  joinstyle = _ps_join_style[_plotter->drawstate->join_type];
   /* number of points to be output */
   numpoints = _plotter->drawstate->PointsInLine - (closed ? 1 : 0);
   for (i=0; i < numpoints; i++)
     {
       /* output the data point */
-      sprintf (_plotter->outbuf.current, "%d %d\n",
+      sprintf (_plotter->page->point, "\
+%d %d\n",
 	       IROUND(granularity * (_plotter->drawstate->datapoints[i]).x),
 	       IROUND(granularity * (_plotter->drawstate->datapoints[i]).y));
-      _update_buffer (&_plotter->outbuf);
+      _update_buffer (_plotter->page);
       
       /* update bounding box */
       if (!closed && ((i == 0) || (i == numpoints - 1)))
@@ -257,11 +310,12 @@ _p_endpath ()
 	  int otherp;
 	  
 	  otherp = (i == 0 ? 1 : numpoints - 2);
-	  _set_line_end_bbox (_plotter->drawstate->datapoints[i].x,
+	  _set_line_end_bbox (_plotter->page,
+			      _plotter->drawstate->datapoints[i].x,
 			      _plotter->drawstate->datapoints[i].y,
 			      _plotter->drawstate->datapoints[otherp].x,
 			      _plotter->drawstate->datapoints[otherp].y,
-			      linewidth, capstyle);
+			      linewidth, _plotter->drawstate->cap_type);
 	}
       else
 	/* a join rather than an end */
@@ -280,21 +334,26 @@ _p_endpath ()
 	      b = i;
 	      c = i + 1;
 	    }
-	  _set_line_join_bbox(_plotter->drawstate->datapoints[a].x,
+	  _set_line_join_bbox(_plotter->page,
+			      _plotter->drawstate->datapoints[a].x,
 			      _plotter->drawstate->datapoints[a].y,
 			      _plotter->drawstate->datapoints[b].x,
 			      _plotter->drawstate->datapoints[b].y,
 			      _plotter->drawstate->datapoints[c].x,
 			      _plotter->drawstate->datapoints[c].y,
-			      linewidth, joinstyle);
+			      linewidth, _plotter->drawstate->join_type);
 	}
     }
   
   if (closed)
-    sprintf (_plotter->outbuf.current, "%d Poly\nEnd\n\n", numpoints);
+    sprintf (_plotter->page->point, "\
+%d Poly\n\
+End\n\n", numpoints);
   else
-    sprintf (_plotter->outbuf.current, "%d MLine\nEnd\n\n", numpoints);
-  _update_buffer (&_plotter->outbuf);
+    sprintf (_plotter->page->point, "\
+%d MLine\n\
+End\n\n", numpoints);
+  _update_buffer (_plotter->page);
   
   /* reset polyline storage buffer */
   free (_plotter->drawstate->datapoints);

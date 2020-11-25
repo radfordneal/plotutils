@@ -32,7 +32,7 @@ _f_retrieve_font()
   _g_retrieve_font();
 
   if (_plotter->drawstate->font_type != F_POSTSCRIPT)
-    /* no additional quantization */
+    /* must be Hershey font, no additional quantization */
     return;
   
   if (!_plotter->drawstate->transform.uniform 
@@ -41,20 +41,27 @@ _f_retrieve_font()
     {
       char *user_specified_name;
 
-      if (!_plotter->font_warning_issued)
-	{
-	  /* Warning commented out; it confused too many end-users. */
-	  /*
-	  _plotter->warning ("xfig does not support anamorphically transformed PS fonts");
-	  _plotter->warning ("will use only Hershey vector fonts");
-	  */
-	  _plotter->font_warning_issued = true;
-	}
       user_specified_name = _plotter->drawstate->font_name;
       _plotter->drawstate->font_name = FIG_DEFAULT_HERSHEY_FONT;
-      _f_retrieve_font();
+      _f_retrieve_font();	/* recursive call */
       _plotter->drawstate->font_name = user_specified_name;
       return;
+
+#if 0
+      /* squawk */
+      if (!_plotter->font_warning_issued)
+	{
+	  char *buf;
+	  
+	  buf = (char *)_plot_xmalloc (strlen (_plotter->drawstate->font_name) + strlen (FIG_DEFAULT_HERSHEY_FONT) + 100);
+	  sprintf (buf, "cannot retrieve font \"%s\", using default \"%s\"", 
+		   _plotter->drawstate->font_name, 
+		   FIG_DEFAULT_HERSHEY_FONT);
+	  _plotter->warning (buf);
+	  free (buf);
+	  _plotter->font_warning_issued = true;
+	}
+#endif
     }
 
   /* text rotation in radians */

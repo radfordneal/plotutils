@@ -2,10 +2,12 @@
 
 ../ode/ode <$SRCDIR/../ode-examples/dynamo.ode >ode.out
 
-if (cmp -s $SRCDIR/ode.xout ode.out)
+# work around line end problems in installations with DJGPP under DOS
+tr -d '\015' < ode.out > ode.dos
+
+if cmp -s $SRCDIR/ode.xout ode.dos
 	then retval=0;
 	else retval=1;
 	fi;
 
-rm -f *.out
 exit $retval

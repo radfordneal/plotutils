@@ -44,12 +44,12 @@ array_bounds (p, length, transpose_axes,
   if (spec_min_x)
     orig_min_x = *min_x;
   else
-    local_min_x = MAXDOUBLE;
+    local_min_x = DBL_MAX;
 
   if (spec_max_x)
     orig_max_x = *max_x;
   else
-    local_max_x = -(MAXDOUBLE);
+    local_max_x = -(DBL_MAX);
   
   /* special case: user specified both limits, but min > max (reversed axis) */
   if (spec_min_x && spec_max_x && orig_min_x > orig_max_x)
@@ -64,12 +64,12 @@ array_bounds (p, length, transpose_axes,
   if (spec_min_y)
     orig_min_y = *min_y;
   else
-    local_min_y = MAXDOUBLE;
+    local_min_y = DBL_MAX;
 
   if (spec_max_y)
     orig_max_y = *max_y;      
   else
-    local_max_y = -(MAXDOUBLE);
+    local_max_y = -(DBL_MAX);
     
   /* special case: user specified both limits, but min > max (reversed axis) */
   if (spec_min_y && spec_max_y && orig_min_y > orig_max_y)

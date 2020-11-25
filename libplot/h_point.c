@@ -33,7 +33,9 @@ _h_fpoint (x, y)
   _plotter->drawstate->pos.x = x;
   _plotter->drawstate->pos.y = y;
 
-  /* select appropriate pen */
+  /* Sync pen color.  This may set the _plotter->bad_pen flag (if optimal
+     pen is #0 and we're not allowed to use pen #0 to draw with).  So we
+     test _plotter->bad_pen before drawing the point (see below). */
   _plotter->set_pen_color ();
 
   /* temporarily store pen width and line attributes */
@@ -48,11 +50,11 @@ _h_fpoint (x, y)
   _plotter->set_position();
   _plotter->set_attributes();
 
-  if (_plotter->pendown == false)
+  if (_plotter->pendown == false && _plotter->bad_pen == false)
     /* if pen were down, point would be invisible */
     {
-      strcpy (_plotter->outbuf.current, "PD;");
-      _update_buffer (&_plotter->outbuf);
+      strcpy (_plotter->page->point, "PD;");
+      _update_buffer (_plotter->page);
       _plotter->pendown = true;
     }
 

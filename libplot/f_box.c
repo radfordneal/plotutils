@@ -50,7 +50,7 @@ _f_fbox (x0, y0, x1, y1)
       (_plotter->fig_drawing_depth)--;
   _plotter->fig_last_priority = POLYLINE_PRIORITY;
 
-  sprintf(_plotter->outbuf.current,
+  sprintf(_plotter->page->point,
 	  "#POLYLINE [BOX]\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %d %d\n",
 	  2,			/* polyline object */
 	  P_BOX,		/* polyline subtype */
@@ -71,23 +71,23 @@ _f_fbox (x0, y0, x1, y1)
 	  0,			/* backward arrow */
 	  5			/* number of points in line */
 	  );
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
 
   xd0 = IROUND(XD(x0, y0));
   yd0 = IROUND(YD(x0, y0));  
   xd1 = IROUND(XD(x1, y1));
   yd1 = IROUND(YD(x1, y1));  
 
-  sprintf (_plotter->outbuf.current, "\t%d %d ", xd0, yd0);
-  _update_buffer (&_plotter->outbuf);
-  sprintf (_plotter->outbuf.current, "%d %d ", xd0, yd1);
-  _update_buffer (&_plotter->outbuf);
-  sprintf (_plotter->outbuf.current, "%d %d ", xd1, yd1);
-  _update_buffer (&_plotter->outbuf);
-  sprintf (_plotter->outbuf.current, "%d %d ", xd1, yd0);
-  _update_buffer (&_plotter->outbuf);
-  sprintf (_plotter->outbuf.current, "%d %d\n", xd0, yd0);
-  _update_buffer (&_plotter->outbuf);
+  sprintf (_plotter->page->point, "\t%d %d ", xd0, yd0);
+  _update_buffer (_plotter->page);
+  sprintf (_plotter->page->point, "%d %d ", xd0, yd1);
+  _update_buffer (_plotter->page);
+  sprintf (_plotter->page->point, "%d %d ", xd1, yd1);
+  _update_buffer (_plotter->page);
+  sprintf (_plotter->page->point, "%d %d ", xd1, yd0);
+  _update_buffer (_plotter->page);
+  sprintf (_plotter->page->point, "%d %d\n", xd0, yd0);
+  _update_buffer (_plotter->page);
 
   /* move to center (libplot convention) */
   xnew = 0.5 * (x0 + x1);

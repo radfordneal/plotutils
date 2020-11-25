@@ -15,7 +15,7 @@ _g_warning (msg)
 #endif
 {
   if (libplot_warning_handler != NULL)
-    (*libplot_warning_handler)((char *)msg);
+    (*libplot_warning_handler)(msg);
   else if (_plotter->errstream != NULL)
     fprintf (_plotter->errstream, "libplot: %s\n", msg);
 }
@@ -29,7 +29,7 @@ _g_error (msg)
 #endif
 {
   if (libplot_error_handler != NULL)
-    (*libplot_error_handler)((char *)msg);
+    (*libplot_error_handler)(msg);
   else if (_plotter->errstream != NULL)
     fprintf (_plotter->errstream, "libplot: error: %s\n", msg);
 

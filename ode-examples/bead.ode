@@ -3,11 +3,11 @@
 #
 # You may run this example by doing:
 #
-#    <bead.ode ode | graph -TX -C
+#    ode < bead.ode | graph -T X -C
 # 
 # or alternatively, to get a real-time plot,
 #
-#    <bead.ode ode | graph -TX -C -x 0 5 -y 0 2.5
+#    ode < bead.ode | graph -T X -C -x 0 5 -y 0 2.5
 #
 
 a = 1  # radius of circular wire

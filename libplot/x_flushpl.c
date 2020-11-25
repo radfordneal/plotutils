@@ -19,7 +19,7 @@ _x_flushpl ()
       return -1;
     }
 
-  if (_plotter->type == PL_X11)
+  /* if (_plotter->type == PL_X11) */
     {
       XSync (_plotter->dpy, (Bool)false);
       _handle_x_events();

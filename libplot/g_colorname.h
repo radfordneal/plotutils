@@ -1,6 +1,6 @@
 /* This file contains the color names recognized by libplot, and their
    24-bit interpretation (internally, we extend to 48 bits by doubling each
-   byte).
+   byte).  It is #included by g_colorname.c.
 
    The table below is taken largely from the `rgb.txt' file distributed
    with X11R6 (version 10.41, dated 20 Feb 94).  However, it was discovered

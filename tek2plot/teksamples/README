@@ -6,12 +6,12 @@ The file ocpred.tek contains a chart showing an astronomical event of 1986,
 prepared in 1985 at the Harvard-Smithsonian Center for Astrophysics.  You
 may do:
 
-    tek2plot -Tps --font-name HersheyGothic-English ocpred.tek > ocpred.ps
+    tek2plot -Tps --font-name HersheyGothicEnglish ocpred.tek > ocpred.ps
 
 to translate it to Postscript.  The text will be rendered in
-HersheyGothic-English, which is an Old English font.  
+HersheyGothicEnglish, which is an Old English font.
 
-HersheyGothic-English is not a fixed-width font, unlike the original
+HersheyGothicEnglish is not a fixed-width font, unlike the original
 Tektronix font.  But if you add the `--position-chars' option on the
 command line, each character will be positioned individually, so as to
 match the position of the corresponding character in the original font.

@@ -38,7 +38,7 @@
    the stream was reached.  If the input file is in ascii format, two
    \n's in succession serves as a separator between datasets.  If, instead,
    the input file is in binary format (a sequence of doubles), then a
-   single MAXDOUBLE serves as a dataset separator.  If the input file is
+   single DBL_MAX serves as a dataset separator.  If the input file is
    in gnuplot `table' format, then two \n's in succession serves as a
    separator.  But there are always two \n's before EOF; this is different
    from ascii format.
@@ -263,7 +263,7 @@ set_reader_parameters (input_type, auto_abscissa, delta_x, abscissa,
    data point could be read due to EOF or garbage in file.  A return value
    of 2 indicates that no point was read, but an explicit end-of-dataset
    indicator was seen in the input file.  For an ascii stream this is two
-   newlines in succession; for a double stream this is a MAXDOUBLE.  A
+   newlines in succession; for a double stream this is a DBL_MAX.  A
    return value of 3 is special: it indicates that no point was read, but a
    `set linemode / symbol type' directive was seen in the input file.  By
    convention we break any polyline under construction when such a
@@ -284,7 +284,7 @@ read_point (input, point)
      Point *point;
 #endif
 {
-  bool success;
+  int success;			/* return code from read_point_* */
 
   /* following fields are constant throughout each polyline */
   point->symbol = reader.symbol;
@@ -615,7 +615,7 @@ read_point_binary (input, point, input_type)
 	    float fx;
 	    
 	    items_read = 
-	      fread ((Voidptr) &fx, sizeof (float), 1, input);
+	      fread ((Voidptr) &fx, sizeof (fx), 1, input);
 	    point->x = fx;
 	  }
 	  break;
@@ -624,7 +624,7 @@ read_point_binary (input, point, input_type)
 	    int ix;
 	    
 	    items_read = 
-	      fread ((Voidptr) &ix, sizeof (int), 1, input);
+	      fread ((Voidptr) &ix, sizeof (ix), 1, input);
 	    point->x = ix;
 	  }
 	  break;
@@ -633,9 +633,9 @@ read_point_binary (input, point, input_type)
 	return 1;		/* presumably EOF */
     }
 
-  if ((input_type == T_DOUBLE && point->x == MAXDOUBLE)
-      || (input_type == T_SINGLE && point->x == (double)MAXFLOAT)
-      || (input_type == T_INTEGER && point->x == (double)MAXINT))
+  if ((input_type == T_DOUBLE && point->x == DBL_MAX)
+      || (input_type == T_SINGLE && point->x == (double)FLT_MAX)
+      || (input_type == T_INTEGER && point->x == (double)INT_MAX))
     return 2;			/* end of dataset */
 
   switch (input_type)
@@ -650,7 +650,7 @@ read_point_binary (input, point, input_type)
 	float fy;
 	
 	items_read = 
-	  fread ((Voidptr) &fy, sizeof (float), 1, input);
+	  fread ((Voidptr) &fy, sizeof (fy), 1, input);
 	point->y = fy;
       }
       break;
@@ -659,7 +659,7 @@ read_point_binary (input, point, input_type)
 	int iy;
 	
 	items_read = 
-	  fread ((Voidptr) &iy, sizeof (int), 1, input);
+	  fread ((Voidptr) &iy, sizeof (iy), 1, input);
 	point->y = iy;
       }
       break;
@@ -768,7 +768,7 @@ read_point_gnuplot (input, point)
    Return value = 1 means the dataset terminated with an EOF, and return
    value = 2 means the dataset terminated with an explicit end-of-dataset
    marker.  An end-of-dataset marker is two newlines in succession for an
-   ascii stream, and a MAXDOUBLE for a stream of doubles.  Return value 3
+   ascii stream, and a DBL_MAX for a stream of doubles.  Return value 3
    is special: it signals that a `set linemode / symbol type' directive was
    seen in the input file.  By convention, we interpret such a directive
    as ending a dataset.  Return value 4 signifies a `soft EOF' (we already
@@ -861,10 +861,10 @@ read_file (input, p_addr, length, no_of_points)
    Return value = 1 means the dataset terminated with an EOF, and return
    value = 2 means the dataset terminated with an explicit end-of-dataset
    marker.  An end-of-dataset marker is two newlines in succession for an
-   ascii stream, and a MAXDOUBLE for a stream of doubles.  Return value 3
-   is special: it signals that a `set linemode / symbol type' directive was
-   seen in the input file.  By convention, we interpret such a directive
-   as ending a dataset.  Return value 4 signifies a `soft EOF' (we already
+   ascii stream, and a DBL_MAX for a stream of doubles.  Return value 3 is
+   special: it signals that a `set linemode / symbol type' directive was
+   seen in the input file.  By convention, we interpret such a directive as
+   ending a dataset.  Return value 4 signifies a `soft EOF' (we already
    returned an end-of-dataset, and this EOF shouldn't be interpreted as
    terminating an additional [null] dataset). */
 

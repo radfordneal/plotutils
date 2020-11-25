@@ -27,7 +27,7 @@
 #define SUPERSCRIPT_DY 0.375
 
 /* font we use for symbol escapes if the current font is a user-specified
-   one that doesn't belong to any of our builtin typefaces */
+   one [for X Windows] that doesn't belong to any of our builtin typefaces */
 #define SYMBOL_FONT "Symbol"
 
 /* forward references */
@@ -142,14 +142,16 @@ _g_flabelwidth (s)
    graphics cursor position is updated accordingly. */
 
 /* We `controlify' the string, translating escape sequences to annotations.
-   Note: for fonts of `OTHER' type, shifts between fonts within a single
-   typeface are ignored, since we have no information on what the other
-   fonts within the font's typeface are.  The annotations simply indicate
-   whether or not a symbol font should be switched to, for the purpose of
-   symbol escapes. */
+   Note: for fonts of `OTHER' type [user-specified X Windows fonts], shifts
+   between fonts within a single typeface are ignored, since we have no
+   information on what the other fonts within the font's typeface are.  The
+   annotations simply indicate whether or not a symbol font should be
+   switched to, for the purpose of symbol escapes.  For fonts of `OTHER'
+   type, font #1 means the user-specified font and font #0 means the symbol
+   font. */
 
-/* As noted this version is invoked only if the current font is
-   non-Hershey.  But due to failure of retrieval of X fonts, it is possible
+/* As noted, this version is invoked only if the current font is
+   non-Hershey.  But due to failure to retrieve an X font, it is possible
    that the font could switch to a Hershey font during rendering. */
 
 static double
@@ -169,8 +171,9 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
   double pushed_width = 0.0;	/* pushed by user */
   int current_font_index;
   /* initial values of these attributes (will be restored at end) */
-  double initial_font_size = _plotter->drawstate->font_size;
+  double initial_font_size;
   char *initial_font_name;
+  our_font_type initial_font_type;
   /* initial and saved locations */
   double initial_position_x = _plotter->drawstate->pos.x;
   double initial_position_y = _plotter->drawstate->pos.y;
@@ -190,6 +193,7 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
     {
       /* compute label width in user units via a recursive call; final two
 	 args here are ignored */
+
       overall_width = _g_render_string_non_hershey (s, false, 'c', 'c');
       
       /* compute initial offsets that must be performed due to
@@ -284,6 +288,15 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
     (char *)_plot_xmalloc (1 + strlen (initial_font_name));
   strcpy (_plotter->drawstate->font_name, initial_font_name);
 
+  /* save font size too */
+  initial_font_size = _plotter->drawstate->font_size;
+
+  /* also save the font type, since for fonts of type F_OTHER (e.g.,
+     user-specified X Windows fonts not in our tables), switching fonts
+     between substrings, e.g. to use the X Windows symbol font, may
+     inconveniently switch _plotter->drawstate->font_type on us */
+  initial_font_type = _plotter->drawstate->font_type;
+
   /* initialize current font index (font type presumably is not Hershey) */
   switch (_plotter->drawstate->font_type)
     {
@@ -294,6 +307,10 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
     case F_PCL:
       current_font_index =
 	(_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+      break;
+    case F_STICK:
+      current_font_index =
+	(_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       break;
     case F_OTHER:
       current_font_index = 1;	/* `1' just means the font we start out with */
@@ -310,8 +327,8 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
       
       c = *cptr;
       if (c & CONTROL_CODE)	
+	/* parse control code; many possibilities */
 	{	
-	  /* parse control code */
 	  switch (c & ~CONTROL_CODE)
 	    {
 	    case C_BEGIN_SUBSCRIPT:
@@ -435,14 +452,32 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 	      width += _plotter->drawstate->true_font_size / 8.0;
 	      break;
 
-	      /* kludge: used for \rn macro only */
+	      /* Kludge: used only for \rn macro, i.e. in square roots, if
+		 the current font is a PS or PCL font.  See g_cntrlify.c.
+		 If the font is a Hershey font, \rn is implemented
+		 differently, and for Stick fonts it isn't implemented at all.
+
+		 Painfully, the amount of shift differs depending whether
+		 this is a PS or a PCL typeface, since the `radicalex'
+		 characters are quite different.  See comment in
+		 g_cntrlify.c. */
 	    case C_RIGHT_RADICAL_SHIFT:
 	      if (do_render)
 		{
-		  (_plotter->drawstate->pos).x += costheta * _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
-		  (_plotter->drawstate->pos).y += sintheta * _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
+		  if (_plotter->drawstate->font_type == F_PCL)
+		    {
+		      (_plotter->drawstate->pos).x += costheta * _plotter->drawstate->true_font_size * PCL_RADICAL_WIDTH;
+		      (_plotter->drawstate->pos).y += sintheta * _plotter->drawstate->true_font_size * PCL_RADICAL_WIDTH;
+		    }
+		  else
+		    {
+		      (_plotter->drawstate->pos).x += costheta * _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
+		      (_plotter->drawstate->pos).y += sintheta * _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
+		    }
+		  /* I'm going to let this serve for the PCL case; it seems to
+		     work (i.e. yield more or less the correct width).  We
+		     definitely don't want PCL_RADICAL_WIDTH here. */
 		}
-	      
 	      width += _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
 	      break;
 
@@ -496,16 +531,29 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 	      width -= _plotter->drawstate->true_font_size / 8.0;
 	      break;
 
-	      /* kludge: used for \rn macro only */
+	      /* Kludge: used only for \rn macro, i.e. in square roots.
+		 Painfully, the amount of shift differs depending whether
+		 this is a PS or a PCL typeface, since the `radicalex'
+		 characters are quite different.  See comment above, and
+		 comment in g_cntrlify.c. */
 	    case C_LEFT_RADICAL_SHIFT:
 	      if (do_render)
 		{
-		  (_plotter->drawstate->pos).x -= costheta * _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
-		  (_plotter->drawstate->pos).y -= sintheta * _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
+		  if (_plotter->drawstate->font_type == F_PCL)
+		    {
+		      (_plotter->drawstate->pos).x -= costheta * _plotter->drawstate->true_font_size * PCL_RADICAL_WIDTH;
+		      (_plotter->drawstate->pos).y -= sintheta * _plotter->drawstate->true_font_size * PCL_RADICAL_WIDTH;
+		    }
+		  else
+		    {
+		      (_plotter->drawstate->pos).x -= costheta * _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
+		      (_plotter->drawstate->pos).y -= sintheta * _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
+		    }
 		}
+	      /* see comment in C_RIGHT_RADICAL_SHIFT case, above */
 	      width -= _plotter->drawstate->true_font_size * PS_RADICAL_WIDTH;
 	      break;
-
+	      
 	      /* unrecognized control code */
 	    default:
 	      break;
@@ -522,7 +570,13 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 	  /* perform font switching if necessary */
 	  if (new_font_index != current_font_index)
 	    {
-	      switch (_plotter->drawstate->font_type)
+	      /* We check initial_font_type, not _drawstate->font_type,
+		 because the latter gets trashed if (1) we start out with a
+		 font of type F_OTHER, e.g. a user-specified X Windows font
+		 not in our tables, and (2) we switch to the X Windows
+		 Symbol font in mid-string, since that font is of type
+		 F_POSTSCRIPT. */
+	      switch (initial_font_type)
 		{
 		case F_HERSHEY:
 		  free (_plotter->drawstate->font_name);
@@ -542,6 +596,12 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 		    (char *)_plot_xmalloc(1 + strlen (_pcl_font_info[new_font_index].ps_name));
 		  strcpy (_plotter->drawstate->font_name, _pcl_font_info[new_font_index].ps_name);
 		  break;
+		case F_STICK:
+		  free (_plotter->drawstate->font_name);
+		  _plotter->drawstate->font_name =
+		    (char *)_plot_xmalloc(1 + strlen (_stick_font_info[new_font_index].ps_name));
+		  strcpy (_plotter->drawstate->font_name, _stick_font_info[new_font_index].ps_name);
+		  break;
 		case F_OTHER:
 		  free (_plotter->drawstate->font_name);
 		  if (new_font_index == 0) /* symbol font */
@@ -550,14 +610,16 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 			(char *)_plot_xmalloc(1 + strlen (SYMBOL_FONT));
 		      strcpy (_plotter->drawstate->font_name, SYMBOL_FONT);
 		    }
-		  else		/* 1, i.e. restore font we started out with */
+		  else
+		    /* Currently, only alternative to zero (symbol font) is
+                       1, i.e. restore font we started out with. */
 		    {
 		      _plotter->drawstate->font_name =
 			(char *)_plot_xmalloc(1 + strlen (initial_font_name));
 		      strcpy (_plotter->drawstate->font_name, initial_font_name);
 		    }
 		  break;
-		default:	/* unsupported font type */
+		default:	/* unsupported font type, shouldn't happen */
 		  break;
 		}
 	      _plotter->retrieve_font();
@@ -605,7 +667,7 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 /* Compute the width of a single-font string (escape sequences not
    recognized), and render it, if requested.  The method that is invoked
    may depend on the Plotter object type (i.e. type of display device), as
-   well as on the font type.  The PS and PCL methods appear below.
+   well as on the font type.  The PS, PCL, and Stick methods appear below.
 
    The rendering only takes place if the do_render flag is set.  If it is
    not, the width is returned only (the h_just argument being ignored). */
@@ -624,7 +686,7 @@ _g_render_simple_string_non_hershey (s, do_render, h_just)
     {
     case F_HERSHEY:
       /* Aargh.  The Hershey-specific routines do much more than is needed:
-	 they handles escape sequences too, via their own controlification.
+	 they handle escape sequences too, via their own controlification.
 	 So we must escape all backslashes before using them. */
       {
 	unsigned char *t;
@@ -645,6 +707,10 @@ _g_render_simple_string_non_hershey (s, do_render, h_just)
       return (do_render ? 
 	      _plotter->falabel_pcl (s, h_just) : 
 	      _plotter->flabelwidth_pcl (s));
+    case F_STICK:
+      return (do_render ? 
+	      _plotter->falabel_stick (s, h_just) : 
+	      _plotter->flabelwidth_stick (s));
     case F_OTHER:
       return (do_render ? 
 	      _plotter->falabel_other (s, h_just) : 
@@ -716,6 +782,56 @@ _g_flabelwidth_pcl (s)
     }
 
   return _plotter->drawstate->true_font_size * (double)width / 1000.0;
+}
+
+
+/* A generic internal method that computes the width (total delta x) of a
+   character string to be rendered in one of the 2 standard Stick fonts, in
+   user units.  The font used is the currently selected one (assumed to be
+   a Stick font). */
+
+double
+#ifdef _HAVE_PROTOS
+_g_flabelwidth_stick (const unsigned char *s)
+#else
+_g_flabelwidth_stick (s)
+     const unsigned char *s;
+#endif
+{
+  double width = 0.0;		/* normalized units (font size = 1.0) */
+  int index;
+  int master_font_index;	/* index into master table */
+
+  /* compute font index in master Stick font table */
+  master_font_index =
+    (_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+
+  /* Width table (in g_fontdb.c) gives character width in terms of abstract
+     raster units (the grid on which the character was defined).  Since
+     font size is twice the width of the abstract raster (by definition),
+     to get the width in normalized units (in which font size = 1.0), we
+     need to divide.  */
+
+  for (index=0; s[index]!='\0'; index++)
+    {
+      unsigned char c;
+
+      c = (unsigned int)s[index];
+      /* some fonts have different raster widths for lower and upper halves
+	 (e.g. ArcANK, which has a JIS-ASCII lower half (width 42 units)
+	 and a half-width-Katakana upper half (width 45 units)) */
+      if (c < 0x80)
+	width			/* lower half */
+	  += (((double)(_stick_font_info[master_font_index].width[c]))
+	      / (2 * _stick_font_info[master_font_index].raster_width_lower));
+      else
+	width			/* upper half */
+	  += (((double)(_stick_font_info[master_font_index].width[c]))
+	      / (2 * _stick_font_info[master_font_index].raster_width_upper));
+    }
+
+  /* convert to user units */
+  return _plotter->drawstate->true_font_size * (double)width;
 }
 
 

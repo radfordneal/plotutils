@@ -26,12 +26,15 @@ _p_erase ()
 
   _plotter->endpath (); /* flush polyline if any */
 
-  _reset_buffer (&_plotter->outbuf); /* discard all objects */
-  _reset_range ();		/* reset bounding box */
+  _reset_outbuf (_plotter->page); /* discard all objects */
 
-  /* reinitialize `font used' array */
+  /* reinitialize `font used' array(s) */
   for (i = 0; i < NUM_PS_FONTS; i++)
     _plotter->ps_font_used[i] = false;
+#ifdef USE_LJ_FONTS
+  for (i = 0; i < NUM_PCL_FONTS; i++)
+    _plotter->pcl_font_used[i] = false;
+#endif
 
   return 0;
 }

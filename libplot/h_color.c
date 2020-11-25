@@ -4,19 +4,32 @@
 
 #define ONEBYTE (0xff)
 
+#define USE_PEN_ZERO (_plotter->hpgl_version == 2 && (_plotter->opaque_mode || _plotter->palette))
+
 /* forward references */
-static int _hpgl_pseudocolor __P((int red, int green, int blue, bool white_allowed));
+static int _hpgl_pseudocolor __P((int red, int green, int blue, bool restrict_white));
 static void _compute_pseudo_fillcolor __P((int red, int green, int blue, int *pen, double *shading));
 static void _set_pen __P((int pen));
 static void _set_fill_type __P((int fill_type, double option1));
 
-/* _h_set_hpgl_pencolor() sets the physical pen color to match the pen
-   color in our current drawing state.  If the palette contains a matching
-   color, the corresponding pen is selected.  Otherwise, the color is
-   entered into the palette and the corresponding pen is selected.  If the
-   palette cannot be modified, i.e., new pen colors cannot be defined, the
-   palette is searched for the closest match, and the corresponding pen is
-   selected. */
+/* _h_set_pencolor() sets the physical pen color to match the pen color in
+   our current drawing state.  If the palette contains a matching color,
+   the corresponding pen is selected.  Otherwise, the color is entered into
+   the palette and the corresponding pen is selected.  If the palette
+   cannot be modified, i.e., new pen colors cannot be defined, the palette
+   is searched for the closest match, and the corresponding `quantized' pen
+   is selected.
+   
+   We adopt a convention: nonwhite pen colors are never quantized to white.
+
+   Pen #0 is the canonical white pen.  But on pen plotters, drawing with
+   pen #0 isn't meaningful.  So we don't actually use pen #0 to draw with
+   unless HPGL_VERSION==2 and HPGL_OPAQUE_MODE=yes (or
+   HPGL_ASSIGN_COLORS=yes, which presumably means the output is directed to
+   a DesignJet).  Accordingly if the closest match here is pen #0, we set
+   the advisory `bad_pen' flag in the Plotter object to `true'; otherwise
+   we set it to `false'. */
+
 void
 #ifdef _HAVE_PROTOS
 _h_set_pen_color(void)
@@ -34,53 +47,42 @@ _h_set_pen_color()
   longgreen = color.green;
   longblue = color.blue;
 
-  /* special case: `monochrome' plotter with only pens #0 and #1,
-     interpreted as white and non-white respectively */
-  if (_plotter->monochrome)
-    {
-      i = ((longred == 0xffff && longgreen == 0xffff && longblue == 0xffff) 
-	   ? 0 : 1);
-      /* select pen */
-      _set_pen (i);
-      return;
-    }
-
-  /* if white pen (pen #0) is a legitimate pen, may be able to use it */
-  if (_plotter->hpgl_version == 2 
-      && _plotter->opaque_white
-      && longred == 0xffff && longgreen == 0xffff && longblue == 0xffff)
-    {
-      _set_pen (0);
-      return;
-    }
-
   /* truncate to 24-bit color */
   red = (longred >> 8) & ONEBYTE;
   green = (longgreen >> 8) & ONEBYTE;
   blue = (longblue >> 8) & ONEBYTE;
   
   /* check whether color is already in the palette */
-  for (i = 1; i < MAX_NUM_PENS; i++)
+  for (i = 0; i < MAX_NUM_PENS; i++)
     {
       if (_plotter->pen_defined[i] != 0 /* i.e. defined (hard or soft) */
 	  && _plotter->pen_color[i].red == red
 	  && _plotter->pen_color[i].green == green
 	  && _plotter->pen_color[i].blue == blue)
-	/* color is in palette, so just select pen */
+	/* color is in palette */
 	{
-	  _set_pen (i);
+	  if (i != 0 || (i == 0 && USE_PEN_ZERO))
+	    /* can be selected */
+	    {
+	      _set_pen (i);
+	      _plotter->bad_pen = false;
+	    }
+	  else
+	    /* aren't using pen #0, so set advisory flag */
+	    _plotter->bad_pen = true;
+
 	  return;
 	}
     }      
 
   /* color not in palette, must do something */
-  if (_plotter->palette)
-    /* can soft-define pen colors */
+  if (_plotter->hpgl_version == 2 && _plotter->palette)
+    /* can soft-define pen colors (HP-GL/2, presumably a DesignJet) */
     {
       /* assign current `free pen' to be the new color */
-      sprintf (_plotter->outbuf.current, "PC%d,%d,%d,%d;", 
+      sprintf (_plotter->page->point, "PC%d,%d,%d,%d;", 
 	       _plotter->free_pen, red, green, blue);
-      _update_buffer (&_plotter->outbuf);
+      _update_buffer (_plotter->page);
       _plotter->pen_color[_plotter->free_pen].red = red;
       _plotter->pen_color[_plotter->free_pen].green = green;
       _plotter->pen_color[_plotter->free_pen].blue = blue;
@@ -91,14 +93,28 @@ _h_set_pen_color()
       do
 	_plotter->free_pen = (_plotter->free_pen + 1) % MAX_NUM_PENS;
       while (_plotter->pen_defined[_plotter->free_pen] == 2);
+
+      _plotter->bad_pen = false;
       return;
     }
   else
-    /* don't have logical pens, i.e. cannot soft-define colors, so select
-       closest defined non-white pen in RGB cube, using Euclidean distance
-       as our metric */
+    /* HPGL_VERSION must be "1" (i.e. generic HP-GL) or "1.5"
+       (i.e. HP7550A), so select closest defined pen in RGB cube, using
+       Euclidean distance as metric.  Final arg here is `true' on account
+       of our convention that a non-white pen color [unlike a fill color]
+       is never quantized to white (i.e. to pen #0). */
     {
-      _set_pen (_hpgl_pseudocolor (red, green, blue, false));
+      i = _hpgl_pseudocolor (red, green, blue, true);
+      if (i != 0 || (i == 0 && USE_PEN_ZERO))
+	/* can be selected */
+	{
+	  _set_pen (i);
+	  _plotter->bad_pen = false;
+	}
+      else
+	/* aren't using pen #0, so set advisory flag */
+	_plotter->bad_pen = true;
+
       return;
     }
 }
@@ -108,19 +124,27 @@ _h_set_pen_color()
    state.  For HP7550A plotters and HP-GL/2 devices, that is; we don't
    support filling on HP-GL devices.  There are three possibilities.
 
-   (1) For HP7550A's, we use solid filling (shading is not supported), so
-   we determine which defined pen is closest to the fill color in the sense
-   of Euclidean distance within the RGB cube.
-   
+   (1) For HP-GL/2 devices supporting soft-definition of pen colors, we use
+   solid filling, after defining the fill color as a new pen color if
+   necessary.
+
    (2) For HP-GL/2 not supporting soft-definition of pen colors, we use
    shading.  So we must determine which shade of which defined pen is
    closest to the fill color in the sense of Euclidean distance within the
    RGB cube.  `Shades' are desaturations (interpolations between a pen
    color, and white).
 
-   (3) For HP-GL/2 devices supporting soft-definition of pen colors, we use
-   solid filling, after defining the fill color as a new pen color if
-   necessary. */
+   (3) For pre-HP-GL/2 devices, we use solid filling (shading is not
+   supported), so we determine which defined pen is closest to the fill
+   color in the sense of Euclidean distance within the RGB cube.
+
+   Pen #0 is the canonical white pen.  But on pen plotters, filling with
+   pen #0 isn't meaningful.  So we don't actually use pen #0 to fill with
+   unless HPGL_VERSION==2 and HPGL_OPAQUE_MODE=yes (or
+   HPGL_ASSIGN_COLORS=yes, which presumably means the output is directed to
+   a DesignJet).  Accordingly if the closest match here is pen #0, we set
+   the advisory `bad_pen' flag in the Plotter object to `true'; otherwise
+   we set it to `false'. */
 
 void
 #ifdef _HAVE_PROTOS
@@ -136,9 +160,7 @@ _h_set_fill_color()
   Color color;
   
   level = _plotter->drawstate->fill_level;
-  if (level == 0) /* no filling requested */
-    return;
-  if (_plotter->hpgl_version == 0) /* no filling on generic HP-GL devices */
+  if (level == 0) /* won't be doing filling, so don't set pen */
     return;
 
   color = _plotter->drawstate->fillcolor;
@@ -155,40 +177,13 @@ _h_set_fill_color()
   longgreen = IROUND(0xFFFF * (d_green + desaturate * (1.0 - d_green)));
   longblue = IROUND(0xFFFF * (d_blue + desaturate * (1.0 - d_blue)));
 
-  /* special case: `monochrome' plotter with only pens #0 and #1,
-     interpreted as white and non-white respectively.  If fill color is
-     non-white, we use solid #1.  Could do better? */
-
-  if (_plotter->monochrome)
-    {
-      i = ((longred == 0xffff && longgreen == 0xffff && longblue == 0xffff) 
-	   ? 0 : 1);
-      /* select pen */
-      _set_pen (i);
-      /* set fill type to solid, unidirectional */
-      _set_fill_type (HPGL_FILL_SOLID_UNI, 0.0);
-      return;
-    }
-
-  /* if white pen (pen #0) is a legitimate pen, may be able to use it */
-  if (_plotter->hpgl_version == 2 
-      && _plotter->opaque_white
-      && longred == 0xffff && longgreen == 0xffff && longblue == 0xffff)
-    {
-      /* select pen */
-      _set_pen (0);
-      /* set fill type to solid, unidirectional */
-      _set_fill_type (HPGL_FILL_SOLID_UNI, 0.0);
-      return;
-    }
-
   /* truncate to 24-bit color */
   red = (longred >> 8) & ONEBYTE;
   green = (longgreen >> 8) & ONEBYTE;
   blue = (longblue >> 8) & ONEBYTE;
   
   /* check whether color is already in palette */
-  for (i = 1; i < MAX_NUM_PENS; i++)
+  for (i = 0; i < MAX_NUM_PENS; i++)
     {
       if (_plotter->pen_defined[i] != 0
 	  && _plotter->pen_color[i].red == red
@@ -196,22 +191,30 @@ _h_set_fill_color()
 	  && _plotter->pen_color[i].blue == blue)
 	/* color is in palette */
 	{
-	  /* select pen */
-	  _set_pen (i);
-	  /* set fill type to solid, unidirectional */
-	  _set_fill_type (HPGL_FILL_SOLID_UNI, 0.0);
+	  if (i != 0 || (i == 0 && USE_PEN_ZERO))
+	    /* can be selected */
+	    {
+	      _set_pen (i);
+	      /* set fill type to solid, unidirectional */
+	      _set_fill_type (HPGL_FILL_SOLID_UNI, 0.0);
+	      _plotter->bad_pen = false;
+	    }
+	  else
+	    /* aren't using pen #0, so set advisory flag */
+	    _plotter->bad_pen = true;
+
 	  return;
 	}
     }      
 
   /* color not in palette, must do something */
   if (_plotter->hpgl_version == 2 && _plotter->palette)
-    /* HP-GL/2, and can soft-define pen colors */
+    /* can soft-define pen colors (HP-GL/2) */
     {
       /* assign current `free pen' to be the new color */
-      sprintf (_plotter->outbuf.current, "PC%d,%d,%d,%d;", 
+      sprintf (_plotter->page->point, "PC%d,%d,%d,%d;", 
 	       _plotter->free_pen, red, green, blue);
-      _update_buffer (&_plotter->outbuf);
+      _update_buffer (_plotter->page);
       _plotter->pen_color[_plotter->free_pen].red = red;
       _plotter->pen_color[_plotter->free_pen].green = green;
       _plotter->pen_color[_plotter->free_pen].blue = blue;
@@ -224,6 +227,8 @@ _h_set_fill_color()
       while (_plotter->pen_defined[_plotter->free_pen] == 2);
       /* set fill type to solid, unidirectional */
       _set_fill_type (HPGL_FILL_SOLID_UNI, 0.0);
+
+      _plotter->bad_pen = false;
       return;
     }
 
@@ -235,20 +240,46 @@ _h_set_fill_color()
       int pen;
       double shading;
 
-      _compute_pseudo_fillcolor (red, green, blue, &pen, &shading);
-      _set_pen (pen);
-      /* shading level in HP-GL/2 is expressed as a percentage */
-      _set_fill_type (HPGL_FILL_SHADING, 100.0 * shading);
+      _compute_pseudo_fillcolor (red, green, blue, &i, &shading);
+
+      if (i != 0 || (i == 0 && USE_PEN_ZERO))
+	/* can be selected */
+	{
+	  _set_pen (i);
+	  /* shading level in HP-GL/2 is expressed as a percentage */
+	  _set_fill_type (HPGL_FILL_SHADING, 100.0 * shading);
+	  _plotter->bad_pen = false;
+	}
+      else
+	/* aren't using pen #0, so set advisory flag */
+	_plotter->bad_pen = true;
+      
       return;
     }
 
   else
-    /* must be a HP7550A (i.e. hpgl_version=1), so select closest defined
-       pen in RGB cube, using Euclidean distance as our metric */
+    /* HPGL_VERSION must be "1" (i.e. generic HP-GL) or "1.5"
+       (i.e. HP7550A), so select closest defined pen in RGB cube, using
+       Euclidean distance as metric.  Final arg is set to `false' to
+       signify that nonwhite fill colors [unlike pen colors] may be
+       quantized to white, i.e. to pen #0. */
     {
-      _set_pen (_hpgl_pseudocolor (red, green, blue, true));
-      /* set fill type to solid, unidirectional */
-      _set_fill_type (HPGL_FILL_SOLID_UNI, 0.0);
+      int i;
+      
+      i = _hpgl_pseudocolor (red, green, blue, false);
+
+      if (i != 0 || (i == 0 && USE_PEN_ZERO)) /* USE_PEN_ZERO = false here */
+	/* can be selected */
+	{
+	  _set_pen (i);
+	  /* set fill type to solid, unidirectional */
+	  _set_fill_type (HPGL_FILL_SOLID_UNI, 0.0);
+	  _plotter->bad_pen = false;
+	}
+      else
+	/* aren't using pen #0, so set advisory flag */
+	_plotter->bad_pen = true;
+      
       return;
     }
 }
@@ -265,12 +296,12 @@ _set_pen (pen)
     {
       if (_plotter->pendown)
 	{
-	  sprintf (_plotter->outbuf.current, "PU;");
-	  _update_buffer (&_plotter->outbuf);
+	  sprintf (_plotter->page->point, "PU;");
+	  _update_buffer (_plotter->page);
 	  _plotter->pendown = false;
 	}
-      sprintf (_plotter->outbuf.current, "SP%d;", pen);
-      _update_buffer (&_plotter->outbuf);
+      sprintf (_plotter->page->point, "SP%d;", pen);
+      _update_buffer (_plotter->page);
       _plotter->pen = pen;
     }
   return;
@@ -296,39 +327,42 @@ _set_fill_type (fill_type, option1)
 	case HPGL_FILL_SOLID_UNI:	  
 	default:
 	  /* options ignored */
-	  sprintf (_plotter->outbuf.current, "FT%d;", fill_type);
+	  sprintf (_plotter->page->point, "FT%d;", fill_type);
 	  break;
 	case HPGL_FILL_SHADING:
 	  /* option1 is shading level in percent */
-	  sprintf (_plotter->outbuf.current, "FT%d,%.1f;", fill_type, option1);
+	  sprintf (_plotter->page->point, "FT%d,%.1f;", fill_type, option1);
 	  _plotter->shading_level = option1;
 	  break;
 	/* hatching and cross-hatching, anyone? */
 	}
-      _update_buffer (&_plotter->outbuf);
+      _update_buffer (_plotter->page);
       _plotter->fill_type = fill_type;
     }
   return;
 }
 
 /* Find closest point within the RGB color cube that is a defined pen
-   color, using Euclidean distance as our metric.  We allow white pen 
-   (pen #0) to be ruled out, because of our convention that nonwhite pen 
-   colors should never be quantized to white.  */
+   color, using Euclidean distance as our metric.  Final arg, if set,
+   specifies that nonwhite colors should never be quantized to white. */
 static int
 #ifdef _HAVE_PROTOS
-_hpgl_pseudocolor (int red, int green, int blue, bool white_allowed)
+_hpgl_pseudocolor (int red, int green, int blue, bool restrict_white)
 #else
-_hpgl_pseudocolor (red, green, blue, white_allowed)
+_hpgl_pseudocolor (red, green, blue, restrict_white)
      int red, green, blue;
-     bool white_allowed;
+     bool restrict_white;
 #endif
 {
-  unsigned long int difference = MAXINT;
+  unsigned long int difference = INT_MAX;
   int i;
   int best = 0;
 
-  for (i = (white_allowed ? 0 : 1); i < MAX_NUM_PENS; i++)
+  if (red == 0xff && green == 0xff && blue == 0xff)
+    /* white pen */
+    return 0;
+
+  for (i = (restrict_white ? 1 : 0); i < MAX_NUM_PENS; i++)
     {
       if (_plotter->pen_defined[i] != 0)
 	{
@@ -349,7 +383,6 @@ _hpgl_pseudocolor (red, green, blue, white_allowed)
 	    }
 	}
     }
-
   return best;
 }
 
@@ -369,7 +402,7 @@ _compute_pseudo_fillcolor (red, green, blue, pen_ptr, shading_ptr)
   int best = 0;
   int i;
   double best_shading = 0.0;
-  double difference = MAXINT;
+  double difference = INT_MAX;
   double red_shifted, green_shifted, blue_shifted;
   
   /* shift color vector so that it emanates from `white' */

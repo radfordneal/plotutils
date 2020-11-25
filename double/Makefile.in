@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -87,6 +88,7 @@ INCLUDES = -I$(srcdir)/../include
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  double$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -186,8 +188,8 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-double: $(double_OBJECTS) $(double_DEPENDENCIES)
-	@rm -f double
+double$(EXEEXT): $(double_OBJECTS) $(double_DEPENDENCIES)
+	@rm -f double$(EXEEXT)
 	$(LINK) $(double_LDFLAGS) $(double_OBJECTS) $(double_LDADD) $(LIBS)
 
 tags: TAGS

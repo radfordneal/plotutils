@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -79,10 +80,15 @@ X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
 
 libplotdatadir = $(datadir)/libplot
-libplotdata_DATA = README colors.txt demo-page hershey-demo.c hershey-fonts hershey-number hershey.bib hershey.doc kana.doc kanji.doc
+libplotdata_DATA = README colors.txt demo-page h-demo.c h-fonts.doc h-glyphs.doc hershey.bib kana.doc kanji.doc
 
 # files with nonstandard names in this directory
-EXTRA_DIST = colors.txt demo-page hershey-demo.c hershey-fonts hershey-number hershey.bib hershey.doc kana.doc kanji.doc
+EXTRA_DIST = colors.txt demo-page h-demo.c h-fonts.doc h-glyphs.doc hershey.bib kana.doc kanji.doc
+
+# remove documentation files installed by previous versions of the package,
+# with obsolete names
+
+OBSOLETEDOC = hershey-demo.c hershey-fonts hershey-number hershey.doc
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -149,6 +155,7 @@ install-exec:
 
 install-data: install-libplotdataDATA
 	@$(NORMAL_INSTALL)
+	$(MAKE) install-data-hook
 
 install: install-exec install-data all
 	@:
@@ -192,6 +199,9 @@ info dvi installcheck install-exec install-data install uninstall all \
 installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+install-data-hook:
+	-for f in $(OBSOLETEDOC) ; do rm -f $(datadir)/libplot/$$f; done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

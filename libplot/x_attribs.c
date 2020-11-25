@@ -13,6 +13,8 @@
 #define SHORTDASHED_LENGTH 2
 #define LONGDASHED_LENGTH 2
 
+#define MAX_DASH_LENGTH 4	/* max of preceding pattern lengths */
+
 /* these on/off bit patterns are those used by the xterm Tektronix
    emulator, except that the emulator seems incorrectly to have on and
    off interchanged */
@@ -29,6 +31,11 @@ static const char longdashed[LONGDASHED_LENGTH]   = { 7, 4 };
    Instruction Manual (dated Aug. 1974) for the diode array that produces
    these patterns. */
 
+/* We scale the above bit patterns by (essentially) the line width, but we
+   can't scale by too great a factor, because each entry needs to be <= 255
+   to fit in a char.  We make the entries <= 127 to be on the safe side. */
+#define MAX_SCALE 18
+
 void
 #ifdef _HAVE_PROTOS
 _x_set_attributes (void)
@@ -37,6 +44,15 @@ _x_set_attributes ()
 #endif
 {
   XGCValues gcv;
+  char dashbuf[MAX_DASH_LENGTH];
+  int scale, i;
+
+  /* scale by line width in terms of pixels, if nonzero */
+  scale = _plotter->drawstate->quantized_device_line_width;
+  if (scale <= 0)
+    scale = 1;
+  if (scale > MAX_SCALE)
+    scale = MAX_SCALE;
 
   switch (_plotter->drawstate->line_type)
     {
@@ -45,23 +61,31 @@ _x_set_attributes ()
       gcv.line_style = LineSolid;
       break;
     case L_DOTTED:
+      for (i = 0; i < DOTTED_LENGTH; i++)
+	dashbuf[i] = scale * dotted[i];
       XSetDashes (_plotter->dpy, _plotter->drawstate->gc_fg, 
-		  0, dotted, DOTTED_LENGTH);
+		  0, dashbuf, DOTTED_LENGTH);
       gcv.line_style = LineOnOffDash;
       break;
     case L_DOTDASHED:
+      for (i = 0; i < DOTDASHED_LENGTH; i++)
+	dashbuf[i] = scale * dotdashed[i];
       XSetDashes (_plotter->dpy, _plotter->drawstate->gc_fg, 
-		  0, dotdashed, DOTDASHED_LENGTH);
+		  0, dashbuf, DOTDASHED_LENGTH);
       gcv.line_style = LineOnOffDash;
       break;
     case L_SHORTDASHED:
+      for (i = 0; i < SHORTDASHED_LENGTH; i++)
+	dashbuf[i] = scale * shortdashed[i];
       XSetDashes (_plotter->dpy, _plotter->drawstate->gc_fg, 
-		  0, shortdashed, SHORTDASHED_LENGTH);
+		  0, dashbuf, SHORTDASHED_LENGTH);
       gcv.line_style = LineOnOffDash;
       break;
     case L_LONGDASHED:
+      for (i = 0; i < LONGDASHED_LENGTH; i++)
+	dashbuf[i] = scale * longdashed[i];
       XSetDashes (_plotter->dpy, _plotter->drawstate->gc_fg, 
-		  0, longdashed, LONGDASHED_LENGTH);
+		  0, dashbuf, LONGDASHED_LENGTH);
       gcv.line_style = LineOnOffDash;
       break;
     }

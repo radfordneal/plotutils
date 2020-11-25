@@ -16,7 +16,7 @@
    codes (e.g. C_BEGIN_SUBSCRIPT) appearing in extern.h. */
 
 #define NUM_CONTROLS 16
-const char * const _control_tbl[NUM_CONTROLS] =
+static const char * const _control_tbl[NUM_CONTROLS] =
 {
   /* \sp = start superscript */
   "sp",
@@ -52,18 +52,18 @@ const char * const _control_tbl[NUM_CONTROLS] =
   "l8",
 };
 
-typedef struct 
+typedef struct
 {
   unsigned char byte;
-  const char * const string;
-  const char * const ps_name;
+  const char * string;
+  const char * ps_name;
 } Escape;
 
 /* The basic translation table, applying to all ISO-Latin-1 fonts. */
 
 #define NUM_ISO_ESCAPES 95
 
-const Escape _iso_escape_tbl[NUM_ISO_ESCAPES] = 
+static const Escape _iso_escape_tbl[NUM_ISO_ESCAPES] = 
 {
   /* groff-style escape sequences */
   {161, "r!", "exclamdown"},
@@ -171,7 +171,7 @@ const Escape _iso_escape_tbl[NUM_ISO_ESCAPES] =
 
 #define NUM_SYMBOL_ESCAPES 161
 
-const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] = 
+static const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] = 
 {
   /* groff-style escape sequences */
   {042, "fa", "universal"},
@@ -349,7 +349,7 @@ const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] =
 
 #define NUM_SPECIAL_ESCAPES 28
 
-const Escape _special_escape_tbl[NUM_SPECIAL_ESCAPES] = 
+static const Escape _special_escape_tbl[NUM_SPECIAL_ESCAPES] = 
 {
   /* some special UGS characters */
   {0204, "~-", "modifiedcongruent"},
@@ -401,7 +401,7 @@ typedef struct
 
 #define NUM_RAISED_CHARS 5
 
-const Raiseinfo _raised_char_tbl[NUM_RAISED_CHARS] = 
+static const Raiseinfo _raised_char_tbl[NUM_RAISED_CHARS] = 
 {
   {170, 97, true},			/* ordfeminine mapped to 'a' */
   {178, 50, false},			/* twosuperior mapped to '2' */
@@ -411,23 +411,23 @@ const Raiseinfo _raised_char_tbl[NUM_RAISED_CHARS] =
 };
 
 /* The single-character `deligature' table, applying to all ISO-8859-1
-   vector fonts (since the Hershey glyphs do not include these ligatures,
-   except for germandbls in Gothic-German). */
+   Hershey fonts (since they do not include these ligatures, except for
+   germandbls [eszet] in Gothic-German). */
 
 typedef struct
 {
   unsigned char from;
-  const char * const to;
+  const char * to;
   int except_font;
 } Deligature;
 
 #define NUM_DELIGATURED_CHARS 3
 
-const Deligature _deligature_char_tbl[NUM_DELIGATURED_CHARS] = 
+static const Deligature _deligature_char_tbl[NUM_DELIGATURED_CHARS] = 
 {
   {198, "AE", 999},
   {230, "ae", 999},
-  {223, "ss", 11},  /* no deligature of #223 in font #11, ie. Gothic-German */
+  {223, "ss", HERSHEY_GOTHIC_GERMAN},  /* no deligature of #223 in G.-German */
 };
 
 /* Same as preceding, for escape sequences rather than for 8-bit
@@ -435,18 +435,18 @@ const Deligature _deligature_char_tbl[NUM_DELIGATURED_CHARS] =
 
 typedef struct
 {
-  const char * const from;
-  const char * const to;
+  const char * from;
+  const char * to;
   int except_font;
 } Deligature_escape;
 
 #define NUM_DELIGATURED_ESCAPES 3
 
-const Deligature_escape _deligature_escape_tbl[NUM_DELIGATURED_ESCAPES] = 
+static const Deligature_escape _deligature_escape_tbl[NUM_DELIGATURED_ESCAPES] = 
 {
   {"AE", "AE", 999},
   {"ae", "ae", 999},
-  {"ss", "ss", 11},   /* no deligature of \ss in font #11, ie. Gothic-German */
+  {"ss", "ss", HERSHEY_GOTHIC_GERMAN},   /* no deligature of \ss in Gothic-G.*/
 };
 
 /* A table of the ligatures present in the Hershey fonts.  Ligaturization
@@ -462,38 +462,34 @@ const Deligature_escape _deligature_escape_tbl[NUM_DELIGATURED_ESCAPES] =
 typedef struct
 {
   int font;
-  const char * const from;
+  const char * from;
   unsigned char byte;
 } Ligature;
 
 #define NUM_LIGATURES 22
 
-const Ligature _ligature_tbl[NUM_LIGATURES] = 
+static const Ligature _ligature_tbl[NUM_LIGATURES] = 
 {
-  {0, "ffi", 0203},		/* font #0 is HersheySerif */
-  {0, "ffl", 0204},
-  {0, "ff", 0200},
-  {0, "fi", 0201},
-  {0, "fl", 0202},
-  {1, "ffi", 0203},		/* font #1 is HersheySerif-Italic */
-  {1, "ffl", 0204},
-  {1, "ff", 0200},
-  {1, "fi", 0201},
-  {1, "fl", 0202},
-  {11, "ch", 0206},		/* font #11 is HersheyGothic-German */
-  {11, "tz", 0207},
-  {13, "ffi", 0203},		/* font #13 is HersheyCyrillic */
-  {13, "ffl", 0204},
-  {13, "ff", 0200},
-  {13, "fi", 0201},
-  {13, "fl", 0202},
-  {16, "ffi", 0203},		/* font #16 is HersheyEUC */
-  {16, "ffl", 0204},
-  {16, "ff", 0200},
-  {16, "fi", 0201},
-  {16, "fl", 0202},
+  {HERSHEY_SERIF, "ffi", 0203},
+  {HERSHEY_SERIF, "ffl", 0204},
+  {HERSHEY_SERIF, "ff", 0200},
+  {HERSHEY_SERIF, "fi", 0201},
+  {HERSHEY_SERIF, "fl", 0202},
+  {HERSHEY_SERIF_ITALIC, "ffi", 0203},	
+  {HERSHEY_SERIF_ITALIC, "ffl", 0204},
+  {HERSHEY_SERIF_ITALIC, "ff", 0200},
+  {HERSHEY_SERIF_ITALIC, "fi", 0201},
+  {HERSHEY_SERIF_ITALIC, "fl", 0202},
+  {HERSHEY_GOTHIC_GERMAN, "ch", 0206},	
+  {HERSHEY_GOTHIC_GERMAN, "tz", 0207},
+  {HERSHEY_CYRILLIC, "ffi", 0203},
+  {HERSHEY_CYRILLIC, "ffl", 0204},
+  {HERSHEY_CYRILLIC, "ff", 0200},
+  {HERSHEY_CYRILLIC, "fi", 0201},
+  {HERSHEY_CYRILLIC, "fl", 0202},
+  {HERSHEY_EUC, "ffi", 0203},		
+  {HERSHEY_EUC, "ffl", 0204},
+  {HERSHEY_EUC, "ff", 0200},
+  {HERSHEY_EUC, "fi", 0201},
+  {HERSHEY_EUC, "fl", 0202},
 };
-
-/* Must equal the index of the HersheyEUC font, in the internal font table
-   in g_fontdb.c.  SHOULD NOT BE HERE. */
-#define HERSHEY_EUC_FONT 16

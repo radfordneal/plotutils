@@ -33,6 +33,7 @@ _t_fcont (x, y)
 {
   Point start, end;		/* endpoints of line seg. (in device coors) */
   IntPoint istart, iend;	/* same, quantized to integer Tek coors */
+  bool force;
   int oldindex, newindex;
   int clipval;
   int retval;
@@ -125,8 +126,17 @@ _t_fcont (x, y)
   _plotter->set_attributes();  
   _plotter->set_pen_color();
 
+  /* If this is the initial line segment of a polyline, force output of a
+  vector even if the line segment has zero length, so that something
+  visible will show up on the Tek display.  We do this only if the cap mode
+  isn't "butt"; if it is, we don't draw anything. */
+  if (oldindex == 0 && _plotter->drawstate->cap_type != CAP_BUTT)
+    force = true;
+  else 
+    force = false;
+
   /* continue polyline by drawing vector on Tek display */
-  _tek_vector_compressed (iend.x, iend.y, istart.x, istart.y);
+  _tek_vector_compressed (iend.x, iend.y, istart.x, istart.y, force);
       
   /* update our notion of Tek's notion of position */
   _plotter->pos.x = iend.x;

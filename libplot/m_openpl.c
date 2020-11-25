@@ -12,7 +12,6 @@ _m_openpl (void)
 _m_openpl ()
 #endif
 {
-  const char *portable_s;
   bool not_previously_opened;
 
   if (_plotter->open)
@@ -21,14 +20,6 @@ _m_openpl ()
       return -1;
     }
 
-  /* initialize certain data members from values of relevant class variables */
-
-  portable_s = (const char *)_get_plot_param ("META_PORTABLE");
-  if (strcasecmp (portable_s, "yes") == 0)
-    _plotter->portable_output = true;
-  else
-    _plotter->portable_output = false;
-  
   /* flag device as open */
   _plotter->open = true;
   not_previously_opened = _plotter->opened ? false : true;

@@ -1,6 +1,7 @@
-/* Known page sizes and their interpretation (included by pagetype.c, and
-   used by various FigPlotter methods, PSPlotter methods, and HPGLPlotter
-   methods.
+/* This header file is #include'd by g_pagetype.c.  It is a database rather
+   than a true header file: it includes known page sizes and their
+   interpretation (used by various FigPlotter methods, PSPlotter methods,
+   and HPGLPlotter methods).
 
    For each page size, the coordinates, in the device frame, of the left,
    right, bottom, and top of the "graphics display" (by convention a
@@ -41,7 +42,7 @@
 
 #define NUM_PAGESIZES 18
 
-const Pagedata _pagedata[NUM_PAGESIZES] =
+static const Pagedata _pagedata[NUM_PAGESIZES] =
 {
   /* ANSI A, 8.5in x 11.0in ["letter"] */
   /* AutoCAD uses 8.0x10.5 */
@@ -151,17 +152,17 @@ const Pagedata _pagedata[NUM_PAGESIZES] =
       {0.47, 16.07, 3.895, 19.495, 0.0}, /* ps */
       {0.0, 15.6, 0.0, 15.6, 22.4}, /* hp-gl */
   },
-  /* ISO A1, 59.4cm x 84.0 cm = 23.39 x 33.07 */
+  /* ISO A1, 59.4cm x 84.1 cm = 23.39 x 33.11 */
   /* AutoCAD uses 22.4x32.2 */
   { "a1", true,
       {0.495, 22.895, 22.895, 0.495, 0.0}, /* fig */
       {0.495, 22.895, 5.335, 27.735, 0.0}, /* ps */
       {0.0, 22.4, 0.0, 22.4, 32.2}, /* hp-gl */
   },
-  /* ISO A0, 84.0cm x 118.8 cm = 33.07 x 46.77 */
+  /* ISO A0, 84.1cm x 118.9 cm = 33.11 x 46.81 */
   /* AutoCAD uses 32.2x45.9 */
   { "a0", true,
-      {0.435, 32.635, 32.635, 0.435, 0.0},	/* fig */
+      {0.435, 32.635, 32.635, 0.435, 0.0}, /* fig */
       {0.435, 32.635, 7.285, 39.485, 0.0}, /* ps */
       {0.0, 32.2, 0.0, 32.2, 45.9}, /* hp-gl */ 
   },

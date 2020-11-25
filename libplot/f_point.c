@@ -40,7 +40,7 @@ _f_fpoint (x, y)
       (_plotter->fig_drawing_depth)--;
   _plotter->fig_last_priority = POLYLINE_PRIORITY;
 
-  sprintf(_plotter->outbuf.current,
+  sprintf(_plotter->page->point,
 	  "#POLYLINE [OPEN]\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %d %d\n\t%d %d\n",
 	  2,			/* polyline object */
 	  P_OPEN,		/* polyline subtype */
@@ -63,7 +63,7 @@ _f_fpoint (x, y)
 	  IROUND(YD(x,y))
 	  );
 
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
 
   /* update our notion of position */
   _plotter->drawstate->pos.x = x;

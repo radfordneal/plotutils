@@ -1,10 +1,10 @@
 # You may run this example by doing:
 #
-#    <soliton.ode ode | graph -TX -C
+#    ode < soliton.ode | graph -T X -C
 #
 # or alternatively, to create a real-time plot,
 #
-#    <soliton.ode ode | graph -TX -C -x 5 15 5 -y -3 3
+#    ode < soliton.ode | graph -T X -C -x 5 15 5 -y -3 3
 
 # This example numerically solves an initial value problem arising in
 # John Selker's soliton thesis:

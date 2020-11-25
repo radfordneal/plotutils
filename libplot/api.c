@@ -1,13 +1,13 @@
 /* This file defines the C binding for GNU libplot.  The C API consists of
-   81 functions that are wrappers around the 81 methods that may be applied
-   to any Plotter object, plus four additional functions (newpl, selectpl,
+   functions that are wrappers around the methods that may be applied to
+   any Plotter object, plus four additional functions (newpl, selectpl,
    deletepl, parampl) that are specific to the C binding.
 
    These four functions maintain an array of Plotter objects, and construct
    and destroy them, as requested.  The _plotter pointer, which is
-   referenced in the 81 basic functions, is a pointer to one of the objects
-   in the array of constructed plotters.  It must be selected by calling
-   selectpl.
+   referenced in the basic functions, is a pointer to one of the objects in
+   the array of currently existing Plotters.  It must be selected by
+   calling selectpl.
 
    By default, _plotter points to a Plotter object that sends output in
    metafile format to standard output.  That is for compatibility with
@@ -33,36 +33,64 @@ int (*libplot_warning_handler)() = NULL;
 int (*libplot_error_handler)() = NULL;
 #endif
 
-/* known plotter types, indexed into by a short mnemonic string:
-   "meta"=metafile, "tek"=Tektronix, "hpgl"=HP-GL/2, "fig"=xfig, "ps"=PS,
-   "X"=X11, "Xdrawable"=X11 Drawable.  The `default plotter' structures are
-   simply copied into a new Plotter struct at the time it is
-   constructed. */
+/* This elides the argument prototypes if the compiler does not support
+   them. The name P__ is chosen in hopes that it will not collide with any
+   others. */
+
+#if __STDC__
+#define P__(a)	a
+#else
+#define P__(a)	()
+#endif
+
+/* Known Plotter types, indexed into by a short mnemonic case-insensitive
+   string: "meta"=metafile, "tek"=Tektronix, "hpgl"=HP-GL/2, "fig"=xfig,
+   "ps"=PS, "X"=X11, "Xdrawable"=X11 Drawable.  When a new Plotter of any
+   type is constructed, the appropriate `default_init' structure is copied
+   into it.  Also, the appropriate `initialize' routine is invoked.  Before
+   the Plotter is destroyed, the appropriate `terminate' routine is
+   invoked. */
 
 typedef struct 
 {
-  const char * const name;
-  const Plotter * const init;
+  const char *name;
+  plotter_type type;
+  const Plotter *default_init;
+  bool (*initialize) P__((Plotter *plotter));
+  bool (*terminate) P__((Plotter *plotter));
 }
-plotter_initialization;
+Plotter_data;
+
+#undef P__
 
 /* default plotter produces metafile output */
 #ifndef DEFAULT_PLOTTER_TYPE
 #define DEFAULT_PLOTTER_TYPE "meta"
 #endif
 
-static const plotter_initialization _plotter_initializations[] = 
+/* each of the default Plotter structures here, with initialization and
+   termination routines, is located in the appropriate ?_defplot.c file */
+
+static const Plotter_data _plotter_data[] = 
 {
-  {"meta", &_meta_default_plotter},
-  {"tek", &_tek_default_plotter},
-  {"hpgl", &_hpgl_default_plotter},
-  {"fig", &_fig_default_plotter},
-  {"ps", &_ps_default_plotter},
+  {"meta", PL_META, &_meta_default_plotter, 
+     _meta_init_plotter, _meta_terminate_plotter},
+  {"tek", PL_TEK, &_tek_default_plotter, 
+     _tek_init_plotter, _tek_terminate_plotter},
+  {"hpgl", PL_HPGL, &_hpgl_default_plotter, 
+     _hpgl_init_plotter, _hpgl_terminate_plotter},
+  {"fig", PL_FIG, &_fig_default_plotter, 
+     _fig_init_plotter, _fig_terminate_plotter},
+  {"ps", PL_PS, &_ps_default_plotter, 
+     _ps_init_plotter, _ps_terminate_plotter},
 #ifndef X_DISPLAY_MISSING
-  {"X", &_X_default_plotter},    
-  {"Xdrawable", &_X_drawable_default_plotter},    
+  {"X", PL_X11, &_X_default_plotter, 
+     _X_init_plotter, _X_terminate_plotter},    
+  {"Xdrawable", PL_X11_DRAWABLE, &_X_drawable_default_plotter, 
+     _X_drawable_init_plotter, _X_drawable_terminate_plotter},    
 #endif /* X_DISPLAY_MISSING */
-  {(const char *)NULL, (const Plotter *)NULL},    
+  {(const char *)NULL, (plotter_type)0, (const Plotter *)NULL,
+     NULL, NULL},
 };
 
 /* array of plotter objects, needed by C binding */
@@ -74,14 +102,16 @@ static Plotter **_plotters;
 Plotter *_plotter = NULL;
 
 /* forward references */
-static bool _string_to_plotter_init __P((const char *type, const Plotter **pptr));
+static bool _string_to_plotter_data __P((const char *type, int *position));
+static bool _type_to_plotter_data __P((plotter_type type, int *position));
+static void _api_error __P((const char *msg));
 static void _api_warning __P((const char *msg));
 static void _init_plotter_array __P((void));
 static void _copy_params_to_plotter __P((Plotter *plotter));
 
 /* Initialize the array of plotters (on entry, _num_plotters should be 0).
    This is invoked when the user calls, for the very first time, one of the
-   81 basic libplot functions. */
+   basic libplot functions. */
 static void
 #ifdef _HAVE_PROTOS
 _init_plotter_array (void)
@@ -91,7 +121,7 @@ _init_plotter_array ()
 {
   int i;
   bool found;
-  const Plotter *plotter;
+  int position;
 
   /* set up plotter array */
   _plotters = (Plotter **)_plot_xmalloc (INITIAL_NUM_PLOTTERS * sizeof(Plotter *));
@@ -100,23 +130,24 @@ _init_plotter_array ()
   _num_plotters = INITIAL_NUM_PLOTTERS;
   
   /* determine initialization for the default plotter type */
-  found = _string_to_plotter_init (DEFAULT_PLOTTER_TYPE, &plotter);
+  found = _string_to_plotter_data (DEFAULT_PLOTTER_TYPE, &position);
   if (!found)
-    {
-      fprintf (stderr, "libplot: panic: cannot create default plotter type \"%s\"\n",
-	       DEFAULT_PLOTTER_TYPE);
-      exit (1);
-    }
+    /* shouldn't happen (library installed wrong?), treat as fatal */
+    _api_error ("cannot create plotter of default type");
   
   /* copy initialization for default type into array slot #0 */
   _plotters[0] = (Plotter *)_plot_xmalloc (sizeof(Plotter));
-  memcpy (_plotters[0], plotter, sizeof(Plotter));
+  memcpy (_plotters[0], _plotter_data[position].default_init, sizeof(Plotter));
   _plotters[0]->instream = stdin;
   _plotters[0]->outstream = stdout;
   _plotters[0]->errstream = stderr;
 
   /* copy in the current values of class variables from _plot_params[] */
   _copy_params_to_plotter (_plotters[0]);
+
+  /* do any needed extra initializiations (usually, initialize data members
+     from the class variables) */
+  _plotter_data[position].initialize (_plotters[0]);
 
   /* select the just-created instance of the default plotter type */
   selectpl (0);
@@ -139,17 +170,17 @@ newpl (type, instream, outstream, errstream)
   bool open_slot = false;
   int i = 0;
   int j;
-  const Plotter *plotter;	/* initialization, will copy in */
+  int position;
   
   /* initialize plotter array if necessary */
   if (_num_plotters == 0)
     _init_plotter_array ();
 
   /* determine initialization for specified plotter type */
-  found = _string_to_plotter_init (type, &plotter);
+  found = _string_to_plotter_data (type, &position);
   if (!found)
     {
-      _api_warning ("ignoring request to create unknown plotter type");
+      _api_warning ("ignoring request to create plotter of unknown type");
       return -1;
     }
 
@@ -174,7 +205,7 @@ newpl (type, instream, outstream, errstream)
   
   /* copy initialization for specified plotter type into open slot */
   _plotters[i] = (Plotter *)_plot_xmalloc (sizeof(Plotter));
-  memcpy (_plotters[i], plotter, sizeof(Plotter));
+  memcpy (_plotters[i], _plotter_data[position].default_init, sizeof(Plotter));
   _plotters[i]->instream = instream;  
   _plotters[i]->outstream = outstream;
   _plotters[i]->errstream = errstream;
@@ -182,21 +213,27 @@ newpl (type, instream, outstream, errstream)
   /* copy in the current values of class variables from _plot_params[] */
   _copy_params_to_plotter (_plotters[i]);
   
+  /* do any needed extra initializiations (usually, initialize data members
+     from the class variables) */
+  _plotter_data[position].initialize (_plotters[i]);
+
   return i;
 }
 
-/* utility function, used above */
+/* utility function, used above; keys into table of Plotter types by a
+   short mnemonic string */
 static bool
 #ifdef _HAVE_PROTOS
-_string_to_plotter_init (const char *type, const Plotter **pptr)
+_string_to_plotter_data (const char *type, int *position)
 #else
-_string_to_plotter_init (type, pptr)
+_string_to_plotter_data (type, position)
      const char *type;
-     const Plotter **pptr;
+     int *position;
 #endif
 {
-  const plotter_initialization *p = _plotter_initializations;
+  const Plotter_data *p = _plotter_data;
   bool found = false;
+  int i = 0;
   
   /* search table of known plotter type mnemonics */
   while (p->name)
@@ -207,9 +244,43 @@ _string_to_plotter_init (type, pptr)
 	  break;
 	}
       p++;
+      i++;
     }
-  /* return pointer to plotter initialization through pointer */
-  *pptr = p->init;
+  /* return pointer to plotter data through pointer */
+  if (found)
+    *position = i;
+  return found;
+}
+
+/* utility function, used above; keys into table of Plotter types by the
+   contents of a Plotter's type field (e.g. P_META, etc.) */
+static bool
+#ifdef _HAVE_PROTOS
+_type_to_plotter_data (plotter_type type, int *position)
+#else
+_type_to_plotter_data (type, position)
+     plotter_type type;
+     int *position;
+#endif
+{
+  const Plotter_data *p = _plotter_data;
+  bool found = false;
+  int i = 0;
+  
+  /* search table of known plotter type mnemonics */
+  while (p->name)
+    {
+      if (type == p->type)
+	{
+	  found = true;
+	  break;
+	}
+      p++;
+      i++;
+    }
+  /* return pointer to plotter data through pointer */
+  if (found)
+    *position = i;
   return found;
 }
 
@@ -295,7 +366,7 @@ deletepl (handle)
 #endif
 {
   Plotter *current_plotter;
-  int j;
+  int j, position;
   
   if (handle < 0 || handle >= _num_plotters 
       || _plotters[handle] == NULL)
@@ -317,6 +388,19 @@ deletepl (handle)
   _plotter = _plotters[handle];
   if (_plotter->open)
     _plotter->closepl ();
+
+  /* Invoke an internal Plotter method before deletion.  For most Plotters
+     this is a no-op.  For a PS Plotter, this emits the Plotter's pages of
+     graphics to its output stream, and deallocates associated storage. */
+
+  if (_type_to_plotter_data (_plotter->type, &position))
+    _plotter_data[position].terminate (_plotter);
+  else
+    /* shouldn't happen */
+    {
+      _api_error ("cannot delete Plotter of unknown type");
+      return -1;
+    }
 
 #ifndef X_DISPLAY_MISSING
   /* if an X Plotter, kill forked-off processes that are maintaining its
@@ -372,7 +456,8 @@ parampl (parameter, value)
       if (strcmp (_plot_params[j].parameter, parameter) == 0)
 	{
 	  if (_plot_params[j].is_string)
-	    /* parameter value is a string, so treat specially */
+	    /* parameter value is a string, so treat specially: copy the
+	       string, byte by byte */
 	    {
 	      if (_plot_params[j].value)
 		free (_plot_params[j].value);
@@ -386,30 +471,30 @@ parampl (parameter, value)
 		_plot_params[j].value = NULL;
 	    }
 	  else
-	    /* parameter value is a void *, so just copy user-spec'd value */
+	    /* parameter value is a (void *), so just copy the
+               user-specified pointer */
 	    _plot_params[j].value = value;
 	  
 	  /* matched, so return happily */
 	  return 0;
 	}
     }
-  /*
-  _api_warning ("ignoring request to set an unknown parameter");
-  return -1;
-  */
 
-  /* we now ignore requests to set unknown parameters */
+  /* silently ignore requests to set unknown parameters */
   return 0;
 }
 
-/* called in each openpl() method, to retrieve value of a class variable,
-   in order to initialize the appropriate data field of a Plotter object */
+/* This is used when a Plotter is created and initialized, to retrieve
+   values of stored class variables.  [And also, if necessary, by the
+   public openpl() method.]  Class variables are copied into each Plotter
+   at creation time, by newpl(). */
 
 Voidptr
 #ifdef _HAVE_PROTOS
-_get_plot_param (const char *parameter_name)
+_get_plot_param (const Plotter *plotter, const char *parameter_name)
 #else
-_get_plot_param (parameter_name)
+_get_plot_param (plotter, parameter_name)
+     const Plotter *plotter;
      const char *parameter_name;
 #endif
 {
@@ -417,7 +502,7 @@ _get_plot_param (parameter_name)
 
   for (j = 0; j < NUM_DEVICE_DRIVER_PARAMETERS; j++)
     if (strcmp (_plot_params[j].parameter, parameter_name) == 0)
-      return _plotter->params[j];
+      return plotter->params[j];
 
   return (Voidptr)NULL;		/* name not matched */
 }
@@ -433,14 +518,19 @@ _flush_plotter_outstreams (void)
 _flush_plotter_outstreams ()
 #endif
 {
+#ifndef HAVE_NULL_FLUSH
   int i;
 
   for (i = 0; i < _num_plotters; i++)
-    if (_plotters[i] && _plotters[i]->outstream)
-      fflush (_plotters[i]->outstream);
-
-#ifdef HAVE_NULL_FLUSH
-  /* do more: flush _all_ output streams before forking */
+    if (_plotters[i]) 
+      {
+	if (_plotters[i]->outstream)
+	  fflush (_plotters[i]->outstream);
+	if (_plotters[i]->errstream)
+	  fflush (_plotters[i]->errstream);
+      }
+#else
+  /* can do more: flush _all_ output streams before forking */
   fflush ((FILE *)NULL);
 #endif /* HAVE_NULL_FLUSH */
 }
@@ -464,10 +554,8 @@ _close_other_plotter_fds (plotter)
 	&& _plotters[i]->opened
 	&& _plotters[i]->open
 	&& close (ConnectionNumber (_plotters[i]->dpy)) < 0)
-      {
-	plotter->error ("couldn't close connection to X display");
-	exit (1);
-      }
+      /* shouldn't happen */
+      plotter->error ("couldn't close connection to X display");
 }
 
 /* function called in x_xevents.c, to process X events associated with
@@ -507,29 +595,46 @@ _api_warning (msg)
 #endif
 {
   if (libplot_warning_handler != NULL)
-    (*libplot_warning_handler)((char *)msg);
+    (*libplot_warning_handler)(msg);
   else
-    fprintf (stderr, "libplot: warning: %s\n", msg);
+    fprintf (stderr, "libplot: %s\n", msg);
 }
 
-/* The following are the C bindings for the 81 methods that operate on
-   objects in the Plotter class.  Together with the four functions above
-   (newpl, selectpl, deletepl; also parampl), they make up the 
-   libplot C API.
+/* function used in this file to print warning messages */
+static void
+#ifdef _HAVE_PROTOS
+_api_error (const char *msg)
+#else
+_api_error (msg)
+     const char *msg;
+#endif
+{
+  if (libplot_error_handler != NULL)
+    (*libplot_error_handler)(msg);
+  else
+    {
+      fprintf (stderr, "libplot: error: %s\n", msg);
+      exit (1);
+    }
+}
+
+/* The following are the C bindings for the methods that operate on objects
+   in the Plotter class.  Together with the four functions above (newpl,
+   selectpl, deletepl; also parampl), they make up the libplot C API.
 
    Each binding tests whether _num_plotters > 0, which determines whether
    the array of plotters has been initialized.  That is because it makes no
    sense to call these functions before the _plotter pointer points to a
-   non-NULL plotter object.
+   non-NULL Plotter object.
 
    In fact, of the below functions, it really only makes sense to call
-   openpl, havecap, or outfile [deprecated], before the plotter array is
+   openpl, havecap, or outfile [deprecated], before the Plotter array is
    initialized.  Calling any other of the below functions, before the
-   plotter array is initialized, will generate an error message because
-   even though the call to _init_plotter_array will initialize the plotter
-   array and select a default plotter instance, the plotter will not be
-   open.  No operation in the plotter class, with the exception of the
-   just-mentioned ones, may be invoked unless the plotter that is being
+   Plotter array is initialized, will generate an error message because
+   even though the call to _init_plotter_array will initialize the Plotter
+   array and select a default Plotter instance, the Plotter will not be
+   open.  No operation in the Plotter class, with the exception of the
+   just-mentioned ones, may be invoked unless the Plotter that is being
    acted on is open. */
 
 int 

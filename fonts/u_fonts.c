@@ -30,15 +30,15 @@ struct _xfstruct x_fontinfo[NUM_FONTS] = {
     {"-*-times-bold-r-*--", (struct xfont*) NULL},
     {"-*-times-bold-i-*--", (struct xfont*) NULL},
 
-    {"-*-avantgarde-medium-r-*--", (struct xfont*) NULL},
-    {"-*-avantgarde-medium-i-*--", (struct xfont*) NULL},
-    {"-*-avantgarde-demi-r-*--", (struct xfont*) NULL},
-    {"-*-avantgarde-demi-i-*--", (struct xfont*) NULL},
+    {"-*-itc avant garde gothic-book-r-*--", (struct xfont*) NULL},
+    {"-*-itc avant garde gothic-book-i-*--", (struct xfont*) NULL},
+    {"-*-itc avant garde gothic-demi-r-*--", (struct xfont*) NULL},
+    {"-*-itc avant garde gothic-demi-i-*--", (struct xfont*) NULL},
 
-    {"-*-bookman-light-r-*--", (struct xfont*) NULL},
-    {"-*-bookman-light-i-*--", (struct xfont*) NULL},
-    {"-*-bookman-demi-r-*--", (struct xfont*) NULL},
-    {"-*-bookman-demi-i-*--", (struct xfont*) NULL},
+    {"-*-itc bookman-light-r-*--", (struct xfont*) NULL},
+    {"-*-itc bookman-light-i-*--", (struct xfont*) NULL},
+    {"-*-itc bookman-demi-r-*--", (struct xfont*) NULL},
+    {"-*-itc bookman-demi-i-*--", (struct xfont*) NULL},
 
     {"-*-courier-medium-r-*--", (struct xfont*) NULL},
     {"-*-courier-medium-o-*--", (struct xfont*) NULL},
@@ -66,8 +66,8 @@ struct _xfstruct x_fontinfo[NUM_FONTS] = {
     {"-*-palatino-bold-i-*--", (struct xfont*) NULL},
 
     {"-*-symbol-medium-r-*--", (struct xfont*) NULL},
-    {"-*-zapfchancery-medium-i-*--", (struct xfont*) NULL},
-    {"-*-zapfdingbats-*-*-*--", (struct xfont*) NULL},
+    {"-*-itc zapf chancery-medium-i-*--", (struct xfont*) NULL},
+    {"-*-itc zapf dingbats-*-*-*--", (struct xfont*) NULL},
 };
 
 struct _fstruct ps_fontinfo[NUM_FONTS + 1] = {

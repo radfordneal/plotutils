@@ -96,14 +96,18 @@ _tek_vector (xx, yy)
    omission of optional bytes.  Hi_Y, Lo_Y and Hi_X are all held in memory,
    so need not be transmitted if they did not change.  Lo_X must always be
    transmitted.  EGM is not held in memory; if not transmitted, it defaults
-   to zero. */
+   to zero.
+
+   The `force' argument will force output even if the vector has zero
+   length. */
 
 void
 #ifdef _HAVE_PROTOS
-_tek_vector_compressed (int xx, int yy, int oldxx, int oldyy)
+_tek_vector_compressed (int xx, int yy, int oldxx, int oldyy, bool force)
 #else
-_tek_vector_compressed (xx, yy, oldxx, oldyy)
+_tek_vector_compressed (xx, yy, oldxx, oldyy, force)
      int xx, yy, oldxx, oldyy;
+     bool force;
 #endif
 {
   char xx_high, yy_high, oldxx_high, oldyy_high;
@@ -123,7 +127,8 @@ _tek_vector_compressed (xx, yy, oldxx, oldyy)
     yy = 0;
 #endif
 
-  if ((xx == oldxx) && (yy == oldyy))
+  /* if line segment has zero length, do nothing unless forcing an output */
+  if (!force && (xx == oldxx) && (yy == oldyy))
     return;
 
   xx_high = (xx>>7) & FIVEBITS;	/* bits 11 through 7 of xx */

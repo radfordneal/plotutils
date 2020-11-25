@@ -30,6 +30,10 @@ _p_fcircle (x, y, radius)
 
   _plotter->endpath (); /* flush polyline if any */
 
+  if (!_plotter->drawstate->points_are_connected)
+    /* line type is `disconnected', so do nothing */
+    return 0;
+
   /* final arg flags this for idraw as a circle, not an ellipse */
   _p_fellipse_internal (x, y, radius, radius, 0.0, true);
 
@@ -52,6 +56,10 @@ _p_fellipse (x, y, rx, ry, angle)
 
   _plotter->endpath (); /* flush polyline if any */
 
+  if (!_plotter->drawstate->points_are_connected)
+    /* line type is `disconnected', so do nothing */
+    return 0;
+
   /* final arg flags this for idraw as an ellipse, not a circle */
   _p_fellipse_internal (x, y, rx, ry, angle, false);
 
@@ -71,6 +79,7 @@ _p_fellipse_internal (x, y, rx, ry, angle, circlep)
   double offcenter_rotation_matrix[6];
   double ellipse_transformation_matrix[6];
   double invnorm = 0.0, granularity = 1.0;
+  double dashbuf[PS_DASH_ARRAY_LEN], scale;
   bool singular_map;
   int i;
 
@@ -98,10 +107,10 @@ _p_fellipse_internal (x, y, rx, ry, angle, circlep)
 
   /* prologue instruction and idraw directive: start of Elli or Circ */
   if (circlep)
-    strcpy (_plotter->outbuf.current, "Begin %I Circ\n");
+    strcpy (_plotter->page->point, "Begin %I Circ\n");
   else
-    strcpy (_plotter->outbuf.current, "Begin %I Elli\n");
-  _update_buffer(&_plotter->outbuf);
+    strcpy (_plotter->page->point, "Begin %I Elli\n");
+  _update_buffer(_plotter->page);
   
   /* redefine `originalCTM' matrix (relevant to line width only) */
   if (singular_map != true)
@@ -116,65 +125,81 @@ _p_fellipse_internal (x, y, rx, ry, angle, circlep)
       else
 	linewidth_adjust = 1.0;
 
-      sprintf (_plotter->outbuf.current, "[");
-      _update_buffer (&_plotter->outbuf);
+      sprintf (_plotter->page->point, "[");
+      _update_buffer (_plotter->page);
 
       for (i = 0; i < 4; i++)
 	{
-	  sprintf (_plotter->outbuf.current, "%.7g ", 
+	  sprintf (_plotter->page->point, "%.7g ", 
 		   linewidth_adjust * invnorm * _plotter->drawstate->transform.m[i]);
-	  _update_buffer (&_plotter->outbuf);
+	  _update_buffer (_plotter->page);
 	}
-      _update_buffer (&_plotter->outbuf);
-      sprintf (_plotter->outbuf.current, 
+      _update_buffer (_plotter->page);
+      sprintf (_plotter->page->point, 
 	       "0 0 ] trueoriginalCTM originalCTM\n concatmatrix pop\n");
-      _update_buffer (&_plotter->outbuf);
+      _update_buffer (_plotter->page);
     }
 
   /* specify cap style and join style */
-  sprintf (_plotter->outbuf.current, "%d setlinecap %d setlinejoin\n",
+  sprintf (_plotter->page->point, "%d setlinecap %d setlinejoin\n",
 	   _ps_cap_style[_plotter->drawstate->cap_type], 
 	   _ps_join_style[_plotter->drawstate->join_type]);
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
 
-  /* idraw directive: set line bit vector */
-  sprintf (_plotter->outbuf.current, "%%I b %ld\n", 
-	   _ps_line_type_bit_vector[_plotter->drawstate->line_type]);
-  _update_buffer(&_plotter->outbuf);
+  /* idraw instruction: brush type (spec'd as bit vector) */
+  sprintf (_plotter->page->point, "\
+%%I b %ld\n", 
+	   _idraw_brush_pattern[_plotter->drawstate->line_type]);
+  _update_buffer (_plotter->page);
+
+  /* compute PS dash array for this line type (scale by line width
+     if larger than 1 device unit, i.e., 1 point) */
+  scale = _plotter->drawstate->device_line_width;
+  if (scale < 1.0)
+    scale = 1.0;
+  for (i = 0; i < PS_DASH_ARRAY_LEN; i++)
+    dashbuf[i] = scale * _ps_dash_array[_plotter->drawstate->line_type][i];
 
   /* PS instruction: SetB (i.e. setbrush), with args
      LineWidth, LeftArrow, RightArrow, DashArray, DashOffset. */
   /* Note LineWidth must be an integer for idraw compatibility. */
-  sprintf (_plotter->outbuf.current, "%d 0 0 [ %s ] 0 SetB\n", 
-	   _plotter->drawstate->quantized_device_line_width,
-	   _ps_line_type_setdash[_plotter->drawstate->line_type]);
-  _update_buffer(&_plotter->outbuf);
-
+  if (_plotter->drawstate->line_type == L_SOLID)
+    sprintf (_plotter->page->point, "\
+%d 0 0 [ ] 0 SetB\n", 
+  	     _plotter->drawstate->quantized_device_line_width);
+  else
+    /* emit dash array.  THIS ASSUMES PS_DASH_ARRAY_LEN = 4. */
+    sprintf (_plotter->page->point, "\
+%d 0 0 [ %.1f %.1f %.1f %.1f ] 0 SetB\n", 
+  	     _plotter->drawstate->quantized_device_line_width,
+             dashbuf[0], dashbuf[1], dashbuf[2], dashbuf[3]);
+  _update_buffer (_plotter->page);
+  
   /* idraw directive and prologue instruction: set foreground color */
   _plotter->set_pen_color();	/* invoked lazily, i.e. when needed */
-  sprintf (_plotter->outbuf.current, "%%I cfg %s\n%g %g %g SetCFg\n",
+  sprintf (_plotter->page->point, "%%I cfg %s\n%g %g %g SetCFg\n",
 	   _idraw_stdcolornames[_plotter->drawstate->idraw_fgcolor],
 	   _plotter->drawstate->ps_fgcolor_red, 
 	   _plotter->drawstate->ps_fgcolor_green, 
 	   _plotter->drawstate->ps_fgcolor_blue);
-  _update_buffer(&_plotter->outbuf);
+  _update_buffer(_plotter->page);
 
   /* includes idraw directive: set background color */
   _plotter->set_fill_color();	/* invoked lazily, i.e. when needed */
-  sprintf (_plotter->outbuf.current, "%%I cbg %s\n%g %g %g SetCBg\n",
+  sprintf (_plotter->page->point, "%%I cbg %s\n%g %g %g SetCBg\n",
 	   _idraw_stdcolornames[_plotter->drawstate->idraw_bgcolor],
 	   _plotter->drawstate->ps_fillcolor_red, 
 	   _plotter->drawstate->ps_fillcolor_green, 
 	   _plotter->drawstate->ps_fillcolor_blue);
-  _update_buffer(&_plotter->outbuf);
+  _update_buffer(_plotter->page);
 
   /* includes idraw directive: set fill pattern */
   if (_plotter->drawstate->fill_level == 0)	/* transparent */
-    sprintf (_plotter->outbuf.current, "%%I p\nnone SetP\n");
+    sprintf (_plotter->page->point, "%%I p\nnone SetP\n");
   else	/* filled, i.e. shaded, in the sense of idraw */
-    sprintf (_plotter->outbuf.current, "%%I p\n%f SetP\n", 
+    sprintf (_plotter->page->point, "%%I p\n%f SetP\n", 
 	     _idraw_stdshadings[_plotter->drawstate->idraw_shading]);
-  _update_buffer(&_plotter->outbuf);
+  _update_buffer(_plotter->page);
 
   costheta = cos (M_PI * angle / 180.0);
   sintheta = sin (M_PI * angle / 180.0);
@@ -214,34 +239,34 @@ _p_fellipse_internal (x, y, rx, ry, angle, circlep)
 		   ellipse_transformation_matrix);
   
   /* includes idraw directive: transformation matrix (all 6 elements) */
-  sprintf (_plotter->outbuf.current, "%%I t\n[");
-  _update_buffer(&_plotter->outbuf);
+  sprintf (_plotter->page->point, "%%I t\n[");
+  _update_buffer(_plotter->page);
   for (i = 0; i < 6; i++)
     {
       if ((i==0) || (i==1) || (i==2) || (i==3))
-	sprintf (_plotter->outbuf.current, "%.7g ", 
+	sprintf (_plotter->page->point, "%.7g ", 
 		 ellipse_transformation_matrix[i] / granularity);
       else
-	sprintf (_plotter->outbuf.current, "%.7g ", 
+	sprintf (_plotter->page->point, "%.7g ", 
 		 ellipse_transformation_matrix[i]);
-      _update_buffer(&_plotter->outbuf);
+      _update_buffer(_plotter->page);
     }
-  sprintf (_plotter->outbuf.current, "] concat\n");
-  _update_buffer(&_plotter->outbuf);
+  sprintf (_plotter->page->point, "] concat\n");
+  _update_buffer(_plotter->page);
 
   /* includes idraw directive: draw Elli, and end Elli (or same for Circ) */
   if (circlep)
-    sprintf (_plotter->outbuf.current, "%%I\n%d %d %d Circ\nEnd\n\n", 
+    sprintf (_plotter->page->point, "%%I\n%d %d %d Circ\nEnd\n\n", 
 	     IROUND(granularity * x), IROUND(granularity * y), 
 	     IROUND(granularity * rx));
   else
-    sprintf (_plotter->outbuf.current, "%%I\n%d %d %d %d Elli\nEnd\n\n", 
+    sprintf (_plotter->page->point, "%%I\n%d %d %d %d Elli\nEnd\n\n", 
 	     IROUND(granularity * x), IROUND(granularity * y), 
 	     IROUND(granularity * rx), IROUND(granularity * ry));
-  _update_buffer(&_plotter->outbuf);
+  _update_buffer(_plotter->page);
 
   /* update bounding box */
-  _set_ellipse_bbox (x, y, rx, ry, costheta, sintheta, 
+  _set_ellipse_bbox (_plotter->page, x, y, rx, ry, costheta, sintheta, 
 		     _plotter->drawstate->line_width);
 
   _plotter->drawstate->pos.x = x;	/* move to center of ellipse */

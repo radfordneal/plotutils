@@ -3,9 +3,13 @@
 
    For FigPlotter objects, we first output all user-defined colors [``color
    pseudo-objects''], which must appear first in the .fig file.  We then
-   output all genuine objects, which we have saved in the resizable outbuf
-   structure.  Finally we fflush the _plotter->outstream and reset all
-   datastructures. */
+   output all genuine objects, which we have saved in a resizable outbuf
+   structure for the current page.  Finally we fflush the
+   _plotter->outstream and reset all datastructures.
+
+   All this applies only if this is page #1, since a Fig file may contain
+   no more than a single page of graphics.  Later pages are simply
+   deallocated. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -35,7 +39,9 @@ _f_closepl ()
 	_plotter->restorestate();
     }
   
-  if (_plotter->outstream)
+  /* Output the page, but only if it's page #1 (currently Fig format
+     supports only one page of graphics output per file). */
+  if (_plotter->page_number == 1 && _plotter->outstream)
     {
       const char *units;
 
@@ -60,11 +66,14 @@ _f_closepl ()
 		  );
 	}
       
-      if (_plotter->outbuf.contents > 0) /* output all cached objects */
-	fputs (_plotter->outbuf.base, _plotter->outstream); 
+      if (_plotter->page->len > 0) /* output all cached objects */
+	fputs (_plotter->page->base, _plotter->outstream); 
     }
   
-  free (_plotter->outbuf.base);		/* free output buffer */
+  /* Delete the page buffer, since Fig Plotters don't need to maintain a
+     linked list of pages. */
+  _delete_outbuf (_plotter->page);
+  _plotter->page = NULL;
 
   /* remove zeroth drawing state too, so we can start afresh */
 

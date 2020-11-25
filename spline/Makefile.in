@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -87,6 +88,7 @@ spline_LDADD = ../lib/libcommon.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  spline$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -186,8 +188,8 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-spline: $(spline_OBJECTS) $(spline_DEPENDENCIES)
-	@rm -f spline
+spline$(EXEEXT): $(spline_OBJECTS) $(spline_DEPENDENCIES)
+	@rm -f spline$(EXEEXT)
 	$(LINK) $(spline_LDFLAGS) $(spline_OBJECTS) $(spline_LDADD) $(LIBS)
 
 tags: TAGS

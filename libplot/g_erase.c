@@ -26,7 +26,7 @@ _g_erase ()
       || _plotter->drawstate->arc_stashed)
     _plotter->endpath(); /* flush polyline if any */
 
-  _reset_buffer (&_plotter->outbuf);	/* discard all objects */
+  _reset_outbuf (_plotter->page); /* discard all objects */
 
   return 0;
 }

@@ -57,7 +57,7 @@ _kermit_pseudocolor (red, green, blue)
      int red, green, blue;
 #endif
 {
-  unsigned long int difference = MAXINT;
+  unsigned long int difference = INT_MAX;
   int i;
   int best = 0;
   

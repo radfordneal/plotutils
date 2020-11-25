@@ -95,7 +95,7 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
   else
     format = "#ELLIPSE\n%d %d %d %d %d %d %d %d %d %.3f %d %.3f %d %d %d %d %d %d %d %d\n";
 
-  sprintf(_plotter->outbuf.current,
+  sprintf(_plotter->page->point,
 	  format,
 	  1,			/* ellipse object */
 	  subtype,		/* subtype, see above */
@@ -122,7 +122,7 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
 	  IROUND(YD(x,y)	/* end_y, last point entered */
 		 + semi_axis_1_y + semi_axis_2_y) 
 	  );			
-  _update_buffer(&_plotter->outbuf);
+  _update_buffer(_plotter->page);
   
   _plotter->drawstate->pos.x = x; /* move to center of ellipse or circle */
   _plotter->drawstate->pos.y = y;
@@ -146,6 +146,10 @@ _f_fellipse (x, y, rx, ry, angle)
 
   _plotter->endpath (); /* flush polyline if any */
 
+  if (!_plotter->drawstate->points_are_connected)
+    /* line type is `disconnected', so do nothing */
+    return 0;
+
   return _f_draw_ellipse_internal (x, y, rx, ry, angle, SUBTYPE_ELLIPSE);
 }
 
@@ -164,6 +168,10 @@ _f_fcircle (x, y, r)
     }
 
   _plotter->endpath (); /* flush polyline if any */
+
+  if (!_plotter->drawstate->points_are_connected)
+    /* line type is `disconnected', so do nothing */
+    return 0;
 
   return _f_draw_ellipse_internal (x, y, r, r, 0.0, SUBTYPE_CIRCLE);
 }

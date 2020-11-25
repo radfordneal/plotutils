@@ -24,20 +24,23 @@ typedef enum
 
   /* GNU_OLD_BINARY [obsolete] is the binary format used in pre-2.0
      releases, with no initial magic string, short ints instead of ints,
-     and no OPENPL or CLOSEPL.  By default, we assume that the input format
-     is GNU_OLD_BINARY, and we switch to GNU_BINARY or GNU_PORTABLE if we
-     see the appropriate magic header string.
+     and no OPENPL or CLOSEPL directives.  By default, we assume that the
+     input format is GNU_OLD_BINARY, and we switch to GNU_BINARY or
+     GNU_PORTABLE if we see the appropriate magic header string.
 
-     GNU_OLD_PORTABLE is the ascii format used in pre-2.0 releases, with no
-     initial comment line, and no OPENPL or CLOSEPL directives.  It
-     subsumes the ascii version of plot(5) format, found on some Unix
-     systems.  If the user wishes to parse GNU_OLD_PORTABLE format, he/she
-     should use the -A option.  */
+     GNU_OLD_PORTABLE [obsolete] is the ascii format used in pre-2.0
+     releases, with no initial magic string, and no OPENPL or CLOSEPL
+     directives.  It subsumes the ascii version of plot(5) format, found on
+     some Unix systems.  If the user wishes to parse GNU_OLD_PORTABLE
+     format, he/she should use the -A option.  */
   GNU_OLD_BINARY, GNU_OLD_PORTABLE
 
 } plot_format;
 
 const char *progname = "plot";	/* name of this program */
+
+const char *usage_appendage = " [FILE]...\n\
+With no FILE, or when FILE is -, read standard input.\n";
 
 bool single_page_is_requested = false; /* set if user uses -p option */
 char *bg_color = NULL;		/* initial bg color, can be spec'd by user */
@@ -50,10 +53,19 @@ int requested_page = 0;		/* user sets this via -p option */
 /* Default input file format (see list of supported formats above).  Don't
    change this (GNU_OLD_BINARY is an obsolete format, but it subsumes
    plot(5) format on many operating systems).  We'll switch to the
-   appropriate modern format by peeking at the first line of the input
-   file. */
+   appropriate modern format by peeking at the first line of the input file. */
 plot_format user_specified_input_format = GNU_OLD_BINARY;
 plot_format input_format = GNU_OLD_BINARY;
+
+/* Variable used for working around a problem libplot currently has, of not
+   recognizing absurdly large font size requests, which can crash X
+   servers.  (You used to be able to do this by piping any EPS file to
+   `plot -TX', since the `S' on the first line was interepreted as a font
+   size request!)  We no longer process the `S' op code unless one of the
+   `space' commands is seen first.  This adds a little safety, since a
+   `space' command should appear very early in any well-behaved
+   metafile. */
+bool space_seen = false;
 
 /* Long options we recognize */
 
@@ -76,8 +88,7 @@ struct option long_options[] =
   { "page-number",	ARG_REQUIRED,	NULL, 'p' },
   { "page-size",	ARG_REQUIRED,	NULL, 'P' << 8 },
   { "pen-color",	ARG_REQUIRED,	NULL, 'C' << 8 },
-  { "rotate",		ARG_REQUIRED,	NULL, 'Q' << 8 },
-  /* Options relevant only to plot2plot (refers to metafile output) */
+  /* Options relevant only to raw plot (refers to metafile output) */
   { "portable-output",	ARG_NONE,	NULL, 'O' },
   /* Old input formats, for backward compatibility */
   { "high-byte-first-input",	ARG_NONE,	NULL, 'h' },
@@ -87,6 +98,7 @@ struct option long_options[] =
   { "ascii-input",		ARG_NONE,	NULL, 'I' },
   /* Documentation options */
   { "help-fonts",	ARG_NONE,	NULL, 'f' << 8 },
+  { "list-fonts",	ARG_NONE,	NULL, 'l' << 8 },
   { "version",		ARG_NONE,	NULL, 'V' << 8 },
   { "help",		ARG_NONE,	NULL, 'h' << 8 },
   { NULL,		0,		NULL,  0}
@@ -105,8 +117,9 @@ int read_true_int __P((FILE *input, bool *badstatus));
 unsigned char read_byte_as_unsigned_char __P((FILE *input, bool *badstatus));
 unsigned int read_byte_as_unsigned_int __P((FILE *input, bool *badstatus));
 /* from libcommon */
-extern void display_fonts __P((const char *display_type, const char *progname));
-extern void display_usage __P((const char *progname, const int *omit_vals, bool files, bool fonts));
+extern bool display_fonts __P((const char *display_type, const char *progname));
+extern bool list_fonts __P((const char *display_type, const char *progname));
+extern void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 extern void display_version __P((const char *progname)); 
 extern Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
 extern Voidptr xmalloc __P ((unsigned int size));
@@ -123,7 +136,8 @@ main (argc, argv)
      char *argv[];
 #endif
 {
-  bool show_fonts = false;	/* show a list of fonts? */
+  bool do_list_fonts = false;	/* show a list of fonts? */
+  bool show_fonts = false;	/* supply help on fonts? */
   bool show_usage = false;	/* show usage message? */
   bool show_version = false;	/* show version message? */
   char *display_type = "meta";	/* default libplot output format */
@@ -134,7 +148,7 @@ main (argc, argv)
   int option;			/* option character */
   int retval;			/* return value */
 
-  while ((option = getopt_long(argc, argv, "hlAIOp:F:f:W:T:", long_options, &opt_index)) != EOF)
+  while ((option = getopt_long (argc, argv, "hlAIOp:F:f:W:T:", long_options, &opt_index)) != EOF)
     {
       if (option == 0)
 	option = long_options[opt_index].val;
@@ -248,6 +262,9 @@ main (argc, argv)
 	case 'h' << 8:		/* Help */
 	  show_usage = true;
 	  break;
+	case 'l' << 8:		/* Fonts */
+	  do_list_fonts = true;
+	  break;
 
 	default:
 	  errcnt++;
@@ -265,14 +282,29 @@ main (argc, argv)
       display_version (progname);
       return 0;
     }
+  if (do_list_fonts)
+    {
+      bool success;
+
+      success = list_fonts (display_type, progname);
+      if (success)
+	return 0;
+      else
+	return 1;
+    }
   if (show_fonts)
     {
-      display_fonts (display_type, progname);
-      return 0;
+      bool success;
+
+      success = display_fonts (display_type, progname);
+      if (success)
+	return 0;
+      else
+	return 1;
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, true, true);
+      display_usage (progname, hidden_options, usage_appendage, true);
       return 0;
     }
 
@@ -303,11 +335,12 @@ main (argc, argv)
 	      data_file = fopen (argv[optind], "r");
 	      if (data_file == NULL)
 		{
-		  fprintf (stderr, "%s: ignoring nonexistent or inaccessible file `%s'\n",
-			   progname, argv[optind]);
+		  fprintf (stderr, "%s: %s: %s\n", progname, argv[optind], strerror(errno));
+		  fprintf (stderr, "%s: ignoring this file\n", progname);
+		  errno = 0;	/* not quite fatal */
 		  retval = 1;
-		  continue;	/* back to top of for loop */
 		}
+	      continue;	/* back to top of for loop */
 	    }
 	  if (read_plot (data_file) == false)
 	    {
@@ -336,6 +369,13 @@ main (argc, argv)
 	  fprintf (stderr, "%s: could not parse input\n", progname);
 	  retval = 1;
 	}
+    }
+
+  selectpl (0);
+  if (deletepl (handle) < 0)
+    {
+      fprintf (stderr, "%s: could not close plot device\n", progname);
+      retval = 1;
     }
 
   return retval;
@@ -662,9 +702,12 @@ read_plot (in_stream)
 	  break;
 	case FONTSIZE:
 	  x0 = read_int (in_stream, &argerr);
-	  if (!argerr)
-	    if (!single_page_is_requested || current_page == requested_page)
-	      ffontsize (x0);
+	  if (space_seen)	/* workaround, see comment above */
+	    {
+	      if (!argerr)
+		if (!single_page_is_requested || current_page == requested_page)
+		  ffontsize (x0);
+	    }
 	  break;
 	case JOINMOD:
 	  s = read_string (in_stream, &argerr);
@@ -851,6 +894,7 @@ read_plot (in_stream)
 		flinewidth (line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
+	  space_seen = true;
 	  break;
 	case SPACE2:
 	  x0 = read_int (in_stream, &argerr);
@@ -884,6 +928,7 @@ read_plot (in_stream)
 		flinewidth (line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
+	  space_seen = true;
 	  break;
 	case TEXTANGLE:
 	  x0 = read_int (in_stream, &argerr);
@@ -1007,9 +1052,12 @@ read_plot (in_stream)
 	  break;
 	case FFONTSIZE:
 	  x0 = read_float (in_stream, &argerr);
-	  if (!argerr)
-	    if (!single_page_is_requested || current_page == requested_page)
-	      ffontsize (x0);
+	  if (space_seen)	/* workaround, see comment above */
+	    {
+	      if (!argerr)
+		if (!single_page_is_requested || current_page == requested_page)
+		  ffontsize (x0);
+	    }
 	  break;
 	case FLINE:
 	  x0 = read_float (in_stream, &argerr);
@@ -1110,6 +1158,7 @@ read_plot (in_stream)
 		flinewidth (line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
+	  space_seen = true;
 	  break;
 	case FSPACE2:
 	  x0 = read_float (in_stream, &argerr);
@@ -1143,6 +1192,7 @@ read_plot (in_stream)
 		flinewidth (line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
+	  space_seen = true;
 	  break;
 	case FTEXTANGLE:
 	  x0 = read_float (in_stream, &argerr);
@@ -1336,7 +1386,7 @@ read_true_int (input, badstatus)
       break;
     case GNU_BINARY:		/* system format for integers */
     default:
-      returnval = fread (&zi, sizeof(int), 1, input);
+      returnval = fread (&zi, sizeof(zi), 1, input);
       if (returnval == 1)
 	x = zi;
       else
@@ -1346,7 +1396,7 @@ read_true_int (input, badstatus)
 	}
       break;
     case GNU_OLD_BINARY:	/* system format for short integers */
-      returnval = fread (&zs, sizeof(short), 1, input);
+      returnval = fread (&zs, sizeof(zs), 1, input);
       if (returnval == 1)
 	x = (int)zs;
       else
@@ -1412,7 +1462,7 @@ read_int (input, badstatus)
       }
     case GNU_BINARY:		/* system format for integers */
     default:
-      returnval = fread (&zi, sizeof(int), 1, input);
+      returnval = fread (&zi, sizeof(zi), 1, input);
       if (returnval == 1)
 	x = (int)zi;
       else
@@ -1422,7 +1472,7 @@ read_int (input, badstatus)
 	}
       break;
     case GNU_OLD_BINARY:	/* system format for short integers */
-      returnval = fread (&zs, sizeof(short), 1, input);
+      returnval = fread (&zs, sizeof(zs), 1, input);
       if (returnval == 1)
 	x = (int)zs;
       else
@@ -1480,7 +1530,7 @@ read_float (input, badstatus)
     case GNU_OLD_BINARY:
     default:
       /* system single-precision format */
-      returnval = fread (&f, sizeof(float), 1, input);
+      returnval = fread (&f, sizeof(f), 1, input);
       break;
     case PLOT5_HIGH:
     case PLOT5_LOW:

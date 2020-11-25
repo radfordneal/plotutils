@@ -24,7 +24,7 @@ m 0 0
 TlcCARTOGRAPHY
 O
 U
-FHersheySerif-Symbol
+FHersheySerifSymbol
 \ 1 0 0 1 -3125 2060
 S 220
 m 0 0
@@ -59,7 +59,7 @@ m 0 0
 TccStandardization
 O
 U
-FHersheySerif-Symbol
+FHersheySerifSymbol
 \ 0.619048 0 0 0.619048 0 2060
 S 220
 m 0 0
@@ -80,7 +80,7 @@ m 0 0
 TrcPublication
 O
 U
-FHersheyGothic-English
+FHersheyGothicEnglish
 \ 1 0 0 1 3125 3340
 S 220
 m 0 0
@@ -94,7 +94,7 @@ m 0 0
 TrcTYPOGRAPHY
 O
 U
-FHersheySerif-Symbol
+FHersheySerifSymbol
 \ 1 0 0 1 3125 2060
 S 220
 m 0 0
@@ -143,7 +143,7 @@ m 0 0
 TlcSyllabary
 O
 U
-FHersheyGothic-English
+FHersheyGothicEnglish
 \ 1 0 0 1 -3125 -1420
 S 220
 m 0 0
@@ -171,7 +171,7 @@ m 0 0
 TlcAnalysis
 O
 U
-FHersheySerif-Symbol
+FHersheySerifSymbol-Bold
 \ 1 0 0 1 0 -780
 S 220
 m 0 0
@@ -185,7 +185,7 @@ m 0 0
 Tcc\#N3719\#N4724
 O
 U
-FHersheyGothic-German
+FHersheyGothicGerman
 \ 1 0 0 1 0 -2060
 S 220
 m 0 0
@@ -213,7 +213,7 @@ m 0 0
 TrcAlphabet
 O
 U
-FHersheyGothic-Italian
+FHersheyGothicItalian
 \ 1 0 0 1 3125 -1420
 S 220
 m 0 0

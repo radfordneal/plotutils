@@ -63,6 +63,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -81,7 +82,7 @@ X_PRE_LIBS = @X_PRE_LIBS@
 X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
 
-SUBDIRS = lib spline double ode ode-examples libplot plot tek2plot graph include info doc fonts test
+SUBDIRS = lib spline double ode ode-examples libplot plot tek2plot plotfont graph include info doc fonts test
 
 # files with nonstandard names in this directory
 EXTRA_DIST = COMPAT INSTALL.pkg INSTALL.fonts KNOWN_BUGS ONEWS PROBLEMS

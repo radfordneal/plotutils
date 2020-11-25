@@ -1,4 +1,5 @@
-graph:
+graph
+-----
 
 Filling of regions (i.e., the polygonal regions whose vertices are the data
 points), when requested by the -q option, works as long as the regions are
@@ -6,3 +7,18 @@ entirely within the plotting box.  Filling does not work properly if the
 regions extend outside the box, since the clipping algorithm which is used
 is appropriate for unfilled regions only.  This will be fixed in a later
 release.
+
+libplot's HP-GL driver and applications that produce HP-GL output
+-----------------------------------------------------------------
+
+The as yet undocumented `Arc' and `Stick' fonts, which show up when you do
+`--help-fonts' or `--list-fonts' in addition to `-T hpgl', are only
+partially implemented.  They are vector fonts that are resident in
+HP plotters and HP LaserJets.  
+
+HP-GL/2 output containing these fonts should be rendered perfectly on
+LaserJets.  But in HP-GL output for an HP7550A plotter or compatible device
+(produced by setting the environment variable HPGL_VERSION to "1.5"),
+labels in any of the Arc fonts may be incorrectly placed.  That is because
+in the HP7550A and other HP plotters, the Arc fonts are kerned.  libplot
+does not yet compensate for this automatic kerning.

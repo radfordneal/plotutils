@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -92,6 +93,7 @@ EXTRA_DIST = INTERNALS gram.h
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  ode$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -196,8 +198,8 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-ode: $(ode_OBJECTS) $(ode_DEPENDENCIES)
-	@rm -f ode
+ode$(EXEEXT): $(ode_OBJECTS) $(ode_DEPENDENCIES)
+	@rm -f ode$(EXEEXT)
 	$(LINK) $(ode_LDFLAGS) $(ode_OBJECTS) $(ode_LDADD) $(LIBS)
 .y.c:
 	$(YACC) $(YFLAGS) $< && mv y.tab.c $*.c

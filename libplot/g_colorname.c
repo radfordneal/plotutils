@@ -1,9 +1,10 @@
-/* This file contains the pencolorname and fillcolorname methods, which are
-   GNU extensions to libplot.  They search a database of known names
-   (stored in colorname.h) for a specified color name.  If the name is
-   found, its interpretation as a 48-bit RGB color is determined, and
-   pencolor or fillcolor is called to set the color.  If the name is not
-   found, a default color (black) is substituted.
+/* This file contains the pencolorname, fillcolorname, and bgcolorname
+   methods, which are GNU extensions to libplot.  They search a database of
+   known names (stored in g_colorname.h) for a specified color name.  If
+   the name is found, its interpretation as a 48-bit RGB color is
+   determined, and pencolor, fillcolor, or bgcolor is called to set the
+   color.  If the name is not found, a default color (black for pen and
+   fill, white for bg) is substituted.
 
    This file also contains the lower-level routine _string_to_color(). */
 
@@ -46,6 +47,17 @@ _g_pencolorname (name)
       intgreen = (green << 8) | green;
       intblue = (blue << 8) | blue;
     }
+  else if (_plotter->pen_color_warning_issued == false)
+    {
+      char *buf;
+		
+      buf = (char *)_plot_xmalloc (strlen (name) + 100);
+      sprintf (buf, "substituting \"black\" for undefined pen color \"%s\"", 
+	       name);
+      _plotter->warning (buf);
+      free (buf);
+      _plotter->pen_color_warning_issued = true;
+    }
 
   _plotter->pencolor (intred, intgreen, intblue);
 
@@ -80,6 +92,17 @@ _g_fillcolorname (name)
       intgreen = (green << 8) | green;
       intblue = (blue << 8) | blue;
     }
+  else if (_plotter->fill_color_warning_issued == false)
+    {
+      char *buf;
+		
+      buf = (char *)_plot_xmalloc (strlen (name) + 100);
+      sprintf (buf, "substituting \"black\" for undefined fill color \"%s\"", 
+	       name);
+      _plotter->warning (buf);
+      free (buf);
+      _plotter->fill_color_warning_issued = true;
+    }
 
   _plotter->fillcolor (intred, intgreen, intblue);
 
@@ -113,6 +136,17 @@ _g_bgcolorname (name)
       intred = (red << 8) | red;
       intgreen = (green << 8) | green;
       intblue = (blue << 8) | blue;
+    }
+  else if (_plotter->bg_color_warning_issued == false)
+    {
+      char *buf;
+		
+      buf = (char *)_plot_xmalloc (strlen (name) + 100);
+      sprintf (buf, "substituting \"white\" for undefined background color \"%s\"", 
+	       name);
+      _plotter->warning (buf);
+      free (buf);
+      _plotter->bg_color_warning_issued = true;
     }
 
   _plotter->bgcolor (intred, intgreen, intblue);

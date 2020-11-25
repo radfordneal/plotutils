@@ -227,6 +227,7 @@ static Axis x_axis, y_axis;
 typedef struct
 {
   /* following elements are parameters (not updated during plotter operation)*/
+  int handle;			/* Plotter handle from libplot */
   char *display_type;		/* mnemonic: type of libplot device driver */
   bool save_screen;		/* erase display when opening plotter? */
   char *bg_color;		/* color of background, if non-NULL */
@@ -305,8 +306,9 @@ print_tick_label (labelbuf, axis, transform, val)
   max = (axis.type == A_LOG10 
 	 ? pow (10.0, transform.input_max) : transform.input_max);
 	  
-  big_exponents = ((min != 0.0 && fabs (log10 (fabs (min))) >= 4.0)
-		   || (max != 0.0 && fabs (log10 (fabs (max))) >= 4.0));
+  big_exponents = (((min != 0.0 && fabs (log10 (fabs (min))) >= 4.0)
+		    || (max != 0.0 && fabs (log10 (fabs (max))) >= 4.0))
+		   ? true : false);
 
   if (big_exponents)
     /* large exponents, rewrite as foo x 10^bar, using escape sequences */
@@ -679,8 +681,9 @@ prepare_axis (axisp, trans,
   min_lin_subtick_count = (int)(ceil((min - FUZZ * range)/ lin_subtick_spacing));
   max_lin_subtick_count = (int)(floor((max + FUZZ * range)/ lin_subtick_spacing)); 
   have_lin_subticks 
-    = (tick_spacing_type != S_UNKNOWN /* S_UNKNOWN -> no subticks */
-       && (max_lin_subtick_count - min_lin_subtick_count) <= MAX_NUM_SUBTICKS);
+    = ((tick_spacing_type != S_UNKNOWN /* S_UNKNOWN -> no subticks */
+	&& (max_lin_subtick_count - min_lin_subtick_count) <= MAX_NUM_SUBTICKS)
+       ? true : false);
 
   /* fill in parameters for axis-specific affine transformation */
   trans->input_min = min;
@@ -1017,11 +1020,12 @@ initialize_plotter(display_type, save_screen, bg_color,
       /* secondary axes are the same */
       x_axis.alt_other_axis_loc = x_axis.other_axis_loc;
       y_axis.alt_other_axis_loc = y_axis.other_axis_loc;
-      x_axis.switch_axis_end = ((x_trans.input_max - x_axis.other_axis_loc)
-				< (x_axis.other_axis_loc - x_trans.input_min));
-      y_axis.switch_axis_end = ((y_trans.input_max - y_axis.other_axis_loc)
-				< (y_axis.other_axis_loc - y_trans.input_min));
-
+      x_axis.switch_axis_end = (((x_trans.input_max - x_axis.other_axis_loc)
+				 < (x_axis.other_axis_loc - x_trans.input_min))
+				? true : false);
+      y_axis.switch_axis_end = (((y_trans.input_max - y_axis.other_axis_loc)
+				 < (y_axis.other_axis_loc - y_trans.input_min))
+				? true : false);
     }
 
   /* The following is a version of (plotter.frame_line_width)/2 (expressed
@@ -1045,16 +1049,14 @@ open_plotter(void)
 open_plotter()
 #endif
 {
-  int handle;
-
   if (plotter.bg_color)
     /* select user-specified background color */
     parampl ("BG_COLOR", plotter.bg_color);
   parampl ("USE_DOUBLE_BUFFERING", "no");
-  if ((handle = newpl (plotter.display_type, NULL, stdout, stderr)) < 0)
+  if ((plotter.handle = newpl (plotter.display_type, NULL, stdout, stderr)) < 0)
     return -1;
   else
-    selectpl (handle);
+    selectpl (plotter.handle);
   if (openpl () < 0)
     return -1;
   if (!plotter.save_screen || plotter.bg_color)
@@ -1071,7 +1073,16 @@ close_plotter(void)
 close_plotter()
 #endif
 {
-  return closepl ();
+  int retval;
+
+  retval = closepl ();
+  if (retval < 0)
+    return -1;
+  else
+    {
+      selectpl (0);
+      return deletepl (plotter.handle);
+    }
 }
 
 
@@ -2545,8 +2556,8 @@ transpose_portmanteau (val)
   bool xtrue, ytrue;
   int newval;
   
-  xtrue = *val & X_AXIS;
-  ytrue = *val & Y_AXIS;
+  xtrue = ((*val & X_AXIS) ? true : false);
+  ytrue = ((*val & Y_AXIS) ? true : false);
   
   newval = (xtrue ? Y_AXIS : 0) | (ytrue ? X_AXIS : 0);
   *val = newval;

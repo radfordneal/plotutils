@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -94,6 +95,7 @@ OBSOLETELIBS = libplottek.a libplothpgl.a libplotfig.a libplotps.a libplotX.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  graph$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -196,8 +198,8 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-graph: $(graph_OBJECTS) $(graph_DEPENDENCIES)
-	@rm -f graph
+graph$(EXEEXT): $(graph_OBJECTS) $(graph_DEPENDENCIES)
+	@rm -f graph$(EXEEXT)
 	$(LINK) $(graph_LDFLAGS) $(graph_OBJECTS) $(graph_LDADD) $(LIBS)
 
 tags: TAGS

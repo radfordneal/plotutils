@@ -59,4 +59,4 @@ strcasecmp(s1, s2)
   
   return retval;
 }
-#endif /* HAVE_STRCASECMP */
+#endif /* not HAVE_STRCASECMP */

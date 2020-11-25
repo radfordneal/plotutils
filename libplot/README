@@ -4,9 +4,9 @@ metafile, Tektronix, HP-GL/2, xfig, Postscript, X11, and X11 Drawable.  The
 first five are supported via output streams.  The last two are supported
 directly, by calling X routines.  The X11 driver pops up a window
 (actually, a Label widget) on an X display, and draws graphics in it.  The
-X11 Drawable driver draws graphics in a `drawable' (a window or a pixmap),
-which must be passed to it.  Each driver is accessed at run time through a
-`Plotter' object of the corresponding type.
+X11 Drawable driver draws graphics in one or two `drawables' (windows or
+pixmaps), which must be passed to it.  Each driver is accessed at run time
+through a `Plotter' object of the corresponding type.
 
 The names of the source files in this directory include as prefix a letter
 indicating which driver they include code for.  For example, the file
@@ -18,11 +18,11 @@ whose names begin with `g' (e.g., g_relative.c) include generic code that
 is used by more than one driver.
 
 The library provides a uniform (Plotter) interface to each display device,
-which treats each display device as a virtual pen plotter. The C binding
-for the library is set up in api.c.  Besides defining 79 standard
-user-level functions, it defines the functions newpl(), selectpl(), and
-deletepl(), which create and manipulate an array of Plotters.  Each Plotter
-is implemented as a C++-style object, which means it is a rather large
+and treats each display device as a virtual pen plotter.  The C binding for
+the library is set up in api.c.  Besides defining the standard user-level
+functions, it defines the functions newpl(), selectpl(), and deletepl(),
+which create and manipulate an array of Plotters.  Each Plotter is
+implemented as a C++-style object, which means it is a rather large
 structure.  Each Plotter includes both private data and public methods: one
 method for each of the user-level functions in the libplot API.
 
@@ -42,10 +42,10 @@ xfig, _p_filltype() if it is Postscript, and _x_filltype() if the Plotter
 is an X11 plotter, which directs the output of libplot to an X display
 rather than to an output stream.
 
-Adding support for a new display device, given the object-oriented way in
-which this code is structured, is quite easy.  An entry for any new device
-must be added to the _plotter_initializations[] array in api.c.  This entry
-must contain an initialization for the corresponding type of Plotter
+Adding support for a new type of display device or output file format,
+given the object-based way in which this code is structured, is easy.  An
+entry for it would be added to the _plotter_data[] array in api.c.  This
+entry must contain an initialization for the corresponding type of Plotter
 structure.  The structures that initialize the existing types of Plotter
 (e.g., _ps_default_plotter) are located in the files *_defplot.c.  Most
 Plotter methods are `generic'; in fact, each type of Plotter structure,
@@ -56,6 +56,6 @@ To see how easy it is to add or remove support for a new display device,
 search for the symbol X_DISPLAY_MISSING.  If this is defined, support for
 the X display device will be dropped at compile time.  The only occurrences
 of `#ifdef X_DISPLAY_MISSING' are in api.c, the header file extern.h, and
-*_defplot.c and *_defstate.c.  The reason for its appearance in the C files
-other than api.c is that the basic datastructures include X-specific
+*_defplot.c and *_defstate.c.  The only reason for its appearance in the
+files other than api.c is that the basic datastructures include X-specific
 fields, which are omitted if X support is not included.

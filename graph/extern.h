@@ -66,11 +66,14 @@ extern const char	*progname; /* Program name */
 
 /*------------prototypes for libcommon functions----------------------------*/
 
-extern void 
+extern bool
 display_fonts __P((const char *display_type, const char *progname));
 
+extern bool
+list_fonts __P((const char *display_type, const char *progname));
+
 extern void 
-display_usage __P((const char *progname, const int *omit_vals, bool files, bool fonts));
+display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 
 extern void 
 display_version __P((const char *progname));

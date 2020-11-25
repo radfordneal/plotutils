@@ -95,7 +95,7 @@ _idraw_pseudocolor (red, green, blue)
   int i;
   int best = 0;
   
-  difference = MAXDOUBLE;
+  difference = DBL_MAX;
   for (i = 0; i < IDRAW_NUM_STD_COLORS; i++)
     {
       double newdifference;
@@ -154,7 +154,7 @@ _compute_idraw_bgcolor()
 {
   double truered, truegreen, trueblue;
   double fgred, fggreen, fgblue;
-  double difference = MAXDOUBLE;
+  double difference = DBL_MAX;
   int i, j;
   int best_bgcolor = 0, best_shading = 0;
   double best_shade = 0.0;

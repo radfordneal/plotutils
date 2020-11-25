@@ -23,7 +23,7 @@ _f_erase ()
 
   _plotter->endpath (); /* flush polyline if any */
 
-  _reset_buffer (&_plotter->outbuf);
+  _reset_outbuf (_plotter->page);
 
   /* reset our knowledge of xfig's internal state */
   _plotter->fig_drawing_depth = FIG_INITIAL_DEPTH;

@@ -30,6 +30,10 @@ _g_havecap (s)
     return _plotter->have_ps_fonts;
   else if (strcasecmp (s, "PCL_FONTS") == 0)
     return _plotter->have_pcl_fonts;
+  else if (strcasecmp (s, "STICK_FONTS") == 0)
+    return _plotter->have_stick_fonts;
+  else if (strcasecmp (s, "EXTRA_STICK_FONTS") == 0)
+    return _plotter->have_extra_stick_fonts;
   else
     return 0;
 }

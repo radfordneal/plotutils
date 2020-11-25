@@ -36,6 +36,7 @@ _clean_iso_string (s)
 	}
       else
 	was_clean = false;
+      
     }
   *t = (unsigned char)'\0';
   

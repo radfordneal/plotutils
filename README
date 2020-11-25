@@ -1,12 +1,14 @@
-This is release 2.1.1 of the GNU plotutils (plotting utilities) package,
-including release 1.1 of GNU libplot: a function library for
-two-dimensional device-independent vector graphics.  The package now has
-its own Web page: http://www.gnu.org/software/plotutils/plotutils.html .
+This is release 2.1.4 of the GNU plotutils (plotting utilities) package,
+including release 1.4 of GNU libplot: a function library for
+two-dimensional device-independent vector graphics, including vector
+graphics animations under the X Window System.  The package has its own Web
+page: http://www.gnu.org/software/plotutils/plotutils.html .
 
-In this directory, the file INSTALL contains generic instructions dealing
-with installation of a GNU package, and the file INSTALL.pkg contains
-package-specific installation instructions.  Please read them in full,
-as well as this file, before attempting to install the package.
+In the top-level source directory, the file INSTALL contains generic
+instructions dealing with installation of a GNU package, and the file
+INSTALL.pkg contains package-specific installation instructions.  Please
+read them _in full_, as well as this file, before attempting to install the
+package.
 
 Please send bug reports to <bug-gnu-utils@gnu.org>, and suggestions for
 longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
@@ -18,9 +20,9 @@ The contents of the plotutils package are:
 
 1. libplot.     This is the function library for device-independent
 		two-dimensional vector graphics that the programs `graph',
-		`plot', and `tek2plot' (see below) are based on.  On
-		systems that support DLL's (dynamically linked libraries),
-		it is installed as a DLL.
+		`plot', `tek2plot', and `plotfont' (see below) are based on.  
+		On systems that support DLL's (dynamically linked
+		libraries), it is installed as a DLL.
 
 		If you are a programmer, you may use this library yourself,
 		to create vector graphics in many output formats.  You may
@@ -44,9 +46,9 @@ The contents of the plotutils package are:
 		positioning of text.  This includes the placement of
 		subscripts and superscripts.  Its X11, Postscript, and Fig
 		drivers all support the 35 standard Postscript fonts, and
-		its HP-GL/2 driver supports the 45 standard PCL 5 fonts.
+		its HP-GL/2 driver supports the 45 standard LaserJet fonts.
 		In addition, all four, together with its Tektronix driver,
-		support a set of 17 Hershey vector fonts.  All supported
+		support a set of 22 Hershey vector fonts.  All supported
 		fonts may be arbitrarily rotated and scaled.  All fonts,
 		except for symbol and dingbat fonts, use the ISO-Latin-1
 		encoding (a superset of ascii; the ISO-Latin-1 support in
@@ -55,19 +57,21 @@ The contents of the plotutils package are:
 		(Clones of the 35 standard Postscript fonts, in Type 1
 		format, have been contributed by URW GmbH and are
 		distributed under the GNU General Public License as part of
-		this package.  See the file ./INSTALL.fonts .)
+		this package.  Installation instructions are in the file
+		./INSTALL.fonts.  Instructions for obtaining and installing
+		45 standard LaserJet fonts, as well, are included.)
 
 		Similarly to Postscript, libplot has the nice feature that
 		user coordinates (in terms of which you express the
 		location of graphical objects) may be transformed to device
 		coordinates by an arbitrary affine transformation.  A stack
-		of drawing states (i.e., graphics contexts) is supported
-		too.
+		of drawing states (i.e., graphics contexts) is supported too.
 
-2. Programs, including the following.		
+		
+2. Programs based on libplot, including the following.
 
-	graph.  A full-featured scientific plotting program for plotting XY
-		(i.e. 2-dimensional) data.  It plots a stream of
+	graph.  A full-featured scientific plotting program for plotting
+		XY (i.e. 2-dimensional) data.  It plots a stream of
 		datapoints, in real time if possible.  There is a
 		well-chosen set of command-line options for adjusting the
 		visual appearance of the plot, labelling axes (with
@@ -179,19 +183,38 @@ The contents of the plotutils package are:
 		`graph', which is in metafile format, to two separate
 		invocations of `plot'.
 	
-		Introducing an intermediate textual representation between
-		graphics function calls and a display device necessarily
-		forces communication to be one-way.  This is a handicap
-		when positioning text strings, since information on the
-		width of strings may not be available.  It is for this
-		reason that the raw variant of `graph' is slightly less
-		sophisticated about label positioning than the other
-		variants.  For most applications, the non-raw variants of
-		`graph' are preferred.
-
 		`plot' may also be useful as a post-processor for older
 		programs that produce output in the traditional plot(5)
 		graphics format.
+
+	tek2plot.  This is a utility program that emulates a Tektronix 4014
+		terminal in the sense that it reads Tektronix commands, and
+		drives any of the five sorts of graphic display device
+		mentioned above, or (alternatively) produces GNU graphics
+		metafile format.  It acts as a filter.
+
+		tek2plot is useful only if you have a legacy program that
+		is intended to drive a Tektronix terminal or emulator.  The
+		directory ./tek2plot/teksamples includes a few files in
+		Tektronix format which you may experiment with.  You may
+		also experiment by piping the output of `gnuplot', if you
+		have configured it to produce Tektronix-format plots, to
+		these filters (the gnuplot terminal types `kc_tek40xx',
+		`km_tek40xx', `tek40xx', and `vttek' all work).  tek2plot
+		does an excellent job of emulating the non-interactive
+		features of a Tektronix 4014, and although it does not
+		support all the features supported by the Tektronix
+		emulator in the MS-DOS version of kermit, it can certainly
+		parse the output of the gnuplot Tektronix terminal drivers.
+		
+	plotfont. This is a simple utility that prints out a character
+		chart for any font available to the above three utilities
+		(graph, plot, tek2plot).  The same output formats are
+		supported.  Which fonts are available depends on the
+		`-T' option that is specified, i.e., on the output format.
+
+		
+3. Programs not based on libplot, including the following.
 
 	spline. This program does spline interpolation of input data, which
 		may be of arbitrary dimensionality.  That is, it takes a
@@ -228,29 +251,10 @@ The contents of the plotutils package are:
 		that gnuplot can graph.  All the primitive real-valued
 		functions that are built into gnuplot are built into ode.
 
-		For sample ode input files, see the ./ode-examples
-		directory.
+		A directory of sample ode input files is installed (usually
+		as /usr/local/share/ode or /usr/share/ode) as part of the
+		package.
 
-	tek2plot.  This is a utility program that emulates a Tektronix 4014
-		terminal in the sense that it reads Tektronix commands, and
-		drives any of the five sorts of graphic display device
-		mentioned above, or (alternatively) produces GNU graphics
-		metafile format.  It acts as a filter.
-
-		tek2plot is useful only if you have a legacy program that
-		is intended to drive a Tektronix terminal or emulator.  The
-		directory ./tek2plot/teksamples includes a few files in
-		Tektronix format which you may experiment with.  You may
-		also experiment by piping the output of `gnuplot', if you
-		have configured it to produce Tektronix-format plots, to
-		these filters (the gnuplot terminal types `kc_tek40xx',
-		`km_tek40xx', `tek40xx', and `vttek' all work).  tek2plot
-		does an excellent job of emulating the non-interactive
-		features of a Tektronix 4014, and although it does not
-		support all the features supported by the Tektronix
-		emulator in the MS-DOS version of kermit, it can certainly
-		parse the output of the gnuplot Tektronix terminal drivers.
-		
 	double. This is a filter for converting, scaling and cutting
 		unformatted (binary) or ascii data streams.  It is still
 		under development and is not yet documented.

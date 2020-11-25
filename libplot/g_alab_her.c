@@ -291,13 +291,13 @@ _label_width_stroke (label)
   while ((c = (*ptr)) != (unsigned short)'\0') 
     {
       int glyphnum;		/* glyph in Hershey array */
-      unsigned char *glyph;
+      const unsigned char *glyph;
       
       if (c & RAW_HERSHEY_GLYPH) 
 	/* glyph was spec'd via an escape, not as a char in a font */
 	{
 	  glyphnum = c & GLYPH_SPEC;
-	  glyph = (unsigned char *)(_occidental_vector_glyphs[glyphnum]);
+	  glyph = (const unsigned char *)(_occidental_vector_glyphs[glyphnum]);
 	  
 	  if (*glyph != '\0')	/* nonempty glyph */
 	    /* 1st two chars are bounds */
@@ -307,7 +307,7 @@ _label_width_stroke (label)
 	/* glyph was spec'd via an escape, not as a char in a font */
 	{
 	  glyphnum = c & GLYPH_SPEC;
-	  glyph = (unsigned char *)_oriental_vector_glyphs[glyphnum];
+	  glyph = (const unsigned char *)_oriental_vector_glyphs[glyphnum];
 	  
 	  if (*glyph != '\0')	/* nonempty glyph */
 	    /* 1st two chars are bounds */
@@ -411,7 +411,7 @@ _label_width_stroke (label)
 	  if (glyphnum & KS)
 	    glyphnum -= KS;
 
-	  glyph = (unsigned char *)(_occidental_vector_glyphs[glyphnum]);
+	  glyph = (const unsigned char *)(_occidental_vector_glyphs[glyphnum]);
 	  if (*glyph != '\0')	/* nonempty glyph */
 	    /* 1st two chars are bounds */
 	    width += charsize * ((int)glyph[1] - (int)glyph[0]);
@@ -462,7 +462,7 @@ _draw_hershey_glyph (glyphnum, charsize, type, oblique)
   double xcurr, ycurr;
   double xfinal, yfinal;
   bool pendown = false;
-  unsigned char *glyph;
+  const unsigned char *glyph;
   double dx, dy;
   double shear;
   
@@ -471,10 +471,10 @@ _draw_hershey_glyph (glyphnum, charsize, type, oblique)
     {
     case OCCIDENTAL:
     default:
-      glyph = (unsigned char *)(_occidental_vector_glyphs[glyphnum]);
+      glyph = (const unsigned char *)(_occidental_vector_glyphs[glyphnum]);
       break;
     case ORIENTAL:
-      glyph = (unsigned char *)(_oriental_vector_glyphs[glyphnum]); 
+      glyph = (const unsigned char *)(_oriental_vector_glyphs[glyphnum]); 
       break;
     }
 
@@ -637,7 +637,7 @@ _draw_hershey_string (string)
 	      int glyphnum;		/* glyph in Hershey array */
 	      int char_glyphnum, accent_glyphnum; /* for composite chars */
 	      int char_width, accent_width; /* for composite chars */
-	      unsigned char *char_glyph, *accent_glyph;
+	      const unsigned char *char_glyph, *accent_glyph;
 	      unsigned char composite, character, accent;
 	      bool oblique, small_kana = false;
 	      
@@ -676,9 +676,9 @@ _draw_hershey_string (string)
 		      accent_glyphnum = 0;
 		    }
 		  char_glyph = 
-		    (unsigned char *)_occidental_vector_glyphs[char_glyphnum];
+		    (const unsigned char *)_occidental_vector_glyphs[char_glyphnum];
 		  accent_glyph = 
-		    (unsigned char *)_occidental_vector_glyphs[accent_glyphnum];
+		    (const unsigned char *)_occidental_vector_glyphs[accent_glyphnum];
 	  
 		  if (*char_glyph != '\0')	/* nonempty glyph */
 		    /* 1st two chars are bounds, in Hershey units */
@@ -736,11 +736,11 @@ _draw_hershey_string (string)
 		  if (small_kana)
 		    {
 		      int kana_width;
-		      unsigned char *kana_glyph;
+		      const unsigned char *kana_glyph;
 		      double shift = 0.5 * (1.0 - (SMALL_KANA_SIZE));
 
 		      kana_glyph = 
-			(unsigned char *)_occidental_vector_glyphs[glyphnum];
+			(const unsigned char *)_occidental_vector_glyphs[glyphnum];
 		      kana_width = (int)kana_glyph[1] - (int)kana_glyph[0];
 
 		      /* draw small Kana, preceded and followed by a penup

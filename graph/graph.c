@@ -53,7 +53,6 @@ struct option long_options[] =
   {"max-line-length",	ARG_REQUIRED,	NULL, 'M' << 8},
   {"pen-colors",	ARG_REQUIRED,	NULL, 'p' << 8},
   {"reposition",	ARG_REQUIRED,	NULL, 'R' << 8}, /* 3 */
-  {"rotate",		ARG_REQUIRED,	NULL, 'Q' << 8},
   {"symbol-font-name",	ARG_REQUIRED,	NULL, 'G' << 8},
   {"title-font-name",	ARG_REQUIRED,	NULL, 'Z' << 8},
   {"title-font-size",	ARG_REQUIRED,	NULL, 'F' << 8},
@@ -64,6 +63,7 @@ struct option long_options[] =
   {"portable-output",	ARG_NONE,	NULL, 'O'},
   /* Documentation options */
   {"help-fonts",	ARG_NONE,	NULL, 'f' << 8},
+  {"list-fonts",	ARG_NONE,	NULL, 'l' << 8},
   {"version",		ARG_NONE,	NULL, 'V' << 8},
   {"help",		ARG_NONE,	NULL, 'h' << 8},
   {NULL, 0, 0, 0}
@@ -73,6 +73,9 @@ struct option long_options[] =
 int hidden_options[] = { 0 };
 
 const char *progname = "graph";	/* name of this program */
+
+const char *usage_appendage = " [FILE]...\n\
+With no FILE, or when FILE is -, read standard input.\n";
 
 /* forward references */
 static void close_file __P ((char *filename, FILE *stream));
@@ -97,7 +100,8 @@ main (argc, argv)
   bool continue_parse = true;	/* reset e.g. when --help or --version seen */
   bool show_version = false;	/* show version message? */
   bool show_usage = false;	/* show usage message? */
-  bool show_fonts = false;	/* show a list of fonts? */
+  bool show_fonts = false;	/* supply help on fonts? */
+  bool do_list_fonts = false;	/* show a list of fonts? */
   bool filter = false;		/* will we act as a filter? */
   bool new_symbol = false;
   bool new_symbol_size = false;
@@ -290,6 +294,10 @@ main (argc, argv)
 	  show_fonts = true;
 	  continue_parse = false;
 	  break;
+	case 'l' << 8:		/* List fonts, ARG NONE		*/
+	  do_list_fonts = true;
+	  continue_parse = false;
+	  break;
 	case 'N' << 8:		/* Toggle rotation of y-label, ARG NONE */
 	  no_rotate_y_label = (no_rotate_y_label == true ? false : true);
 	  break;
@@ -301,26 +309,40 @@ main (argc, argv)
 	    {
 	    case 'a':
 	    case 'A':
+	      /* ASCII format, records and fields within records are
+		 separated by whitespace, and datasets are separated by a
+		 pair of newlines.  Record length = 2. */
 	      input_type = T_ASCII;
 	      break;
 	    case 'f':
 	    case 'F':
+	      /* Binary single precision, records and fields within records
+		 are contiguous, and datasets are separated by a FLT_MAX.
+		 Record length = 2. */
 	      input_type = T_SINGLE;
 	      break;
 	    case 'd':
 	    case 'D':
+	      /* Binary double precision, records and fields within records
+		 are contiguous, and datasets are separated by a DBL_MAX.
+		 Record length = 2. */
 	      input_type = T_DOUBLE;
 	      break;
 	    case 'i':
 	    case 'I':
+	      /* Binary integer, records and fields within records are
+		 contiguous, and datasets are separated by an occurrence of
+		 INT_MAX.  Record length = 2. */
 	      input_type = T_INTEGER;
 	      break;
 	    case 'e':
 	    case 'E':
+	      /* Same as T_ASCII, but record length = 3. */
 	      input_type = T_ASCII_ERRORBAR;
 	      break;
 	    case 'g':
 	    case 'G':
+	      /* Sui generis. */
 	      input_type = T_GNUPLOT;	/* gnuplot `table' format */
 	      break;
 	    default:
@@ -1027,8 +1049,9 @@ main (argc, argv)
 		 file, rather than calling read_file() on each one
 		 separately to create an array of points, and then calling
 		 plot_point_array(). */
-	      filter = (final_spec_min_x && final_spec_max_x 
-			&& final_spec_min_y && final_spec_max_y);
+	      filter = ((final_spec_min_x && final_spec_max_x 
+			 && final_spec_min_y && final_spec_max_y) 
+			? true : false);
 
 	    } /* end of first-file-of-plot initialization */
 
@@ -1097,7 +1120,7 @@ main (argc, argv)
 		  /* draw the plot frame (grid, ticks, etc.); draw a
 		     `canvas' (a background opaque white rectangle) only if
 		     this isn't the first plot */
-		  plot_frame(!first_plot);
+		  plot_frame (first_plot ? false : true);
 		  
 		  initialize_reader (input_type,
 				     auto_abscissa, delta_x, x_start,
@@ -1227,14 +1250,29 @@ main (argc, argv)
       display_version (progname);
       return 0;
     }
+  if (do_list_fonts)
+    {
+      bool success;
+
+      success = list_fonts (display_type, progname);
+      if (success)
+	return 0;
+      else
+	return 1;
+    }
   if (show_fonts)
     {
-      display_fonts (display_type, progname);
-      return 0;
+      bool success;
+
+      success = display_fonts (display_type, progname);
+      if (success)
+	return 0;
+      else
+	return 1;
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, true, true);
+      display_usage (progname, hidden_options, usage_appendage, true);
       return 0;
     }
 
@@ -1353,9 +1391,7 @@ open_file_for_reading (filename, input)
   data_file = fopen (filename, "r");
   if (data_file == NULL)
     {
-      fprintf (stderr, 
-	       "%s: error: input file `%s' is nonexistent or inaccessible\n",
-	       progname, filename);
+      fprintf (stderr, "%s: %s: %s\n", progname, filename, strerror(errno));
       exit (1);
     }
   else

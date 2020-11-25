@@ -1,11 +1,13 @@
 #!/bin/sh
 
-../plot/plot -T hpgl <graph.xout >plot2hpgl.out 2>/dev/null
+../plot/plot -T hpgl <$SRCDIR/graph.xout >plot2hpgl.out 2>/dev/null
 
-if (cmp -s $SRCDIR/plot2hpgl.xout plot2hpgl.out)
+# work around line end problems in installations with DJGPP under DOS
+tr -d '\015' < plot2hpgl.out > plot2hpgl.dos
+
+if cmp -s $SRCDIR/plot2hpgl.xout plot2hpgl.dos
 	then retval=0;
 	else retval=1;
 	fi;
 
-rm -f *.out
 exit $retval

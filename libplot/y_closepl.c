@@ -22,7 +22,9 @@ _y_closepl ()
 
   _plotter->endpath (); /* flush polyline if any */
 
-  if (_plotter->double_buffering)
+  /* Xdrawable Plotters support double buffering `by hand', so check for it */
+
+  if (_plotter->double_buffering == DBL_BY_HAND)
     /* copy final frame of buffered graphics from pixmap serving as
        graphics buffer, to window */
     {
@@ -42,6 +44,10 @@ _y_closepl ()
 		   0, 0,
 		   (unsigned int)window_width, (unsigned int)window_height,
 		   0, 0);
+      
+      /* no more need for pixmap, so free it (if there is one) */
+      if (_plotter->drawable1 || _plotter->drawable2)
+	XFreePixmap (_plotter->dpy, _plotter->drawable3);
     }
 
   /* pop drawing states in progress, if any, off the stack */

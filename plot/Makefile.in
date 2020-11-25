@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -91,6 +92,7 @@ OBSOLETEBINS = plot2plot plot2tek plot2hpgl plot2fig plot2ps plot2X
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  plot$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -191,8 +193,8 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-plot: $(plot_OBJECTS) $(plot_DEPENDENCIES)
-	@rm -f plot
+plot$(EXEEXT): $(plot_OBJECTS) $(plot_DEPENDENCIES)
+	@rm -f plot$(EXEEXT)
 	$(LINK) $(plot_LDFLAGS) $(plot_OBJECTS) $(plot_LDADD) $(LIBS)
 
 tags: TAGS

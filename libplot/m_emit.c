@@ -50,5 +50,5 @@ _emit_float (x)
   float f;
   
   f = FROUND(x);
-  fwrite (&f, sizeof(float), 1, _plotter->outstream);
+  fwrite (&f, sizeof(f), 1, _plotter->outstream);
 }

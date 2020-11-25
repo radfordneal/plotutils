@@ -23,10 +23,7 @@
 #include "plot.h"
 #include "extern.h"
 
-/* font we use for symbol escapes if the current font is a user-specified
-   one that doesn't belong to any of the multi-font typefaces included in
-   our database in g_fontdb.h */
-#define SYMBOL_FONT "Symbol"
+static bool _suppress_retrieve = false;	/* avoids unnecessary font retrieval */
 
 /* This prints a single-font, single-font-size label, and repositions to
    the end after printing.  When this is called, the current point is on
@@ -60,6 +57,18 @@ _x_falabel_other (s, h_just)
   x = XD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y);
   y = YD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y);
   
+  /* Retrieve the font -- all of it that we'll need.  We may have
+     previously retrieved only an empty subset of it.  See x_retrieve.c for
+     information on character subsetting. */
+  _plotter->x_label = s;	/* pass hint */
+  _plotter->retrieve_font ();
+  _plotter->x_label = NULL;
+
+  /* Set font in GC used for drawing (the other GC, used for filling, is
+     left alone).  _x_retrieve_font() does not do this. */
+  XSetFont (_plotter->dpy, _plotter->drawstate->gc_fg,
+	    _plotter->drawstate->x_font_struct->fid);
+
   if (_plotter->drawstate->native_positioning)
     {
       /* a special case: the font name did not include a pixel matrix, or
@@ -73,7 +82,7 @@ _x_falabel_other (s, h_just)
       if (XOOB_INT(ix) || XOOB_INT(iy))
 	return 0.0;
 
-      if (_plotter->double_buffering)
+      if (_plotter->double_buffering != DBL_NONE)
 	XDrawString (_plotter->dpy, _plotter->drawable3, 
 		     _plotter->drawstate->gc_fg, 
 		     ix, iy, (char *)s, label_len);
@@ -115,7 +124,7 @@ _x_falabel_other (s, h_just)
 	  if (XOOB_INT(ix) || XOOB_INT(iy))
 	    return 0.0;
 
-	  if (_plotter->double_buffering)
+	  if (_plotter->double_buffering != DBL_NONE)
 	    XDrawString (_plotter->dpy, _plotter->drawable3,
 			 _plotter->drawstate->gc_fg, 
 			 ix, iy, (char *)stringptr, 1);
@@ -139,7 +148,9 @@ _x_falabel_other (s, h_just)
     }
   
   /* width of the substring in user units */
+  _suppress_retrieve = true;	/* avoid unnecessary retrieval of X font */
   width = _x_flabelwidth_other (s);
+  _suppress_retrieve = false;
 
   /* label rotation angle in radians */
   theta = M_PI * _plotter->drawstate->text_rotation / 180.0;
@@ -173,9 +184,23 @@ _x_flabelwidth_other (s)
   int offset = 0;
   double label_width;
   
+  /* Retrieve the font -- all of it that we'll need.  We may have
+     previously retrieved only an empty subset of it.  See x_retrieve.c for
+     information on character subsetting. */
+  if (_suppress_retrieve == false)
+    /* retrieve X font */
+    {
+      _plotter->x_label = s;	/* pass hint */
+      _plotter->retrieve_font ();
+      _plotter->x_label = NULL;
+    }
+
   if (_plotter->drawstate->native_positioning)
     /* have a non-XLFD font, or an XLFD with zero textrotation, no shearing */
-    offset = IROUND(1000.0 * XTextWidth (_plotter->drawstate->x_font_struct, (char *)s, (int)(strlen((char *)s))) / _plotter->drawstate->font_pixmatrix[0]);
+    offset = IROUND(1000.0 * XTextWidth (_plotter->drawstate->x_font_struct, 
+					 (char *)s, 
+					 (int)(strlen((char *)s))) / 
+		    _plotter->drawstate->font_pixmatrix[0]);
   else				
     /* necessarily have an XLFD font, may need to take shearing into account */
     {

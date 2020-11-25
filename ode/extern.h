@@ -120,7 +120,7 @@ double invnorm __P((double p));
 double norm __P((double x));
 
 /* in libcommon */
-void display_usage __P((const char *progname, const int *omit_vals, bool files, bool fonts));
+void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
 Voidptr xmalloc __P ((unsigned int size));
 char *xstrdup __P ((const char *s));

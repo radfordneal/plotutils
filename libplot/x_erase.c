@@ -26,6 +26,7 @@ _x_erase ()
   bool head_found;
   int window_width, window_height;
   int i, current_frame;
+  Arg wargs[10];		/* werewolves */
   Colorrecord *cptr, **link = NULL;
   State *stateptr;
 
@@ -45,30 +46,88 @@ _x_erase ()
   window_width = (_plotter->imax - _plotter->imin) + 1;
   window_height = (_plotter->jmin - _plotter->jmax) + 1;
 
-  if (_plotter->double_buffering)
+  if (_plotter->double_buffering != DBL_NONE)
     {
-      /* copy current frame of buffered graphics to drawable(s) */
-      if (_plotter->drawable1)
-	XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable1,
-		   _plotter->drawstate->gc_bg,		   
-		   0, 0,
-		   (unsigned int)window_width, (unsigned int)window_height,
-		   0, 0);
-      if (_plotter->drawable2)
-	XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable2,
-		   _plotter->drawstate->gc_bg,		   
-		   0, 0,
-		   (unsigned int)window_width, (unsigned int)window_height,
-		   0, 0);
-      /* erase graphics buffer by filling with background color */
+      /* Following two sorts of server-supported double buffering
+	 (DBL_DBE, DBL_MBX) are possible only for X Plotters, not
+	 X Drawable Plotters.  `By hand' double buffering is possible
+	 for both. */
+
+#ifdef HAVE_X11_EXTENSIONS_XDBE_H
+#ifdef HAVE_DBE_SUPPORT
+      if (_plotter->double_buffering == DBL_DBE)
+	/* we're using the X double buffering extension */
+	{
+	  XdbeSwapInfo info;
+	  
+	  /* Copy current frame of buffered graphics to window.  Implement
+	     this by swapping the front and back buffers for widget's
+	     window.  Former front buffer will become graphics buffer.
+	     Currently, the buffers are `drawable2' (front) and `drawable3'
+	     (back, into which we draw). */
+	  info.swap_window = _plotter->drawable2;
+	  info.swap_action = XdbeUndefined;
+	  XdbeSwapBuffers (_plotter->dpy, &info, 1);
+	}
+      else
+#endif /* HAVE_DBE_SUPPORT */
+#endif /* HAVE_X11_EXTENSIONS_XDBE_H */
+
+#ifdef HAVE_X11_EXTENSIONS_MULTIBUF_H
+#ifdef HAVE_MBX_SUPPORT
+      if (_plotter->double_buffering == DBL_MBX)
+	/* we're using the X multibuffering extension */
+	{
+	  Multibuffer multibuf;
+
+	  /* Copy current frame of buffered graphics to window.  Implement
+	     this by making multibuffer into which we've been drawing the
+	     current multibuffer. */
+	  XmbufDisplayBuffers (_plotter->dpy, 1, &(_plotter->drawable3), 0, 0);
+
+	  /* swap the two multibuffers, making the other one the off-screen
+	     graphics buffer into which we draw (`drawable3') */
+	  multibuf = _plotter->drawable3;
+	  _plotter->drawable3 = _plotter->drawable4;
+	  _plotter->drawable4 = multibuf;
+	}
+      else
+#endif /* HAVE_MBX_SUPPORT */
+#endif /* HAVE_X11_EXTENSIONS_MULTIBUF_H */
+
+	/* we must be doing double buffering `by hand', rather than using
+           an X protocol extension */
+      if (_plotter->double_buffering == DBL_BY_HAND)
+	{
+	  /* copy current frame of buffered graphics to drawable(s) */
+	  if (_plotter->drawable1)
+	    XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable1,
+		       _plotter->drawstate->gc_bg,		   
+		       0, 0,
+		       (unsigned int)window_width, 
+		       (unsigned int)window_height,
+		       0, 0);
+	  if (_plotter->drawable2)
+	    XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable2,
+		       _plotter->drawstate->gc_bg,		   
+		       0, 0,
+		       (unsigned int)window_width, 
+		       (unsigned int)window_height,
+		       0, 0);
+	}
+
+      /* irrespective of which of the three sorts of double buffering is
+	 being performed, clear the (new) graphics buffer, by filling it
+	 with background color */
       XFillRectangle (_plotter->dpy, _plotter->drawable3, 
 		      _plotter->drawstate->gc_bg,
 		      /* upper left corner */
 		      0, 0,
-		      (unsigned int)window_width, (unsigned int)window_height);
+		      (unsigned int)window_width, 
+		      (unsigned int)window_height);
     }
   else
-    /* not double buffering */
+    /* not double buffering at all */
     {
       /* erase drawable(s) by filling with background color */
       if (_plotter->drawable1)
@@ -84,6 +143,21 @@ _x_erase ()
 			0, 0,
 			(unsigned int)window_width, (unsigned int)window_height);
     }
+  
+  if (_plotter->type == PL_X11)
+    /* If an X Plotter, update background color of canvas widget,
+       irrespective of whether or not we're double buffering.  This fixes
+       things so that if the window is resized to a larger size, the new
+       portions of the window will be filled with the correct color. */
+       {
+#ifdef USE_MOTIF
+	 XtSetArg (wargs[0], XmNbackground, _plotter->drawstate->x_bgcolor);
+#else
+	 XtSetArg (wargs[0], XtNbackground, _plotter->drawstate->x_bgcolor);
+#endif
+	 XtSetValues (_plotter->toplevel, wargs, (Cardinal)1);
+	 XtSetValues (_plotter->canvas, wargs, (Cardinal)1);
+       }
   
   /* Flush the color cell cache, to the extent we can.  But heuristically,
      keep in the cache a certain number of cells that aren't strictly
@@ -115,10 +189,10 @@ _x_erase ()
       cptrnext = cptr->next;
       if (cptr->allocated)
 	{
-	  if ((_plotter->double_buffering == false
+	  if (((_plotter->double_buffering == DBL_NONE)
 	      && i < NUM_KEPT_COLORS)
 	      ||
-	      (_plotter->double_buffering == true
+	      ((_plotter->double_buffering != DBL_NONE)
 	       && cptr->frame >= current_frame - NUM_KEPT_FRAMES))
 	    {
 	      if (head_found)

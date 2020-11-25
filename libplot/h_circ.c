@@ -15,6 +15,13 @@ _h_fcircle (x, y, r)
 {
   double radius;
 
+  if (!_plotter->drawstate->points_are_connected)
+    /* line type is `disconnected', so do nothing */
+    {
+      _plotter->endpath (); /* flush polyline if any */
+      return 0;
+    }
+
   /* if affine map from user frame to device frame is anisotropic, use
      generic class method to draw an inscribed polyline */
   if (!_plotter->drawstate->transform.uniform)
@@ -30,53 +37,39 @@ _h_fcircle (x, y, r)
 
   _plotter->endpath (); /* flush polyline if any */
 
-  (_plotter->drawstate->pos).x = x; /* move to center (a libplot convention) */
-  (_plotter->drawstate->pos).y = y;
-  
   radius = sqrt(XDV(r,0)*XDV(r,0)+YDV(r,0)*YDV(r,0));
   
-  /* sync pen position and line attributes, incl. pen width */
+  /* move to center; set attributes, incl. pen width */
+  (_plotter->drawstate->pos).x = x;
+  (_plotter->drawstate->pos).y = y;
   _plotter->set_position();
   _plotter->set_attributes();
   
-  if (_plotter->hpgl_version >= 1)
-    /* have a polygon buffer, and will use it */
+  if (_plotter->drawstate->fill_level)
+    /* ideally, circle should be filled */
     {
-      /* enter polygon mode, draw circle, exit polygon mode */
-      if (_plotter->hpgl_version == 1)
-	sprintf (_plotter->outbuf.current, "PM0;CI%d;PM2;", IROUND(radius));
-      else			/* HP-GL/2, use small chord angle */
-	/* Note -- commented out because 2 degrees may be too small */
-	/* sprintf (_plotter->outbuf.current, "PM0;CI%d,2;PM2;", 
-	   IROUND(radius)); */
-	sprintf (_plotter->outbuf.current, "PM0;CI%d;PM2;", 
-		 IROUND(radius));
-      _update_buffer (&_plotter->outbuf);
-      /* lift pen */
-      strcpy (_plotter->outbuf.current, "PU;");
-      _update_buffer (&_plotter->outbuf);
-      _plotter->pendown = false;
-      if (_plotter->drawstate->fill_level)
+      /* Sync fill color.  This may set the _plotter->bad_pen flag (e.g. if
+	 optimal pen is #0 and we're not allowed to use pen #0 to draw
+	 with).  So we test _plotter->bad_pen before using the pen. */
+      _plotter->set_fill_color ();
+      if (_plotter->bad_pen == false)
+	/* fill the circle (360 degree wedge) */
 	{
-	  /* select appropriate pen and fill the circle */
-	  _plotter->set_fill_color ();
-	  strcpy (_plotter->outbuf.current, "FP;");
-	  _update_buffer (&_plotter->outbuf);
+	  sprintf (_plotter->page->point, "WG%d,0,360;", IROUND(radius));
+	  _update_buffer (_plotter->page);
 	}
-      /* select appropriate pen and edge the circle */
-      _plotter->set_pen_color ();
-      strcpy (_plotter->outbuf.current, "EP;");
-      _update_buffer (&_plotter->outbuf);
     }
-  else
-    /* don't have a polygon buffer, won't do filling */
+
+  /* Sync pen color.  This may set the _plotter->bad_pen flag (e.g. if
+     optimal pen is #0 and we're not allowed to use pen #0 to draw with).
+     So we test _plotter->bad_pen before using the pen. */
+  _plotter->set_pen_color ();
+  if (_plotter->bad_pen == false)
+    /* edge the circle */
     {
-      /* select appropriate pen */
-      _plotter->set_pen_color ();
-      /* draw circle */
-      sprintf (_plotter->outbuf.current, "CI%d;", IROUND(radius));
-      _update_buffer (&_plotter->outbuf);
+      sprintf (_plotter->page->point, "CI%d;", IROUND(radius));
+      _update_buffer (_plotter->page);
     }
-  
+
   return 0;
 }

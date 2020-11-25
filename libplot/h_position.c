@@ -29,12 +29,12 @@ _h_set_position ()
     {
       if (_plotter->pendown == true)
 	{
-	  sprintf (_plotter->outbuf.current, "PU;PA%d,%d;", xnew, ynew);
+	  sprintf (_plotter->page->point, "PU;PA%d,%d;", xnew, ynew);
 	  _plotter->pendown = false;
 	}
       else
-	sprintf (_plotter->outbuf.current, "PA%d,%d;", xnew, ynew);
-      _update_buffer (&_plotter->outbuf);
+	sprintf (_plotter->page->point, "PA%d,%d;", xnew, ynew);
+      _update_buffer (_plotter->page);
 
       /* update our knowledge of pen position */
       _plotter->position_is_unknown = false;

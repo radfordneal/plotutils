@@ -171,12 +171,12 @@ _x_retrieve_color (rgb_ptr)
      XColor *rgb_ptr;
 #endif
 {
+  Arg wargs[10];		/* werewolves */
   Colorrecord *cptr;
   int rgb_red = rgb_ptr->red;
   int rgb_green = rgb_ptr->green;  
   int rgb_blue = rgb_ptr->blue;
   int xretval;
-  static bool color_warning_printed = false;
 
   /* search cache list */
   for (cptr = _plotter->x_colorlist; cptr; cptr = cptr->next)
@@ -218,7 +218,7 @@ _x_retrieve_color (rgb_ptr)
 	{
 	  _plotter->warning ("unable to create private colormap");
 	  _plotter->warning ("color supply exhausted, can't create new colors");
-	  color_warning_printed = true;
+	  _plotter->x_color_warning_issued = true;
 
 	  /* add null color cell to head of cache list */
 	  cptr = (Colorrecord *)_plot_xmalloc (sizeof (Colorrecord));
@@ -226,24 +226,26 @@ _x_retrieve_color (rgb_ptr)
 	  cptr->rgb.green = rgb_green;
 	  cptr->rgb.blue = rgb_blue;
 	  cptr->allocated = false;
-	  cptr->frame = _plotter->frame_number; /* keep track of frame number */
+	  cptr->frame = _plotter->frame_number; /* keep track of frame number*/
 	  cptr->next = _plotter->x_colorlist;
 	  _plotter->x_colorlist = cptr;
 	  return false;
 	}
       _plotter->cmap = new_cmap;
-      XSetWindowColormap (_plotter->dpy, 
-			  XtWindow(_plotter->toplevel), new_cmap);
+      /* install new colormap in toplevel shell widget */
+      XtSetArg (wargs[0], XtNcolormap, new_cmap);
+      XtSetValues (_plotter->toplevel, wargs, (Cardinal)1);
+      /* try again to allocate color cell */
       xretval = XAllocColor (_plotter->dpy, new_cmap, rgb_ptr);
     }
 
   if (xretval == 0)
     /* allocation of new color cell failed */
     {
-      if (!color_warning_printed)
+      if (_plotter->x_color_warning_issued == false)
 	{
 	  _plotter->warning ("color supply exhausted, can't create new colors");
-	  color_warning_printed = true;
+	  _plotter->x_color_warning_issued = true;
 	}
 
       /* add null color cell to head of cache list */

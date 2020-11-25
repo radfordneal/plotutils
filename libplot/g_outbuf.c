@@ -1,50 +1,94 @@
-/* This file contains output buffer manipulation routines, which are called
-   by functions in versions of libplot that for one reason or another do
-   not support real-time output.  Instead, graphics objects are stored in
-   an output buffer, which is written to the output stream when closepl()
-   is called.  This is a kludge, which may eventually be replaced by an
-   in-core object hierarchy, which closepl() will scan. */
+/* This file contains routines for creating, manipulating, and deleting a
+   special sort of output buffer: an Outbuf.  They are invoked by drawing
+   methods for Plotters that do not do real-time output.  Such Plotters
+   store the device code for each page of graphics in an Outbuf.  Bounding
+   box information may be stored in the Outbuf, along with device code.
+
+   Outbufs may be resized when they are too full.  The strange resizing
+   method (_UPDATE_BUFFER) is needed because on many systems, sprintf()
+   does not return the number of characters it writes.
+   
+   Output buffers of this sort are a bit of a kludge.  They may eventually
+   be replaced or supplemented by an in-core object hierarchy, which
+   deletepl() will scan. */
 
 #include "sys-defines.h"
 #include "plot.h"
 #include "extern.h"
 
-/* initial length for an output buffer, for holding output strings (should
-   be large enough to handle any single one of our sprintf's without
-   overflow). */
-
+/* initial length for an Outbuf (should be large enough to handle any
+   single one of our sprintf's without overflow). */
 #define INITIAL_OUTBUF_LEN 256
+
+Outbuf *
+#ifdef _HAVE_PROTOS
+_new_outbuf (void)
+#else
+_new_outbuf ()
+#endif
+{
+  Outbuf *bufp;
+
+  bufp = (Outbuf *)_plot_xmalloc(sizeof(Outbuf));
+  bufp->base = (char *)_plot_xmalloc(INITIAL_OUTBUF_LEN * sizeof(char));
+  bufp->len = INITIAL_OUTBUF_LEN;
+  bufp->point = bufp->base;
+  bufp->contents = 0;
+  bufp->next = NULL;
+  bufp->xrange_min = DBL_MAX;
+  bufp->xrange_max = -(DBL_MAX);
+  bufp->yrange_min = DBL_MAX;
+  bufp->yrange_max = -(DBL_MAX);
+  *(bufp->base) = '\0';
+  return bufp;
+}
 
 void
 #ifdef _HAVE_PROTOS
-_initialize_buffer (Outbuffer *bufp)
+_reset_outbuf (Outbuf *bufp)
 #else
-_initialize_buffer (bufp)
-     Outbuffer *bufp;
+_reset_outbuf (bufp)
+     Outbuf *bufp;
 #endif
 {
-  bufp->base = (char *)_plot_xmalloc(INITIAL_OUTBUF_LEN * sizeof(char));
-  bufp->len = INITIAL_OUTBUF_LEN;
-  bufp->current = bufp->base;
+  bufp->point = bufp->base;
   bufp->contents = 0;
+  bufp->xrange_min = DBL_MAX;
+  bufp->xrange_max = -(DBL_MAX);
+  bufp->yrange_min = DBL_MAX;
+  bufp->yrange_max = -(DBL_MAX);
   *(bufp->base) = '\0';
 }
 
-/* UPDATE_BUFFER must be called after each sprintf() and other object write
-   operation */
-
 void
 #ifdef _HAVE_PROTOS
-_update_buffer (Outbuffer *bufp)
+_delete_outbuf (Outbuf *bufp)
+#else
+_delete_outbuf (bufp)
+     Outbuf *bufp;
+#endif
+{
+  if (bufp)
+    {
+      free (bufp->base);
+      free (bufp);
+    }
+}
+
+/* UPDATE_BUFFER is called after each sprintf() and other object write
+   operations */
+void
+#ifdef _HAVE_PROTOS
+_update_buffer (Outbuf *bufp)
 #else
 _update_buffer (bufp)
-     Outbuffer *bufp;
+     Outbuf *bufp;
 #endif
 {
   int additional;
 
-  additional = strlen (bufp->current);
-  bufp->current += additional;
+  additional = strlen (bufp->point);
+  bufp->point += additional;
   bufp->contents += additional;
 
   if (bufp->contents > bufp->len - 1) /* need room for NUL */
@@ -57,19 +101,39 @@ _update_buffer (bufp)
       bufp->base = 
 	(char *)_plot_xrealloc (bufp->base, 2 * bufp->len * sizeof(char));
       bufp->len *= 2;
-      bufp->current = bufp->base + bufp->contents;
+      bufp->point = bufp->base + bufp->contents;
     }      
 }
 
-void
+/* query bounding box information for the page */
+void 
 #ifdef _HAVE_PROTOS
-_reset_buffer (Outbuffer *bufp)
+_get_range (Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax)
 #else
-_reset_buffer (bufp)
-     Outbuffer *bufp;
+_get_range (bufp, xmin, xmax, ymin, ymax)
+     Outbuf *bufp;
+     double *xmin, *xmax, *ymin, *ymax;
 #endif
 {
-  bufp->current = bufp->base;
-  bufp->contents = 0;
-  *(bufp->base) = '\0';
+  *xmax = bufp->xrange_max;
+  *xmin = bufp->xrange_min;
+  *ymax = bufp->yrange_max;
+  *ymin = bufp->yrange_min;
+}
+
+/* update bounding box information for the page, to take account of a point
+   being plotted */
+void 
+#ifdef _HAVE_PROTOS
+_set_range (Outbuf *bufp, double x, double y)
+#else
+_set_range (bufp, x, y)
+     Outbuf *bufp;
+     double x, y;
+#endif
+{
+  if (x > bufp->xrange_max) bufp->xrange_max = x;
+  if (x < bufp->xrange_min) bufp->xrange_min = x;
+  if (y > bufp->yrange_max) bufp->yrange_max = y;
+  if (y < bufp->yrange_min) bufp->yrange_min = y;
 }

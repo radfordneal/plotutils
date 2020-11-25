@@ -1,87 +1,74 @@
-For version 2.2
+For version 2.x
 ---------------
 
-libsciplot: new library.  Incorporate all functionality of VOGLE, PGPLOT,
-and PLPLOT libraries; check into GLE.  Think about Guile, and Tcl/Tk, and
-Python.  libsciplot will support contouring, but not 3d plots yet.
+libplot: add the display list concept (will facilitate addition of support
+for compound objects and much else).
 
-libsciplot: note when plotting a curve containing data points, symbols 
-should be plotted _last_, after endpath() is called.
+libplot: support copying graphics from one Plotter to another (via display
+list)
+
+libplot: Support Adobe Illustrator format (-T ai), and CGM format.
+Check that CGM is importable into Corel Draw as well as AI.
+
+libsciplot: new library.  Incorporate all functionality of VOGLE, PGPLOT,
+and PLPLOT libraries; check into GLE and PLOTPLUS, XYPLOT.  Think about
+Guile, and Tcl/Tk, and Python.  libsciplot will support contouring, but not
+3d surface plots yet.
 
 graph: librarify the plotting routines, and incorporate them in libsciplot.
 N.B. need better clipping for filled regions (present gnuplot-style
 clipping scheme is right for unfilled regions but wrong for filled ones)
 
-libplot: Support Adobe Illustrator format (-T ai or -T ill), and CGM format.
+libsciplot: note when plotting a curve containing data points, symbols 
+should be plotted _last_, after endpath() is called.
 
-libplot: add support for compound objects, Bezier cubic spline objects
+libplot: support object-level clipping
 
-graph: new option to put frame on top of plot, not vice versa
+libplot: add support for compound objects, Bezier cubic spline objects.
+Also add a simpler spline primitive, guaranteed to go through all
+intermediate points (both open/closed are OK).  Have native support in X11
+for this [XDraw] and in PS/idraw.
+
+libplot: paths should be be able to contain portions that are Beziers, 
+as well as portions that are line segments and circular/elliptic arcs.
+
+libplot: add support for subpaths and nonzero-winding-number filling
+(rather than just even-odd filling)
+
+graph: new option to put frame on top of plot, not vice versa.
 maybe automatic, if `plotting is real time' capability is set?
 
-libplot: zero-length line segments not displayed correctly by Tek and HP-GL
-drivers.  Fix this.
+libplot: add a command to set miter limit for line joins, to the API
+Takes effect only for PS, HP-GL output.  Affects bounding box computations
+(see g_range.c).
 
-Comparatively minor things, for Versions 2.x
---------------------------------------------
+libplot X drawable support: add parameter(s) for offset of canvas within
+drawable?
 
 graph: add legend support (need new --legend :string1:string2: option),
 i.e. gnuplot-style `key'.  Maybe arbitrarily positioned arrows, text
-strings also
-
-old HP-GL plotters can't handle full range of coordinates (AutoCAD values
-for range may not be good)
-
-libplot: think more about `disconnected' line type.  Each defining point
-should really be displayed as a circle of diameter equal to line width.
-
-libplot: report failure-to-retrieve font (e.g. anamorphic problem) better.
-Maybe print anamorphic message only when alabel() is called?
-
-Also improve libplot error reporting: change libplot error handler to use
-name of executable
-
-spline, double: should ignore comment lines in ascii input (cf. graph)
-
-graph: fix positioning of top labels, especially at large sizes
-
-HP-GL/2 stick font size should be reduced?
-
-Add comment() function, takes printable string as arg (no control chars)
-
-PCL fonts for libplot: keep trying to track down slight differences between
-HP-GL/2's font sizes and font sizes as specifed in the .AFM files
-accompanying the Microsoft HP Font Set.
-
-alabel, labelwidth: should not use clean_iso_string for Wingdings?
-
-libplot: In X driver, need sanity check on font size: should switch to a
-Hershey font if requested font is larger than display size.
-
-ode: need no stack blowout
-
-libplot: make meaning of "dotted", "dotdashed" etc. line types fully
-device-independent?
+strings also.  See how NCAR Graphics does it.
 
 Internationalization: think about removing strcasecmp (what if user called
 setlocale i.e. set LOCALE env var)?  Similarly worry about . vs ,
 everywhere, e.g. in PS files.
 
-libplot: add a command to set miter limit for line joins, to the API
+graph: fix positioning of top labels, especially at large sizes
 
-Hershey fonts:
-1. add euro and cedilla; also embolden `times', > , < , etc.
-2. Add support for Hershey indexical positioning on baseline?
-3. Invert `glaze' glyph for EUC, also `therefore'
-
-check into test/plot2tek.test (not currently run, seems to give
-system-dependent behavior depending on rounding mode?)
+libplot: PS driver should output a Level 2 PS page size command, e.g.
+	<</PageSize [595 842]>> setpagedevice
+for A4 paper.
 
 
 Major Enhancements (Possible, Probable, or Certain)
 ---------------------------------------------------
 
+libplot: support PGML output format, maybe VML.  Also, Macromedia's Flash
+.SWF format.
+
 libplot: C++ binding
+
+ode: extend parser to plot functions as well as solve differential equations
 
 libplot: redo X driver, to support window reuse (`persistence') by any
 X Plotter.  Will require forking off an outboard process.
@@ -90,11 +77,7 @@ graph parsing: allow all command-line options in data files, on comment lines
 
 graph: Write alternative parser for interactive version (gnuplot replacement).
 
-libplot: add support for raster objects
-
-libplot: support PGML output format
-
-libplot: polyline hatching as well as filling
+Write a sort of pic2plot program, supporting all output types of course.
 
 libplot: add interactivity (e.g. getloc()), during openpl()...closepl().
 Need to translate back to user coordinates.  [For libsciplot, even
@@ -105,28 +88,16 @@ libplot: write a version producing a bitmap format (e.g. PBM); use new
 freeware rasterizer for type 1 fonts [t1lib, by Rainer Menzner; see
 ftp://ftp.neuroinformatik.ruhr-uni-bochum.de/pub/software/t1lib ].
 
-libplot: add the display list concept (would facilitate addition of
-compound objects).  Once display list is there, support zooming in libplot
-X driver [PS output via buttons?].  Add a `close window' button instead of
-closing by a single mouse click.
+libplot: gradient fill
 
-libplot text string format: \mk..\rt etc. should be stack machine; include
-overline, underline, radical etc.  Cf. Alan Hershey's typesetting.
-
-Break out spline() as subroutine(s), cf. fitpack?  Similarly with plot
-frame / axis drawing.  For this, check into NCAR Graphics package,
-`autograph' routines.
-
-libplot: spline the Hershey fonts
-
-ode: extend parser to plot functions as well as solve differential equations
+Break out spline() as subroutine(s), cf. fitpack?  Cf. IMSL interface.
+Similarly with plot frame / axis drawing.  For this, check into NCAR
+Graphics package, `autograph' routines.
 
 ode: need popen() for output; cf. gnuplot
 
 graph: add `boxes', `steps', `impulses', `bars' plot types (as in gnuplot).
 Boxes, bars should properly support --fill-fraction option.
-
-Write a sort of pic2plot program, supporting all output types of course.
 
 graph: add support for polar/spherical plots, 3-D (surface) plotting
 
@@ -137,3 +108,39 @@ Other needed math software:
 	fitting capability
 	contour plotting via level curves; also compute enclosed area
 	surface plotting	(cf. IDL for plotting and contouring)
+
+
+Low-priority items (may be done someday)
+----------------------------------------
+
+libplot: spline the Hershey fonts, use new spline primitive to draw them.
+
+old HP-GL pen plotters can't handle full range of coordinates (current
+range, taken from AutoCAD, may not be good)
+
+Improve libplot error reporting: change libplot error handler to use name
+of executable
+
+Add comment() function, takes printable string as arg (no control chars)
+
+ode: need no stack blowout
+
+Hershey fonts: 
+1. add euro and cedilla
+2. add support for Hershey indexical positioning on baseline?
+
+graph, plot, tek2plot: add --display and --geometry options?
+
+check into test/plot2tek.test (not currently run, seems to give
+system-dependent behavior depending on rounding mode?)
+
+libplot: In X driver, need sanity check on font size: should switch to a
+Hershey font if requested font is larger than display size.
+
+libplot text string format: \mk..\rt etc. should be stack machine; include
+overline, underline, radical etc.  Cf. Allen Hershey's typesetting.
+
+libplot: polyline hatching as well as filling
+
+libplot: add support for raster objects
+

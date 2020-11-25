@@ -1,25 +1,19 @@
-/* The following is a Postscript prologue which defines a set of macros and
-   constants which are used in rendering graphics on the page.  It is split
-   into several comparatively short pieces, because some compilers have
-   difficulty with strings that are too long.  It is #included by p_closepl.c.
+/* The following Postscript procset defines a set of macros and constants
+   that libplot uses when rendering graphics.  It is split into several
+   shorter pieces, because some compilers have difficulty with strings that
+   are too long.  It is #included by p_writeout.c.
 
-   This prologue was written by John Interrante
-   <interran@uluru.stanford.edu>.  (Thanks to John for generously providing
-   it, and for helpful comments.)  For more information see the InterViews
-   distribution on interviews.stanford.edu. */
+   The procset was largely written by John Interrante
+   <interran@uluru.stanford.edu>, formerly of the InterViews team.  (Thanks
+   to John for generously providing it, and for helpful comments.)
+   For more information see the InterViews distribution at
+   ftp://interviews.stanford.edu. */
 
-static const char * const _ps_header[] =
+#define PS_PROCSET_NAME "GNU_libplot"
+#define PS_PROCSET_VERSION "1.0"
+
+static const char * const _ps_fontproc =
 {"\
-/DrawDict 50 dict def\n\
-DrawDict begin\n\
-\n\
-/reencodeISO {\n\
-dup dup findfont dup length dict begin\n\
-{ 1 index /FID ne { def }{ pop pop } ifelse } forall\n\
-/Encoding ISOLatin1Encoding def\n\
-currentdict end definefont\n\
-} def\n\
-\n\
 /ISOLatin1Encoding [\n\
 /.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n\
 /.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n\
@@ -51,13 +45,21 @@ currentdict end definefont\n\
 /otilde/odieresis/divide/oslash/ugrave/uacute/ucircumflex/udieresis\n\
 /yacute/thorn/ydieresis\n\
 ] def\n\
-\n\
+/reencodeISO {\n\
+dup dup findfont dup length dict begin\n\
+{ 1 index /FID ne { def }{ pop pop } ifelse } forall\n\
+/Encoding ISOLatin1Encoding def\n\
+currentdict end definefont\n\
+} def\n"
+};
+
+static const char * const _ps_procset[] =
+{"\
 /none null def\n\
 /numGraphicParameters 17 def\n\
 /stringLimit 65535 def\n\
 /arrowHeight 8 def\n\
-/arrowWidth 4 def\n\
-\n\
+/arrowWidth 4 def\n\n\
 /Begin { save numGraphicParameters dict begin } def\n\
 /End { end restore } def\n\
 \n\
@@ -78,11 +80,15 @@ false /brushNone idef\n\
 } def\n\
 \n\
 /SetCFg {\n\
-/fgblue idef /fggreen idef /fgred idef\n\
+/fgblue idef\n\
+/fggreen idef\n\
+/fgred idef\n\
 } def\n\
 \n\
 /SetCBg {\n\
-/bgblue idef /bggreen idef /bgred idef\n\
+/bgblue idef\n\
+/bggreen idef\n\
+/bgred idef\n\
 } def\n\
 \n\
 /SetF {\n\
@@ -98,8 +104,8 @@ pop true /patternNone idef\n\
 patternGrayLevel -1 eq {\n\
 /patternString idef\n\
 } if\n\
-false /patternNone idef }\n\
-ifelse\n\
+false /patternNone idef\n\
+} ifelse\n\
 } def\n\
 \n\
 /BSpl {\n\
@@ -125,8 +131,10 @@ n 2 sub dup 1 sub dup rightarrow\n\
 end\n\
 } dup 0 4 dict put def\n\
 \n\
-/Circ {newpath\n\
+/Circ {\n\
+newpath\n\
 0 360 arc\n\
+closepath\n\
 patternNone not { ifill } if\n\
 brushNone not { istroke } if\n\
 } def\n\
@@ -158,6 +166,7 @@ newpath\n\
 translate\n\
 scale\n\
 0 0 1 0 360 arc\n\
+closepath\n\
 patternNone not { ifill } if\n\
 brushNone not { istroke } if\n\
 end\n\
@@ -226,7 +235,7 @@ ishow\n\
 } def\n\
 \n\
 /idef {\n\
-dup where { pop pop pop } {exch def } ifelse\n\
+dup where { pop pop pop } { exch def } ifelse\n\
 } def\n\
 \n\
 /ifill {\n\
@@ -250,7 +259,7 @@ eofill\n\
 fgred fggreen fgblue setrgbcolor\n\
 w 0 gt h 0 gt and {\n\
 l b translate w h scale\n\
-w h true[w 0 0 h neg 0 h] { patternproc } imagemask\n\
+w h true [w 0 0 h neg 0 h] { patternproc } imagemask\n\
 } if\n\
 } ifelse\n\
 grestore\n\
@@ -279,8 +288,7 @@ fgred fggreen fgblue setrgbcolor\n\
 /fontDict printFont findfont printSize scalefont dup setfont def\n\
 /descender fontDict begin 0 [FontBBox] 1 get FontMatrix end\n\
 transform exch pop def\n\
-/vertoffset 0 descender sub printSize sub\n\
-printFont /Courier ne printFont /Courier-Bold ne and { 1 add } if def {\n\
+/vertoffset 1 printSize sub descender sub def {\n\
 0 vertoffset moveto show\n\
 /vertoffset vertoffset printSize sub def\n\
 } forall\n\
@@ -300,7 +308,7 @@ stringLimit patternByteWidth sub min def\n\
 patternHeight mul patternHeight max def\n\
 /imageHeight imageHeight imageMaxHeight sub store\n\
 /imageString imageByteWidth imageMaxHeight mul patternByteWidth add string def\n\
-0 1 imageMaxHeight 1 sub{\n\
+0 1 imageMaxHeight 1 sub {\n\
 /y exch def\n\
 /patternRow y patternByteWidth mul patternByteLength mod def\n\
 /patternRowString patternString patternRow patternByteWidth getinterval def\n\

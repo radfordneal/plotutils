@@ -11,9 +11,9 @@
 # between the pulley and the lighter mass.  Then the system of differential
 # equations below will describe the evolution of the system.
 
-# You may run this example, with output in real time, by doing
+# You may run this example, with output to an X window in real time, by doing
 #
-#	ode < atwoods.ode | graph -TX -x 9 11 -y -1 1 -m 0 -S 1
+#	ode < atwoods.ode | graph -T X -x 9 11 -y -1 1 -m 0 -S 1
 # 
 # The plot will trace out `l' and `ldot' (its time derivative).  The `-m 0
 # -S 1' option requests that successive datapoints not be joined by line

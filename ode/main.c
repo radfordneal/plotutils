@@ -253,7 +253,7 @@ main (argc, argv)
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, false, false);
+      display_usage (progname, hidden_options, NULL, false);
       return 0;
     }
 
@@ -269,8 +269,7 @@ main (argc, argv)
       infile = fopen (filename, "r");
       if (infile == NULL)
 	{
-	  fprintf (stderr, "%s: ", progname);
-	  perror (filename);
+	  fprintf (stderr, "%s: %s: %s\n", progname, filename, strerror(errno));
 	  return 1;
 	}
       yyin = infile;

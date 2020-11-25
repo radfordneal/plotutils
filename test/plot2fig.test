@@ -1,11 +1,13 @@
 #!/bin/sh
 
-../plot/plot -T fig <graph.xout >plot2fig.out
+../plot/plot -T fig <$SRCDIR/graph.xout >plot2fig.out
 
-if (cmp -s $SRCDIR/plot2fig.xout plot2fig.out)
+# work around line end problems in installations with DJGPP under DOS
+tr -d '\015' < plot2fig.out > plot2fig.dos
+
+if cmp -s $SRCDIR/plot2fig.xout plot2fig.dos
 	then retval=0;
 	else retval=1;
 	fi;
 
-rm -f *.out
 exit $retval

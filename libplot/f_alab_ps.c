@@ -159,7 +159,7 @@ _f_falabel_ps (s, h_just)
       (_plotter->fig_drawing_depth)--;
   _plotter->fig_last_priority = TEXT_PRIORITY;
 
-  sprintf(_plotter->outbuf.current,
+  sprintf(_plotter->page->point,
 	  "#TEXT\n%d %d %d %d %d %d %.3f %.3f %d %.3f %.3f %d %d %s\\001\n",
 	  4,			/* text object */
 	  /* xfig supports 3 justification types: left, center, or right. */
@@ -179,7 +179,7 @@ _f_falabel_ps (s, h_just)
 	  IROUND(initial_y),
 	  t);			/* munged string */
   free (t);
-  _update_buffer (&_plotter->outbuf);
+  _update_buffer (_plotter->page);
 
   /* reposition after printing substring */
   _plotter->drawstate->pos.x += translation_x;

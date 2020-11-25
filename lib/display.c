@@ -16,7 +16,7 @@ extern struct option long_options[];
 
 /* forward references */
 bool elementp __P((int item, const int *list));
-void display_usage __P((const char *progname, const int *omit_vals, bool files, bool fonts));
+void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 void display_version __P((const char *progname));
 
 bool
@@ -40,18 +40,19 @@ elementp (item, list)
 
 void
 #ifdef _HAVE_PROTOS
-display_usage (const char *progname, const int *omit_vals, bool files, bool fonts)
+display_usage (const char *progname, const int *omit_vals, const char *appendage, bool fonts)
 #else
-display_usage (progname, omit_vals, files, fonts)
+display_usage (progname, omit_vals, appendage, fonts)
      const char *progname;
      const int *omit_vals;
-     bool files, fonts;
+     const char *appendage;
+     bool fonts;
 #endif
 {
   int i;
   int col = 0;
   
-  fprintf (stderr, "Usage: %s", progname);
+  fprintf (stdout, "Usage: %s", progname);
   col += (strlen (progname) + 7);
   for (i = 0; long_options[i].name; i++)
     {
@@ -63,47 +64,48 @@ display_usage (progname, omit_vals, files, fonts)
       option_len = strlen (long_options[i].name);
       if (col >= 80 - (option_len + 16))
 	{
-	  fprintf (stderr, "\n\t");
+	  fputs ("\n\t", stdout);
 	  col = 8;
 	}
-      fprintf (stderr, " [--%s", long_options[i].name);
+      fprintf (stdout, " [--%s", long_options[i].name);
       col += (option_len + 4);
       if ((unsigned int)(long_options[i].val) < 256)
 	{
-	  fprintf (stderr, " | -%c", long_options[i].val);
+	  fprintf (stdout, " | -%c", long_options[i].val);
 	  col += 5;
 	}
       if (long_options[i].has_arg == ARG_REQUIRED)
 	{
-	  fprintf (stderr, " arg]");
+	  fputs (" arg]", stdout);
 	  col += 5;
 	}
       else if (long_options[i].has_arg == ARG_OPTIONAL)
 	{
-	  fprintf (stderr, " [arg(s)]]");
+	  fputs (" [arg(s)]]", stdout);
 	  col += 10;
 	}
       else
 	{
-	  fprintf (stderr, "]");
+	  fputs ("]", stdout);
 	  col++;
 	}
     }
 
-  if (files)
-    {
-      fprintf (stderr, " [FILE]...\n");
-      fprintf (stderr, 
-	       "\nWith no FILE, or when FILE is -, read standard input.\n");
-    }
+  if (appendage != NULL)
+    fputs (appendage, stdout);
   else
-    fprintf (stderr, "\n");
+    fputs ("\n", stdout);
 
   if (fonts)
-    fprintf (stderr, "\n\
+    fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"device\" --help-fonts',\n\
 where \"device\" is the display device: X, ps, fig, hpgl, or tek.\n",
 	     progname);
+
+  if ((appendage != NULL) || fonts)
+    fputs ("\n", stdout);
+  fputs ("\
+Report bugs to bug-gnu-utils@gnu.org.\n", stdout);
 }
 
 void
@@ -114,14 +116,14 @@ display_version (progname)
      const char *progname;
 #endif
 {
-  fprintf (stderr, 
+  fprintf (stdout, 
 	   "%s (GNU %s) %s\n", progname, PACKAGE, VERSION);
-  fprintf (stderr, 
+  fprintf (stdout, 
 	   "Copyright (C) 1989-1998 Free Software Foundation, Inc.\n");
-  fprintf (stderr, 
+  fprintf (stdout, 
 	   "The GNU %s package comes with NO WARRANTY, to the extent permitted\n", PACKAGE);
-  fprintf (stderr, 
+  fprintf (stdout, 
 	   "by law. You may redistribute copies of the GNU %s package\n", PACKAGE);
-  fprintf (stderr, 
+  fprintf (stdout, 
 	   "under the terms of the GNU General Public License.\n");
 }

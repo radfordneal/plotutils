@@ -2,7 +2,7 @@
 #include "plot.h"
 #include "extern.h"
 
-#define X_EVENT_HANDLING_PERIOD 4
+#define X_EVENT_HANDLING_PERIOD 2
 
 /* _handle_x_events() handles any pending X events.  We call this at the
    end of most of the XPlotter methods.  (Since the same methods are used
@@ -36,6 +36,8 @@ _handle_x_events()
     {
       if (count % X_EVENT_HANDLING_PERIOD == 0)
 	{
+	  /* See api.c.  This processes X events associated with other open
+	     XPlotters. */
 	  _process_other_plotter_events (_plotter);
 	  
 	  while (XtAppPending (_plotter->app_con))

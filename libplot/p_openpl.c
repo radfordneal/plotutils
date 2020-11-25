@@ -1,15 +1,13 @@
 /* This file contains the openpl method, which is a standard part of
-   libplot.  It opens a Plotter object.
+   libplot.  It opens a Plotter object. */
 
-   For PSPlotter objects, we initialize the line type and choice of font,
-   and initialize the buffer in which we'll store Postscript code.  We
-   don't print out the postscript prologue, since we'll know the bounding
-   box only after all objects have been plotted.  The closepl() method will
-   write everything out.
-
-   We also determine the page size and the location on the page of the
-   graphics display, so that we'll be able to work out the map from user
-   coordinates to device coordinates in space.c. */
+/* This version is for PS Plotters.  It is just like g_openpl.c, the
+   version used by Plotters that cache each page of graphics rather than
+   emitting graphics in real time.  But it saves a pointer to the first
+   page, since a PS Plotter emits graphics only after all pages of graphics
+   have been drawn, and the Plotter is deleted.  This allows the emitted PS
+   to satisfy the DSC (Document Structuring Conventions).  See
+   p_terminate.c. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -22,9 +20,7 @@ _p_openpl (void)
 _p_openpl ()
 #endif
 {
-  const char *length_s, *pagesize;
-  const Pagedata *pagedata;
-  int i;
+  Outbuf *new_page;
 
   if (_plotter->open)
     {
@@ -32,42 +28,22 @@ _p_openpl ()
       return -1;
     }
 
-  /* initialize certain data members from values of relevant class variables */
+  /* prepare buffer in which we'll cache Postscript code for this page */
+  new_page = _new_outbuf ();
 
-  length_s = (const char *)_get_plot_param ("MAX_LINE_LENGTH");
-  {
-    int local_length;
-    
-    if (sscanf (length_s, "%d", &local_length) <= 0 || local_length <= 0)
-      {
-	_plotter->error ("bad MAX_LINE_LENGTH parameter, can't initialize");
-	return -1;
-      }
-    else
-      _plotter->max_unfilled_polyline_length = local_length;
-  }
-
-  /* determine page type i.e. determine the range of device coordinates
-   over which the graphics display will extend (and hence the
-   transformation from user to device coordinates). */
-  pagesize = (const char *)_get_plot_param ("PAGESIZE");
-  pagedata = _pagetype(pagesize);
-  if (pagedata == NULL)
+  if (_plotter->opened == false) /* first page */
     {
-      _plotter->error ("bad PAGESIZE variable, can't initialize");
-      return -1;
+      _plotter->page = new_page;
+      /* Save a pointer to the first page, since we'll be caching
+	 all pages until the Plotter is deleted. */
+      _plotter->first_page = new_page;
     }
-  _plotter->display_coors = pagedata->ps;
-
-  /* prepare buffer in which we'll cache all Postscript code */
-  _initialize_buffer (&_plotter->outbuf);
-
-  /* reset range bounds (i.e. BoundingBox) */
-  _reset_range();
-
-  /* initialize `font used' array */
-  for (i = 0; i < NUM_PS_FONTS; i++)
-    _plotter->ps_font_used[i] = false;
+  else
+    /* add new page to tail of list, update pointer to current page */
+    {
+      _plotter->page->next = new_page;
+      _plotter->page = new_page;
+    }
 
   /* flag device as open */
   _plotter->open = true;

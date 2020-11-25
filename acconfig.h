@@ -23,3 +23,12 @@
 
 /* Define to signal that Motif should be used, if X11 is used */
 #undef USE_MOTIF
+
+/* Define to signal support in -lXext for the DBE X11 protocol extension */
+#undef HAVE_DBE_SUPPORT
+
+/* Define to signal support in -lXext for the MBX X11 protocol extension */
+#undef HAVE_MBX_SUPPORT
+
+/* Define to enable support for the 45 LaserJet fonts in PS and X output */
+#undef USE_LJ_FONTS

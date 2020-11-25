@@ -1,6 +1,6 @@
 # You may run this example by doing
 #
-#    <qcd.ode ode | graph -TX -C
+#    ode < qcd.ode | graph -T X -C
 # 
 # This simulates a coupled system of ordinary differential equations that
 # arises in the mathematical theory of quantum chromodynamics (QCD).

@@ -1,8 +1,8 @@
-/* This is plot.h, the user-level include file for release 1.1 of 
+/* This is plot.h, the user-level include file for release 1.4 of
    GNU libplot, a shared library for 2-dimensional vector graphics.  
 
-   Release 1.1 of libplot, and this file, are distributed as part of
-   release 2.2 of the GNU plotting utilities package. */
+   Release 1.4 of libplot, and this file, are distributed as part of
+   release 2.1.4 of the GNU plotting utilities ("plotutils") package. */
 
 /* stdio.h must be included before this file is included. */
 
@@ -60,22 +60,22 @@ __BEGIN_DECLS
 /* THE GLOBAL FUNCTIONS IN GNU LIBPLOT */
 /* There are 81 basic functions, plus 4 that are specific to the C binding */
 
-/* functions in traditional (pre-GNU) libplot */
+/* 13 functions in traditional (pre-GNU) libplot */
 int arc ___P ((int xc, int yc, int x0, int y0, int x1, int y1));
-int box ___P ((int x0, int y0, int x1, int y1));
+int box ___P ((int x0, int y0, int x1, int y1)); /* no op code, originally */
 int circle ___P ((int x, int y, int r));
-int closepl ___P ((void));
+int closepl ___P ((void));	/* no op code, originally */
 int cont ___P ((int x, int y));
 int erase ___P ((void));
 int label ___P ((___const char *s));
 int line ___P ((int x0, int y0, int x1, int y1));
 int linemod ___P ((___const char *s));
 int move ___P ((int x, int y));
-int openpl ___P ((void));
+int openpl ___P ((void));	/* no op code, originally */
 int point ___P ((int x, int y));
 int space ___P ((int x0, int y0, int x1, int y1));
 
-/* additional functions in GNU libplot */
+/* 37 additional functions in GNU libplot */
 int alabel ___P ((int x_justify, int y_justify, ___const char *s));
 int arcrel ___P ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
 int bgcolor ___P ((int red, int green, int blue));
@@ -114,7 +114,7 @@ int savestate ___P((void));
 int space2 ___P ((int x0, int y0, int x1, int y1, int x2, int y2));
 int textangle ___P ((int angle));
 
-/* floating point counterparts to the above (all GNU additions) */
+/* 27 floating point counterparts to some of the above (all GNU additions) */
 double ffontname ___P ((___const char *s));
 double ffontsize ___P ((double size));
 double flabelwidth ___P ((___const char *s));
@@ -143,14 +143,14 @@ int fpointrel ___P ((double dx, double dy));
 int fspace ___P ((double x0, double y0, double x1, double y1));
 int fspace2 ___P ((double x0, double y0, double x1, double y1, double x2, double y2));
 
-/* floating point operations with no integer counterpart (GNU additions) */
+/* 4 floating point operations with no integer counterpart (GNU additions) */
 int fconcat ___P ((double m0, double m1, double m2, double m3, double m4, double m5));
 int frotate ___P ((double theta));
 int fscale ___P ((double x, double y));
 int ftranslate ___P ((double x, double y));
 
-/* functions specific to the C binding (for construction/destruction of
-   Plotters, and setting of low-level Plotter parameters ) */
+/* 4 functions specific to the C binding (for construction/destruction of
+   Plotters, and setting of Plotter parameters ) */
 int newpl ___P((___const char *type, FILE *instream, FILE *outstream, FILE *errstream));
 int selectpl ___P ((int handle));
 int deletepl ___P ((int handle));
@@ -170,12 +170,12 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 #undef ___const
 #undef ___P
 
-/* A temporary kludge.  In plotutils-2.x, endpoly() and fill() were renamed
+/* A temporary kludge.  In plotutils-2.0, endpoly() and fill() were renamed
    endpath() and filltype().  Also, falabel() and the undocumented function
    dot() were dropped, and the return value for alabel() was changed.  We
    can't do anything to work around the latter changes, but for the next
-   couple of releases we'll at least support endpoly() and fill() by
-   including the following preprocessor definitions. */
+   couple of releases we'll at least support the old names endpoly() and
+   fill() by including the following preprocessor definitions. */
 
 #ifndef endpoly
 #define endpoly() endpath()
@@ -207,6 +207,7 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 #define M_FILLED_TRIANGLE 18
 #define M_FILLED_DIAMOND 19
 #define M_FILLED_INVERTED_TRIANGLE 20
+
 #define M_FILLED_FANCY_SQUARE 21
 #define M_FILLED_FANCY_DIAMOND 22
 #define M_HALF_FILLED_CIRCLE 23
@@ -221,10 +222,11 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 
 
 /* ONE-BYTE OP CODES FOR GNU METAFILE FORMAT */
+/* There are currently 71, including 25 that are used only in binary
+   metafiles, not in portable metafiles. */
 
-/* Op codes for primitive graphics operations, as in Unix plot(5) format. */
+/* 10 op codes for primitive graphics operations, as in Unix plot(5) format. */
 #define ARC		'a'
-#define BOX		'B'	/* not a separate op code in Unix plot(5) */
 #define CIRCLE		'c'
 #define CONT		'n'
 #define ERASE		'e'
@@ -235,10 +237,11 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 #define POINT		'p'
 #define SPACE		's'
 
-/* Op codes for operations that are GNU extensions */
+/* 32 op codes that are GNU extensions [plus an obsolete one] */
 #define ALABEL		'T'
 #define ARCREL		'A'
 #define BGCOLOR		'~'
+#define BOX		'B'	/* not a separate op code in Unix plot(5) */
 #define BOXREL		'H'
 #define CAPMOD		'K'
 #define CIRCLEREL	'G'
@@ -269,8 +272,8 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 #define SPACE2		':'
 #define TEXTANGLE	'R'
 
-/* Floating point counterparts to the above.  Used only in binary metafile
-   format, not in portable metafile format. */
+/* 25 floating point counterparts to some of the above.  Used only in
+   binary GNU metafile format, not in portable GNU metafile format. */
 #define FARC		'1'
 #define FARCREL		'2'
 #define FBOX		'3'
@@ -297,7 +300,7 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 #define FSPACE2		';'
 #define FTEXTANGLE	'('
 
-/* Op codes for floating point operations with no integer counterpart */
+/* 4 op codes for floating point operations with no integer counterpart */
 #define FCONCAT		'\\'
 #define FROTATE		'V'
 #define FSCALE		'X'

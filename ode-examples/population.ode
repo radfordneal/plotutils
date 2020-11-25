@@ -1,11 +1,11 @@
 # This is an example from population biology (the predator-prey
 # equations of Lotka and Volterra).  You may run it by doing:
 #
-#    <population.ode ode | graph -TX -C
+#    ode < population.ode | graph -T X -C
 # 
 # or alternatively, to get a real-time plot,
 #
-#    <population.ode ode | graph -TX -C -x 0 10 -y 0 3
+#    ode < population.ode | graph -T X -C -x 0 10 -y 0 3
 #
 # The plot shows the population of the prey as a function of time.
 # The curve oscillates, because as the prey die out, the predators

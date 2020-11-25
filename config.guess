@@ -35,6 +35,12 @@
 # (but try to keep the structure clean).
 #
 
+# Master override (use only in emergencies)
+if test "$SYSTEM_NAME_OVERRIDE" != "" ; then
+    echo ${SYSTEM_NAME_OVERRIDE}
+    exit 0
+fi
+
 # This is needed to find uname on a Pyramid OSx when run in the BSD universe.
 # (ghazi@noc.rutgers.edu 8/24/94.)
 if (test -f /.attbin/uname) >/dev/null 2>&1 ; then

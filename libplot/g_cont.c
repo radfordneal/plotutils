@@ -104,7 +104,7 @@ _g_fcont (x, y)
   /* Check whether we're about to violate the hard length limit on all
      polylines.  (Such a limit is imposed is imposed in an XPlotter,
      because of the X protocol restrictions; for other Plotters they length
-     limit is typically MAXINT.) */
+     limit is typically INT_MAX.) */
   if (_plotter->drawstate->PointsInLine >= _plotter->hard_polyline_length_limit)
     {
       _plotter->warning ("breaking an overly long polyline");

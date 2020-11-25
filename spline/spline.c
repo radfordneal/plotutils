@@ -138,6 +138,9 @@ data_type output_type = T_ASCII;
 
 const char *progname = "spline"; /* name of this program */
 
+const char *usage_appendage = " [FILE]...\n\
+With no FILE, or when FILE is -, read standard input.\n";
+
 /* forward references */
 bool do_bessel __P ((FILE *input, int ydimension, int auto_abscissa, double auto_t, double auto_delta, double first_t, double last_t, double spacing_t, int precision, bool suppress_abscissa));
 bool is_monotonic __P ((int n, double *t));
@@ -161,7 +164,7 @@ void non_monotonic_error __P((void));
 void output_dataset_separator __P ((void));
 void set_format_type __P ((char *s, data_type *typep));
 /* from libcommon */
-extern void display_usage __P((const char *progname, const int *omit_vals, bool files, bool fonts));
+extern void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 extern void display_version __P((const char *progname)); 
 extern Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
 extern Voidptr xmalloc __P ((unsigned int size));
@@ -371,7 +374,7 @@ main (argc, argv)
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, true, false);
+      display_usage (progname, hidden_options, usage_appendage, false);
       return 0;
     }
 
@@ -452,8 +455,7 @@ main (argc, argv)
 		  data_file = fopen (argv[optind], "r");
 		  if (data_file == NULL)
 		    {
-		      fprintf (stderr, "%s: error: couldn't open file `%s'\n",
-			       progname, argv[optind]);
+		      fprintf (stderr, "%s: %s: %s\n", progname, argv[optind], strerror(errno));
 		      return 1;
 		    }
 		}		
@@ -1091,10 +1093,10 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
       if (suppress_abscissa == false)
 	{
 	  ft = FROUND(t);
-	  if (ft == MAXFLOAT || ft == -(MAXFLOAT))
+	  if (ft == FLT_MAX || ft == -(FLT_MAX))
 	    {
 	      maybe_emit_oob_warning();
-	      if (ft == MAXFLOAT)
+	      if (ft == FLT_MAX)
 		ft *= 0.99999;	/* kludge */
 	    }
 	  num_written += fwrite ((Voidptr) &ft, sizeof (ft), 1, stdout);
@@ -1102,10 +1104,10 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
       for (i = 0; i < ydimension; i++)
 	{
 	  fy = y[i];
-	  if (fy == MAXFLOAT || fy == -(MAXFLOAT))
+	  if (fy == FLT_MAX || fy == -(FLT_MAX))
 	    {
 	      maybe_emit_oob_warning();
-	      if (fy == MAXFLOAT)
+	      if (fy == FLT_MAX)
 		fy *= 0.99999;	/* kludge */
 	    }
 	  num_written += fwrite ((Voidptr) &fy, sizeof (fy), 1, stdout);
@@ -1121,10 +1123,10 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
       if (suppress_abscissa == false)
 	{
 	  it = IROUND(t);
-	  if (it == MAXINT || it == -(MAXINT))
+	  if (it == INT_MAX || it == -(INT_MAX))
 	    {
 	      maybe_emit_oob_warning();
-	      if (it == MAXINT)
+	      if (it == INT_MAX)
 		it--;
 	    }
 	  num_written += fwrite ((Voidptr) &it, sizeof (it), 1, stdout);
@@ -1132,10 +1134,10 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
       for (i = 0; i < ydimension; i++)
 	{
 	  iy = IROUND(y[i]);
-	  if (iy == MAXINT || iy == -(MAXINT))
+	  if (iy == INT_MAX || iy == -(INT_MAX))
 	    {
 	      maybe_emit_oob_warning();
-	      if (iy == MAXINT)
+	      if (iy == INT_MAX)
 		iy--;
 	    }
 	  num_written += fwrite ((Voidptr) &iy, sizeof (iy), 1, stdout);
@@ -1152,7 +1154,7 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
    read (i.e. EOF or garbage in file).  A return value of 2 is special: it
    indicates that an explicit end-of-dataset indicator was seen in the input
    stream.  For an ascii stream this is two newlines in succession; for a
-   double stream this is a MAXDOUBLE, etc. */
+   double stream this is a DBL_MAX, etc. */
 int
 #ifdef _HAVE_PROTOS
 read_point (FILE *input, double *t, double *y, int ydimension, 
@@ -1171,7 +1173,9 @@ read_point (input, t, y, ydimension, first_point, auto_abscissa, auto_t, auto_de
 #endif
 {
   bool success;
-  int i;
+  int i, items_read, lookahead;
+
+ head:
 
   if (input_type == T_ASCII)
     {
@@ -1186,15 +1190,35 @@ read_point (input, t, y, ydimension, first_point, auto_abscissa, auto_t, auto_de
   if (feof (input))
     return 1;
 
+  if (input_type == T_ASCII)
+    {
+      lookahead = getc (input);
+      ungetc (lookahead, input);
+      if (lookahead == (int)'#')	/* comment line */
+	{
+	  char c;
+	  
+	  do 
+	    {
+	      items_read = fread (&c, sizeof (c), 1, input);
+	      if (items_read <= 0)
+		return 1;	/* EOF */
+	    }
+	  while (c != '\n');
+	  ungetc ((int)'\n', input); /* push back \n at the end of # line */
+	  goto head;
+	}
+    }
+
   if (auto_abscissa != AUTO_NONE) /* i.e. AUTO_INCREMENT or AUTO_BY_DISTANCE */
     {
       /* read 1st component of y */
       success = read_float (input, &(y[0]));
       if (!success)		/* e.g., EOF */
 	return 1;
-      if ((input_type == T_DOUBLE && y[0] == MAXDOUBLE)
-	  || (input_type == T_SINGLE && y[0] == (double)MAXFLOAT)
-	  || (input_type == T_INTEGER && y[0] == (double)MAXINT))
+      if ((input_type == T_DOUBLE && y[0] == DBL_MAX)
+	  || (input_type == T_SINGLE && y[0] == (double)FLT_MAX)
+	  || (input_type == T_INTEGER && y[0] == (double)INT_MAX))
 	/* end-of-dataset indicator */
 	return 2;
 
@@ -1245,9 +1269,9 @@ read_point (input, t, y, ydimension, first_point, auto_abscissa, auto_t, auto_de
       success = read_float (input, t);
       if (!success)		/* e.g., EOF */
 	return 1;
-      if ((input_type == T_DOUBLE && *t == MAXDOUBLE)
-	  || (input_type == T_SINGLE && *t == (double)MAXFLOAT)
-	  || (input_type == T_INTEGER && *t == (double)MAXINT))
+      if ((input_type == T_DOUBLE && *t == DBL_MAX)
+	  || (input_type == T_SINGLE && *t == (double)FLT_MAX)
+	  || (input_type == T_INTEGER && *t == (double)INT_MAX))
 	/* end-of-dataset indicator */
 	return 2;
 
@@ -1271,7 +1295,7 @@ read_point (input, t, y, ydimension, first_point, auto_abscissa, auto_t, auto_de
 /* read_data() reads a single dataset from an input file, and stores it.
    If the stream is in ascii format, end-of-dataset is signalled by two
    newlines in succession.  If the stream is in double format,
-   end-of-dataset is signalled by the occurrence of a MAXDOUBLE, etc.
+   end-of-dataset is signalled by the occurrence of a DBL_MAX, etc.
 
    Return value is true if the dataset is ended by an explicit
    end-of-dataset, and false if the dataset is terminated by EOF.  That is,
@@ -1527,7 +1551,7 @@ do_spline (used, len, t, ydimension, y, z, tension, periodic, spec_boundary_cond
    interpolation of a dataset.  If the input stream is in ascii format,
    end-of-dataset is signalled by two newlines in succession.  If the
    stream is in double format, end-of-dataset is signalled by the
-   occurrence of a MAXDOUBLE, etc.
+   occurrence of a DBL_MAX, etc.
 
    Return value is true if the dataset is ended by an explicit
    end-of-dataset, and false if the dataset is terminated by EOF.  That is,
@@ -1809,7 +1833,7 @@ do_bessel_range (abscissa0, abscissa1, value0, value1, slope0, slope1,
 /* Output a separator between datasets.  For ascii-format output streams
    this is an extra newline (after the one that the spline ended with,
    yielding two newlines in succession).  For double-format output streams
-   this is a MAXDOUBLE, etc. */
+   this is a DBL_MAX, etc. */
 
 void
 #ifdef _HAVE_PROTOS
@@ -1829,15 +1853,15 @@ output_dataset_separator ()
       printf ("\n");
       break;
     case T_DOUBLE:
-      ddummy = MAXDOUBLE;
+      ddummy = DBL_MAX;
       fwrite ((Voidptr) &ddummy, sizeof(ddummy), 1, stdout);
       break;
     case T_SINGLE:
-      fdummy = MAXFLOAT;
+      fdummy = FLT_MAX;
       fwrite ((Voidptr) &fdummy, sizeof(fdummy), 1, stdout);
       break;
     case T_INTEGER:
-      idummy = MAXINT;
+      idummy = INT_MAX;
       fwrite ((Voidptr) &idummy, sizeof(idummy), 1, stdout);
       break;
     }

@@ -21,5 +21,12 @@ _g_fcircle (x, y, r)
       return -1;
     }
 
+  if (!_plotter->drawstate->points_are_connected)
+    /* line type is `disconnected', so do nothing */
+    {
+      _plotter->endpath (); /* flush polyline if any */
+      return 0;
+    }
+
   return _plotter->fellipse (x, y, r, r, 0.0);
 }

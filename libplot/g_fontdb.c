@@ -1,32 +1,40 @@
-/* This file contains information about Hershey fonts, PS fonts, and PCL
-   fonts, and about the way in which they are divided into typefaces.  For
-   the PS and PCL fonts, the most important information is the width
-   tables.  For the Hershey fonts, it is the mapping from character
-   position in the font, to position of the corresponding glyph, in the
-   glyph array in g_her_glyph.c.  Accented characters are formed as
-   composites. */
+/* THIS FILE IS NOW SPLIT INTO TWO PIECES: g_fontdb.c and g_fontd2.c, TO
+   FACILITATE COMPILING.  This is the first half, containing PS fonts and
+   Hershey vector fonts. */
 
-/* The 35 standard PS fonts, with ISO8859-1 encoding where that is
-   appropriate.  (Note that NUM_PS_FONTS is defined to equal 35 in
-   extern.h.)  Each ps_font_info_struct includes these elements:
+/*----------------------------------------------------------------------*/
 
-   (1) PS name, (2) X name,
-   (3) and (4) (normalized) font ascent and descent (from font bounding box),
-   (5) the font width information (an array, size 256),   
-   (6) a typeface id (an index into the _ps_typeface_info[] array below)
-   (7) a font index (which font within the typeface this is)
-   (8) a Fig font id, for use by FigPlotter methods
-   (9) an `iso8859' flag, for the PS driver, which must re-encode
-*/
+/* This file contains information about PS fonts, Hershey vector fonts, PCL
+   fonts, and Stick fonts (i.e., device-resident vector fonts), and about
+   the way in which they are divided into typefaces.  For the non-Hershey
+   fonts, the most important information is the width tables.  For the
+   Hershey fonts, it is the mapping from the character position in the
+   font, to the position of the corresponding glyph in the glyph array in
+   g_her_glyph.c.  Accented characters are formed as composites. */
 
 #include "sys-defines.h"
 #include "plot.h"
 #include "extern.h"
 
+
+/* The 35 standard PS fonts, with ISO8859-1 (ISO-Latin-1) encoding where
+   that is appropriate.  (Note that NUM_PS_FONTS is defined to equal 35 in
+   extern.h.)  Each ps_font_info_struct includes these elements:
+
+   (1) PS name, (2a) X name, (2b) alternative X name if any (may be NULL)
+   (3) and (4) (normalized) font ascent and descent (from font bounding box),
+   (5) the font width information (an array, size 256),   
+   (6) a typeface id (an index into the _ps_typeface_info[] array below)
+   (7) a font index (which font within the typeface this is)
+   (8) a Fig font id, for use by FigPlotter methods
+   (9) an `iso8859-1' flag, for the PS driver, which must re-encode
+*/
+
 const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica",			/* #0 */
   "helvetica-medium-r-normal",
+  NULL,
   994, 220,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -62,6 +70,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Oblique",		/* #1 */
   "helvetica-medium-o-normal",
+  NULL,
   931, 225,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -97,6 +106,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Bold",		/* #2 */
   "helvetica-bold-r-normal",
+  NULL,
   962, 228,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -132,6 +142,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-BoldOblique",	/* #3 */
   "helvetica-bold-o-normal",
+  NULL,
   962, 228,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -167,6 +178,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Narrow",		/* #4 */
   "helvetica-medium-r-narrow",
+  NULL,
   718, 207,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -202,6 +214,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Narrow-Oblique",	/* #5 */
   "helvetica-medium-o-narrow",
+  NULL,
   931, 225,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -237,6 +250,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Narrow-Bold",	/* #6 */
   "helvetica-bold-r-narrow",
+  NULL,
   962, 228,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -272,6 +286,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Narrow-BoldOblique", /* #7 */
   "helvetica-bold-o-narrow",
+  NULL,
   962, 228,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -307,6 +322,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Times-Roman",		/* #8 */
   "times-medium-r-normal",
+  NULL,
   898, 218,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -342,6 +358,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Times-Italic",		/* #9 */
   "times-medium-i-normal",
+  NULL,
   883, 217,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -377,6 +394,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Times-Bold",			/* #10 */
   "times-bold-r-normal",
+  NULL,
   935, 218,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -412,6 +430,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Times-BoldItalic",		/* #11 */
   "times-bold-i-normal",
+  NULL,
   921, 218,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -446,7 +465,8 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "AvantGarde-Book",		/* #12 */
-  "avantgarde-medium-r-normal",
+  "itc avant garde gothic-book-r-normal", /* as used e.g. by SGI */
+  "avantgarde-book-r-normal",	/* as used e.g. by SunOS */
   989, 223,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -481,7 +501,8 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "AvantGarde-BookOblique",	/* #13 */
-  "avantgarde-medium-o-normal",
+  "itc avant garde gothic-book-o-normal",
+  "avantgarde-book-o-normal",
   989, 223,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -516,6 +537,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "AvantGarde-Demi",		/* #14 */
+  "itc avant garde gothic-demi-r-normal",
   "avantgarde-demi-r-normal",
   1025, 251,
   {
@@ -551,6 +573,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "AvantGarde-DemiOblique",	/* #15 */
+  "itc avant garde gothic-demi-o-normal",
   "avantgarde-demi-o-normal",
   1025, 251,
   {
@@ -586,7 +609,8 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "Bookman-Light",		/* #16 */
-  "bookman-light-r-normal",
+  "itc bookman-light-r-normal",	/* as used e.g. by SGI */
+  "bookman-light-r-normal",	/* our former convention, from SunOS */
   928, 251,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -621,6 +645,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "Bookman-LightItalic",	/* #17 */
+  "itc bookman-light-i-normal",
   "bookman-light-i-normal",
   893, 222,
   {
@@ -656,6 +681,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "Bookman-Demi",		/* #18 */
+  "itc bookman-demi-r-normal",
   "bookman-demi-r-normal",
   934, 243,
   {
@@ -691,6 +717,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "Bookman-DemiItalic",		/* #19 */
+  "itc bookman-demi-i-normal",
   "bookman-demi-i-normal",
   941, 220,
   {
@@ -727,6 +754,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Courier",			/* #20 */
   "courier-medium-r-normal",
+  NULL,
   805, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -762,6 +790,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Courier-Oblique",		/* #21 */
   "courier-medium-o-normal",
+  NULL,
   805, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -797,6 +826,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Courier-Bold",		/* #22 */
   "courier-bold-r-normal",
+  NULL,
   801, 250,
 {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -832,6 +862,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Courier-BoldOblique",	/* #23 */
   "courier-bold-o-normal",
+  NULL,
   801, 250,
 {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -867,6 +898,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "NewCenturySchlbk-Roman",	/* #24 */
   "new century schoolbook-medium-r-normal",
+  "newcenturyschlbk-medium-r-normal", /* name formerly used by DEC */
   980, 215,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -902,6 +934,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "NewCenturySchlbk-Italic",	/* #25 */
   "new century schoolbook-medium-i-normal",
+  "newcenturyschlbk-medium-i-normal",
   968, 227,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -937,6 +970,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "NewCenturySchlbk-Bold",	/* #26 */
   "new century schoolbook-bold-r-normal",
+  "newcenturyschlbk-bold-r-normal",
   1007, 221,
 {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -972,6 +1006,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "NewCenturySchlbk-BoldItalic", /* #27 */
   "new century schoolbook-bold-i-normal",
+  "newcenturyschlbk-bold-i-normal",
   990, 220,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1007,6 +1042,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Palatino-Roman",		/* #28 */
   "palatino-medium-r-normal",
+  NULL,
   927, 283,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1042,6 +1078,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Palatino-Italic",		/* #29 */
   "palatino-medium-i-normal",
+  NULL,
   918, 276,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1077,6 +1114,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Palatino-Bold",		/* #30 */
   "palatino-bold-r-normal",
+  NULL,
   924, 266,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1112,6 +1150,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Palatino-BoldItalic",	/* #31 */
   "palatino-bold-i-normal",
+  NULL,
   926, 271,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1146,7 +1185,8 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "ZapfChancery-MediumItalic",	/* #32 */
-  "zapfchancery-medium-i-normal",
+  "itc zapf chancery-medium-i-normal", /* as used e.g. by SGI */
+  "zapfchancery-medium-i-normal", /* our former convention, from SunOS */
   811, 257,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1181,7 +1221,8 @@ const struct ps_font_info_struct _ps_font_info[] = {
   true},
 {
   "ZapfDingbats",		/* #33 */
-  "zapfdingbats-medium-r-normal",
+  "itc zapf dingbats-medium-r-normal",
+  "zapfdingbats-medium-r-normal", /* our former convention, from SunOS etc. */
   820, 143,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1213,43 +1254,46 @@ const struct ps_font_info_struct _ps_font_info[] = {
   },
   9, 1,
   34,
-  false
-},
+  false},
 {
   "Symbol",			/* #34 */
   "symbol-medium-r-normal",
+  NULL,
   1010, 293,
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 250, 333, 713, 500, 549, 833, 778, 439,
- 333, 333, 500, 549, 250, 549, 250, 278, 500, 500,
- 500, 500, 500, 500, 500, 500, 500, 500, 278, 278,
- 549, 549, 549, 444, 549, 696, 660, 710, 612, 652,
- 763, 603, 765, 351, 631, 724, 686, 918, 739, 750,
- 768, 741, 580, 592, 632, 690, 439, 768, 645, 795,
- 650, 333, 863, 333, 658, 500, 500, 631, 549, 549,
- 494, 439, 521, 411, 603, 329, 603, 549, 549, 576,
- 521, 549, 549, 521, 549, 603, 439, 576, 713, 686,
- 493, 686, 494, 480, 200, 480, 549, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 620, 247, 549, 167, 713, 500, 753, 753, 753,
- 753, 1042, 987, 603, 987, 603, 400, 549, 411, 549,
- 549, 713, 494, 460, 549, 549, 549, 549, 1000, 603,
- 1000, 658, 823, 686, 795, 987, 768, 768, 823, 768,
- 768, 713, 713, 713, 713, 713, 713, 713, 768, 713,
- 790, 790, 890, 823, 549, 250, 713, 603, 603, 1042,
- 987, 603, 987, 603, 494, 329, 790, 790, 786, 713,
- 384, 384, 384, 384, 384, 384, 494, 494, 494, 494,
- 762, 329, 274, 686, 686, 686, 384, 384, 384, 384,
- 384, 384, 494, 494, 494, 0},
+ {
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 250, 333, 713, 500, 549, 833, 778, 439,
+   333, 333, 500, 549, 250, 549, 250, 278, 500, 500,
+   500, 500, 500, 500, 500, 500, 500, 500, 278, 278,
+   549, 549, 549, 444, 549, 696, 660, 710, 612, 652,
+   763, 603, 765, 351, 631, 724, 686, 918, 739, 750,
+   768, 741, 580, 592, 632, 690, 439, 768, 645, 795,
+   650, 333, 863, 333, 658, 500, 500, 631, 549, 549,
+   494, 439, 521, 411, 603, 329, 603, 549, 549, 576,
+   521, 549, 549, 521, 549, 603, 439, 576, 713, 686,
+   493, 686, 494, 480, 200, 480, 549, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 620, 247, 549, 167, 713, 500, 753, 753, 753,
+   753, 1042, 987, 603, 987, 603, 400, 549, 411, 549,
+   549, 713, 494, 460, 549, 549, 549, 549, 1000, 603,
+   1000, 658, 823, 686, 795, 987, 768, 768, 823, 768,
+   768, 713, 713, 713, 713, 713, 713, 713, 768, 713,
+   790, 790, 890, 823, 549, 250, 713, 603, 603, 1042,
+   987, 603, 987, 603, 494, 329, 790, 790, 786, 713,
+   384, 384, 384, 384, 384, 384, 494, 494, 494, 494,
+   762, 329, 274, 686, 686, 686, 384, 384, 384, 384,
+   384, 384, 494, 494, 494, 0
+ },
   2, 0,
   32,
   false},
 {
   NULL,				/* DUMMY */
+  NULL,
   NULL,
   0, 0,
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1318,18 +1362,21 @@ const struct typeface_info_struct _ps_typeface_info[] =
   { 2, { 34, 33, 999, 999, 999, 999, 999, 999, 999, 999 } },
 };
 
+
 /* The Hershey vector fonts we support.  Each character in a Hershey font
-   is an index into the glyph array in g_her_glyphs.h.  Each
+   is an index into the glyph array in g_her_glyphs.c.  Each
    vector_font_info_struct includes these elements:
 
    (1) PS-style name for the font
-   (2) an alternative name for the font
-   (3) the characters in the font (an array of glyph indices, size 256)
-   (4) a typeface id (an index into the _ps_typeface_info[] array below)
-   (5) a font index (which font within the typeface this is)
-   (6) an `obliquing requested' flag (set if glyphs should be sheared)
-   (7) an `iso8859' flag
-   (8) a `visible' flag (false for Kana fonts, that are only used internally)
+   (2) an alias for the font (for backward compatibility)
+   (3) Allen Hershey's original name for the font
+   (4) the characters in the font (an array of glyph indices, size 256)
+   (5) a typeface id (an index into the _ps_typeface_info[] array below)
+   (6) a font index (which font within the typeface this is)
+   (7) an `obliquing requested' flag (set if glyphs should be sheared)
+   (8) an `iso8859-1' flag
+   (9) a `visible' flag (false for the two Kana fonts,
+        which are only used internally)
 */
 
 /* Each Hershey font below may contain up to 256 Hershey glyphs, each of
@@ -1341,7 +1388,7 @@ const struct typeface_info_struct _ps_typeface_info[] =
    the character arrays in these printable ranges which are not proper
    glyphs.  They are:
 
-   0. undefined characters: thorn, eth, the guillemets, a mysterious
+   0. undefined characters: thorn, eth, the guillemets, the mysterious
    `currency' symbol, and the European 'euro' currency symbol.  These are
    written as UNDE, which is a glyph consisting of several horizontal
    lines.
@@ -1372,19 +1419,19 @@ const struct typeface_info_struct _ps_typeface_info[] =
    be isotropically compressed, with the baseline preserved.
 
 
-   Note that in many Hershey fonts, the `nonprintable' range 0x80..0x9f is
+   In many Hershey fonts, the `nonprintable' range 0x80..0x9f is
    nonprintable only in the sense that it is not directly accessible to the
    user; it may contain ligatures, macros, and variant characters.  In fact
    the just-mentioned accents, used in the construction of accented
-   ISO-Latin-1 characters, are stored there.  Our convention for this
-   range, for ISO-Latin-1 Hershey fonts, is:
+   ISO-Latin-1 characters, are stored there.  Our convention for the
+   0x80..0x9f range, for ISO-Latin-1 Hershey fonts, is:
 
    0200: ff
    0201: fi
    0202: fl
    0203: ffi
    0204: ffl
-   0205--0207: other ligatures
+   0205--0207: other ligatures (font-specific)
    0210: acute accent
    0211: grave accent
    0212: dieresis
@@ -1397,13 +1444,19 @@ const struct typeface_info_struct _ps_typeface_info[] =
    0231: dotless i
 */
 
-#define CEDILLA UNDE		/* to be fixed someday */
+#define CEDILLA UNDE   /* currently undefined, to be implemented someday */
+
+/* IMPORTANT: Several of these fonts are referred to elsewhere in the code
+   by number.  If you change the numbering of Hershey fonts, i.e., the
+   order in which they appear in this array, be sure to update the
+   definitions HERSHEY_SERIF, HERSHEY_EUC etc. in extern.h. */
 
 const struct vector_font_info_struct _vector_font_info[] = 
 {
   {
     "HersheySerif",		/* #0 */
-    "hershey serif-medium-r-normal",
+    NULL,
+    "Complex Roman",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
@@ -1445,7 +1498,8 @@ const struct vector_font_info_struct _vector_font_info[] =
   },
   {
     "HersheySerif-Italic",	/* #1 */
-    "hershey serif-medium-i-normal",
+    NULL,
+    "Complex Italic",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
@@ -1487,17 +1541,18 @@ const struct vector_font_info_struct _vector_font_info[] =
   },
   {
     "HersheySerif-Bold",	/* #2 */
-    "hershey serif-bold-r-normal",
+    NULL,
+    "Triplex Roman",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
-      3249, 3214, 3228, 2275, 3219, 2271, 3218, 3217,
+      3249, 3214, 3228, 3232, 3219, 3233, 3218, 3217,
       3221, 3222, 3223, 3225, 3211, 3224, 3210, 3220,
       3200, 3201, 3202, 3203, 3204, 3205, 3206, 3207,
-      3208, 3209, 3212, 3213, 2241, 3226, 2242, 3215,
-      2273, 3001, 3002, 3003, 3004, 3005, 3006, 3007,
+      3208, 3209, 3212, 3213, 3230, 3226, 3231, 3215,
+      3234, 3001, 3002, 3003, 3004, 3005, 3006, 3007,
       3008, 3009, 3010, 3011, 3012, 3013, 3014, 3015,
       3016, 3017, 3018, 3019, 3020, 3021, 3022, 3023,
       3024, 3025, 3026, 2223, 4178, 2224, 4110, 4013,
@@ -1514,7 +1569,7 @@ const struct vector_font_info_struct _vector_font_info[] =
       /* ISO-Latin-1 encoding resumes */
       3249, 4119,  910,  272, UNDE, 4126, 4107, 2276,
       4182,  274,    0, UNDE, 4080, 4105,  273, 4187,
-      3229, 2233,    0,    0, 4180, 2138, UNDE, 4131,
+      3229, 2233,    0,    0, 4180, 3138, UNDE, 4131,
       CEDILLA, 0, 0, UNDE, 270,  261,  271, 4120,
       ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
       ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
@@ -1529,17 +1584,18 @@ const struct vector_font_info_struct _vector_font_info[] =
   },
   {
     "HersheySerif-BoldItalic",	/* #3 */
-    "hershey serif-bold-i-normal",
+    NULL,
+    "Triplex Italic",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
-      3249, 3264, 3278, 2275, 3269, 2271, 3268, 3267,
+      3249, 3264, 3278, 3282, 3269, 3283, 3268, 3267,
       3271, 3272, 3273, 3275, 3261, 3274, 3260, 3270,
       3250, 3251, 3252, 3253, 3254, 3255, 3256, 3257,
-      3258, 3259, 3262, 3263, 2241, 3276, 2242, 3265,
-      2273, 3051, 3052, 3053, 3054, 3055, 3056, 3057,
+      3258, 3259, 3262, 3263, 3280, 3276, 3281, 3265,
+      3284, 3051, 3052, 3053, 3054, 3055, 3056, 3057,
       3058, 3059, 3060, 3061, 3062, 3063, 3064, 3065,
       3066, 3067, 3068, 3069, 3070, 3071, 3072, 3073,
       3074, 3075, 3076, 2223, 4178, 2224, 4110, 4013,
@@ -1556,7 +1612,7 @@ const struct vector_font_info_struct _vector_font_info[] =
       /* ISO-Latin-1 encoding resumes */
       3249, 4121,  910,  272, UNDE, 4130, 4107, 2276,
       4182,  274,    0, UNDE, 4080, 4105,  273, 4187,
-      3279, 2233,    0,    0, 4180, 2138, UNDE, 4131,
+      3279, 2233,    0,    0, 4180, 3138, UNDE, 4131,
       CEDILLA, 0, 0, UNDE, 270,  261,  271, 4122,
       ACC2, ACC2, ACC2, ACC2, ACC2, ACC2,    0, ACC0,
       ACC2, ACC2, ACC2, ACC2, ACC2, ACC2, ACC2, ACC2,
@@ -1570,386 +1626,9 @@ const struct vector_font_info_struct _vector_font_info[] =
     0, 4, false, true, true
   },
   {
-    "HersheySans",		/* #4 */
-    "hershey sans-medium-r-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      699, 714, 717, 2275, 719, 2271, 734, 731,
-      721, 722, 728, 725, 711, 724, 710, 720,
-      700, 701, 702, 703, 704, 705, 706, 707,
-      708, 709, 712, 713, 2241, 726, 2242, 715,
-      2273, 501, 502, 503, 504, 505, 506, 507,
-      508, 509, 510, 511, 512, 513, 514, 515,
-      516, 517, 518, 519, 520, 521, 522, 523,
-      524, 525, 526, 4100, 4002, 4101, 4110, 4013,
-      730, 601, 602, 603, 604, 605, 606, 607,
-      608, 609, 610, 611, 612, 613, 614, 615,
-      616, 617, 618, 619, 620, 621, 622, 623,
-      624, 625, 626, 4102, 723, 4103, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      4188, 4189, 4182, 4190, 4191, 4185, 4186, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      619, 4162, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      699, 4111,  910,  272, UNDE, 4127, 4106, 2276,
-      4182,  274, 0, UNDE, 4080, 4104,  273, 4187,
-      718, 2233, 0, 0, 4188, 638, UNDE, 729,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4112,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
-      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
-       515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
-      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
-       615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
-    },
-    1, 1, false, true, true
-  },
-  {
-    "HersheySans-Oblique",		/* #5 */
-    "hershey sans-medium-o-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      699, 714, 717, 2275, 719, 2271, 734, 731,
-      721, 722, 728, 725, 711, 724, 710, 720,
-      700, 701, 702, 703, 704, 705, 706, 707,
-      708, 709, 712, 713, 2241, 726, 2242, 715,
-      2273, 501, 502, 503, 504, 505, 506, 507,
-      508, 509, 510, 511, 512, 513, 514, 515,
-      516, 517, 518, 519, 520, 521, 522, 523,
-      524, 525, 526, 4100, 4002, 4101, 4110, 4013,
-      730, 601, 602, 603, 604, 605, 606, 607,
-      608, 609, 610, 611, 612, 613, 614, 615,
-      616, 617, 618, 619, 620, 621, 622, 623,
-      624, 625, 626, 4102, 723, 4103, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      4188, 4189, 4182, 4190, 4191, 4185, 4186, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      619, 4162, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      699, 4111,  910,  272, UNDE, 4127, 4106, 2276,
-      4182,  274, 0, UNDE, 4080, 4104,  273, 4187,
-      718, 2233, 0, 0, 4188, 638, UNDE, 729,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4112,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
-      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
-       515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
-      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
-       615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
-    },
-    1, 2, true, true, true
-  },
-  {
-    "HersheySans-Bold",		/* #6 */
-    "hershey sans-bold-r-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      2699, 2714, 2728, 2275, 2719, 2271, 2718, 2717,
-      2721, 2722, 2723, 2725, 2711, 2724, 2710, 2720,
-      2700, 2701, 2702, 2703, 2704, 2705, 2706, 2707,
-      2708, 2709, 2712, 2713, 2241, 2726, 2242, 2715,
-      2273, 2501, 2502, 2503, 2504, 2505, 2506, 2507,
-      2508, 2509, 2510, 2511, 2512, 2513, 2514, 2515,
-      2516, 2517, 2518, 2519, 2520, 2521, 2522, 2523,
-      2524, 2525, 2526, 2223, 4178, 2224, 4110, 4013,
-      2716, 2601, 2602, 2603, 2604, 2605, 2606, 2607,
-      2608, 2609, 2610, 2611, 2612, 2613, 2614, 2615,
-      2616, 2617, 2618, 2619, 2620, 2621, 2622, 2623,
-      2624, 2625, 2626, 2225, 4108, 2226, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      2619, 4163, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      2699, 4115,  910,  272, UNDE, 4128, 4107, 2276,
-      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
-      2729, 2233, 0, 0, 4180, 2138, UNDE, 4131,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4116,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
-      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
-      2515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
-      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
-      2615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
-    },
-    1, 3, false, true, true
-  },
-  {
-    "HersheySans-BoldOblique",		/* #7 */
-    "hershey sans-bold-o-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      2699, 2714, 2728, 2275, 2719, 2271, 2718, 2717,
-      2721, 2722, 2723, 2725, 2711, 2724, 2710, 2720,
-      2700, 2701, 2702, 2703, 2704, 2705, 2706, 2707,
-      2708, 2709, 2712, 2713, 2241, 2726, 2242, 2715,
-      2273, 2501, 2502, 2503, 2504, 2505, 2506, 2507,
-      2508, 2509, 2510, 2511, 2512, 2513, 2514, 2515,
-      2516, 2517, 2518, 2519, 2520, 2521, 2522, 2523,
-      2524, 2525, 2526, 2223, 4178, 2224, 4110, 4013,
-      2716, 2601, 2602, 2603, 2604, 2605, 2606, 2607,
-      2608, 2609, 2610, 2611, 2612, 2613, 2614, 2615,
-      2616, 2617, 2618, 2619, 2620, 2621, 2622, 2623,
-      2624, 2625, 2626, 2225, 4108,  2226, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      2619, 4163, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      2699, 4115,  910,  272, UNDE, 4128, 4107, 2276,
-      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
-      2729, 2233, 0, 0, 4180, 2138, UNDE, 4131,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4116,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
-      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
-      2515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
-      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
-      2615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
-    },
-    1, 4, true, true, true
-  },
-  {
-    "HersheyScript",		/* #8 */
-    "hershey script-medium-r-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      699, 714, 717, 2275, 719, 2271, 734, 731,
-      721, 722, 728, 725, 711, 724, 710, 720,
-      700, 701, 702, 703, 704, 705, 706, 707,
-      708, 709, 712, 713, 2241, 726, 2242, 715,
-      2273, 551, 552, 553, 554, 555, 556, 557,
-      558, 559, 560, 561, 562, 563, 564, 565,
-      566, 567, 568, 569, 570, 571, 572, 573,
-      574, 575, 576, 2223, 4002, 2224, 4110, 4013,
-      730, 651, 652, 653, 654, 655, 656, 657,
-      658, 659, 660, 661, 662, 663, 664, 665,
-      666, 667, 668, 669, 670, 671, 672, 673,
-      674, 675, 676, 2225, 723, 2226, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      669, 0, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      699, 4111,  910,  272, UNDE, 4127, 4106, 2276,
-      4182,  274, 0, UNDE, 4080, 4104,  273, 4187,
-      718, 2233, 0, 0, 4180, 638, UNDE, 729,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4112,
-      551, 551, 551, 551, 551, 551, UNDE, 553,
-      555, 555, 555, 555, 559, 559, 559, 559,
-      UNDE, 564, 565, 565, 565, 565, 565, 727,
-      565, 571, 571, 571, 571, 575, UNDE, 0,
-      651, 651, 651, 651, 651, 651, 0, 653,
-      655, 655, 655, 655, 659, 659, 659, 659,
-      UNDE, 664, 665, 665, 665, 665, 665, 2237,
-      665, 671, 671, 671, 671, 675, UNDE, 675
-    },
-    2, 1, false, true, true
-  },
-  {
-    "HersheyScript-Bold",		/* #9 */
-    "hershey script-bold-r-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      2749, 2764, 2778, 2275, 2769, 2271, 2768, 2767,
-      2771, 2772, 2773, 2775, 2761, 2774, 2760, 2770,
-      2750, 2751, 2752, 2753, 2754, 2755, 2756, 2757,
-      2758, 2759, 2762, 2763, 2241, 2776, 2242, 2765,
-      2273, 2551, 2552, 2553, 2554, 2555, 2556, 2557,
-      2558, 2559, 2560, 2561, 2562, 2563, 2564, 2565,
-      2566, 2567, 2568, 2569, 2570, 2571, 2572, 2573,
-      2574, 2575, 2576, 2223, 4178, 2224, 4110, 4013,
-      2766, 2651, 2652, 2653, 2654, 2655, 2656, 2657,
-      2658, 2659, 2660, 2661, 2662, 2663, 2664, 2665,
-      2666, 2667, 2668, 2669, 2670, 2671, 2672, 2673,
-      2674, 2675, 2676, 2225, 4108, 2226, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      2669, 0, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      2749, 4117,  910,  272, UNDE, 4128, 4107, 2276,
-      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
-      2779, 2233, 0, 0, 4180, 638, UNDE, 4131,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4118,
-      2551, 2551, 2551, 2551, 2551, 2551, 0, 2553,
-      2555, 2555, 2555, 2555, 2559, 2559, 2559, 2559,
-      UNDE, 2554, 2555, 2555, 2555, 2555, 2555, 727,
-      2555, 2571, 2571, 2571, 2571, 2575, UNDE, 0,
-      2651, 2651, 2651, 2651, 2651, 2651, 0, 2653,
-      2655, 2655, 2655, 2655, 2659, 2659, 2659, 2659,
-      UNDE, 2664, 2665, 2665, 2665, 2665, 2665, 2237,
-      2665, 2671, 2671, 2671, 2671, 2675, UNDE, 2675
-    },
-    2, 3, false, true, true
-  },
-  {
-    "HersheyGothic-English",	/* #10 */
-    "hershey gothic english-medium-r-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      3699, 3714, 3728, 2275, 3719, 2271, 3718, 3717,
-      3721, 3722, 3723, 3725, 3711, 3724, 3710, 3720,
-      3700, 3701, 3702, 3703, 3704, 3705, 3706, 3707,
-      3708, 3709, 3712, 3713, 2241, 3726, 2242, 3715,
-      2273, 3501, 3502, 3503, 3504, 3505, 3506, 3507,
-      3508, 3509, 3510, 3511, 3512, 3513, 3514, 3515,
-      3516, 3517, 3518, 3519, 3520, 3521, 3522, 3523,
-      3524, 3525, 3526, 2223, 4178, 2224, 4110, 4013,
-      3716, 3601, 3602, 3603, 3604, 3605, 3606, 3607,
-      3608, 3609, 3610, 3611, 3612, 3613, 3614, 3615,
-      3616, 3617, 3618, 3619, 3620, 3621, 3622, 3623,
-      3624, 3625, 3626, 2225, 4108, 2226, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      3619, 4165, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      3699, 4123,  910,  272, UNDE, 4126, 4107, 2276,
-      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
-      3729, 2233, 0, 0, 4180, 2138, UNDE, 4131,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4124,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
-      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
-      3515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
-      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
-      3615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
-    },
-    3, 1, false, true, true
-  },
-  {
-    "HersheyGothic-German",	/* #11 */
-    "hershey gothic german-medium-r-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      3249, 3214, 3228, 2275, 3219, 2271, 3218, 3217,
-      3221, 3222, 3223, 3225, 3211, 3224, 3210, 3220,
-      3200, 3201, 3202, 3203, 3204, 3205, 3206, 3207,
-      3208, 3209, 3212, 3213, 2241, 3226, 2242, 3215,
-      2273, 3301, 3302, 3303, 3304, 3305, 3306, 3307,
-      3308, 3309, 3310, 3311, 3312, 3313, 3314, 3315,
-      3316, 3317, 3318, 3319, 3320, 3321, 3322, 3323,
-      3324, 3325, 3326, 2223, 4178, 2224, 4110, 4013,
-      3216, 3401, 3402, 3403, 3404, 3405, 3406, 3407,
-      3408, 3409, 3410, 3411, 3412, 3413, 3414, 3415,
-      3416, 3417, 3418, 3419, 3420, 3421, 3422, 3423,
-      3424, 3425, 3426, 2225, 4108, 2226, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 4179, 3429, 
-      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      3427, 4164, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      3249, 4119,  910,  272, UNDE, 4126, 4107, 2276,
-      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
-      3229, 2233, 0, 0, 4180, 2138, UNDE, 4131,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4120,
-      ACC1, ACC1, ACC1, ACC1, 3330, ACC1,    0, ACC0,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
-      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, 3331,  727,
-      3515, ACC1, ACC1, ACC1, 3332, ACC1, UNDE, 3428,
-      ACC0, ACC0, ACC0, ACC0, 3430, ACC0,    0, ACC0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
-      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, 3431, 2237,
-      3615, ACC0, ACC0, ACC0, 3432, ACC0, UNDE, ACC0,
-    },
-    4, 1, false, true, true
-  },
-  {
-    "HersheyGothic-Italian",	/* #12 */
-    "hershey gothic italian-medium-r-normal",
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      0, 0, 0, 0, 0, 0, 0, 0,
-      3249, 3214, 3228, 2275, 3219, 2271, 3218, 3217,
-      3221, 3222, 3223, 3225, 3211, 3224, 3210, 3220,
-      3200, 3201, 3202, 3203, 3204, 3205, 3206, 3207,
-      3208, 3209, 3212, 3213, 2241, 3226, 2242, 3215,
-      2273, 3801, 3802, 3803, 3804, 3805, 3806, 3807,
-      3808, 3809, 3810, 3811, 3812, 3813, 3814, 3815,
-      3816, 3817, 3818, 3819, 3820, 3821, 3822, 3823,
-      3824, 3825, 3826, 2223, 4178, 2224, 4110, 4013,
-      3216, 3901, 3902, 3903, 3904, 3905, 3906, 3907,
-      3908, 3909, 3910, 3911, 3912, 3913, 3914, 3915,
-      3916, 3917, 3918, 3919, 3920, 3921, 3922, 3923,
-      3924, 3925, 3926, 2225, 4108, 2226, 2246, 0,
-      /* The range 0200--0237 isn't accessible to the user.  We store
-	 ligatures, accents, and variant glyphs there. */
-      0, 0, 0, 0, 0, 0, 0, 0, 
-      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      3919, 4166, 0, 0, 0, 0, 0, 0, 
-      /* ISO-Latin-1 encoding resumes */
-      3249, 4119,  910,  272, UNDE, 4126, 4107, 2276,
-      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
-      3229, 2233, 0, 0, 4180, 2138, UNDE, 4131,
-      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4120,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
-      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
-      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
-      3815, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
-      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
-      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
-      3915, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
-    },
-    5, 1, false, true, true
-  },
-{
-    "HersheyCyrillic",	/* #13 */
-    "hershey cyrillic-medium-r-normal",
+    "HersheyCyrillic",	/* #4 */
+    NULL,
+    "Complex Cyrillic",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
@@ -1990,10 +1669,54 @@ const struct vector_font_info_struct _vector_font_info[] =
     },
     0, 5, false, false, true
   },
-
   {
-    "HersheyHiragana",	/* #14 */
-    "hershey hiragana-medium-r-normal",
+    "HersheyCyrillic-Oblique",	/* #5 */
+    NULL,
+    "Complex Cyrillic (obliqued)",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2199, 2214, 2217, 2275, 2274, 2271, 2272, 2251,
+      2221, 2222, 2219, 2232, 2211, 2231, 2210, 2220,
+      2200, 2201, 2202, 2203, 2204, 2205, 2206, 2207,
+      2208, 2209, 2212, 2213, 2241, 2238, 2242, 2215,
+      2273, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+      2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
+      2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023,
+      2024, 2025, 2026, 2223, 4002, 2224, 4110, 4013,
+      2252, 2101, 2102, 2103, 2104, 2105, 2106, 2107,
+      2108, 2109, 2110, 2111, 2112, 2113, 2114, 2115,
+      2116, 2117, 2118, 2119, 2120, 2121, 2122, 2123,
+      2124, 2125, 2126, 2225, 2229, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      2177, 2178, 2179, 2180, 2181, 0, 0, 0, 
+      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      2119, 0, 0, 0, 0, 0, 0, 0,
+      /* begin bogus region */
+      0, 0, 0, ACC0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, ACC1, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 274,
+      /* end bogus region */
+      2931, 2901, 2902, 2923, 2905, 2906, 2921, 2904,
+      2922, 2909, 2910, 2911, 2912, 2913, 2914, 2915,
+      2916, 2932, 2917, 2918, 2919, 2920, 2907, 2903,
+      2929, 2928, 2908, 2925, 2930, 2926, 2924, 2927,
+      2831, 2801, 2802, 2823, 2805, 2806, 2821, 2804,
+      2822, 2809, 2810, 2811, 2812, 2813, 2814, 2815,
+      2816, 2832, 2817, 2818, 2819, 2820, 2807, 2803,
+      2829, 2828, 2808, 2825, 2830, 2826, 2824, 2827,
+    },
+    0, 6, true, false, true
+  },
+  {
+    "HersheyHiragana",	/* #6 */
+    NULL,
+    "Hiragana (from oriental glyph database)",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
@@ -2032,8 +1755,9 @@ const struct vector_font_info_struct _vector_font_info[] =
     0, 6, false, false, false
   },
   {
-    "HersheyKatakana",	/* #15 */
-    "hershey katakana-medium-r-normal",
+    "HersheyKatakana",	/* #7 */
+    NULL,
+    "Katakana (from oriental glyph database)",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
@@ -2072,8 +1796,9 @@ const struct vector_font_info_struct _vector_font_info[] =
     0, 7, false, false, false
   },
   {
-    "HersheyEUC",		/* #16 */
-    "hershey euc-medium-r-normal",
+    "HersheyEUC",		/* #8 */
+    NULL,
+    "Composite Japanese (from oriental glyph database)",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
@@ -2111,18 +1836,406 @@ const struct vector_font_info_struct _vector_font_info[] =
          0,    0,    0,    0,    0,    0,    0,    0,
          0,    0,    0,    0,    0,    0,    0,    0,
     },
-    0, 6, false, false, true
+    0, 7, false, false, true
   },
-{
-    "HersheySerif-Symbol",	/* #17 */
-    "hershey symbol-medium-r-normal",
+  {
+    "HersheySans",		/* #9 */
+    NULL,
+    "Simplex Roman",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      699, 714, 717, 733, 719, 697, 734, 731,
+      721, 722, 728, 725, 711, 724, 710, 720,
+      700, 701, 702, 703, 704, 705, 706, 707,
+      708, 709, 712, 713, 691, 726, 692, 715,
+      690, 501, 502, 503, 504, 505, 506, 507,
+      508, 509, 510, 511, 512, 513, 514, 515,
+      516, 517, 518, 519, 520, 521, 522, 523,
+      524, 525, 526, 693, 4002, 694, 4110, 4013,
+      730, 601, 602, 603, 604, 605, 606, 607,
+      608, 609, 610, 611, 612, 613, 614, 615,
+      616, 617, 618, 619, 620, 621, 622, 623,
+      624, 625, 626, 695, 723, 696, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      4188, 4189, 4182, 4190, 4191, 4185, 4186, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      619, 4162, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      699, 4111,  910,  272, UNDE, 4127, 4106, 2276,
+      4182,  274, 0, UNDE, 4080, 4104,  273, 4187,
+      718, 2233, 0, 0, 4188, 638, UNDE, 729,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4112,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
+      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
+       515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
+      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
+       615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
+    },
+    1, 1, false, true, true
+  },
+  {
+    "HersheySans-Oblique",		/* #10 */
+    NULL,
+    "Simplex Roman (obliqued)",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      699, 714, 717, 733, 719, 697, 734, 731,
+      721, 722, 728, 725, 711, 724, 710, 720,
+      700, 701, 702, 703, 704, 705, 706, 707,
+      708, 709, 712, 713, 691, 726, 692, 715,
+      690, 501, 502, 503, 504, 505, 506, 507,
+      508, 509, 510, 511, 512, 513, 514, 515,
+      516, 517, 518, 519, 520, 521, 522, 523,
+      524, 525, 526, 693, 4002, 694, 4110, 4013,
+      730, 601, 602, 603, 604, 605, 606, 607,
+      608, 609, 610, 611, 612, 613, 614, 615,
+      616, 617, 618, 619, 620, 621, 622, 623,
+      624, 625, 626, 695, 723, 696, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      4188, 4189, 4182, 4190, 4191, 4185, 4186, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      619, 4162, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      699, 4111,  910,  272, UNDE, 4127, 4106, 2276,
+      4182,  274, 0, UNDE, 4080, 4104,  273, 4187,
+      718, 2233, 0, 0, 4188, 638, UNDE, 729,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4112,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
+      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
+       515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
+      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
+       615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
+    },
+    1, 2, true, true, true
+  },
+  {
+    "HersheySans-Bold",		/* #11 */
+    NULL,
+    "Duplex Roman",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2699, 2714, 2728, 2732, 2719, 2733, 2718, 2717,
+      2721, 2722, 2723, 2725, 2711, 2724, 2710, 2720,
+      2700, 2701, 2702, 2703, 2704, 2705, 2706, 2707,
+      2708, 2709, 2712, 2713, 2730, 2726, 2731, 2715,
+      2734, 2501, 2502, 2503, 2504, 2505, 2506, 2507,
+      2508, 2509, 2510, 2511, 2512, 2513, 2514, 2515,
+      2516, 2517, 2518, 2519, 2520, 2521, 2522, 2523,
+      2524, 2525, 2526, 2223, 4178, 2224, 4110, 4013,
+      2716, 2601, 2602, 2603, 2604, 2605, 2606, 2607,
+      2608, 2609, 2610, 2611, 2612, 2613, 2614, 2615,
+      2616, 2617, 2618, 2619, 2620, 2621, 2622, 2623,
+      2624, 2625, 2626, 2225, 4108, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2619, 4163, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      2699, 4115,  910,  272, UNDE, 4128, 4107, 2276,
+      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
+      2729, 2233, 0, 0, 4180, 3138, UNDE, 4131,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4116,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
+      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
+      2515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
+      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
+      2615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
+    },
+    1, 3, false, true, true
+  },
+  {
+    "HersheySans-BoldOblique",		/* #12 */
+    NULL,
+    "Duplex Roman (obliqued)",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2699, 2714, 2728, 2732, 2719, 2733, 2718, 2717,
+      2721, 2722, 2723, 2725, 2711, 2724, 2710, 2720,
+      2700, 2701, 2702, 2703, 2704, 2705, 2706, 2707,
+      2708, 2709, 2712, 2713, 2730, 2726, 2731, 2715,
+      2734, 2501, 2502, 2503, 2504, 2505, 2506, 2507,
+      2508, 2509, 2510, 2511, 2512, 2513, 2514, 2515,
+      2516, 2517, 2518, 2519, 2520, 2521, 2522, 2523,
+      2524, 2525, 2526, 2223, 4178, 2224, 4110, 4013,
+      2716, 2601, 2602, 2603, 2604, 2605, 2606, 2607,
+      2608, 2609, 2610, 2611, 2612, 2613, 2614, 2615,
+      2616, 2617, 2618, 2619, 2620, 2621, 2622, 2623,
+      2624, 2625, 2626, 2225, 4108, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2619, 4163, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      2699, 4115,  910,  272, UNDE, 4128, 4107, 2276,
+      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
+      2729, 2233, 0, 0, 4180, 3138, UNDE, 4131,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4116,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
+      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
+      2515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
+      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
+      2615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
+    },
+    1, 4, true, true, true
+  },
+  {
+    "HersheyScript",		/* #13 */
+    NULL,
+    "Simplex Script",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      699, 714, 717, 733, 719, 697, 734, 731,
+      721, 722, 728, 725, 711, 724, 710, 720,
+      700, 701, 702, 703, 704, 705, 706, 707,
+      708, 709, 712, 713, 691, 726, 692, 715,
+      690, 551, 552, 553, 554, 555, 556, 557,
+      558, 559, 560, 561, 562, 563, 564, 565,
+      566, 567, 568, 569, 570, 571, 572, 573,
+      574, 575, 576, 693, 4002, 694, 4110, 4013,
+      730, 651, 652, 653, 654, 655, 656, 657,
+      658, 659, 660, 661, 662, 663, 664, 665,
+      666, 667, 668, 669, 670, 671, 672, 673,
+      674, 675, 676, 695, 723, 696, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      669, 0, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      699, 4111,  910,  272, UNDE, 4127, 4106, 2276,
+      4182,  274, 0, UNDE, 4080, 4104,  273, 4187,
+      718, 2233, 0, 0, 4180, 638, UNDE, 729,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4112,
+      551, 551, 551, 551, 551, 551, UNDE, 553,
+      555, 555, 555, 555, 559, 559, 559, 559,
+      UNDE, 564, 565, 565, 565, 565, 565, 727,
+      565, 571, 571, 571, 571, 575, UNDE, 0,
+      651, 651, 651, 651, 651, 651, 0, 653,
+      655, 655, 655, 655, 659, 659, 659, 659,
+      UNDE, 664, 665, 665, 665, 665, 665, 2237,
+      665, 671, 671, 671, 671, 675, UNDE, 675
+    },
+    2, 1, false, true, true
+  },
+  {
+    "HersheyScript-Bold",		/* #14 */
+    NULL,
+    "Complex Script",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2749, 2764, 2778, 2782, 2769, 2783, 2768, 2767,
+      2771, 2772, 2773, 2775, 2761, 2774, 2760, 2770,
+      2750, 2751, 2752, 2753, 2754, 2755, 2756, 2757,
+      2758, 2759, 2762, 2763, 2780, 2776, 2781, 2765,
+      2784, 2551, 2552, 2553, 2554, 2555, 2556, 2557,
+      2558, 2559, 2560, 2561, 2562, 2563, 2564, 2565,
+      2566, 2567, 2568, 2569, 2570, 2571, 2572, 2573,
+      2574, 2575, 2576, 2223, 4002, 2224, 4110, 4013,
+      2766, 2651, 2652, 2653, 2654, 2655, 2656, 2657,
+      2658, 2659, 2660, 2661, 2662, 2663, 2664, 2665,
+      2666, 2667, 2668, 2669, 2670, 2671, 2672, 2673,
+      2674, 2675, 2676, 2225, 2229, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2669, 0, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      2749, 4117,  910,  272, UNDE, 4128, 4106, 2276,
+      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
+      2779, 2233, 0, 0, 4180, 638, UNDE, 729,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4118,
+      2551, 2551, 2551, 2551, 2551, 2551, 0, 2553,
+      2555, 2555, 2555, 2555, 2559, 2559, 2559, 2559,
+      UNDE, 2554, 2555, 2555, 2555, 2555, 2555, 727,
+      2555, 2571, 2571, 2571, 2571, 2575, UNDE, 0,
+      2651, 2651, 2651, 2651, 2651, 2651, 0, 2653,
+      2655, 2655, 2655, 2655, 2659, 2659, 2659, 2659,
+      UNDE, 2664, 2665, 2665, 2665, 2665, 2665, 2237,
+      2665, 2671, 2671, 2671, 2671, 2675, UNDE, 2675
+    },
+    2, 3, false, true, true
+  },
+  {
+    "HersheyGothicEnglish",	/* #15 */
+    "HersheyGothic-English",
+    "Gothic English",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      3699, 3714, 3728, 3732, 3719, 3733, 3718, 3717,
+      3721, 3722, 3723, 3725, 3711, 3724, 3710, 3720,
+      3700, 3701, 3702, 3703, 3704, 3705, 3706, 3707,
+      3708, 3709, 3712, 3713, 3730, 3726, 3731, 3715,
+      3734, 3501, 3502, 3503, 3504, 3505, 3506, 3507,
+      3508, 3509, 3510, 3511, 3512, 3513, 3514, 3515,
+      3516, 3517, 3518, 3519, 3520, 3521, 3522, 3523,
+      3524, 3525, 3526, 2223, 4178, 2224, 4110, 4013,
+      3716, 3601, 3602, 3603, 3604, 3605, 3606, 3607,
+      3608, 3609, 3610, 3611, 3612, 3613, 3614, 3615,
+      3616, 3617, 3618, 3619, 3620, 3621, 3622, 3623,
+      3624, 3625, 3626, 2225, 4108, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      3619, 4165, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      3699, 4123,  910,  272, UNDE, 4126, 4107, 2276,
+      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
+      3729, 2233, 0, 0, 4180, 3138, UNDE, 4131,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4124,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
+      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
+      3515, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
+      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
+      3615, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
+    },
+    3, 1, false, true, true
+  },
+  {
+    "HersheyGothicGerman",	/* #16 */
+    "HersheyGothic-German",
+    "Gothic German",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      3249, 3214, 3228, 3232, 3219, 3233, 3218, 3217,
+      3221, 3222, 3223, 3225, 3211, 3224, 3210, 3220,
+      3200, 3201, 3202, 3203, 3204, 3205, 3206, 3207,
+      3208, 3209, 3212, 3213, 3230, 3226, 3231, 3215,
+      3234, 3301, 3302, 3303, 3304, 3305, 3306, 3307,
+      3308, 3309, 3310, 3311, 3312, 3313, 3314, 3315,
+      3316, 3317, 3318, 3319, 3320, 3321, 3322, 3323,
+      3324, 3325, 3326, 2223, 4178, 2224, 4110, 4013,
+      3216, 3401, 3402, 3403, 3404, 3405, 3406, 3407,
+      3408, 3409, 3410, 3411, 3412, 3413, 3414, 3415,
+      3416, 3417, 3418, 3419, 3420, 3421, 3422, 3423,
+      3424, 3425, 3426, 2225, 4108, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 4179, 3429, 
+      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      3427, 4164, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      3249, 4119,  910,  272, UNDE, 4126, 4107, 2276,
+      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
+      3229, 2233, 0, 0, 4180, 3138, UNDE, 4131,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4120,
+      ACC1, ACC1, ACC1, ACC1, 3330, ACC1,    0, ACC0,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
+      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, 3331,  727,
+      3515, ACC1, ACC1, ACC1, 3332, ACC1, UNDE, 3428,
+      ACC0, ACC0, ACC0, ACC0, 3430, ACC0,    0, ACC0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
+      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, 3431, 2237,
+      3615, ACC0, ACC0, ACC0, 3432, ACC0, UNDE, ACC0,
+    },
+    4, 1, false, true, true
+  },
+  {
+    "HersheyGothicItalian",	/* #17 */
+    "HersheyGothic-Italian",
+    "Gothic Italian",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      3249, 3214, 3228, 3232, 3219, 3233, 3218, 3217,
+      3221, 3222, 3223, 3225, 3211, 3224, 3210, 3220,
+      3200, 3201, 3202, 3203, 3204, 3205, 3206, 3207,
+      3208, 3209, 3212, 3213, 3230, 3226, 3231, 3215,
+      3234, 3801, 3802, 3803, 3804, 3805, 3806, 3807,
+      3808, 3809, 3810, 3811, 3812, 3813, 3814, 3815,
+      3816, 3817, 3818, 3819, 3820, 3821, 3822, 3823,
+      3824, 3825, 3826, 2223, 4178, 2224, 4110, 4013,
+      3216, 3901, 3902, 3903, 3904, 3905, 3906, 3907,
+      3908, 3909, 3910, 3911, 3912, 3913, 3914, 3915,
+      3916, 3917, 3918, 3919, 3920, 3921, 3922, 3923,
+      3924, 3925, 3926, 2225, 4108, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible to the user.  We store
+	 ligatures, accents, and variant glyphs there. */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      4180, 4181, 4182, 4183, 4184, 4185, 4186, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      3919, 4166, 0, 0, 0, 0, 0, 0, 
+      /* ISO-Latin-1 encoding resumes */
+      3249, 4119,  910,  272, UNDE, 4126, 4107, 2276,
+      4182,  274, 0, UNDE, 4080, 4105,  273, 4187,
+      3229, 2233, 0, 0, 4180, 3138, UNDE, 4131,
+      CEDILLA, 0, 0, UNDE, 270,  261,  271, 4120,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,    0, ACC0,
+      ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,
+      UNDE, ACC1, ACC1, ACC1, ACC1, ACC1, ACC1,  727,
+      3815, ACC1, ACC1, ACC1, ACC1, ACC1, UNDE,    0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,    0, ACC0,
+      ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0,
+      UNDE, ACC0, ACC0, ACC0, ACC0, ACC0, ACC0, 2237,
+      3915, ACC0, ACC0, ACC0, ACC0, ACC0, UNDE, ACC0,
+    },
+    5, 1, false, true, true
+  },
+  {
+    "HersheySerifSymbol",	/* #18 */
+    "HersheySerif-Symbol",	/* for backward compatibility */
+    "Complex Greek",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
       2199, 2214, 4014, 2275, 2279, 2271, 2272,  282,
-      2221, 2222,  728, 2232, 2211, 2231, 2210, 2220,
+      2221, 2222, 2219, 2232, 2211, 2231, 2210, 2220,
       2200, 2201, 2202, 2203, 2204, 2205, 2206, 2207,
       2208, 2209, 2212, 2213, 2241, 2238, 2242, 2215,
        250, 2027, 2028, 2048, 2030, 2031, 2047, 2029,
@@ -2155,28 +2268,164 @@ const struct vector_font_info_struct _vector_font_info[] =
       UNDE, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
       UNDE, 4177, UNDE, 4175, UNDE, UNDE, UNDE,    0
     },
-    0, 0, false, false, true
+    6, 1, false, false, true
   },
-{
-    "HersheySans-Symbol",	/* #18 */
-    "hershey sans symbol-medium-r-normal",
+  {
+    "HersheySerifSymbol-Oblique",	/* #19 */
+    NULL,
+    "Complex Greek (obliqued)",
     {
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 
       0, 0, 0, 0, 0, 0, 0, 0,
-      2199,  714, 4014, 2275, 2279, 2271,  734,  282,
+      2199, 2214, 4014, 2275, 2279, 2271, 2272,  282,
+      2221, 2222, 2219, 2232, 2211, 2231, 2210, 2220,
+      2200, 2201, 2202, 2203, 2204, 2205, 2206, 2207,
+      2208, 2209, 2212, 2213, 2241, 2238, 2242, 2215,
+       250, 2027, 2028, 2048, 2030, 2031, 2047, 2029,
+      2033, 2035, 2134, 2036, 2037, 2038, 2039, 2041,
+      2042, 2034, 2043, 2044, 2045, 2025, 2187, 2050,
+      2040, 2049, 2032, 2223,  740, 2224,  738, 4013,
+      4009, 2127, 2128, 2148, 2130, 2131, 2186, 2129,
+      2133, 2135, 2147, 2136, 2137, 2138, 2139, 2141,
+      2142, 2185, 2143, 2144, 2145, 2146, 4083, 2150,
+      2140, 2149, 2132, 2225, 2229, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible except through macros, since
+	 in the standard symbol encoding, it's empty.  We store
+	 misc. non-font characters (e.g., Hershey astronomical symbols) in
+	 this range. */
+         0,    0,    0,    0, 4019, 4020, 4021, 4022,
+      UNDE, 2281, 2282, 2283, 2284, 2285, 2286, 2287,
+      2288, 2289, 2290, 2291, 2292, 2293, 2294, 2295,
+      2187, 2277, 2278, 2269, 2234, 2230, 4008, 4012, 
+      /* symbol encoding resumes... */
+      2199, 2046, 2216, 2243, 2220, 2270, 2156,  744,
+       743,  742,  741, 4045, 2263, 2262, 2261, 2264,
+      2218, 2233, 2217, 2244, 2235, 2245, 2265,  828,
+      2237, 2239, 2240,  248, 4070, 4044, 4051, 4065,
+      2077, 3309, 3318, 2190, 4003, 4004, 4071, 2259,
+      2257, 2258, 4011, 4082, 2256, 4010, 2260, 4007,
+       739, 2266,  273,  274, 4098, 2401, 2267, 2236,
+      4080, 4078, 4081, 4046, 4048, 4050, 4049, 4047,
+       743, 2227,  273,  274, 4097, 2402, UNDE, UNDE,
+      UNDE, 4176, UNDE, 4174, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 4177, UNDE, 4175, UNDE, UNDE, UNDE,    0
+    },
+    6, 2, true, false, true
+  },
+  {
+    "HersheySerifSymbol-Bold",	/* #20 */
+    NULL,
+    "Triplex Greek",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2199, 3214, 4014, 3232, 2279, 3233, 3219,  282,
+      3221, 3222, 3223, 3225, 3211, 3224, 3210, 3220,
+      3200, 3201, 3202, 3203, 3204, 3205, 3206, 3207,
+      3208, 3209, 3212, 3213, 3230, 3226, 3231, 3215,
+       250, 3027, 3028, 3048, 3030, 3031, 3047, 3029,
+      3033, 3035, 3134, 3036, 3037, 3038, 3039, 3041,
+      3042, 3034, 3043, 3044, 3045, 3025, 3187, 3050,
+      3040, 3049, 3032, 2223,  740, 2224,  738, 4013,
+      4009, 3127, 3128, 3148, 3130, 3131, 3186, 3129,
+      3133, 3135, 3147, 3136, 3137, 3138, 3139, 3141,
+      3142, 3185, 3143, 3144, 3145, 3146, 3150, 3150,
+      3140, 3149, 3132, 2225, 4108, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible except through macros, since
+	 in the standard symbol encoding, it's empty.  We store
+	 misc. non-font characters (e.g., Hershey astronomical symbols) in
+	 this range. */
+         0,    0,    0,    0, 4019, 4020, 4021, 4022,
+      UNDE, 2281, 2282, 2283, 2284, 2285, 2286, 2287,
+      2288, 2289, 2290, 2291, 2292, 2293, 2294, 2295,
+      3187, 2277, 2278, 2269, 2234, 2230, 4008, 4012, 
+      /* symbol encoding resumes... */
+      2199, 3046, 3227, 2243, 3220, 2270, 3156,  744,
+       743,  742,  741, 4045, 2263, 2262, 2261, 2264,
+      3218, 2233, 3228, 2244, 2235, 2245, 3183,  828,
+      2237, 2239, 2240,  248, 4070, 4044, 4051, 4065,
+      2077, 3309, 3318, 2190, 4003, 4004, 4071, 2259,
+      2257, 2258, 4011, 4082, 2256, 4010, 2260, 4007,
+       739, 3083,  273,  274, 4098, 2401, 2267, 2236,
+      4080, 4078, 4081, 4046, 4048, 4050, 4049, 4047,
+       743, 2227,  273,  274, 4097, 2402, UNDE, UNDE,
+      UNDE, 4176, UNDE, 4174, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 4177, UNDE, 4175, UNDE, UNDE, UNDE,    0
+    },
+    6, 3, false, false, true
+  },
+  {
+    "HersheySerifSymbol-BoldOblique",	/* #21 */
+    NULL,
+    "Triplex Greek (obliqued)",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2199, 3214, 4014, 3232, 2279, 3233, 3219,  282,
+      3221, 3222, 3223, 3225, 3211, 3224, 3210, 3220,
+      3200, 3201, 3202, 3203, 3204, 3205, 3206, 3207,
+      3208, 3209, 3212, 3213, 3230, 3226, 3231, 3215,
+       250, 3027, 3028, 3048, 3030, 3031, 3047, 3029,
+      3033, 3035, 3134, 3036, 3037, 3038, 3039, 3041,
+      3042, 3034, 3043, 3044, 3045, 3025, 3187, 3050,
+      3040, 3049, 3032, 2223,  740, 2224,  738, 4013,
+      4009, 3127, 3128, 3148, 3130, 3131, 3186, 3129,
+      3133, 3135, 3147, 3136, 3137, 3138, 3139, 3141,
+      3142, 3185, 3143, 3144, 3145, 3146, 3150, 3150,
+      3140, 3149, 3132, 2225, 4108, 2226, 2246, 0,
+      /* The range 0200--0237 isn't accessible except through macros, since
+	 in the standard symbol encoding, it's empty.  We store
+	 misc. non-font characters (e.g., Hershey astronomical symbols) in
+	 this range. */
+         0,    0,    0,    0, 4019, 4020, 4021, 4022,
+      UNDE, 2281, 2282, 2283, 2284, 2285, 2286, 2287,
+      2288, 2289, 2290, 2291, 2292, 2293, 2294, 2295,
+      3187, 2277, 2278, 2269, 2234, 2230, 4008, 4012, 
+      /* symbol encoding resumes... */
+      2199, 3046, 3227, 2243, 3220, 2270, 3156,  744,
+       743,  742,  741, 4045, 2263, 2262, 2261, 2264,
+      3218, 2233, 3228, 2244, 2235, 2245, 3183,  828,
+      2237, 2239, 2240,  248, 4070, 4044, 4051, 4065,
+      2077, 3309, 3318, 2190, 4003, 4004, 4071, 2259,
+      2257, 2258, 4011, 4082, 2256, 4010, 2260, 4007,
+       739, 3083,  273,  274, 4098, 2401, 2267, 2236,
+      4080, 4078, 4081, 4046, 4048, 4050, 4049, 4047,
+       743, 2227,  273,  274, 4097, 2402, UNDE, UNDE,
+      UNDE, 4176, UNDE, 4174, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 4177, UNDE, 4175, UNDE, UNDE, UNDE,    0
+    },
+    6, 4, true, false, true
+  },
+  {
+    "HersheySansSymbol",	/* #22 */
+    "HersheySans-Symbol",	/* for backward compatibility */
+    "Simplex Greek",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2199,  714, 4014,  733, 2279,  697,  734,  282,
        721,  722,  728,  725,  711,  724,  710,  720,
        700,  701,  702,  703,  704,  705,  706,  707,
        708,  709,  712,  713, 2241,  726, 2242,  715,
        250,  527,  528,  548,  530,  531,  547,  529,
        533,  535,  534,  536,  537,  538,  539,  541,
        542,  534,  543,  544,  545,  525,  687,  550,
-       540,  549,  532, 4100,  740, 4101,  738, 4013,
+       540,  549,  532,  693,  740,  694,  738, 4013,
       4009,  627,  628,  648,  630,  631,  686,  629,
        633,  635,  647,  636,  637,  638,  639,  641,
-       642,  685,  643,  644,  645,  646, 4083,  650,
-       640,  649,  632, 4102, 2229, 4103, 2246,    0,
+       642,  685,  643,  644,  645,  646,  650,  650,
+       640,  649,  632,  695, 2229,  696, 2246,    0,
       /* The range 0200--0237 isn't accessible except through macros, since
 	 in the standard symbol encoding, it's empty.  We store
 	 misc. non-font characters (e.g., Hershey astronomical symbols) in
@@ -2186,23 +2435,69 @@ const struct vector_font_info_struct _vector_font_info[] =
       2288, 2289, 2290, 2291, 2292, 2293, 2294, 2295,
        687, 2277, 2278, 2269, 2234, 2230, 4008, 4012, 
       /* symbol encoding resumes... */
-      2199,  546,  716, 2243,  720, 2270, 2156,  744,
+      2199,  546,  716, 2243,  720,  736, 2156,  744,
        743,  742,  741, 4045, 2263, 2262, 2261, 2264,
        718, 2233,  717, 2244, 2235, 2245,  683,  828,
       2237, 2239, 2240,  248, 4070, 4044, 4051, 4065,
       2077, 3309, 3318, 2190, 4003, 4004, 4071, 2259,
       2257, 2258, 4011, 4082, 2256, 4010, 2260, 4007,
-       739, 2266,  273,  274, 4098, 2401, 2267, 2236,
+       739,  583,  273,  274, 4098, 2401, 2267, 2236,
       4080, 4078, 4081, 4046, 4048, 4050, 4049, 4047,
        743, 2227,  273,  274, 4097, 2402, UNDE, UNDE,
       UNDE, 4172, UNDE, 4170, UNDE, UNDE, UNDE, UNDE,
       UNDE, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
       UNDE, 4173, UNDE, 4171, UNDE, UNDE, UNDE,    0
     },
-    1, 0, false, false, true
+    7, 1, false, false, true
+  },
+  {
+    "HersheySansSymbol-Oblique", /* #23 */
+    NULL,
+    "Simplex Greek (obliqued)",
+    {
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2199,  714, 4014,  733, 2279,  697,  734,  282,
+       721,  722,  728,  725,  711,  724,  710,  720,
+       700,  701,  702,  703,  704,  705,  706,  707,
+       708,  709,  712,  713, 2241,  726, 2242,  715,
+       250,  527,  528,  548,  530,  531,  547,  529,
+       533,  535,  534,  536,  537,  538,  539,  541,
+       542,  534,  543,  544,  545,  525,  687,  550,
+       540,  549,  532,  693,  740,  694,  738, 4013,
+      4009,  627,  628,  648,  630,  631,  686,  629,
+       633,  635,  647,  636,  637,  638,  639,  641,
+       642,  685,  643,  644,  645,  646,  650,  650,
+       640,  649,  632,  695, 2229,  696, 2246,    0,
+      /* The range 0200--0237 isn't accessible except through macros, since
+	 in the standard symbol encoding, it's empty.  We store
+	 misc. non-font characters (e.g., Hershey astronomical symbols) in
+	 this range. */
+         0,    0,    0,    0, 4019, 4020, 4021, 4022,
+      UNDE, 2281, 2282, 2283, 2284, 2285, 2286, 2287,
+      2288, 2289, 2290, 2291, 2292, 2293, 2294, 2295,
+       687, 2277, 2278, 2269, 2234, 2230, 4008, 4012, 
+      /* symbol encoding resumes... */
+      2199,  546,  716, 2243,  720,  736, 2156,  744,
+       743,  742,  741, 4045, 2263, 2262, 2261, 2264,
+       718, 2233,  717, 2244, 2235, 2245,  683,  828,
+      2237, 2239, 2240,  248, 4070, 4044, 4051, 4065,
+      2077, 3309, 3318, 2190, 4003, 4004, 4071, 2259,
+      2257, 2258, 4011, 4082, 2256, 4010, 2260, 4007,
+       739,  583,  273,  274, 4098, 2401, 2267, 2236,
+      4080, 4078, 4081, 4046, 4048, 4050, 4049, 4047,
+       743, 2227,  273,  274, 4097, 2402, UNDE, UNDE,
+      UNDE, 4172, UNDE, 4170, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 4173, UNDE, 4171, UNDE, UNDE, UNDE,    0
+    },
+    7, 2, true, false, true
   },
   {
     NULL,			/* DUMMY */
+    NULL,
     NULL,
     {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2237,9 +2532,9 @@ const struct vector_font_info_struct _vector_font_info[] =
 };
 
 /* Accented character table, used (1) by ISO-Latin-1 Hershey fonts, and (2)
-   by HersheyCyrillic.  (Really the union of two non-overlapping tables.)
-   This table maps each accented character to a base character and an
-   accent.
+   by HersheyCyrillic and HersheyCyrillic-Oblique.  (Really the union of
+   three non-conflicting tables.)  This table maps each accented character
+   to a base character and an accent.
 
    The indices of the accent glyphs, in the glyph table in g_her_glyph.c,
    are stored in the inaccessible 0x80--0x9f region (i.e., \0200--\0237
@@ -2247,7 +2542,7 @@ const struct vector_font_info_struct _vector_font_info[] =
 
 const struct accented_char_info_struct _vector_accented_char_info[] = 
 {
-  /* for HersheyCyrillic (KOI8-R encoding) accented characters */
+  /* for HersheyCyrillic[-Oblique] (KOI8-R encoding) accented characters */
   {0243, 0305, 0212},		/* edieresis */
   {0263, 0345, 0212},		/* Edieresis */
   /* for ISO-Latin-1 accented characters */
@@ -2321,1732 +2616,20 @@ const struct accented_char_info_struct _vector_accented_char_info[] =
 
 const struct typeface_info_struct _vector_typeface_info[] = 
 {
-  /* Hershey Serif [including Cyrillic and EUC], typeface #0 */
-  { 7, { 17, 0, 1, 2, 3, 13, 16, 999, 999, 999 } },
+  /* Hershey Serif [including Cyrillic, Cyrillic-Obl., and EUC], typeface #0 */
+  { 8, { 18, 0, 1, 2, 3, 4, 5, 8, 999, 999 } },
   /* Hershey Sans, typeface #1 */
-  { 5, { 18, 4, 5, 6, 7, 999, 999, 999, 999, 999 } },
+  { 5, { 22, 9, 10, 11, 12, 999, 999, 999, 999, 999 } },
   /* Hershey Script [note duplicates], typeface #2 */
-  { 5, { 17, 8, 8, 9, 9, 999, 999, 999, 999, 999 } },
+  { 5, { 18, 13, 13, 14, 14, 999, 999, 999, 999, 999 } },
   /* Hershey Gothic English, typeface #3 */
-  { 2, { 17, 10, 999, 999, 999, 999, 999, 999, 999, 999 } },
+  { 2, { 18, 15, 999, 999, 999, 999, 999, 999, 999, 999 } },
   /* Hershey Gothic German, typeface #4 */
-  { 2, { 17, 11, 999, 999, 999, 999, 999, 999, 999, 999 } },
+  { 2, { 18, 16, 999, 999, 999, 999, 999, 999, 999, 999 } },
   /* Hershey Gothic Italian, typeface #5 */
-  { 2, { 17, 12, 999, 999, 999, 999, 999, 999, 999, 999 } },
-};
-
-/* The 45 standard HP LaserJet fonts, with ISO8859-1 encoding where that is
-   appropriate.  These width tables are taken from the LaserJet 4 font
-   distribution, as of this writing available at
-   ftp://ftp.hp.com/pub/printers/software/mp135mu.exe . This is a zipped
-   archive file which includes both .afm and .pfb files for the 45 fonts
-   (apparently constructed by Fontographer from TrueType or Intellifont
-   originals).  Of these fonts, only the four Univers and four CGTimes
-   fonts were available on the LaserJet III.  The same 45 fonts are
-   available on the LaserJet 5 and 6.
-   
-   Each pcl_font_info_struct includes these elements:
-
-   (1) PS name.
-   (2) PCL typeface number.
-   (3) PCL info: fixedwidth(0) / proportional(1).
-   (4) PCL info: upright(0) / italic(1) / condensed(4) / cond. italic(5) /
-   	compressed i.e. extra cond. (8) / expanded (24) / outline (32) / 
-	inline (64).
-   (5) PCL info: normal weight(0) / bold(3) / extra bold(4), etc.
-   (6) PCL info: "symbol set" i.e. character set/encoding.
-   	(0 = Roman-8 i.e. default set; 14 = ISO8859-1 i.e. ECMA-94 Latin 1;
-	621 = PS Symbol; 18540 = Wingdings.  In PCL as opposed to HP-GL/2,
-	these numbers are encoded base 32, as a number and a letter.  E.g.,
-	621 is written as 19M since 19*32+13, and 'M' is letter #13.)
-   (7) and (8) normalized font ascent and descent (from font bounding box).
-   (9) normalized cap height
-   (10) HP width adjustment factor.  This is used when the font is retrieved 
-        on an HP-GL/2 device, and the nominal character width is specified 
-	by the `SR' instruction.  The nominal character width is always very
-	close to 0.5 times the font size, but must be corrected by this factor.
-   (11) the font width information (an array, size 256).
-   (12) a typeface id (an index into the _ps_typeface_info[] array below).
-   (13) a font index (which font within the typeface this is).
-*/
-
-const struct pcl_font_info_struct _pcl_font_info[] = {
-{
-  "Univers",			/* #0 */
-  4148, 1, 0, 0, 14,
-  987, 250, 688, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 332, 332, 498, 627, 627, 996, 756, 332,
-    332, 332, 627, 996, 332, 996, 332, 332, 627, 627,
-    627, 627, 627, 627, 627, 627, 627, 627, 332, 332,
-    996, 996, 996, 517, 996, 738, 627, 701, 719, 572,
-    553, 738, 719, 276, 553, 664, 535, 904, 719, 756,
-    590, 774, 646, 646, 627, 719, 719, 996, 719, 682,
-    608, 332, 332, 332, 498, 498, 332, 535, 572, 535,
-    572, 535, 369, 572, 572, 240, 240, 535, 240, 867,
-    572, 572, 572, 572, 351, 498, 369, 572, 553, 867,
-    553, 553, 479, 443, 498, 443, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    332, 332, 627, 627, 627, 627, 498, 627, 627, 498,
-    406, 553, 996, 332, 498, 627, 627, 996, 387, 387,
-    627, 553, 627, 332, 627, 387, 406, 553, 996, 996,
-    996, 517, 738, 738, 738, 738, 738, 738, 977, 701,
-    572, 572, 572, 572, 276, 276, 276, 276, 719, 719,
-    756, 756, 756, 756, 756, 996, 756, 719, 719, 719,
-    719, 682, 590, 608, 535, 535, 535, 535, 535, 535,
-    848, 535, 535, 535, 535, 535, 240, 240, 240, 240,
-    572, 572, 572, 572, 572, 572, 572, 996, 572, 572,
-    572, 572, 572, 553, 572, 553
-  },
-      0, 1,
-},
-{
-  "Univers-Italic",		/* #1 */
-  4148, 1, 1, 0, 14,
-  989, 250, 688, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 332, 332, 498, 627, 627, 996, 756, 332,
-    332, 332, 627, 996, 332, 996, 332, 332, 627, 627,
-    627, 627, 627, 627, 627, 627, 627, 627, 332, 332,
-    996, 996, 996, 517, 996, 738, 627, 701, 719, 572,
-    553, 738, 719, 276, 553, 664, 535, 904, 719, 756,
-    590, 774, 646, 646, 627, 719, 719, 996, 719, 682,
-    608, 332, 332, 332, 498, 498, 332, 535, 572, 535,
-    572, 535, 369, 572, 572, 240, 240, 535, 240, 867,
-    572, 572, 572, 572, 351, 498, 369, 572, 553, 867,
-    553, 553, 479, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    332, 332, 627, 627, 627, 627, 498, 627, 627, 498,
-    406, 553, 996, 332, 498, 627, 627, 996, 387, 387,
-    627, 553, 627, 332, 627, 387, 406, 553, 996, 996,
-    996, 517, 738, 738, 738, 738, 738, 738, 977, 701,
-    572, 572, 572, 572, 276, 276, 276, 276, 719, 719,
-    756, 756, 756, 756, 756, 996, 756, 719, 719, 719,
-    719, 682, 590, 608, 535, 535, 535, 535, 535, 535,
-    848, 535, 535, 535, 535, 535, 240, 240, 240, 240,
-    572, 572, 572, 572, 572, 572, 572, 996, 572, 572,
-    572, 572, 572, 553, 572, 553
-  },
-      0, 2,
-},
-{
-  "Univers-Bold",		/* #2 */
-  4148, 1, 0, 3, 14,
-  976, 250, 688, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 332, 332, 517, 627, 627, 996, 756, 332,
-    332, 332, 627, 996, 332, 996, 332, 332, 627, 627,
-    627, 627, 627, 627, 627, 627, 627, 627, 332, 332,
-    996, 996, 996, 517, 996, 738, 627, 701, 719, 572,
-    553, 738, 719, 276, 553, 664, 535, 904, 719, 756,
-    590, 774, 646, 646, 627, 719, 719, 996, 719, 682,
-    608, 332, 332, 332, 498, 498, 332, 535, 572, 535,
-    572, 535, 369, 572, 572, 240, 240, 535, 240, 867,
-    572, 572, 572, 572, 351, 498, 369, 572, 553, 867,
-    553, 553, 479, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    332, 332, 627, 627, 627, 627, 498, 627, 627, 498,
-    406, 553, 996, 332, 498, 627, 627, 996, 387, 387,
-    627, 590, 627, 332, 627, 387, 406, 553, 996, 996,
-    996, 517, 738, 738, 738, 738, 738, 738, 977, 701,
-    572, 572, 572, 572, 276, 276, 276, 276, 719, 719,
-    756, 756, 756, 756, 756, 996, 756, 719, 719, 719,
-    719, 682, 590, 608, 535, 535, 535, 535, 535, 535,
-    848, 535, 535, 535, 535, 535, 240, 240, 240, 240,
-    572, 572, 572, 572, 572, 572, 572, 996, 572, 572,
-    572, 572, 572, 553, 572, 553
-  },
-      0, 3,
-},
-{
-  "Univers-BoldItalic",		/* #3 */
-  4148, 1, 1, 3, 14,
-  976, 250, 688, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 332, 332, 535, 627, 627, 996, 756, 332,
-    332, 332, 627, 996, 332, 996, 332, 332, 627, 627,
-    627, 627, 627, 627, 627, 627, 627, 627, 332, 332,
-    996, 996, 996, 517, 996, 738, 627, 701, 719, 572,
-    553, 738, 719, 276, 553, 664, 535, 904, 719, 756,
-    590, 774, 646, 646, 627, 719, 719, 996, 719, 682,
-    608, 332, 332, 332, 498, 498, 332, 535, 572, 535,
-    572, 535, 369, 572, 572, 240, 240, 535, 240, 867,
-    572, 572, 572, 572, 351, 498, 369, 572, 553, 867,
-    553, 553, 479, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    332, 332, 627, 627, 627, 627, 498, 627, 627, 498,
-    406, 553, 996, 332, 498, 627, 627, 996, 387, 387,
-    627, 590, 627, 332, 627, 387, 406, 553, 996, 996,
-    996, 517, 738, 738, 738, 738, 738, 738, 977, 701,
-    572, 572, 572, 572, 276, 276, 276, 276, 719, 719,
-    756, 756, 756, 756, 756, 996, 756, 719, 719, 719,
-    719, 682, 590, 608, 535, 535, 535, 535, 535, 535,
-    848, 535, 535, 535, 535, 535, 240, 240, 240, 240,
-    572, 572, 572, 572, 572, 572, 572, 996, 572, 572,
-    572, 572, 572, 553, 572, 553
-  },
-      0, 4,
-},
-{
-  "UniversCondensed",		/* #4 */
-  4148, 1, 4, 0, 14,
-  932, 250, 688, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 221, 295, 369, 461, 461, 664, 608, 221,
-    221, 221, 461, 664, 221, 664, 221, 221, 461, 461,
-    461, 461, 461, 461, 461, 461, 461, 461, 221, 221,
-    996, 664, 996, 424, 664, 517, 498, 498, 517, 424,
-    406, 517, 517, 221, 424, 498, 387, 682, 535, 517,
-    461, 517, 498, 479, 479, 517, 461, 682, 517, 461,
-    461, 221, 221, 221, 498, 498, 221, 406, 406, 387,
-    406, 387, 295, 406, 406, 185, 185, 406, 185, 608,
-    406, 406, 406, 406, 276, 369, 295, 406, 387, 646,
-    387, 406, 332, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    221, 295, 461, 461, 461, 461, 498, 461, 461, 498,
-    276, 442, 664, 221, 498, 461, 461, 664, 276, 276,
-    461, 553, 461, 221, 461, 276, 276, 442, 664, 664,
-    664, 424, 517, 517, 517, 517, 517, 517, 701, 498,
-    424, 424, 424, 424, 221, 221, 221, 221, 517, 535,
-    517, 517, 517, 517, 517, 664, 517, 517, 517, 517,
-    517, 461, 461, 442, 406, 406, 406, 406, 406, 406,
-    627, 387, 387, 387, 387, 387, 221, 221, 221, 221,
-    406, 406, 406, 406, 406, 406, 406, 664, 406, 406,
-    406, 406, 406, 406, 406, 406
-  },
-      1, 1,
-},
-{
-  "UniversCondensed-Italic",	/* #5 */
-  4148, 1, 5, 0, 14,
-  933, 250, 688, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 221, 295, 369, 461, 461, 664, 608, 221,
-    221, 221, 461, 664, 221, 664, 221, 221, 461, 461,
-    461, 461, 461, 461, 461, 461, 461, 461, 221, 221,
-    996, 664, 996, 424, 664, 517, 498, 498, 517, 424,
-    406, 517, 517, 221, 424, 498, 387, 682, 535, 517,
-    461, 517, 498, 479, 479, 517, 461, 682, 517, 461,
-    461, 221, 295, 221, 498, 498, 221, 406, 406, 387,
-    406, 387, 295, 406, 406, 185, 185, 406, 185, 608,
-    406, 406, 406, 406, 276, 369, 295, 406, 387, 646,
-    387, 406, 332, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    221, 295, 461, 461, 461, 461, 498, 461, 461, 498,
-    295, 442, 664, 221, 498, 461, 461, 664, 276, 276,
-    461, 553, 461, 221, 461, 276, 295, 442, 664, 664,
-    664, 424, 517, 517, 517, 517, 517, 517, 701, 498,
-    424, 424, 424, 424, 221, 221, 221, 221, 517, 535,
-    517, 517, 517, 517, 517, 664, 517, 517, 517, 517,
-    517, 461, 461, 442, 406, 406, 406, 406, 406, 406,
-    627, 387, 387, 387, 387, 387, 221, 221, 221, 221,
-    406, 406, 406, 406, 406, 406, 406, 664, 406, 406,
-    406, 406, 406, 406, 406, 406
-  },
-      1, 2,
-},
-{
-  "UniversCondensed-Bold",	/* #6 */
-  4148, 1, 4, 3, 14,
-  950, 250, 688, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 221, 295, 406, 479, 479, 664, 627, 221,
-    221, 221, 479, 664, 221, 664, 221, 221, 479, 479,
-    479, 479, 479, 479, 479, 479, 479, 479, 221, 221,
-    996, 664, 996, 442, 664, 553, 535, 517, 553, 461,
-    442, 553, 553, 258, 479, 535, 424, 738, 572, 553,
-    517, 572, 517, 535, 498, 553, 517, 774, 553, 517,
-    461, 221, 221, 221, 498, 498, 221, 442, 442, 406,
-    442, 424, 313, 442, 461, 240, 240, 442, 240, 664,
-    461, 442, 442, 442, 332, 406, 313, 461, 442, 701,
-    442, 442, 369, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    221, 295, 479, 479, 479, 479, 498, 479, 479, 498,
-    406, 442, 664, 221, 498, 479, 479, 664, 313, 313,
-    479, 590, 479, 221, 479, 313, 406, 442, 664, 664,
-    664, 442, 553, 553, 553, 553, 553, 553, 774, 517,
-    461, 461, 461, 461, 258, 258, 258, 258, 553, 572,
-    553, 553, 553, 553, 553, 664, 553, 553, 553, 553,
-    553, 517, 517, 498, 442, 442, 442, 442, 442, 442,
-    664, 406, 424, 424, 424, 424, 240, 240, 240, 240,
-    442, 461, 442, 442, 442, 442, 442, 664, 442, 461,
-    461, 461, 461, 442, 442, 442
-  },
-      1, 3,
-},
-{
-  "UniversCondensed-BoldItalic", /* #7 */
-  4148, 1, 5, 3, 14,
-  950, 250, 688, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 221, 295, 406, 479, 479, 664, 627, 221,
-    221, 221, 479, 664, 221, 664, 221, 221, 479, 479,
-    479, 479, 479, 479, 479, 479, 479, 479, 221, 221,
-    996, 664, 996, 442, 664, 553, 535, 517, 553, 461,
-    442, 553, 553, 258, 479, 535, 424, 738, 572, 553,
-    517, 572, 517, 535, 498, 553, 517, 774, 553, 517,
-    461, 221, 313, 221, 498, 498, 221, 442, 442, 406,
-    442, 424, 313, 442, 461, 240, 240, 442, 240, 664,
-    461, 442, 442, 442, 332, 406, 313, 461, 442, 701,
-    442, 442, 369, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    221, 295, 479, 479, 479, 479, 498, 479, 479, 498,
-    406, 442, 664, 221, 498, 479, 479, 664, 313, 313,
-    479, 590, 479, 221, 479, 313, 406, 442, 664, 664,
-    664, 442, 553, 553, 553, 553, 553, 553, 774, 517,
-    461, 461, 461, 461, 258, 258, 258, 258, 553, 572,
-    553, 553, 553, 553, 553, 664, 553, 553, 553, 553,
-    553, 517, 517, 498, 442, 442, 442, 442, 442, 442,
-    664, 406, 424, 424, 424, 424, 240, 240, 240, 240,
-    442, 461, 442, 442, 442, 442, 442, 664, 442, 461,
-    461, 461, 461, 442, 442, 442
-  },
-      1, 4,
-},
-{
-  "CGTimes",			/* #8 */
-  4101, 1, 0, 0, 14,
-  910, 250, 679, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 295, 332, 461, 498, 498, 885, 774, 332,
-    332, 332, 498, 885, 332, 885, 332, 332, 498, 498,
-    498, 498, 498, 498, 498, 498, 498, 498, 332, 332,
-    996, 885, 996, 442, 885, 719, 627, 682, 738, 627,
-    590, 719, 738, 332, 387, 701, 627, 904, 738, 719,
-    572, 719, 664, 535, 627, 738, 719, 940, 719, 719,
-    646, 332, 332, 332, 498, 498, 332, 442, 498, 442,
-    498, 442, 332, 498, 498, 276, 276, 498, 276, 774,
-    498, 498, 498, 498, 369, 387, 276, 498, 498, 719,
-    498, 498, 442, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    295, 332, 498, 498, 498, 498, 498, 498, 498, 498,
-    498, 406, 885, 332, 498, 498, 498, 885, 351, 351,
-    498, 553, 498, 332, 498, 351, 498, 406, 885, 885,
-    885, 442, 719, 719, 719, 719, 719, 719, 885, 682,
-    627, 627, 627, 627, 332, 332, 332, 332, 738, 738,
-    719, 719, 719, 719, 719, 885, 719, 738, 738, 738,
-    738, 719, 572, 498, 442, 442, 442, 442, 442, 442,
-    664, 442, 442, 442, 442, 442, 276, 276, 276, 276,
-    498, 498, 498, 498, 498, 498, 498, 885, 498, 498,
-    498, 498, 498, 498, 498, 498
-  },
-      2, 1,
-},
-{
-  "CGTimes-Italic",		/* #9 */
-  4101, 1, 1, 0, 14,
-  910, 250, 679, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 295, 332, 479, 498, 498, 885, 774, 332,
-    332, 332, 498, 885, 332, 885, 332, 332, 498, 498,
-    498, 498, 498, 498, 498, 498, 498, 498, 332, 332,
-    996, 885, 996, 498, 885, 608, 608, 664, 719, 608,
-    572, 719, 719, 332, 442, 664, 553, 830, 664, 719,
-    608, 719, 608, 498, 553, 719, 608, 830, 608, 553,
-    553, 332, 332, 332, 498, 498, 332, 498, 498, 442,
-    498, 442, 276, 498, 498, 276, 276, 442, 276, 719,
-    498, 498, 498, 498, 387, 387, 276, 498, 442, 664,
-    442, 442, 387, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    295, 332, 498, 498, 498, 498, 498, 498, 498, 498,
-    498, 461, 885, 332, 498, 498, 498, 885, 351, 351,
-    498, 553, 498, 332, 498, 351, 498, 461, 885, 885,
-    885, 498, 608, 608, 608, 608, 608, 608, 885, 664,
-    608, 608, 608, 608, 332, 332, 332, 332, 719, 664,
-    719, 719, 719, 719, 719, 885, 719, 719, 719, 719,
-    719, 553, 608, 498, 498, 498, 498, 498, 498, 498,
-    664, 442, 442, 442, 442, 442, 276, 276, 276, 276,
-    498, 498, 498, 498, 498, 498, 498, 885, 498, 498,
-    498, 498, 498, 442, 498, 442
-  },
-      2, 2,
-},
-{
-  "CGTimes-Bold",		/* #10 */
-  4101, 1, 0, 3, 14,
-  944, 250, 685, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 295, 332, 461, 498, 498, 885, 830, 332,
-    332, 332, 498, 885, 332, 885, 332, 332, 498, 498,
-    498, 498, 498, 498, 498, 498, 498, 498, 332, 332,
-    996, 885, 996, 498, 885, 719, 664, 719, 719, 664,
-    608, 774, 774, 387, 479, 774, 664, 940, 719, 774,
-    608, 774, 719, 553, 664, 719, 719, 996, 719, 719,
-    664, 332, 332, 332, 498, 498, 332, 498, 553, 442,
-    553, 442, 351, 498, 553, 276, 332, 553, 276, 830,
-    553, 498, 553, 553, 442, 387, 332, 553, 498, 719,
-    498, 498, 442, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    295, 332, 498, 498, 498, 498, 498, 498, 498, 498,
-    498, 424, 885, 332, 498, 498, 498, 885, 351, 351,
-    498, 553, 498, 332, 498, 351, 498, 424, 885, 885,
-    885, 498, 719, 719, 719, 719, 719, 719, 1033, 719,
-    664, 664, 664, 664, 387, 387, 387, 387, 719, 719,
-    774, 774, 774, 774, 774, 885, 774, 719, 719, 719,
-    719, 719, 608, 553, 498, 498, 498, 498, 498, 498,
-    719, 442, 442, 442, 442, 442, 276, 276, 276, 276,
-    498, 553, 498, 498, 498, 498, 498, 885, 498, 553,
-    553, 553, 553, 498, 553, 498
-  },
-      2, 3,
-},
-{
-  "CGTimes-BoldItalic",		/* #11 */
-  4101, 1, 1, 3, 14,
-  944, 250, 685, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 295, 387, 517, 498, 498, 885, 774, 332,
-    332, 332, 498, 885, 332, 885, 332, 332, 498, 498,
-    498, 498, 498, 498, 498, 498, 498, 498, 332, 332,
-    996, 885, 996, 498, 885, 664, 664, 664, 719, 664,
-    608, 719, 774, 387, 498, 664, 608, 885, 719, 719,
-    608, 701, 664, 553, 608, 719, 664, 885, 664, 608,
-    608, 332, 332, 332, 498, 498, 332, 498, 498, 442,
-    498, 442, 351, 498, 553, 276, 276, 498, 276, 774,
-    553, 498, 498, 498, 387, 387, 276, 553, 442, 664,
-    498, 442, 387, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    295, 387, 498, 498, 498, 498, 498, 498, 498, 498,
-    498, 442, 885, 332, 498, 498, 498, 885, 332, 332,
-    498, 553, 498, 332, 498, 332, 498, 442, 885, 885,
-    885, 498, 664, 664, 664, 664, 664, 664, 922, 664,
-    664, 664, 664, 664, 387, 387, 387, 387, 719, 719,
-    719, 719, 719, 719, 719, 885, 719, 719, 719, 719,
-    719, 608, 608, 498, 498, 498, 498, 498, 498, 498,
-    701, 442, 442, 442, 442, 442, 276, 276, 276, 276,
-    498, 553, 498, 498, 498, 498, 498, 885, 498, 553,
-    553, 553, 553, 442, 498, 442
-  },
-      2, 4,
-},
-{
-  "AlbertusMedium",		/* #12 */
-  4362, 1, 0, 1, 14,
-  997, 250, 764, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 278, 278, 355, 556, 556, 889, 667, 222,
-    333, 333, 389, 584, 278, 584, 278, 278, 556, 556,
-    556, 556, 556, 556, 556, 556, 556, 556, 278, 278,
-    584, 584, 584, 556, 1015, 667, 667, 722, 722, 667,
-    611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
-    667, 778, 722, 667, 611, 722, 667, 944, 667, 667,
-    611, 278, 278, 278, 469, 556, 222, 556, 556, 500,
-    556, 556, 278, 556, 556, 222, 222, 500, 222, 833,
-    556, 556, 556, 556, 333, 500, 278, 556, 500, 722,
-    500, 500, 500, 334, 260, 334, 584, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    278, 333, 556, 556, 556, 556, 260, 556, 333, 737,
-    370, 556, 584, 333, 737, 333, 400, 584, 333, 333,
-    333, 556, 537, 278, 333, 333, 365, 556, 834, 834,
-    834, 611, 667, 667, 667, 667, 667, 667, 1000, 722,
-    667, 667, 667, 667, 278, 278, 278, 278, 722, 722,
-    778, 778, 778, 778, 778, 584, 778, 722, 722, 722,
-    722, 667, 667, 611, 556, 556, 556, 556, 556, 556,
-    889, 500, 556, 556, 556, 556, 278, 278, 278, 278,
-    556, 556, 556, 556, 556, 556, 556, 584, 611, 556,
-    556, 556, 556, 500, 556, 500
-  },
-      3, 1,
-},
-{
-  "AlbertusExtraBold",		/* #13 */
-  4362, 1, 0, 4, 14,
-  1017, 260, 764, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 369, 369, 572, 664, 664, 977, 904, 369,
-    498, 498, 664, 977, 369, 977, 369, 498, 664, 664,
-    664, 664, 664, 664, 664, 664, 664, 664, 369, 369,
-    996, 977, 996, 479, 977, 774, 701, 719, 774, 608,
-    572, 774, 812, 387, 442, 738, 572, 977, 848, 904,
-    646, 904, 701, 535, 627, 812, 756, 977, 756, 664,
-    664, 498, 498, 498, 498, 498, 369, 498, 608, 479,
-    590, 517, 369, 553, 590, 295, 295, 627, 295, 885,
-    590, 608, 590, 590, 424, 424, 406, 590, 553, 793,
-    627, 553, 461, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    369, 369, 664, 664, 664, 664, 498, 664, 664, 498,
-    461, 517, 977, 369, 498, 664, 553, 977, 461, 461,
-    664, 590, 664, 369, 664, 461, 461, 517, 977, 977,
-    977, 479, 774, 774, 774, 774, 774, 774, 1014, 719,
-    608, 608, 608, 608, 387, 387, 387, 387, 812, 848,
-    904, 904, 904, 904, 904, 977, 904, 812, 812, 812,
-    812, 664, 646, 646, 498, 498, 498, 498, 498, 498,
-    756, 479, 517, 517, 517, 517, 295, 295, 295, 295,
-    608, 590, 608, 608, 608, 608, 608, 977, 608, 590,
-    590, 590, 590, 553, 590, 553
-  },
-      3, 3,
-},
-{
-  "AntiqueOlive",		/* #14 */
-  4168, 1, 0, 0, 14,
-  1038, 250, 750, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 295, 313, 424, 590, 590, 1014, 719, 258,
-    295, 295, 590, 1014, 295, 1014, 295, 313, 590, 590,
-    590, 590, 590, 590, 590, 590, 590, 590, 295, 295,
-    996, 1014, 996, 572, 1014, 701, 664, 608, 701, 590,
-    572, 682, 738, 276, 461, 627, 517, 885, 738, 719,
-    627, 719, 627, 535, 572, 719, 627, 977, 627, 627,
-    608, 295, 313, 295, 498, 498, 258, 572, 701, 553,
-    701, 627, 442, 664, 682, 295, 295, 572, 276, 1033,
-    682, 682, 701, 701, 461, 461, 461, 664, 590, 904,
-    553, 590, 517, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    295, 313, 590, 590, 590, 590, 498, 590, 590, 498,
-    590, 535, 1014, 295, 498, 590, 590, 1014, 387, 387,
-    590, 553, 590, 295, 590, 387, 590, 535, 1014, 1014,
-    1014, 572, 701, 701, 701, 701, 701, 701, 1162, 608,
-    590, 590, 590, 590, 276, 276, 276, 276, 701, 738,
-    719, 719, 719, 719, 719, 1014, 719, 719, 719, 719,
-    719, 627, 627, 627, 572, 572, 572, 572, 572, 572,
-    996, 553, 627, 627, 627, 627, 295, 295, 295, 295,
-    682, 682, 682, 682, 682, 682, 682, 1014, 682, 664,
-    664, 664, 664, 590, 701, 590
-  },
-      4, 1,
-},
-{
-  "AntiqueOlive-Italic",	/* #15 */
-  4168, 1, 1, 0, 14,
-  1035, 250, 750, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 295, 295, 442, 590, 590, 996, 664, 295,
-    295, 295, 590, 996, 295, 996, 295, 295, 590, 590,
-    590, 590, 590, 590, 590, 590, 590, 590, 295, 295,
-    996, 996, 996, 535, 996, 682, 627, 608, 719, 590,
-    572, 682, 738, 258, 461, 608, 479, 867, 738, 719,
-    627, 719, 608, 553, 553, 701, 646, 959, 627, 627,
-    608, 295, 295, 295, 498, 498, 295, 608, 682, 572,
-    682, 627, 424, 682, 682, 258, 276, 553, 258, 1014,
-    682, 664, 682, 682, 424, 479, 461, 682, 608, 922,
-    572, 590, 517, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    295, 295, 590, 590, 590, 590, 498, 590, 590, 498,
-    590, 517, 996, 295, 498, 590, 590, 996, 387, 387,
-    590, 553, 590, 295, 590, 387, 590, 517, 996, 996,
-    996, 535, 682, 682, 682, 682, 682, 682, 1069, 608,
-    590, 590, 590, 590, 258, 258, 258, 258, 719, 738,
-    719, 719, 719, 719, 719, 996, 719, 701, 701, 701,
-    701, 627, 627, 608, 608, 608, 608, 608, 608, 608,
-    977, 572, 627, 627, 627, 627, 258, 258, 258, 258,
-    664, 682, 664, 664, 664, 664, 664, 996, 664, 682,
-    682, 682, 682, 590, 682, 590
-  },
-      4, 2,
-},
-{
-  "AntiqueOlive-Bold",		/* #16 */
-  4168, 1, 0, 3, 14,
-  1055, 250, 750, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 332, 369, 461, 664, 664, 1143, 812, 258,
-    332, 332, 664, 1143, 332, 1143, 332, 406, 664, 664,
-    664, 664, 664, 664, 664, 664, 664, 664, 332, 332,
-    996, 1143, 996, 608, 1143, 756, 682, 646, 738, 608,
-    608, 701, 738, 313, 517, 701, 553, 922, 756, 756,
-    701, 756, 682, 590, 646, 719, 719, 1033, 719, 719,
-    664, 332, 406, 332, 498, 498, 258, 646, 719, 590,
-    719, 664, 517, 719, 719, 332, 332, 646, 313, 1051,
-    719, 701, 719, 719, 517, 553, 535, 701, 664, 996,
-    664, 664, 572, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    332, 369, 664, 664, 664, 664, 498, 664, 664, 498,
-    553, 590, 1143, 332, 498, 664, 664, 1143, 442, 442,
-    664, 590, 664, 332, 664, 442, 553, 590, 1143, 1143,
-    1143, 608, 756, 756, 756, 756, 756, 756, 1143, 646,
-    608, 608, 608, 608, 313, 313, 313, 313, 738, 756,
-    756, 756, 756, 756, 756, 1143, 756, 719, 719, 719,
-    719, 719, 701, 701, 646, 646, 646, 646, 646, 646,
-    1033, 590, 664, 664, 664, 664, 332, 332, 332, 332,
-    701, 719, 701, 701, 701, 701, 701, 1143, 701, 701,
-    701, 701, 701, 664, 719, 664
-  },
-      4, 3,
-},
-{
-  "Arial-Roman",		/* #17 */
-  16602, 1, 0, 0, 14,
-  913, 216, 715, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 278, 278, 355, 556, 556, 889, 667, 222,
-    333, 333, 389, 584, 278, 584, 278, 278, 556, 556,
-    556, 556, 556, 556, 556, 556, 556, 556, 278, 278,
-    584, 584, 584, 556, 1015, 667, 667, 722, 722, 667,
-    611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
-    667, 778, 722, 667, 611, 722, 667, 944, 667, 667,
-    611, 278, 278, 278, 469, 556, 222, 556, 556, 500,
-    556, 556, 278, 556, 556, 222, 222, 500, 222, 833,
-    556, 556, 556, 556, 333, 500, 278, 556, 500, 722,
-    500, 500, 500, 334, 260, 334, 584, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    278, 333, 556, 556, 556, 556, 260, 556, 333, 737,
-    370, 556, 584, 333, 737, 333, 400, 549, 333, 333,
-    333, 576, 537, 278, 333, 333, 365, 556, 834, 834,
-    834, 611, 667, 667, 667, 667, 667, 667, 1000, 722,
-    667, 667, 667, 667, 278, 278, 278, 278, 722, 722,
-    778, 778, 778, 778, 778, 584, 778, 722, 722, 722,
-    722, 667, 667, 611, 556, 556, 556, 556, 556, 556,
-    889, 500, 556, 556, 556, 556, 278, 278, 278, 278,
-    556, 556, 556, 556, 556, 556, 556, 549, 611, 556,
-    556, 556, 556, 500, 556, 500
-  },
-      5, 1,
-},
-{
-  "Arial-Italic",		/* #18 */
-  16602, 1, 1, 0, 14,
-  913, 213, 715, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 278, 278, 355, 556, 556, 889, 667, 222,
-    333, 333, 389, 584, 278, 584, 278, 278, 556, 556,
-    556, 556, 556, 556, 556, 556, 556, 556, 278, 278,
-    584, 584, 584, 556, 1015, 667, 667, 722, 722, 667,
-    611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
-    667, 778, 722, 667, 611, 722, 667, 944, 667, 667,
-    611, 278, 278, 278, 469, 556, 222, 556, 556, 500,
-    556, 556, 278, 556, 556, 222, 222, 500, 222, 833,
-    556, 556, 556, 556, 333, 500, 278, 556, 500, 722,
-    500, 500, 500, 334, 260, 334, 584, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    278, 333, 556, 556, 556, 556, 260, 556, 333, 737,
-    370, 556, 584, 333, 737, 333, 400, 549, 333, 333,
-    333, 576, 537, 278, 333, 333, 365, 556, 834, 834,
-    834, 611, 667, 667, 667, 667, 667, 667, 1000, 722,
-    667, 667, 667, 667, 278, 278, 278, 278, 722, 722,
-    778, 778, 778, 778, 778, 584, 778, 722, 722, 722,
-    722, 667, 667, 611, 556, 556, 556, 556, 556, 556,
-    889, 500, 556, 556, 556, 556, 278, 278, 278, 278,
-    556, 556, 556, 556, 556, 556, 556, 549, 611, 556,
-    556, 556, 556, 500, 556, 500
-  },
-      5, 2,
-},
-{
-  "Arial-Bold",			/* #19 */
-  16602, 1, 0, 3, 14,
-  924, 211, 715, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 278, 333, 474, 556, 556, 889, 722, 278,
-    333, 333, 389, 584, 278, 584, 278, 278, 556, 556,
-    556, 556, 556, 556, 556, 556, 556, 556, 333, 333,
-    584, 584, 584, 611, 975, 722, 722, 722, 722, 667,
-    611, 778, 722, 278, 556, 722, 611, 833, 722, 778,
-    667, 778, 722, 667, 611, 722, 667, 944, 667, 667,
-    611, 333, 278, 333, 584, 556, 278, 556, 611, 556,
-    611, 556, 333, 611, 611, 278, 278, 556, 278, 889,
-    611, 611, 611, 611, 389, 556, 333, 611, 556, 778,
-    556, 556, 500, 389, 280, 389, 584, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    278, 333, 556, 556, 556, 556, 280, 556, 333, 737,
-    370, 556, 584, 333, 737, 333, 400, 549, 333, 333,
-    333, 576, 556, 278, 333, 333, 365, 556, 834, 834,
-    834, 611, 722, 722, 722, 722, 722, 722, 1000, 722,
-    667, 667, 667, 667, 278, 278, 278, 278, 722, 722,
-    778, 778, 778, 778, 778, 584, 778, 722, 722, 722,
-    722, 667, 667, 611, 556, 556, 556, 556, 556, 556,
-    889, 556, 556, 556, 556, 556, 278, 278, 278, 278,
-    611, 611, 611, 611, 611, 611, 611, 549, 611, 611,
-    611, 611, 611, 556, 611, 556
-  },
-      5, 3,
-},
-{
-  "Arial-BoldItalic",		/* #20 */
-  16602, 1, 1, 3, 14,
-  924, 221, 715, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 278, 333, 474, 556, 556, 889, 722, 278,
-    333, 333, 389, 584, 278, 584, 278, 278, 556, 556,
-    556, 556, 556, 556, 556, 556, 556, 556, 333, 333,
-    584, 584, 584, 611, 975, 722, 722, 722, 722, 667,
-    611, 778, 722, 278, 556, 722, 611, 833, 722, 778,
-    667, 778, 722, 667, 611, 722, 667, 944, 667, 667,
-    611, 333, 278, 333, 584, 556, 278, 556, 611, 556,
-    611, 556, 333, 611, 611, 278, 278, 556, 278, 889,
-    611, 611, 611, 611, 389, 556, 333, 611, 556, 778,
-    556, 556, 500, 389, 280, 389, 584, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    278, 333, 556, 556, 556, 556, 280, 556, 333, 737,
-    370, 556, 584, 333, 737, 333, 400, 549, 333, 333,
-    333, 576, 556, 278, 333, 333, 365, 556, 834, 834,
-    834, 611, 722, 722, 722, 722, 722, 722, 1000, 722,
-    667, 667, 667, 667, 278, 278, 278, 278, 722, 722,
-    778, 778, 778, 778, 778, 584, 778, 722, 722, 722,
-    722, 667, 667, 611, 556, 556, 556, 556, 556, 556,
-    889, 556, 556, 556, 556, 556, 278, 278, 278, 278,
-    611, 611, 611, 611, 611, 611, 611, 549, 611, 611,
-    611, 611, 611, 556, 611, 556
-  }, 
-      5, 4,
-},
-{
-  "ClarendonCondensed",		/* #21 */
-  4140, 1, 4, 3, 14,
-  970, 261, 694, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 221, 240, 442, 442, 442, 664, 627, 221,
-    221, 221, 442, 664, 221, 664, 221, 221, 442, 442,
-    442, 442, 442, 442, 442, 442, 442, 442, 221, 221,
-    996, 664, 996, 442, 996, 517, 517, 479, 517, 517,
-    498, 517, 572, 295, 424, 553, 461, 682, 553, 517,
-    498, 535, 572, 461, 517, 498, 535, 738, 517, 498,
-    461, 221, 221, 221, 498, 498, 221, 517, 479, 424,
-    479, 442, 332, 517, 498, 258, 313, 498, 258, 738,
-    498, 461, 479, 479, 369, 424, 313, 498, 442, 664,
-    461, 461, 387, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    221, 240, 442, 442, 664, 442, 498, 442, 442, 498,
-    442, 461, 664, 221, 498, 442, 442, 664, 295, 295,
-    442, 553, 461, 221, 442, 295, 442, 461, 664, 664,
-    664, 442, 517, 517, 517, 517, 517, 517, 867, 479,
-    517, 517, 517, 517, 295, 295, 295, 295, 517, 553,
-    517, 517, 517, 517, 517, 664, 517, 498, 498, 498,
-    498, 498, 498, 498, 517, 517, 517, 517, 517, 517,
-    682, 424, 442, 442, 442, 442, 258, 258, 258, 258,
-    461, 498, 461, 461, 461, 461, 461, 664, 461, 498,
-    498, 498, 498, 461, 479, 461
-  },
-      6, 1,
-},
-{
-  "Coronet",			/* #22 */
-  4116, 1, 1, 0, 14,
-  898, 257, 744, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 203, 185, 276, 406, 406, 517, 774, 166,
-    203, 203, 406, 517, 203, 517, 203, 203, 406, 406,
-    406, 406, 406, 406, 406, 406, 406, 406, 203, 203,
-    996, 517, 996, 295, 517, 885, 535, 553, 885, 572,
-    646, 572, 904, 572, 498, 885, 682, 830, 590, 682,
-    535, 682, 572, 664, 590, 627, 627, 904, 572, 608,
-    682, 203, 203, 203, 498, 498, 166, 332, 313, 258,
-    332, 258, 221, 313, 332, 185, 166, 313, 203, 461,
-    313, 276, 313, 332, 221, 221, 185, 332, 258, 406,
-    221, 295, 221, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    203, 185, 406, 406, 406, 406, 498, 406, 406, 498,
-    313, 276, 517, 203, 498, 406, 406, 517, 240, 240,
-    406, 553, 406, 203, 406, 240, 313, 276, 517, 517,
-    517, 295, 885, 885, 885, 885, 885, 885, 922, 553,
-    572, 572, 572, 572, 572, 572, 572, 572, 885, 590,
-    682, 682, 682, 682, 682, 517, 682, 627, 627, 627,
-    627, 608, 535, 351, 332, 332, 332, 332, 332, 332,
-    424, 258, 258, 258, 258, 258, 185, 185, 185, 185,
-    332, 313, 276, 276, 276, 276, 276, 517, 276, 332,
-    332, 332, 332, 295, 313, 295
-  }, 
-      7, 1,
-},
-{
-  "Courier",			/* #23 */
-  4099, 0, 0, 0, 14,
-  856, 253, 560, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    600, 600, 600, 600, 600, 600, 500, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600
-  }, 
-      8, 1,
-},
-{ 
-  "Courier-Italic",		/* #24 */
-  4099, 0, 1, 0, 14,
-  856, 253, 560, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    600, 600, 600, 600, 600, 600, 500, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600
-  },
-      8, 2,
-},
-{
-  "Courier-Bold",		/* #25 */
-  4099, 0, 0, 3, 14,
-  856, 237, 560, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    600, 600, 600, 600, 600, 600, 500, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600
-  },
-      8, 3,
-},
-{
-  "Courier-BoldItalic",		/* #26 */
-  4099, 0, 1, 3, 14,
-  856, 237, 560, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    600, 600, 600, 600, 600, 600, 500, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 593, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-    600, 600, 600, 600, 600, 600
-  },
-      8, 4,
-},
-{
-  "Garamond",			/* #27 */
-  4197, 1, 0, 0, 14,		/* Garamond Antiqua */
-  1023, 260, 695, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 258, 258, 424, 479, 479, 812, 830, 276,
-    295, 295, 479, 812, 258, 812, 258, 479, 479, 479,
-    479, 479, 479, 479, 479, 479, 479, 479, 258, 258,
-    996, 812, 996, 369, 816, 756, 608, 738, 793, 627,
-    590, 793, 848, 332, 369, 719, 608, 904, 848, 848,
-    590, 848, 701, 479, 682, 812, 719, 977, 756, 719,
-    664, 295, 479, 295, 498, 498, 276, 424, 535, 424,
-    517, 424, 313, 461, 553, 276, 258, 553, 276, 830,
-    553, 535, 535, 517, 387, 351, 332, 535, 498, 756,
-    498, 535, 461, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    258, 258, 479, 479, 479, 479, 498, 479, 479, 498,
-    479, 424, 812, 258, 498, 479, 479, 812, 332, 332,
-    479, 553, 479, 258, 479, 332, 479, 424, 812, 812,
-    812, 369, 756, 756, 756, 756, 756, 756, 1069, 738,
-    627, 627, 627, 627, 332, 332, 332, 332, 793, 848,
-    848, 848, 848, 848, 848, 812, 848, 812, 812, 812,
-    812, 719, 590, 553, 424, 424, 424, 424, 424, 424,
-    646, 424, 424, 424, 424, 424, 276, 276, 276, 276,
-    535, 553, 535, 535, 535, 535, 535, 812, 535, 535,
-    535, 535, 535, 535, 535, 535
-  },
-      9, 1,
-},
-{
-  "Garamond-Italic",		/* #28 */
-  4197, 1, 1, 0, 14,		/* Garamond Kursiv */
-  984, 261, 695, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 240, 240, 424, 479, 479, 774, 682, 240,
-    240, 240, 479, 774, 240, 774, 240, 498, 479, 479,
-    479, 479, 479, 479, 479, 479, 479, 479, 240, 240,
-    996, 774, 996, 351, 779, 701, 572, 701, 756, 590,
-    498, 774, 774, 332, 313, 682, 590, 774, 738, 793,
-    553, 793, 682, 461, 608, 756, 719, 959, 701, 664,
-    627, 240, 498, 240, 498, 498, 240, 461, 479, 369,
-    498, 369, 276, 424, 479, 295, 240, 498, 276, 812,
-    553, 461, 461, 479, 387, 295, 313, 517, 517, 719,
-    461, 442, 424, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    240, 258, 479, 479, 479, 479, 498, 479, 479, 498,
-    442, 406, 774, 240, 498, 479, 479, 774, 332, 332,
-    479, 553, 479, 240, 479, 332, 442, 406, 774, 774,
-    774, 351, 701, 701, 701, 701, 701, 701, 959, 701,
-    590, 590, 590, 590, 332, 332, 332, 332, 756, 738,
-    793, 793, 793, 793, 793, 774, 793, 756, 756, 756,
-    756, 664, 553, 498, 461, 461, 461, 461, 461, 461,
-    627, 369, 369, 369, 369, 369, 295, 295, 295, 295,
-    461, 553, 461, 461, 461, 461, 461, 774, 461, 517,
-    517, 517, 517, 442, 461, 442
-  },
-      9, 2,
-},
-{
-  "Garamond-Bold",		/* #29 */
-  4197, 1, 0, 3, 14,		/* Garamond Halbfett */
-  1010, 261, 695, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 276, 276, 406, 498, 498, 830, 848, 258,
-    313, 313, 498, 830, 276, 830, 276, 498, 498, 498,
-    498, 498, 498, 498, 498, 498, 498, 498, 276, 276,
-    996, 830, 996, 387, 830, 756, 664, 756, 830, 627,
-    627, 812, 885, 387, 369, 738, 608, 940, 848, 867,
-    627, 867, 738, 535, 664, 812, 738, 996, 756, 701,
-    664, 313, 498, 313, 498, 498, 258, 461, 553, 424,
-    553, 442, 351, 535, 590, 295, 276, 553, 295, 867,
-    590, 535, 553, 553, 424, 369, 369, 590, 535, 756,
-    535, 517, 479, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    276, 276, 498, 498, 498, 498, 498, 498, 498, 498,
-    461, 479, 830, 276, 498, 498, 498, 830, 351, 351,
-    498, 553, 498, 276, 498, 351, 461, 479, 830, 830,
-    830, 387, 756, 756, 756, 756, 756, 756, 977, 756,
-    627, 627, 627, 627, 387, 387, 387, 387, 830, 848,
-    867, 867, 867, 867, 867, 830, 867, 812, 812, 812,
-    812, 701, 627, 590, 461, 461, 461, 461, 461, 461,
-    682, 424, 442, 442, 442, 442, 295, 295, 295, 295,
-    535, 590, 535, 535, 535, 535, 535, 830, 535, 590,
-    590, 590, 590, 517, 553, 517
-  },
-      9, 3,
-},
-{
-  "Garamond-BoldItalic",	/* #30 */
-  4197, 1, 1, 3, 14,		/* Garamond Kursiv Halbfett */
-  1016, 264, 697, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 258, 258, 424, 498, 498, 830, 701, 258,
-    295, 295, 498, 830, 258, 830, 258, 498, 498, 498,
-    498, 498, 498, 498, 498, 498, 498, 498, 258, 258,
-    996, 830, 996, 387, 830, 738, 627, 738, 774, 627,
-    572, 793, 812, 387, 351, 719, 627, 867, 793, 830,
-    627, 830, 738, 498, 682, 812, 738, 996, 719, 738,
-    664, 295, 498, 295, 498, 498, 258, 517, 553, 424,
-    553, 424, 295, 479, 553, 313, 295, 535, 295, 812,
-    553, 479, 553, 535, 387, 332, 313, 535, 572, 774,
-    479, 498, 424, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    258, 258, 498, 498, 498, 498, 498, 498, 498, 498,
-    424, 424, 830, 258, 498, 498, 498, 830, 332, 332,
-    498, 553, 498, 258, 498, 332, 424, 424, 830, 830,
-    830, 387, 738, 738, 738, 738, 738, 738, 977, 738,
-    627, 627, 627, 627, 387, 387, 387, 387, 774, 793,
-    830, 830, 830, 830, 830, 830, 830, 812, 812, 812,
-    812, 738, 627, 535, 517, 517, 517, 517, 517, 517,
-    701, 424, 424, 424, 424, 424, 313, 313, 313, 313,
-    479, 553, 479, 479, 479, 479, 479, 830, 479, 535,
-    535, 535, 535, 498, 553, 498
-  },
-      9, 4,
-},
-{
-  "LetterGothic",		/* #31 */
-  4102, 0, 0, 0, 14,
-  946, 308, 721, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500
-  },
-      10, 1,
-},
-{
-  "LetterGothic-Italic",	/* #32 */
-  4102, 0, 1, 0, 14,
-  947, 308, 721, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500
-  },
-      10, 2,
-},
-{
-  "LetterGothic-Bold",		/* #33 */
-  4102, 0, 0, 3, 14,
-  988, 308, 721, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-    500, 500, 500, 500, 500, 500
-  },
-      10, 3,
-},
-{
-  "Marigold",			/* #34 */
-  4297, 1, 0, 0, 14,
-  770, 302, 450, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 221, 295, 240, 369, 369, 646, 479, 147,
-    258, 258, 369, 442, 221, 442, 221, 332, 369, 369,
-    369, 369, 369, 369, 369, 369, 369, 369, 221, 221,
-    996, 442, 996, 313, 682, 461, 406, 406, 479, 387,
-    369, 461, 461, 240, 240, 461, 332, 608, 498, 442,
-    369, 442, 442, 369, 387, 479, 461, 608, 461, 406,
-    406, 240, 332, 240, 498, 498, 147, 313, 258, 240,
-    295, 240, 147, 295, 313, 185, 147, 258, 147, 424,
-    295, 258, 295, 276, 240, 203, 203, 295, 276, 369,
-    276, 276, 276, 313, 498, 313, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    221, 295, 369, 369, 369, 369, 498, 369, 442, 295,
-    240, 351, 442, 258, 295, 442, 295, 442, 276, 276,
-    442, 553, 442, 221, 442, 276, 240, 351, 646, 646,
-    646, 313, 461, 461, 461, 461, 461, 461, 664, 406,
-    387, 387, 387, 387, 240, 240, 240, 240, 479, 498,
-    442, 442, 442, 442, 442, 442, 442, 479, 479, 479,
-    479, 406, 369, 351, 313, 313, 313, 313, 313, 313,
-    406, 240, 240, 240, 240, 240, 185, 185, 185, 185,
-    276, 295, 258, 258, 258, 258, 258, 442, 258, 295,
-    295, 295, 295, 276, 295, 276
-  }, 
-      11, 1,
-},
-{
-  "CGOmega",			/* #35 */
-  4113, 1, 0, 0, 14,
-  895, 250, 683, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 276, 276, 406, 553, 553, 885, 719, 276,
-    276, 276, 553, 885, 276, 885, 276, 276, 553, 553,
-    553, 553, 553, 553, 553, 553, 553, 553, 276, 276,
-    996, 885, 996, 387, 885, 664, 608, 664, 774, 498,
-    498, 774, 774, 276, 276, 608, 498, 885, 774, 830,
-    553, 830, 608, 498, 553, 774, 664, 996, 608, 608,
-    608, 276, 276, 276, 498, 498, 276, 479, 553, 479,
-    553, 498, 276, 498, 553, 276, 276, 498, 276, 830,
-    553, 553, 553, 553, 332, 387, 276, 553, 498, 774,
-    498, 498, 498, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    276, 276, 553, 553, 553, 553, 498, 553, 553, 498,
-    406, 369, 885, 276, 498, 553, 553, 885, 369, 369,
-    553, 553, 553, 276, 553, 369, 406, 369, 885, 885,
-    885, 387, 664, 664, 664, 664, 664, 664, 812, 664,
-    498, 498, 498, 498, 276, 276, 276, 276, 774, 774,
-    830, 830, 830, 830, 830, 885, 830, 774, 774, 774,
-    774, 608, 553, 553, 479, 479, 479, 479, 479, 479,
-    774, 479, 498, 498, 498, 498, 276, 276, 276, 276,
-    553, 553, 553, 553, 553, 553, 553, 885, 553, 553,
-    553, 553, 553, 498, 553, 498
-  }, 
-      12, 1,
-},
-{
-  "CGOmega-Italic",		/* #36 */
-  4113, 1, 1, 0, 14,
-  911, 250, 683, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 276, 276, 406, 553, 553, 885, 664, 276,
-    276, 276, 553, 885, 276, 885, 276, 276, 553, 553,
-    553, 553, 553, 553, 553, 553, 553, 553, 276, 276,
-    996, 885, 996, 387, 885, 664, 608, 664, 774, 498,
-    498, 738, 774, 295, 276, 608, 461, 885, 774, 830,
-    553, 830, 627, 498, 553, 774, 608, 940, 553, 553,
-    608, 276, 276, 276, 498, 498, 276, 498, 553, 479,
-    553, 498, 276, 498, 553, 276, 276, 498, 276, 830,
-    553, 553, 553, 553, 332, 387, 295, 553, 498, 774,
-    442, 498, 498, 442, 498, 442, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    276, 276, 553, 553, 553, 553, 498, 553, 553, 498,
-    461, 369, 885, 276, 498, 553, 553, 885, 387, 387,
-    553, 553, 553, 276, 553, 387, 461, 369, 885, 885,
-    885, 387, 664, 664, 664, 664, 664, 664, 793, 664,
-    498, 498, 498, 498, 295, 295, 295, 295, 774, 774,
-    830, 830, 830, 830, 830, 885, 830, 774, 774, 774,
-    774, 553, 553, 535, 498, 498, 498, 498, 498, 498,
-    774, 479, 498, 498, 498, 498, 276, 276, 276, 276,
-    553, 553, 553, 553, 553, 553, 553, 885, 553, 553,
-    553, 553, 553, 498, 553, 498
-  },
-      12, 2,
-},
-{
-  "CGOmega-Bold",		/* #37 */
-  4113, 1, 0, 3, 14,
-  924, 250, 686, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 276, 276, 461, 553, 553, 885, 719, 276,
-    276, 276, 553, 885, 276, 885, 276, 276, 553, 553,
-    553, 553, 553, 553, 553, 553, 553, 553, 276, 276,
-    996, 885, 996, 442, 885, 664, 608, 664, 774, 498,
-    498, 774, 774, 332, 332, 627, 498, 885, 774, 830,
-    572, 830, 608, 498, 553, 774, 664, 996, 608, 608,
-    608, 276, 276, 276, 498, 498, 276, 498, 553, 498,
-    553, 498, 332, 498, 553, 276, 276, 498, 276, 830,
-    553, 553, 553, 553, 387, 387, 332, 553, 498, 774,
-    498, 498, 498, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    276, 276, 553, 553, 553, 553, 498, 553, 553, 498,
-    369, 442, 885, 276, 498, 553, 553, 885, 369, 369,
-    553, 590, 553, 276, 553, 369, 369, 442, 885, 885,
-    885, 442, 664, 664, 664, 664, 664, 664, 867, 664,
-    498, 498, 498, 498, 332, 332, 332, 332, 774, 774,
-    830, 830, 830, 830, 830, 885, 830, 774, 774, 774,
-    774, 608, 572, 553, 498, 498, 498, 498, 498, 498,
-    756, 498, 498, 498, 498, 498, 276, 276, 276, 276,
-    553, 553, 553, 553, 553, 553, 553, 885, 553, 553,
-    553, 553, 553, 498, 553, 498
-  },
-      12, 3,
-},
-{
-  "CGOmega-BoldItalic",		/* #38 */
-  4113, 1, 1, 3, 14,
-  923, 250, 686, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 276, 276, 461, 553, 553, 885, 719, 276,
-    276, 276, 553, 885, 276, 885, 276, 276, 553, 553,
-    553, 553, 553, 553, 553, 553, 553, 553, 276, 276,
-    996, 885, 996, 442, 885, 664, 608, 664, 774, 498,
-    498, 774, 774, 332, 332, 608, 498, 885, 774, 830,
-    553, 830, 608, 498, 553, 774, 664, 940, 608, 608,
-    608, 276, 276, 276, 498, 498, 276, 498, 553, 479,
-    553, 498, 332, 498, 553, 276, 276, 498, 276, 830,
-    553, 553, 553, 553, 387, 387, 332, 553, 498, 774,
-    498, 498, 498, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    276, 276, 553, 553, 553, 553, 498, 553, 553, 498,
-    369, 424, 885, 276, 498, 553, 553, 885, 351, 351,
-    553, 590, 553, 276, 553, 351, 369, 424, 885, 885,
-    885, 442, 664, 664, 664, 664, 664, 664, 867, 664,
-    498, 498, 498, 498, 332, 332, 332, 332, 774, 774,
-    830, 830, 830, 830, 830, 885, 830, 774, 774, 774,
-    774, 608, 553, 553, 498, 498, 498, 498, 498, 498,
-    756, 479, 498, 498, 498, 498, 276, 276, 276, 276,
-    553, 553, 553, 553, 553, 553, 553, 885, 553, 553,
-    553, 553, 553, 498, 553, 498
-  },
-      12, 4,
-},
-{
-  "TimesNewRoman",		/* #39 */
-  16901, 1, 0, 0, 14,
-  913, 219, 662, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 250, 333, 408, 500, 500, 833, 778, 333,
-    333, 333, 500, 564, 250, 564, 250, 278, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 278, 278,
-    564, 564, 564, 444, 921, 722, 667, 667, 722, 611,
-    556, 722, 722, 333, 389, 722, 611, 889, 722, 722,
-    556, 722, 667, 556, 611, 722, 722, 944, 722, 722,
-    611, 333, 278, 333, 469, 500, 333, 444, 500, 444,
-    500, 444, 333, 500, 500, 278, 278, 500, 278, 778,
-    500, 500, 500, 500, 333, 389, 278, 500, 500, 722,
-    500, 500, 444, 480, 200, 480, 541, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    250, 333, 500, 500, 500, 500, 200, 500, 333, 760,
-    276, 500, 564, 333, 760, 333, 400, 549, 300, 300,
-    333, 576, 453, 250, 333, 300, 310, 500, 750, 750,
-    750, 444, 722, 722, 722, 722, 722, 722, 889, 667,
-    611, 611, 611, 611, 333, 333, 333, 333, 722, 722,
-    722, 722, 722, 722, 722, 564, 722, 722, 722, 722,
-    722, 722, 556, 500, 444, 444, 444, 444, 444, 444,
-    667, 444, 444, 444, 444, 444, 278, 278, 278, 278,
-    500, 500, 500, 500, 500, 500, 500, 549, 500, 500,
-    500, 500, 500, 500, 500, 500
-  },
-      13, 1,
-},
-{
-  "TimesNewRoman-Italic",	/* #40 */
-  16901, 1, 1, 0, 14,
-  913, 216, 662, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 250, 333, 420, 500, 500, 833, 778, 333,
-    333, 333, 500, 675, 250, 675, 250, 278, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 333, 333,
-    675, 675, 675, 500, 920, 611, 611, 667, 722, 611,
-    611, 722, 722, 333, 444, 667, 556, 833, 667, 722,
-    611, 722, 611, 500, 556, 722, 611, 833, 611, 556,
-    556, 389, 278, 389, 422, 500, 333, 500, 500, 444,
-    500, 444, 278, 500, 500, 278, 278, 444, 278, 722,
-    500, 500, 500, 500, 389, 389, 278, 500, 444, 667,
-    444, 444, 389, 400, 275, 400, 541, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    250, 389, 500, 500, 500, 500, 275, 500, 333, 760,
-    276, 500, 675, 333, 760, 333, 400, 549, 300, 300,
-    333, 576, 523, 250, 333, 300, 310, 500, 750, 750,
-    750, 500, 611, 611, 611, 611, 611, 611, 889, 667,
-    611, 611, 611, 611, 333, 333, 333, 333, 722, 667,
-    722, 722, 722, 722, 722, 675, 722, 722, 722, 722,
-    722, 556, 611, 500, 500, 500, 500, 500, 500, 500,
-    667, 444, 444, 444, 444, 444, 278, 278, 278, 278,
-    500, 500, 500, 500, 500, 500, 500, 549, 500, 500,
-    500, 500, 500, 444, 500, 444
-  },
-      13, 2,
-},
-{
-  "TimesNewRoman-Bold",		/* #41 */
-  16901, 1, 0, 3, 14,
-  913, 226, 662, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 250, 333, 555, 500, 500, 1000, 833, 333,
-    333, 333, 500, 570, 250, 570, 250, 278, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 333, 333,
-    570, 570, 570, 500, 930, 722, 667, 722, 722, 667,
-    611, 778, 778, 389, 500, 778, 667, 944, 722, 778,
-    611, 778, 722, 556, 667, 722, 722, 1000, 722, 722,
-    667, 333, 278, 333, 581, 500, 333, 500, 556, 444,
-    556, 444, 333, 500, 556, 278, 333, 556, 278, 833,
-    556, 500, 556, 556, 444, 389, 333, 556, 500, 722,
-    500, 500, 444, 394, 220, 394, 520, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    250, 333, 500, 500, 500, 500, 220, 500, 333, 747,
-    300, 500, 570, 333, 747, 333, 400, 549, 300, 300,
-    333, 576, 540, 250, 333, 300, 330, 500, 750, 750,
-    750, 500, 722, 722, 722, 722, 722, 722, 1000, 722,
-    667, 667, 667, 667, 389, 389, 389, 389, 722, 722,
-    778, 778, 778, 778, 778, 570, 778, 722, 722, 722,
-    722, 722, 611, 556, 500, 500, 500, 500, 500, 500,
-    722, 444, 444, 444, 444, 444, 278, 278, 278, 278,
-    500, 556, 500, 500, 500, 500, 500, 549, 500, 556,
-    556, 556, 556, 500, 556, 500
-  },
-  13, 3,
-},
-{
-  "TimesNewRoman-BoldItalic",	/* #42 */
-  16901, 1, 1, 3, 14,
-  913, 216, 662, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 250, 389, 555, 500, 500, 833, 778, 333,
-    333, 333, 500, 570, 250, 606, 250, 278, 500, 500,
-    500, 500, 500, 500, 500, 500, 500, 500, 333, 333,
-    570, 570, 570, 500, 832, 667, 667, 667, 722, 667,
-    667, 722, 778, 389, 500, 667, 611, 889, 722, 722,
-    611, 722, 667, 556, 611, 722, 667, 889, 667, 611,
-    611, 333, 278, 333, 570, 500, 333, 500, 500, 444,
-    500, 444, 333, 500, 556, 278, 278, 500, 278, 778,
-    556, 500, 500, 500, 389, 389, 278, 556, 444, 667,
-    500, 444, 389, 348, 220, 348, 570, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    250, 389, 500, 500, 500, 500, 220, 500, 333, 747,
-    266, 500, 606, 333, 747, 333, 400, 549, 300, 300,
-    333, 576, 500, 250, 333, 300, 300, 500, 750, 750,
-    750, 500, 667, 667, 667, 667, 667, 667, 944, 667,
-    667, 667, 667, 667, 389, 389, 389, 389, 722, 722,
-    722, 722, 722, 722, 722, 570, 722, 722, 722, 722,
-    722, 611, 611, 500, 500, 500, 500, 500, 500, 500,
-    722, 444, 444, 444, 444, 444, 278, 278, 278, 278,
-    500, 556, 500, 500, 500, 500, 500, 549, 500, 556,
-    556, 556, 556, 444, 500, 444
-  },
-      13, 4,
-},
-{
-  "Wingdings",			/* #43 */
-  31402, 1, 0, 0, 18540,	/* also called Tidbits */
-  895, 210, 723, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 1000, 1030, 1145, 1301, 1344, 894, 1217, 458, 
-    1084, 892, 1132, 1132, 1171, 1171, 1431, 1431, 1096, 1343, 
-    699, 699, 892, 554, 602, 1072, 948, 1078, 939, 891, 
-    892, 892, 891, 910, 910, 587, 793, 674, 674, 942, 
-    942, 549, 549, 892, 843, 843, 843, 1111, 660, 849, 
-    1089, 888, 880, 650, 813, 747, 747, 723, 693, 794, 
-    885, 892, 896, 891, 1156, 1054, 964, 1090, 941, 933, 
-    946, 1025, 929, 1096, 1065, 780, 1050, 1271, 747, 953, 
-    747, 891, 891, 891, 891, 458, 747, 986, 891, 578, 
-    1060, 1060, 891, 892, 892, 530, 530, 1000, 892, 892, 
-    892, 892, 892, 892, 892, 892, 892, 892, 892, 892, 
-    892, 892, 892, 892, 892, 892, 892, 892, 892, 892, 
-    1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 313, 458, 
-    313, 891, 891, 891, 891, 891, 953, 458, 891, 891, 
-    891, 891, 891, 891, 891, 891, 891, 891, 891, 891, 
-    891, 891, 891, 891, 891, 891, 891, 891, 891, 891, 
-    891, 891, 891, 891, 891, 891, 891, 891, 891, 1048, 
-    1048, 1048, 1048, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 
-    1000, 1000, 1000, 1253, 1253, 794, 794, 891, 891, 891, 
-    891, 891, 891, 979, 979, 891, 891, 776, 776, 776, 
-    776, 1067, 1067, 891, 891, 873, 873, 873, 873, 891, 
-    891, 811, 811, 1060, 811, 782, 782, 782, 782, 482, 
-    385, 635, 786, 892, 892, 1035,
-  },
-  14, 1,
-},
-{
-  "Symbol",			/* #44 */
-  16686, 1, 0, 0, 621,
-  945, 284, 685, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 250, 333, 713, 500, 549, 833, 778, 439, 
-    333, 333, 500, 549, 250, 549, 250, 278, 500, 500, 
-    500, 500, 500, 500, 500, 500, 500, 500, 278, 278,
-    549, 549, 549, 444, 549, 722, 667, 722, 612, 611, 
-    763, 603, 722, 333, 631, 722, 686, 889, 722, 722, 
-    768, 741, 556, 592, 611, 690, 439, 768, 645, 795,
-    611, 333, 863, 333, 658, 500, 500, 631, 549, 549, 
-    494, 439, 521, 411, 603, 329, 603, 549, 549, 576, 
-    521, 549, 549, 521, 549, 603, 439, 576, 713, 686,
-    493, 686, 494, 480, 603, 480, 549, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 620, 247, 549, 167, 713, 500, 753, 753, 753, 
-    753, 1042, 987, 603, 987, 603, 400, 549, 411, 549, 
-    549, 713, 494, 460, 549, 549, 549, 549, 1000, 603,
-    1000, 658, 823, 686, 795, 987, 768, 768, 823, 768,
-    768, 713, 713, 713, 713, 713, 713, 713, 768, 713, 
-    790, 790, 890, 823, 549, 250, 713, 603, 603, 1042,
-    987, 603, 987, 603, 494, 329, 790, 790, 786, 713, 
-    384, 384, 384, 384, 384, 384, 494, 494, 494, 603, 
-    762, 329, 274, 686, 384, 686, 384, 384, 384, 384,
-    494, 384, 494, 494, 494, 0
-  },
-      2, 0,
-},
-{
-  "Stick",			/* #45 */
-  48, 0, 0, 0, 277,
-  800, 200, 667, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750
-  }, 
-      15, 1,
-},
-{
-  "Stick-Bold",			/* #46 */
-  48, 0, 0, 3, 277,
-  800, 200, 667, 1.0,
-  {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-    750, 750, 750, 750, 750, 750
-  }, 
-      15, 3,
-},
-{
-  NULL,				/* DUMMY */
-  0, 0, 0, 0, 0,
-  0, 0, 0, 1.0,
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
-  0, 0, 0, 0, 0, 0},
-  0, 0,
-}
-};
-
-/* Known PCL typefaces.  Each typeface_info_struct contains the following
-   information:
-   
-   (1) number of valid fonts [should be >= 2, since every typeface
-       should include a symbol font (the zeroth font, the 1st listed)]
-   (2) a list of fonts (each number is an index into
-       the _pcl_font_info[] array above).
-
-   The number of valid fonts should be <= FONTS_PER_TYPEFACE; the
-   initializers are filled out with dummy fonts to get arrays of length
-   FONTS_PER_TYPEFACE. */
-
-const struct typeface_info_struct _pcl_typeface_info[] = 
-{
-  /* Univers, #0 */
-  { 5, { 44, 0, 1, 2, 3, 999, 999, 999, 999, 999 } },
-  /* Univers Condensed, #1 */
-  { 5, { 44, 4, 5, 6, 7, 999, 999, 999, 999, 999  } }, 
-  /* CG Times, #2 */
-  { 5, { 44, 8, 9, 10, 11, 999, 999, 999, 999, 999  } },
-  /* Albertus, #3 */
-  { 5, { 44, 12, 12, 13, 13, 999, 999, 999, 999, 999  } }, 
-  /* Antique Olive, #4 */
-  { 4, { 44, 14, 15, 16, 999, 999, 999, 999, 999, 999  } }, 
-  /* Arial, #5 */
-  { 5, { 44, 17, 18, 19, 20, 999, 999, 999, 999, 999  } },
-  /* Clarendon, #6 */
-  { 2, { 44, 21, 999, 999, 999, 999, 999, 999, 999, 999  } }, 
-  /* Coronet, #7 */
-  { 2, { 44, 22, 999, 999, 999, 999, 999, 999, 999, 999  } },
-  /* Courier, #8 */
-  { 5, { 44, 23, 24, 25, 26, 999, 999, 999, 999, 999 } },
-  /* Garamond, #9 */
-  { 5, { 44, 27, 28, 29, 30, 999, 999, 999, 999, 999 } },
-  /* Letter Gothic, #10 */
-  { 4, { 44, 31, 32, 33, 999, 999, 999, 999, 999, 999 } },
-  /* Marigold, #11 */
-  { 2, { 44, 34, 999, 999, 999, 999, 999, 999, 999, 999 } },
-  /* CG Omega, #12 */
-  { 5, { 44, 35, 36, 37, 38, 999, 999, 999, 999, 999 } },
-  /* Times New Roman, #13 */
-  { 5, { 44, 39, 40, 41, 42, 999, 999, 999, 999, 999 } },
-  /* Wingdings, #14 */
-  { 2, { 44, 43, 999, 999, 999, 999, 999, 999, 999, 999 } },
-  /* Stick, #15 */
-  { 5, { 44, 45, 45, 46, 46, 999, 999, 999, 999, 999 } },
+  { 2, { 18, 17, 999, 999, 999, 999, 999, 999, 999, 999 } },
+  /* Hershey Serif Symbol, typeface #6 */
+  { 5, { 18, 18, 19, 20, 21, 999, 999, 999, 999, 999 } },
+  /* Hershey Sans Symbol, typeface #7 */
+  { 3, { 22, 22, 23, 999, 999, 999, 999, 999, 999, 999 } },
 };

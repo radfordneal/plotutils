@@ -24,7 +24,7 @@ _x_fpoint (x, y)
   /* select pen color as foreground color in GC used for drawing */
   _plotter->set_pen_color();
 
-  if (_plotter->double_buffering)
+  if (_plotter->double_buffering != DBL_NONE)
 	XDrawPoint (_plotter->dpy, _plotter->drawable3, 
 		    _plotter->drawstate->gc_fg, 
 		    IROUND(XD(x,y)), IROUND(YD(x,y)));

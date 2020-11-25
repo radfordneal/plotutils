@@ -1,10 +1,158 @@
+Version 2.1.4 released, 7/98.  [Includes libplot 1.4, interface age=1.]
+
+libplot: HP-GL driver now supports 8 Stick fonts (device-resident
+	vector fonts) when producing HP-GL/2 output, and 18 Stick fonts
+	when producing output for an HP7550A plotter (HPGL_VERSION="1.5").
+	Not yet documented because kerning is being worked on, but
+	they show up when `--help-fonts' or `--list-fonts' is used.
+libplot: HP-GL driver, if HPGL_VERSION is "1.5", will no longer attempt
+	to use pen #0 as a white pen, when filling polygons that are
+	meant to be filled with white.
+graph, plot, tek2plot, plotfont: no more segmentation faults when using
+	the `--help-fonts' or `--list-fonts' options.
+
+Version 2.1.3 released, 7/98.  [Includes libplot 1.3, interface age=1.]
+
+plotfont: new `--numbering-font-name' option.
+libplot: color was not being updated (if necessary) before rendering labels 
+	in HP-GL[/2] output. Now fixed.
+libplot: default value for HPGL_PENS parameter/environment variable is now
+	"1=black:2=red:3=green:4=yellow:5=blue:6=magenta:7=cyan" when
+	HPGL_VERSION is "1.5", as well as when it is "2".
+tests: validation tests may now be run even if the build directory is
+	different from the source directory (thanks Thomas Walter).
+tests: bug in test for HP-GL/2 output fixed (thanks Thomas Walter).
+
+Version 2.1.2 released, 7/98.  [Includes libplot 1.2, interface age=1.]
+
+libplot: any polyline with "disconnected" line type is now drawn as a set
+	of filled circles, one centered on each defining point.  Circle
+	diameter is chosen to be the nominal line width.
+libplot: PS driver previously did not quite close large filled circles
+	and ellipses, leading to an `inverse pie-wedge' effect.  Now fixed.
+libplot: previously the HP-GL driver required that HPGL_VERSION be "1" 
+	to produce paths, arcs, etc. that would be positioned correctly on
+	generic HP-GL (as opposed to HP-GL/2) devices.  No longer
+	absolutely necessary: HP-GL/2 line graphics produced by the driver
+	should be positioned correctly even when erroneously sent to an
+	HP-GL device.
+libplot: HP-GL driver now visibly displays zero-length line segments,
+	if cap mode is `round' or `projecting'.
+libplot: dot/dash spacing in the "dotted", "dotdashed", "shortdashed" and
+	"longdashed" line types, as produced by the PS, Fig, HP-GL/2, and
+	X11 drivers, now scales with line width.  This affects the lines
+	produced by the `-m' option to `graph', when used with `-W'.
+spline, double: now permit comment lines in ascii input files, like `graph'.
+double: default is now to print all fields, i.e., `-f' option is not
+	needed in order for the program to function.  Instructions on using
+	`double' added to double.c, but not yet to texinfo documentation.
+libplot: when producing HP-GL/2 output, can now use 8 builtin HP-GL/2
+	vector typefaces (Arc as well as Stick; usual 4 variants for each).
+libplot and utilities based on it: installation-time option
+	"--enable-lj-fonts" allows use of PCL fonts when using `-T X' or
+	`-T ps' options.  For this to be meaningful, installer must obtain
+	the 45 PCL (i.e. LaserJet) fonts from Hewlett-Packard and install
+	them.  They are available for free via the net (see instructions in
+	./INSTALL.fonts).
+libplot: small errors in positioning text strings, when producing PS
+	output, now fixed.  The bug only appeared when rendering
+	non-Courier text strings with nonzero angle of inclination.
+libplot: X Windows names of several of the 35 supported PS fonts to agree
+	with current conventions.  (Old names continue to work.)
+	"avantgarde-medium-r-normal" is now "itc avant garde
+	gothic-book-r-normal", "zapfchancery-medium-i-normal" is now 
+	"itc zapf chancery-medium-i-normal", etc.
+libplot: In HP-GL/2 driver code, fixed slight errors in positioning text
+	strings, when rendered in the PCL and Stick fonts.  Errors were due
+	to an unusual HP-GL/2 `leftward shift' label positioning convention
+	dating back to pen plotter days.
+texinfo documentation: Fixed incorrect statement that for `plot' and
+	`tek2plot', the relative order of filenames and command-line
+	options matters.
+graph,plot,tek2plot,plotfont: --rotate option dropped, and ROTATE
+	environment variable renamed to HPGL_ROTATE.  `Rotation' only
+	occurs if `-T hpgl' is specified, and HP-GL[/2] output is produced.
+	So by our coding standards, it doesn't deserve a command-line option.
+libplot: ROTATE Plotter parameter, which affected only HPGL Plotters,
+	renamed to HPGL_ROTATE.  (It doesn't provide a pure rotation; in
+	HP-GL, `rotation' includes a coordinate shift as well.)
+plotfont: new utility, displays either half of any recognized font.  Which
+	fonts are recognized depends on the output device (set with -T
+	option).  `plotfont -T X' will also display any X font specified by
+	[truncated] XLFD name, e.g. "utopia-medium-r-normal".  By doing
+	e.g. `--bitmap-size 300x450' you can scale fonts anisotropically.
+libplot: HP-GL driver had two characters out of place in the upper half of
+	the Stick font.  Fixed.
+libplot: all substitutions of fonts (due to lack of availability) and
+	colors (due to color names not being recognized) now yield a
+	warning message.  However, only the first font warning message
+	and the first color warning message of each sort (pen color,
+	fill color, background color) is actually emitted.
+graph,plot,tek2plot: new --list-fonts option.	
+libplot: On X11R6 displays, X driver now rasterizes and retrieves only the
+	characters in any scalable font that will actually be used in
+	drawing a text string.  This _enormously_ speeds up the drawing of
+	text strings and the animation of text.
+libplot: default value of Plotter parameter HPGL_OPAQUE_MODE is now "yes"
+	rather than "no", for consistency with libplot's imaging model.
+	Some rather old HP-GL/2 devices (large pen plotters?) are reported to
+	malfunction if asked to switch from transparent mode to opaque mode.
+	Set the parameter to "no" for such devices.
+configuration: now checks for -lXp if --with-motif is used (for Motif 2.x).
+libplot: X driver now treats absurdly small numbers passed back from some
+	X11R6 servers when requesting fonts rotated by 0 or 90 degrees
+	(e.g., 4e-311) as zero.  Such numbers are too small to be
+	manipulated arithmetically on DEC Alphas, and caused floating point
+	exceptions in `graph -T X' when the `-Y' option was used.
+all utilities: output of --help option now includes an email address
+	for reporting bugs.
+package: several small changes made to ensure it will compile under DOS
+	with DJGPP (thanks Michel de Ruiter).
+libplot: X Plotters now support hardware (i.e. server-supported) double
+	buffering, if available.  Set USE_DOUBLE_BUFFERING to "fast" to
+	obtain it.  Both DBE and MBX, of the standard X11 double buffering 
+	extensions, are tried.
+libplot: output of PS driver now fully conforms to the PS DSC (Document
+	Structuring Conventions).  If output is only a single page of
+	graphics, it is in EPS format.
+libplot: Plotters that do not do output in real time (i.e. Fig, HP-GL, and
+	PS Plotters) must now, in general, be deleted in order for an
+	output file to be written.  That is, _in general_ each page is not
+	emitted when closepl() is called.  In practice, pages are still
+	emitted when closepl() is seen, for Fig and HP-GL Plotters.  But PS
+	Plotters now do not emit anything until deletepl() is called.
+libplot: fixed bugs dealing with Greek and mathematical symbol escapes in
+	text strings, when the current font is a user-specified X Windows
+	font (e.g. "utopia-medium-r-normal" or "vtsingle").  When the
+	user-specified font is an ISO-Latin-1 font, the usual ISO-Latin-1
+	escape sequences (e.g. "\sc" for the section symbol) now work also.
+	This fixed problems with `graph' labels.
+libplot: Fig Plotters now produce only a single page of output,
+	irrespective of how many times openpl..closepl are invoked.  Only
+	the first page of graphics is written to the file, since Fig format
+	currently supports only a single page of graphics.
+libplot: Tektronix driver now visibly displays zero-length line segments,
+	if cap mode is `round' or `projecting'.
+libplot: HersheyGothic-German font renamed HersheyGothicGerman, etc.
+	(Former font names continue to work.)  Similarly,
+	HersheySerif-Symbol and HersheySans-Symbol fonts renamed
+	HersheySerifSymbol and HersheySansSymbol.  Oblique, Bold,
+	BoldOblique variants added to former; Oblique variant added to
+	latter.  Similarly, HersheyCyrillic-Oblique added.
+	HersheySerifSymbol-Bold is based on Allen Hershey's Triplex Greek
+	alphabet.  There are now 22 Hershey fonts in all.
+libplot: Hershey glyph database updated.  Now incorporates Allen Hershey's
+	final revisions, and his Triplex Greek alphabet.  That alphabet
+	does not appear in most releases of the Hershey glyphs, since it
+	was developed c. 1990.  See ./doc/h-fonts.doc, ./doc/h-glyphs.doc.
+
 Version 2.1.1 released, 5/98.  [Includes libplot 1.1, interface age=1.]
 
-libplot: to permit smooth animations, double buffering is now implemented 
-	for X and X Drawable Plotters.  Double buffering is turned on
-	if a new device parameter, USE_DOUBLE_BUFFERING, is set to "yes"
-	at Plotter creation time.  Successive frames of graphics are 
-	separated by invocations of erase().
+libplot: to permit smooth animations, double buffering is now implemented
+	for X and X Drawable Plotters.  Double buffering is turned on if a
+	new device parameter, USE_DOUBLE_BUFFERING, is set to "yes" at
+	Plotter creation time.  Successive frames of graphics are separated
+	by invocations of erase().
 libplot: X and X Drawable Plotters now maintain a local cache of X color
 	cells, and no longer automatically allocate new one(s) for each
 	plotted object.  This speeds up rendering, and avoids a memory leak
@@ -15,6 +163,8 @@ libplot: new device driver parameters, BG_COLOR and XDRAWABLE_COLORMAP.
 	Former allows background color of an X or X Drawable Plotter to
 	be specified at creation time; latter adds support for
 	non-default colormaps.
+libplot: setting unrecognized parameters with parampl()	no longer yields
+	a warning message.
 libplot: bug in point() that affected X Drawable Plotters now fixed.
 libplot: erase() now acts correctly on X and X Drawable Plotters: any
 	path under construction is flushed out before erasure.
@@ -362,4 +512,4 @@ Many miscellaneous cleanups to Hershey fonts
 	for example; `asteriskmath' vertical height fixed, etc.).
 plot.h now works with C++ as well as C
 
-Version 1.1 released, 7/97.
+Version 1.1 released, 7/97.  See ONEWS for earlier changes.

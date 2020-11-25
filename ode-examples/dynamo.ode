@@ -6,11 +6,11 @@
 
 # You may run this example by doing:
 #
-#    <dynamo.ode ode | graph -TX -C
+#    ode < dynamo.ode | graph -T X -C
 #
 # or alternatively, to get a real-time plot,
 #
-#    <dynamo.ode ode | graph -TX -C -x 0 10 -y -10 10
+#    ode < dynamo.ode | graph -T X -C -x 0 10 -y -10 10
 #
 
 # The equations are: 

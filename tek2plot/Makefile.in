@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -94,6 +95,7 @@ OBSOLETEBINS = tek2tek tek2hpgl tek2fig tek2ps tek2X
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  tek2plot$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -196,8 +198,8 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-tek2plot: $(tek2plot_OBJECTS) $(tek2plot_DEPENDENCIES)
-	@rm -f tek2plot
+tek2plot$(EXEEXT): $(tek2plot_OBJECTS) $(tek2plot_DEPENDENCIES)
+	@rm -f tek2plot$(EXEEXT)
 	$(LINK) $(tek2plot_LDFLAGS) $(tek2plot_OBJECTS) $(tek2plot_LDADD) $(LIBS)
 
 # This directory's subdirectories are mostly independent; you can cd

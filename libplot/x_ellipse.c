@@ -29,6 +29,13 @@ _x_fellipse (xc, yc, rx, ry, angle)
       return -1;
     }
 
+  if (!_plotter->drawstate->points_are_connected)
+    /* line type is `disconnected', so do nothing */
+    {
+      _plotter->endpath ();
+      return 0;
+    }
+  
  /* if angle is multiple of 90 degrees, modify to permit use of native X
     arc rendering */
   if (angle == (double) (90 * ninetymult))
@@ -93,7 +100,7 @@ _x_fellipse (xc, yc, rx, ry, angle)
 	/* select fill color as foreground color in GC used for filling */
 	_plotter->set_fill_color();
 
-	if (_plotter->double_buffering)
+	if (_plotter->double_buffering != DBL_NONE)
 	  XFillArc(_plotter->dpy, _plotter->drawable3,
 		   _plotter->drawstate->gc_fill, 
 		   xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
@@ -113,7 +120,7 @@ _x_fellipse (xc, yc, rx, ry, angle)
     /* select pen color as foreground color in GC used for drawing */
     _plotter->set_pen_color();
 
-    if (_plotter->double_buffering)
+    if (_plotter->double_buffering != DBL_NONE)
       XDrawArc(_plotter->dpy, _plotter->drawable3, 
 	       _plotter->drawstate->gc_fg,
 	       xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);

@@ -81,7 +81,7 @@ _controlify (src)
   /* Determine initial number of font, as index into low-level table in
      g_fontdb.c, and the initial value for the shifted `font word' which
      we'll OR with each character; also same, for associated symbol font.
-     Can be updated by \f0, \f1, etc. */
+     May be updated by \f0, \f1, etc. */
   switch (_plotter->drawstate->font_type)
     {
     case F_POSTSCRIPT:
@@ -92,6 +92,10 @@ _controlify (src)
     case F_PCL:
       raw_fontnum = _pcl_typeface_info[_plotter->drawstate->typeface_index].fonts[_plotter->drawstate->font_index];
       raw_symbol_fontnum = _pcl_typeface_info[_plotter->drawstate->typeface_index].fonts[0];
+      break;
+    case F_STICK:
+      raw_fontnum = _stick_typeface_info[_plotter->drawstate->typeface_index].fonts[_plotter->drawstate->font_index];
+      raw_symbol_fontnum = _stick_typeface_info[_plotter->drawstate->typeface_index].fonts[0];
       break;
     case F_HERSHEY:
       raw_fontnum = _vector_typeface_info[_plotter->drawstate->typeface_index].fonts[_plotter->drawstate->font_index];
@@ -105,6 +109,9 @@ _controlify (src)
       raw_symbol_fontnum = 0;
       break;
     }
+  /* Of the following two words, `fontword' is updated whenever an escape
+     sequence like \f0, \f1, \f2 etc. is seen, since raw_fontnum is itself
+     updated.  But `symbol_fontword' is fixed */
   fontword = ((unsigned short)raw_fontnum) << FONT_SHIFT;
   symbol_fontword = ((unsigned short)raw_symbol_fontnum) << FONT_SHIFT;
 
@@ -114,7 +121,7 @@ _controlify (src)
 	 separately.  This approach is awkward (we duplicate a lot of code
 	 here, which appears elsewhere below). */
 
-      if ((raw_fontnum == HERSHEY_EUC_FONT) 
+      if ((raw_fontnum == HERSHEY_EUC) 
 	  && (*src & 0x80) && (*(src + 1) & 0x80))
 	{
 	  unsigned char jis_row = *src & ~(0x80);
@@ -232,8 +239,8 @@ _controlify (src)
       if (c != (unsigned char)'\\') /* ordinary char, may pass through */
 	{
 	  /* if current font is an ISO-Latin-1 Hershey font ... */
-	  if ((_plotter->drawstate->font_type == F_HERSHEY)
-	      && _plotter->drawstate->font_is_iso8859)
+	  if (_plotter->drawstate->font_type == F_HERSHEY
+	      && _vector_font_info[raw_fontnum].iso8859_1)
 	    {
 	      int i;
 	      bool matched = false;
@@ -275,7 +282,8 @@ _controlify (src)
 		  continue; /* back to top of while loop */
 		}
 
-	      /* also check if this char should be deligatured */
+	      /* since current font is an ISO-Latin-1 Hershey font, also
+                 check if this char should be deligatured */
 	      for (i = 0; i < NUM_DELIGATURED_CHARS; i++) 
 		if (c == _deligature_char_tbl[i].from)
 		  {
@@ -499,11 +507,11 @@ _controlify (src)
 	      }
 	  }
 
-	  /* if an ISO-Latin-1 Hershey font, is this an escape sequence for
-	     an `8-bit' (non-ASCII) char, which due to nonexistence should
-	     be deligatured? */
-	  if ((_plotter->drawstate->font_type == F_HERSHEY)
-	      && _plotter->drawstate->font_is_iso8859)
+	  /* if current font is an ISO-Latin-1 Hershey font, is this an
+	     escape sequence for an 8-bit (non-ASCII) char, which due to
+	     nonexistence should be deligatured? */
+	  if (_plotter->drawstate->font_type == F_HERSHEY
+	      && _vector_font_info[raw_fontnum].iso8859_1)
 	    {
 	      int i;
 	      bool matched = false;
@@ -527,9 +535,21 @@ _controlify (src)
 		}
 	    }
 
-	  /* no matter whether font is a PS font or a Hershey font, is this
-             an escape seq. for an `8-bit' (non-ASCII) ISO8859-1 char? */
-	  if (_plotter->drawstate->font_is_iso8859)
+	  /* if the current font is an ISO-Latin-1 font (no matter whether
+             font is a a Hershey font, a PS or PCL/Stick font, or a
+             device-specific font for which we have no table entry), is
+             this an escape seq. for an 8-bit (non-ASCII) ISO8859-1 char?  */
+	  if ((_plotter->drawstate->font_type == F_POSTSCRIPT
+	       && _ps_font_info[raw_fontnum].iso8859_1)
+	      || (_plotter->drawstate->font_type == F_HERSHEY
+		  && _vector_font_info[raw_fontnum].iso8859_1)
+	      || (_plotter->drawstate->font_type == F_PCL
+		  && _pcl_font_info[raw_fontnum].iso8859_1)
+	      || (_plotter->drawstate->font_type == F_STICK
+		  && _stick_font_info[raw_fontnum].iso8859_1)
+	      || (_plotter->drawstate->font_type == F_OTHER
+		  && _plotter->drawstate->font_is_iso8859_1
+		  && raw_fontnum == 1))
 	    {
 	      bool matched = false;
 
@@ -539,7 +559,7 @@ _controlify (src)
 		    matched = true;
 		    break;
 		  }
-	      if (matched)	/* it's an `8-bit' ISO8859-1 character */
+	      if (matched)	/* it's an 8-bit ISO8859-1 character */
 		{
 		  /* certain such characters are drawn in the Hershey fonts
                      as superscripts */
@@ -576,8 +596,10 @@ _controlify (src)
 				symbol_fontword | (unsigned short)VECTOR_SYMBOL_FONT_UNDERSCORE;
 			    }
 			  else	/* just print raised char, no underline */
-			    dest[j++] = 
-			      fontword | (unsigned short)_raised_char_tbl[k].to;
+			    {
+			      dest[j++] = 
+				fontword | (unsigned short)_raised_char_tbl[k].to;
+			    }
 
 			  dest[j++] = 
 			    (unsigned short) (CONTROL_CODE | C_END_SUPERSCRIPT);
@@ -593,7 +615,8 @@ _controlify (src)
 	    }
 
 	  /* is this an escape seq. for a `special' (non-ISO, non-Symbol)
-	     Hershey character? */
+	     Hershey glyph?  Such glyphs include astronomical signs, and
+	     `final s'. */
 	  if (_plotter->drawstate->font_type == F_HERSHEY)
 	    {
 	      bool matched = false;
@@ -621,7 +644,8 @@ _controlify (src)
 	  {
 	    bool matched = false;
 	    
-	    /* is this an escape seq. for a char in the symbol font? */
+	    /* Irrespective of font type, is this an escape seq. for a char
+	       in the font's corresponding symbol font? */
 	    for (i = 0; i < NUM_SYMBOL_ESCAPES; i++) 
 	      if (strcmp (_symbol_escape_tbl[i].string, "NO_ABBREV") != 0
 		  && strcmp ((char *)esc, _symbol_escape_tbl[i].string) == 0)
@@ -637,33 +661,51 @@ _controlify (src)
 	      }
 	  }
 
-	  /* Gross kludge.  In the PS and PCL fonts we handle "\rn" by
-	     mapping it into (1) a left shift, (2) the `radicalex'
-	     character in the Symbol font, and (3) a right shift.  Shift
-	     distances are taken from the bbox of the radicalex char, and
-	     are slightly larger than 0.5 em. */
-	  if ((_plotter->drawstate->font_type == F_POSTSCRIPT 
-	       || _plotter->drawstate->font_type == F_PCL)
-	      && (strcmp ((char *)esc, "rn") == 0))
+	  /* Gross kludge.  In the non-Hershey fonts we handle the "\rn"
+	     control sequence in a painful way.  For a PS font we map it
+	     into (1) a left shift, (2) the `radicalex' character in the PS
+	     Symbol font, and (3) a right shift.  Shift distances are taken
+	     from the bbox of the radicalex char, and are slightly larger
+	     than 0.5 em.  For a PCL font it's similar, but the shifts are
+	     much smaller.  The reason it's different for PCL is that the
+	     PCL radicalex character is different from the PS radicalex
+	     character: the overbar is not displaced.  Possibly someone at
+	     HP made a mistake while reimplementing the Adobe Symbol font
+	     for PCL 5?
+
+	     We don't implement \rn for Stick fonts, because they have
+	     no associated symbol font. */
+	  if (strcmp ((char *)esc, "rn") == 0)
 	    {
-	      dest[j++] 
-		= (unsigned short)(CONTROL_CODE | C_LEFT_RADICAL_SHIFT);
-	      dest[j++] 
-		= symbol_fontword | (unsigned short)RADICALEX; /* symbol font */
-	      dest[j++] 
-		= (unsigned short)(CONTROL_CODE | C_RIGHT_RADICAL_SHIFT);
-	      continue;
+	      if (_plotter->drawstate->font_type == F_POSTSCRIPT
+		  || _plotter->drawstate->font_type == F_PCL)
+		{
+		  dest[j++] 
+		    = (unsigned short)(CONTROL_CODE | C_LEFT_RADICAL_SHIFT);
+		  /* take `radicalex' glyph from PS symbol font */
+		  dest[j++] 
+		    = symbol_fontword | (unsigned short)RADICALEX; 
+		  dest[j++] 
+		    = (unsigned short)(CONTROL_CODE | C_RIGHT_RADICAL_SHIFT);
+		  continue;
+		}
 	    }
 
-	  /* attempt to parse as a font-change command, i.e. as one of the
-	     macros \f0, \f1, \f2, etc., unless a device-specific font is
-	     being used (we have no table of such, so we don't allow
-	     user-specified shifting among them). */
-	  if (_plotter->drawstate->font_type != F_OTHER)
-	    if (esc[0] == 'f' && esc[1] >= '0' && esc[1] <= '9')
+	  /* Attempt to parse as a font-change command, i.e. as one of the
+	     macros \f0, \f1, \f2, etc.  If a user-specified,
+	     device-specific font is being used (we have no table of such),
+	     we don't allow user-specified shifting among them, except via
+	     \f0 and \f1.  These switch to the symbol font and the
+	     user-specified font, respectively. */
+	  if ((_plotter->drawstate->font_type != F_OTHER
+	       && (esc[0] == 'f' && esc[1] >= '0' && esc[1] <= '9'))
+	      || (_plotter->drawstate->font_type == F_OTHER
+	       && (esc[0] == 'f' && (esc[1] == '0' || esc[1] == '1'))))
 	      {
 		int new_font_index = esc[1] - '0';
 
+		/* switch to appropriate font (the tests for OOB are 
+		   now obsolete) */
 		switch (_plotter->drawstate->font_type)
 		  {
 		  case F_HERSHEY:
@@ -678,12 +720,23 @@ _controlify (src)
 		      new_font_index = 1; /* OOB -> use default font */
 		    raw_fontnum = _pcl_typeface_info[_plotter->drawstate->typeface_index].fonts[new_font_index];
 		    break;
+		  case F_STICK:
+		    if ((new_font_index >= _stick_typeface_info[_plotter->drawstate->typeface_index].numfonts)
+			|| new_font_index < 0)
+		      new_font_index = 1; /* OOB -> use default font */
+		    raw_fontnum = _stick_typeface_info[_plotter->drawstate->typeface_index].fonts[new_font_index];
+		    break;
 		  case F_POSTSCRIPT:
 		  default:
 		    if ((new_font_index >= _ps_typeface_info[_plotter->drawstate->typeface_index].numfonts)
 			|| new_font_index < 0)
 		      new_font_index = 1; /* OOB -> use default font */
 		    raw_fontnum = _ps_typeface_info[_plotter->drawstate->typeface_index].fonts[new_font_index];
+		    break;
+		  case F_OTHER:
+		    if (new_font_index != 0 && new_font_index != 1)
+		      new_font_index = 1; /* OOB -> use default font */
+		    raw_fontnum = new_font_index;
 		    break;
 		  }
 

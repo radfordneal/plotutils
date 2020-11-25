@@ -54,7 +54,7 @@ _x_savestate()
 	/* there was a previous drawing state, can copy contents of old GC's */
 	{
 	  gcmask = GCForeground | GCBackground 
-	    | GCPlaneMask | GCFunction | GCArcMode
+	    | GCPlaneMask | GCFunction | GCArcMode | GCFillRule
 	      |  GCLineStyle | GCLineWidth | GCJoinStyle | GCCapStyle | GCFont;
 	  /* copy GC used for drawing */
 	  XGetGCValues (_plotter->dpy, _plotter->drawstate->previous->gc_fg, 
@@ -75,10 +75,11 @@ _x_savestate()
       else
 	/* stack must have been empty, must build new GC's from scratch */
 	{
-	  gcmask = GCPlaneMask | GCFunction | GCArcMode;
+	  gcmask = GCPlaneMask | GCFunction | GCArcMode | GCFillRule;
 	  gcv.plane_mask = AllPlanes;
 	  gcv.function = GXcopy;
 	  gcv.arc_mode = ArcChord; /* libplot convention */
+	  gcv.fill_rule = EvenOddRule; /* libplot convention */
 
 	  _plotter->drawstate->gc_fg = 
 	    XCreateGC (_plotter->dpy, drawable, gcmask, &gcv);
@@ -92,10 +93,9 @@ _x_savestate()
 	  _plotter->set_fill_color ();
 	  _plotter->set_bg_color ();	  
 
-	  /* We no longer retrieve a default font from the X server here. */
-	  /* space(), when invoked (which we require after invoking
-             openpl()), will do this. */
-	  /* _plotter->retrieve_font(); */
+	  /* We do not retrieve a font from the X server here; not even a
+	     default font.  space(), when invoked (which we require after
+	     each invocation of openpl()), will do this. */
 	}
     }
   

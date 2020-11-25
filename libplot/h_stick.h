@@ -3,8 +3,6 @@
    mapping from the upper half of the ISO-Latin-1 character set to
    Roman-8. */
 
-#define HPGL2_STICK 48		/* HP-GL/2 typeface #48 is Stick */
-
 /* ISO-Latin-1 characters not included in Roman-8; we map each of them to
    040, i.e., to the space character. */
 #define COPYRIGHT 040
@@ -25,9 +23,9 @@ static const unsigned char _iso_to_roman8 [128] =
     0, 0, 0, 0, 0, 0, 0, 0,
     /* printable iso-latin-1 characters */
     040, 0270, 0277, 0257, 0272, 0274, (unsigned char)'|', 0275,
-    0253, COPYRIGHT, 0371, 0373, NEGATION, 0366, REGISTERED, 0260,
+    0253, COPYRIGHT, 0371, 0373, NEGATION, (unsigned char)'-', REGISTERED, 0260,
     0263, 0376, RAISEDTWO, RAISEDTHREE, 0250, 0363, 0364, 0362, 
-    CEDILLA, RAISEDONE, 0263, 0375, 0367, 0370, 0365, 0271,
+    CEDILLA, RAISEDONE, 0372, 0375, 0367, 0370, 0365, 0271,
     0241, 0340, 0242, 0341, 0330, 0320, 0323, 0264,
     0243, 0334, 0244, 0245, 0346, 0345, 0246, 0247,
     0343, 0266, 0350, 0347, 0337, 0351, 0332, MULTIPLY,

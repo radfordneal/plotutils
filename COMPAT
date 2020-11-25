@@ -1,8 +1,33 @@
 These are some notes on backward compatibility of the plotutils package, on
 both the user and programmer levels.
 
+Release 2.1.2, 2.1.3, 2.1.4
+---------------------------
+
+No additions to libplot API, but the semantics of closepl() vs. deletepl()
+have finally changed (programmers were warned about this in the texinfo
+documentation).  The libplot version number is now 1.2 (upped to 1.3 for
+release 2.1.3).
+
+Plotter output, for non-realtime plotting, is now guaranteed to be emitted
+only when deletepl() is called.  I.e., graphic output is not necessarily
+written to the output stream after each page is closed.  In practice, this
+affects only Postscript output.  Emitting PS only after the final page of a
+multi-page graphics file is closed enables the PS to conform to the DSC
+(Postscript Document Structuring Conventions).  
+
+Support for many new stick fonts added (mostly available only if using 
+`-T hpgl', with HPGL_VERSION=1.5.  `Stick fonts' are device-resident 
+vector fonts.
+
+If using `-T hpgl' with HPGL_VERSION=1, circles and rectangles aligned 
+with the coordinate axes can now be filled.
+
+Names of many Hershey fonts changed, but old names continue to work.
+
+
 Release 2.1.1
------------
+-------------
 
 No additions to libplot API, though libplot was improved in various ways.
 The libplot version number is now 1.1.

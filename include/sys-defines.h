@@ -39,9 +39,26 @@ typedef char *Voidptr;
 
 #include <stdio.h>
 #include <ctype.h>
+
+#include <errno.h>
+#ifndef HAVE_STRERROR
+extern char * strerror __P((int errnum));
+#endif
+
+#ifdef __DJGPP__
+/* must specify -lm will be used, according to mdruiter@cs.vu.nl */
+#define _USE_LIBM_MATH_H
+#endif
 #include <math.h>
+
+#ifdef HAVE_FLOAT_H
+#include <float.h>		/* for DBL_MAX, FLT_MAX */
+#endif
+#ifdef HAVE_LIMITS_H
+#include <limits.h>		/* for INT_MAX */
+#endif
 #ifdef HAVE_VALUES_H
-#include <values.h>		/* for MAXDOUBLE, MAXINT */
+#include <values.h>		/* for MAXDOUBLE, MAXFLOAT, MAXINT (backups) */
 #endif
 
 #ifdef STDC_HEADERS
@@ -80,7 +97,7 @@ extern double atof __P((const char *nptr));
 #endif
 
 #ifndef HAVE_STRCASECMP		/* will use local version */
-extern int strcasecmp _P((const char *s1, const char *s2));
+extern int strcasecmp __P((const char *s1, const char *s2));
 #endif
 
 #ifdef HAVE_MALLOC_H
@@ -116,18 +133,32 @@ typedef int bool;
 #endif
 #endif
   
-#ifndef MAXINT
-#define MAXINT ((int)(~(1U << (8 * (int)sizeof(int) - 1))))
+#ifndef INT_MAX
+#ifdef MAXINT
+#define INT_MAX MAXINT
+#else
+#define INT_MAX ((int)(~(1U << (8 * (int)sizeof(int) - 1))))
 #endif
-#ifndef MAXLONG
-#define MAXLONG ((long int)(~(1U << (8 * (long int)sizeof(long int) - 1))))
+#endif /* not INT_MAX */
+
+#ifndef DBL_MAX
+#ifdef MAXDOUBLE
+#define DBL_MAX MAXDOUBLE
+#else
+/* make a very conservative (Vax-like) assumption */
+#define DBL_MAX (1.701411834604692293e+38) 
 #endif
-#ifndef MAXDOUBLE   /* make a very conservative (Vax-like) assumption */
-#define MAXDOUBLE   (1.701411834604692293e+38) 
+#endif /* not DBL_MAX */
+
+#ifndef FLT_MAX
+#ifdef MAXFLOAT
+#define FLT_MAX MAXFLOAT
+#else
+/* make a very conservative (Vax-like) assumption */
+#define FLT_MAX (1.7014117331926443e+38)
 #endif
-#ifndef MAXFLOAT    /* make a very conservative (Vax-like) assumption */
-#define MAXFLOAT    (1.7014117331926443e+38)
-#endif
+#endif /* not FLT_MAX */
+
 #ifndef M_PI
 #define M_PI        3.14159265358979323846264
 #endif
@@ -165,12 +196,12 @@ typedef int bool;
 #endif
 #endif /* NO_SYSTEM_GAMMA */
 
-/* IBM's definition of MAXINT is bizarre, in AIX 4.1 at least, and using
+/* IBM's definition of INT_MAX is bizarre, in AIX 4.1 at least, and using
    IROUND() below will yield a warning message unless we repair it */
 #ifdef _AIX
 #ifdef __GNUC__
-#undef MAXINT
-#define MAXINT ((int)(~(1U << (8 * (int)sizeof(int) - 1))))
+#undef INT_MAX
+#define INT_MAX ((int)(~(1U << (8 * (int)sizeof(int) - 1))))
 #endif
 #endif
 
@@ -180,13 +211,13 @@ typedef int bool;
 #define DMAX(a,b) ({double _a = (a), _b = (b); _a > _b ? _a : _b; })
 #define DMIN(a,b) ({double _a = (a), _b = (b); _a < _b ? _a : _b; })
 #define IROUND(x) ({double _x = (x); int _i; \
-                    if (_x >= MAXINT) _i = MAXINT; \
-                    else if (_x <= -(MAXINT)) _i = -(MAXINT); \
+                    if (_x >= INT_MAX) _i = INT_MAX; \
+                    else if (_x <= -(INT_MAX)) _i = -(INT_MAX); \
                     else _i = (_x > 0.0 ? (int)(_x + 0.5) : (int)(_x - 0.5)); \
                     _i;})
 #define FROUND(x) ({double _x = (x); float _f; \
-                    if (_x >= MAXFLOAT) _f = MAXFLOAT; \
-                    else if (_x <= -(MAXFLOAT)) _f = -(MAXFLOAT); \
+                    if (_x >= FLT_MAX) _f = FLT_MAX; \
+                    else if (_x <= -(FLT_MAX)) _f = -(FLT_MAX); \
                     else _f = _x; \
                     _f;})
 #else

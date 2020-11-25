@@ -33,11 +33,16 @@
 
 const char *progname = "tek2plot"; /* name of this program */
 
-/* Default font, assumed to be monospaced.  Each character should have a
-   width equal to CHAR_WIDTH em, i.e. a width equal to CHAR_WIDTH times the
-   font size. */
-#define DEFAULT_FONT_NAME "courier"
-#define CHAR_WIDTH 0.6		/* for all four members of Courier family */
+const char *usage_appendage = " [FILE]...\n\
+With no FILE, or when FILE is -, read standard input.\n";
+
+/* Default font, ideally monospaced.  Each character in the font should
+   ideally have a width equal to CHAR_WIDTH em, i.e. a width equal to
+   CHAR_WIDTH times the font size. */
+#define CHAR_WIDTH 0.6		/* valid for Courier family, at least */
+#define DEFAULT_PS_FONT_NAME "Courier"
+#define DEFAULT_PCL_FONT_NAME "Courier"
+#define DEFAULT_HERSHEY_FONT_NAME "HersheySerif" /* not monospaced */
 
 /* Coordinates in Tek file should be in range [0..4095]x[0..3119].  So to
    center points within a virtual graphics display of size
@@ -122,12 +127,12 @@ struct option long_options[] =
   { "page-number",	ARG_REQUIRED,	NULL, 'p' },
   { "page-size",	ARG_REQUIRED,	NULL, 'P' << 8 },
   { "position-chars",	ARG_NONE,	NULL, 'S' << 8 },
-  { "rotate",		ARG_REQUIRED,	NULL, 'Q' << 8 },
   { "use-tek-fonts",	ARG_NONE,	NULL, 't' << 8 },
   /* Options relevant only to raw tek2plot (refers to metafile output) */
   { "portable-output",	ARG_NONE,	NULL, 'O' },
   /* Documentation options */
   { "help-fonts",	ARG_NONE,	NULL, 'f' << 8 },
+  { "list-fonts",	ARG_NONE,	NULL, 'l' << 8 },
   { "version",		ARG_NONE,	NULL, 'V' << 8 },
   { "help",		ARG_NONE,	NULL, 'h' << 8 },
   { NULL,		0,		NULL, 0}
@@ -195,8 +200,9 @@ void end_page __P((void));
 void set_font_size __P ((int new_fontsize));
 void unread_byte __P((int byte, FILE *in_stream, int *badstatus));
 /* from libcommon */
-extern void display_fonts __P((const char *display_type, const char *progname));
-extern void display_usage __P((const char *progname, const int *omit_vals, bool files, bool fonts));
+extern bool display_fonts __P((const char *display_type, const char *progname));
+extern bool list_fonts __P((const char *display_type, const char *progname));
+extern void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 extern void display_version __P((const char *progname)); 
 extern Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
 extern Voidptr xmalloc __P ((unsigned int size));
@@ -211,7 +217,8 @@ main (argc, argv)
      char *argv[];
 #endif
 {
-  bool show_fonts = false;	/* show a list of fonts? */
+  bool do_list_fonts = false;	/* show a list of fonts? */
+  bool show_fonts = false;	/* supply help on fonts? */
   bool show_usage = false;	/* show usage message? */
   bool show_version = false;	/* show version message? */
   char *display_type = "meta";	/* default libplot output format */
@@ -223,7 +230,7 @@ main (argc, argv)
   int option;			/* option character */
   int retval;			/* return value */
 
-  while ((option = getopt_long(argc, argv, "Op:F:W:T:", long_options, &opt_index)) != EOF) 
+  while ((option = getopt_long (argc, argv, "Op:F:W:T:", long_options, &opt_index)) != EOF) 
     {
       if (option == 0)
 	option = long_options[opt_index].val;
@@ -304,6 +311,9 @@ main (argc, argv)
 	case 'f' << 8:		/* Fonts */
 	  show_fonts = true;
 	  break;
+	case 'l' << 8:		/* Fonts */
+	  do_list_fonts = true;
+	  break;
 	case 'h' << 8:		/* Help */
 	  show_usage = true;
 	  break;
@@ -327,14 +337,29 @@ main (argc, argv)
       display_version (progname);
       return 0;
     }
+  if (do_list_fonts)
+    {
+      bool success;
+
+      success = list_fonts (display_type, progname);
+      if (success)
+	return 0;
+      else
+	return 1;
+    }
   if (show_fonts)
     {
-      display_fonts (display_type, progname);
-      return 0;
+      bool success;
+
+      success = display_fonts (display_type, progname);
+      if (success)
+	return 0;
+      else
+	return 1;
     }
   if (show_usage)
     {
-      display_usage (progname, hidden_options, true, true);
+      display_usage (progname, hidden_options, usage_appendage, true);
       return 0;
     }
 
@@ -366,8 +391,9 @@ main (argc, argv)
 	      data_file = fopen (argv[optind], "r");
 	      if (data_file == NULL)
 		{
-		  fprintf (stderr, "%s: ignoring nonexistent or inaccessible file `%s'\n",
-			   progname, argv[optind]);
+		  fprintf (stderr, "%s: %s: %s\n", progname, argv[optind], strerror(errno));
+		  fprintf (stderr, "%s: ignoring this file\n", progname);
+		  errno = 0;	/* not quite fatal */
 		  retval = 1;
 		  continue;	/* back to top of for loop */
 		}
@@ -423,6 +449,13 @@ main (argc, argv)
 	      end_page ();
 	    }
 	}
+    }
+
+  selectpl (0);
+  if (deletepl (handle) < 0)
+    {
+      fprintf (stderr, "%s: error: could not close plot device\n", progname);
+      retval = 1;
     }
 
   return retval;
@@ -774,7 +807,7 @@ read_plot (in_stream)
 	case CASE_PRINT:	/* printable character */
 	  {
 	    char *cp = text;
-	    int x_here, y_here;
+	    int x_here, y_here, n;
 	    
 	    x_here = cur_X, y_here = cur_Y;
 	    
@@ -783,9 +816,9 @@ read_plot (in_stream)
 	    if (badstatus)
 	      break;
 	    
-	    x = position_indiv_chars ? 1 : sizeof(text) - 1;
+	    n = (position_indiv_chars ? 1 : TEXT_BUFFER_SIZE - 1);
 	    y = cur_Y;
-	    while (!badstatus && x-- > 0 && y == cur_Y) 
+	    while (!badstatus && n-- > 0 && y == cur_Y) 
 	      {
 		c = read_byte (in_stream, &badstatus);
 		if (badstatus)
@@ -1328,7 +1361,15 @@ begin_page ()
       if (font_name)
 	fontname (font_name);
       else
-	fontname (DEFAULT_FONT_NAME);
+	{
+	  if (havecap ("PS_FONTS") == 1)
+	    fontname (DEFAULT_PS_FONT_NAME);
+	  else if (havecap ("PCL_FONTS") == 1)
+	    fontname (DEFAULT_PCL_FONT_NAME);
+	  else
+	    /* use Hershey font as a default */
+	    fontname (DEFAULT_HERSHEY_FONT_NAME);
+	}
       /* `large' is default size */
       ffontsize ((double)(TekChar[0].hsize) / CHAR_WIDTH);
     }

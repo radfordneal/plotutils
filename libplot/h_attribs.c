@@ -12,6 +12,15 @@ static const int _hpgl_line_type[] =
 { HPGL_L_SOLID, HPGL_L_DOTTED, HPGL_L_DOTDASHED, 
     HPGL_L_SHORTDASHED, HPGL_L_LONGDASHED };
 
+/* Default iteration interval for dashes, as a percentage of the diagonal
+   P1-P2 distance. */
+#define DEFAULT_ITERATION_INTERVAL 2.0
+
+/* If emitting HP-GL/2 we can set the line width.  So we increase the
+   iteration interval if necessary so that iteration interval / line width
+   is at least this large. */
+#define MIN_INTERVAL_TO_WIDTH_FACTOR 10.0   
+
 /* HP-GL/2 join styles, indexed by internal join type number(miter/rd./bevel)*/
 static const int _hpgl_join_style[] =
 { HPGL_JOIN_MITER, HPGL_JOIN_ROUND, HPGL_JOIN_BEVEL };
@@ -32,18 +41,32 @@ _h_set_attributes ()
   if (_plotter->hpgl_line_type != 
       _hpgl_line_type[_plotter->drawstate->line_type])
     {
+      double iteration_interval = DEFAULT_ITERATION_INTERVAL;
+
+      if (_plotter->hpgl_version == 2)
+	/* can set linewidth, so adjust iteration interval if necc. */
+	{
+	  iteration_interval = 
+	    DMAX (iteration_interval, 
+		  100 * MIN_INTERVAL_TO_WIDTH_FACTOR
+		  * _plotter->drawstate->hpgl_pen_width);
+	}
+
       if (_hpgl_line_type[_plotter->drawstate->line_type] == HPGL_L_SOLID)
-	strcpy (_plotter->outbuf.current, "LT;");
+	strcpy (_plotter->page->point, "LT;");
       else if (_hpgl_line_type[_plotter->drawstate->line_type] == HPGL_L_DOTTED)
 	/* emulate dots by selecting shortdashed pattern along with a short
-           iteration interval (0.5% of diagonal P1-P2 distance) */
-	sprintf (_plotter->outbuf.current, 
-		 "LT%d,0.5;", HPGL_L_SHORTDASHED);
+           iteration interval (25% of the usual interval) */
+	sprintf (_plotter->page->point, 
+		 "LT%d,%.3g;", 
+		 HPGL_L_SHORTDASHED, 
+		 0.25 * iteration_interval);
       else
-	/* iteration interval will be 2% of diagonal P1-P2 distance */
-	sprintf (_plotter->outbuf.current, 
-		 "LT%d,2;", _hpgl_line_type[_plotter->drawstate->line_type]);
-      _update_buffer (&_plotter->outbuf);
+	sprintf (_plotter->page->point, 
+		 "LT%d,%.3g;", 
+		 _hpgl_line_type[_plotter->drawstate->line_type], 
+		 iteration_interval);
+      _update_buffer (_plotter->page);
       _plotter->hpgl_line_type = _hpgl_line_type[_plotter->drawstate->line_type];
     }
 
@@ -56,10 +79,10 @@ _h_set_attributes ()
 	  || (_plotter->hpgl_join_style 
 	      != _hpgl_join_style[_plotter->drawstate->join_type]))
 	{
-	  sprintf (_plotter->outbuf.current, "LA1,%d,2,%d;", 
+	  sprintf (_plotter->page->point, "LA1,%d,2,%d;", 
 		   _hpgl_cap_style[_plotter->drawstate->cap_type],
 		   _hpgl_join_style[_plotter->drawstate->join_type]);
-	  _update_buffer (&_plotter->outbuf);
+	  _update_buffer (_plotter->page);
 	  _plotter->hpgl_cap_style = 
 	    _hpgl_cap_style[_plotter->drawstate->cap_type];
 	  _plotter->hpgl_join_style = 
@@ -73,9 +96,9 @@ _h_set_attributes ()
     {
       if (_plotter->pen_width != _plotter->drawstate->hpgl_pen_width)
 	{
-	  sprintf (_plotter->outbuf.current, "PW%.3f;", 
+	  sprintf (_plotter->page->point, "PW%.3f;", 
 		   100.0 * _plotter->drawstate->hpgl_pen_width);
-	  _update_buffer (&_plotter->outbuf);
+	  _update_buffer (_plotter->page);
 	  _plotter->pen_width = _plotter->drawstate->hpgl_pen_width;
 	}
     }

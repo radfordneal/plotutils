@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
+EXEEXT = @EXEEXT@
 LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
@@ -81,7 +82,7 @@ YACC = @YACC@
 noinst_LIBRARIES = libcommon.a libfontlist.a
 INCLUDES = -I$(srcdir)/../include
 
-libcommon_a_SOURCES = xmalloc.c xstrdup.c display.c getopt.c getopt1.c 
+libcommon_a_SOURCES = compat.c display.c getopt.c getopt1.c xmalloc.c xstrdup.c
 libcommon_a_LIBADD = @ALLOCA@
 libcommon_a_DEPENDENCIES = $(libcommon_a_LIBADD)
 
@@ -96,7 +97,8 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libcommon_a_OBJECTS =  xmalloc.o xstrdup.o display.o getopt.o getopt1.o
+libcommon_a_OBJECTS =  compat.o display.o getopt.o getopt1.o xmalloc.o \
+xstrdup.o
 libfontlist_a_LIBADD = 
 libfontlist_a_OBJECTS =  fontlist.o
 AR = ar
@@ -220,6 +222,7 @@ distdir: $(DISTFILES)
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
 alloca.o alloca.lo: alloca.c ../config.h
+compat.o: compat.c ./../include/sys-defines.h ../config.h
 display.o: display.c ./../include/sys-defines.h ../config.h \
 	./../include/getopt.h
 fontlist.o: fontlist.c ./../include/sys-defines.h ../config.h \
