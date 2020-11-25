@@ -1,3 +1,15 @@
+This a fork of the GNU plotutils package, based on the most recent 
+GNU version, 2.6, from 2009, with earlier versions present in the 
+commit history for this repository.  Some fixes from Debian have 
+been incorporated (see the debian-patches directory, most recent from
+2018), along with some fixes by me, Radford Neal.
+
+Some new features may be added soon!
+
+The original GNU README follows...
+
+----------------------------------------------------------------------
+
 This is release 2.6 of the GNU plotutils (plotting utilities) package,
 including release 4.4 of GNU libplot: a thread-safe function library for
 exporting two-dimensional vector graphics files, and for displaying
