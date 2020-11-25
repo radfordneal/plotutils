@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This internal method is invoked before drawing any polyline.  It sets
    the relevant attributes of a Tektronix display (line type only, since
    cap type, join type, line width are not supported) to what they should
@@ -12,12 +30,7 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_t_set_attributes (S___(Plotter *_plotter))
-#else
-_t_set_attributes (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_t_set_attributes (S___(Plotter *_plotter))
 {
   if ((!(_plotter->tek_line_type_is_unknown))
       && (_plotter->tek_line_type == _plotter->drawstate->line_type))
@@ -26,39 +39,39 @@ _t_set_attributes (S___(_plotter))
   switch (_plotter->drawstate->line_type)
     {
     default:
-    case L_SOLID:
+    case PL_L_SOLID:
       /* ASCII ESC `, i.e. ^[` */
       _write_string (_plotter->data, "\033`");
       break;
-    case L_DOTTED:
+    case PL_L_DOTTED:
       /* ASCII ESC a, i.e. ^[a */
       _write_string (_plotter->data, "\033a");	
       break;
       /* following two are interchanged in kermit emulator */
-    case L_DOTDASHED:
-      if (_plotter->tek_display_type == D_KERMIT)
+    case PL_L_DOTDASHED:
+      if (_plotter->tek_display_type == TEK_DPY_KERMIT)
 	/* ASCII ESC c, i.e. ^[c */
 	_write_string (_plotter->data, "\033c"); 
       else
 	/* ASCII ESC b, i.e. ^[b */
 	_write_string (_plotter->data, "\033b"); 
       break;
-    case L_SHORTDASHED:
-      if (_plotter->tek_display_type == D_KERMIT)
+    case PL_L_SHORTDASHED:
+      if (_plotter->tek_display_type == TEK_DPY_KERMIT)
 	/* ASCII ESC b, i.e. ^[b */
 	_write_string (_plotter->data, "\033b"); 
       else
 	/* ASCII ESC c, i.e. ^[c */
 	_write_string (_plotter->data, "\033c"); 
       break;
-    case L_LONGDASHED:
+    case PL_L_LONGDASHED:
       /* in kermit emulator, the following switches to "dotlongdashed"
 	 rather than "longdashed", but we can live with that */
       /* ASCII ESC d, i.e. ^[d */
       _write_string (_plotter->data, "\033d");	
       break;
-    case L_DOTDOTDASHED:
-      if (_plotter->tek_display_type == D_KERMIT)
+    case PL_L_DOTDOTDASHED:
+      if (_plotter->tek_display_type == TEK_DPY_KERMIT)
 	/* ASCII ESC e, i.e. ^[e */
 	_write_string (_plotter->data, "\033e"); 
       else
@@ -66,7 +79,7 @@ _t_set_attributes (S___(_plotter))
 	/* ASCII ESC b, i.e. ^[b */
 	_write_string (_plotter->data, "\033b"); 
       break;
-    case L_DOTDOTDOTDASHED:
+    case PL_L_DOTDOTDOTDASHED:
       /* not supported, so punt */
       /* ASCII ESC b, i.e. ^[b */
       _write_string (_plotter->data, "\033b");

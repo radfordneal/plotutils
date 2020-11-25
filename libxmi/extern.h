@@ -1,3 +1,21 @@
+/* This file is part of the GNU libxmi package.  Copyright (C) 1998, 1999,
+   2000, 2005, Free Software Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* If libxmi is compiled standalone, this header file is #included.  It
    renames the global symbols by prepending each name with an underscore,
    to avoid polluting the user-level namespace. */

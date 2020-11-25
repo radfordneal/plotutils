@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This version is for XPlotters, and should be exactly the same as
    x_erase.c (the version for XDrawablePlotters) except XPlotter-specific
    lines are NOT commented out.  (Search for #if 1...#endif.) */
@@ -17,12 +35,7 @@
 #define NUM_KEPT_FRAMES 16
 
 bool
-#ifdef _HAVE_PROTOS
-_y_erase_page (S___(Plotter *_plotter))
-#else
-_y_erase_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_y_erase_page (S___(Plotter *_plotter))
 {
   bool head_found;
   int window_width, window_height;
@@ -32,23 +45,23 @@ _y_erase_page (S___(_plotter))
 
   /* set the foreground color in the GC we use for erasing,
      to be the background color in the drawing state */
-  _x_set_bg_color (S___(_plotter));
+  _pl_x_set_bg_color (S___(_plotter));
 
   /* compute rectangle size; note flipped-y convention */
   window_width = (_plotter->data->imax - _plotter->data->imin) + 1;
   window_height = (_plotter->data->jmin - _plotter->data->jmax) + 1;
 
-  if (_plotter->x_double_buffering != DBL_NONE)
+  if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
     {
       /* Following two sorts of server-supported double buffering
-	 (DBL_DBE, DBL_MBX) are possible only for X Plotters, not
+	 (X_DBL_BUF_DBE, X_DBL_BUF_MBX) are possible only for X Plotters, not
 	 X Drawable Plotters.  `By hand' double buffering is possible
 	 for both. */
 
 #if 1
 #ifdef HAVE_X11_EXTENSIONS_XDBE_H
 #ifdef HAVE_DBE_SUPPORT
-      if (_plotter->x_double_buffering == DBL_DBE)
+      if (_plotter->x_double_buffering == X_DBL_BUF_DBE)
 	/* we're using the X double buffering extension */
 	{
 	  XdbeSwapInfo info;
@@ -68,7 +81,7 @@ _y_erase_page (S___(_plotter))
 
 #ifdef HAVE_X11_EXTENSIONS_MULTIBUF_H
 #ifdef HAVE_MBX_SUPPORT
-      if (_plotter->x_double_buffering == DBL_MBX)
+      if (_plotter->x_double_buffering == X_DBL_BUF_MBX)
 	/* we're using the X multibuffering extension */
 	{
 	  Multibuffer multibuf;
@@ -91,7 +104,7 @@ _y_erase_page (S___(_plotter))
 
       /* we must be doing double buffering `by hand', rather than using
          an X protocol extension */
-      if (_plotter->x_double_buffering == DBL_BY_HAND)
+      if (_plotter->x_double_buffering == X_DBL_BUF_BY_HAND)
 	{
 	  /* copy current frame of buffered graphics to drawable(s) */
 	  if (_plotter->x_drawable1)
@@ -198,11 +211,11 @@ _y_erase_page (S___(_plotter))
       cptrnext = cptr->next;
       if (cptr->allocated)
 	{
-	  if ((_plotter->x_double_buffering == DBL_NONE
+	  if ((_plotter->x_double_buffering == X_DBL_BUF_NONE
 	       && cptr->page_number == current_page_number
 	       && i < NUM_KEPT_COLORS)
 	      ||
-	      (_plotter->x_double_buffering != DBL_NONE
+	      (_plotter->x_double_buffering != X_DBL_BUF_NONE
 	       && cptr->page_number == current_page_number
 	       && cptr->frame_number >= current_frame_number - NUM_KEPT_FRAMES))
 	    /* cached cell contains a genuine pixel value, and it meets our

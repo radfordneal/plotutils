@@ -1,9 +1,27 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This program, spline, interpolates scalar or vector-valued input data
    using splines with tension, including piecewise cubic (zero-tension)
    splines.  When acting as a real-time filter, it uses cubic Bessel
    interpolation instead.  Written by Robert S. Maier
    <rsm@math.arizona.edu>, based on earlier work by Rich Murphey.
-   Copyright (C) 1989-1999 Free Software Foundation, Inc.
 
    References:
 
@@ -80,11 +98,8 @@
    etc., apply to d-dimensional ones also. */
 
 #include "sys-defines.h"
+#include "libcommon.h"
 #include "getopt.h"
-
-#define	ARG_NONE	0
-#define	ARG_REQUIRED	1
-#define	ARG_OPTIONAL	2
 
 /* states for cubic Bessel DFA; occupancy of data point queue */
 enum { STATE_ZERO, STATE_ONE, STATE_TWO, STATE_THREE };
@@ -103,6 +118,14 @@ enum { AUTO_NONE, AUTO_INCREMENT, AUTO_BY_DISTANCE };
 /* Maximum value for magnitude of x, beyond which we approximate
    x/sinh(x) and x/tanh(x) by |x|exp(-|x|). */
 #define TRIG_ARG_MAX 50.0
+
+/* options */
+
+#define	ARG_NONE	0
+#define	ARG_REQUIRED	1
+#define	ARG_OPTIONAL	2
+
+const char *optstring = "fpsAd:I:O:P:k:n:t:x:T:a::";
 
 struct option long_options[] =
 {
@@ -128,7 +151,7 @@ struct option long_options[] =
 };
 
 /* null-terminated list of options that we don't show to the user */
-int hidden_options[] = { (int)'x', 0 };
+const int hidden_options[] = { (int)'x', 0 };
 
 /* type of data in input and output streams */
 typedef enum
@@ -141,49 +164,38 @@ data_type input_type = T_ASCII;
 data_type output_type = T_ASCII;
 
 const char *progname = "spline"; /* name of this program */
+const char *written = "Written by Robert S. Maier and Rich Murphey.";
+const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
 
 /* forward references */
-bool do_bessel ____P ((FILE *input, int ydimension, int auto_abscissa, double auto_t, double auto_delta, double first_t, double last_t, double spacing_t, int precision, bool suppress_abscissa));
-bool is_monotonic ____P ((int n, double *t));
-bool read_data ____P ((FILE *input, int *len, int *used, int auto_abscissa, double auto_t, double auto_delta, double **t, int ydimension, double **y, double **z));
-bool read_float ____P((FILE *input, double *dptr));
-bool skip_whitespace ____P ((FILE *stream));
-bool write_point ____P((double t, double *y, int ydimension, int precision, bool suppress_abscissa));
-double interpolate ____P ((int n, double *t, double *y, double *z, double x, double tension, bool periodic));
-double quotient_sin_func ____P((double x, double y));
-double quotient_sinh_func ____P((double x, double y));
-double sin_func ____P((double x));
-double sinh_func ____P((double x));
-double tan_func ____P((double x));
-double tanh_func ____P((double x));
-int read_point ____P ((FILE *input, double *t, double *y, int ydimension, bool *first_point, int auto_abscissa, double *auto_t, double auto_delta, double *stored));
-void do_bessel_range ____P ((double abscissa0, double abscissa1, double *value0, double *value1, double *slope0, double *slope1, double first_t, double last_t, double spacing_t, int ydimension, int precision, bool endit, bool suppress_abscissa));
-void do_spline ____P ((int used, int len, double **t, int ydimension, double **y, double **z, double tension, bool periodic, bool spec_boundary_condition, double boundary_condition, int precision, double first_t, double last_t, double spacing_t, int no_of_intervals, bool spec_first_t, bool spec_last_t, bool spec_spacing_t, bool spec_no_of_intervals, bool suppress_abscissa));
-void fit ____P ((int n, double *t, double *y, double *z, double k, double tension, bool periodic));
-void maybe_emit_oob_warning ____P ((void));
-void non_monotonic_error ____P((void));
-void output_dataset_separator ____P ((void));
-void set_format_type ____P ((char *s, data_type *typep));
-/* from libcommon */
-extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version ____P((const char *progname)); 
-extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
-extern voidptr_t xmalloc ____P ((size_t size));
-extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
-extern char *xstrdup ____P ((const char *s));
+bool do_bessel (FILE *input, int ydimension, int auto_abscissa, double auto_t, double auto_delta, double first_t, double last_t, double spacing_t, int precision, bool suppress_abscissa);
+bool is_monotonic (int n, double *t);
+bool read_data (FILE *input, int *len, int *used, int auto_abscissa, double auto_t, double auto_delta, double **t, int ydimension, double **y, double **z);
+bool read_float (FILE *input, double *dptr);
+bool skip_whitespace (FILE *stream);
+bool write_point (double t, double *y, int ydimension, int precision, bool suppress_abscissa);
+double interpolate (int n, double *t, double *y, double *z, double x, double tension, bool periodic);
+double quotient_sin_func (double x, double y);
+double quotient_sinh_func (double x, double y);
+double sin_func (double x);
+double sinh_func (double x);
+double tan_func (double x);
+double tanh_func (double x);
+int read_point (FILE *input, double *t, double *y, int ydimension, bool *first_point, int auto_abscissa, double *auto_t, double auto_delta, double *stored);
+void do_bessel_range (double abscissa0, double abscissa1, double *value0, double *value1, double *slope0, double *slope1, double first_t, double last_t, double spacing_t, int ydimension, int precision, bool endit, bool suppress_abscissa);
+void do_spline (int used, int len, double **t, int ydimension, double **y, double **z, double tension, bool periodic, bool spec_boundary_condition, double boundary_condition, int precision, double first_t, double last_t, double spacing_t, int no_of_intervals, bool spec_first_t, bool spec_last_t, bool spec_spacing_t, bool spec_no_of_intervals, bool suppress_abscissa);
+void fit (int n, double *t, double *y, double *z, double k, double tension, bool periodic);
+void maybe_emit_oob_warning (void);
+void non_monotonic_error (void);
+void output_dataset_separator (void);
+void set_format_type (char *s, data_type *typep);
 
 
 int
-#ifdef _HAVE_PROTOS
 main (int argc, char *argv[])
-#else
-main (argc, argv)
-     int argc;
-     char *argv[];
-#endif
 {
   int option;
   int opt_index;
@@ -216,7 +228,7 @@ main (argc, argv)
 
   for ( ; ; )
     {
-      option = getopt_long (argc, argv, "fpsAd:I:O:P:k:n:t:x:T:a::", long_options, &opt_index);
+      option = getopt_long (argc, argv, optstring, long_options, &opt_index);
       if (option == 0)
 	option = long_options[opt_index].val;
       
@@ -373,7 +385,7 @@ main (argc, argv)
     }
   if (show_version)
     {
-      display_version (progname);
+      display_version (progname, written, copyright);
       return EXIT_SUCCESS;
     }
   if (show_usage)
@@ -641,13 +653,7 @@ main (argc, argv)
 
 
 void
-#ifdef _HAVE_PROTOS
 set_format_type (char *s, data_type *typep)
-#else
-set_format_type (s, typep)
-     char *s;
-     data_type *typep;
-#endif
 {
   switch (s[0])
     {
@@ -696,18 +702,10 @@ set_format_type (s, typep)
    = alpha[i].  Here i=1..n-1 indexes the set of knots.  The matrix
    equation is solved by back-substitution for y''[], i.e., for z[]. */
 
+/* ARGS: k = coeff in bdy condition y''_1 = k y''_0, etc. */
 void
-#ifdef _HAVE_PROTOS
 fit (int n, double *t, double *y, double *z, double k, double tension,
      bool periodic)
-#else
-fit (n, t, y, z, k, tension, periodic)
-     int n;
-     double *t, *y, *z;
-     double k;			/* y''_1 = k y''_0, etc. */
-     double tension;
-     bool periodic;
-#endif
 {
   double *h, *b, *u, *v, *alpha, *beta;
   double *uu = NULL, *vv = NULL, *s = NULL;
@@ -917,16 +915,8 @@ fit (n, t, y, z, k, tension, periodic)
    periodic case. */
 
 double
-#ifdef _HAVE_PROTOS
 interpolate (int n, double *t, double *y, double *z, double x, 
 	     double tension, bool periodic)
-#else
-interpolate (n, t, y, z, x, tension, periodic)
-     int n;
-     double *t, *y, *z, x;
-     double tension;
-     bool periodic;
-#endif
 {
   double diff, updiff, reldiff, relupdiff, h;
   double value;
@@ -1020,13 +1010,7 @@ interpolate (n, t, y, z, x, tension, periodic)
 /* is_monotonic() check whether an array of data points, read in by
    read_data(), has monotonic abscissa values. */
 bool
-#ifdef _HAVE_PROTOS
 is_monotonic (int n, double *t)
-#else
-is_monotonic (n, t)
-     int n;			/* array size n+1, n>=1 */
-     double *t;
-#endif
 {
   bool is_ascending;
 
@@ -1051,13 +1035,7 @@ is_monotonic (n, t)
    (in either ascii or double format).  Return value indicates whether it
    was read successfully. */
 bool 
-#ifdef _HAVE_PROTOS
 read_float (FILE *input, double *dptr)
-#else
-read_float (input, dptr)
-     FILE *input;
-     double *dptr;
-#endif
 {
   int num_read;
   double dval;
@@ -1071,14 +1049,14 @@ read_float (input, dptr)
       num_read = fscanf (input, "%lf", &dval);
       break;
     case T_SINGLE:
-      num_read = fread ((voidptr_t) &fval, sizeof (fval), 1, input);
+      num_read = fread ((void *) &fval, sizeof (fval), 1, input);
       dval = fval;
       break;
     case T_DOUBLE:
-      num_read = fread ((voidptr_t) &dval, sizeof (dval), 1, input);
+      num_read = fread ((void *) &dval, sizeof (dval), 1, input);
       break;
     case T_INTEGER:
-      num_read = fread ((voidptr_t) &ival, sizeof (ival), 1, input);
+      num_read = fread ((void *) &ival, sizeof (ival), 1, input);
       dval = ival;
       break;
     }
@@ -1101,14 +1079,7 @@ read_float (input, dptr)
    if any of the emitted values was out-of-bounds for single-precision or
    integer format. */
 bool 
-#ifdef _HAVE_PROTOS
 write_point (double t, double *y, int ydimension, int precision, bool suppress_abscissa)
-#else
-write_point (t, y, ydimension, precision, suppress_abscissa)
-     double t, *y;
-     int ydimension, precision;
-     bool suppress_abscissa;
-#endif
 {
   int i, num_written = 0;
   float ft, fy;
@@ -1134,7 +1105,7 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
 	      if (ft == FLT_MAX)
 		ft *= 0.99999;	/* kludge */
 	    }
-	  num_written += fwrite ((voidptr_t) &ft, sizeof (ft), 1, stdout);
+	  num_written += fwrite ((void *) &ft, sizeof (ft), 1, stdout);
 	}
       for (i = 0; i < ydimension; i++)
 	{
@@ -1145,14 +1116,14 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
 	      if (fy == FLT_MAX)
 		fy *= 0.99999;	/* kludge */
 	    }
-	  num_written += fwrite ((voidptr_t) &fy, sizeof (fy), 1, stdout);
+	  num_written += fwrite ((void *) &fy, sizeof (fy), 1, stdout);
 	}
       break;
     case T_DOUBLE:
       if (suppress_abscissa == false)
-	num_written += fwrite ((voidptr_t) &t, sizeof (t), 1, stdout);
+	num_written += fwrite ((void *) &t, sizeof (t), 1, stdout);
       for (i = 0; i < ydimension; i++)
-	num_written += fwrite ((voidptr_t) &(y[i]), sizeof (double), 1, stdout);
+	num_written += fwrite ((void *) &(y[i]), sizeof (double), 1, stdout);
       break;
     case T_INTEGER:
       if (suppress_abscissa == false)
@@ -1164,7 +1135,7 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
 	      if (it == INT_MAX)
 		it--;
 	    }
-	  num_written += fwrite ((voidptr_t) &it, sizeof (it), 1, stdout);
+	  num_written += fwrite ((void *) &it, sizeof (it), 1, stdout);
 	}
       for (i = 0; i < ydimension; i++)
 	{
@@ -1175,7 +1146,7 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
 	      if (iy == INT_MAX)
 		iy--;
 	    }
-	  num_written += fwrite ((voidptr_t) &iy, sizeof (iy), 1, stdout);
+	  num_written += fwrite ((void *) &iy, sizeof (iy), 1, stdout);
 	}
       break;
     }
@@ -1191,21 +1162,10 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
    stream.  For an ascii stream this is two newlines in succession; for a
    double stream this is a DBL_MAX, etc. */
 int
-#ifdef _HAVE_PROTOS
 read_point (FILE *input, double *t, double *y, int ydimension, 
 	    bool *first_point,
 	    int auto_abscissa, double *auto_t, double auto_delta, 
 	    double *stored)
-#else
-read_point (input, t, y, ydimension, first_point, auto_abscissa, auto_t, auto_delta, stored)
-     FILE *input;
-     double *t, *y;
-     int ydimension;
-     bool *first_point;
-     int auto_abscissa;
-     double *auto_t, auto_delta;
-     double *stored;
-#endif
 {
   bool success;
   int i, items_read, lookahead;
@@ -1336,20 +1296,9 @@ read_point (input, t, y, ydimension, first_point, auto_abscissa, auto_t, auto_de
    end-of-dataset, and false if the dataset is terminated by EOF.  That is,
    return value indicates whether another dataset is expected to follow. */
 bool
-#ifdef _HAVE_PROTOS
 read_data (FILE *input, int *len, int *used, int auto_abscissa,
 	   double auto_t, double auto_delta, 
 	   double **t, int ydimension, double **y, double **z)
-#else
-read_data (input, len, used, auto_abscissa, auto_t, auto_delta, t, ydimension, y, z)
-     FILE *input;
-     int *len, *used;
-     int auto_abscissa;
-     double auto_t, auto_delta;
-     double **t;
-     int ydimension;
-     double **y, **z;
-#endif
 {
   bool first = true;
   int i, success;
@@ -1413,31 +1362,18 @@ read_data (input, len, used, auto_abscissa, auto_t, auto_delta, t, ydimension, y
    In fact, in the periodic case this function will increment the size of
    the array once more, since the periodic interpolation algorithm requires
    the first two data points, not just the first, to appear at the end. */
+
+/* ARGS: used = indicator that used+1 elements stored in (*t)[] etc.
+   	 len = length of each array
+	 y,z are ptrs-to-ptrs because we may need to realloc
+	 k = coeff in bdy condition y''_1 = k y''_0, etc. */
 void
-#ifdef _HAVE_PROTOS
 do_spline (int used, int len, double **t, int ydimension, double **y, double **z, 
 	   double tension, bool periodic, bool spec_boundary_condition,
 	   double k, int precision, double first_t, double last_t, 
 	   double spacing_t, int no_of_intervals, bool spec_first_t, 
 	   bool spec_last_t, bool spec_spacing_t, 
 	   bool spec_no_of_intervals, bool suppress_abscissa)
-#else
-do_spline (used, len, t, ydimension, y, z, tension, periodic, spec_boundary_condition, k, precision, first_t, last_t, spacing_t, no_of_intervals, spec_first_t, spec_last_t, spec_spacing_t, spec_no_of_intervals, suppress_abscissa)
-     int used;			/* used+1 elements stored in (*t)[] etc. */
-     int len;			/* length of each array */
-     double **t;
-     int ydimension;
-     double **y, **z;		/* we use ** because may have to realloc */
-     double tension;
-     bool periodic;
-     bool spec_boundary_condition;
-     double k;			/* boundary condition: y''_1 = k y''_0, etc. */
-     int precision;
-     double first_t, last_t, spacing_t; 
-     int no_of_intervals;
-     bool spec_first_t, spec_last_t, spec_spacing_t, spec_no_of_intervals;
-     bool suppress_abscissa;
-#endif
 {
   int range_count = 0;		/* number of req'd datapoints out of range */
   int lastval = 0;		/* last req'd point = 1st/last data point? */
@@ -1592,20 +1528,9 @@ do_spline (used, len, t, ydimension, y, z, tension, periodic, spec_boundary_cond
    end-of-dataset, and false if the dataset is terminated by EOF.  That is,
    return value indicates whether another dataset is expected to follow. */
 bool
-#ifdef _HAVE_PROTOS
 do_bessel (FILE *input, int ydimension, int auto_abscissa, double auto_t, 
 	   double auto_delta, double first_t, double last_t, 
 	   double spacing_t, int precision, bool suppress_abscissa)
-#else
-do_bessel (input, ydimension, auto_abscissa, auto_t, auto_delta, first_t, last_t, spacing_t, precision, suppress_abscissa)
-     FILE *input;
-     int ydimension;
-     int auto_abscissa;
-     double auto_t, auto_delta;     
-     double first_t, last_t, spacing_t;
-     int precision;
-     bool suppress_abscissa;
-#endif
 {
   bool first = true;
   double t, *y, *s0, *s1, *s2, *stored;
@@ -1763,11 +1688,7 @@ do_bessel (input, ydimension, auto_abscissa, auto_t, auto_delta, first_t, last_t
 }
 
 void
-#ifdef _HAVE_PROTOS
 non_monotonic_error (void)
-#else
-non_monotonic_error ()
-#endif
 {
   fprintf (stderr, "%s: error: abscissa values not monotonic\n",
 	   progname);
@@ -1783,24 +1704,13 @@ non_monotonic_error ()
    stretch slightly farther than abscissa1 and last_t, to compensate for
    roundoff error. */
 
+/* ARGS: endit = last interval to be treated? */
 void
-#ifdef _HAVE_PROTOS
 do_bessel_range (double abscissa0, double abscissa1, double *value0, 
 		 double *value1, double *slope0, double *slope1, 
 		 double first_t, double last_t, double spacing_t, 
 		 int ydimension, int precision, bool endit,
 		 bool suppress_abscissa)
-#else
-do_bessel_range (abscissa0, abscissa1, value0, value1, slope0, slope1,
-		 first_t, last_t, spacing_t, ydimension, precision, 
-		 endit, suppress_abscissa)
-     double abscissa0, abscissa1, *value0, *value1, *slope0, *slope1;
-     double first_t, last_t, spacing_t;
-     int ydimension;
-     int precision;
-     bool endit;		/* last interval to be treated */
-     bool suppress_abscissa;
-#endif
 {
   int direction = ((last_t > first_t) ? 1 : -1); /* sign of spacing_t */
   int i, j;
@@ -1871,11 +1781,7 @@ do_bessel_range (abscissa0, abscissa1, value0, value1, slope0, slope1,
    this is a DBL_MAX, etc. */
 
 void
-#ifdef _HAVE_PROTOS
 output_dataset_separator (void)
-#else
-output_dataset_separator ()
-#endif
 {
   double ddummy;
   float fdummy;
@@ -1889,15 +1795,15 @@ output_dataset_separator ()
       break;
     case T_DOUBLE:
       ddummy = DBL_MAX;
-      fwrite ((voidptr_t) &ddummy, sizeof(ddummy), 1, stdout);
+      fwrite ((void *) &ddummy, sizeof(ddummy), 1, stdout);
       break;
     case T_SINGLE:
       fdummy = FLT_MAX;
-      fwrite ((voidptr_t) &fdummy, sizeof(fdummy), 1, stdout);
+      fwrite ((void *) &fdummy, sizeof(fdummy), 1, stdout);
       break;
     case T_INTEGER:
       idummy = INT_MAX;
-      fwrite ((voidptr_t) &idummy, sizeof(idummy), 1, stdout);
+      fwrite ((void *) &idummy, sizeof(idummy), 1, stdout);
       break;
     }
 }
@@ -1908,12 +1814,7 @@ output_dataset_separator ()
    input files, two newlines signals an end-of-dataset.) */
 
 bool
-#ifdef _HAVE_PROTOS
 skip_whitespace (FILE *stream)
-#else
-skip_whitespace (stream)
-     FILE *stream;
-#endif
 {
   int lookahead;
   int nlcount = 0;
@@ -1936,11 +1837,7 @@ skip_whitespace (stream)
 }
 
 void
-#ifdef _HAVE_PROTOS
 maybe_emit_oob_warning (void)
-#else
-maybe_emit_oob_warning ()
-#endif
 {
   static bool warning_written = false;
 
@@ -1958,48 +1855,28 @@ maybe_emit_oob_warning ()
    when |x|<TRIG_ARG_MIN, to avoid loss of significance.  Errors are
    O(x**6). */
 double
-#ifdef _HAVE_PROTOS
 sinh_func (double x) 
-#else
-sinh_func (x)
-     double x;
-#endif
 {
   /* use 1-(7/60)x**2+(31/2520)x**4 */
   return 1.0 - (7.0/60.0)*x*x + (31.0/2520.0)*x*x*x*x;
 }
 
 double
-#ifdef _HAVE_PROTOS
 tanh_func (double x) 
-#else
-tanh_func (x)
-     double x;
-#endif
 {
   /* use 1-(1/15)x**2+(2/315)x**4 */
   return 1.0 - (1.0/15.0)*x*x + (2.0/315.0)*x*x*x*x;
 }
 
 double
-#ifdef _HAVE_PROTOS
 sin_func (double x) 
-#else
-sin_func (x)
-     double x;
-#endif
 {
   /* use -1-(7/60)x**2-(31/2520)x**4 */
   return -1.0 - (7.0/60.0)*x*x - (31.0/2520.0)*x*x*x*x;
 }
 
 double
-#ifdef _HAVE_PROTOS
 tan_func (double x) 
-#else
-tan_func (x)
-     double x;
-#endif
 {
   /* use -1-(1/15)x**2-(2/315)x**4 */
   return -1.0 - (1.0/15.0)*x*x - (2.0/315.0)*x*x*x*x;
@@ -2011,12 +1888,7 @@ tan_func (x)
    power series in y.  They are used when |y|<TRIG_ARG_MIN, to avoid loss
    of significance.  Errors are O(y**6). */
 double
-#ifdef _HAVE_PROTOS
 quotient_sinh_func (double x, double y) 
-#else
-quotient_sinh_func (x, y)
-     double x, y;
-#endif
 {
   return ((x*x*x-x) + (x*x*x*x*x/20.0 - x*x*x/6.0 + 7.0*x/60.0)*(y*y)
 	  + (x*x*x*x*x*x*x/840.0 - x*x*x*x*x/120.0 + 7.0*x*x*x/360.0
@@ -2024,12 +1896,7 @@ quotient_sinh_func (x, y)
 }
 
 double
-#ifdef _HAVE_PROTOS
 quotient_sin_func (double x, double y) 
-#else
-quotient_sin_func (x, y)
-     double x, y;
-#endif
 {
   return (- (x*x*x-x) + (x*x*x*x*x/20.0 - x*x*x/6.0 + 7.0*x/60.0)*(y*y)
 	  - (x*x*x*x*x*x*x/840.0 - x*x*x*x*x/120.0 + 7.0*x*x*x/360.0

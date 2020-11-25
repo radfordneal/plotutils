@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This is the public include file for the miPaintedSet module, contained
    in mi_spans.c. */
 
@@ -88,6 +111,6 @@ typedef struct lib_miPaintedSet
   }
 
 /* miPaintedSet manipulation routines (other than public) */
-extern void miAddSpansToPaintedSet ____P((const Spans *spans, miPaintedSet *paintedSet, miPixel pixel));
-extern void miQuickSortSpansY ____P((miPoint *points, unsigned int *widths, int numSpans));
-extern void miUniquifyPaintedSet ____P((miPaintedSet *paintedSet));
+extern void miAddSpansToPaintedSet (const Spans *spans, miPaintedSet *paintedSet, miPixel pixel);
+extern void miQuickSortSpansY (miPoint *points, unsigned int *widths, int numSpans);
+extern void miUniquifyPaintedSet (miPaintedSet *paintedSet);

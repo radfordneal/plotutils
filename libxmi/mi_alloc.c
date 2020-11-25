@@ -1,3 +1,21 @@
+/* This file is part of the GNU libxmi package.  Copyright (C) 1998, 1999,
+   2000, 2005, Free Software Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* Wrappers for standard storage allocation functions.  The tests for zero
    size, etc., are necessitated by the way in which the original X11
    scan-conversion code was written. */
@@ -10,21 +28,16 @@
 #include "mi_api.h"
 
 /* wrapper for malloc() */
-voidptr_t 
-#ifdef _HAVE_PROTOS
+void * 
 mi_xmalloc (size_t size)
-#else
-mi_xmalloc (size)
-     size_t size;
-#endif
 {
-  voidptr_t p;
+  void * p;
 
   if (size == 0)
-    return (voidptr_t)NULL;
+    return (void *)NULL;
 
-  p = (voidptr_t) malloc (size);
-  if (p == (voidptr_t)NULL)
+  p = (void *) malloc (size);
+  if (p == (void *)NULL)
     {
       fprintf (stderr, "libxmi: ");
       perror ("out of memory");
@@ -34,21 +47,16 @@ mi_xmalloc (size)
 }
 
 /* wrapper for calloc() */
-voidptr_t 
-#ifdef _HAVE_PROTOS
+void * 
 mi_xcalloc (size_t nmemb, size_t size)
-#else
-mi_xcalloc (nmemb, size)
-     size_t nmemb, size;
-#endif
 {
-  voidptr_t p;
+  void * p;
 
   if (size == 0)
-    return (voidptr_t)NULL;
+    return (void *)NULL;
 
-  p = (voidptr_t) calloc (nmemb, size);
-  if (p == (voidptr_t)NULL)
+  p = (void *) calloc (nmemb, size);
+  if (p == (void *)NULL)
     {
       fprintf (stderr, "libxmi: ");
       perror ("out of memory");
@@ -58,14 +66,8 @@ mi_xcalloc (nmemb, size)
 }
 
 /* wrapper for realloc() */
-voidptr_t 
-#ifdef _HAVE_PROTOS
-mi_xrealloc (voidptr_t p, size_t size)
-#else
-mi_xrealloc (p, size)
-     voidptr_t p;
-     size_t size;
-#endif
+void * 
+mi_xrealloc (void * p, size_t size)
 {
   if (!p)
     return mi_xmalloc (size);
@@ -74,11 +76,11 @@ mi_xrealloc (p, size)
       if (size == 0)
 	{
 	  free (p);
-	  return (voidptr_t)NULL;
+	  return (void *)NULL;
 	}
       
-      p = (voidptr_t) realloc (p, size);
-      if (p == (voidptr_t)NULL)
+      p = (void *) realloc (p, size);
+      if (p == (void *)NULL)
 	{
 	  fprintf (stderr, "libxmi: ");
 	  perror ("out of memory");

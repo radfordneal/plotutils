@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -16,12 +34,7 @@
 #define MAX_SQUARED_SINE (1e-6)
 
 void
-#ifdef _HAVE_PROTOS
-_a_paint_path (S___(Plotter *_plotter))
-#else
-_a_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_a_paint_path (S___(Plotter *_plotter))
 {
   if (_plotter->drawstate->pen_type == 0
       && _plotter->drawstate->fill_type == 0)
@@ -52,19 +65,19 @@ _a_paint_path (S___(_plotter))
 	/* set fill color and pen color */
 	if (_plotter->drawstate->fill_type)
 	  /* will be filling the path */
-	  _a_set_fill_color (R___(_plotter) false);
+	  _pl_a_set_fill_color (R___(_plotter) false);
 	else
 	  /* won't be filling the path, but set AI's fill color anyway; in
 	     particular, to be the same as the pen color (this is a
 	     convenience for AI users who may wish e.g. to switch from
 	     stroking to filling) */
-	  _a_set_fill_color (R___(_plotter) true);
+	  _pl_a_set_fill_color (R___(_plotter) true);
 
-	_a_set_pen_color (S___(_plotter));
+	_pl_a_set_pen_color (S___(_plotter));
 	
 	/* update line attributes (cap style, join style, line width), if
 	   necessary */
-	_a_set_attributes (S___(_plotter));
+	_pl_a_set_attributes (S___(_plotter));
 	
 	linewidth = _plotter->drawstate->line_width;
 	numpoints = _plotter->drawstate->path->num_segments;
@@ -311,12 +324,7 @@ _a_paint_path (S___(_plotter))
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_a_paint_paths (S___(Plotter *_plotter))
-#else
-_a_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_a_paint_paths (S___(Plotter *_plotter))
 {
   return false;
 }

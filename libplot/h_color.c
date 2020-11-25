@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -43,13 +61,7 @@
    the Plotter to `true'; otherwise we set it to `false'. */
 
 void
-#ifdef _HAVE_PROTOS
-_h_set_pen_color(R___(Plotter *_plotter) int hpgl_object_type)
-#else
-_h_set_pen_color(R___(_plotter) hpgl_object_type)
-     S___(Plotter *_plotter;)
-     int hpgl_object_type;
-#endif
+_pl_h_set_pen_color(R___(Plotter *_plotter) int hpgl_object_type)
 {
   bool found;
   int longred, longgreen, longblue;
@@ -94,7 +106,7 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
 	/* can be selected */
 	{
 	  /* select the pen */
-	  _set_hpgl_pen (R___(_plotter) i);
+	  _pl_h_set_hpgl_pen (R___(_plotter) i);
 	  
 	  /* in HP-GL/2 case, be sure that `solid' vector screening or
              character filling is used (one or the other, depending on a
@@ -105,9 +117,9 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
 	      if (_plotter->hpgl_version == 2 
 		  && _plotter->hpgl_have_screened_vectors == true)
 		/* set pen type to solid */
-		_set_hpgl_pen_type (R___(_plotter) HPGL_PEN_SOLID, 
-				    /* options ignored */
-				    0.0, 0.0);
+		_pl_h_set_hpgl_pen_type (R___(_plotter) HPGL_PEN_SOLID, 
+					 /* options ignored */
+					 0.0, 0.0);
 	      break;
 	    case HPGL_OBJECT_LABEL:
 	      if (_plotter->hpgl_version == 2 
@@ -151,7 +163,7 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
 	_plotter->hpgl_pen_color[_plotter->hpgl_free_pen].blue = blue;
 	_plotter->hpgl_pen_defined[_plotter->hpgl_free_pen] = 1; /* soft-def */
 	/* select pen */
-	_set_hpgl_pen (R___(_plotter) _plotter->hpgl_free_pen);
+	_pl_h_set_hpgl_pen (R___(_plotter) _plotter->hpgl_free_pen);
 	/* update free pen, i.e. choose next non-hard-defined pen */
 	do
 	  _plotter->hpgl_free_pen = (_plotter->hpgl_free_pen + 1) % HPGL2_MAX_NUM_PENS;
@@ -166,9 +178,9 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
 	    if (_plotter->hpgl_version == 2 
 		&& _plotter->hpgl_have_screened_vectors == true)
 	      /* set pen type to solid */
-	      _set_hpgl_pen_type (R___(_plotter) HPGL_PEN_SOLID, 
-				/* options ignored */
-				  0.0, 0.0);
+	      _pl_h_set_hpgl_pen_type (R___(_plotter) HPGL_PEN_SOLID, 
+				       /* options ignored */
+				       0.0, 0.0);
 	    break;
 	  case HPGL_OBJECT_LABEL:
 	    if (_plotter->hpgl_version == 2 
@@ -203,18 +215,18 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
       {
 	double shading;
 	
-	_hpgl_shaded_pseudocolor (R___(_plotter) 
-				  red, green, blue, &i, &shading);
+	_pl_h_hpgl_shaded_pseudocolor (R___(_plotter) 
+				       red, green, blue, &i, &shading);
 	
 	if (i != 0 || (i == 0 && USE_PEN_ZERO))
 	  /* can be selected */
 	  {
 	    /* select the pen */
-	    _set_hpgl_pen (R___(_plotter) i);
+	    _pl_h_set_hpgl_pen (R___(_plotter) i);
 	    /* set shading level, as a percentage */
-	    _set_hpgl_pen_type (R___(_plotter) HPGL_PEN_SHADED, 
-				/* 2nd option ignored for HPGL_PEN_SHADED */
-				100.0 * shading, 0.0);
+	    _pl_h_set_hpgl_pen_type (R___(_plotter) HPGL_PEN_SHADED, 
+				     /* 2nd option ignored for HPGL_PEN_SHADED */
+				     100.0 * shading, 0.0);
 	    _plotter->hpgl_bad_pen = false;
 	  }
 	else
@@ -233,14 +245,14 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
       {
 	double shading;
 	
-	_hpgl_shaded_pseudocolor (R___(_plotter) 
-				  red, green, blue, &i, &shading);
+	_pl_h_hpgl_shaded_pseudocolor (R___(_plotter) 
+				       red, green, blue, &i, &shading);
 	
 	if (i != 0 || (i == 0 && USE_PEN_ZERO))
 	  /* can be selected */
 	  {
 	    /* select the pen */
-	    _set_hpgl_pen (R___(_plotter) i);
+	    _pl_h_set_hpgl_pen (R___(_plotter) i);
 	    /* if necessary, emit `CF' instruction: specify that characters
 	       are to be rendered in a non-default way, by being filled
 	       with the current fill type (without edging) */
@@ -252,8 +264,8 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
 	      }
 	    /* set the fill type to be a shading level (expressed as a
 	       percentage) */
-	    _set_hpgl_fill_type (R___(_plotter) HPGL_FILL_SHADED, 
-				 100.0 * shading, 0.0); /* 2nd option ignord */
+	    _pl_h_set_hpgl_fill_type (R___(_plotter) HPGL_FILL_SHADED, 
+				      100.0 * shading, 0.0); /* 2nd option ignord */
 	    _plotter->hpgl_bad_pen = false;
 	  }
 	else
@@ -271,12 +283,12 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
 	 [unlike a fill color] is never quantized to white (i.e. to pen
 	 #0). */
       {
-	i = _hpgl_pseudocolor (R___(_plotter) red, green, blue, true);
+	i = _pl_h_hpgl_pseudocolor (R___(_plotter) red, green, blue, true);
 	if (i != 0 || (i == 0 && USE_PEN_ZERO))
 	  /* can be selected */
 	  {
 	    /* select the pen */
-	    _set_hpgl_pen (R___(_plotter) i);
+	    _pl_h_set_hpgl_pen (R___(_plotter) i);
 	    
 	    /* do some updating, based on the type of object to be drawn */
 	    switch (hpgl_object_type)
@@ -285,9 +297,9 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
 		if (_plotter->hpgl_version == 2 
 		    && _plotter->hpgl_have_screened_vectors == true)
 		  /* set pen type to solid */
-		  _set_hpgl_pen_type (R___(_plotter) HPGL_PEN_SOLID, 
-				/* options ignored */
-				      0.0, 0.0);
+		  _pl_h_set_hpgl_pen_type (R___(_plotter) HPGL_PEN_SOLID, 
+					   /* options ignored */
+					   0.0, 0.0);
 		break;
 	      case HPGL_OBJECT_LABEL:
 		if (_plotter->hpgl_version == 2 
@@ -317,9 +329,10 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
       }
 }
 
-/* _h_set_fill_color() is similar to _h_set_pen_color: it sets the HP-GL
-   pen color (and fill type, if appropriate) to match the fill color in our
-   current drawing state.  It's invoked before any filling operation.
+/* _pl_h_set_fill_color() is similar to _pl_h_set_pen_color: it sets the
+   HP-GL pen color (and fill type, if appropriate) to match the fill color
+   in our current drawing state.  It's invoked before any filling
+   operation.
 
    (Note that all filling operations will use the polygon buffer, except
    when we're emitting generic HP-GL [i.e., HPGL_VERSION="1"], which has no
@@ -351,9 +364,9 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
 
    (WARNING: our selection of cross-hatching includes the setting of the
    line type to `solid'.  As a consequence, if HPGL_VERSION="1.5" or "1",
-   then `_h_set_fill_color' does not commute with `_h_set_attributes'.
-   This is taken into account in several places in h_path.c; grep for
-   KLUDGE.)
+   then `_pl_h_set_fill_color' does not commute with
+   `_pl_h_set_attributes'.  This is taken into account in several places in
+   h_path.c; grep for KLUDGE.)
 
    Pen #0 is the canonical white pen.  But on pen plotters, filling with
    pen #0 isn't meaningful.  So we won't actually use pen #0 to fill with
@@ -364,13 +377,7 @@ _h_set_pen_color(R___(_plotter) hpgl_object_type)
    set it to `false'.  This is just as in set_pen_color() above. */
 
 void
-#ifdef _HAVE_PROTOS
-_h_set_fill_color(R___(Plotter *_plotter) bool force_pen_color)
-#else
-_h_set_fill_color(R___(_plotter) force_pen_color)
-     S___(Plotter *_plotter;)
-     bool force_pen_color;
-#endif
+_pl_h_set_fill_color(R___(Plotter *_plotter) bool force_pen_color)
 {
   bool found;
   int longred, longgreen, longblue;
@@ -423,10 +430,10 @@ _h_set_fill_color(R___(_plotter) force_pen_color)
 	/* can be selected */
 	{
 	  /* select it */
-	  _set_hpgl_pen (R___(_plotter) i);
+	  _pl_h_set_hpgl_pen (R___(_plotter) i);
 	  /* set fill type to solid, unidirectional */
-	  _set_hpgl_fill_type (R___(_plotter) HPGL_FILL_SOLID_UNI, 
-			       0.0, 0.0); /* options ignored */
+	  _pl_h_set_hpgl_fill_type (R___(_plotter) HPGL_FILL_SOLID_UNI, 
+				    0.0, 0.0); /* options ignored */
 	  _plotter->hpgl_bad_pen = false;
 	}
       else
@@ -448,14 +455,14 @@ _h_set_fill_color(R___(_plotter) force_pen_color)
 	_plotter->hpgl_pen_color[_plotter->hpgl_free_pen].blue = blue;
 	_plotter->hpgl_pen_defined[_plotter->hpgl_free_pen] = 1; /* soft-def */
 	/* select pen */
-	_set_hpgl_pen (R___(_plotter) _plotter->hpgl_free_pen);
+	_pl_h_set_hpgl_pen (R___(_plotter) _plotter->hpgl_free_pen);
 	/* update free pen, i.e. choose next non-hard-defined pen */
 	do
 	  _plotter->hpgl_free_pen = (_plotter->hpgl_free_pen + 1) % HPGL2_MAX_NUM_PENS;
 	while (_plotter->hpgl_pen_defined[_plotter->hpgl_free_pen] == 2);
 	/* set fill type to solid, unidirectional */
-	_set_hpgl_fill_type (R___(_plotter) HPGL_FILL_SOLID_UNI, 
-			     0.0, 0.0); /* options ignored */
+	_pl_h_set_hpgl_fill_type (R___(_plotter) HPGL_FILL_SOLID_UNI, 
+				  0.0, 0.0); /* options ignored */
 	
 	_plotter->hpgl_bad_pen = false;
       }
@@ -468,16 +475,16 @@ _h_set_fill_color(R___(_plotter) force_pen_color)
       {
 	double shading;
 	
-	_hpgl_shaded_pseudocolor (R___(_plotter) 
-				  red, green, blue, &i, &shading);
+	_pl_h_hpgl_shaded_pseudocolor (R___(_plotter) 
+				       red, green, blue, &i, &shading);
 	
 	if (i != 0 || (i == 0 && USE_PEN_ZERO))
 	  /* can be selected */
 	  {
-	    _set_hpgl_pen (R___(_plotter) i);
+	    _pl_h_set_hpgl_pen (R___(_plotter) i);
 	    /* shading level in HP-GL/2 is expressed as a percentage */
-	    _set_hpgl_fill_type (R___(_plotter) HPGL_FILL_SHADED, 
-				 100.0 * shading, 0.0); /* 2nd option ignord */
+	    _pl_h_set_hpgl_fill_type (R___(_plotter) HPGL_FILL_SHADED, 
+				      100.0 * shading, 0.0); /* 2nd option ignord */
 	    _plotter->hpgl_bad_pen = false;
 	  }
 	else
@@ -496,8 +503,8 @@ _h_set_fill_color(R___(_plotter) force_pen_color)
       {
 	double shading;
 	
-	_hpgl_shaded_pseudocolor (R___(_plotter) 
-				  red, green, blue, &i, &shading);
+	_pl_h_hpgl_shaded_pseudocolor (R___(_plotter) 
+				       red, green, blue, &i, &shading);
 	
 	if (i != 0 && shading > 0.01)
 	  /* pen can be selected; note that we insist that shading level be
@@ -506,7 +513,7 @@ _h_set_fill_color(R___(_plotter) force_pen_color)
 	  {
 	    double interline_distance;
 	    
-	    _set_hpgl_pen (R___(_plotter) i);
+	    _pl_h_set_hpgl_pen (R___(_plotter) i);
 	    
 	    /* convert shading fraction to cross-hatch distance */
 	    
@@ -526,8 +533,8 @@ _h_set_fill_color(R___(_plotter) force_pen_color)
 	    interline_distance 
 	      = HPGL_NOMINAL_PEN_WIDTH * (1.0 + sqrt (1.0 - shading)) /shading;
 	    
-	    _set_hpgl_fill_type (R___(_plotter) HPGL_FILL_CROSSHATCHED_LINES, 
-				 interline_distance, 45.0); /* 45 degrees */
+	    _pl_h_set_hpgl_fill_type (R___(_plotter) HPGL_FILL_CROSSHATCHED_LINES, 
+				      interline_distance, 45.0); /* 45 degrees */
 	    _plotter->hpgl_bad_pen = false;
 	  }
 	else
@@ -541,13 +548,7 @@ _h_set_fill_color(R___(_plotter) force_pen_color)
    color by selecting a pen in the palette, by number. */
 
 void 
-#ifdef _HAVE_PROTOS
-_set_hpgl_pen (R___(Plotter *_plotter) int new_pen)
-#else
-_set_hpgl_pen (R___(_plotter) new_pen)
-     S___(Plotter *_plotter;)
-     int new_pen;
-#endif
+_pl_h_set_hpgl_pen (R___(Plotter *_plotter) int new_pen)
 {
   if (new_pen != _plotter->hpgl_pen) /* need to select new pen */
     {
@@ -571,14 +572,7 @@ _set_hpgl_pen (R___(_plotter) new_pen)
    above. */
 
 void
-#ifdef _HAVE_PROTOS
-_set_hpgl_pen_type (R___(Plotter *_plotter) int new_hpgl_pen_type, double option1, double option2)
-#else
-_set_hpgl_pen_type (R___(_plotter) new_hpgl_pen_type, option1, option2)
-     S___(Plotter *_plotter;)
-     int new_hpgl_pen_type;
-     double option1, option2;
-#endif
+_pl_h_set_hpgl_pen_type (R___(Plotter *_plotter) int new_hpgl_pen_type, double option1, double option2)
 {
   if (new_hpgl_pen_type != _plotter->hpgl_pen_type
       /* in shading case, we store the current shading level in the option1
@@ -627,14 +621,7 @@ _set_hpgl_pen_type (R___(_plotter) new_hpgl_pen_type, option1, option2)
    sets it to `solid'). */
 
 void
-#ifdef _HAVE_PROTOS
-_set_hpgl_fill_type (R___(Plotter *_plotter) int new_hpgl_fill_type, double option1, double option2)
-#else
-_set_hpgl_fill_type (R___(_plotter) new_hpgl_fill_type, option1, option2)
-     S___(Plotter *_plotter;)
-     int new_hpgl_fill_type;
-     double option1, option2;
-#endif
+_pl_h_set_hpgl_fill_type (R___(Plotter *_plotter) int new_hpgl_fill_type, double option1, double option2)
 {
   if (new_hpgl_fill_type != _plotter->hpgl_fill_type
       /* in shading case, we store the current shading level in the option1
@@ -706,14 +693,7 @@ _set_hpgl_fill_type (R___(_plotter) new_hpgl_fill_type, option1, option2)
    color, using Euclidean distance as our metric.  Final arg, if set,
    specifies that nonwhite colors should never be quantized to white. */
 int
-#ifdef _HAVE_PROTOS
-_hpgl_pseudocolor (R___(Plotter *_plotter) int red, int green, int blue, bool restrict_white)
-#else
-_hpgl_pseudocolor (R___(_plotter) red, green, blue, restrict_white)
-     S___(Plotter *_plotter;)
-     int red, green, blue;
-     bool restrict_white;
-#endif
+_pl_h_hpgl_pseudocolor (R___(Plotter *_plotter) int red, int green, int blue, bool restrict_white)
 {
   unsigned long int difference = INT_MAX;
   int i;
@@ -751,15 +731,7 @@ _hpgl_pseudocolor (R___(_plotter) red, green, blue, restrict_white)
    version of one of the defined pen colors, using Euclidean distance as
    our metric. */
 void
-#ifdef _HAVE_PROTOS
-_hpgl_shaded_pseudocolor (R___(Plotter *_plotter) int red, int green, int blue, int *pen_ptr, double *shading_ptr)
-#else
-_hpgl_shaded_pseudocolor (R___(_plotter) red, green, blue, pen_ptr, shading_ptr)
-     S___(Plotter *_plotter;)
-     int red, green, blue;
-     int *pen_ptr;
-     double *shading_ptr;
-#endif
+_pl_h_hpgl_shaded_pseudocolor (R___(Plotter *_plotter) int red, int green, int blue, int *pen_ptr, double *shading_ptr)
 {
   int best = 0;
   int i;

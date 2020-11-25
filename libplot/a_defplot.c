@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any AIPlotter object, including
    both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -9,28 +27,28 @@
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    an AIPlotter struct. */
-const Plotter _a_default_plotter = 
+const Plotter _pl_a_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _a_initialize, _a_terminate,
+  _pl_a_initialize, _pl_a_terminate,
   /* page manipulation */
-  _a_begin_page, _a_erase_page, _a_end_page,
+  _pl_a_begin_page, _pl_a_erase_page, _pl_a_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _a_paint_path, _a_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_a_paint_path, _pl_a_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _a_paint_point,
+  _pl_g_paint_marker, _pl_a_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _a_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_a_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -46,16 +64,11 @@ const Plotter _a_default_plotter =
    which version of Illustrator file format we'll emit. */
 
 void
-#ifdef _HAVE_PROTOS
-_a_initialize (S___(Plotter *_plotter))
-#else
-_a_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_a_initialize (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override superclass initializations, as necessary */
@@ -86,7 +99,7 @@ _a_initialize (S___(_plotter))
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->data->default_font_type = F_POSTSCRIPT;
+  _plotter->data->default_font_type = PL_F_POSTSCRIPT;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->issue_font_warning = true;
   _plotter->data->have_horizontal_justification = true;
@@ -132,13 +145,13 @@ _a_initialize (S___(_plotter))
   _plotter->ai_magenta_used = false;
   _plotter->ai_yellow_used = false;
   _plotter->ai_black_used = false;
-  _plotter->ai_cap_style = PS_LINE_CAP_BUTT;
-  _plotter->ai_join_style = PS_LINE_JOIN_MITER;  
+  _plotter->ai_cap_style = AI_LINE_CAP_BUTT;
+  _plotter->ai_join_style = AI_LINE_JOIN_MITER;  
 /* Maximum value the cosecant of the half-angle between any two line
    segments can have, if the join is to be mitered rather than beveled.
    Default value for AI is 4.0. */
   _plotter->ai_miter_limit = 4.0;
-  _plotter->ai_line_type = L_SOLID;  
+  _plotter->ai_line_type = PL_L_SOLID;  
   _plotter->ai_line_width = 1.0;    
   _plotter->ai_fill_rule_type = 0; /* i.e. nonzero winding number rule */
 
@@ -198,16 +211,11 @@ _a_initialize (S___(_plotter))
    _plotter points to the Plotter that is about to be deleted. */
 
 void
-#ifdef _HAVE_PROTOS
-_a_terminate (S___(Plotter *_plotter))
-#else
-_a_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_a_terminate (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
@@ -215,60 +223,60 @@ _a_terminate (S___(_plotter))
 AIPlotter::AIPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:Plotter (infile, outfile, errfile)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter (FILE *outfile)
 	:Plotter (outfile)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter (ostream& out)
 	: Plotter (out)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter ()
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::AIPlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _a_initialize ();
+  _pl_a_initialize ();
 }
 
 AIPlotter::~AIPlotter ()
@@ -277,6 +285,6 @@ AIPlotter::~AIPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _a_terminate ();
+  _pl_a_terminate ();
 }
 #endif

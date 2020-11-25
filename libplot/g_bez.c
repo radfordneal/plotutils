@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the bezier2 and bezier3 methods, which are GNU
    extensions to libplot.  Each of them draws an object: a quadratic and a
    cubic Bezier path segment, respectively. */
@@ -6,13 +24,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 _API_fbezier2 (R___(Plotter *_plotter) double x0, double y0, double x1, double y1, double x2, double y2)
-#else
-_API_fbezier2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
-     S___(Plotter *_plotter;) 
-     double x0, y0, x1, y1, x2, y2;
-#endif
 {
   int prev_num_segments;
   plPoint p0, p1, p2;
@@ -78,7 +90,7 @@ _API_fbezier2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
       if (_plotter->data->have_mixed_paths == false
 	  && _plotter->drawstate->path->num_segments == 2)
 	{
-	  _maybe_replace_arc (S___(_plotter));
+	  _pl_g_maybe_replace_arc (S___(_plotter));
 	  if (_plotter->drawstate->path->num_segments > 2)
 	    prev_num_segments = 0;	
 	}
@@ -130,13 +142,7 @@ _API_fbezier2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_fbezier3 (R___(Plotter *_plotter) double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
-#else
-_API_fbezier3 (R___(_plotter) x0, y0, x1, y1, x2, y2, x3, y3)
-     S___(Plotter *_plotter;)
-     double x0, y0, x1, y1, x2, y2, x3, y3;
-#endif
 {
   int prev_num_segments;
   plPoint p0, p1, p2, p3;
@@ -203,7 +209,7 @@ _API_fbezier3 (R___(_plotter) x0, y0, x1, y1, x2, y2, x3, y3)
       if (_plotter->data->have_mixed_paths == false
 	  && _plotter->drawstate->path->num_segments == 2)
 	{
-	  _maybe_replace_arc (S___(_plotter));
+	  _pl_g_maybe_replace_arc (S___(_plotter));
 	  if (_plotter->drawstate->path->num_segments > 2)
 	    prev_num_segments = 0;	
 	}

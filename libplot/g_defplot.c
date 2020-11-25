@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any generic Plotter object,
    including both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -15,16 +33,11 @@
 
 /* global library variables (user-settable error handlers) */
 #ifndef LIBPLOTTER
-#ifdef _HAVE_PROTOS
-int (*libplot_warning_handler)(const char *) = NULL;
-int (*libplot_error_handler)(const char *) = NULL;
-#else
-int (*libplot_warning_handler)() = NULL;
-int (*libplot_error_handler)() = NULL;
-#endif
+int (*pl_libplot_warning_handler)(const char *) = NULL;
+int (*pl_libplot_error_handler)(const char *) = NULL;
 #else  /* LIBPLOTTER */
-int (*libplotter_warning_handler)(const char *) = NULL;
-int (*libplotter_error_handler)(const char *) = NULL;
+int (*pl_libplotter_warning_handler)(const char *) = NULL;
+int (*pl_libplotter_error_handler)(const char *) = NULL;
 #endif /* LIBPLOTTER */
 
 /* The following variables (_plotters, _plotters_len) are global variables
@@ -60,28 +73,28 @@ PlotterParams *_old_api_global_plotter_params = NULL;
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    a Plotter struct. */
-const Plotter _g_default_plotter = 
+const Plotter _pl_g_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _g_initialize, _g_terminate,
+  _pl_g_initialize, _pl_g_terminate,
   /* page manipulation */
-  _g_begin_page, _g_erase_page, _g_end_page,
+  _pl_g_begin_page, _pl_g_erase_page, _pl_g_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _g_paint_path, _g_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_g_paint_path, _pl_g_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _g_paint_point,
+  _pl_g_paint_marker, _pl_g_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _g_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_g_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error
 };
 #endif /* not LIBPLOTTER */
 
@@ -93,12 +106,7 @@ const Plotter _g_default_plotter =
    _plotter is an alias for `this'. */
 
 void
-#ifdef _HAVE_PROTOS
-_g_initialize (S___(Plotter *_plotter))
-#else
-_g_initialize (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_initialize (S___(Plotter *_plotter))
 {
   bool open_slot = false;
   int i, j;
@@ -113,7 +121,7 @@ _g_initialize (S___(_plotter))
   /* ensure plotter instance array is set up */
   if (_plotters_len == 0)
     {
-      _plotters = (Plotter **)_plot_xmalloc (INITIAL_PLOTTERS_LEN * sizeof(Plotter *));
+      _plotters = (Plotter **)_pl_xmalloc (INITIAL_PLOTTERS_LEN * sizeof(Plotter *));
       for (i = 0; i < INITIAL_PLOTTERS_LEN; i++)
 	_plotters[i] = (Plotter *)NULL;
       _plotters_len = INITIAL_PLOTTERS_LEN;
@@ -132,7 +140,7 @@ _g_initialize (S___(_plotter))
     {
       i = _plotters_len;
       _plotters = 
-	(Plotter **)_plot_xrealloc (_plotters, 
+	(Plotter **)_pl_xrealloc (_plotters, 
 				    2 * _plotters_len * sizeof (Plotter *));
       for (j = _plotters_len; j < 2 * _plotters_len; j++)
 	_plotters[j] = (Plotter *)NULL;
@@ -195,7 +203,7 @@ _g_initialize (S___(_plotter))
   _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user) */
-  _plotter->data->default_font_type = F_HERSHEY;
+  _plotter->data->default_font_type = PL_F_HERSHEY;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->have_horizontal_justification = false;
   _plotter->data->have_vertical_justification = false;
@@ -203,7 +211,7 @@ _g_initialize (S___(_plotter))
   _plotter->data->issue_font_warning = true;
 
   /* path-related parameters (also internal) */
-  _plotter->data->max_unfilled_path_length = MAX_UNFILLED_PATH_LENGTH;
+  _plotter->data->max_unfilled_path_length = PL_MAX_UNFILLED_PATH_LENGTH;
   _plotter->data->have_mixed_paths = false;
   _plotter->data->allowed_arc_scaling = AS_NONE;
   _plotter->data->allowed_ellarc_scaling = AS_NONE;  
@@ -308,12 +316,7 @@ _g_initialize (S___(_plotter))
    to an output stream from internal storage, deallocate storage, etc. */
 
 void
-#ifdef _HAVE_PROTOS
-_g_terminate (S___(Plotter *_plotter))
-#else
-_g_terminate (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_terminate (S___(Plotter *_plotter))
 {
   int i;
 
@@ -322,7 +325,7 @@ _g_terminate (S___(_plotter))
     _API_closepl (S___(_plotter));
 
   /* free instance-specific copies of class parameters */
-  _free_params_in_plotter (S___(_plotter));
+  _pl_g_free_params_in_plotter (S___(_plotter));
 
   /* free color name cache */
   _delete_color_name_cache (_plotter->data->color_name_cache);
@@ -357,7 +360,7 @@ _g_terminate (S___(_plotter))
 Plotter::Plotter (FILE *infile, FILE *outfile, FILE *errfile)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = infile;
   _plotter->data->outfp = outfile;  
@@ -368,15 +371,15 @@ Plotter::Plotter (FILE *infile, FILE *outfile, FILE *errfile)
   /* copy in the current values of device driver parameters */
   if (_old_api_global_plotter_params == NULL)
     _old_api_global_plotter_params = new PlotterParams;
-  _copy_params_to_plotter (_old_api_global_plotter_params);
+  _pl_g_copy_params_to_plotter (_old_api_global_plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::Plotter (FILE *outfile)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = NULL;
   _plotter->data->outfp = outfile;  
@@ -387,15 +390,15 @@ Plotter::Plotter (FILE *outfile)
   /* copy in the current values of device driver parameters */
   if (_old_api_global_plotter_params == NULL)
     _old_api_global_plotter_params = new PlotterParams;
-  _copy_params_to_plotter (_old_api_global_plotter_params);
+  _pl_g_copy_params_to_plotter (_old_api_global_plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::Plotter (istream& in, ostream& out, ostream& err)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = NULL;
   _plotter->data->outfp = NULL;  
@@ -415,15 +418,15 @@ Plotter::Plotter (istream& in, ostream& out, ostream& err)
   /* copy in the current values of device driver parameters */
   if (_old_api_global_plotter_params == NULL)
     _old_api_global_plotter_params = new PlotterParams;
-  _copy_params_to_plotter (_old_api_global_plotter_params);
+  _pl_g_copy_params_to_plotter (_old_api_global_plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::Plotter (ostream& out)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = NULL;
   _plotter->data->outfp = NULL;
@@ -437,15 +440,15 @@ Plotter::Plotter (ostream& out)
   /* copy in the current values of device driver parameters */
   if (_old_api_global_plotter_params == NULL)
     _old_api_global_plotter_params = new PlotterParams;
-  _copy_params_to_plotter (_old_api_global_plotter_params);
+  _pl_g_copy_params_to_plotter (_old_api_global_plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::Plotter ()
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = NULL;
   _plotter->data->outfp = NULL;
@@ -456,9 +459,9 @@ Plotter::Plotter ()
   /* copy in the current values of device driver parameters */
   if (_old_api_global_plotter_params == NULL)
     _old_api_global_plotter_params = new PlotterParams;
-  _copy_params_to_plotter (_old_api_global_plotter_params);
+  _pl_g_copy_params_to_plotter (_old_api_global_plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 /* NEW API; thread-safe (since user can specify a local PlotterParams
@@ -467,7 +470,7 @@ Plotter::Plotter ()
 Plotter::Plotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &plotter_params)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = infile;
   _plotter->data->outfp = outfile;  
@@ -476,15 +479,15 @@ Plotter::Plotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &plo
   _plotter->data->outstream = NULL;  
   _plotter->data->errstream = NULL;
   /* copy in the specified values of device driver parameters */
-  _copy_params_to_plotter (&plotter_params);
+  _pl_g_copy_params_to_plotter (&plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::Plotter (FILE *outfile, PlotterParams &plotter_params)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = NULL;
   _plotter->data->outfp = outfile;  
@@ -493,15 +496,15 @@ Plotter::Plotter (FILE *outfile, PlotterParams &plotter_params)
   _plotter->data->outstream = NULL;  
   _plotter->data->errstream = NULL;
   /* copy in the specified values of device driver parameters */
-  _copy_params_to_plotter (&plotter_params);
+  _pl_g_copy_params_to_plotter (&plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::Plotter (istream& in, ostream& out, ostream& err, PlotterParams &plotter_params)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = NULL;
   _plotter->data->outfp = NULL;  
@@ -519,15 +522,15 @@ Plotter::Plotter (istream& in, ostream& out, ostream& err, PlotterParams &plotte
   else
     _plotter->data->errstream = NULL;
   /* copy in the specified values of device driver parameters */
-  _copy_params_to_plotter (&plotter_params);
+  _pl_g_copy_params_to_plotter (&plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::Plotter (ostream& out, PlotterParams &plotter_params)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = NULL;
   _plotter->data->outfp = NULL;
@@ -539,15 +542,15 @@ Plotter::Plotter (ostream& out, PlotterParams &plotter_params)
     _plotter->data->outstream = NULL;
   _plotter->data->errstream = NULL;
   /* copy in the specified values of device driver parameters */
-  _copy_params_to_plotter (&plotter_params);
+  _pl_g_copy_params_to_plotter (&plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::Plotter (PlotterParams &plotter_params)
 {
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   _plotter->data->infp = NULL;
   _plotter->data->outfp = NULL;
@@ -556,14 +559,14 @@ Plotter::Plotter (PlotterParams &plotter_params)
   _plotter->data->outstream = NULL;  
   _plotter->data->errstream = NULL;
   /* copy in the specified values of device driver parameters */
-  _copy_params_to_plotter (&plotter_params);
+  _pl_g_copy_params_to_plotter (&plotter_params);
 
-  _g_initialize ();
+  _pl_g_initialize ();
 }
 
 Plotter::~Plotter ()
 {
-  _g_terminate ();
+  _pl_g_terminate ();
 
   /* destroy PlotterData structure in Plotter */
   free (_plotter->data);

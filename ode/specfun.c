@@ -1,7 +1,12 @@
-/* Special function approximations by Jos van der Woude <jvdwoude@hut.nl>,
-   Copyright (c) 1992 by Jos van der Woude.  Permission granted to
+/* This file is part of the GNU plotutils package. */
+
+/* Copyright (C) 1992 by Jos van der Woude.  Permission granted to
    distribute freely for non-commercial purposes only.
 
+   GNU enhancements Copyright (C) 1997, 1998, 1998, 2005, Free Software
+   Foundation, Inc. */
+
+/* Special function approximations by Jos van der Woude <jvdwoude@hut.nl>,
    Extracted from the file specfun.c in the gnuplot 3.5 distribution.
 
    This file contains the functions
@@ -77,40 +82,39 @@
 #ifdef NO_SYSTEM_GAMMA
 #define SIGNGAM our_signgam
 static int SIGNGAM;
-double f_lgamma ____P((double x));
-static double lgamneg ____P((double x));
-static double lgampos ____P((double x));
+double f_lgamma (double x);
+static double lgamneg (double x);
+static double lgampos (double x);
 #else  /* not NO_SYSTEM_GAMMA, we link in vendor code */
 #define SIGNGAM signgam
 extern int SIGNGAM;
 #endif
-double f_gamma ____P((double x));
+double f_gamma (double x);
 
 #ifndef HAVE_ERF
-double erf ____P((double x));
-double erfc ____P((double x));
+double erf (double x);
+double erfc (double x);
 #endif
-double ibeta ____P((double a, double b, double x));
-double igamma ____P((double a, double x));
-double inverf ____P((double p));
-double invnorm ____P((double p));
-double norm ____P((double x));
-static double confrac ____P((double a, double b, double x));
+double ibeta (double a, double b, double x);
+double igamma (double a, double x);
+double inverf (double p);
+double invnorm (double p);
+double norm (double x);
+static double confrac (double a, double b, double x);
 
 /* Our gamma function.  F_LGAMMA(), which this calls, computes the log of
    the gamma function, with the sign being returned in SIGNGAM.  F_LGAMMA()
    is defined in include/sys-defines.h.  It may be a vendor-supplied
    lgamma(), a vendor-supplied gamma(), or our own f_lgamma (see below). */
 double
-#ifdef _HAVE_PROTOS
 f_gamma (double x)
-#else
-f_gamma (x)
-     double x;
-#endif
 {
 #ifdef HAVE_MATHERR
+#ifdef __cplusplus
+  struct __exception exc;
+#else
   struct exception exc;
+#endif
 #endif
 
   double y = F_LGAMMA(x);
@@ -191,16 +195,15 @@ static const double a[] =
 };
 
 static double   
-#ifdef _HAVE_PROTOS
 lgamneg (double z)
-#else
-lgamneg (z)
-     double z;
-#endif
 {
   double tmp, result;
 #ifdef HAVE_MATHERR
+#ifdef __cplusplus
+  struct __exception exc;
+#else
   struct exception exc;
+#endif
 #endif
 
   if (!modf (z = -z, &tmp)) 
@@ -253,19 +256,18 @@ lgamneg (z)
 }
 
 static double   
-#ifdef _HAVE_PROTOS
 lgampos (double z)
-#else
-lgampos (z)
-     double z;
-#endif
 {
   double          sum;
   double          tmp;
   double          result;
   int             i;
 #ifdef HAVE_MATHERR
+#ifdef __cplusplus
+  struct __exception exc;
+#else
   struct exception exc;
+#endif
 #endif
   
   sum = a[0];
@@ -301,12 +303,7 @@ lgampos (z)
 /* Our log-of-gamma function, which we use if the vendor doesn't supply
    one, or if the vendor's version is buggy. */
 double 
-#ifdef _HAVE_PROTOS
 f_lgamma (double z)
-#else
-f_lgamma (z)
-     double z;
-#endif
 {
   SIGNGAM = 1;
   
@@ -319,12 +316,7 @@ f_lgamma (z)
 
 #ifndef HAVE_ERF
 double
-#ifdef _HAVE_PROTOS
 erf (double x)
-#else
-erf (x)
-     double x;
-#endif
 {
   x = x < 0.0 ? -igamma(0.5, x * x) : igamma(0.5, x * x);
 
@@ -332,12 +324,7 @@ erf (x)
 }
 
 double
-#ifdef _HAVE_PROTOS
 erfc (double x)
-#else
-erfc (x)
-     double x;
-#endif
 {
   x = x < 0.0 ? 1.0 + igamma(0.5, x * x) : 1.0 - igamma(0.5, x * x);
 
@@ -379,12 +366,7 @@ erfc (x)
  */
 
 double
-#ifdef _HAVE_PROTOS
 ibeta (double a, double b, double x)
-#else
-ibeta (a, b, x)
-     double a, b, x;
-#endif
 {
   /* Test for admissibility of arguments */
   if (a <= 0.0 || b <= 0.0 || x < 0.0 || x > 1.0)
@@ -399,12 +381,7 @@ ibeta (a, b, x)
 }
 
 static double   
-#ifdef _HAVE_PROTOS
 confrac (double a, double b, double x)
-#else
-confrac (a, b, x)
-     double a, b, x;
-#endif
 {
   double          Alo = 0.0;
   double          Ahi;
@@ -483,12 +460,7 @@ confrac (a, b, x)
  */
 
 double
-#ifdef _HAVE_PROTOS
 igamma (double a, double x)
-#else
-igamma (a, x)
-     double a, x;
-#endif
 {
   double          arg;
   double          aa;
@@ -580,12 +552,7 @@ igamma (a, x)
    ---------------------------------------------------------------- */
 
 double
-#ifdef _HAVE_PROTOS
 norm (double x)			/* Normal or Gaussian Probability Function */
-#else
-norm (x)			/* Normal or Gaussian Probability Function */
-     double x;
-#endif
 {
   /* Ref.: Abramowitz and Stegun 1964, "Handbook of Mathematical
      Functions", Applied Mathematics Series, vol. 55, Chapter 26, page 934,
@@ -602,12 +569,7 @@ norm (x)			/* Normal or Gaussian Probability Function */
 }
 
 double 
-#ifdef _HAVE_PROTOS
 invnorm (double p)		/* Inverse Normal Probability Function */
-#else
-invnorm (p)			/* Inverse Normal Probability Function */
-     double p;
-#endif
 {
   /* Source: This routine was derived (using f2c) from the Fortran
    * subroutine MDNRIS found in ACM Algorithm 602, obtained from netlib.
@@ -657,12 +619,7 @@ invnorm (p)			/* Inverse Normal Probability Function */
 } 
 
 double 
-#ifdef _HAVE_PROTOS
 inverf (double p)		/* Inverse Error Function */
-#else
-inverf (p)			/* Inverse Error Function */
-     double p;
-#endif
 {
   /* 
    * Source: This routine was derived (using f2c) from the Fortran

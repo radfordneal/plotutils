@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -8,7 +31,7 @@
 #include "mi_scanfill.h"
 
 /* forward references */
-static int getPolyYBounds ____P((const miPoint *pts, int n, int *by, int *ty));
+static int getPolyYBounds (const miPoint *pts, int n, int *by, int *ty);
 
 /*
  * Written by Brian Kelleher; Dec. 1985.
@@ -26,16 +49,9 @@ static int getPolyYBounds ____P((const miPoint *pts, int n, int *by, int *ty));
  * general polygons (i.e. polygons that may be non-convex or
  * self-intersecting).  */
 
+/* ARGS: pGC = unused */
 void
-#ifdef _HAVE_PROTOS
 miFillConvexPoly (miPaintedSet *paintedSet, const miGC *pGC, int count, const miPoint *ptsIn)
-#else
-miFillConvexPoly (paintedSet, pGC, count, ptsIn)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;		/* unused */
-     int count;
-     const miPoint *ptsIn;
-#endif
 /* count = num of points, ptsIn = the points */
 {
   int xl = 0, xr = 0;		/* x vals of left and right edges */
@@ -170,14 +186,7 @@ miFillConvexPoly (paintedSet, pGC, count, ptsIn)
  *     Find the index of the point with the smallest y.
  */
 static int
-#ifdef _HAVE_PROTOS
 getPolyYBounds (const miPoint *pts, int n, int *by, int *ty)
-#else
-getPolyYBounds (pts, n, by, ty)
-     const miPoint *pts;
-     int n;
-     int *by, *ty;
-#endif
 {
   const miPoint *ptsStart = pts;
   const miPoint *ptMin;

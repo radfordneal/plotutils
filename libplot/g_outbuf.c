@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains routines for creating, manipulating, and deleting a
    special sort of output buffer: a plOutbuf.  They are invoked by drawing
    methods for Plotters that do not do real-time output.  Such Plotters
@@ -36,18 +54,14 @@
 #define NEW_OUTBUF_LEN(old_outbuf_len) ((old_outbuf_len) < 10000000 ? 2 * (old_outbuf_len) : (old_outbuf_len) + 10000000)
 
 plOutbuf *
-#ifdef _HAVE_PROTOS
 _new_outbuf (void)
-#else
-_new_outbuf ()
-#endif
 {
   plOutbuf *bufp;
 
-  bufp = (plOutbuf *)_plot_xmalloc(sizeof(plOutbuf));
+  bufp = (plOutbuf *)_pl_xmalloc(sizeof(plOutbuf));
   bufp->header = (plOutbuf *)NULL;
   bufp->trailer = (plOutbuf *)NULL;
-  bufp->base = (char *)_plot_xmalloc(INITIAL_OUTBUF_LEN * sizeof(char));
+  bufp->base = (char *)_pl_xmalloc(INITIAL_OUTBUF_LEN * sizeof(char));
   bufp->len = (unsigned long)INITIAL_OUTBUF_LEN;
   bufp->next = NULL;
   bufp->reset_point = bufp->base;
@@ -58,12 +72,7 @@ _new_outbuf ()
 }
 
 void
-#ifdef _HAVE_PROTOS
 _reset_outbuf (plOutbuf *bufp)
-#else
-_reset_outbuf (bufp)
-     plOutbuf *bufp;
-#endif
 {
   int i;
 
@@ -80,31 +89,21 @@ _reset_outbuf (bufp)
   bufp->yrange_max = -(DBL_MAX);
 
   /* initialize `font used' arrays for the page */
-  for (i = 0; i < NUM_PS_FONTS; i++)
+  for (i = 0; i < PL_NUM_PS_FONTS; i++)
     bufp->ps_font_used[i] = false;
-  for (i = 0; i < NUM_PCL_FONTS; i++)
+  for (i = 0; i < PL_NUM_PCL_FONTS; i++)
     bufp->pcl_font_used[i] = false;
 }
 
 void
-#ifdef _HAVE_PROTOS
 _freeze_outbuf (plOutbuf *bufp)
-#else
-_freeze_outbuf (bufp)
-     plOutbuf *bufp;
-#endif
 {
   bufp->reset_point = bufp->point;
   bufp->reset_contents = bufp->contents;
 }
 
 void
-#ifdef _HAVE_PROTOS
 _delete_outbuf (plOutbuf *bufp)
-#else
-_delete_outbuf (bufp)
-     plOutbuf *bufp;
-#endif
 {
   if (bufp)
     {
@@ -119,12 +118,7 @@ _delete_outbuf (bufp)
    characters were added.  */
 
 void
-#ifdef _HAVE_PROTOS
 _update_buffer (plOutbuf *bufp)
-#else
-_update_buffer (bufp)
-     plOutbuf *bufp;
-#endif
 {
   int additional;
 
@@ -148,7 +142,7 @@ _update_buffer (bufp)
       newlen = NEW_OUTBUF_LEN(oldlen);
 
       bufp->base = 
-	(char *)_plot_xrealloc (bufp->base, newlen * sizeof(char));
+	(char *)_pl_xrealloc (bufp->base, newlen * sizeof(char));
       bufp->len = newlen;
       bufp->point = bufp->base + bufp->contents;
       bufp->reset_point = bufp->base + bufp->reset_contents;
@@ -160,13 +154,7 @@ _update_buffer (bufp)
    than a null-terminated string (e.g., raw binary bytes). */
 
 void
-#ifdef _HAVE_PROTOS
 _update_buffer_by_added_bytes (plOutbuf *bufp, int additional)
-#else
-_update_buffer_by_added_bytes (bufp, additional)
-     plOutbuf *bufp;
-     int additional;
-#endif
 {
   bufp->point += additional;
   bufp->contents += additional;
@@ -186,7 +174,7 @@ _update_buffer_by_added_bytes (bufp, additional)
       newlen = NEW_OUTBUF_LEN(oldlen);
 
       bufp->base = 
-	(char *)_plot_xrealloc (bufp->base, newlen * sizeof(char));
+	(char *)_pl_xrealloc (bufp->base, newlen * sizeof(char));
       bufp->len = newlen;
       bufp->point = bufp->base + bufp->contents;
       bufp->reset_point = bufp->base + bufp->reset_contents;
@@ -196,13 +184,7 @@ _update_buffer_by_added_bytes (bufp, additional)
 /* update bounding box information for a plOutbuf, to take account of a
    point being plotted on the associated page */
 void 
-#ifdef _HAVE_PROTOS
 _update_bbox (plOutbuf *bufp, double x, double y)
-#else
-_update_bbox (bufp, x, y)
-     plOutbuf *bufp;
-     double x, y;
-#endif
 {
   if (x > bufp->xrange_max) bufp->xrange_max = x;
   if (x < bufp->xrange_min) bufp->xrange_min = x;
@@ -212,13 +194,7 @@ _update_bbox (bufp, x, y)
 
 /* return bounding box information for a plOutbuf */
 void 
-#ifdef _HAVE_PROTOS
 _bbox_of_outbuf (plOutbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax)
-#else
-_bbox_of_outbuf (bufp, xmin, xmax, ymin, ymax)
-     plOutbuf *bufp;
-     double *xmin, *xmax, *ymin, *ymax;
-#endif
 {
   double page_x_min = DBL_MAX;
   double page_y_min = DBL_MAX;  
@@ -242,13 +218,7 @@ _bbox_of_outbuf (bufp, xmin, xmax, ymin, ymax)
 /* compute bounding box information for a linked list of plOutbufs
    (i.e. pages), starting with a specified plOutbuf (i.e., page) */
 void 
-#ifdef _HAVE_PROTOS
 _bbox_of_outbufs (plOutbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax)
-#else
-_bbox_of_outbufs (bufp, xmin, xmax, ymin, ymax)
-     plOutbuf *bufp;
-     double *xmin, *xmax, *ymin, *ymax;
-#endif
 {
   double doc_x_min = DBL_MAX;
   double doc_y_min = DBL_MAX;  

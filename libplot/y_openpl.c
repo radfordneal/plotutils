@@ -1,13 +1,31 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This implementation is for XPlotters.  When invoked, it pops up a
    plotting window on the default screen of the specified X display.  When
    the corresponding closepl method is invoked, the window is `spun off',
    i.e., is managed thenceforth by a forked-off child process. */
 
-/* This file also contains the internal functions _y_maybe_get_new_colormap
-   and _y_maybe_handle_x_events.  They override the corresponding functions
+/* This file also contains the internal functions _pl_y_maybe_get_new_colormap
+   and _pl_y_maybe_handle_x_events.  They override the corresponding functions
    in the XDrawablePlotter superclass, which are no-ops.
 
-   The function _y_maybe_handle_x_events is very important: it contains our
+   The function _pl_y_maybe_handle_x_events is very important: it contains our
    hand-crafted loop for processing X events, which is called by an
    XPlotter after any libplot drawing operation is invoked on it. */
 
@@ -88,11 +106,11 @@ static const String _xplot_translations_after_forking =
 #endif
 
 /* forward references */
-static bool _bitmap_size_ok ____P((const char *bitmap_size_s));
-static void Foldup ____P((Widget widget, XEvent *event, String *params, Cardinal *num_params));
+static bool _bitmap_size_ok (const char *bitmap_size_s);
+static void Foldup (Widget widget, XEvent *event, String *params, Cardinal *num_params);
 
 #ifndef HAVE_STRERROR
-static char * _plot_strerror ____P ((int errnum));
+static char * _plot_strerror (int errnum);
 #define strerror _plot_strerror
 #endif
 
@@ -101,12 +119,7 @@ static char * _plot_strerror ____P ((int errnum));
    canvas widget so that Foldup() will be invoked when `q' is pressed or a
    mouse click is seen. */
 void
-#ifdef _HAVE_PROTOS
-_y_set_data_for_quitting (S___(Plotter *_plotter))
-#else
-_y_set_data_for_quitting (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_y_set_data_for_quitting (S___(Plotter *_plotter))
 {
   Arg wargs[1];		/* a lone werewolf */
 
@@ -126,15 +139,7 @@ _y_set_data_for_quitting (S___(_plotter))
    and being a forked-off child process managing it, we exit). */
 
 static void			
-#ifdef _HAVE_PROTOS
 Foldup (Widget widget, XEvent *event, String *params, Cardinal *num_params)
-#else
-Foldup (widget, event, params, num_params) /* an action */
-     Widget widget;		
-     XEvent *event;
-     String *params;
-     Cardinal *num_params;
-#endif
 {
   Display *dpy;
       
@@ -151,12 +156,7 @@ static const XtActionsRec _xplot_actions[] =
 };
 
 bool
-#ifdef _HAVE_PROTOS
-_y_begin_page (S___(Plotter *_plotter))
-#else
-_y_begin_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_y_begin_page (S___(Plotter *_plotter))
 {
   Arg wargs[10];		/* werewolves */
   Dimension window_height, window_width;
@@ -265,7 +265,7 @@ _y_begin_page (S___(_plotter))
 	      {
 		char *buf;
 		
-		buf = (char *)_plot_xmalloc (strlen (bg_color_s) + 100);
+		buf = (char *)_pl_xmalloc (strlen (bg_color_s) + 100);
 		sprintf (buf, "substituting \"white\" for undefined background color \"%s\"", 
 			 bg_color_s);
 		_plotter->warning (R___(_plotter) buf);
@@ -312,7 +312,7 @@ _y_begin_page (S___(_plotter))
 	{
 	  char *buf;
 
-	  buf = (char *)_plot_xmalloc(strlen(display_s) + 1 + 50);
+	  buf = (char *)_pl_xmalloc(strlen(display_s) + 1 + 50);
 	  sprintf (buf, "can't open X Window System display \"%s\"", 
 		   display_s);
 	  _plotter->error (R___(_plotter) buf);
@@ -326,7 +326,7 @@ _y_begin_page (S___(_plotter))
   screen_struct = ScreenOfDisplay (_plotter->x_dpy, screen);
   _plotter->x_visual = DefaultVisualOfScreen (screen_struct);
   _plotter->x_cmap = DefaultColormapOfScreen (screen_struct);
-  _plotter->x_cmap_type = CMAP_ORIG; /* original cmap (not a private one) */
+  _plotter->x_cmap_type = X_CMAP_ORIG; /* original cmap (not a private one) */
   
   /* find out how long polylines can get on this X display */
   _plotter->x_max_polyline_len = XMaxRequestSize(_plotter->x_dpy) / 2;
@@ -420,7 +420,7 @@ _y_begin_page (S___(_plotter))
     }
 
   /* determine whether to use double buffering */
-  _plotter->x_double_buffering = DBL_NONE;
+  _plotter->x_double_buffering = X_DBL_BUF_NONE;
   double_buffer_s = (const char *)_get_plot_param (_plotter->data, 
 						   "USE_DOUBLE_BUFFERING");
 
@@ -481,7 +481,7 @@ _y_begin_page (S___(_plotter))
 					    _plotter->x_drawable2, 
 					    (XdbeSwapAction)XdbeUndefined);
 	      /* set double buffering type in Plotter structure */
-	      _plotter->x_double_buffering = DBL_DBE;
+	      _plotter->x_double_buffering = X_DBL_BUF_DBE;
 	    }
 	}
     }
@@ -490,7 +490,7 @@ _y_begin_page (S___(_plotter))
 
 #ifdef HAVE_X11_EXTENSIONS_MULTIBUF_H
 #ifdef HAVE_MBX_SUPPORT
-  if (_plotter->x_double_buffering == DBL_NONE
+  if (_plotter->x_double_buffering == X_DBL_BUF_NONE
       && strcmp (double_buffer_s, "yes") == 0)
     /* check whether X server supports the (obsolete) MBX extension, as a
        substitute for DBE */
@@ -518,7 +518,7 @@ _y_begin_page (S___(_plotter))
 	      _plotter->x_drawable3 = multibuf[0];
 	      _plotter->y_drawable4 = multibuf[1];	      
 	      /* set double buffering type in Plotter structure */
-	      _plotter->x_double_buffering = DBL_MBX;
+	      _plotter->x_double_buffering = X_DBL_BUF_MBX;
 	    }
 	  else
 	    _plotter->warning (R___(_plotter) 
@@ -528,7 +528,7 @@ _y_begin_page (S___(_plotter))
 #endif /* HAVE_MBX_SUPPORT */
 #endif /* HAVE_X11_EXTENSIONS_MULTIBUF_H */
 
-  if (_plotter->x_double_buffering == DBL_NONE)
+  if (_plotter->x_double_buffering == X_DBL_BUF_NONE)
     /* user didn't request double buffering, or did but special support for
        double buffering isn't contained in the X server */
     {
@@ -549,38 +549,38 @@ _y_begin_page (S___(_plotter))
       if (strcmp (double_buffer_s, "yes") == 0)
 	{
 	  _plotter->x_drawable3 = (Drawable)bg_pixmap;
-	  _plotter->x_double_buffering = DBL_BY_HAND;
+	  _plotter->x_double_buffering = X_DBL_BUF_BY_HAND;
 	}
       else
 	{
 	  _plotter->x_drawable1 = (Drawable)bg_pixmap;
-	  _plotter->x_double_buffering = DBL_NONE;
+	  _plotter->x_double_buffering = X_DBL_BUF_NONE;
 	}
     }
 
   /* add X GC's to drawing state (which was constructed by openpl() before
      begin_page() was called), so we can at least fill with solid color */
-  _x_add_gcs_to_first_drawing_state (S___(_plotter));
+  _pl_x_add_gcs_to_first_drawing_state (S___(_plotter));
 
   /* If not double-buffering, clear both pixmap and window by filling them
      with the drawing state's background color, via XFillRectangle.  If
      double buffering, do something similar (see y_erase.c). */
-  _y_erase_page (S___(_plotter));
+  _pl_y_erase_page (S___(_plotter));
   
   /* If double buffering, must invoke `erase' one more time to clear both
      graphics buffer and window, since what `erase' does in that case is
      (1) copy the graphics buffer to window, and (2) clear the graphics
      buffer. */
-  if (_plotter->x_double_buffering != DBL_NONE) 
-    _y_erase_page (S___(_plotter));
+  if (_plotter->x_double_buffering != X_DBL_BUF_NONE) 
+    _pl_y_erase_page (S___(_plotter));
 
-  if (_plotter->x_double_buffering == DBL_NONE
-      || _plotter->x_double_buffering == DBL_BY_HAND)
+  if (_plotter->x_double_buffering == X_DBL_BUF_NONE
+      || _plotter->x_double_buffering == X_DBL_BUF_BY_HAND)
     /* have a pixmap, so install it as Label widget's background pixmap */
     {
       Pixmap bg_pixmap;
       
-      bg_pixmap = ((_plotter->x_double_buffering == DBL_BY_HAND) ? 
+      bg_pixmap = ((_plotter->x_double_buffering == X_DBL_BUF_BY_HAND) ? 
 		   _plotter->x_drawable3 : _plotter->x_drawable1);
 #ifdef USE_MOTIF
       XtSetArg (wargs[0], XmNlabelPixmap, bg_pixmap);
@@ -594,7 +594,7 @@ _y_begin_page (S___(_plotter))
 
   /* do an XSync on the display (this will cause the background color to
    show up if it hasn't already) */
-  _x_flush_output (S___(_plotter));
+  _pl_x_flush_output (S___(_plotter));
 
   /* Note: at this point the drawing state, which we added X GC's to, a few
      lines above, won't be ready for drawing graphics, since it won't
@@ -605,12 +605,7 @@ _y_begin_page (S___(_plotter))
 }
 
 static bool 
-#ifdef _HAVE_PROTOS
 _bitmap_size_ok (const char *bitmap_size_s)
-#else
-_bitmap_size_ok (bitmap_size_s)
-     const char *bitmap_size_s;
-#endif
 {
   int width, height;
   
@@ -627,24 +622,19 @@ _bitmap_size_ok (bitmap_size_s)
    method, which is invoked when a Plotter's original colormap fills up.
    It overrides the XDrawable-specific version, which is a no-op. */
 void
-#ifdef _HAVE_PROTOS
-_y_maybe_get_new_colormap (S___(Plotter *_plotter))
-#else
-_y_maybe_get_new_colormap (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_y_maybe_get_new_colormap (S___(Plotter *_plotter))
 {
-  Colormap new_x_cmap;
+  Colormap new_pl_x_cmap;
   
   /* sanity check */
-  if (_plotter->x_cmap_type != CMAP_ORIG)
+  if (_plotter->x_cmap_type != X_CMAP_ORIG)
     return;
 
   _plotter->warning (R___(_plotter) 
 		     "color supply low, switching to private colormap");
-  new_x_cmap = XCopyColormapAndFree (_plotter->x_dpy, _plotter->x_cmap);
+  new_pl_x_cmap = XCopyColormapAndFree (_plotter->x_dpy, _plotter->x_cmap);
 
-  if (new_x_cmap == 0)
+  if (new_pl_x_cmap == 0)
     /* couldn't create colormap */
     {
       _plotter->warning (R___(_plotter) 
@@ -659,8 +649,8 @@ _y_maybe_get_new_colormap (S___(_plotter))
       Arg wargs[1];		/* a lone werewolf */
 
       /* place in Plotter, flag as new */
-      _plotter->x_cmap = new_x_cmap;
-      _plotter->x_cmap_type = CMAP_NEW;
+      _plotter->x_cmap = new_pl_x_cmap;
+      _plotter->x_cmap_type = X_CMAP_NEW;
 
       /* switch to it: install in y_toplevel shell widget */
       XtSetArg (wargs[0], XtNcolormap, _plotter->x_cmap);
@@ -733,12 +723,7 @@ _y_maybe_get_new_colormap (S___(_plotter))
 #define X_EVENT_HANDLING_PERIOD 4
 
 void
-#ifdef _HAVE_PROTOS
-_y_maybe_handle_x_events(S___(Plotter *_plotter))
-#else
-_y_maybe_handle_x_events(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_y_maybe_handle_x_events(S___(Plotter *_plotter))
 {
   if (_plotter->y_auto_flush)
   /* Flush output buffer if we're *not* in the middle of constructing a
@@ -748,7 +733,7 @@ _y_maybe_handle_x_events(S___(_plotter))
      (see x_cont.c). */
     {
       if (_plotter->drawstate->path == (plPath *)NULL
-	  || (_plotter->drawstate->line_type == L_SOLID
+	  || (_plotter->drawstate->line_type == PL_L_SOLID
 	      && !_plotter->drawstate->dash_array_in_effect
 	      && _plotter->drawstate->points_are_connected
 	      && _plotter->drawstate->quantized_device_line_width == 0))
@@ -877,12 +862,7 @@ extern char *sys_errlist[];
 extern int sys_nerr;
 
 static char *
-#ifdef _HAVE_PROTOS
 _plot_strerror (int errnum)
-#else
-_plot_strerror (errnum)
-     int errnum;
-#endif
 {
   if (errnum < 0 || errnum >= sys_nerr)
     return "unknown error";

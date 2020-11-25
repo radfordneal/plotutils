@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file includes vector-related utility routines. */
 
 #include "sys-defines.h"
@@ -7,13 +25,7 @@
 
 /* Scale an input vector to a new length, and return it. */
 plVector *
-#ifdef _HAVE_PROTOS
 _vscale(plVector *v, double newlen) 
-#else
-_vscale(v, newlen) 
-     plVector *v;
-     double newlen;
-#endif
 {
   double len = VLENGTH(*v);
   
@@ -28,12 +40,7 @@ _vscale(v, newlen)
 /* Compute angle (arctangent) of 2-D vector via atan2, but standardize
    handling of singular cases.  */
 double
-#ifdef _HAVE_PROTOS
 _xatan2 (double y, double x)
-#else
-_xatan2 (y, x)
-     double y, x;
-#endif
 {
   if (y == 0.0 && x >= 0.0)
     return 0.0;
@@ -50,12 +57,7 @@ _xatan2 (y, x)
 /* Compute angle between vectors pc..p0 and pc..pp1, in range -pi..pi;
    collinear vectors yield an angle of pi.  This is used when drawing arcs.  */
 double
-#ifdef _HAVE_PROTOS
 _angle_of_arc(plPoint p0, plPoint pp1, plPoint pc)
-#else
-_angle_of_arc(p0, pp1, pc)
-     plPoint p0, pp1, pc; 
-#endif
 {
   plVector v0, v1;
   double cross, angle, angle0;
@@ -97,12 +99,7 @@ _angle_of_arc(p0, pp1, pc)
    perpendicularly bisects the line segment from p0 to p1, it is projected
    orthogonally onto it.  p0 and p1 are assumed not to be coincident. */
 plPoint
-#ifdef _HAVE_PROTOS
 _truecenter(plPoint p0, plPoint p1, plPoint pc)
-#else
-_truecenter(p0, p1, pc)
-     plPoint p0, p1, pc;
-#endif
 {
   plPoint pm;
   plVector a, b, c;

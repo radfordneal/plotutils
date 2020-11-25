@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains a special version of the function
    _maybe_output_image, which is called by the BitmapPlotter closepl method
    (see b_closepl.c).  This version is for the PNGPlotter subclass:
@@ -51,9 +69,9 @@ static const char _short_months[12][4] =
 { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 /* forward references */
-static int _image_type ____P((miPixel **pixmap, int width, int height));
-static void _our_error_fn_stdio ____P((png_struct *png_ptr, const char *data));
-static void _our_warn_fn_stdio ____P((png_struct *png_ptr, const char *data));
+static int _image_type (miPixel **pixmap, int width, int height);
+static void _our_error_fn_stdio (png_struct *png_ptr, const char *data);
+static void _our_warn_fn_stdio (png_struct *png_ptr, const char *data);
 #ifdef LIBPLOTTER
 static void _our_IO_flush_fn (png_struct *png_ptr);
 static void _our_error_fn_stream (png_struct *png_ptr, const char *data);
@@ -62,12 +80,7 @@ static void _our_write_fn (png_struct *png_ptr, png_byte *data, png_size_t lengt
 #endif /* LIBPLOTTER */
 
 int
-#ifdef _HAVE_PROTOS
-_z_maybe_output_image (S___(Plotter *_plotter))
-#else
-_z_maybe_output_image (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_z_maybe_output_image (S___(Plotter *_plotter))
 {
   miPixel **pixmap;		/* pixmap in miCanvas */
   int width, height;
@@ -293,14 +306,14 @@ _z_maybe_output_image (S___(_plotter))
     switch (image_type)
       {
       case 0:			/* mono */
-	rowbuf = (png_byte *)_plot_xmalloc(((width + 7)/8) * sizeof(png_byte));
+	rowbuf = (png_byte *)_pl_xmalloc(((width + 7)/8) * sizeof(png_byte));
 	break;
       case 1:			/* gray */
-	rowbuf = (png_byte *)_plot_xmalloc(width * sizeof(png_byte));	
+	rowbuf = (png_byte *)_pl_xmalloc(width * sizeof(png_byte));	
 	break;
       case 2:			/* rgb */
       default:
-	rowbuf = (png_byte *)_plot_xmalloc(3 * width * sizeof(png_byte));
+	rowbuf = (png_byte *)_pl_xmalloc(3 * width * sizeof(png_byte));
 	break;
       }
 
@@ -366,13 +379,7 @@ _z_maybe_output_image (S___(_plotter))
 
 /* return best type for writing an image (0=mono, 1=grey, 2=color) */
 static int
-#ifdef _HAVE_PROTOS
 _image_type (miPixel **pixmap, int width, int height)
-#else
-_image_type (pixmap, width, height)
-     miPixel **pixmap;
-     int width, height;
-#endif
 {
   int i, j;
   int type = 0;			/* default is mono */
@@ -415,13 +422,7 @@ _image_type (pixmap, width, height)
 
 /* custom error and warning handlers (for stdio) */
 static void 
-#ifdef _HAVE_PROTOS
 _our_error_fn_stdio (png_struct *png_ptr, const char *data)
-#else
-_our_error_fn_stdio (png_ptr, data)
-     png_struct *png_ptr;
-     const char *data;
-#endif
 {
   FILE *errfp;
 
@@ -447,13 +448,7 @@ _our_error_fn_stdio (png_ptr, data)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _our_warn_fn_stdio (png_struct *png_ptr, const char *data)
-#else
-_our_warn_fn_stdio (png_ptr, data)
-     png_struct *png_ptr;
-     const char *data;
-#endif
 {
   FILE *errfp;
 
@@ -484,7 +479,7 @@ _our_write_fn (png_struct *png_ptr, png_byte *data, png_size_t length)
   ostream *stream;
 
   stream = (ostream *)png_get_io_ptr (png_ptr);
-  stream->write (data, length);
+  stream->write ((const char *)data, length);
 }
 
 static void 

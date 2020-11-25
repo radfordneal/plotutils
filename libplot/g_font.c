@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the fontname, fontsize, and textangle methods, which
    are a GNU extension to libplot.  They set drawing attributes: the name
    of the font used for text subsequent drawn on the graphics device, the
@@ -22,13 +40,7 @@
 #include "extern.h"
 
 double
-#ifdef _HAVE_PROTOS
 _API_ffontname (R___(Plotter *_plotter) const char *s)
-#else
-_API_ffontname (R___(_plotter) s)
-     S___(Plotter *_plotter;) 
-     const char *s;
-#endif
 {
   char *font_name;
 
@@ -44,42 +56,36 @@ _API_ffontname (R___(_plotter) s)
   if ((s == NULL) || (*s == '\0') || !strcmp(s, "(null)"))
     switch (_plotter->data->default_font_type)
       {
-      case F_HERSHEY:
+      case PL_F_HERSHEY:
       default:
-	s = DEFAULT_HERSHEY_FONT;
+	s = PL_DEFAULT_HERSHEY_FONT;
 	break;
-      case F_POSTSCRIPT:
-	s = DEFAULT_POSTSCRIPT_FONT;
+      case PL_F_POSTSCRIPT:
+	s = PL_DEFAULT_POSTSCRIPT_FONT;
 	break;
-      case F_PCL:
-	s = DEFAULT_PCL_FONT;
+      case PL_F_PCL:
+	s = PL_DEFAULT_PCL_FONT;
 	break;
-      case F_STICK:
-	s = DEFAULT_STICK_FONT;
+      case PL_F_STICK:
+	s = PL_DEFAULT_STICK_FONT;
 	break;
       }
 
   /* save new font name */
   free ((char *)_plotter->drawstate->font_name);
-  font_name = (char *)_plot_xmalloc (strlen (s) + 1);
+  font_name = (char *)_pl_xmalloc (strlen (s) + 1);
   strcpy (font_name, s);
   _plotter->drawstate->font_name = font_name;
 
   /* retrieve font and metrics; compute `true' font size (may differ) */
-  _set_font (S___(_plotter));
+  _pl_g_set_font (S___(_plotter));
 
   /* return value is size in user units */
   return _plotter->drawstate->true_font_size;
 }
 
 double
-#ifdef _HAVE_PROTOS
 _API_ffontsize (R___(Plotter *_plotter) double size)
-#else
-_API_ffontsize (R___(_plotter) size)
-     S___(Plotter *_plotter;) 
-     double size;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -100,7 +106,7 @@ _API_ffontsize (R___(_plotter) size)
   _plotter->drawstate->font_size = size;
 
   /* retrieve font and metrics; compute `true' font size (may differ) */
-  _set_font (S___(_plotter));
+  _pl_g_set_font (S___(_plotter));
   
   /* flag fontsize as having been invoked (so that fsetmatrix will no
      longer automatically adjust the font size to a reasonable value) */
@@ -111,13 +117,7 @@ _API_ffontsize (R___(_plotter) size)
 }
 
 double
-#ifdef _HAVE_PROTOS
 _API_ftextangle (R___(Plotter *_plotter) double angle)
-#else
-_API_ftextangle (R___(_plotter) angle)
-     S___(Plotter *_plotter;)
-     double angle;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -130,7 +130,7 @@ _API_ftextangle (R___(_plotter) angle)
   _plotter->drawstate->text_rotation = angle;
   
   /* retrieve font and metrics; compute `true' font size (may differ) */
-  _set_font (S___(_plotter));
+  _pl_g_set_font (S___(_plotter));
   
   /* return quantized user-specified font size */
   return _plotter->drawstate->true_font_size;
@@ -144,47 +144,27 @@ _API_ftextangle (R___(_plotter) angle)
    These should be replaced by a properly crafted API for querying font
    names, font metrics, etc. */
 
-voidptr_t
-#ifdef _HAVE_PROTOS
-pl_get_hershey_font_info (S___(Plotter *_plotter))
-#else
-pl_get_hershey_font_info (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+void *
+_pl_get_hershey_font_info (S___(Plotter *_plotter))
 {
-  return (voidptr_t)_hershey_font_info;
+  return (void *)_pl_g_hershey_font_info;
 }
 
-voidptr_t
-#ifdef _HAVE_PROTOS
-pl_get_ps_font_info (S___(Plotter *_plotter))
-#else
-pl_get_ps_font_info (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+void *
+_pl_get_ps_font_info (S___(Plotter *_plotter))
 {
-  return (voidptr_t)_ps_font_info;
+  return (void *)_pl_g_ps_font_info;
 }
 
-voidptr_t
-#ifdef _HAVE_PROTOS
-pl_get_pcl_font_info (S___(Plotter *_plotter))
-#else
-pl_get_pcl_font_info (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+void *
+_pl_get_pcl_font_info (S___(Plotter *_plotter))
 {
-  return (voidptr_t)_pcl_font_info;
+  return (void *)_pl_g_pcl_font_info;
 }
 
-voidptr_t
-#ifdef _HAVE_PROTOS
-pl_get_stick_font_info (S___(Plotter *_plotter))
-#else
-pl_get_stick_font_info (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+void *
+_pl_get_stick_font_info (S___(Plotter *_plotter))
 {
-  return (voidptr_t)_stick_font_info;
+  return (void *)_pl_g_stick_font_info;
 }
 

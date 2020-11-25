@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This internal method is invoked by an Illustrator Plotter before drawing
    any object.  It sets the relevant attributes (fill rule [if filling],
    cap type, join type, miter limit, line width) to what they should be. */
@@ -8,26 +26,32 @@
 /* Pseudo line type, which we use internally when AI's line type,
    i.e. dashing style, is set to agree with what the user specifies with
    linedash(), rather than with what the user specifies with linemod().
-   Should not equal any of our canonical line types, i.e. L_SOLID etc. */
+   Should not equal any of our canonical line types, i.e. PL_L_SOLID etc. */
 #define SPECIAL_AI_LINE_TYPE 100
 
-/* AI fill rule types (in version 5 and later), indexed into by our
-   internal fill rule number (FILL_ODD_WINDING/FILL_NONZERO_WINDING) */
-const int _ai_fill_rule[] = { AI_FILL_ODD_WINDING, AI_FILL_NONZERO_WINDING };
+/* AI fill rule types (in version 5 and later), indexed by our internal
+   fill rule number (PL_FILL_ODD_WINDING/PL_FILL_NONZERO_WINDING) */
+static const int _ai_fill_rule[PL_NUM_FILL_RULES] = 
+{ AI_FILL_ODD_WINDING, AI_FILL_NONZERO_WINDING };
+
+/* AI (i.e. PS) join styles, indexed by internal number
+   (miter/rd./bevel/triangular) */
+static const int _ai_join_style[PL_NUM_JOIN_TYPES] =
+{ AI_LINE_JOIN_MITER, AI_LINE_JOIN_ROUND, AI_LINE_JOIN_BEVEL, AI_LINE_JOIN_ROUND };
+
+/* AI (i.e. PS) cap styles, indexed by internal number
+   (butt/rd./project/triangular) */
+static const int _ai_cap_style[PL_NUM_CAP_TYPES] =
+{ AI_LINE_CAP_BUTT, AI_LINE_CAP_ROUND, AI_LINE_CAP_PROJECT, AI_LINE_CAP_ROUND };
 
 void
-#ifdef _HAVE_PROTOS
-_a_set_attributes (S___(Plotter *_plotter))
-#else
-_a_set_attributes (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_a_set_attributes (S___(Plotter *_plotter))
 {
   bool changed_width = false;
   int desired_fill_rule = _ai_fill_rule[_plotter->drawstate->fill_rule_type];
   double desired_ai_line_width = _plotter->drawstate->device_line_width;
-  int desired_ai_cap_style = _ps_cap_style[_plotter->drawstate->cap_type];
-  int desired_ai_join_style = _ps_join_style[_plotter->drawstate->join_type];
+  int desired_ai_cap_style = _ai_cap_style[_plotter->drawstate->cap_type];
+  int desired_ai_join_style = _ai_join_style[_plotter->drawstate->join_type];
   double desired_ai_miter_limit = _plotter->drawstate->miter_limit;
   int desired_ai_line_type = _plotter->drawstate->line_type;  
   int i;
@@ -56,7 +80,7 @@ _a_set_attributes (S___(_plotter))
       _plotter->ai_join_style = desired_ai_join_style;
     }
 
-  if (_plotter->drawstate->join_type == JOIN_MITER
+  if (_plotter->drawstate->join_type == PL_JOIN_MITER
       && _plotter->ai_miter_limit != desired_ai_miter_limit)
     {
       sprintf (_plotter->data->page->point, "%.4g M\n", desired_ai_miter_limit);
@@ -74,7 +98,7 @@ _a_set_attributes (S___(_plotter))
 
   if (_plotter->drawstate->dash_array_in_effect
       || _plotter->ai_line_type != desired_ai_line_type
-      || (changed_width && desired_ai_line_type != L_SOLID))
+      || (changed_width && desired_ai_line_type != PL_L_SOLID))
     /* must tell AI which dash array to use */
     {
       double *dashbuf;
@@ -97,7 +121,7 @@ _a_set_attributes (S___(_plotter))
 	      _matrix_sing_vals (_plotter->drawstate->transform.m, 
 				 &min_sing_val, &max_sing_val);
 	      
-	      dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+	      dashbuf = (double *)_pl_xmalloc (num_dashes * sizeof(double));
 
 	      for (i = 0; i < num_dashes; i++)
 		{
@@ -124,7 +148,7 @@ _a_set_attributes (S___(_plotter))
       else
 	/* dash array not in effect, have a canonical line type instead */
 	{
-	  if (desired_ai_line_type == L_SOLID)
+	  if (desired_ai_line_type == PL_L_SOLID)
 	    {
 	      num_dashes = 0;
 	      dashbuf = NULL;
@@ -136,17 +160,17 @@ _a_set_attributes (S___(_plotter))
 	      double scale;
 	      
 	      num_dashes =
-		_line_styles[_plotter->drawstate->line_type].dash_array_len;
-	      dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+		_pl_g_line_styles[_plotter->drawstate->line_type].dash_array_len;
+	      dashbuf = (double *)_pl_xmalloc (num_dashes * sizeof(double));
 
 	      /* compute PS dash array for this line type */
-	      dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	      dash_array = _pl_g_line_styles[_plotter->drawstate->line_type].dash_array;
 	      /* scale the array of integers by line width (actually by
 		 floored line width; see comments at head of file) */
 	      display_size_in_points = 
 		DMIN(_plotter->data->xmax - _plotter->data->xmin, 
 		     _plotter->data->ymax - _plotter->data->ymin);
-	      min_dash_unit = (MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
+	      min_dash_unit = (PL_MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
 			       * display_size_in_points);
 	      scale = DMAX(min_dash_unit,
 			   _plotter->drawstate->device_line_width);
@@ -172,7 +196,7 @@ _a_set_attributes (S___(_plotter))
       _update_buffer (_plotter->data->page);
 
       /* Update our knowledge of AI's line type (i.e. dashing style). 
-	 This new value will be one of L_SOLID etc., or the pseudo value
+	 This new value will be one of PL_L_SOLID etc., or the pseudo value
 	 SPECIAL_AI_LINE_TYPE. */
       _plotter->ai_line_type = desired_ai_line_type;
 

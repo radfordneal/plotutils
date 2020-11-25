@@ -1,16 +1,29 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
 /* forward references */
-static void _write_svg_transform ____P((plOutbuf *outbuf, const double m[6]));
+static void write_svg_transform (plOutbuf *outbuf, const double m[6]);
 
 bool
-#ifdef _HAVE_PROTOS
-_s_end_page (S___(Plotter *_plotter))
-#else
-_s_end_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_s_end_page (S___(Plotter *_plotter))
 {
   plOutbuf *svg_header, *svg_trailer;
       
@@ -24,31 +37,36 @@ _s_end_page (S___(_plotter))
   /* start with DTD */
   sprintf (svg_header->point, "\
 <?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>\n\
-<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 20000303 Stylable//EN\"\n\
-\"http://www.w3.org/TR/2000/03/WD-SVG-20000303/DTD/svg-20000303-stylable.dtd\">\n");
+<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
   _update_buffer (svg_header);
 
   /* Emit nominal physical size of the device-frame viewport (and specify
      that in the device-frame coordinates we use, it's a unit square).
-     viewport_{x,y}size are set from the PAGESIZE Plotter parameter, and
-     either or both may be negative.  If they are, we flipped the
-     NDC_frame->device_frame map to compensate (see s_defplot.c).  Which is
-     why we can take absolute values here. */
+     viewport_{x,y}size are set from the PAGESIZE Plotter parameter, via
+     the xsize and ysize options, and either or both may be negative.  If
+     they are, we flipped the NDC_frame->device_frame map to compensate
+     (see s_defplot.c).  Which is why we can take absolute values here. */
 
   if (_plotter->data->page_data->metric)
     sprintf (svg_header->point, 
-	     "<svg width=\"%.5gcm\" height=\"%.5gcm\" %s %s>\n",
+	     "<svg version=\"1.1\" baseProfile=\"full\" id=\"body\" width=\"%.5gcm\" height=\"%.5gcm\" ",
 	     2.54 * FABS(_plotter->data->viewport_xsize),
-	     2.54 * FABS(_plotter->data->viewport_ysize),
-	     "viewBox=\"0 0 1 1\"",
-	     "preserveAspectRatio=\"none\"");
+	     2.54 * FABS(_plotter->data->viewport_ysize));
   else
     sprintf (svg_header->point, 
-	     "<svg width=\"%.5gin\" height=\"%.5gin\" %s %s>\n",
+	     "<svg version=\"1.1\" baseProfile=\"full\" id=\"body\" width=\"%.5gin\" height=\"%.5gin\" ",
 	     FABS(_plotter->data->viewport_xsize),
-	     FABS(_plotter->data->viewport_ysize),
-	     "viewBox=\"0 0 1 1\"",
-	     "preserveAspectRatio=\"none\"");
+	     FABS(_plotter->data->viewport_ysize));
+  _update_buffer (svg_header);
+  sprintf (svg_header->point, 
+	   "%s %s %s %s %s>\n",
+	   "viewBox=\"0 0 1 1\"",
+	   "preserveAspectRatio=\"none\"",
+	   /* bind SVG namespace */
+	   "xmlns=\"http://www.w3.org/2000/svg\"",
+	   /* bind XLink and XML Events namespaces for good measure */
+	   "xmlns:xlink=\"http://www.w3.org/1999/xlink\"",
+	   "xmlns:ev=\"http://www.w3.org/2001/xml-events\"");
   _update_buffer (svg_header);
 
   sprintf (svg_header->point, "<title>SVG drawing</title>\n");
@@ -64,13 +82,13 @@ _s_end_page (S___(_plotter))
       char color_buf[8];	/* enough room for "#ffffff", incl. NUL */
 
       sprintf (svg_header->point, 
-	       "<rect x=\"0\" y=\"0\" width=\"1\" height=\"1\" style=\"stroke:none;fill:%s;\"/>\n",
+	       "<rect id=\"background\" x=\"0\" y=\"0\" width=\"1\" height=\"1\" stroke=\"none\" fill=\"%s\"/>\n",
 	       _libplot_color_to_svg_color (_plotter->s_bgcolor, color_buf));
       _update_buffer (svg_header);
     }
 
   /* enclose everything else in a container */
-  sprintf (svg_header->point, "<g ");
+  sprintf (svg_header->point, "<g id=\"content\" ");
   _update_buffer (svg_header);
       
   if (_plotter->s_matrix_is_unknown == false
@@ -83,16 +101,16 @@ _s_end_page (S___(_plotter))
        map from user space to NDC space.  So we're careful to multiply by
        `m_ndc_to_device', which transforms NDC space to device space.
        Because SVG uses a flipped-y convention, `m_ndc_to_device' flips the
-       y coordinate.  There will be additional flipping if the
+       y coordinate.  (There will be additional flipping if the
        user-specified xsize, ysize are negative; see s_defplot.c.  Also, if
-       the user-specified ROTATION Plotter parameter is set, it may do a
-       90, 180, or 270 degree rotation. */
+       the ROTATION Plotter parameter is specified by the user, it may
+       rotate.) */
     {
       double product[6];
 
       _matrix_product (_plotter->s_matrix, _plotter->data->m_ndc_to_device,
 		       product);
-      _write_svg_transform (svg_header, product);
+      write_svg_transform (svg_header, product);
     }
 
   /* turn off SVG's default [unfortunate] XML-inherited treatment of spaces */
@@ -101,82 +119,78 @@ _s_end_page (S___(_plotter))
 
   /* specify style properties (all libplot defaults) */
 
-  sprintf (svg_header->point, "style=\"");
-  _update_buffer (svg_header);
-
-  sprintf (svg_header->point, "stroke:%s;",
+  sprintf (svg_header->point, "stroke=\"%s\" ",
 	   "black");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "stroke-linecap:%s;",
+  sprintf (svg_header->point, "stroke-linecap=\"%s\" ",
 	   "butt");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "stroke-linejoin:%s;",
+  sprintf (svg_header->point, "stroke-linejoin=\"%s\" ",
 	   "miter");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "stroke-miterlimit:%.5g;",
-	   DEFAULT_MITER_LIMIT);
+  sprintf (svg_header->point, "stroke-miterlimit=\"%.5g\" ",
+	   PL_DEFAULT_MITER_LIMIT);
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "stroke-dasharray:%s;",
+  sprintf (svg_header->point, "stroke-dasharray=\"%s\" ",
 	   "none");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "stroke-dashoffset:%.5g;",
+  /* should use `px' here to specify user units, per the SVG Authoring
+     Guide, but ImageMagick objects to that */
+  sprintf (svg_header->point, "stroke-dashoffset=\"%.5g\" ",
 	   0.0);
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "stroke-opacity:%.5g;",
+  sprintf (svg_header->point, "stroke-opacity=\"%.5g\" ",
 	   1.0);
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "fill:%s;",
+  sprintf (svg_header->point, "fill=\"%s\" ",
 	   "none");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "fill-rule:%s;",
+  sprintf (svg_header->point, "fill-rule=\"%s\" ",
 	   "even-odd");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "fill-opacity:%.5g;",
+  sprintf (svg_header->point, "fill-opacity=\"%.5g\" ",
 	   1.0);
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "font-style:%s;",
+  sprintf (svg_header->point, "font-style=\"%s\" ",
 	   "normal");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "font-variant:%s;",
+  sprintf (svg_header->point, "font-variant=\"%s\" ",
 	   "normal");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "font-weight:%s;",
+  sprintf (svg_header->point, "font-weight=\"%s\" ",
 	   "normal");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "font-stretch:%s;",
+  sprintf (svg_header->point, "font-stretch=\"%s\" ",
 	   "normal");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "font-size-adjust:%s;",
+  sprintf (svg_header->point, "font-size-adjust=\"%s\" ",
 	   "none");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "letter-spacing:%s;",
+  sprintf (svg_header->point, "letter-spacing=\"%s\" ",
 	   "normal");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "word-spacing:%s;",
+  sprintf (svg_header->point, "word-spacing=\"%s\" ",
 	   "normal");
   _update_buffer (svg_header);
 
-  sprintf (svg_header->point, "text-anchor:%s;",
+  sprintf (svg_header->point, "text-anchor=\"%s\"",
 	   "start");
-  _update_buffer (svg_header);
-
-  sprintf (svg_header->point, "\"");
   _update_buffer (svg_header);
 
   sprintf (svg_header->point, ">\n");
@@ -202,40 +216,55 @@ _s_end_page (S___(_plotter))
 
 /* This function is invoked while writing any graphical object on a page to
    the page's output buffer.  It emits the string "transform=\"...\" ",
-   where the "\"...\"" is computed from the transformation matrix attribute
-   of the object, which is passed.
+   where the "\"...\"" is computed from a transformation matrix attribute
+   of the object, which is passed.  I.e., it transforms a per-object
+   transformation matrix to an SVG-style transformation matrix, and emits
+   the latter as an SVG element attribute.  The per-object transformation
+   matrix is always the identity, except for rotated text strings and
+   ellipses.
 
-   The transformation matrix attribute of the first object to be written on
-   the page sets `s_matrix', the global transformation matrix for the page,
-   which will later be written at the head of the SVG code for the page
-   when closepl() is invoked (see above).  Because we may need to compute
-   the inverse of the global transformation matrix, we flag `s_matrix' as
-   bogus if it's singular.  If it's bogus, it won't be written out when
-   closepl() is invoked, and the global transformation matrix of the page
-   will effectively be the identity.
+   This code evaluates the SVG transformation matrix as the composition of
+   two transformations: the local transformation, which acts first (in user
+   space), which is passed as an argument; and a 2nd transformation, which
+   is the current transformation from user to NDC coordinates.  Typically,
+   it's the 1st which this code emits as the value of the `transform'
+   attribute.  That's because when this is called for the first time on a
+   page (or newly erased page), the 2nd is stored in `s_matrix', the global
+   transformation matrix for the page, which will later be written at the
+   head of the SVG code for the page when closepl() is invoked (see above).
 
-   This function supports passing the transformation matrix attribute of an
-   object via two arguments: a base piece and a local piece, only the first
-   of which may get stored as `s_matrix'.  This two-piece approach is
-   useful when plotting rotated text, for example (the local piece would
-   contains the rotation, which really shouldn't affect `s_matrix'). */
+   This separation of the two distinct transformations will of course work
+   only if the 2nd doesn't change from object to object on the page.  For
+   this reason, what's actually emitted as the value of the SVG transform
+   attribute is a composite transformation, made up in succession of
+
+   (1) the passed per-object transformation
+   (2) the current value of the transformation from user to NDC coordinates
+   (3) the inverse of s_matrix.
+
+   If the user space -> NDC space map is the same for all objects on the
+   page, then (2) and (3) will cancel each other out for all objects on
+   the page.
+
+   Note that in this code we flag `s_matrix' as bogus if it's singular.  If
+   it's bogus, it won't be written out when closepl() is invoked, and the
+   global transformation matrix of the page will effectively be the
+   identity (i.e., we'll punt). */
 
 void
-#ifdef _HAVE_PROTOS
-_s_set_matrix (R___(Plotter *_plotter) const double m_base[6], const double m_local[6])
-#else
-_s_set_matrix (R___(_plotter) m_base, m_local)
-     S___(Plotter *_plotter;)
-     const double m_base[6], m_local[6];
-#endif
+_pl_s_set_matrix (R___(Plotter *_plotter) const double m_local[6])
 {
-  double m[6];
+  double m_base[6], m[6];
   const double *m_emitted = (const double *)NULL; /* keep compiler happy */
   bool need_transform_attribute = false;
   int i;
   
-  /* if this is the first time this function is invoked on a page, store
-     base matrix for later use as global page transformation matrix */
+  for (i = 0; i < 6; i++)
+    m_base[i] = _plotter->drawstate->transform.m_user_to_ndc[i];
+
+  /* if this is the first time this function is invoked on a page (or newly
+     erased page), store the current user-to-NDC matrix for later use as
+     the global transformation matrix for the page */
   if (_plotter->s_matrix_is_unknown)
     {
       for (i = 0; i < 6; i++)
@@ -248,7 +277,8 @@ _s_set_matrix (R___(_plotter) m_base, m_local)
 	_plotter->s_matrix_is_bogus = true;
     }
 
-  /* compute product: current transformation matrix */
+  /* compute product: current transformation matrix (in the transformation
+     from user to NDC coors, local acts first, then base)  */
   _matrix_product (m_local, m_base, m);
 
   /* determine whether current matrix is different from the global one that
@@ -270,10 +300,15 @@ _s_set_matrix (R___(_plotter) m_base, m_local)
 
       if (need_transform_attribute)
 	{
-	  double inverse[6], product[6];
+	  double inverse_of_global[6], product[6];
 
-	  _matrix_inverse (_plotter->s_matrix, inverse);
-	  _matrix_product (m, inverse, product);
+	  _matrix_inverse (_plotter->s_matrix, inverse_of_global);
+
+	  /* emitted transform attribute of object will be a product of
+	     three matrices: (1) the passed matrix, (2) the current
+	     user-to-NDC transformation matrix, and (3) the inverse of the
+	     global transformation matrix */
+	  _matrix_product (m, inverse_of_global, product);
 	  m_emitted = product;
 	}
     }
@@ -288,21 +323,26 @@ _s_set_matrix (R___(_plotter) m_base, m_local)
   
   /* emit object's transform attribute if it's not the identity */
   if (need_transform_attribute)
-    _write_svg_transform (_plotter->data->page, m_emitted);
+    write_svg_transform (_plotter->data->page, m_emitted);
 }
 
 /* Internal function for writing out a PS-style affine transformation as a
    SVG-style affine transformation.  If matrix is the identity, nothing is
-   written. */
+   written.  
+
+   In SVG format, the value of the `transform' attribute is a sequence of
+   transformations such as `rotate', `scale', and `translate', where the
+   sequence (as a composite transformation from user space to device [NDC]
+   space) is read from right to left.  This is the opposite of the PS
+   convention.  SVG documentation uses column vectors, while PS
+   documentation uses row vectors.
+
+   Presumably the SVG convention arose from a desire to make the
+   `nestedness' of the transform attribute, implemented as the computation
+   of a composite transformation, more intuitive. */
 
 static void
-#ifdef _HAVE_PROTOS
-_write_svg_transform (plOutbuf *outbuf, const double m[6])
-#else
-_write_svg_transform (outbuf, m)
-     plOutbuf *outbuf;
-     const double m[6];
-#endif
+write_svg_transform (plOutbuf *outbuf, const double m[6])
 {
   double mm[6];
   double max_value = 0.0;

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* The internal point-drawing function, which point() is a wrapper around.
    It draws a point at the current location.  There is no standard
    definition of `point', so any Plotter is free to implement this as it
@@ -9,12 +27,7 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_c_paint_point (S___(Plotter *_plotter))
-#else
-_c_paint_point (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_c_paint_point (S___(Plotter *_plotter))
 {
   double xd, yd;
   int i_x, i_y;
@@ -48,7 +61,7 @@ _c_paint_point (S___(_plotter))
 	 a single pixel. */
 
       /* set CGM marker color */
-      _c_set_pen_color (R___(_plotter) CGM_OBJECT_MARKER);
+      _pl_c_set_pen_color (R___(_plotter) CGM_OBJECT_MARKER);
 
       /* compute location in device frame */
       xd = XD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y);

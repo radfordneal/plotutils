@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any CGMPlotter object,
    including both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -34,35 +52,35 @@
 #endif /* not TIME_WITH_SYS_TIME */
 
 /* forward references */
-static void _build_sdr_from_index ____P((plOutbuf *sdr_buffer, int cgm_encoding, int x));
-static void _build_sdr_from_string ____P((plOutbuf *sdr_buffer, int cgm_encoding, const char *s, int string_length, bool use_double_quotes));
-static void _build_sdr_from_ui8s ____P((plOutbuf *sdr_buffer, int cgm_encoding, const int *x, int n));
+static void build_sdr_from_index (plOutbuf *sdr_buffer, int cgm_encoding, int x);
+static void build_sdr_from_string (plOutbuf *sdr_buffer, int cgm_encoding, const char *s, int string_length, bool use_double_quotes);
+static void build_sdr_from_ui8s (plOutbuf *sdr_buffer, int cgm_encoding, const int *x, int n);
 
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    a CGMPlotter struct. */
-const Plotter _c_default_plotter = 
+const Plotter _pl_c_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _c_initialize, _c_terminate,
+  _pl_c_initialize, _pl_c_terminate,
   /* page manipulation */
-  _c_begin_page, _c_erase_page, _c_end_page,
+  _pl_c_begin_page, _pl_c_erase_page, _pl_c_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _c_paint_path, _c_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_c_paint_path, _pl_c_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _c_paint_marker, _c_paint_point,
+  _pl_c_paint_marker, _pl_c_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _c_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_c_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -73,16 +91,11 @@ const Plotter _c_default_plotter =
    created. */
 
 void
-#ifdef _HAVE_PROTOS
-_c_initialize (S___(Plotter *_plotter))
-#else
-_c_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_c_initialize (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override generic initializations (which are appropriate to the base
@@ -114,7 +127,7 @@ _c_initialize (S___(_plotter))
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->data->default_font_type = F_POSTSCRIPT;
+  _plotter->data->default_font_type = PL_F_POSTSCRIPT;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->have_horizontal_justification = true;
   _plotter->data->have_vertical_justification = true;
@@ -422,18 +435,13 @@ static const plCGMCharset _symbol_cgm_charset[2] =
    a plOutbuf, and the page plOutbufs form a linked list. */
 
 void
-#ifdef _HAVE_PROTOS
-_c_terminate (S___(Plotter *_plotter))
-#else
-_c_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_c_terminate (S___(Plotter *_plotter))
 {
   int i;
   plOutbuf *current_page;
-  bool ps_font_used_in_doc[NUM_PS_FONTS];
+  bool ps_font_used_in_doc[PL_NUM_PS_FONTS];
   bool symbol_font_used_in_doc;
-  bool cgm_font_id_used_in_doc[NUM_PS_FONTS];
+  bool cgm_font_id_used_in_doc[PL_NUM_PS_FONTS];
   bool doc_uses_fonts;
   int max_cgm_font_id;
 
@@ -549,8 +557,11 @@ _c_terminate (S___(_plotter))
       {
 	time_t clock;
 	const char *profile_string, *profile_edition_string;
-	struct tm local_time_struct, *local_time_struct_ptr;
 	char string_param[254];
+	struct tm *local_time_struct_ptr;
+#ifdef HAVE_LOCALTIME_R
+	struct tm local_time_struct;
+#endif
 
 	/* Work out ASCII specification of profile */
 	switch (_plotter->cgm_profile)
@@ -810,11 +821,11 @@ _c_terminate (S___(_plotter))
       {
 	current_page = _plotter->data->first_page;
 	
-	for (i = 0; i < NUM_PS_FONTS; i++)
+	for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	  ps_font_used_in_doc[i] = false;
 	while (current_page)
 	  {
-	    for (i = 0; i < NUM_PS_FONTS; i++)
+	    for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	      if (current_page->ps_font_used[i])
 		ps_font_used_in_doc[i] = true;
 	    current_page = current_page->next;
@@ -826,18 +837,18 @@ _c_terminate (S___(_plotter))
 	 `Adobe 13' to come first, out of the `Adobe 35').  Also work out
 	 whether Symbol font, which has its own character sets, is used. */
       symbol_font_used_in_doc = false;
-      for (i = 0; i < NUM_PS_FONTS; i++)
+      for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	{
-	  cgm_font_id_used_in_doc[_ps_font_to_cgm_font_id[i]] = ps_font_used_in_doc[i];
+	  cgm_font_id_used_in_doc[_pl_g_ps_font_to_cgm_font_id[i]] = ps_font_used_in_doc[i];
 	  if (ps_font_used_in_doc[i] 
-	      && strcmp (_ps_font_info[i].ps_name, "Symbol") == 0)
+	      && strcmp (_pl_g_ps_font_info[i].ps_name, "Symbol") == 0)
 	    symbol_font_used_in_doc = true;
 	}
       
       /* compute maximum used font id, if any */
       max_cgm_font_id = 0;
       doc_uses_fonts = false;
-      for (i = 0; i < NUM_PS_FONTS; i++)
+      for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	{
 	  if (cgm_font_id_used_in_doc[i] == true)
 	    {
@@ -859,8 +870,8 @@ _c_terminate (S___(_plotter))
 	      int ps_font_index;
 	      int font_name_length, encoded_font_name_length;
 
-	      ps_font_index = _cgm_font_id_to_ps_font[i];
-	      font_name_length = (int) strlen (_ps_font_info[ps_font_index].ps_name);
+	      ps_font_index = _pl_g_cgm_font_id_to_ps_font[i];
+	      font_name_length = (int) strlen (_pl_g_ps_font_info[ps_font_index].ps_name);
 	      encoded_font_name_length = 
 		CGM_BINARY_BYTES_PER_STRING(font_name_length);
 	      data_len += encoded_font_name_length;
@@ -875,10 +886,10 @@ _c_terminate (S___(_plotter))
 	    {
 	      int ps_font_index;
 
-	      ps_font_index = _cgm_font_id_to_ps_font[i];
+	      ps_font_index = _pl_g_cgm_font_id_to_ps_font[i];
 	      _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
-				_ps_font_info[ps_font_index].ps_name,
-				(int) strlen (_ps_font_info[ps_font_index].ps_name),
+				_pl_g_ps_font_info[ps_font_index].ps_name,
+				(int) strlen (_pl_g_ps_font_info[ps_font_index].ps_name),
 				true,
 				data_len, &data_byte_count, &byte_count);
 	    }
@@ -941,7 +952,7 @@ _c_terminate (S___(_plotter))
 		  int family_length;
 		  plOutbuf *sdr_buffer;
 
-		  family_length = strlen(_cgm_font_properties[i].family);
+		  family_length = strlen(_pl_g_cgm_font_properties[i].family);
 		  data_len = (14 * CGM_BINARY_BYTES_PER_INTEGER 
 			      + 48 /* hardcoded constants; see above */
 			      + CGM_BINARY_BYTES_PER_STRING(family_length));
@@ -965,7 +976,7 @@ _c_terminate (S___(_plotter))
 		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
 				       1, /* priority */
 				       data_len, &data_byte_count, &byte_count);
-		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+		    build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
 					   i + 1); /* add 1 to index */
 		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
 				      sdr_buffer->base,
@@ -983,9 +994,9 @@ _c_terminate (S___(_plotter))
 		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
 				       1,
 				       data_len, &data_byte_count, &byte_count);
-		    _build_sdr_from_string (sdr_buffer, _plotter->cgm_encoding,
-					    _cgm_font_properties[i].family,
-					    (int)(strlen (_cgm_font_properties[i].family)),
+		    build_sdr_from_string (sdr_buffer, _plotter->cgm_encoding,
+					    _pl_g_cgm_font_properties[i].family,
+					    (int)(strlen (_pl_g_cgm_font_properties[i].family)),
 					    true); /* use double quotes */
 		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
 				      sdr_buffer->base,
@@ -1003,8 +1014,8 @@ _c_terminate (S___(_plotter))
 		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
 				       1,
 				       data_len, &data_byte_count, &byte_count);
-		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
-					   _cgm_font_properties[i].posture);
+		    build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   _pl_g_cgm_font_properties[i].posture);
 		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
 				      sdr_buffer->base,
 				      (int)(sdr_buffer->contents),
@@ -1021,8 +1032,8 @@ _c_terminate (S___(_plotter))
 		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
 				       1,
 				       data_len, &data_byte_count, &byte_count);
-		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
-					   _cgm_font_properties[i].weight);
+		    build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   _pl_g_cgm_font_properties[i].weight);
 		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
 				      sdr_buffer->base,
 				      (int)(sdr_buffer->contents),
@@ -1039,8 +1050,8 @@ _c_terminate (S___(_plotter))
 		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
 				       1,
 				       data_len, &data_byte_count, &byte_count);
-		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
-					   _cgm_font_properties[i].proportionate_width);
+		    build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   _pl_g_cgm_font_properties[i].proportionate_width);
 		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
 				      sdr_buffer->base,
 				      (int)(sdr_buffer->contents),
@@ -1057,8 +1068,8 @@ _c_terminate (S___(_plotter))
 		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
 				       1,
 				       data_len, &data_byte_count, &byte_count);
-		    _build_sdr_from_ui8s (sdr_buffer, _plotter->cgm_encoding,
-					  _cgm_font_properties[i].design_group,
+		    build_sdr_from_ui8s (sdr_buffer, _plotter->cgm_encoding,
+					  _pl_g_cgm_font_properties[i].design_group,
 					  3);
 		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
 				      sdr_buffer->base,
@@ -1076,8 +1087,8 @@ _c_terminate (S___(_plotter))
 		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
 				       1,
 				       data_len, &data_byte_count, &byte_count);
-		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
-					   _cgm_font_properties[i].structure);
+		    build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   _pl_g_cgm_font_properties[i].structure);
 		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
 				      sdr_buffer->base,
 				      (int)(sdr_buffer->contents),
@@ -1636,7 +1647,7 @@ _c_terminate (S___(_plotter))
 	      linetype_ptr = linetype_ptr->next;
 	      free (old_linetype_ptr);
 	    }
-	  _plotter->data->page->extra = (voidptr_t)NULL;
+	  _plotter->data->page->extra = (void *)NULL;
 	}
 
       _delete_outbuf (current_page);
@@ -1665,19 +1676,12 @@ _c_terminate (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
 static void
-#ifdef _HAVE_PROTOS
-_build_sdr_from_index (plOutbuf *sdr_buffer, int cgm_encoding, int x)
-#else
-_build_sdr_from_index (sdr_buffer, cgm_encoding, x)
-     plOutbuf *sdr_buffer;
-     int cgm_encoding;
-     int x;
-#endif
+build_sdr_from_index (plOutbuf *sdr_buffer, int cgm_encoding, int x)
 {
   int dummy_data_len, dummy_data_byte_count, dummy_byte_count;
 
@@ -1697,16 +1701,7 @@ _build_sdr_from_index (sdr_buffer, cgm_encoding, x)
 }
 
 static void
-#ifdef _HAVE_PROTOS
-_build_sdr_from_string (plOutbuf *sdr_buffer, int cgm_encoding, const char *s, int string_length, bool use_double_quotes)
-#else
-_build_sdr_from_string (sdr_buffer, cgm_encoding, s, string_length, use_double_quotes)
-     plOutbuf *sdr_buffer;
-     int cgm_encoding;
-     const char *s;
-     int string_length;
-     bool use_double_quotes;
-#endif
+build_sdr_from_string (plOutbuf *sdr_buffer, int cgm_encoding, const char *s, int string_length, bool use_double_quotes)
 {
   int dummy_data_len, dummy_data_byte_count, dummy_byte_count;
 
@@ -1726,15 +1721,7 @@ _build_sdr_from_string (sdr_buffer, cgm_encoding, s, string_length, use_double_q
 }
 
 static void
-#ifdef _HAVE_PROTOS
-_build_sdr_from_ui8s (plOutbuf *sdr_buffer, int cgm_encoding, const int *x, int n)
-#else
-_build_sdr_from_ui8s (sdr_buffer, cgm_encoding, x, n)
-     plOutbuf *sdr_buffer;
-     int cgm_encoding;
-     const int *x;
-     int n;
-#endif
+build_sdr_from_ui8s (plOutbuf *sdr_buffer, int cgm_encoding, const int *x, int n)
 {
   int i, dummy_data_len, dummy_data_byte_count, dummy_byte_count;
 
@@ -1758,60 +1745,60 @@ _build_sdr_from_ui8s (sdr_buffer, cgm_encoding, x, n)
 CGMPlotter::CGMPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:Plotter (infile, outfile, errfile)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter (FILE *outfile)
 	:Plotter (outfile)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter (ostream& out)
 	: Plotter (out)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter ()
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::CGMPlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _c_initialize ();
+  _pl_c_initialize ();
 }
 
 CGMPlotter::~CGMPlotter ()
@@ -1820,6 +1807,6 @@ CGMPlotter::~CGMPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _c_terminate ();
+  _pl_c_terminate ();
 }
 #endif

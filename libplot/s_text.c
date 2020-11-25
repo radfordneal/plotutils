@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This prints a single-font, single-font-size label.  When this is called,
    the current point is on the intended baseline of the label.  */
 
@@ -9,10 +27,19 @@
 #include "extern.h"
 
 /* maximum length we support */
-#define MAX_SVG_STRING_LEN 256
+#define PL_MAX_SVG_STRING_LEN 256
+
+/* The fixed value we specify for the font-size parameter, when any font is
+   retrieved, in terms of `px'.  (We now scale as needed by choosing an
+   appropriate transformation matrix.)  According to the SVG Authoring
+   Guide, a `px' means simply a user-space unit, but some SVG renderers
+   (e.g., in Firefox) get confused if it's smaller than 1.0 or so, and
+   return absurdly scaled fonts.  Maybe they think px stands for pixels?
+   :-) */
+#define PL_SVG_FONT_SIZE_IN_PX 20.0
 
 /* forward references */
-static void _write_svg_text_style ____P((plOutbuf *page, const plDrawState *drawstate, int h_just, int v_just));
+static void write_svg_text_style (plOutbuf *page, const plDrawState *drawstate, int h_just, int v_just);
 
 typedef struct
 {
@@ -34,34 +61,34 @@ static const plCharEscape _svg_char_escapes[NUM_SVG_CHAR_ESCAPES] =
 
 /* SVG horizontal alignment styles, i.e., text-anchor attribute, indexed by
    internal number (left/center/right) */
-static const char * _svg_horizontal_alignment_style[] =
+static const char * const svg_horizontal_alignment_style[PL_NUM_HORIZ_JUST_TYPES] =
 { "start", "middle", "end" };
 
-/* SVG vertical alignment styles, i.e., baseline-identifier attribute,
+/* SVG vertical alignment styles, i.e., alignment-baseline attribute,
    indexed by internal number (top/half/base/bottom/cap) */
-static const char * _svg_vertical_alignment_style[] =
-{ "text-top", "centerline", "baseline", "text-bottom", "topline" };
+static const char * const svg_vertical_alignment_style[PL_NUM_VERT_JUST_TYPES] =
+{ "text-before-edge", "central", "alphabetic", "text-after-edge", "hanging" };
+/* This version of the paint_text_string method, for SVG Plotters, supports
+   each of libplot's possible vertical justifications (see the list
+   immediately above).  However, only the `baseline' justification is
+   currently used.  That's because in s_defplot.c we set the Plotter
+   parameter `have_vertical_justification' to false.  Too many SVG
+   renderers don't support the SVG alignment-baseline attribute; e.g.,
+   Firefox 1.5 doesn't.  So it's best for libplot to do its own vertical
+   positioning of text strings. */
 
 double
-#ifdef _HAVE_PROTOS
-_s_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
-#else
-_s_paint_text_string (R___(_plotter) s, h_just, v_just)
-     S___(Plotter *_plotter;)
-     const unsigned char *s;
-     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
-     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
-#endif
+_pl_s_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 {
   const unsigned char *sp = s;
   unsigned char *t, *tp;
-  int n = 0;
+  int i, n = 0;
   double local_matrix[6];
   double angle = _plotter->drawstate->text_rotation;
   
   /* replace certain printable ASCII characters by entities */
-  tp = t = (unsigned char *)_plot_xmalloc ((2 + MAX_SVG_CHAR_ESCAPE_LEN) * strlen ((const char *)s) + 1);
-  while (*sp && n < MAX_SVG_STRING_LEN)
+  tp = t = (unsigned char *)_pl_xmalloc ((2 + MAX_SVG_CHAR_ESCAPE_LEN) * strlen ((const char *)s) + 1);
+  while (*sp && n < PL_MAX_SVG_STRING_LEN)
     {
       bool matched;
       int i;
@@ -97,7 +124,7 @@ _s_paint_text_string (R___(_plotter) s, h_just, v_just)
      as in PS and libplot. (Which is the opposite of the SVG convention,
      since SVG documentation uses column vectors instead of row vectors, so
      that the CTM is effectively transposed.  Although SVG's matrix()
-     construct uses Ps order for the six matrix elements... go figure.)
+     construct uses PS order for the six matrix elements... go figure.)
 
      Here CTM_local rotates by the libplot's text angle parameter, and
      translates to the correct position.  And CTM_base is libplot's current
@@ -124,13 +151,20 @@ _s_paint_text_string (R___(_plotter) s, h_just, v_just)
   local_matrix[1] = sin (M_PI * angle / 180.0);
   local_matrix[2] = -sin (M_PI * angle / 180.0) * (-1);	/* SEE ABOVE */
   local_matrix[3] = cos (M_PI * angle / 180.0) * (-1); /* SEE ABOVE */
+
+  /* since we now specify a fixed font-size, equal to PL_SVG_FONT_SIZE_IN_PX
+     (see below), rather than specifying a font size equal to the
+     font size in user units, we must here scale the text string to
+     the right size */
+  for (i = 0; i < 4; i++)
+    local_matrix[i] *= (_plotter->drawstate->font_size
+			/ PL_SVG_FONT_SIZE_IN_PX);
+
   local_matrix[4] = _plotter->drawstate->pos.x;
   local_matrix[5] = _plotter->drawstate->pos.y;
-  _s_set_matrix (R___(_plotter) 
-		 _plotter->drawstate->transform.m_user_to_ndc, 
-		 local_matrix); 
+  _pl_s_set_matrix (R___(_plotter) local_matrix); 
 
-  _write_svg_text_style (_plotter->data->page, _plotter->drawstate, 
+  write_svg_text_style (_plotter->data->page, _plotter->drawstate, 
 			 h_just, v_just);
 
   sprintf (_plotter->data->page->point, ">");
@@ -149,14 +183,7 @@ _s_paint_text_string (R___(_plotter) s, h_just, v_just)
 }
 
 static void
-#ifdef _HAVE_PROTOS
-_write_svg_text_style (plOutbuf *page, const plDrawState *drawstate, int h_just, int v_just)
-#else
-_write_svg_text_style (page, drawstate, h_just, v_just)
-     plOutbuf *page; 
-     const plDrawState *drawstate; 
-     int h_just, v_just;
-#endif
+write_svg_text_style (plOutbuf *page, const plDrawState *drawstate, int h_just, int v_just)
 {
   const char *ps_name, *css_family, *css_generic_family; /* last may be NULL */
   const char *css_style, *css_weight, *css_stretch;
@@ -169,33 +196,30 @@ _write_svg_text_style (page, drawstate, h_just, v_just)
     {
       int master_font_index;
 
-    case F_POSTSCRIPT:
+    case PL_F_POSTSCRIPT:
       master_font_index =
-	(_ps_typeface_info[drawstate->typeface_index].fonts)[drawstate->font_index];
-      ps_name = _ps_font_info[master_font_index].ps_name;
-      css_family = _ps_font_info[master_font_index].css_family;
-      css_generic_family = _ps_font_info[master_font_index].css_generic_family;
-      css_style = _ps_font_info[master_font_index].css_style;
-      css_weight = _ps_font_info[master_font_index].css_weight;
-      css_stretch = _ps_font_info[master_font_index].css_stretch;
+	(_pl_g_ps_typeface_info[drawstate->typeface_index].fonts)[drawstate->font_index];
+      ps_name = _pl_g_ps_font_info[master_font_index].ps_name;
+      css_family = _pl_g_ps_font_info[master_font_index].css_family;
+      css_generic_family = _pl_g_ps_font_info[master_font_index].css_generic_family;
+      css_style = _pl_g_ps_font_info[master_font_index].css_style;
+      css_weight = _pl_g_ps_font_info[master_font_index].css_weight;
+      css_stretch = _pl_g_ps_font_info[master_font_index].css_stretch;
       break;
-    case F_PCL:
+    case PL_F_PCL:
       master_font_index =
-	(_pcl_typeface_info[drawstate->typeface_index].fonts)[drawstate->font_index];
-      ps_name = _pcl_font_info[master_font_index].ps_name;
-      css_family = _pcl_font_info[master_font_index].css_family;
-      css_generic_family = _pcl_font_info[master_font_index].css_generic_family;
-      css_style = _pcl_font_info[master_font_index].css_style;
-      css_weight = _pcl_font_info[master_font_index].css_weight;
-      css_stretch = _pcl_font_info[master_font_index].css_stretch;
+	(_pl_g_pcl_typeface_info[drawstate->typeface_index].fonts)[drawstate->font_index];
+      ps_name = _pl_g_pcl_font_info[master_font_index].ps_name;
+      css_family = _pl_g_pcl_font_info[master_font_index].css_family;
+      css_generic_family = _pl_g_pcl_font_info[master_font_index].css_generic_family;
+      css_style = _pl_g_pcl_font_info[master_font_index].css_style;
+      css_weight = _pl_g_pcl_font_info[master_font_index].css_weight;
+      css_stretch = _pl_g_pcl_font_info[master_font_index].css_stretch;
       break;
     default:			/* shouldn't happen */
       return;
       break;
     }
-
-  sprintf (page->point, "style=\"");
-  _update_buffer (page);
 
   if (strcmp (ps_name, css_family) == 0)
     /* no need to specify both */
@@ -203,78 +227,82 @@ _write_svg_text_style (page, drawstate, h_just, v_just)
   else
     css_family_is_ps_name = false;
 
+  /* N.B. In each of the following four sprintf()'s, we should apparently
+     enclose css_family in single quotes, at least if it contains a space.
+     But doing so would cause the SVG renderer in `display', which is part
+     of the ImageMagick package, to reject the emitted SVG file. */
+
   if (css_generic_family)
     {
       if (css_family_is_ps_name)
-	sprintf (page->point, "font-family:'%s',%s;",
+	sprintf (page->point, "font-family=\"%s,%s\" ",
 		 css_family, css_generic_family);
       else
-	sprintf (page->point, "font-family:%s,'%s',%s;",
+	sprintf (page->point, "font-family=\"%s,%s,%s\" ",
 		 ps_name, css_family, css_generic_family);
     }
   else
     {
       if (css_family_is_ps_name)
-	sprintf (page->point, "font-family:'%s';",
+	sprintf (page->point, "font-family=\"%s\" ",
 		 css_family);
       else
-	sprintf (page->point, "font-family:%s,'%s';",
+	sprintf (page->point, "font-family=\"%s,%s\" ",
 		 ps_name, css_family);
     }
   _update_buffer (page);
   
   if (strcmp (css_style, "normal") != 0) /* not default */
     {
-      sprintf (page->point, "font-style:%s;",
+      sprintf (page->point, "font-style=\"%s\" ",
 	       css_style);
       _update_buffer (page);
     }
 
   if (strcmp (css_weight, "normal") != 0) /* not default */
     {
-      sprintf (page->point, "font-weight:%s;",
+      sprintf (page->point, "font-weight=\"%s\" ",
 	       css_weight);
       _update_buffer (page);
     }
 
   if (strcmp (css_stretch, "normal") != 0) /* not default */
     {
-      sprintf (page->point, "font-stretch:%s;",
+      sprintf (page->point, "font-stretch=\"%s\" ",
 	       css_stretch);
       _update_buffer (page);
     }
 
-  sprintf (page->point, "font-size:%.5g;",
-	   drawstate->font_size);
+  sprintf (page->point, "font-size=\"%.5gpx\" ",
+	   /* see comments above for why we don't simply specify
+	      drawstate->font_size here */
+	   PL_SVG_FONT_SIZE_IN_PX);
   _update_buffer (page);
 
-  if (h_just != JUST_LEFT)	/* not default */
+  if (h_just != PL_JUST_LEFT)	/* not default */
     {
-      sprintf (page->point, "text-anchor:%s;",
-	       _svg_horizontal_alignment_style[h_just]);
+      sprintf (page->point, "text-anchor=\"%s\" ",
+	       svg_horizontal_alignment_style[h_just]);
       _update_buffer (page);
     }
 
-  if (v_just != JUST_BASE)	/* not default */
+  if (v_just != PL_JUST_BASE)	/* not default */
     {
-      sprintf (page->point, "baseline-identifier:%s;",
-	       _svg_vertical_alignment_style[v_just]);
+      sprintf (page->point, "alignment-baseline=\"%s\" ",
+	       svg_vertical_alignment_style[v_just]);
       _update_buffer (page);
     }
 
-  /* currently, we never draw outlines; we only fill */
-  sprintf (page->point, "stroke:none;");
+  /* currently, we never draw character outlines; we only fill */
+  sprintf (page->point, "stroke=\"none\" ");
   _update_buffer (page);
 
   if (drawstate->pen_type)
     /* according to libplot convention, text should be filled, and since
        SVG's default filling is "none", we must say so */
     {
-      sprintf (page->point, "fill:%s;",
+      sprintf (page->point, "fill=\"%s\" ",
 	       _libplot_color_to_svg_color (drawstate->fgcolor, color_buf));
       _update_buffer (page);
     }
-  
-  sprintf (page->point, "\"");
-  _update_buffer (page);
 }

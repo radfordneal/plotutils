@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains a low-level method for adjusting the font of an HP-GL
    or PCL device to agree with an HPGL or PCL Plotter's notion of what it
    should be, prior to plotting a label.  Note: The `PCL 5' output by any
@@ -37,7 +55,7 @@
 
 /* NOTE: This code assumes that P1 and P2 have different x coordinates, and
    different y coordinates.  If that isn't the case, it'll divide by zero.
-   So we check for that possibility in _h_paint_text_string() before
+   So we check for that possibility in _pl_h_paint_text_string() before
    calling this function.  See comment in h_text.c. */
 
 #include "sys-defines.h"
@@ -48,12 +66,7 @@
 #define SHEAR (2.0/7.0)
 
 void
-#ifdef _HAVE_PROTOS
-_h_set_font (S___(Plotter *_plotter))
-#else
-_h_set_font (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_set_font (S___(Plotter *_plotter))
 {
   bool font_changed = false;
   bool oblique;
@@ -64,18 +77,18 @@ _h_set_font (S___(_plotter))
   double base_native_len, up_native_len, tan_slant;
   
   /* sanity check, should be unnecessary */
-  if (_plotter->drawstate->font_type == F_HERSHEY)
+  if (_plotter->drawstate->font_type == PL_F_HERSHEY)
     return;
 
-  if (_plotter->drawstate->font_type == F_STICK)
+  if (_plotter->drawstate->font_type == PL_F_STICK)
     /* check whether obliquing of this font is called for */
     {
       int master_font_index;
 
       /* compute index of font in master table of fonts, in g_fontdb.c */
       master_font_index =
-	(_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
-      oblique = _stick_font_info[master_font_index].obliquing;
+	(_pl_g_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+      oblique = _pl_g_stick_font_info[master_font_index].obliquing;
     }
   else
     oblique = false;
@@ -114,9 +127,9 @@ _h_set_font (S___(_plotter))
 
   /* emit command to select new font, if needed (see below) */
   if (_plotter->hpgl_version == 2)
-    font_changed = _hpgl2_maybe_update_font (S___(_plotter));
+    font_changed = _pl_h_hpgl2_maybe_update_font (S___(_plotter));
   else				/* 0 or 1, i.e. generic HP-GL or HP7550A */
-    font_changed = _hpgl_maybe_update_font (S___(_plotter));
+    font_changed = _pl_h_hpgl_maybe_update_font (S___(_plotter));
 
   /* Compute image, in the device frame, of a so-called `up vector': a
      vector which in the user frame is perpendicular to the above `base'
@@ -246,12 +259,7 @@ _h_set_font (S___(_plotter))
    Return value indicates whether font was changed. */
 
 bool
-#ifdef _HAVE_PROTOS
-_hpgl2_maybe_update_font (S___(Plotter *_plotter))
-#else
-_hpgl2_maybe_update_font (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_hpgl2_maybe_update_font (S___(Plotter *_plotter))
 {
   bool font_change = false;
   bool font_is_iso_latin_1;
@@ -265,63 +273,63 @@ _hpgl2_maybe_update_font (S___(_plotter))
 
   switch (_plotter->drawstate->font_type)
     {
-    case F_PCL:
+    case PL_F_PCL:
     default:
       /* compute index of font in master table of fonts, in g_fontdb.c */
       master_font_index =
-	(_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+	(_pl_g_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       
       /* #1: symbol set */
-      symbol_set = _pcl_font_info[master_font_index].hpgl_symbol_set;
+      symbol_set = _pl_g_pcl_font_info[master_font_index].hpgl_symbol_set;
       /* #2: spacing */
-      spacing = _pcl_font_info[master_font_index].hpgl_spacing;
+      spacing = _pl_g_pcl_font_info[master_font_index].hpgl_spacing;
       /* #3, #4 are pitch and height (we use defaults) */
       /* #5: posture */
-      posture = _pcl_font_info[master_font_index].hpgl_posture;
+      posture = _pl_g_pcl_font_info[master_font_index].hpgl_posture;
       /* #6: stroke weight */
-      stroke_weight = _pcl_font_info[master_font_index].hpgl_stroke_weight;
+      stroke_weight = _pl_g_pcl_font_info[master_font_index].hpgl_stroke_weight;
       /* #7: typeface */
-      typeface = _pcl_font_info[master_font_index].pcl_typeface;  
+      typeface = _pl_g_pcl_font_info[master_font_index].pcl_typeface;  
       /* ISO-Latin-1 after reencoding (if any)? */
-      font_is_iso_latin_1 = _pcl_font_info[master_font_index].iso8859_1;
+      font_is_iso_latin_1 = _pl_g_pcl_font_info[master_font_index].iso8859_1;
       break;
-    case F_POSTSCRIPT:
+    case PL_F_POSTSCRIPT:
       /* compute index of font in master table of fonts, in g_fontdb.c */
       master_font_index =
-	(_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+	(_pl_g_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       
       /* #1: symbol set */
-      symbol_set = _ps_font_info[master_font_index].hpgl_symbol_set;
+      symbol_set = _pl_g_ps_font_info[master_font_index].hpgl_symbol_set;
       /* #2: spacing */
-      spacing = _ps_font_info[master_font_index].hpgl_spacing;
+      spacing = _pl_g_ps_font_info[master_font_index].hpgl_spacing;
       /* #3, #4 are pitch and height (we use defaults) */
       /* #5: posture */
-      posture = _ps_font_info[master_font_index].hpgl_posture;
+      posture = _pl_g_ps_font_info[master_font_index].hpgl_posture;
       /* #6: stroke weight */
-      stroke_weight = _ps_font_info[master_font_index].hpgl_stroke_weight;
+      stroke_weight = _pl_g_ps_font_info[master_font_index].hpgl_stroke_weight;
       /* #7: typeface */
-      typeface = _ps_font_info[master_font_index].pcl_typeface;  
+      typeface = _pl_g_ps_font_info[master_font_index].pcl_typeface;  
       /* ISO-Latin-1 after reencoding (if any)? */
-      font_is_iso_latin_1 = _ps_font_info[master_font_index].iso8859_1;
+      font_is_iso_latin_1 = _pl_g_ps_font_info[master_font_index].iso8859_1;
       break;
-    case F_STICK:
+    case PL_F_STICK:
       /* compute index of font in master table of fonts, in g_fontdb.c */
       master_font_index =
-	(_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+	(_pl_g_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       
       /* #1: symbol set */
-      symbol_set = _stick_font_info[master_font_index].hpgl_symbol_set;
+      symbol_set = _pl_g_stick_font_info[master_font_index].hpgl_symbol_set;
       /* #2: spacing */
-      spacing = _stick_font_info[master_font_index].hpgl_spacing;
+      spacing = _pl_g_stick_font_info[master_font_index].hpgl_spacing;
       /* #3, #4 are pitch and height (we use defaults) */
       /* #5: posture */
-      posture = _stick_font_info[master_font_index].hpgl_posture;
+      posture = _pl_g_stick_font_info[master_font_index].hpgl_posture;
       /* #6: stroke weight */
-      stroke_weight = _stick_font_info[master_font_index].hpgl_stroke_weight;
+      stroke_weight = _pl_g_stick_font_info[master_font_index].hpgl_stroke_weight;
       /* #7: typeface */
-      typeface = _stick_font_info[master_font_index].pcl_typeface;  
+      typeface = _pl_g_stick_font_info[master_font_index].pcl_typeface;  
       /* ISO-Latin-1 after reencoding (if any)? */
-      font_is_iso_latin_1 = _stick_font_info[master_font_index].iso8859_1;
+      font_is_iso_latin_1 = _pl_g_stick_font_info[master_font_index].iso8859_1;
       break;
     }
   
@@ -334,13 +342,13 @@ _hpgl2_maybe_update_font (S___(_plotter))
   
   if (font_change)
     {
-      if (spacing == FIXED_SPACING)
+      if (spacing == HPGL2_FIXED_SPACING)
 	/* fixed-width font */
 	sprintf (_plotter->data->page->point, 
 		 /* #4 (nominal point size) not needed but included anyway */
 		 "SD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
 		 symbol_set, spacing, 
-		 (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
+		 (double)HPGL2_NOMINAL_CHARS_PER_INCH, (double)HPGL2_NOMINAL_POINT_SIZE, 
 		 posture, stroke_weight, typeface);
       else
 	/* variable-width font */
@@ -348,7 +356,7 @@ _hpgl2_maybe_update_font (S___(_plotter))
 		 /* #3 (nominal chars per inch) not needed but incl'd anyway */
 		 "SD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
 		 symbol_set, spacing, 
-		 (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
+		 (double)HPGL2_NOMINAL_CHARS_PER_INCH, (double)HPGL2_NOMINAL_POINT_SIZE, 
 		 posture, stroke_weight, typeface);
       _update_buffer (_plotter->data->page);
 
@@ -359,17 +367,17 @@ _hpgl2_maybe_update_font (S___(_plotter))
 	 encoding.  We implement this by using two fonts: standard and
 	 alternative.  See h_text.c for the DFA that switches back and
 	 forth (if necessary) when the label is rendered. */
-      if (_plotter->drawstate->font_type == F_PCL
+      if (_plotter->drawstate->font_type == PL_F_PCL
 	  && font_is_iso_latin_1
 	  && symbol_set == PCL_ROMAN_8)
 	{
-	  if (spacing == FIXED_SPACING)
+	  if (spacing == HPGL2_FIXED_SPACING)
 	    /* fixed-width font */
 	    sprintf (_plotter->data->page->point, 
 		     /* #4 (nominal point size) not needed but included anyway */
 		     "AD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
 		     PCL_ISO_8859_1, spacing, 
-		     (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
+		     (double)HPGL2_NOMINAL_CHARS_PER_INCH, (double)HPGL2_NOMINAL_POINT_SIZE, 
 		     posture, stroke_weight, typeface);
 	  else
 	    /* variable-width font */
@@ -377,7 +385,7 @@ _hpgl2_maybe_update_font (S___(_plotter))
 		    /* #3 (nominal chars per inch) not needed but included anyway */
 		     "AD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
 		     PCL_ISO_8859_1, spacing, 
-		     (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
+		     (double)HPGL2_NOMINAL_CHARS_PER_INCH, (double)HPGL2_NOMINAL_POINT_SIZE, 
 		     posture, stroke_weight, typeface);
 	  _update_buffer (_plotter->data->page);
 	}
@@ -399,23 +407,18 @@ _hpgl2_maybe_update_font (S___(_plotter))
    pre-HP/GL-2 HP-GL devices had.)  */
 
 bool
-#ifdef _HAVE_PROTOS
-_hpgl_maybe_update_font (S___(Plotter *_plotter))
-#else
-_hpgl_maybe_update_font (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_hpgl_maybe_update_font (S___(Plotter *_plotter))
 {
   bool font_change = false;
   int new_hpgl_charset_lower, new_hpgl_charset_upper, master_font_index;
 
   /* compute index of font in master table of fonts, in g_fontdb.c */
   master_font_index =
-    (_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+    (_pl_g_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
   
   /* determine HP character set numbers (old style, pre-HP-GL/2) */
-  new_hpgl_charset_lower = _stick_font_info[master_font_index].hpgl_charset_lower;
-  new_hpgl_charset_upper = _stick_font_info[master_font_index].hpgl_charset_upper;
+  new_hpgl_charset_lower = _pl_g_stick_font_info[master_font_index].hpgl_charset_lower;
+  new_hpgl_charset_upper = _pl_g_stick_font_info[master_font_index].hpgl_charset_upper;
 
   /* using `CS', select charset for lower half of font */
   if (new_hpgl_charset_lower != _plotter->hpgl_charset_lower)

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains color methods that are GNU extensions to libplot:
    pencolor, fillcolor, bgcolor, and the convenience function, color.
 
@@ -18,7 +36,7 @@
 #include "g_colorname.h"
 
 /* forward references */
-static bool _string_to_precise_color ____P((const char *name, plColor *color_p));
+static bool string_to_precise_color (const char *name, plColor *color_p);
 
 /* The pencolor method, which is a GNU extension to libplot.  It sets a
    drawing attribute: the pen color (``foreground color'') of objects
@@ -29,13 +47,7 @@ static bool _string_to_precise_color ____P((const char *name, plColor *color_p))
    bits, i.e. 0x0000 through 0xffff, for each of red, green, and blue). */
 
 int
-#ifdef _HAVE_PROTOS
 _API_pencolor (R___(Plotter *_plotter) int red, int green, int blue)
-#else
-_API_pencolor (R___(_plotter) red, green, blue)
-     S___(Plotter *_plotter;) 
-     int red, green, blue;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -76,13 +88,7 @@ _API_pencolor (R___(_plotter) red, green, blue)
    0xffff, for each of red, green, and blue). */
 
 int
-#ifdef _HAVE_PROTOS
 _API_fillcolor (R___(Plotter *_plotter) int red, int green, int blue)
-#else
-_API_fillcolor (R___(_plotter) red, green, blue)
-     S___(Plotter *_plotter;) 
-     int red, green, blue;
-#endif
 {
   double red_d, green_d, blue_d;
   double desaturate;
@@ -148,13 +154,7 @@ _API_fillcolor (R___(_plotter) red, green, blue)
 /* convenience function */
 
 int
-#ifdef _HAVE_PROTOS
 _API_color (R___(Plotter *_plotter) int red, int green, int blue)
-#else
-_API_color (R___(_plotter) red, green, blue)
-     S___(Plotter *_plotter;) 
-     int red, green, blue;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -176,13 +176,7 @@ _API_color (R___(_plotter) red, green, blue)
    bits, i.e. 0x0000 through 0xffff, for each of red, green, and blue). */
 
 int
-#ifdef _HAVE_PROTOS
 _API_bgcolor (R___(Plotter *_plotter) int red, int green, int blue)
-#else
-_API_bgcolor (R___(_plotter) red, green, blue)
-     S___(Plotter *_plotter;) 
-     int red, green, blue;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -214,12 +208,7 @@ _API_bgcolor (R___(_plotter) red, green, blue)
 /* compute a 16-bit grayscale approximation to a 48-bit RGB; optionally
    used by pencolorname, fillcolorname, bgcolorname methods */
 int
-#ifdef _HAVE_PROTOS
 _grayscale_approx (int red, int green, int blue)
-#else
-_grayscale_approx (red, green, blue)
-     int red, green, blue;
-#endif
 {
   double gray;
   
@@ -239,13 +228,7 @@ _grayscale_approx (red, green, blue)
    The lowest-level routine is _string_to_color(). */
 
 int 
-#ifdef _HAVE_PROTOS
 _API_pencolorname (R___(Plotter *_plotter) const char *name)
-#else
-_API_pencolorname (R___(_plotter) name)
-     S___(Plotter *_plotter;)
-     const char *name;
-#endif
 {
   plColor color;
   int intred, intgreen, intblue;
@@ -282,7 +265,7 @@ _API_pencolorname (R___(_plotter) name)
     {
       char *buf;
 		
-      buf = (char *)_plot_xmalloc (strlen (name) + 100);
+      buf = (char *)_pl_xmalloc (strlen (name) + 100);
       sprintf (buf, "substituting \"black\" for undefined pen color \"%s\"", 
 	       name);
       _plotter->warning (R___(_plotter) buf);
@@ -296,13 +279,7 @@ _API_pencolorname (R___(_plotter) name)
 }
 
 int 
-#ifdef _HAVE_PROTOS
 _API_fillcolorname (R___(Plotter *_plotter) const char *name)
-#else
-_API_fillcolorname (R___(_plotter) name)
-     S___(Plotter *_plotter;) 
-     const char *name;
-#endif
 {
   plColor color;
   int intred, intgreen, intblue;
@@ -339,7 +316,7 @@ _API_fillcolorname (R___(_plotter) name)
     {
       char *buf;
 		
-      buf = (char *)_plot_xmalloc (strlen (name) + 100);
+      buf = (char *)_pl_xmalloc (strlen (name) + 100);
       sprintf (buf, "substituting \"black\" for undefined fill color \"%s\"", 
 	       name);
       _plotter->warning (R___(_plotter) buf);
@@ -355,13 +332,7 @@ _API_fillcolorname (R___(_plotter) name)
 /* convenience function */
 
 int
-#ifdef _HAVE_PROTOS
 _API_colorname (R___(Plotter *_plotter) const char *name)
-#else
-_API_colorname (R___(_plotter) name)
-     S___(Plotter *_plotter;)
-     const char *name;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -377,13 +348,7 @@ _API_colorname (R___(_plotter) name)
 }
 
 int 
-#ifdef _HAVE_PROTOS
 _API_bgcolorname (R___(Plotter *_plotter) const char *name)
-#else
-_API_bgcolorname (R___(_plotter) name)
-     S___(Plotter *_plotter;) 
-     const char *name;
-#endif
 {
   plColor color;
   int intred, intgreen, intblue;
@@ -430,7 +395,7 @@ _API_bgcolorname (R___(_plotter) name)
     {
       char *buf;
 		
-      buf = (char *)_plot_xmalloc (strlen (name) + 100);
+      buf = (char *)_pl_xmalloc (strlen (name) + 100);
       sprintf (buf, "substituting \"white\" for undefined background color \"%s\"", 
 	       name);
       _plotter->warning (R___(_plotter) buf);
@@ -452,14 +417,7 @@ _API_bgcolorname (R___(_plotter) name)
    of previously found colors. */
 
 bool
-#ifdef _HAVE_PROTOS
 _string_to_color (const char *name, plColor *color_p, plColorNameCache *color_name_cache)
-#else
-_string_to_color (name, color_p, color_name_cache)
-     const char *name;
-     plColor *color_p;
-     plColorNameCache *color_name_cache;
-#endif
 {
   plColor color;
   plCachedColorNameInfo **cached_colors_p;
@@ -476,14 +434,14 @@ _string_to_color (name, color_p, color_name_cache)
     return false;
 
   /* first check whether string is of the form "#ffffff" */
-  if (_string_to_precise_color (name, &color))
+  if (string_to_precise_color (name, &color))
     {
       *color_p = color;
       return true;
     }
 
   /* copy string, removing spaces */
-  squeezed_name = (char *)_plot_xmalloc (strlen (name) + 1);
+  squeezed_name = (char *)_pl_xmalloc (strlen (name) + 1);
   optr = name, nptr = squeezed_name;
   while (*optr)
     {
@@ -515,7 +473,7 @@ _string_to_color (name, color_p, color_name_cache)
   if (!found)
    /* not previously used, so search master colorname table (this is slower) */
     {
-      info = _colornames;	/* start at head of list in g_colorname.h */
+      info = _pl_g_colornames; /* start at head of list in g_colorname.h */
       while (info->name)
 	{
 	  if (strcasecmp (info->name, squeezed_name) == 0)
@@ -534,7 +492,7 @@ _string_to_color (name, color_p, color_name_cache)
 
 	  old_cached_colors = *cached_colors_p;
 	  cached_colors = 
-	    (plCachedColorNameInfo *)_plot_xmalloc (sizeof (plCachedColorNameInfo));
+	    (plCachedColorNameInfo *)_pl_xmalloc (sizeof (plCachedColorNameInfo));
 	  cached_colors->next = old_cached_colors;
 	  cached_colors->info = found_info;
 	  *cached_colors_p = cached_colors;
@@ -556,13 +514,7 @@ _string_to_color (name, color_p, color_name_cache)
    of the form "#ffffff". */
 
 static bool
-#ifdef _HAVE_PROTOS
-_string_to_precise_color (const char *name, plColor *color_p)
-#else
-_string_to_precise_color (name, color_p)
-     const char *name;
-     plColor *color_p;
-#endif
+string_to_precise_color (const char *name, plColor *color_p)
 {
   const char *good_hex_digits = "0123456789abcdefABCDEF";
   int i, num_assigned;
@@ -606,26 +558,17 @@ _string_to_precise_color (name, color_p)
 /* The cache of color names is currently implemented as a linked list. */
 
 plColorNameCache *
-#ifdef _HAVE_PROTOS
 _create_color_name_cache (void)
-#else
-_create_color_name_cache ()
-#endif
 {
   plColorNameCache *new_cache;
   
-  new_cache = (plColorNameCache *)_plot_xmalloc(sizeof(plColorNameCache));
+  new_cache = (plColorNameCache *)_pl_xmalloc(sizeof(plColorNameCache));
   new_cache->cached_colors = NULL;
   return new_cache;
 }
 
 void 
-#ifdef _HAVE_PROTOS
 _delete_color_name_cache (plColorNameCache *color_name_cache)
-#else
-_delete_color_name_cache (color_name_cache)
-     plColorNameCache *color_name_cache;
-#endif
 {
   plCachedColorNameInfo *colorptr;
 

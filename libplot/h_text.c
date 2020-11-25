@@ -1,9 +1,27 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This is the low-level method which is used by any HP-GL or PCL Plotter
    for rendering a single-font label in a PCL, PS, or Stick font.  Note:
    The `PCL 5' output by any PCL Plotter is simply a wrapped version of
    HP-GL/2.
 
-   This method internally invokes _h_set_font to select the font.  See
+   This method internally invokes _pl_h_set_font to select the font.  See
    h_font.c for the font selection code.
 
    Before HP-GL/2 (introduced c. 1990), HP-GL devices supported only Stick
@@ -63,16 +81,9 @@ typedef enum { LOWER_HALF, UPPER_HALF } state_type;
 /* kludge, see comment in code */
 #define HP_ROMAN_8_MINUS_CHAR 0366
 
+/* ARGS: h_just,v_just are PL_JUST_{LEFT|CENTER|RIGHT}, PL_JUST_{TOP etc.} */
 double
-#ifdef _HAVE_PROTOS
-_h_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
-#else
-_h_paint_text_string (R___(_plotter) s, h_just, v_just)
-     S___(Plotter *_plotter;) 
-     const unsigned char *s;
-     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
-     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
-#endif
+_pl_h_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 {
   bool created_temp_string = false;
   bool reencode_iso_as_roman8 = false;
@@ -88,18 +99,18 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 
   /* sanity checks: this routine supports only baseline positioning and
      left-justification */
-  if (v_just != JUST_BASE || h_just != JUST_LEFT)
+  if (v_just != PL_JUST_BASE || h_just != PL_JUST_LEFT)
     return 0.0;
 
   /* sanity check, should be unnecessary */
 #ifndef USE_PS_FONTS_IN_PCL
-  if (_plotter->drawstate->font_type != F_PCL
-      && _plotter->drawstate->font_type != F_STICK)
+  if (_plotter->drawstate->font_type != PL_F_PCL
+      && _plotter->drawstate->font_type != PL_F_STICK)
     return 0.0;
 #else  /* USE_PS_FONTS_IN_PCL */
-  if (_plotter->drawstate->font_type != F_POSTSCRIPT
-      && _plotter->drawstate->font_type != F_PCL
-      && _plotter->drawstate->font_type != F_STICK)
+  if (_plotter->drawstate->font_type != PL_F_POSTSCRIPT
+      && _plotter->drawstate->font_type != PL_F_PCL
+      && _plotter->drawstate->font_type != PL_F_STICK)
     return 0.0;
 #endif
 
@@ -119,18 +130,18 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
   /* compute index of font in master table in g_fontdb.c */
   switch (_plotter->drawstate->font_type)
     {
-    case F_PCL:
+    case PL_F_PCL:
     default:
       master_font_index =
-	(_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+	(_pl_g_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       break;
-    case F_POSTSCRIPT:
+    case PL_F_POSTSCRIPT:
       master_font_index =
-	(_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+	(_pl_g_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       break;
-    case F_STICK:
+    case PL_F_STICK:
       master_font_index =
-	(_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+	(_pl_g_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       break;
     }
 
@@ -141,10 +152,10 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 
   switch (_plotter->drawstate->font_type)
     {
-    case F_PCL:
+    case PL_F_PCL:
     default:
-      if (_pcl_font_info[master_font_index].hpgl_symbol_set == PCL_ROMAN_8
-	  && _pcl_font_info[master_font_index].iso8859_1)
+      if (_pl_g_pcl_font_info[master_font_index].hpgl_symbol_set == PCL_ROMAN_8
+	  && _pl_g_pcl_font_info[master_font_index].iso8859_1)
 	/* An ISO-Latin-1 PCL font, for which we use HP's Roman-8 for lower
 	   half and HP's Latin-1 for upper half.  Why?  Because it's what
 	   works best; see comments in the font retrieval code in h_font.c.
@@ -160,7 +171,7 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 	  unsigned char *tptr;
 
 	  /* temp string for rewritten label */
-	  t = (unsigned char *)_plot_xmalloc (3 * strlen ((const char *)s) + 1);
+	  t = (unsigned char *)_pl_xmalloc (3 * strlen ((const char *)s) + 1);
 	  tptr = t;
 	  created_temp_string = true;
 
@@ -202,13 +213,13 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 	/* a non-ISO-Latin-1 PCL font, no need for reencoding */
 	t = (unsigned char *)s;
       break;
-    case F_POSTSCRIPT:
+    case PL_F_POSTSCRIPT:
       /* no need for reencoding (HP's encoding of the font is good enough) */
       t = (unsigned char *)s;
       break;
-    case F_STICK:
-      if (_stick_font_info[master_font_index].hpgl_symbol_set == PCL_ROMAN_8
-	  && _stick_font_info[master_font_index].iso8859_1)
+    case PL_F_STICK:
+      if (_pl_g_stick_font_info[master_font_index].hpgl_symbol_set == PCL_ROMAN_8
+	  && _pl_g_stick_font_info[master_font_index].iso8859_1)
 	/* stick font uses HP's Roman-8 encoding for its upper half, so
            must reencode ISO-Latin-1 as Roman-8 */
 	reencode_iso_as_roman8 = true;
@@ -227,11 +238,11 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 	     upper half; if so, we'll ignore all 8-bit characters.  This
 	     case is recognized by the charset number for the upper half
 	     being -1 (see table in g_fontdb.c). */
-	  if (_stick_font_info[master_font_index].hpgl_charset_upper < 0)
+	  if (_pl_g_stick_font_info[master_font_index].hpgl_charset_upper < 0)
 	    bogus_upper_half = true;
 
 	  /* temp string for rewritten label */
-	  t = (unsigned char *)_plot_xmalloc (3 * strlen ((const char *)s) + 1);
+	  t = (unsigned char *)_pl_xmalloc (3 * strlen ((const char *)s) + 1);
 	  tptr = t;
 	  created_temp_string = true;
 
@@ -244,7 +255,7 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 	      c = *sptr++;
 	      if (c >= 0x80 && reencode_iso_as_roman8)
 		/* reencode upper half via lookup table in h_roman8.h */
-		c = _iso_to_roman8[c - 0x80];
+		c = iso_to_roman8[c - 0x80];
 
 	      if (c < 0x80)
 		/* lower half of font, pass through */
@@ -282,7 +293,7 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 	  unsigned const char *sptr = s;
 	  unsigned char *tptr;
 	
-	  t = (unsigned char *)_plot_xmalloc (strlen ((const char *)s) + 1);
+	  t = (unsigned char *)_pl_xmalloc (strlen ((const char *)s) + 1);
 	  tptr = t;
 	  created_temp_string = true;
 	  while (*sptr)
@@ -293,7 +304,7 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 		{
 		  if (reencode_iso_as_roman8)
 		    /* reencode upper half via lookup table in h_roman8.h */
-		    *tptr++ = _iso_to_roman8[(*sptr++) - 0x80];
+		    *tptr++ = iso_to_roman8[(*sptr++) - 0x80];
 		  else
 		    *tptr++ = *sptr++;
 		}
@@ -307,16 +318,16 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
      for first character in label, i.e. its `first ink' */
   switch (_plotter->drawstate->font_type)
     {
-    case F_PCL:
+    case PL_F_PCL:
     default:
       /* per-character offset expressed in units where font size = 1000 */
-      hp_offset = _pcl_font_info[master_font_index].offset[*((unsigned char *)s)] / 1000.0;
+      hp_offset = _pl_g_pcl_font_info[master_font_index].offset[*((unsigned char *)s)] / 1000.0;
       break;
-    case F_POSTSCRIPT:
+    case PL_F_POSTSCRIPT:
       /* per-character offset expressed in units where font size = 1000 */
-      hp_offset = _ps_font_info[master_font_index].offset[*((unsigned char *)s)] / 1000.0;
+      hp_offset = _pl_g_ps_font_info[master_font_index].offset[*((unsigned char *)s)] / 1000.0;
       break;
-    case F_STICK:
+    case PL_F_STICK:
       /* Offset expressed in HP's abstract raster units, need to divide by
 	 what the font size equals in raster units.  
 	 (Font size = 2 * raster width, by definition.) */
@@ -328,8 +339,8 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 	 half, with raster width 45.  For now, just use the raster width
 	 for the lower half. */
 
-      hp_offset = (((double)(_stick_font_info[master_font_index].offset)) /
-		   (2.0 * _stick_font_info[master_font_index].raster_width_lower));
+      hp_offset = (((double)(_pl_g_stick_font_info[master_font_index].offset)) /
+		   (2.0 * _pl_g_stick_font_info[master_font_index].raster_width_lower));
       break;
     }
 
@@ -340,13 +351,13 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
     sintheta * _plotter->drawstate->true_font_size * hp_offset;
 
   /* sync font and pen position */
-  _h_set_font (S___(_plotter));
-  _h_set_position (S___(_plotter));
+  _pl_h_set_font (S___(_plotter));
+  _pl_h_set_position (S___(_plotter));
 
   /* Sync pen color.  This may set the _plotter->hpgl_bad_pen flag (if optimal
      pen is #0 [white] and we're not allowed to use pen #0 to draw with).
      So we test _plotter->hpgl_bad_pen before drawing the label (see below). */
-  _h_set_pen_color (R___(_plotter) HPGL_OBJECT_LABEL);
+  _pl_h_set_pen_color (R___(_plotter) HPGL_OBJECT_LABEL);
 
   if (t[0] != '\0' /* i.e. label nonempty */
       && _plotter->hpgl_bad_pen == false)

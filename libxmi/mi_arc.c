@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -258,34 +281,34 @@ typedef struct
 /**********************************************************************/
 
 /* internal functions that do painting of pixels */
-static void fillSpans ____P((miPaintedSet *paintedSet, miPixel pixel, miAccumSpans *accumSpans));
-static void miArcCap ____P((miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArcFace *pFace, int end, int xOrg, int yOrg, double xFtrans, double yFtrans));
-static void miArcJoin ____P((miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArcFace *pLeft, const miArcFace *pRight, int xOrgLeft, int yOrgLeft, double xFtransLeft, double yFtransLeft, int xOrgRight, int yOrgRight, double xFtransRight, double yFtransRight));
-static void miFillWideEllipse ____P((miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArc *parc, miEllipseCache *ellipseCache));
-static void miRoundCap ____P((miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, SppPoint pCenter, SppPoint pEnd, SppPoint pCorner, SppPoint pOtherCorner, int fLineEnd, int xOrg, int yOrg, double xFtrans, double yFtrans));
+static void fillSpans (miPaintedSet *paintedSet, miPixel pixel, miAccumSpans *accumSpans);
+static void miArcCap (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArcFace *pFace, int end, int xOrg, int yOrg, double xFtrans, double yFtrans);
+static void miArcJoin (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArcFace *pLeft, const miArcFace *pRight, int xOrgLeft, int yOrgLeft, double xFtransLeft, double yFtransLeft, int xOrgRight, int yOrgRight, double xFtransRight, double yFtransRight);
+static void miFillWideEllipse (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArc *parc, miEllipseCache *ellipseCache);
+static void miRoundCap (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, SppPoint pCenter, SppPoint pEnd, SppPoint pCorner, SppPoint pOtherCorner, int fLineEnd, int xOrg, int yOrg, double xFtrans, double yFtrans);
 
 /* internal functions that don't do painting of pixels */
-static double angleBetween ____P((SppPoint center, SppPoint point1, SppPoint point2));
-static double miDasin ____P((double v));
-static double miDatan2 ____P((double dy, double dx));
-static double miDcos ____P((double a));
-static double miDsin ____P((double a));
-static int computeAngleFromPath ____P((int startAngle, int endAngle, const dashMap *map, int *lenp, bool backwards));
-static int miGetArcPts ____P((const SppArc *parc, int cpt, SppPoint **ppPts));
-static miArcData * addArc ____P((miPolyArcs *polyArcs, const miArc *xarc));
-static miArcSpanData * miComputeWideEllipse ____P((unsigned int lw, const miArc *parc, bool *mustFree, miEllipseCache *ellipseCache));
-static miPolyArcs * miComputeArcs ____P((const miGC *pGC, const miArc *parcs, int narcs));
-static void addCap ____P((miPolyArcs *polyArcs, int end, int arcIndex));
-static void addJoin ____P((miPolyArcs *polyArcs, int end0, int index0, int paintType0, int end1, int index1, int paintType1));
-static void computeDashMap ____P((const miArc *arcp, dashMap *map));
-static void drawArc ____P((miAccumSpans *accumSpans, const miArc *tarc, unsigned int l, int a0, int a1, miArcFace *right, miArcFace *left, miEllipseCache *ellipseCache));
-static void drawZeroArc ____P((miAccumSpans *accumSpans, const miArc *tarc, unsigned int lw, miArcFace *left, miArcFace *right));
-static void initAccumSpans ____P((miAccumSpans *accumSpans));
-static void miArcSegment ____P((const miGC *pGC, miAccumSpans *accumSpans, miArc tarc, miArcFace *right, miArcFace *left, miEllipseCache *ellipseCache));
-static void miComputeCircleSpans ____P((unsigned int lw, const miArc *parc, miArcSpanData *spdata));
-static void miComputeEllipseSpans ____P((unsigned int lw, const miArc *parc, miArcSpanData *spdata));
-static void miFreeArcs ____P((const miGC *pGC, miPolyArcs *arcs));
-static void translateBounds ____P((miArcFace *b, int x, int y, double fx, double fy));
+static double angleBetween (SppPoint center, SppPoint point1, SppPoint point2);
+static double miDasin (double v);
+static double miDatan2 (double dy, double dx);
+static double miDcos (double a);
+static double miDsin (double a);
+static int computeAngleFromPath (int startAngle, int endAngle, const dashMap *map, int *lenp, bool backwards);
+static int miGetArcPts (const SppArc *parc, int cpt, SppPoint **ppPts);
+static miArcData * addArc (miPolyArcs *polyArcs, const miArc *xarc);
+static miArcSpanData * miComputeWideEllipse (unsigned int lw, const miArc *parc, bool *mustFree, miEllipseCache *ellipseCache);
+static miPolyArcs * miComputeArcs (const miGC *pGC, const miArc *parcs, int narcs);
+static void addCap (miPolyArcs *polyArcs, int end, int arcIndex);
+static void addJoin (miPolyArcs *polyArcs, int end0, int index0, int paintType0, int end1, int index1, int paintType1);
+static void computeDashMap (const miArc *arcp, dashMap *map);
+static void drawArc (miAccumSpans *accumSpans, const miArc *tarc, unsigned int l, int a0, int a1, miArcFace *right, miArcFace *left, miEllipseCache *ellipseCache);
+static void drawZeroArc (miAccumSpans *accumSpans, const miArc *tarc, unsigned int lw, miArcFace *left, miArcFace *right);
+static void initAccumSpans (miAccumSpans *accumSpans);
+static void miArcSegment (const miGC *pGC, miAccumSpans *accumSpans, miArc tarc, miArcFace *right, miArcFace *left, miEllipseCache *ellipseCache);
+static void miComputeCircleSpans (unsigned int lw, const miArc *parc, miArcSpanData *spdata);
+static void miComputeEllipseSpans (unsigned int lw, const miArc *parc, miArcSpanData *spdata);
+static void miFreeArcs (const miGC *pGC, miPolyArcs *arcs);
+static void translateBounds (miArcFace *b, int x, int y, double fx, double fy);
 
 
 /*
@@ -305,17 +328,9 @@ static void translateBounds ____P((miArcFace *b, int x, int y, double fx, double
  * version, miPolyArc, maintains its own `rasterized ellipse' cache as
  * static data, and simply calls this one.  */
 
+/* ARGS: ellipseCache = pointer to ellipse data cache */
 void
-#ifdef _HAVE_PROTOS
 miPolyArc_r (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs, miEllipseCache *ellipseCache)
-#else
-miPolyArc_r (paintedSet, pGC, narcs, parcs, ellipseCache)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-     miEllipseCache *ellipseCache; /* pointer to ellipse data cache */
-#endif
 {
   int           i;
   const miArc   *parc;
@@ -480,15 +495,7 @@ miPolyArc_r (paintedSet, pGC, narcs, parcs, ellipseCache)
 /* The non-reentrant version of miPolyArc, which unlike miPolyArc_r
    maintains its own ellipse spans cache as static (persistent) data. */
 void
-#ifdef _HAVE_PROTOS
 miPolyArc (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs)
-#else
-miPolyArc (paintedSet, pGC, narcs, parcs)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-#endif
 {
   if (_mi_ellipseCache == (miEllipseCache *)NULL)
     _mi_ellipseCache = miNewEllipseCache ();
@@ -502,11 +509,7 @@ miPolyArc (paintedSet, pGC, narcs, parcs)
    recently used), and a timestamp variable that is incremented when any
    record is cached.  `Replace least recently used' is the policy. */
 miEllipseCache *
-#ifdef _HAVE_PROTOS
 miNewEllipseCache (void)
-#else
-miNewEllipseCache ()
-#endif
 {
   int k;
   cachedEllipse *chead, *cent;
@@ -539,12 +542,7 @@ miNewEllipseCache ()
 /* Free a cache of rasterized ellipses, which must previously have been
    allocated by invoking miNewEllipseCache. */
 void
-#ifdef _HAVE_PROTOS
 miDeleteEllipseCache (miEllipseCache *ellipseCache)
-#else
-miDeleteEllipseCache (ellipseCache)
-     miEllipseCache *ellipseCache;
-#endif
 {
   int k, cache_size;
   cachedEllipse *chead, *cent;
@@ -577,16 +575,7 @@ miDeleteEllipseCache (ellipseCache)
  * by a later invocation of fillSpans().  This function updates the ellipse
  * span cache. */
 static void
-#ifdef _HAVE_PROTOS
 miArcSegment (const miGC *pGC, miAccumSpans *accumSpans, miArc tarc, miArcFace *right, miArcFace *left, miEllipseCache *ellipseCache)
-#else
-miArcSegment (pGC, accumSpans, tarc, right, left, ellipseCache)
-     const miGC *pGC;
-     miAccumSpans *accumSpans;
-     miArc tarc;
-     miArcFace *right, *left;
-     miEllipseCache *ellipseCache;
-#endif
 {
   unsigned int l = pGC->lineWidth;
   int a0, a1, startAngle, endAngle;
@@ -651,16 +640,7 @@ miArcSegment (pGC, accumSpans, tarc, right, left, ellipseCache)
    Called by miPolyArc if angle is at least 360 degrees.  Calls
    miComputeWideEllipse(), and updates the ellipse span cache. */
 static void
-#ifdef _HAVE_PROTOS
 miFillWideEllipse (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArc *parc, miEllipseCache *ellipseCache)
-#else
-miFillWideEllipse (paintedSet, pixel, pGC, parc, ellipseCache)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     const miGC *pGC;
-     const miArc *parc;
-     miEllipseCache *ellipseCache;
-#endif
 {
   miArcSpanData *spdata;
   bool mustFree;
@@ -860,15 +840,7 @@ miFillWideEllipse (paintedSet, pixel, pGC, parc, ellipseCache)
    actual computation of spans, i.e. to do scan conversion.  */
 
 static miArcSpanData *
-#ifdef _HAVE_PROTOS
 miComputeWideEllipse (unsigned int lw, const miArc *parc, bool *mustFree, miEllipseCache *ellipseCache)
-#else
-miComputeWideEllipse (lw, parc, mustFree, ellipseCache)
-     unsigned int lw;
-     const miArc *parc;
-     bool *mustFree;
-     miEllipseCache *ellipseCache;
-#endif
 {
   miArcSpanData *spdata;
   cachedEllipse *cent, *lruent;
@@ -958,14 +930,7 @@ miComputeWideEllipse (lw, parc, mustFree, ellipseCache)
    cache.  It includes spdata->spans, an array of k+2 ArcSpans, which will
    be filled in.  Here k=height/2 + (lw-1)/2. */
 static void
-#ifdef _HAVE_PROTOS
 miComputeCircleSpans (unsigned int lw, const miArc *parc, miArcSpanData *spdata)
-#else
-miComputeCircleSpans (lw, parc, spdata)
-     unsigned int lw;
-     const miArc *parc;
-     miArcSpanData *spdata;
-#endif
 {
   miArcSpan *span;
   int doinner;
@@ -1137,14 +1102,7 @@ correspond to the inner and outer boundaries of the wide ellipse.  */
    of k+2 ArcSpans, which will be filled in.  Here 
    k=height/2 + (lw-1)/2. */
 static void
-#ifdef _HAVE_PROTOS
 miComputeEllipseSpans (unsigned int lw, const miArc *parc, miArcSpanData *spdata)
-#else
-miComputeEllipseSpans (lw, parc, spdata)
-     unsigned int lw;
-     const miArc *parc;
-     miArcSpanData *spdata;
-#endif
 {
   miArcSpan *span;
   double w, h, r, xorg;
@@ -1367,14 +1325,7 @@ miComputeEllipseSpans (lw, parc, spdata)
    sub-pixel placement of arc segment endpoints will normally occur. */
 
 static miPolyArcs *
-#ifdef _HAVE_PROTOS
 miComputeArcs (const miGC *pGC, const miArc *parcs, int narcs)
-#else
-miComputeArcs (pGC, parcs, narcs)
-     const miGC *pGC;
-     const miArc *parcs;
-     int narcs;
-#endif
 {
   bool		isDashed, isDoubleDash;
   miPolyArcs	*arcs;
@@ -1777,13 +1728,7 @@ miComputeArcs (pGC, parcs, narcs)
 /* Free a list of arc segments (i.e. dashes) for an incomplete ellipse,
    indexed by pixel paint type, that was computed by miComputeArcs(). */
 static void
-#ifdef _HAVE_PROTOS
 miFreeArcs(const miGC *pGC, miPolyArcs *arcs)
-#else
-miFreeArcs(pGC, arcs)
-     const miGC *pGC;
-     miPolyArcs *arcs;
-#endif
 {
   int paintType;
 
@@ -1810,14 +1755,7 @@ miFreeArcs(pGC, arcs)
 /* helper function called by miComputeArcs(); add a cap to the array of
    miArcCapStructs in a miPolyArcs struct */
 static void
-#ifdef _HAVE_PROTOS
 addCap (miPolyArcs *polyArcs, int end, int arcIndex)
-#else
-addCap (polyArcs, end, arcIndex)
-     miPolyArcs *polyArcs;
-     int end;
-     int arcIndex;
-#endif
 {
   miArcCapStruct *cap;
 
@@ -1842,14 +1780,7 @@ addCap (polyArcs, end, arcIndex)
 /* helper function called by miComputeArcs(); add a join to the array of
    miArcJoinStructs in a miPolyArcs struct */
 static void
-#ifdef _HAVE_PROTOS
 addJoin (miPolyArcs *polyArcs, int end0, int index0, int paintType0, int end1, int index1, int paintType1)
-#else
-addJoin (polyArcs, end0, index0, paintType0, end1, index1, paintType1)
-     miPolyArcs *polyArcs;
-     int end0, index0, paintType0;
-     int end1, index1, paintType1;
-#endif
 {
   miArcJoinStruct *join;
 
@@ -1879,13 +1810,7 @@ addJoin (polyArcs, end0, index0, paintType0, end1, index1, paintType1)
    the array of miArcData structs in a miPolyArcs struct, and return a
    pointer to the new miArcData struct */
 static miArcData *
-#ifdef _HAVE_PROTOS
 addArc (miPolyArcs *polyArcs, const miArc *xarc)
-#else
-addArc (polyArcs, xarc)
-     miPolyArcs *polyArcs;
-     const miArc *xarc;
-#endif
 {
   miArcData *arc;
 
@@ -1916,19 +1841,7 @@ addArc (polyArcs, xarc)
 
 /* Draw a join between two contiguous arcs, by calling miFillSppPoly(). */
 static void
-#ifdef _HAVE_PROTOS
 miArcJoin (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArcFace *pLeft, const miArcFace *pRight, int xOrgLeft, int yOrgLeft, double xFtransLeft, double yFtransLeft, int xOrgRight, int yOrgRight, double xFtransRight, double yFtransRight)
-#else
-miArcJoin (paintedSet, pixel, pGC, pLeft, pRight, xOrgLeft, yOrgLeft, xFtransLeft, yFtransLeft, xOrgRight, yOrgRight, xFtransRight, yFtransRight)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     const miGC *pGC;
-     const miArcFace *pLeft, *pRight;
-     int xOrgLeft, yOrgLeft;
-     double xFtransLeft, yFtransLeft;
-     int xOrgRight, yOrgRight;
-     double xFtransRight, yFtransRight;
-#endif
 {
   SppPoint	center, corner, otherCorner;
   SppPoint	poly[5];
@@ -2080,12 +1993,7 @@ miArcJoin (paintedSet, pixel, pGC, pLeft, pRight, xOrgLeft, yOrgLeft, xFtransLef
 
 /* helper function, used by miArcJoin() above */
 static double
-#ifdef _HAVE_PROTOS
 angleBetween (SppPoint center, SppPoint point1, SppPoint point2)
-#else
-angleBetween (center, point1, point2)
-     SppPoint center, point1, point2;
-#endif
 {
   double	a1, a2, a;
 	
@@ -2106,14 +2014,7 @@ angleBetween (center, point1, point2)
 
 /* helper function, used by miArcJoin() above */
 static void
-#ifdef _HAVE_PROTOS
 translateBounds (miArcFace *b, int x, int y, double fx, double fy)
-#else
-translateBounds (b, x, y, fx, fy)
-     miArcFace *b;
-     int x, y;
-     double fx, fy;
-#endif
 {
   fx += x;
   fy += y;
@@ -2128,18 +2029,7 @@ translateBounds (b, x, y, fx, fy)
 /* Draw a cap on an arc segment, by calling miFillSppPoly(). */
 /*ARGSUSED*/
 static void
-#ifdef _HAVE_PROTOS
 miArcCap (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const miArcFace *pFace, int end, int xOrg, int yOrg, double xFtrans, double yFtrans)
-#else
-miArcCap (paintedSet, pixel, pGC, pFace, end, xOrg, yOrg, xFtrans, yFtrans)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     const miGC *pGC;
-     const miArcFace *pFace;
-     int end;
-     int xOrg, yOrg;
-     double xFtrans, yFtrans;
-#endif
 {
   SppPoint corner, otherCorner, center, endPoint, poly[5];
 
@@ -2199,18 +2089,7 @@ miArcCap (paintedSet, pixel, pGC, pFace, end, xOrg, yOrg, xFtrans, yFtrans)
  */
 /*ARGSUSED*/
 static void
-#ifdef _HAVE_PROTOS
 miRoundCap (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, SppPoint pCenter, SppPoint pEnd, SppPoint pCorner, SppPoint pOtherCorner, int fLineEnd, int xOrg, int yOrg, double xFtrans, double yFtrans)
-#else
-miRoundCap (paintedSet, pixel, pGC, pCenter, pEnd, pCorner, pOtherCorner, fLineEnd, xOrg, yOrg, xFtrans, yFtrans)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     const miGC *pGC;
-     SppPoint pCenter, pEnd, pCorner, pOtherCorner;
-     int fLineEnd;
-     int xOrg, yOrg;
-     double xFtrans, yFtrans;
-#endif
 {
   int		cpt;
   double	width;
@@ -2256,15 +2135,11 @@ miRoundCap (paintedSet, pixel, pGC, pCenter, pEnd, pCorner, pOtherCorner, fLineE
  * stashing the points.  If there isn't an array already, we just pass in a
  * null pointer and count on mi_xrealloc() to handle the null pointer
  * correctly.  */
+
+/* ARGS: cpt = number of points already in arc list
+   	 ppPts = ptr to ptr to arc-list -- modified */
 static int
-#ifdef _HAVE_PROTOS
 miGetArcPts (const SppArc *parc, int cpt, SppPoint **ppPts)
-#else
-miGetArcPts (parc, cpt, ppPts)
-     const SppArc *parc;
-     int cpt;			/* number of points already in arc list */
-     SppPoint **ppPts;		/* ptr to ptr to arc-list -- modified */
-#endif
 {
   double st;			/* Start Theta, start angle */
   double et;			/* End Theta, offset from start theta */
@@ -2359,12 +2234,7 @@ miGetArcPts (parc, cpt, ppPts)
 #define mod(a,b)	((a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 
 static double
-#ifdef _HAVE_PROTOS
 miDcos (double a)
-#else
-miDcos (a)
-     double a;
-#endif
 {
   int	i;
 
@@ -2383,12 +2253,7 @@ miDcos (a)
 }
 
 static double
-#ifdef _HAVE_PROTOS
 miDsin (double a)
-#else
-miDsin (a)
-     double a;
-#endif
 {
   int	i;
 
@@ -2407,12 +2272,7 @@ miDsin (a)
 }
 
 static double
-#ifdef _HAVE_PROTOS
 miDasin (double v)
-#else
-miDasin (v)
-     double v;
-#endif
 {
   if (v == 0)
     return 0.0;
@@ -2424,12 +2284,7 @@ miDasin (v)
 }
 
 static double 
-#ifdef _HAVE_PROTOS
 miDatan2 (double dy, double dx)
-#else
-miDatan2 (dy, dx)
-     double dy, dx;
-#endif
 {
   if (dy == 0) 
     {
@@ -2476,17 +2331,11 @@ miDatan2 (dy, dx)
 #define dashXAngleStep	(((double) (90 * 64)) / ((double) (DASH_MAP_SIZE - 1)))
 
 /* forward references (functions in this sub-module) */
-static double angleToLength ____P((int angle, const dashMap *map));
-static int lengthToAngle ____P((double len, const dashMap *map));
+static double angleToLength (int angle, const dashMap *map);
+static int lengthToAngle (double len, const dashMap *map);
 
 static void
-#ifdef _HAVE_PROTOS
 computeDashMap (const miArc *arcp, dashMap *map)
-#else
-computeDashMap (arcp, map)
-     const miArc *arcp;
-     dashMap *map;
-#endif
 {
   int di;
   double a, x, y, prevx = 0.0, prevy = 0.0, dist;
@@ -2509,13 +2358,7 @@ computeDashMap (arcp, map)
 }
 
 static double
-#ifdef _HAVE_PROTOS
 angleToLength (int angle, const dashMap *map)
-#else
-angleToLength (angle, map)
-     int angle;
-     const dashMap *map;
-#endif
 {
   double len, excesslen, sidelen = map->map[DASH_MAP_SIZE - 1], totallen;
   int    di;
@@ -2569,13 +2412,7 @@ angleToLength (angle, map)
  */
 
 static int
-#ifdef _HAVE_PROTOS
 lengthToAngle (double len, const dashMap *map)
-#else
-lengthToAngle (len, map)
-     double len;
-     const dashMap *map;
-#endif
 {
   double sidelen = map->map[DASH_MAP_SIZE - 1];
   int angle, angleexcess;
@@ -2650,16 +2487,8 @@ lengthToAngle (len, map)
  * beyond the arc.  */
 
 static int
-#ifdef _HAVE_PROTOS
 computeAngleFromPath (int startAngle, int endAngle, const dashMap *map, int *lenp, bool backwards)
 /* start, endAngle are angles in 1/64 degree units */
-#else
-computeAngleFromPath (startAngle, endAngle, map, lenp, backwards)
-     int startAngle, endAngle;
-     const dashMap *map;
-     int *lenp;
-     bool backwards;
-#endif
 {
   int	a0, a1, a;
   double len0;
@@ -2761,29 +2590,21 @@ struct accelerators
 #define intersectLine(y,line) (line.m * (y) + line.b)
 
 /* forward references */
-static double hookEllipseY ____P((double scan_y, const struct arc_bound *bound, const struct accelerators *acc, bool left));
-static double hookX ____P((double scan_y, const struct arc_def *def, const struct arc_bound *bound, const struct accelerators *acc, bool left));
-static double innerXfromXY ____P((double x, double y, const struct accelerators *acc));
-static double innerYfromXY ____P((double x, double y, const struct accelerators *acc));
-static double innerYfromY ____P((double y, const struct arc_def *def, const struct accelerators *acc));
-static double outerXfromXY ____P((double x, double y, const struct accelerators *acc));
-static double outerYfromXY ____P((double x, double y, const struct accelerators *acc));
-static double tailX ____P((double K, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc));
-static void computeAcc ____P((const miArc *tarc, unsigned int lw, struct arc_def *def, struct accelerators *acc));
-static void computeBound ____P((const struct arc_def *def, struct arc_bound *bound, struct accelerators *acc, miArcFace *right, miArcFace *left));
-static void computeLine ____P((double x1, double y1, double x2, double y2, struct line *line));
-static void tailEllipseY ____P((const struct arc_def *def, struct accelerators *acc));
+static double hookEllipseY (double scan_y, const struct arc_bound *bound, const struct accelerators *acc, bool left);
+static double hookX (double scan_y, const struct arc_def *def, const struct arc_bound *bound, const struct accelerators *acc, bool left);
+static double innerXfromXY (double x, double y, const struct accelerators *acc);
+static double innerYfromXY (double x, double y, const struct accelerators *acc);
+static double innerYfromY (double y, const struct arc_def *def, const struct accelerators *acc);
+static double outerXfromXY (double x, double y, const struct accelerators *acc);
+static double outerYfromXY (double x, double y, const struct accelerators *acc);
+static double tailX (double K, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc);
+static void computeAcc (const miArc *tarc, unsigned int lw, struct arc_def *def, struct accelerators *acc);
+static void computeBound (const struct arc_def *def, struct arc_bound *bound, struct accelerators *acc, miArcFace *right, miArcFace *left);
+static void computeLine (double x1, double y1, double x2, double y2, struct line *line);
+static void tailEllipseY (const struct arc_def *def, struct accelerators *acc);
 
 static double
-#ifdef _HAVE_PROTOS
 tailX (double K, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc)
-#else
-tailX (K, def, bounds, acc)
-     double K;
-     const struct arc_def *def;
-     const struct arc_bound *bounds;
-     const struct accelerators *acc;
-#endif
 {
   double w, h, r;
   double Hs, Hf, WH, Vk, Nk, Fk, Vr, N, Nc, Z, rs;
@@ -2924,13 +2745,7 @@ tailX (K, def, bounds, acc)
 #define CUBE_ROOT_4	1.5874010519681993173435330390930175781250
 
 static void
-#ifdef _HAVE_PROTOS
 tailEllipseY (const struct arc_def *def, struct accelerators *acc)
-#else
-tailEllipseY (def, acc)
-     const struct arc_def *def;
-     struct accelerators *acc;
-#endif
 {
   double t;
 
@@ -2960,62 +2775,31 @@ tailEllipseY (def, acc)
  */
 
 static double
-#ifdef _HAVE_PROTOS
 outerXfromXY (double x, double y, const struct accelerators *acc)
-#else
-outerXfromXY (x, y, acc)
-     double x, y;
-     const struct accelerators *acc;
-#endif
 {
   return x + (x * acc->h2l) / sqrt (x*x * acc->h4 + y*y * acc->w4);
 }
 
 static double
-#ifdef _HAVE_PROTOS
 outerYfromXY (double x, double y, const struct accelerators *acc)
-#else
-outerYfromXY (x, y, acc)
-     double x, y;
-     const struct accelerators *acc;
-#endif
 {
   return y + (y * acc->w2l) / sqrt (x*x * acc->h4 + y*y * acc->w4);
 }
 
 static double
-#ifdef _HAVE_PROTOS
 innerXfromXY (double x, double y, const struct accelerators *acc)
-#else
-innerXfromXY (x, y, acc)
-     double x, y;
-     const struct accelerators *acc;
-#endif
 {
   return x - (x * acc->h2l) / sqrt (x*x * acc->h4 + y*y * acc->w4);
 }
 
 static double
-#ifdef _HAVE_PROTOS
 innerYfromXY (double x, double y, const struct accelerators *acc)
-#else
-innerYfromXY (x, y, acc)
-     double x, y;
-     const struct accelerators *acc;
-#endif
 {
   return y - (y * acc->w2l) / sqrt (x*x * acc->h4 + y*y * acc->w4);
 }
 
 static double
-#ifdef _HAVE_PROTOS
 innerYfromY (double y, const struct arc_def *def, const struct accelerators *acc)
-#else
-innerYfromY (y, def, acc)
-     double y;
-     const struct arc_def *def;
-     const struct accelerators *acc;
-#endif
 {
   double x;
 										 x = (def->w / def->h) * sqrt (acc->h2 - y*y);
@@ -3024,13 +2808,7 @@ innerYfromY (y, def, acc)
      
 /* compute a line through two points */
 static void
-#ifdef _HAVE_PROTOS
 computeLine (double x1, double y1, double x2, double y2, struct line *line)
-#else
-computeLine (x1, y1, x2, y2, line)
-     double x1, y1, x2, y2;
-     struct line *line;
-#endif
 {
   if (y1 == y2)
     line->valid = false;
@@ -3046,15 +2824,7 @@ computeLine (x1, y1, x2, y2, line)
    used repeatedly in the computations.  Also begin filling in the arc_def
    structure too. */
 static void
-#ifdef _HAVE_PROTOS
 computeAcc (const miArc *tarc, unsigned int lw, struct arc_def *def, struct accelerators *acc)
-#else
-computeAcc (tarc, lw, def, acc)
-     const miArc *tarc;
-     unsigned int lw;
-     struct arc_def *def;
-     struct accelerators *acc;
-#endif
 {
   def->w = 0.5 * (double)tarc->width;
   def->h = 0.5 * (double)tarc->height;
@@ -3078,15 +2848,7 @@ computeAcc (tarc, lw, def, acc)
    the ellipse and the inner edge.  Also invoke computeLine to compute left
    and right lines (stored in accelerator structure). */
 static void
-#ifdef _HAVE_PROTOS
 computeBound (const struct arc_def *def, struct arc_bound *bound, struct accelerators *acc, miArcFace *right, miArcFace *left)
-#else
-computeBound (def, bound, acc, right, left)
-     const struct arc_def *def;
-     struct arc_bound *bound;
-     struct accelerators *acc;
-     miArcFace *right, *left;
-#endif
 {
   double		t;
   double		innerTaily;
@@ -3219,15 +2981,7 @@ computeBound (def, bound, acc, right, left)
 /* Compute the position on the ellipse whose normal line intersects the
    given scan line maximally. */
 static double
-#ifdef _HAVE_PROTOS
 hookEllipseY (double scan_y, const struct arc_bound *bound, const struct accelerators *acc, bool left)
-#else
-hookEllipseY (scan_y, bound, acc, left)
-     double scan_y;
-     const struct arc_bound *bound;
-     const struct accelerators *acc;
-     bool left;
-#endif
 {
   double ret;
 
@@ -3247,16 +3001,7 @@ hookEllipseY (scan_y, bound, acc, left)
 /* Compute the X value of the intersection of the given scan line with the
    right side of the lower hook. */
 static double
-#ifdef _HAVE_PROTOS
 hookX (double scan_y, const struct arc_def *def, const struct arc_bound *bound, const struct accelerators *acc, bool left)
-#else
-hookX (scan_y, def, bound, acc, left)
-     double scan_y;
-     const struct arc_def *def;
-     const struct arc_bound *bound;
-     const struct accelerators *acc;
-     bool left;
-#endif
 {
   double	ellipse_y, x;
   double	maxMin;
@@ -3334,10 +3079,10 @@ hookX (scan_y, def, bound, acc, left)
 #define SPAN_REALLOC	100
 
 /* forward references */
-static struct finalSpan * realAllocSpan ____P((miAccumSpans *accumSpans));
-static struct finalSpan ** realFindSpan ____P((miAccumSpans *accumSpans, int y));
-static void disposeFinalSpans ____P((miAccumSpans *accumSpans));
-static void newFinalSpan ____P((miAccumSpans *accumSpans, int y, int xmin, int xmax));
+static struct finalSpan * realAllocSpan (miAccumSpans *accumSpans);
+static struct finalSpan ** realFindSpan (miAccumSpans *accumSpans, int y);
+static void disposeFinalSpans (miAccumSpans *accumSpans);
+static void newFinalSpan (miAccumSpans *accumSpans, int y, int xmin, int xmax);
 
 /*** allocation-related functions ***/
 
@@ -3345,12 +3090,7 @@ static void newFinalSpan ____P((miAccumSpans *accumSpans, int y, int xmin, int x
    (an in-core accumulation of spans, which is added to by newFinalSpan(),
    and painted and deallocated by fillSpans()). */
 static void
-#ifdef _HAVE_PROTOS
 initAccumSpans (miAccumSpans *accumSpans)
-#else
-initAccumSpans (accumSpans)
-     miAccumSpans *accumSpans;
-#endif
 {
   accumSpans->finalSpans = (struct finalSpan **)NULL;
   accumSpans->finalMiny = 0;
@@ -3367,13 +3107,7 @@ initAccumSpans (accumSpans)
    bottom edges) of polygons should be omitted, so that adjacent polygons
    can abut with no overlaps or gaps. */
 static void
-#ifdef _HAVE_PROTOS
 newFinalSpan (miAccumSpans *accumSpans, int y, int xmin, int xmax)
-#else
-newFinalSpan (accumSpans, y, xmin, xmax)
-     miAccumSpans *accumSpans;
-     int y, xmin, xmax;
-#endif
 {
   struct finalSpan *x, *oldx, *prev, **f;
 
@@ -3460,13 +3194,7 @@ newFinalSpan (accumSpans, y, xmin, xmax)
    the finalSpans array, of the pointer to the head of the list of spans at
    the new value of y. */
 static struct finalSpan **
-#ifdef _HAVE_PROTOS
 realFindSpan (miAccumSpans *accumSpans, int y)
-#else
-realFindSpan (accumSpans, y)
-     miAccumSpans *accumSpans;
-     int y;
-#endif
 {
   struct finalSpan	**newSpans, **t;
   int			newSize, newMiny, newMaxy;
@@ -3504,8 +3232,8 @@ realFindSpan (accumSpans, y)
 	newMaxy = accumSpans->finalMaxy + change;
       if (accumSpans->finalSpans)
 	{
-	  memmove ((voidptr_t)(newSpans + (accumSpans->finalMiny - newMiny)),
-		   (voidptr_t)(accumSpans->finalSpans),
+	  memmove ((void *)(newSpans + (accumSpans->finalMiny - newMiny)),
+		   (void *)(accumSpans->finalSpans),
 		   accumSpans->finalSize * sizeof(struct finalSpan *));
 	  free (accumSpans->finalSpans);
 	}
@@ -3531,12 +3259,7 @@ realFindSpan (accumSpans, y)
    any) is exhausted.  The freeFinalSpans and chunks pointers are
    updated. */
 static struct finalSpan *
-#ifdef _HAVE_PROTOS
 realAllocSpan (miAccumSpans *accumSpans)
-#else
-realAllocSpan (accumSpans)
-     miAccumSpans *accumSpans;
-#endif
 {
   struct finalSpanChunk	*newChunk;
   struct finalSpan	*span;
@@ -3575,14 +3298,7 @@ realAllocSpan (accumSpans)
 /* All painting done in this file goes through this function. */
 
 static void
-#ifdef _HAVE_PROTOS
 fillSpans (miPaintedSet *paintedSet, miPixel pixel, miAccumSpans *accumSpans)
-#else
-fillSpans (paintedSet, pixel, accumSpans)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     miAccumSpans *accumSpans;
-#endif
 {
   struct finalSpan	*span;
   struct finalSpan	**f;
@@ -3624,12 +3340,7 @@ fillSpans (paintedSet, pixel, accumSpans)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 disposeFinalSpans (miAccumSpans *accumSpans)
-#else
-disposeFinalSpans (accumSpans)
-     miAccumSpans *accumSpans;
-#endif
 {
   struct finalSpanChunk	*chunk, *next;
 
@@ -3655,23 +3366,13 @@ disposeFinalSpans (accumSpans)
 /**********************************************************************/
 
 /* forward references */
-static void arcSpan ____P((miAccumSpans *accumSpans, int y, int lx, int lw, int rx, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask));
-static void arcSpan0 ____P((miAccumSpans *accumSpans, int lx, int lw, int rx, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask));
-static void tailSpan ____P((miAccumSpans *accumSpans, int y, int lw, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask));
+static void arcSpan (miAccumSpans *accumSpans, int y, int lx, int lw, int rx, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask);
+static void arcSpan0 (miAccumSpans *accumSpans, int lx, int lw, int rx, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask);
+static void tailSpan (miAccumSpans *accumSpans, int y, int lw, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask);
 
 /* Generate the set of spans with the given y coordinate. */
 static void
-#ifdef _HAVE_PROTOS
 arcSpan (miAccumSpans *accumSpans, int y, int lx, int lw, int rx, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask)
-#else
-arcSpan (accumSpans, y, lx, lw, rx, rw, def, bounds, acc, mask)
-     miAccumSpans *accumSpans;
-     int y, lx, lw, rx, rw;
-     const struct arc_def *def;
-     const struct arc_bound *bounds;
-     const struct accelerators *acc;
-     unsigned int mask;
-#endif
 {
   int linx, loutx, rinx, routx;
   double x, altx;
@@ -3747,17 +3448,7 @@ arcSpan (accumSpans, y, lx, lw, rx, rw, def, bounds, acc, mask)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 arcSpan0 (miAccumSpans *accumSpans, int lx, int lw, int rx, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask)
-#else
-arcSpan0 (accumSpans, lx, lw, rx, rw, def, bounds, acc, mask)
-     miAccumSpans *accumSpans;
-     int lx, lw, rx, rw;
-     const struct arc_def *def;
-     const struct arc_bound *bounds;
-     const struct accelerators *acc;
-     unsigned int mask;
-#endif
 {
   double x;
 
@@ -3777,17 +3468,7 @@ arcSpan0 (accumSpans, lx, lw, rx, rw, def, bounds, acc, mask)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 tailSpan (miAccumSpans *accumSpans, int y, int lw, int rw, const struct arc_def *def, const struct arc_bound *bounds, const struct accelerators *acc, unsigned int mask)
-#else
-tailSpan (accumSpans, y, lw, rw, def, bounds, acc, mask)
-     miAccumSpans *accumSpans;
-     int y, lw, rw;
-     const struct arc_def *def;
-     const struct arc_bound *bounds;
-     const struct accelerators *acc;
-     unsigned int mask;
-#endif
 {
   double yy, xalt, x, lx, rx;
   int n;
@@ -3852,25 +3533,17 @@ tailSpan (accumSpans, y, lw, rw, def, bounds, acc, mask)
 /**********************************************************************/
 
 /* forward references */
-static void drawQuadrant ____P((miAccumSpans *accumSpans, struct arc_def *def, struct accelerators *acc, int a0, int a1, unsigned int mask, miArcFace *right, miArcFace *left, miArcSpanData *spdata));
-static void mirrorSppPoint ____P((int quadrant, SppPoint *sppPoint));
+static void drawQuadrant (miAccumSpans *accumSpans, struct arc_def *def, struct accelerators *acc, int a0, int a1, unsigned int mask, miArcFace *right, miArcFace *left, miArcSpanData *spdata);
+static void mirrorSppPoint (int quadrant, SppPoint *sppPoint);
 
 /* Split an arc into pieces which are scan-converted in the first quadrant
  * and mirrored into position.  This is necessary as the scan-conversion
  * code can only deal with arcs completely contained in the first quadrant.
  */
+
+/* ARGS: right,left save arc endpoints */
 static void
-#ifdef _HAVE_PROTOS
 drawArc (miAccumSpans *accumSpans, const miArc *tarc, unsigned int l, int a0, int a1, miArcFace *right, miArcFace *left, miEllipseCache *ellipseCache)
-#else
-drawArc (accumSpans, tarc, l, a0, a1, right, left, ellipseCache)
-     miAccumSpans *accumSpans;
-     const miArc *tarc;
-     unsigned int l;
-     int a0, a1;
-     miArcFace *right, *left;	/* these save arc endpoints */
-     miEllipseCache *ellipseCache;
-#endif
 {
   struct arc_def	def;
   struct accelerators	acc;
@@ -4139,19 +3812,9 @@ drawArc (accumSpans, tarc, l, a0, a1, right, left, ellipseCache)
     }
 }
 
+/* ARGS: spdata = rasterized wide ellipse */
 static void
-#ifdef _HAVE_PROTOS
 drawQuadrant (miAccumSpans *accumSpans, struct arc_def *def, struct accelerators *acc, int a0, int a1, unsigned int mask, miArcFace *right, miArcFace *left, miArcSpanData *spdata)
-#else
-drawQuadrant (accumSpans, def, acc, a0, a1, mask, right, left, spdata)
-     miAccumSpans *accumSpans;
-     struct arc_def *def;
-     struct accelerators *acc;
-     int a0, a1;
-     unsigned int mask;
-     miArcFace *right, *left;
-     miArcSpanData *spdata;	/* rasterized wide ellipse */
-#endif
 {
   struct arc_bound	bound;
   double		yy, x, xalt;
@@ -4280,13 +3943,7 @@ drawQuadrant (accumSpans, def, acc, a0, a1, mask, right, left, spdata)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 mirrorSppPoint (int quadrant, SppPoint *sppPoint)
-#else
-mirrorSppPoint (quadrant, sppPoint)
-     int quadrant;
-     SppPoint *sppPoint;
-#endif
 {
   switch (quadrant) 
     {
@@ -4316,16 +3973,9 @@ mirrorSppPoint (quadrant, sppPoint)
  * tarc->width = 0 or tarc->height = 0. */
 /***********************************************************************/
 
+/* ARGS: left,right save arc endpoints */
 static void
-#ifdef _HAVE_PROTOS
 drawZeroArc (miAccumSpans *accumSpans, const miArc *tarc, unsigned int lw, miArcFace *left, miArcFace *right)
-#else
-drawZeroArc (accumSpans, tarc, lw, left, right)
-     miAccumSpans *accumSpans;
-     const miArc *tarc;
-     unsigned int lw;
-     miArcFace *left, *right;	/* these save arc endpoints */
-#endif
 {
   double	x0 = 0.0, y0 = 0.0, x1 = 0.0, y1 = 0.0;
   double	w, h, x, y;

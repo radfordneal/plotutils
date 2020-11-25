@@ -1,6 +1,12 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1996, 1997, 2005, Free Software Foundation, Inc.
+ */
+
 /*
  * lex wrapper for ode.
- * Copyright (C) 1996-1997 Free Software Foundation, Inc.
+ *
  */
 
 #include "sys-defines.h"
@@ -8,11 +14,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 yywrap (void)
-#else
-yywrap ()
-#endif
 {
   if (yyin != stdin)		/* we were reading from a file, */
     {				/* so switch to reading from stdin */

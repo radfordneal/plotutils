@@ -71,17 +71,6 @@ struct option
 #define required_argument	1
 #define optional_argument	2
 
-#ifdef _____P
-#undef _____P
-#endif
-#if defined (__STDC__) || defined (_AIX) \
-	|| (defined (__mips) && defined (_SYSTYPE_SVR4)) \
-	|| defined(WIN32) || defined(__cplusplus)
-#define _____P(protos) protos
-#else
-#define _____P(protos) ()
-#endif
-
 /* Support declarations of C linkage in C++, for functions not declared in
    C headers the way they should be. */
 #ifndef __C_LINKAGE
@@ -92,13 +81,11 @@ struct option
 #endif
 #endif /* not __C_LINKAGE */
 
-extern __C_LINKAGE int gnu_getopt _____P((int argc, char *const *argv, const char *shortopts));
-extern __C_LINKAGE int getopt_long _____P((int argc, char *const *argv, const char *shortopts, const struct option *longopts, int *longind));
-extern __C_LINKAGE int getopt_long_only _____P((int argc, char *const *argv, const char *shortopts, const struct option *longopts, int *longind));
+extern __C_LINKAGE int gnu_getopt (int argc, char *const *argv, const char *shortopts);
+extern __C_LINKAGE int getopt_long (int argc, char *const *argv, const char *shortopts, const struct option *longopts, int *longind);
+extern __C_LINKAGE int getopt_long_only (int argc, char *const *argv, const char *shortopts, const struct option *longopts, int *longind);
 
 /* Internal only.  Users should not call this directly.  */
-extern __C_LINKAGE int _getopt_internal _____P((int argc, char *const *argv, const char *shortopts, const struct option *longopts, int *longind, int long_only));
-
-#undef _____P
+extern __C_LINKAGE int _getopt_internal (int argc, char *const *argv, const char *shortopts, const struct option *longopts, int *longind, int long_only);
 
 #endif

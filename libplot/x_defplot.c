@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any XDrawablePlotter object,
    including both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -9,28 +27,28 @@
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    an XDrawablePlotter struct. */
-const Plotter _x_default_plotter = 
+const Plotter _pl_x_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _x_initialize, _x_terminate,
+  _pl_x_initialize, _pl_x_terminate,
   /* page manipulation */
-  _x_begin_page, _x_erase_page, _x_end_page,
+  _pl_x_begin_page, _pl_x_erase_page, _pl_x_end_page,
   /* drawing state manipulation */
-  _x_push_state, _x_pop_state,
+  _pl_x_push_state, _pl_x_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _x_paint_path, _x_paint_paths, _x_path_is_flushable, _x_maybe_prepaint_segments,
+  _pl_x_paint_path, _pl_x_paint_paths, _pl_x_path_is_flushable, _pl_x_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _x_paint_point,
+  _pl_g_paint_marker, _pl_x_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _x_paint_text_string,
-  _x_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_x_paint_text_string,
+  _pl_x_get_text_width,
   /* private low-level `retrieve font' method */
-  _x_retrieve_font,
+  _pl_x_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _x_flush_output,
+  _pl_x_flush_output,
   /* internal error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -41,19 +59,14 @@ const Plotter _x_default_plotter =
    created. */
 
 void
-#ifdef _HAVE_PROTOS
-_x_initialize (S___(Plotter *_plotter))
-#else
-_x_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_initialize (S___(Plotter *_plotter))
 {
   Colormap *x_cmap_ptr;
   Drawable *drawable_p1, *drawable_p2;
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override superclass initializations, as necessary */
@@ -88,7 +101,7 @@ _x_initialize (S___(_plotter))
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->data->default_font_type = F_POSTSCRIPT;
+  _plotter->data->default_font_type = PL_F_POSTSCRIPT;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->have_horizontal_justification = false;
   _plotter->data->have_vertical_justification = false;
@@ -126,12 +139,12 @@ _x_initialize (S___(_plotter))
   _plotter->x_drawable1 = (Drawable)0;
   _plotter->x_drawable2 = (Drawable)0;  
   _plotter->x_drawable3 = (Drawable)0;
-  _plotter->x_double_buffering = DBL_NONE;
+  _plotter->x_double_buffering = X_DBL_BUF_NONE;
   _plotter->x_max_polyline_len = INT_MAX; /* reduced in openpl() */
-  _plotter->x_fontlist = (plFontRecord *)NULL;
+  _plotter->x_fontlist = (plXFontRecord *)NULL;
   _plotter->x_colorlist = (plColorRecord *)NULL;  
   _plotter->x_cmap = (Colormap)0;
-  _plotter->x_cmap_type = CMAP_ORIG;
+  _plotter->x_cmap_type = X_CMAP_ORIG;
   _plotter->x_colormap_warning_issued = false;
   _plotter->x_bg_color_warning_issued = false;
   _plotter->x_paint_pixel_count = 0;
@@ -191,7 +204,7 @@ _x_initialize (S___(_plotter))
 
   /* colormap type will always be `original' (unlike XPlotters, XDrawable
      Plotters never switch to a private colormap) */
-  _plotter->x_cmap_type = CMAP_ORIG;
+  _plotter->x_cmap_type = X_CMAP_ORIG;
 }
 
 /* The private `terminate' method, which is invoked when a Plotter is
@@ -200,16 +213,28 @@ _x_initialize (S___(_plotter))
    _plotter points to the Plotter that is about to be deleted. */
 
 void
-#ifdef _HAVE_PROTOS
-_x_terminate (S___(Plotter *_plotter))
-#else
-_x_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_terminate (S___(Plotter *_plotter))
 {
+  plXFontRecord *fptr = _plotter->x_fontlist, *fptr_next;
+
+  /* Free entire cache of retrieved core X fonts (a linked list).  One of
+     these is the `current font', i.e., _plotter->x_font_struct, so we
+     don't free that data member separately. */
+  while (fptr)
+    {
+      fptr_next = fptr->next;
+
+      free (fptr->x_font_name);
+      if (fptr->x_font_struct)
+	/* non-NULL, indicating a successful font retrieval */
+	XFreeFont (_plotter->x_dpy, fptr->x_font_struct);
+
+      fptr = fptr->next;
+    }
+
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
@@ -217,60 +242,60 @@ _x_terminate (S___(_plotter))
 XDrawablePlotter::XDrawablePlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:Plotter (infile, outfile, errfile)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter (FILE *outfile)
 	:Plotter (outfile)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter (ostream& out)
 	: Plotter (out)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter ()
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::XDrawablePlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _x_initialize ();
+  _pl_x_initialize ();
 }
 
 XDrawablePlotter::~XDrawablePlotter ()
@@ -279,7 +304,7 @@ XDrawablePlotter::~XDrawablePlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _x_terminate ();
+  _pl_x_terminate ();
 }
 #endif
 
@@ -292,50 +317,40 @@ XDrawablePlotter::~XDrawablePlotter ()
 /* Forwarding function called by any XDrawablePlotter/XPlotter in
    x_color.c, if the original colormap fills up.  See x_openpl.c and
    y_openpl.c for the two forwarded-to functions
-   _x_maybe_get_new_colormap() and _y_maybe_get_new_colormap(),
+   _pl_x_maybe_get_new_colormap() and _pl_y_maybe_get_new_colormap(),
    respectively.  The former is a no-op, but the latter tries to switch to
    a new colormap. */
 void
-#ifdef _HAVE_PROTOS
 _maybe_get_new_colormap (Plotter *_plotter)
-#else
-_maybe_get_new_colormap (_plotter)
-     Plotter *_plotter;
-#endif
 {
   switch ((int)_plotter->data->type)
     {
     case (int)PL_X11_DRAWABLE:
     default:
-      _x_maybe_get_new_colormap (_plotter); /* no-op */
+      _pl_x_maybe_get_new_colormap (_plotter); /* no-op */
       break;
     case (int)PL_X11:
-      _y_maybe_get_new_colormap (_plotter);
+      _pl_y_maybe_get_new_colormap (_plotter);
       break;
     }
 }
 
 /* Forwarding function called by any XDrawablePlotter at the conclusion of
    most drawing operations.  See x_openpl.c and y_openpl.c for the two
-   forwarded-to functions _x_maybe_handle_x_events() and
-   _y_maybe_handle_x_events(), respectively.  The former is a no-op, but
+   forwarded-to functions _pl_x_maybe_handle_x_events() and
+   _pl_y_maybe_handle_x_events(), respectively.  The former is a no-op, but
    the latter is processes pending X events. */
 void
-#ifdef _HAVE_PROTOS
 _maybe_handle_x_events (Plotter *_plotter)
-#else
-_maybe_handle_x_events (_plotter)
-     Plotter *_plotter;
-#endif
 {
   switch ((int)_plotter->data->type)
     {
     case (int)PL_X11_DRAWABLE:
     default:
-      _x_maybe_handle_x_events (_plotter); /* no-op */
+      _pl_x_maybe_handle_x_events (_plotter); /* no-op */
       break;
     case (int)PL_X11:
-      _y_maybe_handle_x_events (_plotter);
+      _pl_y_maybe_handle_x_events (_plotter);
       break;
     }
 }

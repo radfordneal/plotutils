@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -26,16 +49,7 @@
  *
  */
 static void
-#ifdef _HAVE_PROTOS
 miInsertEdgeInET (EdgeTable *ET, EdgeTableEntry *ETE, int scanline, ScanLineListBlock **SLLBlock, int *iSLLBlock)
-#else
-miInsertEdgeInET (ET, ETE, scanline, SLLBlock, iSLLBlock)
-     EdgeTable *ET;
-     EdgeTableEntry *ETE;
-     int scanline;
-     ScanLineListBlock **SLLBlock;
-     int *iSLLBlock;
-#endif
 {
     EdgeTableEntry *start, *prev;
     ScanLineList *pSLL, *pPrevSLL;
@@ -118,17 +132,7 @@ miInsertEdgeInET (ET, ETE, scanline, SLLBlock, iSLLBlock)
  */
 
 void
-#ifdef _HAVE_PROTOS
 miCreateETandAET(int count, const miPoint *pts, EdgeTable *ET, EdgeTableEntry *AET, EdgeTableEntry *pETEs, ScanLineListBlock *pSLLBlock)
-#else
-miCreateETandAET(count, pts, ET, AET, pETEs, pSLLBlock)
-     int count;
-     const miPoint *pts;
-     EdgeTable *ET;
-     EdgeTableEntry *AET;
-     EdgeTableEntry *pETEs;
-     ScanLineListBlock *pSLLBlock;
-#endif
 {
     const miPoint *top, *bottom;
     const miPoint *PrevPt, *CurrPt;
@@ -212,13 +216,7 @@ miCreateETandAET(count, pts, ET, AET, pETEs, pSLLBlock)
  */
 
 void
-#ifdef _HAVE_PROTOS
 miloadAET(EdgeTableEntry *AET, EdgeTableEntry *ETEs)
-#else
-miloadAET(AET, ETEs)
-     EdgeTableEntry *AET;
-     EdgeTableEntry *ETEs;
-#endif
 {
     EdgeTableEntry *pPrevAET;
     EdgeTableEntry *tmp;
@@ -265,12 +263,7 @@ miloadAET(AET, ETEs)
  *
  */
 void
-#ifdef _HAVE_PROTOS
 micomputeWAET(EdgeTableEntry *AET)
-#else
-micomputeWAET(AET)
-     EdgeTableEntry *AET;
-#endif
 {
     EdgeTableEntry *pWETE;
     int inside = 1;
@@ -308,12 +301,7 @@ micomputeWAET(AET)
  */
 
 bool
-#ifdef _HAVE_PROTOS
 miInsertionSort(EdgeTableEntry *AET)
-#else
-miInsertionSort(AET)
-     EdgeTableEntry *AET;
-#endif
 {
     EdgeTableEntry *pETEchase;
     EdgeTableEntry *pETEinsert;
@@ -349,12 +337,7 @@ miInsertionSort(AET)
  *     Clean up our act.
  */
 void
-#ifdef _HAVE_PROTOS
 miFreeStorage(ScanLineListBlock *pSLLBlock)
-#else
-miFreeStorage(pSLLBlock)
-     ScanLineListBlock *pSLLBlock;
-#endif
 {
     ScanLineListBlock   *tmpSLLBlock;
 

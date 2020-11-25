@@ -1,3 +1,22 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file is the point-reader half of GNU graph.  Included here are
    routines that will read data points from an input stream.  The input
    file may be in ascii format (a sequence of floating-point numbers,
@@ -75,6 +94,7 @@
    plotter.c) to plot each point as it is read. */
 
 #include "sys-defines.h"
+#include "libcommon.h"
 #include "extern.h"
 
 /* New (larger) length of a Point array, as function of the old; used when
@@ -124,38 +144,24 @@ struct ReaderStruct		/* point reader datatype */
 typedef enum { IN_PROGRESS, ENDED_BY_EOF, ENDED_BY_DATASET_TERMINATOR, ENDED_BY_MODE_CHANGE } dataset_status_t;
 
 /* forward references */
-static bool skip_some_whitespace ____P((FILE *stream));
-static dataset_status_t read_and_plot_dataset ____P((Reader *reader, Multigrapher *multigrapher));
-static dataset_status_t read_dataset ____P((Reader *reader, Point **p, int *length, int *no_of_points));
-static dataset_status_t read_point ____P((Reader *reader, Point *point));
-static dataset_status_t read_point_ascii ____P((Reader *reader, Point *point));
-static dataset_status_t read_point_ascii_errorbar ____P((Reader *reader, Point *point));
-static dataset_status_t read_point_binary ____P((Reader *reader, Point *point));
-static dataset_status_t read_point_gnuplot ____P((Reader *reader, Point *point));
-static void reset_reader ____P((Reader *reader));
-static void skip_all_whitespace ____P((FILE *stream));
+static bool skip_some_whitespace (FILE *stream);
+static dataset_status_t read_and_plot_dataset (Reader *reader, Multigrapher *multigrapher);
+static dataset_status_t read_dataset (Reader *reader, Point **p, int *length, int *no_of_points);
+static dataset_status_t read_point (Reader *reader, Point *point);
+static dataset_status_t read_point_ascii (Reader *reader, Point *point);
+static dataset_status_t read_point_ascii_errorbar (Reader *reader, Point *point);
+static dataset_status_t read_point_binary (Reader *reader, Point *point);
+static dataset_status_t read_point_gnuplot (Reader *reader, Point *point);
+static void reset_reader (Reader *reader);
+static void skip_all_whitespace (FILE *stream);
 
+/* ARGS: format_type = double, or ascii, etc.
+   	 symbol_size = symbol size for markers
+	 symbol_font_name = name for markers >= 32
+	 line_width = fraction of display size
+	 fill_fraction = number in range [0,1], <0 means unfilled (transparent)*/
 Reader *
-#ifdef _HAVE_PROTOS
 new_reader (FILE *input, data_type format_type, bool auto_abscissa, double delta_x, double abscissa, bool transpose_axes, int log_axis, bool auto_bump, int symbol, double symbol_size, const char *symbol_font_name, int linemode, double line_width, double fill_fraction, bool use_color)
-#else
-new_reader (input, format_type, auto_abscissa, delta_x, abscissa, transpose_axes, log_axis, auto_bump, symbol, symbol_size, symbol_font_name, linemode, line_width, fill_fraction, use_color)
-     FILE *input;
-     data_type format_type;	/* double, or ascii, etc. */
-     bool auto_abscissa;
-     double delta_x;
-     double abscissa;
-     bool transpose_axes;
-     int log_axis;
-     bool auto_bump;
-     int symbol;
-     double symbol_size;	/* for markers */
-     const char *symbol_font_name; /* for markers >= 32 */
-     int linemode;
-     double line_width;		/* as fraction of display size */
-     double fill_fraction;	/* in [0,1], <0 means unfilled (transparent) */
-     bool use_color;
-#endif
 
 {
   Reader *reader;
@@ -184,12 +190,7 @@ new_reader (input, format_type, auto_abscissa, delta_x, abscissa, transpose_axes
 }
 
 void
-#ifdef _HAVE_PROTOS
 delete_reader (Reader *reader)
-#else
-delete_reader (reader)
-     Reader *reader;
-#endif
 {
   free (reader);
   return;
@@ -203,28 +204,9 @@ delete_reader (reader)
    last feature to permit command-line specification of linemode/symbol
    type on a per-file basis.)  */
 
+/* ARGS: note that the final new_* args make up a mask */
 void 
-#ifdef _HAVE_PROTOS
 alter_reader_parameters (Reader *reader, FILE *input, data_type format_type, bool auto_abscissa, double delta_x, double abscissa, int symbol, double symbol_size, const char *symbol_font_name, int linemode, double line_width, double fill_fraction, bool use_color, bool new_symbol, bool new_symbol_size, bool new_symbol_font_name, bool new_linemode, bool new_line_width, bool new_fill_fraction, bool new_use_color)
-#else
-alter_reader_parameters (reader, input, format_type, auto_abscissa, delta_x, abscissa, symbol, symbol_size, symbol_font_name, linemode, line_width, fill_fraction, use_color, new_symbol, new_symbol_size, new_symbol_font_name, new_linemode, new_line_width, new_fill_fraction, new_use_color)
-     Reader *reader;
-     FILE *input;
-     data_type format_type;
-     bool auto_abscissa;
-     double delta_x;
-     double abscissa;
-     int symbol;
-     double symbol_size;
-     const char *symbol_font_name;
-     int linemode;
-     double line_width;
-     double fill_fraction;
-     bool use_color;
-     /* following bools make up a mask */
-     bool new_symbol, new_symbol_size, new_symbol_font_name;
-     bool new_linemode, new_line_width, new_fill_fraction, new_use_color;
-#endif
 {
   reader->need_break = true;	/* force break in polyline */
   reader->input = input;
@@ -258,13 +240,7 @@ alter_reader_parameters (reader, input, format_type, auto_abscissa, delta_x, abs
    the dataset in progress ended, if it did). */
 
 static dataset_status_t
-#ifdef _HAVE_PROTOS
 read_point (Reader *reader, Point *point)
-#else
-read_point (reader, point)
-     Reader *reader;
-     Point *point;
-#endif
 {
   dataset_status_t status;
 
@@ -395,13 +371,7 @@ read_point (reader, point)
 }
 
 static dataset_status_t
-#ifdef _HAVE_PROTOS
 read_point_ascii (Reader *reader, Point *point)
-#else
-read_point_ascii (reader, point)
-     Reader *reader;
-     Point *point;
-#endif
 {
   int items_read, lookahead;
   bool two_newlines;
@@ -473,13 +443,7 @@ read_point_ascii (reader, point)
 }
 
 static dataset_status_t
-#ifdef _HAVE_PROTOS
 read_point_ascii_errorbar (Reader *reader, Point *point)
-#else
-read_point_ascii_errorbar (reader, point)
-     Reader *reader;
-     Point *point;
-#endif
 {
   int items_read, lookahead;
   bool two_newlines;
@@ -566,13 +530,7 @@ read_point_ascii_errorbar (reader, point)
 }
 
 static dataset_status_t
-#ifdef _HAVE_PROTOS
 read_point_binary (Reader *reader, Point *point)
-#else
-read_point_binary (reader, point)
-     Reader *reader;
-     Point *point;
-#endif
 {
   int items_read;
   data_type format_type = reader->format_type;
@@ -591,14 +549,14 @@ read_point_binary (reader, point)
 	case T_DOUBLE:
 	default:
 	  items_read = 
-	    fread ((voidptr_t) &(point->x), sizeof (double), 1, input);
+	    fread ((void *) &(point->x), sizeof (double), 1, input);
 	  break;
 	case T_SINGLE:
 	  {
 	    float fx;
 	    
 	    items_read = 
-	      fread ((voidptr_t) &fx, sizeof (fx), 1, input);
+	      fread ((void *) &fx, sizeof (fx), 1, input);
 	    point->x = fx;
 	  }
 	  break;
@@ -607,7 +565,7 @@ read_point_binary (reader, point)
 	    int ix;
 	    
 	    items_read = 
-	      fread ((voidptr_t) &ix, sizeof (ix), 1, input);
+	      fread ((void *) &ix, sizeof (ix), 1, input);
 	    point->x = ix;
 	  }
 	  break;
@@ -626,14 +584,14 @@ read_point_binary (reader, point)
     case T_DOUBLE:
     default:
       items_read = 
-	fread ((voidptr_t) &(point->y), sizeof (double), 1, input);
+	fread ((void *) &(point->y), sizeof (double), 1, input);
       break;
     case T_SINGLE:
       {
 	float fy;
 	
 	items_read = 
-	  fread ((voidptr_t) &fy, sizeof (fy), 1, input);
+	  fread ((void *) &fy, sizeof (fy), 1, input);
 	point->y = fy;
       }
       break;
@@ -642,7 +600,7 @@ read_point_binary (reader, point)
 	int iy;
 	
 	items_read = 
-	  fread ((voidptr_t) &iy, sizeof (iy), 1, input);
+	  fread ((void *) &iy, sizeof (iy), 1, input);
 	point->y = iy;
       }
       break;
@@ -669,13 +627,7 @@ read_point_binary (reader, point)
    before) and a more modern style (from later gnuplot 3.5, circa 1997). */
 
 static dataset_status_t
-#ifdef _HAVE_PROTOS
 read_point_gnuplot (Reader *reader, Point *point)
-#else
-read_point_gnuplot (reader, point)
-     Reader *reader;
-     Point *point;
-#endif
 {
   int lookahead, items_read;
   char directive, c;
@@ -788,16 +740,9 @@ read_point_gnuplot (reader, point)
    been allocated on the heap.  The length of the block in which the points
    are stored, and the number of points, are passed back.  */
 
+/* ARGS: length = buffer length in bytes, should begin >0 */
 static dataset_status_t
-#ifdef _HAVE_PROTOS
 read_dataset (Reader *reader, Point **p_addr, int *length, int *no_of_points)
-#else
-read_dataset (reader, p_addr, length, no_of_points)
-     Reader *reader;
-     Point **p_addr;
-     int *length;  /* buffer length in bytes, should begin > 0 */
-     int *no_of_points;
-#endif
 {
   Point *p = *p_addr;
   dataset_status_t status;
@@ -835,16 +780,9 @@ read_dataset (reader, p_addr, length, no_of_points)
    heap.  The length of the block in which the data points are stored, and
    the number of points, are passed back.  */
 
+/* ARGS: length = buffer length in bytes, should begin >0 */
 void
-#ifdef _HAVE_PROTOS
 read_file (Reader *reader, Point **p_addr, int *length, int *no_of_points)
-#else
-read_file (reader, p_addr, length, no_of_points)
-     Reader *reader;
-     Point **p_addr;
-     int *length;  /* buffer length in bytes, should begin > 0 */
-     int *no_of_points;
-#endif
 {
   dataset_status_t status;
 
@@ -877,12 +815,7 @@ read_file (reader, p_addr, length, no_of_points)
    abscissa will be reset if auto-abscissa is in effect. */
 
 static void
-#ifdef _HAVE_PROTOS
 reset_reader (Reader *reader)
-#else
-reset_reader (reader)
-     Reader *reader;
-#endif
 {
   reader->need_break = true;	/* force break in polyline */
 
@@ -904,12 +837,7 @@ reset_reader (reader)
    end-of-dataset.) */
 
 static bool
-#ifdef _HAVE_PROTOS
 skip_some_whitespace (FILE *stream)
-#else
-skip_some_whitespace (stream)
-     FILE *stream;
-#endif
 {
   int lookahead;
   int nlcount = 0;
@@ -936,12 +864,7 @@ skip_some_whitespace (stream)
    newlines, but new-style format uses three newlines. */
 
 static void
-#ifdef _HAVE_PROTOS
 skip_all_whitespace (FILE *stream)
-#else
-skip_all_whitespace (stream)
-     FILE *stream;
-#endif
 {
   int lookahead;
   
@@ -965,13 +888,7 @@ skip_all_whitespace (stream)
    points are not stored).  */
 
 static dataset_status_t
-#ifdef _HAVE_PROTOS
 read_and_plot_dataset (Reader *reader, Multigrapher *multigrapher)
-#else
-read_and_plot_dataset (reader, multigrapher)
-     Reader *reader;
-     Multigrapher *multigrapher;
-#endif
 {
   dataset_status_t status;
 
@@ -995,13 +912,7 @@ read_and_plot_dataset (reader, multigrapher)
    plotting is accomplished in real time (the points are not stored).  */
 
 void
-#ifdef _HAVE_PROTOS
 read_and_plot_file (Reader *reader, Multigrapher *multigrapher)
-#else
-read_and_plot_file (reader, multigrapher)
-     Reader *reader;
-     Multigrapher *multigrapher;
-#endif
 {
   dataset_status_t status;
 

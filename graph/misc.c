@@ -1,3 +1,22 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains miscellaneous subroutines for GNU graph.  Currently,
    it contains only array_bounds(), which is called if the user fails to
    specify at least one of the bounds xmin,xmax,ymin,ymax.  
@@ -19,29 +38,16 @@ enum { ACCEPTED = 0x1, CLIPPED_FIRST = 0x2, CLIPPED_SECOND = 0x4 };
 enum { TOP = 0x1, BOTTOM = 0x2, RIGHT = 0x4, LEFT = 0x8 };
 
 /* forward references */
-static int clip_line ____P((double *x0_p, double *y0_p, double *x1_p, double *y1_p, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip, bool spec_min_x, bool spec_min_y, bool spec_max_x, bool spec_max_y));
-static int compute_relevant_points ____P ((double xx, double yy, double oldxx, double oldyy, int clip_mode, double user_min_x, double user_min_y, double user_max_x, double user_max_y, bool spec_min_x, bool spec_min_y, bool spec_max_x, bool spec_max_y, double xxr[2], double yyr[2]));
-static int compute_outcode ____P ((double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip, bool spec_min_x, bool spec_min_y, bool spec_max_x, bool spec_max_y));
+static int clip_line (double *x0_p, double *y0_p, double *x1_p, double *y1_p, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip, bool spec_min_x, bool spec_min_y, bool spec_max_x, bool spec_max_y);
+static int compute_relevant_points (double xx, double yy, double oldxx, double oldyy, int clip_mode, double user_min_x, double user_min_y, double user_max_x, double user_max_y, bool spec_min_x, bool spec_min_y, bool spec_max_x, bool spec_max_y, double xxr[2], double yyr[2]);
+static int compute_outcode (double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip, bool spec_min_x, bool spec_min_y, bool spec_max_x, bool spec_max_y);
 
 void
-#ifdef _HAVE_PROTOS
 array_bounds (const Point *p, int length, 
 	      bool transpose_axes, int clip_mode,
 	      double *min_x, double *min_y, double *max_x, double *max_y,
 	      bool spec_min_x, bool spec_min_y, 
 	      bool spec_max_x, bool spec_max_y)
-#else
-array_bounds (p, length, 
-	      transpose_axes, clip_mode,
-	      min_x, min_y, max_x, max_y,
-	      spec_min_x, spec_min_y, spec_max_x, spec_max_y)
-     const Point *p;
-     int length;
-     bool transpose_axes;
-     int clip_mode;
-     double *min_x, *min_y, *max_x, *max_y;
-     bool spec_min_x, spec_min_y, spec_max_x, spec_max_y;
-#endif
 {
   /* keep compilers happy */
   double user_min_x = 0.0, user_min_y = 0.0;
@@ -193,7 +199,6 @@ array_bounds (p, length,
    is clipped on both ends, and both resulting endpoints are relevant. */
 
 static int
-#ifdef _HAVE_PROTOS
 compute_relevant_points (double xx, double yy,
 			 double oldxx, double oldyy,
 			 int clip_mode,
@@ -202,18 +207,6 @@ compute_relevant_points (double xx, double yy,
 			 bool spec_min_x, bool spec_min_y, 
 			 bool spec_max_x, bool spec_max_y,
 			 double xxr[2], double yyr[2])
-#else
-compute_relevant_points (xx, yy, oldxx, oldyy,
-			 clip_mode,
-			 user_min_x, user_min_y, user_max_x, user_max_y,
-			 spec_min_x, spec_min_y, spec_max_x, spec_max_y,
-			 xxr, yyr)
-     double xx, yy, oldxx, oldyy;
-     int clip_mode;
-     double user_min_x, user_min_y, user_max_x, user_max_y;
-     bool spec_min_x, spec_min_y, spec_max_x, spec_max_y;
-     double xxr[2], yyr[2];
-#endif
 {
   int clipval;
 
@@ -275,14 +268,7 @@ compute_relevant_points (xx, yy, oldxx, oldyy,
  */
 
 static int
-#ifdef _HAVE_PROTOS
 clip_line (double *x0_p, double *y0_p, double *x1_p, double *y1_p, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip, bool spec_min_x, bool spec_min_y, bool spec_max_x, bool spec_max_y)
-#else
-clip_line (x0_p, y0_p, x1_p, y1_p, x_min_clip, x_max_clip, y_min_clip, y_max_clip, spec_min_x, spec_min_y, spec_max_x, spec_max_y)
-     double *x0_p, *y0_p, *x1_p, *y1_p;
-     double x_min_clip, x_max_clip, y_min_clip, y_max_clip;
-     bool spec_min_x, spec_min_y, spec_max_x, spec_max_y;
-#endif
 {
   double x0 = *x0_p;
   double y0 = *y0_p;
@@ -366,13 +352,7 @@ clip_line (x0_p, y0_p, x1_p, y1_p, x_min_clip, x_max_clip, y_min_clip, y_max_cli
 }
 
 static int
-#ifdef _HAVE_PROTOS
 compute_outcode (double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip, bool spec_min_x, bool spec_min_y, bool spec_max_x, bool spec_max_y)
-#else
-compute_outcode (x, y, x_min_clip, x_max_clip, y_min_clip, y_max_clip, spec_min_x, spec_min_y, spec_max_x, spec_max_y)
-     double x, y, x_min_clip, x_max_clip, y_min_clip, y_max_clip;
-     bool spec_min_x, spec_min_y, spec_max_x, spec_max_y;
-#endif
 {
   int code = 0;
 

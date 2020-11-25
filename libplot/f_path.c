@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -21,28 +39,23 @@
 #define SUBTYPE_CIRCLE  3	/* circle defined by radius */
 
 /* Fig's line styles, indexed into by internal line number
-   (L_SOLID/L_DOTTED/L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED/L_DOTDOTDASHED) */
-const int _fig_line_style[NUM_LINE_STYLES] =
+   (PL_L_SOLID/PL_L_DOTTED/PL_L_DOTDASHED/PL_L_SHORTDASHED/PL_L_LONGDASHED/PL_L_DOTDOTDASHED) */
+const int _pl_f_fig_line_style[PL_NUM_LINE_TYPES] =
 { FIG_L_SOLID, FIG_L_DOTTED, FIG_L_DASHDOTTED, FIG_L_DASHED, FIG_L_DASHED,
     FIG_L_DASHDOUBLEDOTTED, FIG_L_DASHTRIPLEDOTTED };
 
 /* Fig join styles, indexed by internal number (miter/rd./bevel/triangular) */
-const int _fig_join_style[] =
+const int _pl_f_fig_join_style[PL_NUM_JOIN_TYPES] =
 { FIG_JOIN_MITER, FIG_JOIN_ROUND, FIG_JOIN_BEVEL, FIG_JOIN_ROUND };
 
 /* Fig cap styles, indexed by internal number (butt/rd./project/triangular) */
-const int _fig_cap_style[] =
+const int _pl_f_fig_cap_style[PL_NUM_CAP_TYPES] =
 { FIG_CAP_BUTT, FIG_CAP_ROUND, FIG_CAP_PROJECT, FIG_CAP_ROUND };
 
 #define FUZZ 0.0000001
 
 void
-#ifdef _HAVE_PROTOS
-_f_paint_path (S___(Plotter *_plotter))
-#else
-_f_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_f_paint_path (S___(Plotter *_plotter))
 {
   if (_plotter->drawstate->pen_type == 0
       && _plotter->drawstate->fill_type == 0)
@@ -77,7 +90,7 @@ _f_paint_path (S___(_plotter))
 	    double xc = _plotter->drawstate->path->segments[1].pc.x;
 	    double yc = _plotter->drawstate->path->segments[1].pc.y;      
 	    
-	    _f_draw_arc_internal (R___(_plotter) xc, yc, x0, y0, x1, y1);
+	    _pl_f_draw_arc_internal (R___(_plotter) xc, yc, x0, y0, x1, y1);
 	    break;
 	  }
 	
@@ -100,8 +113,8 @@ _f_paint_path (S___(_plotter))
 	  }
 	
 	/* evaluate fig colors lazily, i.e. only when needed */
-	_f_set_pen_color (S___(_plotter));
-	_f_set_fill_color (S___(_plotter));
+	_pl_f_set_pen_color (S___(_plotter));
+	_pl_f_set_fill_color (S___(_plotter));
 	
 	/* xfig expresses line widths in terms of `Fig display units', so
 	   scale appropriately */
@@ -114,7 +127,7 @@ _f_paint_path (S___(_plotter))
 
 	/* compute line style (type of dotting/dashing, spacing of
            dots/dashes)*/
-	_f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
+	_pl_f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
 	
 	/* update xfig's `depth' attribute */
 	if (_plotter->fig_drawing_depth > 0)
@@ -134,8 +147,8 @@ _f_paint_path (S___(_plotter))
 		0,		/* pen style, ignored */
 		_plotter->drawstate->fig_fill_level, /* area fill */
 		nominal_spacing, /* style val, in Fig display units (float) */
-		_fig_join_style[_plotter->drawstate->join_type],/*join style */
-		_fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
+		_pl_f_fig_join_style[_plotter->drawstate->join_type],/*join style */
+		_pl_f_fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
 		0,		/* radius(of arc boxes, ignored here) */
 		0,		/* forward arrow */
 		0,		/* backward arrow */
@@ -178,7 +191,7 @@ _f_paint_path (S___(_plotter))
 	p0 = _plotter->drawstate->path->p0;
 	p1 = _plotter->drawstate->path->p1;
 
-	_f_draw_box_internal (R___(_plotter) p0, p1);
+	_pl_f_draw_box_internal (R___(_plotter) p0, p1);
       }
       break;
 
@@ -188,7 +201,7 @@ _f_paint_path (S___(_plotter))
 	double y = _plotter->drawstate->path->pc.y;
 	double r = _plotter->drawstate->path->radius;
 
-	_f_draw_ellipse_internal (R___(_plotter) 
+	_pl_f_draw_ellipse_internal (R___(_plotter) 
 				  x, y, r, r, 0.0, SUBTYPE_CIRCLE);
       }
       break;
@@ -201,7 +214,7 @@ _f_paint_path (S___(_plotter))
 	double ry = _plotter->drawstate->path->ry;
 	double angle = _plotter->drawstate->path->angle;	
 
-	_f_draw_ellipse_internal (R___(_plotter) 
+	_pl_f_draw_ellipse_internal (R___(_plotter) 
 				  x, y, rx, ry, angle, SUBTYPE_ELLIPSE);
       }
       break;
@@ -221,13 +234,7 @@ _f_paint_path (S___(_plotter))
 			  + ((p1).y - (p2).y) * ((p1).y - (p2).y))
 
 void
-#ifdef _HAVE_PROTOS
-_f_draw_arc_internal (R___(Plotter *_plotter) double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-_f_draw_arc_internal (R___(_plotter) xc, yc, x0, y0, x1, y1)
-     S___(Plotter *_plotter;)
-     double xc, yc, x0, y0, x1, y1;
-#endif
+_pl_f_draw_arc_internal (R___(Plotter *_plotter) double xc, double yc, double x0, double y0, double x1, double y1)
 {
   plPoint p0, p1, pc, pb;
   plVector v, v0, v1;
@@ -263,8 +270,8 @@ _f_draw_arc_internal (R___(_plotter) xc, yc, x0, y0, x1, y1)
   pb.y = pc.y - orientation * v.x;
       
   /* evaluate fig colors lazily, i.e. only when needed */
-  _f_set_pen_color (S___(_plotter));
-  _f_set_fill_color (S___(_plotter));
+  _pl_f_set_pen_color (S___(_plotter));
+  _pl_f_set_fill_color (S___(_plotter));
   
   /* xfig expresses line widths in terms of `Fig display units', so
      scale appropriately */
@@ -276,7 +283,7 @@ _f_draw_arc_internal (R___(_plotter) xc, yc, x0, y0, x1, y1)
     quantized_device_line_width = 1;
 
   /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
-  _f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
+  _pl_f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
 
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
@@ -310,7 +317,7 @@ _f_draw_arc_internal (R___(_plotter) xc, yc, x0, y0, x1, y1)
 	  0,			/* pen style, ignored */
 	  _plotter->drawstate->fig_fill_level, /* area fill */
 	  nominal_spacing,	/* style val, in Fig display units (float) */
-	  _fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
+	  _pl_f_fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
 	  1,			/* counterclockwise */
 	  0,			/* no forward arrow */
 	  0,			/* no backward arrow */
@@ -326,13 +333,7 @@ _f_draw_arc_internal (R___(_plotter) xc, yc, x0, y0, x1, y1)
 }
 
 void
-#ifdef _HAVE_PROTOS
-_f_draw_box_internal (R___(Plotter *_plotter) plPoint p0, plPoint p1)
-#else
-_f_draw_box_internal (R___(_plotter) p0, p1)
-     S___(Plotter *_plotter;)
-     plPoint p0, p1;
-#endif
+_pl_f_draw_box_internal (R___(Plotter *_plotter) plPoint p0, plPoint p1)
 {
   int xd0, xd1, yd0, yd1;	/* in device coordinates */
   double nominal_spacing;
@@ -341,8 +342,8 @@ _f_draw_box_internal (R___(_plotter) p0, p1)
   int quantized_device_line_width;
 
   /* evaluate fig colors lazily, i.e. only when needed */
-  _f_set_pen_color (S___(_plotter));
-  _f_set_fill_color (S___(_plotter));
+  _pl_f_set_pen_color (S___(_plotter));
+  _pl_f_set_fill_color (S___(_plotter));
   
   /* xfig expresses line widths in terms of `Fig display units', so
      scale appropriately */
@@ -354,7 +355,7 @@ _f_draw_box_internal (R___(_plotter) p0, p1)
     quantized_device_line_width = 1;
 
   /* compute line style (type of dotting/dashing, spacing of dots/dashes)*/
-  _f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
+  _pl_f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
   
   /* update xfig's `depth' attribute */
   if (_plotter->fig_drawing_depth > 0)
@@ -374,8 +375,8 @@ _f_draw_box_internal (R___(_plotter) p0, p1)
 	  0,			/* pen style, ignored */
 	  _plotter->drawstate->fig_fill_level, /* area fill */
 	  nominal_spacing,	/* style val, in Fig display units (float) */
-	  _fig_join_style[_plotter->drawstate->join_type], /* join style */
-	  _fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
+	  _pl_f_fig_join_style[_plotter->drawstate->join_type], /* join style */
+	  _pl_f_fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
 	  0,			/* radius (of arc boxes, ignored here) */
 	  0,			/* forward arrow */
 	  0,			/* backward arrow */
@@ -403,14 +404,7 @@ _f_draw_box_internal (R___(_plotter) p0, p1)
 }
 
 void
-#ifdef _HAVE_PROTOS
-_f_draw_ellipse_internal (R___(Plotter *_plotter) double x, double y, double rx, double ry, double angle, int subtype)
-#else
-_f_draw_ellipse_internal (R___(_plotter) x, y, rx, ry, angle, subtype)
-     S___(Plotter *_plotter;)
-     double x, y, rx, ry, angle;
-     int subtype;
-#endif
+_pl_f_draw_ellipse_internal (R___(Plotter *_plotter) double x, double y, double rx, double ry, double angle, int subtype)
 {
   const char *format;
   double theta, mixing_angle;
@@ -469,8 +463,8 @@ _f_draw_ellipse_internal (R___(_plotter) x, y, rx, ry, angle, subtype)
     subtype = SUBTYPE_ELLIPSE;
 
   /* evaluate fig colors lazily, i.e. only when needed */
-  _f_set_pen_color (S___(_plotter));
-  _f_set_fill_color (S___(_plotter));
+  _pl_f_set_pen_color (S___(_plotter));
+  _pl_f_set_fill_color (S___(_plotter));
   
   /* xfig expresses line widths in terms of `Fig display units', so
      scale appropriately */
@@ -482,7 +476,7 @@ _f_draw_ellipse_internal (R___(_plotter) x, y, rx, ry, angle, subtype)
     quantized_device_line_width = 1;
 
   /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
-  _f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
+  _pl_f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
 
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
@@ -526,14 +520,7 @@ _f_draw_ellipse_internal (R___(_plotter) x, y, rx, ry, angle, subtype)
 /* compute appropriate Fig line style, and also appropriate value for Fig's
    notion of `dash length/dot gap' (in Fig display units) */
 void
-#ifdef _HAVE_PROTOS
-_f_compute_line_style (R___(Plotter *_plotter) int *style, double *spacing)
-#else
-_f_compute_line_style (R___(_plotter) style, spacing)
-     S___(Plotter *_plotter;)
-     int *style;
-     double *spacing;
-#endif
+_pl_f_compute_line_style (R___(Plotter *_plotter) int *style, double *spacing)
 {
   int fig_line_style;
   double fig_nominal_spacing;
@@ -586,8 +573,8 @@ _f_compute_line_style (R___(_plotter) style, spacing)
       double display_size_in_fig_units, min_dash_unit, dash_unit;
 
       num_dashes =
-	_line_styles[_plotter->drawstate->line_type].dash_array_len;
-      dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	_pl_g_line_styles[_plotter->drawstate->line_type].dash_array_len;
+      dash_array = _pl_g_line_styles[_plotter->drawstate->line_type].dash_array;
       cycle_length = 0;
       for (i = 0; i < num_dashes; i++)
 	cycle_length += dash_array[i];
@@ -597,14 +584,14 @@ _f_compute_line_style (R___(_plotter) style, spacing)
       display_size_in_fig_units = DMIN(_plotter->data->xmax - _plotter->data->xmin, 
 				       /* flipped y */
 				       _plotter->data->ymin - _plotter->data->ymax);
-      min_dash_unit = MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
+      min_dash_unit = PL_MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
 	* FIG_UNITS_TO_FIG_DISPLAY_UNITS(display_size_in_fig_units);
       dash_unit = DMAX(min_dash_unit, 
 		       FIG_UNITS_TO_FIG_DISPLAY_UNITS(_plotter->drawstate->device_line_width));
 
       /* desired cycle length in Fig display units */
       fig_nominal_spacing = cycle_length * dash_unit;
-      fig_line_style = _fig_line_style[_plotter->drawstate->line_type];
+      fig_line_style = _pl_f_fig_line_style[_plotter->drawstate->line_type];
     }
       
   /* compensate for Fig's (or fig2dev's) peculiarities; value stored in Fig
@@ -641,12 +628,7 @@ _f_compute_line_style (R___(_plotter) style, spacing)
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_f_paint_paths (S___(Plotter *_plotter))
-#else
-_f_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_f_paint_paths (S___(Plotter *_plotter))
 {
   return false;
 }

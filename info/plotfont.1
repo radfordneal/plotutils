@@ -22,7 +22,7 @@ utilities, which include
 .BR tek2plot (1),
 and the GNU libplot 2-D graphics export library (see
 .BR plot (3)).
-Which fonts are supported depends on the output format or display type,
+Which fonts are supported depends on the output format,
 which is specified by the 
 .BR \-T " option."
 A listing of the fonts available in any specified output format may be
@@ -71,10 +71,10 @@ The Utopia-Regular font is available on most X Window System displays.
 .br
 .ns
 .TP
-.BI \-\-display\-type " type"
+.BI \-\-output\-format " type"
 Select 
 .I type
-as the output format or display type.
+as the output format.
 It may be "X", "png", "pnm", "gif", "svg", "ai", "ps", "cgm", "fig",
 "pcl", "hpgl", "regis", "tek", or "meta" (the default).
 These refer respectively
@@ -355,7 +355,7 @@ Print a list of command-line options, and exit.
 .TP
 .B \-\-help\-fonts
 Print a table of available fonts, and exit.
-The table will depend on which output format or display type
+The table will depend on which output format
 is specified with the 
 .B \-T 
 option.

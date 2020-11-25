@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains low-level functions used by CGMPlotters.  E.g.,
    _cgm_emit_command_header and _cgm_emit_command_terminator, which begin
    and end a CGM command.  A CGM output file, in either the binary or clear
@@ -75,10 +93,10 @@
 (((data_len) > 30) && ((*(data_byte_count)) % CGM_BINARY_DATA_BYTES_PER_PARTITION == 0))
 
 /* forward references */
-static void _cgm_emit_partition_control_word ____P((plOutbuf *outbuf, int data_len, const int *data_byte_count, int *byte_count));
-static void _double_to_ieee_single_precision ____P((double d, unsigned char output[4]));
-static void _int_to_cgm_int ____P((int n, unsigned char *cgm_int, int octets_per_cgm_int));
-static void _unsigned_int_to_cgm_unsigned_int ____P((unsigned int n, unsigned char *cgm_unsigned_int, int octets_per_cgm_unsigned_int));
+static void cgm_emit_partition_control_word (plOutbuf *outbuf, int data_len, const int *data_byte_count, int *byte_count);
+static void double_to_ieee_single_precision (double d, unsigned char output[4]);
+static void int_to_cgm_int (int n, unsigned char *cgm_int, int octets_per_cgm_int);
+static void unsigned_int_to_cgm_unsigned_int (unsigned int n, unsigned char *cgm_unsigned_int, int octets_per_cgm_unsigned_int);
 
 
 /* Write the header of a CGM command.  
@@ -98,17 +116,7 @@ static void _unsigned_int_to_cgm_unsigned_int ____P((unsigned int n, unsigned ch
    latter is updated by the argument-emitting functions).  */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_command_header (plOutbuf *outbuf, int cgm_encoding, int element_class, int id, int data_len, int *byte_count, const char *op_code)
-#else
-_cgm_emit_command_header (outbuf, cgm_encoding, element_class, id, data_len, byte_count, op_code)
-     plOutbuf *outbuf;
-     int cgm_encoding;
-     int element_class, id;
-     int data_len;
-     int *byte_count;
-     const char *op_code;
-#endif
 {
   switch (cgm_encoding)
     {
@@ -148,15 +156,7 @@ _cgm_emit_command_header (outbuf, cgm_encoding, element_class, id, data_len, byt
    word, to indicate that another data partition will follow. */
 
 static void
-#ifdef _HAVE_PROTOS
-_cgm_emit_partition_control_word (plOutbuf *outbuf, int data_len, const int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     int data_len;
-     const int *data_byte_count;
-     int *byte_count;
-#endif
+cgm_emit_partition_control_word (plOutbuf *outbuf, int data_len, const int *data_byte_count, int *byte_count)
 {
   int bytes_remaining = data_len - (*data_byte_count);
   int bytes_in_partition;
@@ -196,14 +196,7 @@ _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count)
    unsigned chars to chars with impunity. */
 
 static void
-#ifdef _HAVE_PROTOS
-_int_to_cgm_int (int n, unsigned char *cgm_int, int octets_per_cgm_int)
-#else
-_int_to_cgm_int (n, cgm_int, octets_per_cgm_int)
-     int n;
-     unsigned char *cgm_int;
-     int octets_per_cgm_int;
-#endif
+int_to_cgm_int (int n, unsigned char *cgm_int, int octets_per_cgm_int)
 {
   int max_int, i;
   unsigned int u;
@@ -246,14 +239,7 @@ _int_to_cgm_int (n, cgm_int, octets_per_cgm_int)
 /* similar to the preceding, but for unsigned ints rather than signed ints */
 
 static void
-#ifdef _HAVE_PROTOS
-_unsigned_int_to_cgm_unsigned_int (unsigned int n, unsigned char *cgm_unsigned_int, int octets_per_cgm_unsigned_int)
-#else
-_unsigned_int_to_cgm_unsigned_int (n, cgm_unsigned_int, octets_per_cgm_unsigned_int)
-     unsigned int n;
-     unsigned char *cgm_unsigned_int;
-     int octets_per_cgm_unsigned_int;
-#endif
+unsigned_int_to_cgm_unsigned_int (unsigned int n, unsigned char *cgm_unsigned_int, int octets_per_cgm_unsigned_int)
 {
   unsigned int max_unsigned_int;
   int i;
@@ -283,17 +269,7 @@ _unsigned_int_to_cgm_unsigned_int (n, cgm_unsigned_int, octets_per_cgm_unsigned_
    be increased. */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_integer (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_integer (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     int x;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int i;
   unsigned char cgm_int[CGM_BINARY_BYTES_PER_INTEGER];
@@ -302,12 +278,12 @@ _cgm_emit_integer (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte
     {
     case CGM_ENCODING_BINARY:
     default:
-      _int_to_cgm_int (x, cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
+      int_to_cgm_int (x, cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
       for (i = 0; i < CGM_BINARY_BYTES_PER_INTEGER; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
@@ -330,17 +306,7 @@ _cgm_emit_integer (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte
    signed integer. */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_unsigned_integer (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_unsigned_integer (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     unsigned int x;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int i;
   unsigned char cgm_unsigned_int[CGM_BINARY_BYTES_PER_INTEGER];
@@ -349,12 +315,12 @@ _cgm_emit_unsigned_integer (outbuf, no_partitioning, cgm_encoding, x, data_len, 
     {
     case CGM_ENCODING_BINARY:
     default:
-      _unsigned_int_to_cgm_unsigned_int (x, cgm_unsigned_int, CGM_BINARY_BYTES_PER_INTEGER);
+      unsigned_int_to_cgm_unsigned_int (x, cgm_unsigned_int, CGM_BINARY_BYTES_PER_INTEGER);
       for (i = 0; i < CGM_BINARY_BYTES_PER_INTEGER; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_unsigned_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
@@ -377,17 +343,7 @@ _cgm_emit_unsigned_integer (outbuf, no_partitioning, cgm_encoding, x, data_len, 
    unsigned integer in the range 0.255) as a single byte.  */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_unsigned_integer_8bit (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_unsigned_integer_8bit (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     unsigned int x;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   /* clamp to 0..255 */
   if (x > (unsigned int)255)
@@ -399,7 +355,7 @@ _cgm_emit_unsigned_integer_8bit (outbuf, no_partitioning, cgm_encoding, x, data_
     default:
       if (no_partitioning == false
 	  && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	_cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
       *(outbuf->point) = (char)(unsigned char)x;
       _update_buffer_by_added_bytes (outbuf, 1);
@@ -421,17 +377,7 @@ _cgm_emit_unsigned_integer_8bit (outbuf, no_partitioning, cgm_encoding, x, data_
    binary encoding, 2 * CGM_BINARY_BYTES_PER_INTEGER bytes are written. */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_point (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int y, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_point (outbuf, no_partitioning, cgm_encoding, x, y, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     int x, y;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int i;
   unsigned char cgm_int[CGM_BINARY_BYTES_PER_INTEGER];
@@ -440,24 +386,24 @@ _cgm_emit_point (outbuf, no_partitioning, cgm_encoding, x, y, data_len, data_byt
     {
     case CGM_ENCODING_BINARY:
     default:
-      _int_to_cgm_int (x, cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
+      int_to_cgm_int (x, cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
       for (i = 0; i < CGM_BINARY_BYTES_PER_INTEGER; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
 	  (*data_byte_count)++;
 	  (*byte_count)++;
 	}
-      _int_to_cgm_int (y, cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
+      int_to_cgm_int (y, cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
       for (i = 0; i < CGM_BINARY_BYTES_PER_INTEGER; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
@@ -480,18 +426,7 @@ _cgm_emit_point (outbuf, no_partitioning, cgm_encoding, x, y, data_len, data_byt
    CGM format.  */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_points (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, const int *x, const int *y, int npoints, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_points (outbuf, no_partitioning, cgm_encoding, x, y, npoints, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     const int *x, *y;
-     int npoints;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int i, j;
   unsigned char cgm_int[CGM_BINARY_BYTES_PER_INTEGER];
@@ -502,24 +437,24 @@ _cgm_emit_points (outbuf, no_partitioning, cgm_encoding, x, y, npoints, data_len
     default:
       for (j = 0; j < npoints; j++)
 	{
-	  _int_to_cgm_int (x[j], cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
+	  int_to_cgm_int (x[j], cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
 	  for (i = 0; i < CGM_BINARY_BYTES_PER_INTEGER; i++)
 	    {
 	      if (no_partitioning == false
 		  && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-		_cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+		cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	      
 	      *(outbuf->point) = (char)(cgm_int[i]);
 	      _update_buffer_by_added_bytes (outbuf, 1);
 	      (*data_byte_count)++;
 	      (*byte_count)++;
 	    }
-	  _int_to_cgm_int (y[j], cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
+	  int_to_cgm_int (y[j], cgm_int, CGM_BINARY_BYTES_PER_INTEGER);
 	  for (i = 0; i < CGM_BINARY_BYTES_PER_INTEGER; i++)
 	    {
 	      if (no_partitioning == false
 		  && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-		_cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+		cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	      
 	      *(outbuf->point) = (char)(cgm_int[i]);
 	      _update_buffer_by_added_bytes (outbuf, 1);
@@ -548,18 +483,7 @@ _cgm_emit_points (outbuf, no_partitioning, cgm_encoding, x, y, npoints, data_len
    string is written. */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_enum (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count, const char *text_string)
-#else
-_cgm_emit_enum (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_count, byte_count, text_string)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     int x;
-     int data_len;
-     int *data_byte_count, *byte_count;
-     const char *text_string;
-#endif
 {
   int i;
   unsigned char cgm_int[2];
@@ -568,12 +492,12 @@ _cgm_emit_enum (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_co
     {
     case CGM_ENCODING_BINARY:
     default:
-      _int_to_cgm_int (x, cgm_int, 2);
+      int_to_cgm_int (x, cgm_int, 2);
       for (i = 0; i < 2; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
@@ -602,17 +526,7 @@ _cgm_emit_enum (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_co
    precisions). */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_index (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_index (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     int x;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int i;
   unsigned char cgm_int[2];
@@ -621,12 +535,12 @@ _cgm_emit_index (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_c
     {
     case CGM_ENCODING_BINARY:
     default:
-      _int_to_cgm_int (x, cgm_int, 2);
+      int_to_cgm_int (x, cgm_int, 2);
       for (i = 0; i < 2; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
@@ -651,17 +565,7 @@ _cgm_emit_index (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_c
    c_color.c supports only 1 or 2, i.e. 24-bit color or 48-bit color. */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_color_component (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_color_component (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     unsigned int x;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int i;
   unsigned char cgm_unsigned_int[CGM_BINARY_BYTES_PER_COLOR_COMPONENT];
@@ -670,13 +574,13 @@ _cgm_emit_color_component (outbuf, no_partitioning, cgm_encoding, x, data_len, d
     {
     case CGM_ENCODING_BINARY:
     default:
-      _unsigned_int_to_cgm_unsigned_int (x, cgm_unsigned_int,
+      unsigned_int_to_cgm_unsigned_int (x, cgm_unsigned_int,
 					 CGM_BINARY_BYTES_PER_COLOR_COMPONENT);
       for (i = 0; i < CGM_BINARY_BYTES_PER_COLOR_COMPONENT; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_unsigned_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
@@ -702,17 +606,7 @@ _cgm_emit_color_component (outbuf, no_partitioning, cgm_encoding, x, data_len, d
    encoding, a conventional representation is used. */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_real_fixed_point (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, double x, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_real_fixed_point (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     double x;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int x_floor;
   unsigned int x_frac;
@@ -732,24 +626,24 @@ _cgm_emit_real_fixed_point (outbuf, no_partitioning, cgm_encoding, x, data_len, 
     {
     case CGM_ENCODING_BINARY:
     default:
-      _int_to_cgm_int (x_floor, cgm_int, 2);
+      int_to_cgm_int (x_floor, cgm_int, 2);
       for (i = 0; i < 2; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
 	  (*data_byte_count)++;
 	  (*byte_count)++;
 	}
-      _unsigned_int_to_cgm_unsigned_int (x_frac, cgm_unsigned_int, 2);
+      unsigned_int_to_cgm_unsigned_int (x_frac, cgm_unsigned_int, 2);
       for (i = 0; i < 2; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  
 	  *(outbuf->point) = (char)(cgm_unsigned_int[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
@@ -781,13 +675,7 @@ _cgm_emit_real_fixed_point (outbuf, no_partitioning, cgm_encoding, x, data_len, 
    unsigned chars to chars with impunity. */
 
 static void
-#ifdef _HAVE_PROTOS
-_double_to_ieee_single_precision (double d, unsigned char output[4])
-#else
-_double_to_ieee_single_precision (d, output)
-     double d;
-     unsigned char output[4];
-#endif
+double_to_ieee_single_precision (double d, unsigned char output[4])
 {
   double min_magnitude, max_magnitude, tmp_power, max_power;
   bool got_a_bit;
@@ -901,17 +789,7 @@ _double_to_ieee_single_precision (d, output)
    factor' that is probably bogus.  See c_defplot.c. */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_real_floating_point (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, double x, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_real_floating_point (outbuf, no_partitioning, cgm_encoding, x, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     double x;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int i;
   unsigned char cp[4];
@@ -920,12 +798,12 @@ _cgm_emit_real_floating_point (outbuf, no_partitioning, cgm_encoding, x, data_le
     {
     case CGM_ENCODING_BINARY:
     default:
-      _double_to_ieee_single_precision (x, cp);
+      double_to_ieee_single_precision (x, cp);
       for (i = 0; i < 4; i++)
 	{
 	  if (no_partitioning == false
 	      && CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	    _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	    cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	  *(outbuf->point) = (char)(cp[i]);
 	  _update_buffer_by_added_bytes (outbuf, 1);
 	  (*data_byte_count)++;
@@ -963,19 +841,7 @@ _cgm_emit_real_floating_point (outbuf, no_partitioning, cgm_encoding, x, data_le
    the `use_double_quotes' flag is set. */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_string (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, const char *s, int string_length, bool use_double_quotes, int data_len, int *data_byte_count, int *byte_count)
-#else
-_cgm_emit_string (outbuf, no_partitioning, cgm_encoding, s, string_length, use_double_quotes, data_len, data_byte_count, byte_count)
-     plOutbuf *outbuf;
-     bool no_partitioning;
-     int cgm_encoding;
-     const char *s;
-     int string_length;
-     bool use_double_quotes;
-     int data_len;
-     int *data_byte_count, *byte_count;
-#endif
 {
   int i, encoded_string_length;
   const char *sp = s;
@@ -996,7 +862,7 @@ _cgm_emit_string (outbuf, no_partitioning, cgm_encoding, s, string_length, use_d
 	/* first, encode the string */
 
 	encoded_string_length = CGM_BINARY_BYTES_PER_STRING(string_length);
-	tp = t = (char *)_plot_xmalloc (encoded_string_length * sizeof(char));
+	tp = t = (char *)_pl_xmalloc (encoded_string_length * sizeof(char));
 
 	if (string_length <= 254)
 	  {
@@ -1008,7 +874,7 @@ _cgm_emit_string (outbuf, no_partitioning, cgm_encoding, s, string_length, use_d
 	else
 	  {
 	    /* first byte is `255' */
-	    *tp++ = 255;
+	    *tp++ = (char)255;
 
 	    /* copy data bytes, with string partition headers interpolated
 	       as needed; `i' counts data bytes copied */
@@ -1044,7 +910,7 @@ _cgm_emit_string (outbuf, no_partitioning, cgm_encoding, s, string_length, use_d
 	  {
 	    if (no_partitioning == false
 		&& CGM_BINARY_DATA_PARTITION_BEGINS(data_len, data_byte_count))
-	      _cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
+	      cgm_emit_partition_control_word (outbuf, data_len, data_byte_count, byte_count);
 	    *(outbuf->point) = t[i];
 	    _update_buffer_by_added_bytes (outbuf, 1);
 	    (*data_byte_count)++;
@@ -1064,7 +930,7 @@ _cgm_emit_string (outbuf, no_partitioning, cgm_encoding, s, string_length, use_d
 	/* allocate space for encoded string, including initial and final
            quotes, a space for readability, and a final NULL */
 	encoded_string_length = 2 * string_length + 3;
-	tp = t = (char *)_plot_xmalloc ((encoded_string_length + 1) * sizeof(char));
+	tp = t = (char *)_pl_xmalloc ((encoded_string_length + 1) * sizeof(char));
 
 	/* begin with a space for readability, and a quote */
 	*tp++ = ' ';
@@ -1095,14 +961,7 @@ _cgm_emit_string (outbuf, no_partitioning, cgm_encoding, s, string_length, use_d
    it does nothing.  In the clear text encoding it writes ";\n". */
 
 void
-#ifdef _HAVE_PROTOS
 _cgm_emit_command_terminator (plOutbuf *outbuf, int cgm_encoding, int *byte_count)
-#else
-_cgm_emit_command_terminator (outbuf, cgm_encoding, byte_count)
-     plOutbuf *outbuf;
-     int cgm_encoding;
-     int *byte_count;
-#endif
 {
   switch (cgm_encoding)
     {

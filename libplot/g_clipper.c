@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -8,7 +26,7 @@ enum { ACCEPTED = 0x1, CLIPPED_FIRST = 0x2, CLIPPED_SECOND = 0x4 };
 enum { TOP = 0x1, BOTTOM = 0x2, RIGHT = 0x4, LEFT = 0x8 };
 
 /* forward references */
-static int _compute_outcode ____P ((double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip));
+static int compute_outcode (double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip);
 
 /* _clip_line() takes two points, the endpoints of a line segment in the
  * device frame (expressed in terms of floating-point device coordinates),
@@ -19,13 +37,7 @@ static int _compute_outcode ____P ((double x, double y, double x_min_clip, doubl
  */
 
 int
-#ifdef _HAVE_PROTOS
 _clip_line (double *x0_p, double *y0_p, double *x1_p, double *y1_p, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip)
-#else
-_clip_line (x0_p, y0_p, x1_p, y1_p, x_min_clip, x_max_clip, y_min_clip, y_max_clip)
-     double *x0_p, *y0_p, *x1_p, *y1_p;
-     double x_min_clip, x_max_clip, y_min_clip, y_max_clip;
-#endif
 {
   double x0 = *x0_p;
   double y0 = *y0_p;
@@ -35,8 +47,8 @@ _clip_line (x0_p, y0_p, x1_p, y1_p, x_min_clip, x_max_clip, y_min_clip, y_max_cl
   bool accepted;
   int clipval = 0;
   
-  outcode0 = _compute_outcode (x0, y0, x_min_clip, x_max_clip, y_min_clip, y_max_clip);
-  outcode1 = _compute_outcode (x1, y1, x_min_clip, x_max_clip, y_min_clip, y_max_clip);  
+  outcode0 = compute_outcode (x0, y0, x_min_clip, x_max_clip, y_min_clip, y_max_clip);
+  outcode1 = compute_outcode (x1, y1, x_min_clip, x_max_clip, y_min_clip, y_max_clip);  
 
   for ( ; ; )
     {
@@ -81,13 +93,13 @@ _clip_line (x0_p, y0_p, x1_p, y1_p, x_min_clip, x_max_clip, y_min_clip, y_max_cl
 	    {
 	      x0 = x;
 	      y0 = y;
-	      outcode0 = _compute_outcode (x0, y0, x_min_clip, x_max_clip, y_min_clip, y_max_clip);
+	      outcode0 = compute_outcode (x0, y0, x_min_clip, x_max_clip, y_min_clip, y_max_clip);
 	    }
 	  else
 	    {
 	      x1 = x; 
 	      y1 = y;
-	      outcode1 = _compute_outcode (x1, y1, x_min_clip, x_max_clip, y_min_clip, y_max_clip);
+	      outcode1 = compute_outcode (x1, y1, x_min_clip, x_max_clip, y_min_clip, y_max_clip);
 	    }
 	}
     }
@@ -109,12 +121,7 @@ _clip_line (x0_p, y0_p, x1_p, y1_p, x_min_clip, x_max_clip, y_min_clip, y_max_cl
 }
 
 static int
-#ifdef _HAVE_PROTOS
-_compute_outcode (double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip)
-#else
-_compute_outcode (x, y, x_min_clip, x_max_clip, y_min_clip, y_max_clip)
-     double x, y, x_min_clip, x_max_clip, y_min_clip, y_max_clip;
-#endif
+compute_outcode (double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip)
 {
   int code = 0;
 

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any XPlotter object, including
    both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -13,8 +31,8 @@
    In libplotter these are not global variables: in extern.h, they are
    #define'd to be static data members of the XPlotter class.
 
-   Accessed by _y_initialize() and _y_terminate() in this file, by
-   _y_maybe_handle_x_events() in y_openpl.c, and by _y_closepl() in
+   Accessed by _pl_y_initialize() and _pl_y_terminate() in this file, by
+   _pl_y_maybe_handle_x_events() in y_openpl.c, and by _pl_y_closepl() in
    y_closepl.c. */
 
 XPlotter **_xplotters = NULL;
@@ -33,28 +51,28 @@ pthread_mutex_t _xplotters_mutex = PTHREAD_MUTEX_INITIALIZER;
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    an XPlotter struct. */
-const Plotter _y_default_plotter = 
+const Plotter _pl_y_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _y_initialize, _y_terminate,
+  _pl_y_initialize, _pl_y_terminate,
   /* page manipulation */
-  _y_begin_page, _y_erase_page, _y_end_page,
+  _pl_y_begin_page, _pl_y_erase_page, _pl_y_end_page,
   /* drawing state manipulation */
-  _x_push_state, _x_pop_state,
+  _pl_x_push_state, _pl_x_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _x_paint_path, _x_paint_paths, _x_path_is_flushable, _x_maybe_prepaint_segments,
+  _pl_x_paint_path, _pl_x_paint_paths, _pl_x_path_is_flushable, _pl_x_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _x_paint_point,
+  _pl_g_paint_marker, _pl_x_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _x_paint_text_string,
-  _x_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_x_paint_text_string,
+  _pl_x_get_text_width,
   /* private low-level `retrieve font' method */
-  _x_retrieve_font,
+  _pl_x_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _x_flush_output,
+  _pl_x_flush_output,
   /* internal error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -65,19 +83,14 @@ const Plotter _y_default_plotter =
    created. */
 
 void
-#ifdef _HAVE_PROTOS
-_y_initialize (S___(Plotter *_plotter))
-#else
-_y_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_y_initialize (S___(Plotter *_plotter))
 {
   bool open_slot = false;
   int i, j;
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _x_initialize (S___(_plotter));
+  _pl_x_initialize (S___(_plotter));
 #endif
 
 #ifdef PTHREAD_SUPPORT
@@ -108,7 +121,7 @@ _y_initialize (S___(_plotter))
   /* ensure XPlotter array is set up */
   if (_xplotters_len == 0)
     {
-      _xplotters = (XPlotter **)_plot_xmalloc (INITIAL_XPLOTTERS_LEN * sizeof(XPlotter *));
+      _xplotters = (XPlotter **)_pl_xmalloc (INITIAL_XPLOTTERS_LEN * sizeof(XPlotter *));
       for (i = 0; i < INITIAL_XPLOTTERS_LEN; i++)
 	_xplotters[i] = (XPlotter *)NULL;
       _xplotters_len = INITIAL_XPLOTTERS_LEN;
@@ -126,7 +139,7 @@ _y_initialize (S___(_plotter))
     {
       i = _xplotters_len;
       _xplotters = 
-	(XPlotter **)_plot_xrealloc (_xplotters, 
+	(XPlotter **)_pl_xrealloc (_xplotters, 
 				    2 * _xplotters_len * sizeof (XPlotter *));
       for (j = _xplotters_len; j < 2 * _xplotters_len; j++)
 	_xplotters[j] = (XPlotter *)NULL;
@@ -198,12 +211,7 @@ _y_initialize (S___(_plotter))
    _plotter points to the Plotter that is about to be deleted. */
 
 void
-#ifdef _HAVE_PROTOS
-_y_terminate (S___(Plotter *_plotter))
-#else
-_y_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_y_terminate (S___(Plotter *_plotter))
 {
   int i, j;
 
@@ -244,7 +252,7 @@ _y_terminate (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _x_terminate (S___(_plotter));
+  _pl_x_terminate (S___(_plotter));
 #endif
 }
 
@@ -252,7 +260,7 @@ _y_terminate (S___(_plotter))
 XPlotter::XPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:XDrawablePlotter (infile, outfile, errfile)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -260,7 +268,7 @@ XPlotter::XPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 XPlotter::XPlotter (FILE *outfile)
 	:XDrawablePlotter (outfile)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -268,7 +276,7 @@ XPlotter::XPlotter (FILE *outfile)
 XPlotter::XPlotter (istream& in, ostream& out, ostream& err)
 	: XDrawablePlotter (in, out, err)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -276,14 +284,14 @@ XPlotter::XPlotter (istream& in, ostream& out, ostream& err)
 XPlotter::XPlotter (ostream& out)
 	: XDrawablePlotter (out)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
 
 XPlotter::XPlotter ()
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -291,7 +299,7 @@ XPlotter::XPlotter ()
 XPlotter::XPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:XDrawablePlotter (infile, outfile, errfile, parameters)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -299,7 +307,7 @@ XPlotter::XPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &p
 XPlotter::XPlotter (FILE *outfile, PlotterParams &parameters)
 	:XDrawablePlotter (outfile, parameters)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -307,7 +315,7 @@ XPlotter::XPlotter (FILE *outfile, PlotterParams &parameters)
 XPlotter::XPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: XDrawablePlotter (in, out, err, parameters)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -315,7 +323,7 @@ XPlotter::XPlotter (istream& in, ostream& out, ostream& err, PlotterParams &para
 XPlotter::XPlotter (ostream& out, PlotterParams &parameters)
 	: XDrawablePlotter (out, parameters)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -323,7 +331,7 @@ XPlotter::XPlotter (ostream& out, PlotterParams &parameters)
 XPlotter::XPlotter (PlotterParams &parameters)
 	: XDrawablePlotter (parameters)
 {
-  _y_initialize ();
+  _pl_y_initialize ();
 
   /* add to _xplotters sparse array */
 }
@@ -334,7 +342,7 @@ XPlotter::~XPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _y_terminate ();
+  _pl_y_terminate ();
 
   /* remove from _xplotters sparse array */
 }

@@ -1,21 +1,23 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999, 2005, Free
+ * Software Foundation, Inc.
+ */
+
+/*
+ * symbol table space management routines
+ *
+ */
+
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
 
-/*
- * symbol table space management
- * routines
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
- */
-
 struct sym *
-#ifdef _HAVE_PROTOS
 lookup (const char *nam)
-#else
-lookup (nam)
-     const char *nam;
-#endif
 {
   struct sym *sp;
   
@@ -28,11 +30,7 @@ lookup (nam)
 }
 
 struct sym *
-#ifdef _HAVE_PROTOS
 salloc (void)
-#else
-salloc ()
-#endif
 {
   struct sym *sp;
   
@@ -47,13 +45,8 @@ salloc ()
 }
 
 void
-#ifdef _HAVE_PROTOS
 sfree (struct sym *sp)
-#else
-sfree (sp)
-     struct sym *sp;
-#endif
 {
   if (sp != NULL)
-    free ((voidptr_t)sp);
+    free ((void *)sp);
 }

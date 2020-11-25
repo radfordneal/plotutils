@@ -1,17 +1,30 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 #include "xmi.h"
 
 bool
-#ifdef _HAVE_PROTOS
-_b_begin_page (S___(Plotter *_plotter))
-#else
-_b_begin_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_b_begin_page (S___(Plotter *_plotter))
 {
   /* create new pixmap of specified size (all pixels of background color) */
-  _b_new_image (S___(_plotter));
+  _pl_b_new_image (S___(_plotter));
 
   return true;
 }
@@ -19,12 +32,7 @@ _b_begin_page (S___(_plotter))
 /* internal function: create new image, consisting of a bitmap; also fill
    with Plotter's background color */
 void
-#ifdef _HAVE_PROTOS
-_b_new_image (S___(Plotter *_plotter))
-#else
-_b_new_image (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_b_new_image (S___(Plotter *_plotter))
 {
   unsigned char red, green, blue;
   miPixel pixel;
@@ -39,6 +47,6 @@ _b_new_image (S___(_plotter))
   pixel.u.rgb[2] = blue;
 
   /* create libxmi miPaintedSet and miCanvas structs */
-  _plotter->b_painted_set = (voidptr_t)miNewPaintedSet ();
-  _plotter->b_canvas = (voidptr_t)miNewCanvas ((unsigned int)_plotter->b_xn, (unsigned int)_plotter->b_yn, pixel);
+  _plotter->b_painted_set = (void *)miNewPaintedSet ();
+  _plotter->b_canvas = (void *)miNewCanvas ((unsigned int)_plotter->b_xn, (unsigned int)_plotter->b_yn, pixel);
 }

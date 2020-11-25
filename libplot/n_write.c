@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains a special version of the function
    _maybe_output_image, which is called by the BitmapPlotter closepl method
    (see b_closepl.c).  Provided that the current page is the first, this
@@ -13,7 +31,7 @@
 #define MAX_PPM_PIXELS_PER_LINE 5
 
 /* forward references */
-static int _image_type ____P((miPixel **pixmap, int width, int height));
+static int best_image_type (miPixel **pixmap, int width, int height);
 
 /* do a rapid decimal printf of a nonnegative integer, in range 0..999
    to a character buffer */
@@ -40,18 +58,13 @@ static int _image_type ____P((miPixel **pixmap, int width, int height));
 }
 
 int
-#ifdef _HAVE_PROTOS
-_n_maybe_output_image (S___(Plotter *_plotter))
-#else
-_n_maybe_output_image (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_n_maybe_output_image (S___(Plotter *_plotter))
 {
   /* Output the page as a PBM/PGM/PPM file, but only if it's page #1, since
      PBM/PGM/PPM format supports only a single page of graphics. */
   if (_plotter->data->page_number == 1)
     /* emit PBM/PGM/PPM file */
-    _n_write_pnm (S___(_plotter));
+    _pl_n_write_pnm (S___(_plotter));
 
   return true;
 }
@@ -59,12 +72,7 @@ _n_maybe_output_image (S___(_plotter))
 /* determine which sort of PNM (i.e. PBM/PGM/PPM) file should be output,
    and output it */
 void
-#ifdef _HAVE_PROTOS
-_n_write_pnm (S___(Plotter *_plotter))
-#else
-_n_write_pnm (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_n_write_pnm (S___(Plotter *_plotter))
 {
   int type;			/* 0,1,2 = PBM/PGM/PPM */
   int width, height;
@@ -73,31 +81,26 @@ _n_write_pnm (S___(_plotter))
   width = _plotter->b_xn;
   height = _plotter->b_yn;
   pixmap = ((miCanvas *)(_plotter->b_canvas))->drawable->pixmap;
-  type = _image_type (pixmap, width, height);
+  type = best_image_type (pixmap, width, height);
 
   switch (type)
     {
     case 0:			/* PBM */
-      _n_write_pbm (S___(_plotter));
+      _pl_n_write_pbm (S___(_plotter));
       break;
     case 1:			/* PGM */
-      _n_write_pgm (S___(_plotter));
+      _pl_n_write_pgm (S___(_plotter));
       break;
     case 2:			/* PPM */
     default:
-      _n_write_ppm (S___(_plotter));
+      _pl_n_write_ppm (S___(_plotter));
       break;
     }
 }
 
 /* write output (header plus RGB values) in PBM format */
 void
-#ifdef _HAVE_PROTOS
-_n_write_pbm (S___(Plotter *_plotter))
-#else
-_n_write_pbm (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_n_write_pbm (S___(Plotter *_plotter))
 {
   int i, j;
   bool portable = _plotter->n_portable_output;
@@ -137,7 +140,7 @@ P1\n\
 		  linebuf[pos++] = '0';
 		if (pos >= MAX_PBM_PIXELS_PER_LINE || i == (width - 1))
 		  {
-		    fwrite ((voidptr_t)linebuf, sizeof(unsigned char), pos, fp);
+		    fwrite ((void *)linebuf, sizeof(unsigned char), pos, fp);
 		    putc ('\n', fp);
 		    pos = 0;
 		  }
@@ -155,7 +158,7 @@ P4\n\
 %d %d\n", PL_LIBPLOT_VER_STRING, width, height);
 	  
 	  /* row buffer contains bytes, each representing up to 8 pixels */
-	  rowbuf = (unsigned char *)_plot_xmalloc (((width + 7) / 8) * sizeof (unsigned char));
+	  rowbuf = (unsigned char *)_pl_xmalloc (((width + 7) / 8) * sizeof (unsigned char));
 	  for (j = 0; j < height; j++)
 	    {
 	      bitcount = 0;
@@ -179,7 +182,7 @@ P4\n\
 		  rowbuf[bytecount++] = outbyte;
 		}
 	      /* emit row of bytes */
-	      fwrite ((voidptr_t)rowbuf, sizeof(unsigned char), bytecount, fp);
+	      fwrite ((void *)rowbuf, sizeof(unsigned char), bytecount, fp);
 	    }
 
 	  free (rowbuf);
@@ -208,7 +211,7 @@ P1\n\
 		  linebuf[pos++] = '0';
 		if (pos >= MAX_PBM_PIXELS_PER_LINE || i == (width - 1))
 		  {
-		    stream->write (linebuf, pos);
+		    stream->write ((const char *)linebuf, pos);
 		    stream->put ('\n');
 
 		    pos = 0;
@@ -229,7 +232,7 @@ P4\n\
 	  
 	  
 	  /* row buffer contains bytes, each representing up to 8 pixels */
-	  rowbuf = (unsigned char *)_plot_xmalloc (((width + 7) / 8) * sizeof (unsigned char));
+	  rowbuf = (unsigned char *)_pl_xmalloc (((width + 7) / 8) * sizeof (unsigned char));
 	  for (j = 0; j < height; j++)
 	    {
 	      bitcount = 0;
@@ -253,7 +256,7 @@ P4\n\
 		  rowbuf[bytecount++] = outbyte;
 		}
 	      /* emit row of bytes */
-	      stream->write (rowbuf, bytecount);
+	      stream->write ((const char *)rowbuf, bytecount);
 	    }
 
 	  free (rowbuf);
@@ -264,12 +267,7 @@ P4\n\
 
 /* write output (header plus RGB values) in PGM format */
 void
-#ifdef _HAVE_PROTOS
-_n_write_pgm (S___(Plotter *_plotter))
-#else
-_n_write_pgm (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_n_write_pgm (S___(Plotter *_plotter))
 {
   int i, j;
   bool portable = _plotter->n_portable_output;
@@ -312,7 +310,7 @@ P2\n\
 		num_pixels++;
 		if (num_pixels >= MAX_PGM_PIXELS_PER_LINE || i == (width - 1))
 		  {
-		    fwrite ((voidptr_t)linebuf, sizeof(unsigned char), pos, fp);
+		    fwrite ((void *)linebuf, sizeof(unsigned char), pos, fp);
 		    putc ('\n', fp);
 		    num_pixels = 0;
 		    pos = 0;
@@ -325,7 +323,7 @@ P2\n\
 	{
 	  unsigned char *rowbuf;
 	  
-	  rowbuf = (unsigned char *)_plot_xmalloc (width * sizeof (unsigned char));
+	  rowbuf = (unsigned char *)_pl_xmalloc (width * sizeof (unsigned char));
 	  fprintf (fp, "\
 P5\n\
 # CREATOR: GNU libplot drawing library, version %s\n\
@@ -336,7 +334,7 @@ P5\n\
 	    {
 	      for (i = 0; i < width; i++)
 		rowbuf[i] = pixmap[j][i].u.rgb[0];
-	      fwrite ((voidptr_t)rowbuf, sizeof(unsigned char), width, fp);
+	      fwrite ((void *)rowbuf, sizeof(unsigned char), width, fp);
 	    }
 	  free (rowbuf);
 	}
@@ -366,7 +364,7 @@ P2\n\
 		num_pixels++;
 		if (num_pixels >= MAX_PGM_PIXELS_PER_LINE || i == (width - 1))
 		  {
-		    stream->write (linebuf, pos);
+		    stream->write ((const char *)linebuf, pos);
 		    stream->put ('\n');
 
 		    num_pixels = 0;
@@ -387,12 +385,12 @@ P5\n\
 		 << width << ' ' << height << '\n'
 	         << "255" << '\n';
 	  
-	  rowbuf = (unsigned char *)_plot_xmalloc (width * sizeof (unsigned char));
+	  rowbuf = (unsigned char *)_pl_xmalloc (width * sizeof (unsigned char));
 	  for (j = 0; j < height; j++)
 	    {
 	      for (i = 0; i < width; i++)
 		rowbuf[i] = pixmap[j][i].u.rgb[0];
-	      stream->write (rowbuf, width);
+	      stream->write ((const char *)rowbuf, width);
 	    }
 	  free (rowbuf);
 	}
@@ -402,12 +400,7 @@ P5\n\
 
 /* write output (header plus RGB values) in PPM format */
 void
-#ifdef _HAVE_PROTOS
-_n_write_ppm (S___(Plotter *_plotter))
-#else
-_n_write_ppm (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_n_write_ppm (S___(Plotter *_plotter))
 {
   int i, j;
   bool portable = _plotter->n_portable_output;
@@ -454,7 +447,7 @@ P3\n\
 		num_pixels++;
 		if (num_pixels >= MAX_PPM_PIXELS_PER_LINE || i == (width - 1))
 		  {
-		    fwrite ((voidptr_t)linebuf, sizeof(unsigned char), pos, fp);
+		    fwrite ((void *)linebuf, sizeof(unsigned char), pos, fp);
 		    putc ('\n', fp);
 		    num_pixels = 0;
 		    pos = 0;
@@ -474,13 +467,13 @@ P6\n\
 %d %d\n\
 255\n", PL_LIBPLOT_VER_STRING, width, height);
       
-	  rowbuf = (unsigned char *)_plot_xmalloc (3 * width * sizeof (unsigned char));
+	  rowbuf = (unsigned char *)_pl_xmalloc (3 * width * sizeof (unsigned char));
 	  for (j = 0; j < height; j++)
 	    {
 	      for (i = 0; i < width; i++)
 		for (component = 0; component < 3; component++)
 		  rowbuf[3 * i + component] = pixmap[j][i].u.rgb[component];
-	      fwrite ((voidptr_t)rowbuf, sizeof(unsigned char), 3 * width, fp);
+	      fwrite ((void *)rowbuf, sizeof(unsigned char), 3 * width, fp);
 	    }
 	  free (rowbuf);
 	}
@@ -514,7 +507,7 @@ P3\n\
 		num_pixels++;
 		if (num_pixels >= MAX_PPM_PIXELS_PER_LINE || i == (width - 1))
 		  {
-		    stream->write (linebuf, pos);
+		    stream->write ((const char *)linebuf, pos);
 		    stream->put ('\n');
 
 		    num_pixels = 0;
@@ -536,13 +529,13 @@ P6\n\
 		 << width << ' ' << height << '\n'
 	         << "255" << '\n';
 	  
-	  rowbuf = (unsigned char *)_plot_xmalloc (3 * width * sizeof (unsigned char));
+	  rowbuf = (unsigned char *)_pl_xmalloc (3 * width * sizeof (unsigned char));
 	  for (j = 0; j < height; j++)
 	    {
 	      for (i = 0; i < width; i++)
 		for (component = 0; component < 3; component++)
 		  rowbuf[3 * i + component] = pixmap[j][i].u.rgb[component];
-	      stream->write (rowbuf, 3 * width);
+	      stream->write ((const char *)rowbuf, 3 * width);
 	    }
 	  free (rowbuf);
 	}
@@ -552,13 +545,7 @@ P6\n\
 
 /* return best type for writing an image (0=mono, 1=grey, 2=color) */
 static int
-#ifdef _HAVE_PROTOS
-_image_type (miPixel **pixmap, int width, int height)
-#else
-_image_type (pixmap, width, height)
-     miPixel **pixmap;
-     int width, height;
-#endif
+best_image_type (miPixel **pixmap, int width, int height)
 {
   int i, j;
   int type = 0;			/* default is mono */

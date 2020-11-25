@@ -1,13 +1,26 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
 bool
-#ifdef _HAVE_PROTOS
-_h_begin_page (S___(Plotter *_plotter))
-#else
-_h_begin_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_begin_page (S___(Plotter *_plotter))
 {
   int i;
 
@@ -61,9 +74,9 @@ _h_begin_page (S___(_plotter))
   _plotter->hpgl_spacing = 0;  
   _plotter->hpgl_posture = 0;  
   _plotter->hpgl_stroke_weight = 0;  
-  _plotter->hpgl_pcl_typeface = STICK_TYPEFACE;  
-  _plotter->hpgl_charset_lower = HP_ASCII;
-  _plotter->hpgl_charset_upper = HP_ASCII;
+  _plotter->hpgl_pcl_typeface = PCL_STICK_TYPEFACE;  
+  _plotter->hpgl_charset_lower = HPGL_CHARSET_ASCII;
+  _plotter->hpgl_charset_upper = HPGL_CHARSET_ASCII;
   _plotter->hpgl_rel_char_height = 0.0;
   _plotter->hpgl_rel_char_width = 0.0;  
   _plotter->hpgl_rel_label_rise = 0.0;    
@@ -159,22 +172,12 @@ _h_begin_page (S___(_plotter))
 }
 
 void
-#ifdef _HAVE_PROTOS
-_h_maybe_switch_to_hpgl (S___(Plotter *_plotter))
-#else
-_h_maybe_switch_to_hpgl (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_maybe_switch_to_hpgl (S___(Plotter *_plotter))
 {
 }
 
 void
-#ifdef _HAVE_PROTOS
-_q_maybe_switch_to_hpgl (S___(Plotter *_plotter))
-#else
-_q_maybe_switch_to_hpgl (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_q_maybe_switch_to_hpgl (S___(Plotter *_plotter))
 {
   if (_plotter->data->page_number > 1) /* not first page */
     /* eject previous page, by issuing PCL command */

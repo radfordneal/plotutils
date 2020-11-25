@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the linemod method, which is a standard part of
    libplot.  It sets a drawing attribute: the line style used in subsequent
    drawing operations.
@@ -35,13 +53,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 _API_linemod (R___(Plotter *_plotter) const char *s)
-#else
-_API_linemod (R___(_plotter) s)
-     S___(Plotter *_plotter;) 
-     const char *s;
-#endif
 {
   bool matched = false;
   char *line_mode;
@@ -61,7 +73,7 @@ _API_linemod (R___(_plotter) s)
     s = _default_drawstate.line_mode;
 
   free ((char *)_plotter->drawstate->line_mode);
-  line_mode = (char *)_plot_xmalloc (strlen (s) + 1);
+  line_mode = (char *)_pl_xmalloc (strlen (s) + 1);
   strcpy (line_mode, s);
   _plotter->drawstate->line_mode = line_mode;
   
@@ -69,18 +81,18 @@ _API_linemod (R___(_plotter) s)
      /* we'll implement disconnected lines by drawing a filled circle at
 	each path join point; see g_endpath.c */
     {
-      _plotter->drawstate->line_type = L_SOLID;
+      _plotter->drawstate->line_type = PL_L_SOLID;
       _plotter->drawstate->points_are_connected = false;
       matched = true;
     }
   
-  else	/* search table of libplot's builtin line styles */
-    for (i = 0; i < NUM_LINE_STYLES; i++)
+  else	/* search table of libplot's builtin line types */
+    for (i = 0; i < PL_NUM_LINE_TYPES; i++)
       {
-	if (strcmp (s, _line_styles[i].name) == 0)
+	if (strcmp (s, _pl_g_line_styles[i].name) == 0)
 	  {
 	    _plotter->drawstate->line_type =
-	      _line_styles[i].type;
+	      _pl_g_line_styles[i].type;
 	    _plotter->drawstate->points_are_connected = true;
 	    matched = true;
 	    break;
@@ -99,13 +111,7 @@ _API_linemod (R___(_plotter) s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_capmod (R___(Plotter *_plotter) const char *s)
-#else
-_API_capmod (R___(_plotter) s)
-     S___(Plotter *_plotter;) 
-     const char *s;
-#endif
 {
   char *cap_mode;
 
@@ -123,20 +129,20 @@ _API_capmod (R___(_plotter) s)
     s = _default_drawstate.cap_mode;
 
   free ((char *)_plotter->drawstate->cap_mode);
-  cap_mode = (char *)_plot_xmalloc (strlen (s) + 1);
+  cap_mode = (char *)_pl_xmalloc (strlen (s) + 1);
   strcpy (cap_mode, s);
   _plotter->drawstate->cap_mode = cap_mode;
 
   /* The following four cap types are now standard. */
 
   if (strcmp( s, "butt") == 0)
-    _plotter->drawstate->cap_type = CAP_BUTT;
+    _plotter->drawstate->cap_type = PL_CAP_BUTT;
   else if (strcmp( s, "round") == 0)
-    _plotter->drawstate->cap_type = CAP_ROUND;
+    _plotter->drawstate->cap_type = PL_CAP_ROUND;
   else if (strcmp( s, "projecting") == 0)
-    _plotter->drawstate->cap_type = CAP_PROJECT;
+    _plotter->drawstate->cap_type = PL_CAP_PROJECT;
   else if (strcmp( s, "triangular") == 0)
-    _plotter->drawstate->cap_type = CAP_TRIANGULAR;
+    _plotter->drawstate->cap_type = PL_CAP_TRIANGULAR;
   else
     /* don't recognize, silently switch to default mode */
     return _API_capmod (R___(_plotter) _default_drawstate.cap_mode);
@@ -145,13 +151,7 @@ _API_capmod (R___(_plotter) s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_joinmod (R___(Plotter *_plotter) const char *s)
-#else
-_API_joinmod (R___(_plotter) s)
-     S___(Plotter *_plotter;) 
-     const char *s;
-#endif
 {
   char *join_mode;
 
@@ -169,22 +169,22 @@ _API_joinmod (R___(_plotter) s)
     s = _default_drawstate.join_mode;
 
   free ((char *)_plotter->drawstate->join_mode);
-  join_mode = (char *)_plot_xmalloc (strlen (s) + 1);
+  join_mode = (char *)_pl_xmalloc (strlen (s) + 1);
   strcpy (join_mode, s);
   _plotter->drawstate->join_mode = join_mode;
 
   /* The following four join types are now standard. */
 
   if (strcmp( s, "miter") == 0)
-    _plotter->drawstate->join_type = JOIN_MITER;
+    _plotter->drawstate->join_type = PL_JOIN_MITER;
   else if (strcmp( s, "mitre") == 0)
-    _plotter->drawstate->join_type = JOIN_MITER;
+    _plotter->drawstate->join_type = PL_JOIN_MITER;
   else if (strcmp( s, "round") == 0)
-    _plotter->drawstate->join_type = JOIN_ROUND;
+    _plotter->drawstate->join_type = PL_JOIN_ROUND;
   else if (strcmp( s, "bevel") == 0)
-    _plotter->drawstate->join_type = JOIN_BEVEL;
+    _plotter->drawstate->join_type = PL_JOIN_BEVEL;
   else if (strcmp( s, "triangular") == 0)
-    _plotter->drawstate->join_type = JOIN_TRIANGULAR;
+    _plotter->drawstate->join_type = PL_JOIN_TRIANGULAR;
   else
     /* unknown, so silently switch to default mode (via recursive call) */
     return _API_joinmod (R___(_plotter) _default_drawstate.join_mode);
@@ -218,13 +218,7 @@ _API_joinmod (R___(_plotter) s)
    i.e. sin(theta/2) >= 1/MITERLIMIT, where theta > 0 is the join angle. */
 
 int
-#ifdef _HAVE_PROTOS
 _API_fmiterlimit (R___(Plotter *_plotter) double new_miter_limit)
-#else
-_API_fmiterlimit (R___(_plotter) new_miter_limit)
-     S___(Plotter *_plotter;)
-     double new_miter_limit;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -236,7 +230,7 @@ _API_fmiterlimit (R___(_plotter) new_miter_limit)
   _API_endpath (S___(_plotter)); /* flush path if any */
 
   if (new_miter_limit < 1.0)	/* reset to default */
-    new_miter_limit = DEFAULT_MITER_LIMIT;
+    new_miter_limit = PL_DEFAULT_MITER_LIMIT;
 
   /* set the new miter limit in the drawing state */
   _plotter->drawstate->miter_limit = new_miter_limit;
@@ -255,13 +249,7 @@ _API_fmiterlimit (R___(_plotter) new_miter_limit)
    paths of a compound path. */
 
 int
-#ifdef _HAVE_PROTOS
 _API_orientation (R___(Plotter *_plotter) int direction)
-#else
-_API_orientation (R___(_plotter) direction)
-     S___(Plotter *_plotter;) 
-     int direction;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -288,13 +276,7 @@ _API_orientation (R___(_plotter) direction)
    winding number' rule are supported.  The former is the default. */
 
 int
-#ifdef _HAVE_PROTOS
 _API_fillmod (R___(Plotter *_plotter) const char *s)
-#else
-_API_fillmod (R___(_plotter) s)
-     S___(Plotter *_plotter;) 
-     const char *s;
-#endif
 {
   const char *default_s;
   char *fill_rule;
@@ -323,16 +305,16 @@ _API_fillmod (R___(_plotter) s)
     s = default_s;
 
   free ((char *)_plotter->drawstate->fill_rule);
-  fill_rule = (char *)_plot_xmalloc (strlen (s) + 1);
+  fill_rule = (char *)_pl_xmalloc (strlen (s) + 1);
   strcpy (fill_rule, s);
   _plotter->drawstate->fill_rule = fill_rule;
 
   if ((strcmp (s, "even-odd") == 0 || strcmp (s, "alternate") == 0)
       && _plotter->data->have_odd_winding_fill)
-    _plotter->drawstate->fill_rule_type = FILL_ODD_WINDING;
+    _plotter->drawstate->fill_rule_type = PL_FILL_ODD_WINDING;
   else if ((strcmp (s, "nonzero-winding") == 0 || strcmp (s, "winding") == 0)
 	   && _plotter->data->have_nonzero_winding_fill)
-    _plotter->drawstate->fill_rule_type = FILL_NONZERO_WINDING;
+    _plotter->drawstate->fill_rule_type = PL_FILL_NONZERO_WINDING;
   else
     /* unknown, so silently switch to default fill rule (via recursive call) */
     _API_fillmod (R___(_plotter) default_s);

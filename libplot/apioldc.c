@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file is specific to libplot, rather than libplotter.  It defines
    the `old' (i.e. non-thread-safe) C API.  The old C API consists of
    wrappers around the methods that may be applied to any Plotter object.
@@ -50,18 +68,14 @@ static Plotter *_old_api_plotter = NULL;
 #endif
 
 /* forward references */
-static void _api_warning ____P((const char *msg));
-static void _create_and_select_default_plotter ____P((void));
+static void _api_warning (const char *msg);
+static void _create_and_select_default_plotter (void);
 
 /* Expand the local array of Plotters to include a single Plotter, of
    default type; also, select that Plotter.  When this is invoked, the
    array has zero size.  */
 static void
-#ifdef _HAVE_PROTOS
 _create_and_select_default_plotter (void)
-#else
-_create_and_select_default_plotter ()
-#endif
 {
   int i;
   Plotter *default_plotter;
@@ -74,7 +88,7 @@ _create_and_select_default_plotter ()
 				_old_api_global_plotter_params);
 
   /* initialize local array of Plotters */
-  _old_api_plotters = (Plotter **)_plot_xmalloc (INITIAL_PLOTTERS_LEN * sizeof(Plotter *));
+  _old_api_plotters = (Plotter **)_pl_xmalloc (INITIAL_PLOTTERS_LEN * sizeof(Plotter *));
   for (i = 0; i < INITIAL_PLOTTERS_LEN; i++)
     _old_api_plotters[i] = (Plotter *)NULL;
   _old_api_plotters_len = INITIAL_PLOTTERS_LEN;
@@ -89,13 +103,7 @@ _create_and_select_default_plotter ()
 
 /* user-callable */
 int 
-#ifdef _HAVE_PROTOS
 pl_newpl (const char *type, FILE *infile, FILE *outfile, FILE *errfile)
-#else
-pl_newpl (type, infile, outfile, errfile)
-     const char *type;
-     FILE *infile, *outfile, *errfile;
-#endif
 {
   Plotter *new_plotter;
   bool open_slot;
@@ -127,7 +135,7 @@ pl_newpl (type, infile, outfile, errfile)
     {
       i = _old_api_plotters_len;
       _old_api_plotters = 
-	(Plotter **)_plot_xrealloc (_old_api_plotters, 
+	(Plotter **)_pl_xrealloc (_old_api_plotters, 
 				    2 * _old_api_plotters_len * sizeof (Plotter *));
       for (j = _old_api_plotters_len; j < 2 * _old_api_plotters_len; j++)
 	_old_api_plotters[j] = (Plotter *)NULL;
@@ -144,12 +152,7 @@ pl_newpl (type, infile, outfile, errfile)
 /* user-callable, alters selected Plotter and returns index of the one that
    was previously selected */
 int
-#ifdef _HAVE_PROTOS
 pl_selectpl (int handle)
-#else
-pl_selectpl (handle)
-     int handle;
-#endif
 {
   int i;
 
@@ -174,12 +177,7 @@ pl_selectpl (handle)
 
 /* user-callable */
 int
-#ifdef _HAVE_PROTOS
 pl_deletepl (int handle)
-#else
-pl_deletepl (handle)
-     int handle;
-#endif
 {
   if (handle < 0 || handle >= _old_api_plotters_len 
       || _old_api_plotters[handle] == NULL)
@@ -206,15 +204,10 @@ pl_deletepl (handle)
 
 /* function used in this file to print warning messages */
 static void
-#ifdef _HAVE_PROTOS
 _api_warning (const char *msg)
-#else
-_api_warning (msg)
-     const char *msg;
-#endif
 {
-  if (libplot_warning_handler != NULL)
-    (*libplot_warning_handler)(msg);
+  if (pl_libplot_warning_handler != NULL)
+    (*pl_libplot_warning_handler)(msg);
   else
     fprintf (stderr, "libplot: %s\n", msg);
 }
@@ -241,13 +234,7 @@ _api_warning (msg)
    being acted on is open. */
 
 int 
-#ifdef _HAVE_PROTOS
 pl_alabel (int x_justify, int y_justify, const char *s)
-#else
-pl_alabel (x_justify, y_justify, s)
-     int x_justify, y_justify;
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -255,12 +242,7 @@ pl_alabel (x_justify, y_justify, s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_arc (int xc, int yc, int x0, int y0, int x1, int y1)
-#else
-pl_arc (xc, yc, x0, y0, x1, y1)
-     int xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -268,12 +250,7 @@ pl_arc (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_arcrel (int xc, int yc, int x0, int y0, int x1, int y1)
-#else
-pl_arcrel (xc, yc, x0, y0, x1, y1)
-     int xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -281,12 +258,7 @@ pl_arcrel (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_bezier2 (int xc, int yc, int x0, int y0, int x1, int y1)
-#else
-pl_bezier2 (xc, yc, x0, y0, x1, y1)
-     int xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -294,12 +266,7 @@ pl_bezier2 (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_bezier2rel (int xc, int yc, int x0, int y0, int x1, int y1)
-#else
-pl_bezier2rel (xc, yc, x0, y0, x1, y1)
-     int xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -307,12 +274,7 @@ pl_bezier2rel (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_bezier3 (int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
-#else
-pl_bezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
-     int x0, y0, x1, y1, x2, y2, x3, y3;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -320,12 +282,7 @@ pl_bezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_bezier3rel (int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
-#else
-pl_bezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
-     int x0, y0, x1, y1, x2, y2, x3, y3;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -333,12 +290,7 @@ pl_bezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_bgcolor (int red, int green, int blue)
-#else
-pl_bgcolor (red, green, blue)
-     int red, green, blue;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -346,12 +298,7 @@ pl_bgcolor (red, green, blue)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_bgcolorname (const char *s)
-#else
-pl_bgcolorname (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -359,12 +306,7 @@ pl_bgcolorname (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_box (int x0, int y0, int x1, int y1)
-#else
-pl_box (x0, y0, x1, y1)
-     int x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -372,12 +314,7 @@ pl_box (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_boxrel (int x0, int y0, int x1, int y1)
-#else
-pl_boxrel (x0, y0, x1, y1)
-     int x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -385,12 +322,7 @@ pl_boxrel (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_capmod (const char *s)
-#else
-pl_capmod (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -398,12 +330,7 @@ pl_capmod (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_circle (int x, int y, int r)
-#else
-pl_circle (x, y, r)
-     int x, y, r;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -411,12 +338,7 @@ pl_circle (x, y, r)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_circlerel (int x, int y, int r)
-#else
-pl_circlerel (x, y, r)
-     int x, y, r;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -424,11 +346,7 @@ pl_circlerel (x, y, r)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_closepath (void)
-#else
-pl_closepath ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -436,11 +354,7 @@ pl_closepath ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_closepl (void)
-#else
-pl_closepl ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -448,12 +362,7 @@ pl_closepl ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_color (int red, int green, int blue)
-#else
-pl_color (red, green, blue)
-     int red, green, blue;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -461,12 +370,7 @@ pl_color (red, green, blue)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_colorname (const char *s)
-#else
-pl_colorname (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -474,12 +378,7 @@ pl_colorname (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_cont (int x, int y)
-#else
-pl_cont (x, y)
-     int x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -487,12 +386,7 @@ pl_cont (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_contrel (int x, int y)
-#else
-pl_contrel (x, y)
-     int x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -500,12 +394,7 @@ pl_contrel (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_ellarc (int xc, int yc, int x0, int y0, int x1, int y1)
-#else
-pl_ellarc (xc, yc, x0, y0, x1, y1)
-     int xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -513,12 +402,7 @@ pl_ellarc (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_ellarcrel (int xc, int yc, int x0, int y0, int x1, int y1)
-#else
-pl_ellarcrel (xc, yc, x0, y0, x1, y1)
-     int xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -526,12 +410,7 @@ pl_ellarcrel (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_ellipse (int x, int y, int rx, int ry, int angle)
-#else
-pl_ellipse (x, y, rx, ry, angle)
-     int x, y, rx, ry, angle;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -539,12 +418,7 @@ pl_ellipse (x, y, rx, ry, angle)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_ellipserel (int x, int y, int rx, int ry, int angle)
-#else
-pl_ellipserel (x, y, rx, ry, angle)
-     int x, y, rx, ry, angle;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -552,11 +426,7 @@ pl_ellipserel (x, y, rx, ry, angle)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_endpath (void)
-#else
-pl_endpath ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -564,11 +434,7 @@ pl_endpath ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_endsubpath (void)
-#else
-pl_endsubpath ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -576,11 +442,7 @@ pl_endsubpath ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_erase (void)
-#else
-pl_erase ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -588,12 +450,7 @@ pl_erase ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_farc (double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-pl_farc (xc, yc, x0, y0, x1, y1)
-     double xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -601,12 +458,7 @@ pl_farc (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_farcrel (double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-pl_farcrel (xc, yc, x0, y0, x1, y1)
-     double xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -614,12 +466,7 @@ pl_farcrel (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fbezier2 (double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-pl_fbezier2 (xc, yc, x0, y0, x1, y1)
-     double xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -627,12 +474,7 @@ pl_fbezier2 (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fbezier2rel (double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-pl_fbezier2rel (xc, yc, x0, y0, x1, y1)
-     double xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -640,12 +482,7 @@ pl_fbezier2rel (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fbezier3 (double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
-#else
-pl_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
-     double x0, y0, x1, y1, x2, y2, x3, y3;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -653,12 +490,7 @@ pl_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fbezier3rel (double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
-#else
-pl_fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
-     double x0, y0, x1, y1, x2, y2, x3, y3;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -666,12 +498,7 @@ pl_fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fbox (double x0, double y0, double x1, double y1)
-#else
-pl_fbox (x0, y0, x1, y1)
-     double x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -679,12 +506,7 @@ pl_fbox (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fboxrel (double x0, double y0, double x1, double y1)
-#else
-pl_fboxrel (x0, y0, x1, y1)
-     double x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -692,12 +514,7 @@ pl_fboxrel (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fcircle (double x, double y, double r)
-#else
-pl_fcircle (x, y, r)
-     double x, y, r;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -705,12 +522,7 @@ pl_fcircle (x, y, r)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fcirclerel (double x, double y, double r)
-#else
-pl_fcirclerel (x, y, r)
-     double x, y, r;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -718,12 +530,7 @@ pl_fcirclerel (x, y, r)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fconcat (double m0, double m1, double m2, double m3, double m4, double m5)
-#else
-pl_fconcat (m0, m1, m2, m3, m4, m5)
-     double m0, m1, m2, m3, m4, m5;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -731,12 +538,7 @@ pl_fconcat (m0, m1, m2, m3, m4, m5)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fcont (double x, double y)
-#else
-pl_fcont (x, y)
-     double x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -744,12 +546,7 @@ pl_fcont (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fcontrel (double x, double y)
-#else
-pl_fcontrel (x, y)
-     double x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -757,12 +554,7 @@ pl_fcontrel (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fellarc (double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-pl_fellarc (xc, yc, x0, y0, x1, y1)
-     double xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -770,12 +562,7 @@ pl_fellarc (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fellarcrel (double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-pl_fellarcrel (xc, yc, x0, y0, x1, y1)
-     double xc, yc, x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -783,12 +570,7 @@ pl_fellarcrel (xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fellipse (double x, double y, double rx, double ry, double angle)
-#else
-pl_fellipse (x, y, rx, ry, angle)
-     double x, y, rx, ry, angle;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -796,12 +578,7 @@ pl_fellipse (x, y, rx, ry, angle)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fellipserel (double x, double y, double rx, double ry, double angle)
-#else
-pl_fellipserel (x, y, rx, ry, angle)
-     double x, y, rx, ry, angle;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -809,12 +586,7 @@ pl_fellipserel (x, y, rx, ry, angle)
 }
 
 double
-#ifdef _HAVE_PROTOS
 pl_ffontname (const char *s)
-#else
-pl_ffontname (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -822,12 +594,7 @@ pl_ffontname (s)
 }
 
 double
-#ifdef _HAVE_PROTOS
 pl_ffontsize (double size)
-#else
-pl_ffontsize (size)
-     double size;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -835,12 +602,7 @@ pl_ffontsize (size)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fillcolor (int red, int green, int blue)
-#else
-pl_fillcolor (red, green, blue)
-     int red, green, blue;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -848,12 +610,7 @@ pl_fillcolor (red, green, blue)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fillcolorname (const char *s)
-#else
-pl_fillcolorname (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -861,12 +618,7 @@ pl_fillcolorname (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fillmod (const char *s)
-#else
-pl_fillmod (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -874,12 +626,7 @@ pl_fillmod (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_filltype (int level)
-#else
-pl_filltype (level)
-     int level;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -887,12 +634,7 @@ pl_filltype (level)
 }
 
 double
-#ifdef _HAVE_PROTOS
 pl_flabelwidth (const char *s)
-#else
-pl_flabelwidth (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -900,12 +642,7 @@ pl_flabelwidth (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fline (double x0, double y0, double x1, double y1)
-#else
-pl_fline (x0, y0, x1, y1)
-     double x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -913,14 +650,7 @@ pl_fline (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_flinedash (int n, const double *dashes, double offset)
-#else
-pl_flinedash (n, dashes, offset)
-     int n;
-     const double *dashes;
-     double offset;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -928,12 +658,7 @@ pl_flinedash (n, dashes, offset)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_flinerel (double x0, double y0, double x1, double y1)
-#else
-pl_flinerel (x0, y0, x1, y1)
-     double x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -941,12 +666,7 @@ pl_flinerel (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_flinewidth (double size)
-#else
-pl_flinewidth (size)
-     double size;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -954,11 +674,7 @@ pl_flinewidth (size)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_flushpl (void)
-#else
-pl_flushpl ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -966,14 +682,7 @@ pl_flushpl ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fmarker (double x, double y, int type, double size)
-#else
-pl_fmarker (x, y, type, size)
-     double x, y;
-     int type;
-     double size;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -981,14 +690,7 @@ pl_fmarker (x, y, type, size)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fmarkerrel (double x, double y, int type, double size)
-#else
-pl_fmarkerrel (x, y, type, size)
-     double x, y;
-     int type;
-     double size;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -996,12 +698,7 @@ pl_fmarkerrel (x, y, type, size)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fmiterlimit (double limit)
-#else
-pl_fmiterlimit (limit)
-     double limit;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1009,12 +706,7 @@ pl_fmiterlimit (limit)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fmove (double x, double y)
-#else
-pl_fmove (x, y)
-     double x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1022,12 +714,7 @@ pl_fmove (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fmoverel (double x, double y)
-#else
-pl_fmoverel (x, y)
-     double x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1035,12 +722,7 @@ pl_fmoverel (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fontname (const char *s)
-#else
-pl_fontname (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1048,12 +730,7 @@ pl_fontname (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fontsize (int size)
-#else
-pl_fontsize (size)
-     int size;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1061,12 +738,7 @@ pl_fontsize (size)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fpoint (double x, double y)
-#else
-pl_fpoint (x, y)
-     double x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1074,12 +746,7 @@ pl_fpoint (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fpointrel (double x, double y)
-#else
-pl_fpointrel (x, y)
-     double x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1087,12 +754,7 @@ pl_fpointrel (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_frotate (double theta)
-#else
-pl_frotate (theta)
-     double theta;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1100,12 +762,7 @@ pl_frotate (theta)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fscale (double x, double y)
-#else
-pl_fscale (x, y)
-     double x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1113,12 +770,7 @@ pl_fscale (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fsetmatrix (double m0, double m1, double m2, double m3, double m4, double m5)
-#else
-pl_fsetmatrix (m0, m1, m2, m3, m4, m5)
-     double m0, m1, m2, m3, m4, m5;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1126,12 +778,7 @@ pl_fsetmatrix (m0, m1, m2, m3, m4, m5)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fspace (double x0, double y0, double x1, double y1)
-#else
-pl_fspace (x0, y0, x1, y1)
-     double x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1139,12 +786,7 @@ pl_fspace (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_fspace2 (double x0, double y0, double x1, double y1, double x2, double y2)
-#else
-pl_fspace2 (x0, y0, x1, y1, x2, y2)
-     double x0, y0, x1, y1, x2, y2;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1152,12 +794,7 @@ pl_fspace2 (x0, y0, x1, y1, x2, y2)
 }
 
 double
-#ifdef _HAVE_PROTOS
 pl_ftextangle (double angle)
-#else
-pl_ftextangle (angle)
-     double angle;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1165,12 +802,7 @@ pl_ftextangle (angle)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_ftranslate (double x, double y)
-#else
-pl_ftranslate (x, y)
-     double x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1178,12 +810,7 @@ pl_ftranslate (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_havecap (const char *s)
-#else
-pl_havecap (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1191,12 +818,7 @@ pl_havecap (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_joinmod (const char *s)
-#else
-pl_joinmod (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1204,12 +826,7 @@ pl_joinmod (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_label (const char *s)
-#else
-pl_label (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1217,12 +834,7 @@ pl_label (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_labelwidth (const char *s)
-#else
-pl_labelwidth (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1230,12 +842,7 @@ pl_labelwidth (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_line (int x0, int y0, int x1, int y1)
-#else
-pl_line (x0, y0, x1, y1)
-     int x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1243,12 +850,7 @@ pl_line (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_linerel (int x0, int y0, int x1, int y1)
-#else
-pl_linerel (x0, y0, x1, y1)
-     int x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1256,12 +858,7 @@ pl_linerel (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_linewidth (int size)
-#else
-pl_linewidth (size)
-     int size;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1269,14 +866,7 @@ pl_linewidth (size)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_linedash (int n, const int *dashes, int offset)
-#else
-pl_linedash (n, dashes, offset)
-     int n;
-     const int *dashes;
-     int offset;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1284,12 +874,7 @@ pl_linedash (n, dashes, offset)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_linemod (const char *s)
-#else
-pl_linemod (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1297,12 +882,7 @@ pl_linemod (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_marker (int x, int y, int type, int size)
-#else
-pl_marker (x, y, type, size)
-     int x, y, type, size;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1310,12 +890,7 @@ pl_marker (x, y, type, size)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_markerrel (int x, int y, int type, int size)
-#else
-pl_markerrel (x, y, type, size)
-     int x, y, type, size;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1323,12 +898,7 @@ pl_markerrel (x, y, type, size)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_move (int x, int y)
-#else
-pl_move (x, y)
-     int x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1336,12 +906,7 @@ pl_move (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_moverel (int x, int y)
-#else
-pl_moverel (x, y)
-     int x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1349,11 +914,7 @@ pl_moverel (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_openpl (void)
-#else
-pl_openpl ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1361,12 +922,7 @@ pl_openpl ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_orientation (int direction)
-#else
-pl_orientation (direction)
-     int direction;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1374,12 +930,7 @@ pl_orientation (direction)
 }
 
 FILE *
-#ifdef _HAVE_PROTOS
 pl_outfile (FILE *outfile)
-#else
-pl_outfile (outfile)
-     FILE *outfile;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1387,12 +938,7 @@ pl_outfile (outfile)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_pencolor (int red, int green, int blue)
-#else
-pl_pencolor (red, green, blue)
-     int red, green, blue;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1400,12 +946,7 @@ pl_pencolor (red, green, blue)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_pencolorname (const char *s)
-#else
-pl_pencolorname (s)
-     const char *s;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1413,12 +954,7 @@ pl_pencolorname (s)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_pentype (int level)
-#else
-pl_pentype (level)
-     int level;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1426,12 +962,7 @@ pl_pentype (level)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_point (int x, int y)
-#else
-pl_point (x, y)
-     int x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1439,12 +970,7 @@ pl_point (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_pointrel (int x, int y)
-#else
-pl_pointrel (x, y)
-     int x, y;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1452,11 +978,7 @@ pl_pointrel (x, y)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_restorestate (void)
-#else
-pl_restorestate ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1464,11 +986,7 @@ pl_restorestate ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_savestate (void)
-#else
-pl_savestate ()
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1476,12 +994,7 @@ pl_savestate ()
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_space (int x0, int y0, int x1, int y1)
-#else
-pl_space (x0, y0, x1, y1)
-     int x0, y0, x1, y1;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1489,12 +1002,7 @@ pl_space (x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_space2 (int x0, int y0, int x1, int y1, int x2, int y2)
-#else
-pl_space2 (x0, y0, x1, y1, x2, y2)
-     int x0, y0, x1, y1, x2, y2;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
@@ -1502,12 +1010,7 @@ pl_space2 (x0, y0, x1, y1, x2, y2)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_textangle (int angle)
-#else
-pl_textangle (angle)
-     int angle;
-#endif
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();

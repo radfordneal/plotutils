@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any MetaPlotter object,
    including both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -9,28 +27,28 @@
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    a MetaPlotter struct. */
-const Plotter _m_default_plotter = 
+const Plotter _pl_m_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _m_initialize, _m_terminate,
+  _pl_m_initialize, _pl_m_terminate,
   /* page manipulation */
-  _m_begin_page, _m_erase_page, _m_end_page,
+  _pl_m_begin_page, _pl_m_erase_page, _pl_m_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _m_paint_path, _m_paint_paths, _m_path_is_flushable, _m_maybe_prepaint_segments,
+  _pl_m_paint_path, _pl_m_paint_paths, _pl_m_path_is_flushable, _pl_m_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _m_paint_marker, _m_paint_point,
+  _pl_m_paint_marker, _pl_m_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _m_paint_text_string_with_escapes, _g_paint_text_string,
-  _g_get_text_width,
+  _pl_m_paint_text_string_with_escapes, _pl_g_paint_text_string,
+  _pl_g_get_text_width,
   /* internal `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* internal `error handler' methods */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -41,16 +59,11 @@ const Plotter _m_default_plotter =
    created. */
 
 void
-#ifdef _HAVE_PROTOS
-_m_initialize (S___(Plotter *_plotter))
-#else
-_m_initialize (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_m_initialize (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override superclass initializations, as necessary */
@@ -81,14 +94,14 @@ _m_initialize (S___(_plotter))
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->data->default_font_type = F_HERSHEY;
+  _plotter->data->default_font_type = PL_F_HERSHEY;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->have_horizontal_justification = true;
   _plotter->data->have_vertical_justification = true;
   _plotter->data->issue_font_warning = true;
 
   /* path-related parameters (also internal) */
-  _plotter->data->max_unfilled_path_length = MAX_UNFILLED_PATH_LENGTH;
+  _plotter->data->max_unfilled_path_length = PL_MAX_UNFILLED_PATH_LENGTH;
   _plotter->data->have_mixed_paths = true;
   _plotter->data->allowed_arc_scaling = AS_ANY;
   _plotter->data->allowed_ellarc_scaling = AS_ANY;
@@ -128,12 +141,12 @@ _m_initialize (S___(_plotter))
   _plotter->meta_m_user_to_ndc[3] = 1.0;
   _plotter->meta_m_user_to_ndc[4] = 0.0;
   _plotter->meta_m_user_to_ndc[5] = 0.0;
-  _plotter->meta_fill_rule_type = FILL_ODD_WINDING;
-  _plotter->meta_line_type = L_SOLID;
+  _plotter->meta_fill_rule_type = PL_FILL_ODD_WINDING;
+  _plotter->meta_line_type = PL_L_SOLID;
   _plotter->meta_points_are_connected = true;  
-  _plotter->meta_cap_type = CAP_BUTT;  
-  _plotter->meta_join_type = JOIN_MITER;  
-  _plotter->meta_miter_limit = DEFAULT_MITER_LIMIT;  
+  _plotter->meta_cap_type = PL_CAP_BUTT;  
+  _plotter->meta_join_type = PL_JOIN_MITER;  
+  _plotter->meta_miter_limit = PL_DEFAULT_MITER_LIMIT;  
   _plotter->meta_line_width = 0.0;
   _plotter->meta_line_width_is_default = true;
   _plotter->meta_dash_array = (const double *)NULL;
@@ -178,16 +191,11 @@ _m_initialize (S___(_plotter))
    _plotter points to the Plotter that is about to be deleted. */
 
 void
-#ifdef _HAVE_PROTOS
-_m_terminate (S___(Plotter *_plotter))
-#else
-_m_terminate (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_m_terminate (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
@@ -195,60 +203,60 @@ _m_terminate (S___(_plotter))
 MetaPlotter::MetaPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	: Plotter (infile, outfile, errfile)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter (FILE *outfile)
 	: Plotter (outfile)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter (ostream& out)
 	: Plotter (out)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter ()
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::MetaPlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _m_initialize ();
+  _pl_m_initialize ();
 }
 
 MetaPlotter::~MetaPlotter ()
@@ -257,6 +265,6 @@ MetaPlotter::~MetaPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _m_terminate ();
+  _pl_m_terminate ();
 }
 #endif

@@ -33,7 +33,7 @@ format found on non-GNU systems.
 It can also be produced by the GNU libplot 2-D graphics export library (see
 .BR plot (3)).
 .LP
-The output format or display type is specified with the 
+The output format is specified with the 
 .BR \-T " option."
 The possible output formats and display types are the same as those 
 supported by
@@ -59,10 +59,10 @@ is encountered, the standard input is read.
 .br
 .ns
 .TP
-.BI \-\-display\-type " type"
+.BI \-\-output\-format " type"
 Select 
 .I type
-as the output format or display type.
+as the output format.
 It may be "X", "png", "pnm", "gif", "svg", "ai", "ps", "cgm", "fig",
 "pcl", "hpgl", "regis", "tek", or "meta" (the default).
 These refer respectively
@@ -433,7 +433,7 @@ Print a list of command-line options, and exit.
 .TP
 .B \-\-help\-fonts
 Print a table of available fonts, and exit.
-The table will depend on which output format or display type
+The table will depend on which output format
 is specified with the 
 .B \-T 
 option.

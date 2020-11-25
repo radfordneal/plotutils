@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* Wrappers for standard storage allocation functions, for
    libplot/libplotter with the exception of the libxmi scan conversion
    module, which has its own more complicated versions (see mi_alloc.c). */
@@ -6,18 +24,13 @@
 #include "extern.h"
 
 /* wrapper for malloc() */
-voidptr_t 
-#ifdef _HAVE_PROTOS
-_plot_xmalloc (size_t size)
-#else
-_plot_xmalloc (size)
-     size_t size;
-#endif
+void * 
+_pl_xmalloc (size_t size)
 {
-  voidptr_t p;
+  void * p;
 
-  p = (voidptr_t) malloc (size);
-  if (p == (voidptr_t)NULL)
+  p = (void *) malloc (size);
+  if (p == (void *)NULL)
     {
       fputs ("libplot: ", stderr);
       perror ("out of memory");
@@ -32,18 +45,13 @@ _plot_xmalloc (size)
 }
 
 /* wrapper for calloc() */
-voidptr_t 
-#ifdef _HAVE_PROTOS
-_plot_xcalloc (size_t nmemb, size_t size)
-#else
-_plot_xcalloc (nmemb, size)
-     size_t nmemb, size;
-#endif
+void * 
+_pl_xcalloc (size_t nmemb, size_t size)
 {
-  voidptr_t p;
+  void * p;
 
-  p = (voidptr_t) calloc (nmemb, size);
-  if (p == (voidptr_t)NULL)
+  p = (void *) calloc (nmemb, size);
+  if (p == (void *)NULL)
     {
       fputs ("libplot: ", stderr);
       perror ("out of memory");
@@ -58,19 +66,13 @@ _plot_xcalloc (nmemb, size)
 }
 
 /* wrapper for realloc() */
-voidptr_t 
-#ifdef _HAVE_PROTOS
-_plot_xrealloc (voidptr_t p, size_t size)
-#else
-_plot_xrealloc (p, size)
-     voidptr_t p;
-     size_t size;
-#endif
+void * 
+_pl_xrealloc (void * p, size_t size)
 {
-  voidptr_t q;
+  void * q;
 
-  q = (voidptr_t) realloc (p, size);
-  if (q == (voidptr_t)NULL)
+  q = (void *) realloc (p, size);
+  if (q == (void *)NULL)
     {
       fputs ("libplot: ", stderr);
       perror ("out of memory");

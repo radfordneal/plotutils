@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This header file is #include'd by g_pagetype.c.  It is a database rather
    than a true header file: it lists known page sizes and dimensions.
 
@@ -60,9 +78,9 @@
    left corner of the hard-clip region wasn't even the same as the default
    location of the so-called HP-GL `scaling point' P1.) */
 
-#define NUM_PAGESIZES 13
+#define PL_NUM_PAGESIZES 13
 
-static const plPageData _pagedata[NUM_PAGESIZES] =
+static const plPageData _pagedata[PL_NUM_PAGESIZES] =
 {
   /* ANSI A, 8.5in x 11.0in */
   /* AutoCAD plotting area is 8.0x10.5;

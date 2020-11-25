@@ -1,27 +1,43 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the Plotter-specific _retrieve_font method, which is
-   called when the font_name, font_size, and textangle fields of the
-   current drawing state have been filled in, and _set_font() is being
-   invoked.  It retrieves the specified font, and fills in the font_type,
+   called by the _set_font() function, which in turn is invoked by the API
+   functions alabel() and flabelwidth().  It is called when the font_name,
+   font_size, and textangle fields of the current drawing state have been
+   filled in.  It retrieves the specified font, and fills in the font_type,
    typeface_index, font_index, font_is_iso8858, true_font_size, and
-   font_ascent, and font_descent fields of the drawing state,
-   definitively. */
+   font_ascent, and font_descent fields of the drawing state. */
+
+/* This version is for FigPlotters.  It also fills in the fig_point_size
+   field of the drawing state. */
 
 /* This Fig-specific version is needed because xfig supports arbitrary
    (non-integer) font sizes for PS fonts only on paper.  The current
    releases (3.1 and 3.2) of xfig round them to integers.  So we quantize
-   the user-specified font size in such a way that the font size that fig
+   the user-specified font size in such a way that the font size that xfig
    will see, and use, will be precisely an integer. */
 
 #include "sys-defines.h"
 #include "extern.h"
 
 bool
-#ifdef _HAVE_PROTOS
-_f_retrieve_font (S___(Plotter *_plotter))
-#else
-_f_retrieve_font (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_f_retrieve_font (S___(Plotter *_plotter))
 {
   double theta;
   double dx, dy, device_dx, device_dy, device_vector_len;
@@ -30,7 +46,7 @@ _f_retrieve_font (S___(_plotter))
   double quantization_factor;
 
   /* sanity check */
-  if (_plotter->drawstate->font_type != F_POSTSCRIPT)
+  if (_plotter->drawstate->font_type != PL_F_POSTSCRIPT)
     return false;
   
   if (!_plotter->drawstate->transform.uniform 

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the PS-driver-specific version of the low-level
    paint_text_string method, which is called to plot a label in the current
    font (either PS or PCL), at the current fontsize and textangle.  The
@@ -16,15 +34,7 @@
 #define GOOD_PRINTABLE_ASCII(c) ((c >= 0x20) && (c <= 0x7E))
 
 double
-#ifdef _HAVE_PROTOS
-_p_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
-#else
-_p_paint_text_string (R___(_plotter) s, h_just, v_just)
-     S___(Plotter *_plotter;)
-     const unsigned char *s;
-     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
-     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
-#endif
+_pl_p_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 {
   int i, master_font_index;
   double width;
@@ -41,11 +51,11 @@ _p_paint_text_string (R___(_plotter) s, h_just, v_just)
   bool pcl_font;
   
   /* sanity check; this routine supports only baseline positioning */
-  if (v_just != JUST_BASE)
+  if (v_just != PL_JUST_BASE)
     return 0.0;
 
   /* similarly for horizontal justification */
-  if (h_just != JUST_LEFT)
+  if (h_just != PL_JUST_LEFT)
     /* shouldn't happen */
     return 0.0;
 
@@ -55,23 +65,23 @@ _p_paint_text_string (R___(_plotter) s, h_just, v_just)
 
   /* sanity check */
 #ifndef USE_LJ_FONTS_IN_PS
-  if (_plotter->drawstate->font_type != F_POSTSCRIPT)
+  if (_plotter->drawstate->font_type != PL_F_POSTSCRIPT)
     return 0.0;
 #else  /* USE_LJ_FONTS_IN_PS */
-  if (_plotter->drawstate->font_type != F_POSTSCRIPT
-      && _plotter->drawstate->font_type != F_PCL)
+  if (_plotter->drawstate->font_type != PL_F_POSTSCRIPT
+      && _plotter->drawstate->font_type != PL_F_PCL)
     return 0.0;
 #endif
-  pcl_font = (_plotter->drawstate->font_type == F_PCL ? true : false);
+  pcl_font = (_plotter->drawstate->font_type == PL_F_PCL ? true : false);
 
   /* compute index of font in master table of PS [or PCL] fonts, in
      g_fontdb.c */
   if (pcl_font)			/* one of the 45 standard PCL fonts */
     master_font_index =
-      (_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+      (_pl_g_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
   else				/* one of the 35 standard PS fonts */
     master_font_index =
-      (_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+      (_pl_g_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
 
   /* label rotation angle in radians, in user frame */
   theta = M_PI * _plotter->drawstate->text_rotation / 180.0;
@@ -81,13 +91,13 @@ _p_paint_text_string (R___(_plotter) s, h_just, v_just)
   /* font ascent and descent (taken from the font's bounding box) */
   if (pcl_font)
     {
-      font_ascent = (double)((_pcl_font_info[master_font_index]).font_ascent);
-      font_descent = (double)((_pcl_font_info[master_font_index]).font_descent);
+      font_ascent = (double)((_pl_g_pcl_font_info[master_font_index]).font_ascent);
+      font_descent = (double)((_pl_g_pcl_font_info[master_font_index]).font_descent);
     }
   else				/* PS font */
     {
-      font_ascent = (double)((_ps_font_info[master_font_index]).font_ascent);
-      font_descent = (double)((_ps_font_info[master_font_index]).font_descent);
+      font_ascent = (double)((_pl_g_ps_font_info[master_font_index]).font_ascent);
+      font_descent = (double)((_pl_g_ps_font_info[master_font_index]).font_descent);
     }
   up = user_font_size * font_ascent / 1000.0;
   down = user_font_size * font_descent / 1000.0;
@@ -175,9 +185,9 @@ _p_paint_text_string (R___(_plotter) s, h_just, v_just)
   _update_buffer (_plotter->data->page);
 
   /* idraw directive, plus prologue instruction: set foreground color */
-  _p_set_pen_color (S___(_plotter));	/* invoked lazily, i.e. when needed */
+  _pl_p_set_pen_color (S___(_plotter));	/* invoked lazily, i.e. when needed */
   sprintf (_plotter->data->page->point, "%%I cfg %s\n%g %g %g SetCFg\n",
-	   _idraw_stdcolornames[_plotter->drawstate->ps_idraw_fgcolor],
+	   _pl_p_idraw_stdcolornames[_plotter->drawstate->ps_idraw_fgcolor],
 	   _plotter->drawstate->ps_fgcolor_red,
 	   _plotter->drawstate->ps_fgcolor_green,
 	   _plotter->drawstate->ps_fgcolor_blue);
@@ -197,14 +207,14 @@ _p_paint_text_string (R___(_plotter) s, h_just, v_just)
       const char *ps_name;
       
       /* this is to support the Tidbits-is-Wingdings botch */
-      if (_pcl_font_info[master_font_index].substitute_ps_name)
-	ps_name = _pcl_font_info[master_font_index].substitute_ps_name;
+      if (_pl_g_pcl_font_info[master_font_index].substitute_ps_name)
+	ps_name = _pl_g_pcl_font_info[master_font_index].substitute_ps_name;
       else
-	ps_name = _pcl_font_info[master_font_index].ps_name;
+	ps_name = _pl_g_pcl_font_info[master_font_index].ps_name;
 
       sprintf (_plotter->data->page->point,
 	       "%%I f -*-%s-*-%d-*-*-*-*-*-*-*\n", 
-	       (_pcl_font_info[master_font_index]).x_name, 
+	       (_pl_g_pcl_font_info[master_font_index]).x_name, 
 	       IROUND(device_font_size));
       _update_buffer (_plotter->data->page);
 
@@ -218,13 +228,13 @@ _p_paint_text_string (R___(_plotter) s, h_just, v_just)
     {
       sprintf (_plotter->data->page->point,
 	       "%%I f -*-%s-*-%d-*-*-*-*-*-*-*\n", 
-	       (_ps_font_info[master_font_index]).x_name, 
+	       (_pl_g_ps_font_info[master_font_index]).x_name, 
 	       IROUND(device_font_size));
       _update_buffer (_plotter->data->page);
 
       /* prolog instruction: PS font name and size */
       sprintf (_plotter->data->page->point, "/%s %f SetF\n", 
-	       _ps_font_info[master_font_index].ps_name,
+	       _pl_g_ps_font_info[master_font_index].ps_name,
 	       device_font_size);
       _update_buffer (_plotter->data->page);
     }

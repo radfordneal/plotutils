@@ -1,3 +1,16 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 2005, Free Software
+ * Foundation, Inc.
+ */
+
+/*
+ * Adams-Moulton with adaptive step size
+ */
+
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
@@ -9,18 +22,8 @@
                         t+0.9375*tstep > tstop && t+0.0625*tstep < tstop : \
                         t+0.9375*tstep < tstop && t+0.0625*tstep > tstop)
 
-/*
- * Adams-Moulton with adaptive step size
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
- */
-
 void
-#ifdef _HAVE_PROTOS
 ama (void)
-#else
-ama ()
-#endif
 {
   bool gdval = true;		/* good value to print ? */
   int overtime = 1;

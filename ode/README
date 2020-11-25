@@ -1,7 +1,7 @@
 This directory contains the source code for GNU ode.  Original version
-copyright (C) 1982-1994 by Nicholas B. Tufillaro <nbt@reed.edu>.
+copyright (C) 1982-1994 Nicholas B. Tufillaro <nbt@reed.edu>.
 GNU enhancements by Robert S. Maier <rsm@math.arizona.edu>, copyright 
-(C) 1996-1999 Free Software Foundation, Inc.
+(C) 1996, 1997, 1998, 1999, 2005 Free Software Foundation, Inc.
 
 ----------------------------------------------------------------------
 

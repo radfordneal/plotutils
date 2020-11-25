@@ -1,3 +1,22 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file is the main routine for GNU tek2plot.  It reads a stream of
    Tektronix commands and draws graphics in real time by calling the
    appropriate routines in GNU libplot.  Written by Robert S. Maier
@@ -7,9 +26,7 @@
    The table-driven parser is based on the one written by Ed at Berkeley in
    the mid-'80s.  The parsing tables in Tektable.c are essentially the same
    as the ones he designed for his `tek2ps' utility and for the Tektronix
-   emulator included in the X10 and X11 versions of xterm(1).  All GNU
-   extensions to his work copyright (C) 1989-1998 Free Software Foundation,
-   Inc. */
+   emulator included in the X10 and X11 versions of xterm(1). */
 
 /* The basic reference on the features of the Tektronix 4014 with extended
    graphics module (EGM), which is what we emulate, is the 4014 Service
@@ -27,11 +44,15 @@
    Tektronix emulators. */
 
 #include "sys-defines.h"
-#include "plot.h"
+#include "libcommon.h"
 #include "getopt.h"
+#include "fontlist.h"
+#include "plot.h"
 #include "Tekparse.h"
 
 const char *progname = "tek2plot"; /* name of this program */
+const char *written = "Written by Robert S. Maier.";
+const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
@@ -114,16 +135,19 @@ enum { NORTH = 04, SOUTH = 010, EAST = 01, WEST = 02 };
 #define FIVE_BITS (0x1f)
 #define TEN_BITS (0x3ff)
 
-/* Long options we recognize */
+/* options */
 
 #define	ARG_NONE	0
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
+const char *optstring = "Op:F:W:T:";
+
 struct option long_options[] = 
 {
-  /* The most important option */
-  {"display-type",	ARG_REQUIRED,	NULL, 'T'},
+  /* The most important option ("--display-type" is an obsolete variant) */
+  { "output-format",	ARG_REQUIRED,	NULL, 'T'},
+  { "display-type",	ARG_REQUIRED,	NULL, 'T' << 8 }, /* hidden */
   /* Other frequently used options */
   { "bg-color",		ARG_REQUIRED,	NULL, 'q' << 8 },
   { "bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8 },
@@ -147,8 +171,9 @@ struct option long_options[] =
   { NULL,		0,		NULL, 0}
 };
 
-/* null-terminated list of options that we don't show to the user */
-int hidden_options[] = { 0 };
+/* null-terminated list of options, such as obsolete-but-still-maintained
+   options or undocumented options, which we don't show to the user */
+const int hidden_options[] = { (int)('T' << 8), 0 };
 
 typedef struct
 {
@@ -200,30 +225,16 @@ int cur_X = 0, cur_Y = 0;	/* graphics cursor position in Tek coors */
 int current_page = 0;		/* page count */
 
 /* forward references */
-bool getpoint ____P((int *xcoor, int *ycoor, FILE *stream, int *badstatus, int *margin));
-bool read_plot ____P((plPlotter *plotter, FILE *in_stream));
-int read_byte ____P((FILE *stream, int *badstatus));
-void begin_page ____P((plPlotter *plotter));
-void end_page ____P((plPlotter *plotter));
-void set_font_size ____P ((plPlotter *plotter, int new_fontsize));
-void unread_byte ____P((int byte, FILE *in_stream, int *badstatus));
-/* from libcommon */
-extern int display_fonts ____P((const char *display_type, const char *progname));
-extern int list_fonts ____P((const char *display_type, const char *progname));
-extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version ____P((const char *progname)); 
-extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
-extern voidptr_t xmalloc ____P ((size_t size));
-extern char *xstrdup ____P ((const char *s));
+bool getpoint (int *xcoor, int *ycoor, FILE *stream, int *badstatus, int *margin);
+bool read_plot (plPlotter *plotter, FILE *in_stream);
+int read_byte (FILE *stream, int *badstatus);
+void begin_page (plPlotter *plotter);
+void end_page (plPlotter *plotter);
+void set_font_size (plPlotter *plotter, int new_fontsize);
+void unread_byte (int byte, FILE *in_stream, int *badstatus);
 
 int
-#ifdef _HAVE_PROTOS
 main (int argc, char *argv[])
-#else
-main (argc, argv)
-     int argc;
-     char *argv[];
-#endif
 {
   plPlotter *plotter;
   plPlotterParams *plotter_params;
@@ -231,7 +242,7 @@ main (argc, argv)
   bool show_fonts = false;	/* supply help on fonts? */
   bool show_usage = false;	/* show usage message? */
   bool show_version = false;	/* show version message? */
-  char *display_type = (char *)"meta"; /* default libplot output format */
+  char *output_format = (char *)"meta"; /* default libplot output format */
   double local_line_width;	/* temporary storage */
   int errcnt = 0;		/* errors encountered */
   int local_page_number;	/* temporary storage */
@@ -240,22 +251,23 @@ main (argc, argv)
   int retval;			/* return value */
 
   plotter_params = pl_newplparams ();
-  while ((option = getopt_long (argc, argv, "Op:F:W:T:", long_options, &opt_index)) != EOF) 
+  while ((option = getopt_long (argc, argv, optstring, long_options, &opt_index)) != EOF) 
     {
       if (option == 0)
 	option = long_options[opt_index].val;
       
       switch (option)
 	{
-	case 'T':		/* Display type, ARG REQUIRED      */
-	  display_type = (char *)xmalloc (strlen (optarg) + 1);
-	  strcpy (display_type, optarg);
+	case 'T':		/* Output format, ARG REQUIRED      */
+	case 'T' << 8:
+	  output_format = (char *)xmalloc (strlen (optarg) + 1);
+	  strcpy (output_format, optarg);
 
 	  /* Kludge: if HP-GL[/2] output is requested, be sure to use a
 	     Hershey font as the default font, even though the Plotter
 	     nominally supports PS fonts.  Reason: nominal != real. */
 
-	  if (strcasecmp (display_type, "hpgl") == 0)
+	  if (strcasecmp (output_format, "hpgl") == 0)
 	    force_hershey_default = true;
 	  else
 	    force_hershey_default = false;
@@ -295,37 +307,37 @@ main (argc, argv)
 	    line_width = local_line_width;
 	  break;
 	case 'O':		/* Portable version of metafile output */
-	  pl_setplparam (plotter_params, "META_PORTABLE", (voidptr_t)"yes");
+	  pl_setplparam (plotter_params, "META_PORTABLE", (void *)"yes");
 	  break;
 
 	  /*---------------- Long options below here ----------------*/
 	case 'e' << 8:		/* Emulate color via grayscale */
-	  pl_setplparam (plotter_params, "EMULATE_COLOR", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "EMULATE_COLOR", (void *)optarg);
 	  break;
 	case 'q' << 8:		/* Set the initial background color */
-	  pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "BG_COLOR", (void *)optarg);
 	  break;
 	case 'B' << 8:		/* Bitmap size */
-	  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "BITMAPSIZE", (void *)optarg);
 	  break;
 	case 'C' << 8:		/* Set the initial pen color */
 	  pen_color = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (pen_color, optarg);
 	  break;
 	case 'M' << 8:		/* Max line length */
-	  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (void *)optarg);
 	  break;
 	case 'P' << 8:		/* Page size */
-	  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "PAGESIZE", (void *)optarg);
 	  break;
 	case 'S' << 8:        /* Position chars in text strings individually */
 	  position_indiv_chars = true;
 	  break;
 	case 'r' << 8:		/* Rotation angle */
-	  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "ROTATION", (void *)optarg);
 	  break;
 	case 't' << 8:		/* Use Tektronix fonts (must be installed) */
-	  if (strcmp (display_type, "X") == 0)
+	  if (strcmp (output_format, "X") == 0)
 	    use_tek_fonts = true;
 	  break;
 
@@ -355,14 +367,14 @@ main (argc, argv)
     }
   if (show_version)
     {
-      display_version (progname);
+      display_version (progname, written, copyright);
       return EXIT_SUCCESS;
     }
   if (do_list_fonts)
     {
       int success;
 
-      success = list_fonts (display_type, progname);
+      success = list_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -372,7 +384,7 @@ main (argc, argv)
     {
       int success;
 
-      success = display_fonts (display_type, progname);
+      success = display_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -385,9 +397,9 @@ main (argc, argv)
     }
 
   /* turn off special interpretation of `erase' in GIF Plotters */
-  pl_setplparam (plotter_params, "GIF_ANIMATION", (voidptr_t)"no");
+  pl_setplparam (plotter_params, "GIF_ANIMATION", (void *)"no");
 
-  if ((plotter = pl_newpl_r (display_type, NULL, stdout, stderr,
+  if ((plotter = pl_newpl_r (output_format, NULL, stdout, stderr,
 			     plotter_params)) == NULL)
     {
       fprintf (stderr, "%s: error: could not create plot device\n", progname);
@@ -480,14 +492,7 @@ main (argc, argv)
 }
 
 void
-#ifdef _HAVE_PROTOS
 unread_byte (int c, FILE *in_stream, int *badstatus)
-#else
-unread_byte (c, in_stream, badstatus)
-     int c;
-     FILE *in_stream;
-     int *badstatus;
-#endif
 {
   if (*badstatus == 0)
     {
@@ -497,13 +502,7 @@ unread_byte (c, in_stream, badstatus)
 }
 
 int 
-#ifdef _HAVE_PROTOS
 read_byte (FILE *in_stream, int *badstatus)
-#else
-read_byte (in_stream, badstatus)
-     FILE *in_stream;
-     int *badstatus;
-#endif
 {
   int i;
 
@@ -548,15 +547,7 @@ read_byte (in_stream, badstatus)
    left-hand margin will be set to MARGIN2, i.e. to 2048.  */
 
 bool
-#ifdef _HAVE_PROTOS
 getpoint (int *xcoor, int *ycoor, FILE *in_stream, int *badstatus, int *margin)
-#else
-getpoint (xcoor, ycoor, in_stream, badstatus, margin)
-     int *xcoor, *ycoor;
-     FILE *in_stream;
-     int *badstatus;
-     int *margin;
-#endif
 {
   /* variables for the point-reading DFA, initialized */
   int status_one = 0, status_three = 0;	/* 0=none, 1=seen one, 2=finished */
@@ -757,13 +748,7 @@ getpoint (xcoor, ycoor, in_stream, badstatus, margin)
    attention to several global variables.  Will output at least one
    openpl()..closepl(). */
 bool 
-#ifdef _HAVE_PROTOS
 read_plot (plPlotter *plotter, FILE *in_stream)
-#else
-read_plot (plotter, in_stream)
-     plPlotter *plotter;
-     FILE *in_stream;
-#endif
 {
   /* variables for DFA */
   int *Tparsestate = Talptable;	/* start in ALPHA mode */
@@ -1317,13 +1302,7 @@ read_plot (plotter, in_stream)
 
 
 void
-#ifdef _HAVE_PROTOS
 set_font_size (plPlotter *plotter, int new_fontsize)
-#else
-set_font_size (plotter, new_fontsize)
-     plPlotter *plotter;
-     int new_fontsize;
-#endif
 {
   if (use_tek_fonts)
     /* switch among Tektronix fonts (may not be available on all X servers) */
@@ -1352,12 +1331,7 @@ set_font_size (plotter, new_fontsize)
 }
 
 void
-#ifdef _HAVE_PROTOS
 begin_page (plPlotter *plotter)
-#else
-begin_page (plotter)
-     plPlotter *plotter;
-#endif
 {
   if (pl_openpl_r (plotter) < 0)
     {
@@ -1416,12 +1390,7 @@ begin_page (plotter)
 }
 
 void
-#ifdef _HAVE_PROTOS
 end_page (plPlotter *plotter)
-#else
-end_page (plotter)
-     plPlotter *plotter;
-#endif
 {
   if (pl_closepl_r (plotter) < 0)
     {

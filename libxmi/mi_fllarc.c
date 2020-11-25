@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* Original author unknown (Bob Scheifler?).  
    Hacked by Robert S. Maier, 1998-1999. */
 
@@ -23,28 +46,22 @@
 #define Dcos(d)	cos((double)d*(M_PI/11520.0))
 
 /* internal functions that do painting of pixels */
-static void miFillArcSliceD ____P((miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc));
-static void miFillArcSliceI ____P((miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc));
-static void miFillEllipseD ____P((miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc));
-static void miFillEllipseI ____P((miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc));
+static void miFillArcSliceD (miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc);
+static void miFillArcSliceI (miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc);
+static void miFillEllipseD (miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc);
+static void miFillEllipseI (miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc);
 
 /* internal functions that don't do painting of pixels */
-static void miEllipseAngleToSlope ____P((int angle, unsigned int width, unsigned int height, int *dxp, int *dyp, double *d_dxp, double *d_dyp));
-static void miFillArcDSetup ____P((const miArc *arc, miFillArcD *info));
-static void miFillArcSetup ____P((const miArc *arc, miFillArc *info));
-static void miFillArcSliceSetup ____P((const miGC *pGC, const miArc *arc, miArcSlice *slice));
-static void miGetArcEdge ____P((const miArc *arc, miSliceEdge *edge, int k, bool top, bool left));
-static void miGetPieEdge ____P((const miArc *arc, int angle, miSliceEdge *edge, bool top, bool left));
+static void miEllipseAngleToSlope (int angle, unsigned int width, unsigned int height, int *dxp, int *dyp, double *d_dxp, double *d_dyp);
+static void miFillArcDSetup (const miArc *arc, miFillArcD *info);
+static void miFillArcSetup (const miArc *arc, miFillArc *info);
+static void miFillArcSliceSetup (const miGC *pGC, const miArc *arc, miArcSlice *slice);
+static void miGetArcEdge (const miArc *arc, miSliceEdge *edge, int k, bool top, bool left);
+static void miGetPieEdge (const miArc *arc, int angle, miSliceEdge *edge, bool top, bool left);
 
 
 static void
-#ifdef _HAVE_PROTOS
 miFillArcSetup (const miArc *arc, miFillArc *info)
-#else
-miFillArcSetup (arc, info)
-     const miArc *arc;
-     miFillArc *info;
-#endif
 {
   info->y = arc->height >> 1;
   info->dy = arc->height & 1;
@@ -98,13 +115,7 @@ miFillArcSetup (arc, info)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 miFillArcDSetup (const miArc *arc, miFillArcD *info)
-#else
-miFillArcDSetup (arc, info)
-     const miArc *arc;
-     miFillArcD *info;
-#endif
 {
   /* h^2 * (2x - 2xorg)^2 = w^2 * h^2 - w^2 * (2y - 2yorg)^2 */
   /* even: xorg = yorg = 0   odd:  xorg = .5, yorg = -.5 */
@@ -134,15 +145,7 @@ miFillArcDSetup (arc, info)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 miGetArcEdge (const miArc *arc, miSliceEdge *edge, int k, bool top, bool left)
-#else
-miGetArcEdge (arc, edge, k, top, left)
-     const miArc *arc;
-     miSliceEdge *edge;
-     int k;
-     bool top, left;
-#endif
 {
   int xady, y;
 
@@ -186,15 +189,7 @@ miGetArcEdge (arc, edge, k, top, left)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 miEllipseAngleToSlope (int angle, unsigned int width, unsigned int height, int *dxp, int *dyp, double *d_dxp, double *d_dyp)
-#else
-miEllipseAngleToSlope (angle, width, height, dxp, dyp, d_dxp, d_dyp)
-     int angle;
-     unsigned int width, height;
-     int *dxp, *dyp;
-     double *d_dxp, *d_dyp;
-#endif
 {
   int     dx, dy;
   double  d_dx, d_dy, scale;
@@ -274,15 +269,7 @@ miEllipseAngleToSlope (angle, width, height, dxp, dyp, d_dxp, d_dyp)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 miGetPieEdge (const miArc *arc, int angle, miSliceEdge *edge, bool top, bool left)
-#else
-miGetPieEdge (arc, angle, edge, top, left)
-     const miArc *arc;
-     int angle;
-     miSliceEdge *edge;
-     bool top, left;
-#endif
 {
   int k;
   int dx, dy;
@@ -324,14 +311,7 @@ miGetPieEdge (arc, angle, edge, top, left)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 miFillArcSliceSetup (const miGC *pGC, const miArc *arc, miArcSlice *slice)
-#else
-miFillArcSliceSetup (pGC, arc, slice)
-     const miGC *pGC;
-     const miArc *arc;
-     miArcSlice *slice;
-#endif
 {
   int angle1, angle2;
 
@@ -564,14 +544,7 @@ miFillArcSliceSetup (pGC, arc, slice)
   }
 
 static void
-#ifdef _HAVE_PROTOS
 miFillEllipseI (miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc)
-#else
-miFillEllipseI (paintedSet, pGC, arc)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     const miArc *arc;
-#endif
 {
   int x, y, e;
   int yk, xk, ym, xm, dx, dy, xorg, yorg;
@@ -610,14 +583,7 @@ miFillEllipseI (paintedSet, pGC, arc)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 miFillEllipseD (miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc)
-#else
-miFillEllipseD (paintedSet, pGC, arc)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     const miArc *arc;
-#endif
 {
   int x, y;
   int xorg, yorg, dx, dy, slw;
@@ -682,14 +648,7 @@ else \
 }
 
 static void
-#ifdef _HAVE_PROTOS
 miFillArcSliceI (miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc)
-#else
-miFillArcSliceI (paintedSet, pGC, arc)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     const miArc *arc;
-#endif
 {
   int yk, xk, ym, xm, dx, dy, xorg, yorg, slw, orig_slw;
   int x, y, e;
@@ -753,14 +712,7 @@ miFillArcSliceI (paintedSet, pGC, arc)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 miFillArcSliceD (miPaintedSet *paintedSet, const miGC *pGC, const miArc *arc)
-#else
-miFillArcSliceD (paintedSet, pGC, arc)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     const miArc *arc;
-#endif
 {
   int x, y;
   int dx, dy, xorg, yorg, slw, orig_slw;
@@ -825,15 +777,7 @@ miFillArcSliceD (paintedSet, pGC, arc)
 }
 
 void
-#ifdef _HAVE_PROTOS
 miFillArcs_internal (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs)
-#else
-miFillArcs_internal (paintedSet, pGC, narcs, parcs)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-#endif
 {
   int i;
   const miArc *arc;

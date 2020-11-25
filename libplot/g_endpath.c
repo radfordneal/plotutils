@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the endpath() method, which is a GNU extension to
    libplot.  A path object may be constructed incrementally, by repeated
    invocation of such operations as cont(), arc(), etc.  The construction
@@ -19,12 +37,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 _API_endpath (S___(Plotter *_plotter))
-#else
-_API_endpath (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
 {
   int i;
 
@@ -220,12 +233,7 @@ _API_endpath (S___(_plotter))
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_endsubpath (S___(Plotter *_plotter))
-#else
-_API_endsubpath (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -240,10 +248,10 @@ _API_endsubpath (S___(_plotter))
     {
       if (_plotter->drawstate->num_paths == 0)
 	_plotter->drawstate->paths = 
-	  (plPath **)_plot_xmalloc(sizeof (plPath *));
+	  (plPath **)_pl_xmalloc(sizeof (plPath *));
       else
 	_plotter->drawstate->paths = 
-	  (plPath **)_plot_xrealloc(_plotter->drawstate->paths,
+	  (plPath **)_pl_xrealloc(_plotter->drawstate->paths,
 				    (_plotter->drawstate->num_paths + 1) 
 				    * sizeof (plPath *));
       _plotter->drawstate->paths[_plotter->drawstate->num_paths++] =
@@ -255,12 +263,7 @@ _API_endsubpath (S___(_plotter))
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_closepath (S___(Plotter *_plotter))
-#else
-_API_closepath (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
 {
   if (!_plotter->data->open)
     {

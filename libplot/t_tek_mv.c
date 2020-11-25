@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains a low-level routine for repositioning the graphics
    cursor on a Tektronix display, by emitting an escape sequence.
 
@@ -14,24 +32,18 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_tek_move (R___(Plotter *_plotter) int xx, int yy)
-#else
-_tek_move (R___(_plotter) xx, yy)
-     S___(Plotter *_plotter;)
-     int xx, yy;
-#endif
+_pl_t_tek_move (R___(Plotter *_plotter) int xx, int yy)
 {
   int correct_tek_mode = 
-    _plotter->drawstate->points_are_connected ? MODE_PLOT : MODE_POINT;
+    _plotter->drawstate->points_are_connected ? TEK_MODE_PLOT : TEK_MODE_POINT;
 
   switch (correct_tek_mode)
     {
-    case MODE_POINT:
+    case TEK_MODE_POINT:
       /* ASCII FS, i.e. ^\ (enter POINT mode)*/
       _write_byte (_plotter->data, '\034'); 
       break;
-    case MODE_PLOT:
+    case TEK_MODE_PLOT:
       /* ASCII GS, i.e. ^] (enter PLOT mode) */
       _write_byte (_plotter->data, '\035'); 
       break;
@@ -40,7 +52,7 @@ _tek_move (R___(_plotter) xx, yy)
     }
 
   /* output location to the Tektronix */
-  _tek_vector (R___(_plotter) xx, yy);
+  _pl_t_tek_vector (R___(_plotter) xx, yy);
 
   /* Tek position is now correct */
   _plotter->tek_pos.x = xx;

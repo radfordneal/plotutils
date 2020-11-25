@@ -1,8 +1,26 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This program, double, is a filter for converting, scaling, joining, and
    cutting data sets that are in the format accepted by the `spline' and
    `graph' utilities.  The data sets may be in binary (either double or
    single precision floating point format, or integer format), or in ascii.
-   Copyright (C) 1989-1999 Free Software Foundation, Inc.
 
    The `I', `O', and `q' options (i.e. `--input-type', `--output-type', and
    `--precision') are similar to those accepted by `spline' and `graph'.
@@ -46,6 +64,7 @@
    should be equal. */
 
 #include "sys-defines.h"
+#include "libcommon.h"
 #include "getopt.h"
 
 /* type of data in input and output streams */
@@ -59,6 +78,8 @@ data_type input_type = T_ASCII;
 data_type output_type = T_ASCII;
 
 const char *progname = "double"; /* name of this program */
+const char *written = "Written by Robert S. Maier and Rich Murphey.";
+const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
@@ -97,32 +118,19 @@ struct option long_options[] =
 int hidden_options[] = { 0 };
 
 /* forward references */
-bool mung_dataset ____P ((FILE *input, int record_length, int *field_array, int field_array_len, double scale, double baseline, FILE *add_fp, FILE *mult_fp, FILE *pre_join_fp, FILE *post_join_fp, int precision, bool suppress));
-bool read_float ____P ((FILE *input, double *dptr));
-bool skip_whitespace ____P ((FILE *stream));
-bool write_float ____P ((double data, int precision));
-int get_record ____P ((FILE *input, double *record, int record_length));
-void maybe_emit_oob_warning ____P ((void));
-void open_file ____P ((char *name, FILE **fpp));
-void output_dataset_separator ____P ((void));
-void set_format_type ____P ((char *s, data_type *typep));
-/* from libcommon */
-extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version ____P((const char *progname)); 
-extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
-extern voidptr_t xmalloc ____P ((size_t length));
-extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
-extern char *xstrdup ____P ((const char *s));
+bool mung_dataset (FILE *input, int record_length, int *field_array, int field_array_len, double scale, double baseline, FILE *add_fp, FILE *mult_fp, FILE *pre_join_fp, FILE *post_join_fp, int precision, bool suppress);
+bool read_float (FILE *input, double *dptr);
+bool skip_whitespace (FILE *stream);
+bool write_float (double data, int precision);
+int get_record (FILE *input, double *record, int record_length);
+void maybe_emit_oob_warning (void);
+void open_file (char *name, FILE **fpp);
+void output_dataset_separator (void);
+void set_format_type (char *s, data_type *typep);
 
 
 int
-#ifdef _HAVE_PROTOS
 main (int argc, char **argv)
-#else
-main (argc, argv)
-     int argc;
-     char **argv;
-#endif
 {
   int option;			/* for option parsing */
   int opt_index;
@@ -293,7 +301,7 @@ main (argc, argv)
     }
   if (show_version)
     {
-      display_version (progname);
+      display_version (progname, written, copyright);
       return EXIT_SUCCESS;
     }
   if (show_usage)
@@ -428,13 +436,7 @@ main (argc, argv)
    was read successfully. */
 
 bool 
-#ifdef _HAVE_PROTOS
 read_float (FILE *input, double *dptr)
-#else
-read_float (input, dptr)
-     FILE *input;
-     double *dptr;
-#endif
 {
   int num_read;
   double dval;
@@ -448,14 +450,14 @@ read_float (input, dptr)
       num_read = fscanf (input, "%lf", &dval);
       break;
     case T_SINGLE:
-      num_read = fread ((voidptr_t) &fval, sizeof (fval), 1, input);
+      num_read = fread ((void *) &fval, sizeof (fval), 1, input);
       dval = fval;
       break;
     case T_DOUBLE:
-      num_read = fread ((voidptr_t) &dval, sizeof (dval), 1, input);
+      num_read = fread ((void *) &dval, sizeof (dval), 1, input);
       break;
     case T_INTEGER:
-      num_read = fread ((voidptr_t) &ival, sizeof (ival), 1, input);
+      num_read = fread ((void *) &ival, sizeof (ival), 1, input);
       dval = ival;
       break;
     }
@@ -484,14 +486,7 @@ read_float (input, dptr)
    otherwise have been the beginning of the record, etc. */
 
 int
-#ifdef _HAVE_PROTOS
 get_record (FILE *input, double *record, int record_length)
-#else
-get_record (input, record, record_length)
-     FILE *input;
-     double *record;
-     int record_length;
-#endif
 {
   bool success;
   int i, items_read, lookahead;
@@ -559,13 +554,7 @@ get_record (input, record, record_length)
    user if any of the emitted values were out-of-bounds for
    single-precision or integer format. */
 bool
-#ifdef _HAVE_PROTOS
 write_float (double x, int precision)
-#else
-write_float (x, precision)
-     double x;
-     int precision;
-#endif
 {
   int num_written = 0;
   float fx;
@@ -585,10 +574,10 @@ write_float (x, precision)
 	  if (fx == FLT_MAX)
 	    fx *= 0.99999;	/* kludge */
 	}
-      num_written = fwrite ((voidptr_t) &fx, sizeof (fx), 1, stdout);
+      num_written = fwrite ((void *) &fx, sizeof (fx), 1, stdout);
       break;
     case T_DOUBLE:
-      num_written = fwrite ((voidptr_t) &x, sizeof (x), 1, stdout);
+      num_written = fwrite ((void *) &x, sizeof (x), 1, stdout);
       break;
     case T_INTEGER:
       ix = IROUND(x);
@@ -598,7 +587,7 @@ write_float (x, precision)
 	  if (ix == INT_MAX)
 	    ix--;
 	}
-      num_written = fwrite ((voidptr_t) &ix, sizeof (ix), 1, stdout);
+      num_written = fwrite ((void *) &ix, sizeof (ix), 1, stdout);
       break;
     }
   if (num_written < 0)
@@ -608,13 +597,7 @@ write_float (x, precision)
 }
 
 void
-#ifdef _HAVE_PROTOS
 open_file (char *name, FILE **fpp)
-#else
-open_file (name, fpp)
-     char *name;
-     FILE **fpp;
-#endif
 {
   FILE *fp;
 
@@ -628,13 +611,7 @@ open_file (name, fpp)
 }
 
 void
-#ifdef _HAVE_PROTOS
 set_format_type (char *s, data_type *typep)
-#else
-set_format_type (s, typep)
-     char *s;
-     data_type *typep;
-#endif
 {
   switch (s[0])
     {
@@ -678,24 +655,17 @@ set_format_type (s, typep)
    indicator, i.e., whether another dataset is expected to follow.  An
    end-of-dataset indicator is two newlines in succession for an ascii
    stream, and a DBL_MAX for a stream of doubles, etc. */
+
+/* ARGS: record_length = number of fields per record in dataset
+   	 field_array = array of fields we'll extract
+	 field_array_len = length of this array
+	 suppress = suppress output for this dataset? */
 bool
-#ifdef _HAVE_PROTOS
 mung_dataset (FILE *input, int record_length, 
 	      int *field_array, int field_array_len,
 	      double scale, double baseline, FILE *add_fp, FILE *mult_fp, 
 	      FILE *pre_join_fp, FILE *post_join_fp, int precision, 
 	      bool suppress)
-#else
-mung_dataset (input, record_length, field_array, field_array_len, scale, baseline, add_fp, mult_fp, pre_join_fp, post_join_fp, precision, suppress)
-     FILE *input;
-     int record_length;		/* number of fields per record in dataset */
-     int *field_array;		/* array of fields we'll extract */
-     int field_array_len;	/* length of this array */
-     double scale, baseline;
-     FILE *add_fp, *mult_fp, *pre_join_fp, *post_join_fp;
-     int precision;
-     bool suppress;		/* suppress output for this dataset */
-#endif
 {
   double *record = (double *)xmalloc (record_length * sizeof(double));
   bool in_trouble = suppress; /* once in trouble, we never get out */
@@ -778,12 +748,7 @@ mung_dataset (input, record_length, field_array, field_array_len, scale, baselin
    input files, two newlines signals an end-of-dataset.) */
 
 bool
-#ifdef _HAVE_PROTOS
 skip_whitespace (FILE *stream)
-#else
-skip_whitespace (stream)
-     FILE *stream;
-#endif
 {
   int lookahead;
   int nlcount = 0;
@@ -811,11 +776,7 @@ skip_whitespace (stream)
    this is a DBL_MAX, etc. */
 
 void
-#ifdef _HAVE_PROTOS
 output_dataset_separator(void)
-#else
-output_dataset_separator()
-#endif
 {
   double ddummy;
   float fdummy;
@@ -829,25 +790,21 @@ output_dataset_separator()
       break;
     case T_DOUBLE:
       ddummy = DBL_MAX;
-      fwrite ((voidptr_t) &ddummy, sizeof(ddummy), 1, stdout);
+      fwrite ((void *) &ddummy, sizeof(ddummy), 1, stdout);
       break;
     case T_SINGLE:
       fdummy = FLT_MAX;
-      fwrite ((voidptr_t) &fdummy, sizeof(fdummy), 1, stdout);
+      fwrite ((void *) &fdummy, sizeof(fdummy), 1, stdout);
       break;
     case T_INTEGER:
       idummy = INT_MAX;
-      fwrite ((voidptr_t) &idummy, sizeof(idummy), 1, stdout);
+      fwrite ((void *) &idummy, sizeof(idummy), 1, stdout);
       break;
     }
 }
 
 void
-#ifdef _HAVE_PROTOS
 maybe_emit_oob_warning (void)
-#else
-maybe_emit_oob_warning ()
-#endif
 {
   static bool warning_written = false;
 

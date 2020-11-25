@@ -1,64 +1,68 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the Plotter-specific _retrieve_font method, which is
-   called when the font_name, font_size, and textangle fields of the
-   current drawing state have been filled in.  It retrieves the specified
-   font, and fills in the true_font_name, true_font_size, font_type,
-   typeface_index, font_index, font_ascent, font_descent, font_cap_height,
-   and font_is_iso8859_1 fields of the drawing state.  It is called by
-   _set_font, which in turn is called by the API functions alabel() and
-   flabelwidth(). */
+   called by the _pl_g_set_font() function, which in turn is invoked by the
+   API functions alabel() and flabelwidth().  It is called when the
+   font_name, font_size, and textangle fields of the current drawing state
+   have been filled in.  It retrieves the specified font, and fills in the
+   font_type, typeface_index, font_index, font_is_iso8858, true_font_size,
+   and font_ascent, and font_descent fields of the drawing state. */
 
 /* This version is for XDrawablePlotters (and XPlotters).  It also fills in
-   the x_font_pixmatrix and x_native_positioning fields of the drawing
-   state, which are X-specific. */
+   the x_font_struct and x_font_pixel_size fields of the drawing state,
+   which are X-specific.
 
-/* We retrieve the font from the X server, or from a local cache of
-   XFontStruct's.  We run through various possibilities: first we try to
-   interpret `name' as the name of a PS font in libplot's font database
-   (e.g. "Times-Roman"), for which we necessarily have a base XLFD name
-   (e.g., "times-medium-r-normal", then as a base XLFD name not in our
-   database (e.g. "utopia-medium-r-normal"), then as a non-XLFD font name
-   (e.g., "fixed" or "vtsingle").  If none of these succeeds, then we try
-   to retrieve a default X font instead.  That the default font may be
-   different from the requested font is one reason why the true_font_name
-   field, when filled in, may be different from the font_name field.
+   This version operates by retrieving an 8-bit core X font from the X
+   display, as follows.  First, it looks at the x_label field of the
+   drawing state, which may contain a "hint": a string passed down from a
+   higher level, containing the characters that will eventually be rendered
+   in the font.  This is for efficiency.  If possible, only a subset of the
+   font will be retrieved (most X displays support this).
 
-   The `true_font_size' field is a bit difficult to compute for an X font.
-   Ideally it would be a minimum interline spacing, because that is what
-   must be returned (in user units) by fontname(), fontsize, and
-   textangle().  But even for non-rotated, non-sheared fonts, there are
-   several possibilities for this: (1) the so-called pixel size (which can
-   be extracted only if the font has an XLFD name, or if the font has a
-   PIXEL_SIZE or POINT_SIZE property), (2) the sum of the `logical'
-   font_ascent and font_descent (from the font structure), (3) the sum of
-   the maximum (over characters) ascent and the maximum descent, (4) the
-   sum of the cap height and the maximum descender length (which may both
-   be difficult to extract), etc.
+   Nearly all core X fonts have XLFD (X Logical Font Description) names.
+   So we run through various possibilities: first we try to interpret the
+   font_name parameter as the name of a PS font in libplot's hardcoded font
+   database (e.g. "Times-Roman"), in which case the database will supply a
+   corresponding base XLFD name (e.g., "times-medium-r-normal"); then we
+   try to interpret font_name as a base XLFD name which is not in the
+   hardcoded database (e.g. "charter-medium-r-normal"); then finally we try
+   to interpret it as a non-XLFD font name (e.g., "fixed" or "9x15").  In
+   each of these cases, we try to retrieve only a subset of the font (as
+   specified by the x_label field, just mentioned); if that fails, an
+   attempt is made to retrieve the entire font.
 
-   I decided to use (1).  The analogue for affinely transformed fonts is
-   easy to compute (from the pixel matrix).  However, for old non-XLFD (and
-   hence non-rotated, non-sheared) fonts, there is the possibility that the
-   PIXEL_SIZE property may not be available.  For such fonts, the
-   POINT_SIZE and RESOLUTION_Y properties are used to compute it.  If they
-   also are not available, we fall back on definition (2).
+   Text strings, including rotated and affinely transformed text strings,
+   will eventually be rendered in x_text.c, using the XAffText module in
+   x_afftext.c.  So here, all we do is retrieve a reasonable pixel size for
+   the font, which will be scaled, etc., as needed.  (Note that the choice
+   we make for the pixel size does not depend on the `textangle' drawing
+   parameter, which is the rotation angle of the text in the user frame;
+   though the XAffText module will pay attention to that parameter.)  The
+   XAffText module will take care of scaling, so we set the true_font_size
+   parameter to be the same as the user-specified font_size.
 
-   The {font_ascent,font_descent} fields of the drawing state are important
-   for vertical positioning.  For modern XLFD fonts at least, we obtain
-   them from the RAW_ASCENT and RAW_DESCENT properties.  The
-   font_cap_height field is harder.  See comments in the code. */
-
-/* NOTE: _x_retrieve_font() and the routines that it calls now keep careful
-   track of which elements of the X11R6-style font pixel matrix, if any,
-   are zero.  This is because the true font size, as supplied by the X
-   server, may not be quite the size we request.  If a font with pixel
-   matrix containing one or more zeroes is requested from the X server,
-   what comes back may have the zeroes replaced by absurdly small
-   quantities (e.g. 4e-311).  Believe it or not, floating point numbers
-   that small cannot be manipulated arithmetically on a DEC Alpha.  If you
-   try, you get a SIGFPE and a program crash!  We make sure that our
-   internal representation for the returned font pixel matrix sets such
-   elements to zero (exactly).  This problem was first noticed when `graph'
-   on a DEC Alpha crashed when trying to plot a y-axis label (rotated 90
-   degrees, so two of the four elements of the pixel matrix were zero). */
+   Note: For speed, we maintain a linked-list cache of previously
+   rasterized-and-retrieved fonts.  The linked list is accessible via the
+   x_font_list member of the XDrawablePlotter (or XPlotter).  An
+   ever-growing linked list is probably good enough if there aren't huge
+   numbers of font or font size changes.  It's deallocated when the Plotter
+   is destroyed; see x_defplot.c. */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -73,115 +77,111 @@
    to handle XFLD template, user-level font name */
 #define MAX_FONT_NAME_LENGTH 255
 
-/* An XLFD template, with holes into which we can punch the base name (a
+/* XLFD templates, with holes into which we can punch the base XLFD name (a
    string with exactly three hyphens in it) and the integer size in terms
-   of pixels */
-static const char * const _xlfd_template = "-*-%s-*-%d-*-*-*-*-*-*-*";
-
-/* An XLFD template for an affinely transformed font, with holes for the
-   base name and for four dimensions in terms of pixels.  Supported as of
-   X11R6.  (And by HP for several years before that?) */
-static const char * const _xlfd_template_with_scaling = "-*-%s-*-[%s %s %s %s]-*-*-*-*-*-*-*";
+   of pixels.  We need a Latin-1 one and a generic one, since e.g. the
+   Symbol font, which we support, has "adobe-fontspecific" as its last two
+   fields. */
+static const char * const xlfd_template_latin_1 = "-*-%s-*-%d-*-*-*-*-*-iso8859-1";
+static const char * const xlfd_template_generic = "-*-%s-*-%d-*-*-*-*-*-*-*";
 
 /* length of buffer for constructing an X11R6-style list-of-charset-ranges
    string, e.g. "[32 48_57 65_90]" would represent the non-contiguous set
    of characters [ 0-9A-Z]. */
 #define MAX_CHARSET_SUBSET_LIST_LENGTH 767
 
-#define NUM_XLFD_FIELDS 14
-#define FIELD_FOUNDRY 0
-#define FIELD_FAMILY 1
-#define FIELD_WEIGHT 2
-#define FIELD_SLANT 3
-#define FIELD_SET_WIDTH 4
-#define FIELD_ADDITIONAL_STYLE 5
-#define FIELD_PIXELS 6
-#define FIELD_POINTS 7
-#define FIELD_HORIZONTAL_RESOLUTION 8
-#define FIELD_VERTICAL_RESOLUTION 9
-#define FIELD_SPACING 10
-#define FIELD_AVERAGE_WIDTH 11
-#define FIELD_CHARACTER_SET_MAJOR 12
-#define FIELD_CHARACTER_SET_MINOR 13 /* in X11R6 may include char subset too */
+#define PL_NUM_XLFD_FIELDS 14
+#define XLFD_FIELD_FOUNDRY 0
+#define XLFD_FIELD_FAMILY 1
+#define XLFD_FIELD_WEIGHT 2
+#define XLFD_FIELD_SLANT 3
+#define XLFD_FIELD_SET_WIDTH 4
+#define XLFD_FIELD_ADDITIONAL_STYLE 5
+#define XLFD_FIELD_PIXELS 6
+#define XLFD_FIELD_POINTS 7
+#define XLFD_FIELD_HORIZONTAL_RESOLUTION 8
+#define XLFD_FIELD_VERTICAL_RESOLUTION 9
+#define XLFD_FIELD_SPACING 10
+#define XLFD_FIELD_AVERAGE_WIDTH 11
+#define XLFD_FIELD_CHARACTER_SET_MAJOR 12
+#define XLFD_FIELD_CHARACTER_SET_MINOR 13 /* in X11R6 may include char subset */
 
 /* forward references */
-static bool _is_a_subset ____P((unsigned char set1[32], unsigned char set2[32]));
-static char *_xlfd_field ____P ((const char *name, int field));
-static void _parse_pixmatrix ____P ((const char *pixel_string, double d[4], bool *x_native_positioning, bool is_zero[4]));
-static void _print_bitvector ____P ((unsigned char v[32], char *s));
-static void _string_to_bitvector ____P ((const unsigned char *s, unsigned char v[8], bool include_X));
+static bool is_a_subset (unsigned char set1[32], unsigned char set2[32]);
+static char *xlfd_field (const char *name, int field);
+static double min_sing_val (double m[4]);
+static void print_bitvector (unsigned char v[32], char *s);
+static void set_font_dimensions (Display *dpy, plXFontRecord *fptr);
+static void string_to_bitvector (const unsigned char *s, unsigned char v[8]);
+static plXFontRecord *select_x_font (Display *dpy, plXFontRecord **x_fontlist_ptr, const char *name, const unsigned char *s, bool subsetting);
 
-/* _x_retrieve_font() attempts to retrieve an X font specified by a triple,
-   namely {name, size, rotation}.  Three possible interpretations are
-   tried, in order.
+/* _pl_x_retrieve_font() attempts to retrieve a core X font specified by a
+   triple, namely {name, size, rotation}.  The rotation parameter is
+   ignored, since the XAffText module will be used to rotate or transform
+   any rendered string (see x_text.c, and x_afftext.c for the module).
+   Four possible font retrievals are attempted, in order.
 
    1. `name' is taken to be an alias for an XLFD base name, as listed in
-   our table in g_fontdb.c.  (Aliases for the 35 standard font names appear
-   there).  E.g., name="times-roman" or "Times-Roman".
+   libplot's hardcoded font database in g_fontdb.c.  (Aliases for the 35
+   standard font names appear there.  E.g., name="times-roman" or
+   "Times-Roman" is an alias for the three-hyphen XLFD base name
+   "times-roman-r-normal".)
 
-   2. `name' is taken to be an XLFD base name (no aliasing), of the form
+   2. `name' is taken to be an XLFD base name, of the form
    foundry-family-weight-slant-width, with exactly four hyphens.  E.g.,
+   name="adobe-times-roman-r-normal" or
    name="bitstream-courier-medium-r-normal".  NOT YET IMPLEMENTED.
 
-   3. `name' is taken to be an XLFD base name (no aliasing), of the form
+   3. `name' is taken to be an XLFD base name, of the form
    family-weight-slant-width, with exactly three hyphens.  E.g.,
    name="grotesk-bold-r-normal", or "times-medium-r-normal".
 
-   4. `name' is taken to be a full X font name, in which case `size' and
-   `rotation' are ignored.  E.g.,
-   name="-schumacher-clean-medium-r-normal--6-60-75-75-c-50-iso8859-1" or
-   name="vtbold".  This option is really to support old (pre-XLFD) fonts,
-   such as "vtbold".
+   4. `name' is taken to be a full font name, in which case `size' is
+   ignored.  E.g., name="fixed" or name="9x15" or
+   name="-dec-terminal-bold-r-normal--14-140-75-75-c-80-iso8859-1".  This
+   option is mostly to support ancient core X fonts without proper XLFD
+   names, such as "9x15".
 
-   If an X font is successfully retrieved (which will set the fields
-   true_font_size, font_ascent, font_descent, and font_iso8859_1 of the
+   If a core X font is successfully retrieved (which will set the fields
+   true_font_size, font_ascent, font_descent, and font_is_iso8859_1 of the
    drawing state, and the X-specific fields x_font_struct,
-   x_font_pixmatrix, and x_native_positioning too), then this function sets
-   font_type (F_POSTSCRIPT in case 1, F_OTHER in cases 2, 3 and 4) and
-   returns true.  If a font is not successfully retrieved, this function
-   returns false.
+   x_font_pixel_size), then this function fills in the font_type field
+   (PL_F_POSTSCRIPT [or PL_F_PCL] in case 1, PL_F_OTHER in cases 2, 3 and
+   4), and returns true.  If a font is not successfully retrieved, this
+   function returns false.
 
-   typeface_index and font_index are also set in case 1.  In the other
-   cases (F_OTHER) it's hardly worth it to set them, since switching to
-   other fonts, except for a symbol font (`font #0') won't be supported.
-   See g_cntrlify.c. */
+   The typeface_index and font_index fields are also filled in, in case 1.
+   In the other cases (PL_F_OTHER) it's hardly worth it to fill them in, since
+   switching to other fonts in the middle of a text string, except for a
+   symbol font (`font #0') won't be supported.  See g_cntrlify.c. */
 
 bool
-#ifdef _HAVE_PROTOS
-_x_retrieve_font (S___(Plotter *_plotter))
-#else
-_x_retrieve_font (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_retrieve_font (S___(Plotter *_plotter))
 {
   const char *name, *true_name = ""; /* keep compiler happy */
-  double size, rotation;
-  bool is_zero[4];		/* pixel matrix el.s are zero? (see above) */
   bool matched_builtin = false;	/* font name matches name of a font in db? */
   bool success;			/* font retrieved from cache or server? */
   const char *name_p;
-  const char *x_name = NULL, *x_name_alt = NULL; /* from our font tables */
-  double user_size;		/* font size in user units */
+  const char *x_name = NULL, *x_name_alt = NULL; /* from db */
+  const char *x_name_alt2 = NULL, *x_name_alt3 = NULL; /* from db */
+  int typeface_index = 0, font_index = 0; /* from db */
+  int font_type = PL_F_POSTSCRIPT; /* from db */
   int i, hyphen_count;
-  int typeface_index = 0, font_index = 0; /* from our database of fonts */
-  int font_type = F_POSTSCRIPT; /* from our database of fonts */
 
   name = _plotter->drawstate->font_name;
-  size = _plotter->drawstate->font_size;
-  rotation = _plotter->drawstate->text_rotation;  
 
 #ifdef DEBUG
-	  fprintf (stderr, "_x_retrieve_font(): name=\"%s\", size=%g, rotation=%g\n", 
-		   name, size, rotation);
+  fprintf (stderr, "----------------------------------------------------------------------\n");
+  fprintf (stderr, "_pl_x_retrieve_font(): name=\"%s\", size=%g, x_label=%s\n", 
+		   name, _plotter->drawstate->font_size, _plotter->drawstate->x_label);
 #endif
 
   if (strlen (name) > MAX_USER_FONT_NAME_LENGTH) /* avoid buffer overflow */
     return false;
 
-  if (size == 0.0)		/* don't try to retrieve zero-size fonts */
+  if (_plotter->drawstate->font_size == 0.0)
+    /* don't try to retrieve zero-size fonts */
     return false;
-
-  user_size = size;		/* user units */
 
   /* Search null-terminated table of recognized PS fonts, in g_fontdb.c,
      for a name matching the passed name.  We support either PS-style names
@@ -190,74 +190,89 @@ _x_retrieve_font (S___(_plotter))
      supported because some X servers use "zapfdingbats" instead of "itc
      zapf dingbats", etc. */
   i = -1;
-  while (_ps_font_info[++i].ps_name) /* array ends in NULL */
+  while (_pl_g_ps_font_info[++i].ps_name) /* array ends in NULL */
     {
-      if ((strcasecmp (_ps_font_info[i].ps_name, name) == 0)
+      if ((strcasecmp (_pl_g_ps_font_info[i].ps_name, name) == 0)
 	  /* check alternative ps font name if any */
-	  || (_ps_font_info[i].ps_name_alt
-	      && strcasecmp (_ps_font_info[i].ps_name_alt, name) == 0)
+	  || (_pl_g_ps_font_info[i].ps_name_alt
+	      && strcasecmp (_pl_g_ps_font_info[i].ps_name_alt, name) == 0)
 	  /* check 2nd alternative ps font name if any */
-	  || (_ps_font_info[i].ps_name_alt2
-	      && strcasecmp (_ps_font_info[i].ps_name_alt2, name) == 0)
+	  || (_pl_g_ps_font_info[i].ps_name_alt2
+	      && strcasecmp (_pl_g_ps_font_info[i].ps_name_alt2, name) == 0)
 	  /* check X font name */
-	  || (strcasecmp (_ps_font_info[i].x_name, name) == 0)
+	  || (strcasecmp (_pl_g_ps_font_info[i].x_name, name) == 0)
 	  /* check alternative X font name if any */
-	  || (_ps_font_info[i].x_name_alt
-	      && strcasecmp (_ps_font_info[i].x_name_alt, name) == 0))
+	  || (_pl_g_ps_font_info[i].x_name_alt
+	      && strcasecmp (_pl_g_ps_font_info[i].x_name_alt, name) == 0)
+	  /* check 2nd alternative X font name if any */
+	  || (_pl_g_ps_font_info[i].x_name_alt2
+	      && strcasecmp (_pl_g_ps_font_info[i].x_name_alt2, name) == 0)
+	  /* check 3rd alternative X font name if any */
+	  || (_pl_g_ps_font_info[i].x_name_alt3
+	      && strcasecmp (_pl_g_ps_font_info[i].x_name_alt3, name) == 0))
 	break;
     }
   
-  if (_ps_font_info[i].ps_name)	/* matched name of a PS font in database */
+  if (_pl_g_ps_font_info[i].ps_name) /* matched name of a PS font in database */
     {
       matched_builtin = true;
-      true_name = _ps_font_info[i].ps_name;
-      x_name = _ps_font_info[i].x_name;
-      x_name_alt = _ps_font_info[i].x_name_alt;
-      font_type = F_POSTSCRIPT;
-      typeface_index = _ps_font_info[i].typeface_index;
-      font_index = _ps_font_info[i].font_index;
+      true_name = _pl_g_ps_font_info[i].ps_name;
+      x_name = _pl_g_ps_font_info[i].x_name;
+      x_name_alt = _pl_g_ps_font_info[i].x_name_alt;
+      x_name_alt2 = _pl_g_ps_font_info[i].x_name_alt2;
+      x_name_alt3 = _pl_g_ps_font_info[i].x_name_alt3;
+      font_type = PL_F_POSTSCRIPT;
+      typeface_index = _pl_g_ps_font_info[i].typeface_index;
+      font_index = _pl_g_ps_font_info[i].font_index;
     }
 
 #ifdef USE_LJ_FONTS_IN_X
   if (matched_builtin == false)	/* PS match failed, so try PCL fonts too */
     {
       i = -1;
-      while (_pcl_font_info[++i].ps_name) /* array ends in NULL */
+      while (_pl_g_pcl_font_info[++i].ps_name) /* array ends in NULL */
 	{
-	  if ((strcasecmp (_pcl_font_info[i].ps_name, name) == 0)
+	  if ((strcasecmp (_pl_g_pcl_font_info[i].ps_name, name) == 0)
 	      /* check alternative ps font name if any */
-	      || (_pcl_font_info[i].ps_name_alt
-		  && strcasecmp (_pcl_font_info[i].ps_name_alt, name) == 0)
+	      || (_pl_g_pcl_font_info[i].ps_name_alt
+		  && strcasecmp (_pl_g_pcl_font_info[i].ps_name_alt, name) == 0)
 	      /* check X font name */
-	      || (strcasecmp (_pcl_font_info[i].x_name, name) == 0))
+	      || (strcasecmp (_pl_g_pcl_font_info[i].x_name, name) == 0))
 	    break;
 	}
   
-      if (_pcl_font_info[i].ps_name) /* matched name of a PCL font in db */
+      if (_pl_g_pcl_font_info[i].ps_name) /* matched name of a PCL font in db */
 	{
 	  matched_builtin = true;
-	  true_name = _pcl_font_info[i].ps_name;
-	  x_name = _pcl_font_info[i].x_name;
+	  true_name = _pl_g_pcl_font_info[i].ps_name;
+	  x_name = _pl_g_pcl_font_info[i].x_name;
 	  x_name_alt = NULL;
-	  font_type = F_PCL;
-	  typeface_index = _pcl_font_info[i].typeface_index;
-	  font_index = _pcl_font_info[i].font_index;
+	  font_type = PL_F_PCL;
+	  typeface_index = _pl_g_pcl_font_info[i].typeface_index;
+	  font_index = _pl_g_pcl_font_info[i].font_index;
 	}
     }
 #endif /* USE_LJ_FONTS_IN_X */
 
+#ifdef DEBUG
+  fprintf (stderr, "Matched database font %s = %s = %s = %s\n", 
+	   x_name, x_name_alt, x_name_alt2, x_name_alt3);
+#endif
+
   if (matched_builtin)
     {
       /* user passed the name of a PS or PCL font in libplot's database */
-      success = _x_select_xlfd_font_carefully (R___(_plotter) x_name, x_name_alt, user_size, rotation);
-
+      success = _pl_x_select_xlfd_font_carefully (R___(_plotter) x_name, 
+						  x_name_alt, x_name_alt2,
+						  x_name_alt3);
       if (success)
-	/* we've retrieved an X font version of a font in our internal
-           database, and have filled in X-specific fields; good */
+	/* RETRIEVAL TYPE #1: we've retrieved a core X font, the XLFD name
+           of which was listed in libplot's hardcoded database; and have
+           filled in X-specific fields */
 	{
 	  free ((char *)_plotter->drawstate->true_font_name);
 	  _plotter->drawstate->true_font_name = 
-	    (const char *)_plot_xmalloc (strlen (true_name) + 1);
+	    (const char *)_pl_xmalloc (strlen (true_name) + 1);
 	  strcpy ((char *)_plotter->drawstate->true_font_name, true_name);
 
 	  _plotter->drawstate->font_type = font_type;
@@ -265,16 +280,17 @@ _x_retrieve_font (S___(_plotter))
 	  _plotter->drawstate->font_index = font_index;
 
 #ifdef DEBUG
-	  fprintf (stderr, "_x_retrieve_font(): retrieved \"%s\" as \"%s\", type=%d\n", name, _plotter->drawstate->true_font_name, _plotter->drawstate->font_type);
+	  fprintf (stderr, "_pl_x_retrieve_font(): retrieved \"%s\" as \"%s\", type=%d\n", name, _plotter->drawstate->true_font_name, _plotter->drawstate->font_type);
+	  fprintf (stderr, "_pl_x_retrieve_font(): font_size=%g, true_font_size=%g, font_ascent=%g, font_descent=%g, font_is_iso8859_1=%d, x_font_pixel_size=%d\n", _plotter->drawstate->font_size, _plotter->drawstate->true_font_size, _plotter->drawstate->font_ascent, _plotter->drawstate->font_descent, _plotter->drawstate->font_is_iso8859_1, _plotter->drawstate->x_font_pixel_size);
 #endif
 	  return true;
 	}
     }
   
   /* User-specified font name didn't match either of the names of any PS
-     [or PCL] font in libplot's database, so first consider possibility
-     that it's an XLFD base name for some other X font
-     (e.g. "utopia-medium-r-normal"), with exactly three hyphens. */
+     [or PCL] font in libplot's database, so first handle the possibility
+     that it's an XLFD base name for some other core X font
+     (e.g. "charter-medium-r-normal"), with exactly three hyphens. */
   name_p = name;
   hyphen_count = 0;
   while (*name_p)
@@ -283,531 +299,590 @@ _x_retrieve_font (S___(_plotter))
   if (hyphen_count == 3)
     /* treat as base of an XLFD name */
     {
-      success = _x_select_xlfd_font_carefully (R___(_plotter) name, NULL, user_size, rotation);
+      success = _pl_x_select_xlfd_font_carefully (R___(_plotter) name, 
+						  NULL, NULL, NULL);
 
       if (success)
-	/* we've retrieved a scalable X font that isn't one of the fonts in
-           the libplot database */
+	/* RETRIEVAL TYPE #3: we've retrieved a core X font, the base XLFD
+           name of which was passed by the user, that isn't one of the
+           fonts in libplot's hardcoded database; and have filled in
+           X-specific fields */
 	{
 	  free ((char *)_plotter->drawstate->true_font_name);
 	  _plotter->drawstate->true_font_name = 
-	    (const char *)_plot_xmalloc (strlen (name) + 1);
+	    (const char *)_pl_xmalloc (strlen (name) + 1);
 	  strcpy ((char *)_plotter->drawstate->true_font_name, name);
 
-	  _plotter->drawstate->font_type = F_OTHER;
+	  _plotter->drawstate->font_type = PL_F_OTHER;
 	  /* these two fields are irrelevant because we don't support
-	     switching among user-defined fonts */
+	     switching among fonts not in libplot's internal database */
 	  _plotter->drawstate->typeface_index = 0;
 	  _plotter->drawstate->font_index = 1;
 
 #ifdef DEBUG
-	  fprintf (stderr, "_x_retrieve_font(): retrieved \"%s\" as \"%s\", type=%d\n", name, _plotter->drawstate->true_font_name, _plotter->drawstate->font_type);
+	  fprintf (stderr, "_pl_x_retrieve_font(): retrieved \"%s\" as \"%s\", type=%d\n", name, _plotter->drawstate->true_font_name, _plotter->drawstate->font_type);
+	  fprintf (stderr, "_pl_x_retrieve_font(): font_size=%g, true_font_size=%g, font_ascent=%g, font_descent=%g, font_is_iso8859_1=%d, x_font_pixel_size=%d\n", _plotter->drawstate->font_size, _plotter->drawstate->true_font_size, _plotter->drawstate->font_ascent, _plotter->drawstate->font_descent, _plotter->drawstate->font_is_iso8859_1, _plotter->drawstate->x_font_pixel_size);
 #endif
 	  return true;
 	}  
     }
   
   /* User-passed name didn't have exactly 3 hyphens, so try treating it as
-     a full X fontname; ignore size.  This a kludge, needed to support
-     pre-XLFD fonts, e.g. "vtsingle", and aliases for XLFD fonts,
-     e.g. "fixed".  Most of the latter are really pre-XLFD names. */
-  
-  /* We don't do this unless the desired text rotation is zero, since
-     pre-XLFD fonts all have rotation 0.  Also we insist that the
-     user->device coordinate scaling should preserve coordinate axes, have
-     the same scaling factors in both directions, and not involve a
-     reflection. */
+     the full name of a core X font; ignore size.  This a kludge, included
+     partly to support pre-XLFD fonts, e.g. "9x15", and aliases for XLFD
+     fonts, e.g. "fixed".  Most of the latter are really pre-XLFD names. */
 
-  if ((rotation == (double)0.0) 
-      && _plotter->drawstate->transform.axes_preserved 
-      && _plotter->drawstate->transform.uniform 
-      && _plotter->drawstate->transform.nonreflection
-      && _plotter->drawstate->transform.m[0] > 0.0)
     {
-      /* don't assume that any elements of pixel matrix are zero (user
-	 perhaps could have passed us a bizarre font name containing an
-	 explicit pixel matrix?) */
-      is_zero[0] = is_zero[3] = false;
-      is_zero[1] = is_zero[2] = false;
+      double det;
+      
+      det = _plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[3]
+	- _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[2];
+      if (det == 0.0)
+	/* singular user-space -> device-space map; bail */
+	return false;
 
-      /* try to retrieve font from server or cache list */
-      success = _x_select_font_carefully (R___(_plotter)
-					  name, is_zero, 
-					  _plotter->drawstate->x_label);
+      /* Try to retrieve font from server or cache list, given its full
+	 name; and for the moment, ignore the preferred pixel size we just
+	 computed.  3rd argument `false' requests entire font.  A GOOD IDEA? */
+      success = _pl_x_select_font_carefully (R___(_plotter) name,
+					 _plotter->drawstate->x_label,
+					 false);
+
       if (success)
-	/* we've retrieved a presumably non-scalable X font that isn't one
-           of the fonts in the libplot database */
+	/* RETRIEVAL TYPE #4: we've retrieved a core X font, the full name
+           of which was passed by the user, that isn't one of the fonts in
+           libplot's hardcoded database */
 	{
 	  free ((char *)_plotter->drawstate->true_font_name);
 	  _plotter->drawstate->true_font_name = 
-	    (const char *)_plot_xmalloc (strlen (name) + 1);
+	    (const char *)_pl_xmalloc (strlen (name) + 1);
 	  strcpy ((char *)_plotter->drawstate->true_font_name, name);
 
-	  _plotter->drawstate->font_type = F_OTHER;
-	  _plotter->drawstate->x_native_positioning = true;
+	  _plotter->drawstate->font_type = PL_F_OTHER;
 	  /* these two fields are irrelevant because we don't support
 	     switching among `other' fonts */
 	  _plotter->drawstate->typeface_index = 0;
 	  _plotter->drawstate->font_index = 1;
 
+	  if (_plotter->drawstate->x_font_pixel_size == 0) /* paranoia */
+	    return false;
+
 #ifdef DEBUG
-	  fprintf (stderr, "_x_retrieve_font(): retrieved \"%s\" as \"%s\", type=%d\n", name, _plotter->drawstate->true_font_name, _plotter->drawstate->font_type);
+	  fprintf (stderr, "_pl_x_retrieve_font(): retrieved \"%s\" as \"%s\", type=%d\n", name, _plotter->drawstate->true_font_name, _plotter->drawstate->font_type);
 #endif
 	  return true;
 	}
     }
   
-  /* couldn't retrieve a matching X font; failure */
+  /* couldn't retrieve a matching X font, so declare failure; this will
+     lead (at a higher level; see g_retrieve.c) either to the retrieval of
+     a default substitute X font, or a builtin Hershey font */
 #ifdef DEBUG
-	  fprintf (stderr, "_x_retrieve_font(): FAILURE, couldn't retrieve \"%s\"\n", name);
+	  fprintf (stderr, "_pl_x_retrieve_font(): FAILURE, couldn't retrieve \"%s\"\n", name);
 #endif
   return false;
 }
 
-/* A helper function that x_retrieve_font() above uses.  It constructs a
-   full XLFD font name from one or two possible prefixes, such as
-   "helvetica-medium-r-normal", and attempts to retrieve each of them. */
+/* _pl_x_select_xlfd_font_carefully() is a helper function that
+   x_retrieve_font() above uses.  It constructs a full XLFD name of a core
+   X11 font from each of several specified base XLFD names, such as
+   "helvetica-medium-r-normal", and attempts to retrieve them in order,
+   until a successful retrieval occurs.  The inclusion of several
+   alternatives is useful, since each of the built-in fonts in libplot's
+   database (see g_fontdb.c) is associated with several possible base XLFD
+   names.  That's because there is no standardization of names across
+   vendors, even for the commonly used `Adobe 35' fonts, i.e., libplot's
+   supported `Postscript fonts'.
+
+   For each alternative, a fontname ending in -iso8859-1 (indicating the
+   ISO-Latin-1 encoding) is tried, and if that doesn't work, a fontname
+   ending in -*-* (the encoding being left up to the server).  The
+   lower-level function _pl_x_select_font_carefully() does the retrieval.
+   It is passed the `x_label' field of the drawing state, which is a hint
+   indicating which characters are needed.  A proper subset of the font
+   will be retrieved, if possible, to save time.  The proper subset is
+   indicated to the server, as usual, by a suffix on the font name.  E.g.,
+   ....-iso8859-1[88 89] consists only of the letters `X' and `Y'
+   (characters 88 and 89).
+
+   This code, when requesting the retrieval, must place an integer pixel
+   size in the XLFD name.  The pixel size it chooses is based on (1) the
+   font_size in user coordinates and (2) the transformation matrix, which
+   takes user-space to device-space, i.e., to X11 pixel space.
+   
+   When any label is drawn, the retrieved font will in general be scaled,
+   by XAffDrawString(); see the code in x_text.c.  So this code cleverly
+   chooses an integer pixel size which, if it weren't for rounding to the
+   closest integer, wouldn't require any scaling of the glyph bitmaps at
+   all, provided that the user-space -> device-space is uniform (not
+   "anamorphic"), and doesn't involve a rotation. */
 
 bool
-#ifdef _HAVE_PROTOS
-_x_select_xlfd_font_carefully (R___(Plotter *_plotter) const char *x_name, const char *x_name_alt, double user_size, double rotation)
-#else
-_x_select_xlfd_font_carefully (R___(_plotter) x_name, x_name_alt, user_size, rotation)
-     S___(Plotter *_plotter;)
-     const char *x_name, *x_name_alt;
-     double user_size, rotation;
-#endif
+_pl_x_select_xlfd_font_carefully (R___(Plotter *_plotter) const char *x_name, const char *x_name_alt, const char *x_name_alt2, const char *x_name_alt3)
 {
   char *x_name_buf;		/* buffer for creating font name */
-  bool is_zero[4];		/* pixel matrix el.s are zero? */
   bool success = false;
+  int integer_font_size_in_pixels;
+  double det, font_size_in_pixels;
 
+  det = _plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[3]
+    - _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[2];
+  
+  if (det == 0.0)
+    /* singular user-space -> device-space map; bail */
+    return false;
+
+  /* Compute preferred pixel size for the core X font: the user-space font
+     size, multiplied by a measure of the size of the user-space to
+     device-space transformation matrix.  The "measure" we choose is the
+     minimum of the matrix's two singular values.  (There are other
+     possible choices for this measure.) */
+
+  font_size_in_pixels = 
+    min_sing_val (_plotter->drawstate->transform.m) *_plotter->drawstate->font_size;
+  if (font_size_in_pixels == 0.0)
+    /* preferred device-space font size, in terms of pixels, is zero; bail */
+    return false;
+
+  /* quantize to an integer pixel size: round downward */
+  integer_font_size_in_pixels = (int)font_size_in_pixels;
+      
+  if (font_size_in_pixels == 0)
+    /* integer device-space size, in terms of pixels, is zero; bail */
+    return false;
+      
   /* prepare buffer for font name assemblage */
-  x_name_buf = (char *)_plot_xmalloc ((MAX_FONT_NAME_LENGTH + 1) * sizeof (char));
+  x_name_buf = (char *)_pl_xmalloc ((MAX_FONT_NAME_LENGTH + 1) * sizeof (char));
 
-  /* Build full XLFD name of font, computing pixel matrix values if we have
-     something other than an unrotated, uniformly scaled font. */
-  if ((rotation == (double)0.0) 
-      && _plotter->drawstate->transform.axes_preserved 
-      && _plotter->drawstate->transform.uniform
-      && _plotter->drawstate->transform.nonreflection
-      && _plotter->drawstate->transform.m[0] > 0.0)
-    /* case 1: zero text rotation, uniformly scaled */
-    {
-      int size_in_pixels;
-      
-      size_in_pixels = 
-	IROUND(_plotter->drawstate->transform.m[0] * user_size);
-      
-      /* if integer size in terms of pixels is zero, bail */
-      if (size_in_pixels == 0)
-	{
-	  free (x_name_buf);
-	  return false;
-	}
-      
-      /* no text rotation, pixel matrix will be diagonal */
-      is_zero[0] = is_zero[3] = false;
-      is_zero[1] = is_zero[2] = true;
-      
-      /* punch size into template, try to retrieve font from server or
-	 cache list */
-      sprintf (x_name_buf, _xlfd_template, x_name, size_in_pixels);
-      success = _x_select_font_carefully (R___(_plotter)
-					  x_name_buf, is_zero, 
-					  _plotter->drawstate->x_label);
-      if (success == false && x_name_alt)
-	/* alternative X font name was supplied, so try it */
-	{
-	  sprintf (x_name_buf, _xlfd_template, x_name_alt, size_in_pixels);
-	  success = _x_select_font_carefully (R___(_plotter)
-					      x_name_buf, is_zero, 
-					      _plotter->drawstate->x_label);
-	}
-    }
-  else
-    /* case 2: nonzero font rotation, or non-uniform scaling */
-    {
-      double rot[4];		/* font rotation matrix */
-      double pm[4];		/* pixel matrix */
-      char a[4][256];		/* ascii representation */
-      char *p;
-      int k;
-      
-      rot[0] = cos (M_PI * rotation / 180.0);
-      rot[1] = sin (M_PI * rotation / 180.0);
-      rot[2] = - sin (M_PI * rotation / 180.0);
-      rot[3] = cos (M_PI * rotation / 180.0);
+  /* try to retrieve font from server or cache list, after punching the
+     pixel size into the appropriate XLFD fontname template */
 
-      /* pixel matrix: product of text rotation matrix, and
-	 transformation from user to device coordinates; note flipped-y
-	 convention affecting _plotter->drawstate->transform.m[1] and
-	 _plotter->drawstate->transform.m[3].  A factor user_size is
-	 also included; see below. */
-      pm[0] =  (rot[0] * _plotter->drawstate->transform.m[0] 
-		+ rot[1] * _plotter->drawstate->transform.m[2]);
-      pm[1] =  - (rot[0] * _plotter->drawstate->transform.m[1] 
-		  + rot[1] * _plotter->drawstate->transform.m[3]);
-      pm[2] =  (rot[2] * _plotter->drawstate->transform.m[0] 
-		+ rot[3] * _plotter->drawstate->transform.m[2]);
-      pm[3] =  - (rot[2] * _plotter->drawstate->transform.m[1] 
-		  + rot[3] * _plotter->drawstate->transform.m[3]);
-      
-      /* don't attempt to retrieve zero-size fonts */
-      if (pm[0] == 0.0 && pm[1] == 0.0 && pm[2] == 0.0 && pm[3] == 0.0)
-	{
-	  free (x_name_buf);
-	  return false;
-	}
-      
-      /* ascii entries in pixel matrix string */
-      for (k = 0; k < 4; k++)
-	{
-	  sprintf (a[k], "%f", user_size * pm[k]);
-	  /* test whether pixel matrix elements are zero, to the
-	     precision supported by %f (6 significant digits) */
-	  if (strcmp (a[k], "0.000000") == 0
-	      || strcmp (a[k], "-0.000000") == 0)
-	    is_zero[k] = true;
-	  else 
-	    is_zero[k] = false;
-	}
-      
-      /* convert minus signs to tildes */
-      for (k = 0; k < 4; k++)
-	for (p = a[k]; *p; p++)
-	  if (*p == '-')
-	    *p = '~';
-      
-      /* punch size into template, try to retrieve font from server or
-	 cache list */
-      sprintf (x_name_buf, _xlfd_template_with_scaling,
-	       x_name, a[0], a[1], a[2], a[3]);
-      success = _x_select_font_carefully (R___(_plotter)
-					  x_name_buf, is_zero, 
-					  _plotter->drawstate->x_label);
-      if (success == false && x_name_alt)
-	/* alternative X font name was supplied, so try it */
-	{
-	  sprintf (x_name_buf, _xlfd_template_with_scaling,
-		   x_name_alt, a[0], a[1], a[2], a[3]);
-	  success = _x_select_font_carefully (R___(_plotter)
-					      x_name_buf, is_zero, 
-					      _plotter->drawstate->x_label);
-	}
-    }
+  /* try Latin-1 fontname, i.e. fontname ending in -iso8859-1 */
 
-  return success;
-}
-
-/* _x_select_font_carefully() is a wrapper around _x_select_font() below.
-   It attempts to retrieve a font (with charset subsetting) from the X
-   server or the font cache.  The charset subset (if any) is specified by a
-   string.  NULL means that we are only retrieving the font to look at its
-   metrics, so we attempt to retrieve a singleton subset consisting of the
-   space character, " ".  If a valid string is supplied, we attempt to
-   retrieve a subset that will allow the string to be rendered.  In both
-   cases, in the event of failure we attempt a complete retrieval of the
-   font (as would be needed on a pre-X11R6 server, for example). */
-
-bool
-#ifdef _HAVE_PROTOS
-_x_select_font_carefully (R___(Plotter *_plotter) const char *name, bool is_zero[4], const unsigned char *s)
-#else
-_x_select_font_carefully (R___(_plotter) name, is_zero, s)
-     S___(Plotter *_plotter;)
-     const char *name;
-     bool is_zero[4];
-     const unsigned char *s;
+  sprintf (x_name_buf, xlfd_template_latin_1, x_name, integer_font_size_in_pixels);
+  success = _pl_x_select_font_carefully (R___(_plotter) x_name_buf,
+					 _plotter->drawstate->x_label,
+					 true);
+#ifdef DEBUG
+  fprintf (stderr, "_pl_x_select_xlfd_font_carefully(): retrieval begins with %s\n",
+	   x_name_buf);
 #endif
-{
-  bool success;
-  
-  if (s == NULL)
-    /* need metrics only */
-    s = (const unsigned char *)" ";
 
-  /* Following #ifdef requested by Georgy Salnikov <sge@nmr.nioch.nsc.ru>,
-     to fix a problem with XFree86-3.2.  If an XLFD font name ends in
-     *-*[32], i.e. font contains only a single space, the X server reports
-     an error retrieving the font, and the client exits.  The bug does not
-     surface in XFree86-3.3, or in Solaris-2.4 or Irix-5.3.  Retrieving the
-     entire font is what he recommends. */
-
-  /* This bug fix is now presumed obsolete, since we now always include the
-     character `X' in the subset of the character set that we retrieve,
-     since we wish to compute the cap height of the font.  I.e., we no
-     longer retrieve fonts consisting of a single space character. */
-
-#ifdef XFREE86_FONTNAME_BUG_FIX
-  {
-    bool replace_space = true;
-    const unsigned char *t = s;
+  if (success == false)
+    /* try fontname ending in -*-* */
+    {
+      sprintf (x_name_buf, xlfd_template_generic, 
+	       x_name, integer_font_size_in_pixels);
+      success = _pl_x_select_font_carefully (R___(_plotter) x_name_buf,
+					     _plotter->drawstate->x_label,
+					     true);
+    }
     
-    while (*t)
-      if (*t++ != ' ')
+  if (x_name_alt)
+    /* alternative base XLFD name was supplied, so try it too */
+    {
+      if (success == false)
+	/* try Latin-1 fontname, i.e. fontname ending in -iso8859-1 */
 	{
-	  replace_space = false;
-	  break;
+	  sprintf (x_name_buf, xlfd_template_latin_1, 
+		   x_name_alt, integer_font_size_in_pixels);
+	  success = _pl_x_select_font_carefully (R___(_plotter) x_name_buf,
+						 _plotter->drawstate->x_label,
+						 true);
 	}
-    if (replace_space)
-      s = NULL;
-  }
-#endif
+      if (success == false)
+	/* try fontname ending in -*-* */
+	{
+	  sprintf (x_name_buf, xlfd_template_generic, 
+		   x_name_alt, integer_font_size_in_pixels);
+	  success = _pl_x_select_font_carefully (R___(_plotter) x_name_buf,
+						 _plotter->drawstate->x_label,
+						 true);
+	}
+    }
 
-  success = _x_select_font (R___(_plotter) name, is_zero, s);
-  if (s != NULL && success == false)
-    /* request entire font */
-    success = _x_select_font (R___(_plotter) name, is_zero, NULL);
-  
+  if (x_name_alt2)
+    /* 2nd alternative base XLFD name was supplied, so try it too */
+    {
+      if (success == false)
+	/* try Latin-1 fontname, i.e. fontname ending in -iso8859-1 */
+	{
+	  sprintf (x_name_buf, xlfd_template_latin_1, 
+		   x_name_alt2, integer_font_size_in_pixels);
+	  success = _pl_x_select_font_carefully (R___(_plotter) x_name_buf,
+						 _plotter->drawstate->x_label, 
+						 true);
+	}
+      if (success == false)
+	/* try fontname ending in -*-* */
+	{
+	  sprintf (x_name_buf, xlfd_template_generic, 
+		   x_name_alt2, integer_font_size_in_pixels);
+	  success = _pl_x_select_font_carefully (R___(_plotter) x_name_buf,
+						 _plotter->drawstate->x_label, 
+						 true);
+	}
+    }
+
+  if (x_name_alt3)
+    /* 3rd alternative base XLFD name was supplied, so try it too */
+    {
+      if (success == false)
+	/* try Latin-1 fontname, i.e. fontname ending in -iso8859-1 */
+	{
+	  sprintf (x_name_buf, xlfd_template_latin_1, 
+		   x_name_alt3, integer_font_size_in_pixels);
+	  success = _pl_x_select_font_carefully (R___(_plotter) x_name_buf,
+						 _plotter->drawstate->x_label, 
+						 true);
+	}
+      if (success == false)
+	/* try fontname ending in -*-* */
+	{
+	  sprintf (x_name_buf, xlfd_template_generic, 
+		   x_name_alt3, integer_font_size_in_pixels);
+	  success = _pl_x_select_font_carefully (R___(_plotter) x_name_buf,
+						 _plotter->drawstate->x_label, 
+						 true);
+	}
+    }
+
+  if (success)
+    /* A clever hack.  Slightly alter the true_font_size field (and
+       font_ascent/font_descent/font_cap_height for consistency), in a way
+       that will permit any text string to be rendered in this font by
+       XDrawString(), rather than by our bitmap-scaling code in
+       x_afftext.c.  Provided, that is, the text string isn't rotated, and
+       the user-space -> device-space transformation is a uniform scaling
+       that respects coordinate axes.
+       
+       The reason this works is that the rendering code in x_text.c calls
+       our bitmap-scaling function XAffDrawString() with a certain
+       transformation matrix a[] as an argument.  Under the above
+       circumstances, this matrix will turn out to be the identity matrix,
+       due to the slight modification performed below.  That being the
+       case, XAffDrawString() will simply call XDrawString rather than
+       performing any bitmap scaling.  The result: in the above
+       circumstances, which are very common, the glyphs in the text string
+       won't undergo a slight scaling traceable to the integer quantization
+       of font pixel size, and will look better. */
+    {
+      double factor = integer_font_size_in_pixels / font_size_in_pixels;
+      
+      /* scale by this factor, quite close to unity */
+      _plotter->drawstate->true_font_size *= factor;
+      _plotter->drawstate->font_ascent *= factor;
+      _plotter->drawstate->font_descent *= factor;
+      _plotter->drawstate->font_cap_height *= factor;
+    }
+
   return success;
 }
 
-/* _x_select_font() attempts to retrieve a specified X font by (1) checking
-   the list of fonts previously retrieved with XLoadQueryFont(), and (2) if
-   the font is not in the list, calling XLoadQueryFont.  X11R6-style
-   charset subsetting is supported (subsetting may be specified by passing
-   a non-NULL pointer to a string).  If retrieval succeeds, i.e. we obtain
-   an XFontStruct, we call _x_set_font_dimensions() to fill in the
-   true_font_size, x_font_pixmatrix, font_ascent, font_descent,
-   font_cap_height, x_native_positioning, and font_is_iso8859_1 fields of
-   the drawing state.  We don't set the font in the GC used for drawing
-   though (for that, see x_text.c). */
+/* _pl_x_select_font_carefully() is a wrapper around select_x_font() below.
+   It attempts to retrieve the font NAME from the X server or from the
+   per-Plotter font cache of already-retrieved fonts.  The character subset
+   desired (if any) is specified by the string S, and whether an attempt
+   should actually be made to retrieve a subset rather than the entire is
+   specified by the parameter SUBSETTING.  The return value indicates
+   whether the retrieval succeeded.
 
-/* Note: if subsetting, we always include the character `X' in the subset.
-   This is a bit of a kludge.  Generally, rasterizing and retrieving `X' is
-   the only way we can compute the cap height; see comments below in
-   _x_set_font_dimensions().  We have some backup code in that function
-   which will automatically set the cap height to 0.75 times the font
-   ascent, if `X' isn't present in the retrieved font. */
+   A NULL value for S means the font is being retrieved only to look at its
+   metrics; in which case select_x_font() will attempt to retrieve the
+   character 'X' only, to permit the cap-height metric to be determined;
+   and the space character, for good measure.  This is arranged in the
+   low-level function string_to_bitvector() below; we _always_ include the
+   characters 'X' and ' ' among those we ask the server to rasterize.
+
+   The inclusion of 'X' incidentally works around a bug reported by Georgy
+   Salnikov <sge@nmr.nioch.nsc.ru>, in XFree86-3.2.  (We previously tried
+   to retrieve not 'X', but rather the space character.  But if an XLFD
+   font name ends in *-*[32], i.e. font contains only a single space,
+   XFree86 reports an error retrieving the font, and any executable linked
+   with this code client will terminate.)
+
+   If the font is successfully retrieved (either from the X server or from
+   the cache), this function fills in most font-related fields of the
+   drawing state.  That includes the generic fields true_font_size,
+   font_ascent, font_descent, font_cap_height, font_is_iso8859_1, and the
+   X-specific fields x_font_struct and x_font_pixel_size.
+
+   The true_font_size is simply set equal to font_size (which is whatever
+   the user passed to libplot by invoking the fontname() function in the
+   libplot API).  That is because in principle, libplot's X driver can
+   match exactly any user-specified font size, by scaling bitmaps.  See
+   x_text.c and x_afftext.c for the code that renders text strings. */
 
 bool
-#ifdef _HAVE_PROTOS
-_x_select_font (R___(Plotter *_plotter) const char *name, bool is_zero[4], const unsigned char *s)
-#else
-_x_select_font (R___(_plotter) name, is_zero, s)
-     S___(Plotter *_plotter;)
-     const char *name;
-     bool is_zero[4];
-     const unsigned char *s;
-#endif
+_pl_x_select_font_carefully (R___(Plotter *_plotter) const char *name, const unsigned char *s, bool subsetting)
 {
-  plFontRecord *fptr;
-  bool subsetting = (s == NULL ? false : true);
-  bool found = false;
-  unsigned char bitvec[32];
+  plXFontRecord *fptr;
+
+  if (s == (unsigned char *)NULL)
+    s = (unsigned char *)"";	/* "" is effectively "X " */
+
+  /* attempt to retrieve the specified (subset of the) font */
+  fptr = select_x_font (_plotter->x_dpy, &(_plotter->x_fontlist),
+			   name, s, subsetting);
 
 #ifdef DEBUG
-  fprintf (stderr, "_x_select_font (name=\"%s\", subset=\"%s\")\n", 
-	   name, (const char *)s ? (const char *)s : "(null)");
+  fprintf (stderr, "_pl_x_select_font_carefully(): select_x_font() returns %p\n",
+	   fptr);
+#endif  
+  
+  if (subsetting && (fptr == (plXFontRecord *)NULL))
+    /* failure; so try to retrieve entire font instead of a subset,
+       ignoring the passed hint string S (perhaps server doesn't support
+       subsetting?) */
+    fptr = select_x_font (_plotter->x_dpy, &(_plotter->x_fontlist), 
+			   name, s, false);
+  
+  if (fptr == (plXFontRecord *)NULL)
+    /* couldn't retrieve font from cache or from server */
+    return false;
+  else
+    /* Success, so fill in fields of the drawing state from the returned
+       font record.  Most are generic rather than X-specific.  Ascent,
+       descent and cap_height are user-space quantities; so are scaled by
+       the font_size, which is expressed in user-space units. */
+    {
+      if (fptr->x_font_pixel_size <= 0) /* paranoia */
+	return false;
+
+#ifdef DEBUG
+      fprintf (stderr, "fontname = %s, min_char_or_byte2 = %u, max_char_or_byte2 = %u, ascent = %d, descent = %d, default_char = %u\n", name, fptr->x_font_struct->min_char_or_byte2, fptr->x_font_struct->max_char_or_byte2, fptr->x_font_struct->ascent, fptr->x_font_struct->descent, fptr->x_font_struct->default_char);
+#endif
+
+      /* set generic fields */
+      _plotter->drawstate->true_font_size = _plotter->drawstate->font_size;
+      _plotter->drawstate->font_ascent =
+	((fptr->x_font_struct->ascent * _plotter->drawstate->font_size)
+	 / fptr->x_font_pixel_size);
+      _plotter->drawstate->font_descent =
+	((fptr->x_font_struct->descent * _plotter->drawstate->font_size)
+	 / fptr->x_font_pixel_size);
+      _plotter->drawstate->font_cap_height =
+	((fptr->x_font_cap_height * _plotter->drawstate->font_size)
+	 / fptr->x_font_pixel_size);
+      
+      _plotter->drawstate->font_is_iso8859_1 = fptr->x_font_is_iso8859_1;
+      
+      /* set X-specific fields */
+      _plotter->drawstate->x_font_struct = fptr->x_font_struct;
+      _plotter->drawstate->x_font_pixel_size = fptr->x_font_pixel_size;
+      
+      return true;
+    }
+}
+
+/* Attempt to retrieve a core X font, as a plXFontRecord.  The font is
+   specified by NAME, and a hint as to which characters will need to be
+   rendered is passed as the non-null string S.  This permits the retrieval
+   of a proper subset of the font, if desired.  The SUBSETTING parameter
+   indicates whether the retrieval of an appropriate subset of the font
+   should first be attempted, before retrieval of the entire font.
+
+   The X_FONTLIST_PTR argument passes [by reference!] a pointer to a font
+   cache, a linked list of plXFontRecords that will be searched.  If the
+   font isn't found in the cache but can be successfully retrieved from the
+   X display server instead, a new record is added to the head of this
+   list; and if it can't be, a null (invalid) record is added to the head
+   of the list; in both cases, to speed up later retrieval attempts.
+
+   Return value: a pointer to the font record, if a font was found in the
+   cache or newly added to it; otherwise NULL.  */
+
+static plXFontRecord *
+select_x_font (Display *dpy, plXFontRecord **x_fontlist_ptr, const char *name, const unsigned char *s, bool subsetting)
+{
+  bool found = false;
+  unsigned char bitvec[32];
+  plXFontRecord *x_fontlist, *fptr;
+
+#ifdef DEBUG
+  fprintf (stderr, "select_x_font (name=\"%s\", subset=\"%s\", subsetting=%d)\n", 
+	   name, (const char *)s, subsetting);
 #endif
 
   if (subsetting)
-    /* construct 256-bit vector specifying charset subset; final arg `true'
-       requests that the character `X' be included (we use it for
-       retrieving the font's cap height) */
-    _string_to_bitvector (s, bitvec, true);
+    /* construct 256-bit vector specifying charset subset */
+    string_to_bitvector (s, bitvec);
 
-  /* attempt to find font in cache list */
-  for (fptr = _plotter->x_fontlist; fptr; fptr = fptr->next)
-    if (strcmp (name, fptr->name) == 0)
-      {
-	if ((subsetting && fptr->subset
-	       && _is_a_subset (bitvec, fptr->subset_vector))
-	    || (subsetting && (fptr->subset == false))
-	    || (subsetting == false && fptr->subset == false))
-	  {
-	    found = true;
-	    _plotter->drawstate->x_font_struct = fptr->x_font_struct;
-	    break;
-	  }
-      }
+  /* get head of linked-list cache */
+  x_fontlist = *x_fontlist_ptr;
 
-  if (found == false)
-    /* no record, try to retrieve font from X server */
+  /* attempt to find font in cache */
+  for (fptr = x_fontlist; fptr; fptr = fptr->next)
     {
-      char *tmpname, *tmpname_perm, *_charset_subset_list = NULL;
-      int extra = 0;
-      plFontRecord *record = 
-	(plFontRecord *)_plot_xmalloc (sizeof (plFontRecord));
-
-      if (subsetting)
-	{
-	  _charset_subset_list = 
-	    (char *)_plot_xmalloc ((MAX_CHARSET_SUBSET_LIST_LENGTH + 1) * sizeof (char));
-	  _print_bitvector (bitvec, _charset_subset_list);
-	  extra = strlen (_charset_subset_list);
-	}
-      tmpname_perm = (char *)_plot_xmalloc (1 + strlen (name));
-      strcpy (tmpname_perm, name);
-      tmpname = (char *)_plot_xmalloc (1 + strlen (name) + extra);
-      strcpy (tmpname, name);
-      if (subsetting)
-	{
-	  /* append X11R6 list-of-ranges to name to be sent to server */
-	  strcat (tmpname, _charset_subset_list);
-	  free (_charset_subset_list);
-	}
-
 #ifdef DEBUG
-      fprintf (stderr, "_x_select_font(): trying to invoke XLoadQueryFont on \"%s\"\n", tmpname);
+      fprintf (stderr, "select_x_font(): cache entry: name=\"%s\", subset=%d\n",
+	       fptr->x_font_name, fptr->subset);
 #endif
-
-      _plotter->drawstate->x_font_struct = 
-	XLoadQueryFont (_plotter->x_dpy, tmpname);
-      free (tmpname);
       
-      /* Whether successfully retrieved or not, add a record of this font
-	 to cache list.  (If retrieval failed, recorded x_font_struct will
-	 be NULL.) */
-      record->name = tmpname_perm; /* stored name doesn't include subset */
-      record->x_font_struct = _plotter->drawstate->x_font_struct;
-      record->subset = subsetting;
-      if (subsetting)
-	memcpy (record->subset_vector, bitvec, 32 * sizeof (unsigned char));
-      record->next = _plotter->x_fontlist;
-      _plotter->x_fontlist = record;
-
-      if (_plotter->drawstate->x_font_struct)
-	/* successfully retrieved a font from the server */
+      if (strcmp (name, fptr->x_font_name) == 0)
 	{
-#ifdef DEBUG
-	  fprintf (stderr, "_x_select_font(): loaded font \"%s\"\n", name);
-#endif	  
-	  /* fill in abovementioned six fields of the drawing state */
-	  _x_set_font_dimensions (R___(_plotter) is_zero);
-	  /* copy these six fields into the record in the cache */
-	  record->true_font_size = _plotter->drawstate->true_font_size;
-	  record->font_pixmatrix[0] = _plotter->drawstate->x_font_pixmatrix[0];
-	  record->font_pixmatrix[1] = _plotter->drawstate->x_font_pixmatrix[1];
-	  record->font_pixmatrix[2] = _plotter->drawstate->x_font_pixmatrix[2];
-	  record->font_pixmatrix[3] = _plotter->drawstate->x_font_pixmatrix[3];
-	  record->font_cap_height = _plotter->drawstate->font_cap_height;
-	  record->font_ascent = _plotter->drawstate->font_ascent;
-	  record->font_descent = _plotter->drawstate->font_descent;
-	  record->native_positioning = _plotter->drawstate->x_native_positioning;
-	  record->font_is_iso8859_1 = _plotter->drawstate->font_is_iso8859_1;
-
-	  return true;		/* X font selected */
-	}
-      else
-	/* couldn't find font either in cache or on server */
-	{
-#ifdef DEBUG
-	  fprintf (stderr, "_x_select_font(): failed to load font \"%s\"\n", name);
-#endif	  
-	  return false;
+	  if ((subsetting && fptr->subset
+	       && is_a_subset (bitvec, fptr->subset_vector))
+	      || (subsetting && (fptr->subset == false))
+	      || (subsetting == false && fptr->subset == false))
+	    {
+	      found = true;
+	      break;
+	    }
 	}
     }
-  else
-    /* record for font was found in cache */
+  
+  if (found)
     {
-      if (_plotter->drawstate->x_font_struct) 
-	/* font record was a genuine one */
+      if (fptr->x_font_struct)
+	/* found record was a genuine one */
 	{
 #ifdef DEBUG
-	  fprintf (stderr, "_x_select_font(): found in cache: \"%s\"\n", name);
+	  fprintf (stderr, "select_x_font(): font cache HIT on name=%s, s=\"%s\"\n", name, s);
 #endif
-	  /* copy abovementioned six fields from cached font record */
-	  _plotter->drawstate->true_font_size = fptr->true_font_size;
-	  _plotter->drawstate->x_font_pixmatrix[0] = fptr->font_pixmatrix[0];  
-	  _plotter->drawstate->x_font_pixmatrix[1] = fptr->font_pixmatrix[1];
-	  _plotter->drawstate->x_font_pixmatrix[2] = fptr->font_pixmatrix[2];
-	  _plotter->drawstate->x_font_pixmatrix[3] = fptr->font_pixmatrix[3];
-	  _plotter->drawstate->font_cap_height = fptr->font_cap_height;
-	  _plotter->drawstate->font_ascent = fptr->font_ascent;
-	  _plotter->drawstate->font_descent = fptr->font_descent;
-	  _plotter->drawstate->x_native_positioning = fptr->native_positioning;
-	  _plotter->drawstate->font_is_iso8859_1 = fptr->font_is_iso8859_1;
-
-	  return true;		/* X font selected */
+	  return fptr;
 	}
       else
 	{
 #ifdef DEBUG
-	  fprintf (stderr, "_x_select_font(): found in cache: NULL record for \"%s\"\n", name);
+	  fprintf (stderr, "select_x_font(): font cache HIT (fake) on name=\"%s\", s=\"%s\"\n", name, s);
 #endif
-	  /* we don't have a font; previous retrieval attempt failed */
-	  return false;		/* X font not selected */
-	}	  
-    }  
+	  /* invalid record: an earlier retrieval attempt must have failed */
+	  return (plXFontRecord *)NULL;
+	}
+    }
+  
+#ifdef DEBUG
+  fprintf (stderr, "select_x_font(): font cache miss on name=\"%s\", s=\"%s\"\n", name, s);
+#endif
+
+  /* no record in cache, so try to retrieve font from X server */
+  {
+    char *tmpname, *tmpname_perm, *_charset_subset_list = NULL;
+    int extra = 0;
+
+    /* allocate space for new record, update pointer to cache to include it */
+    fptr = 
+      (plXFontRecord *)_pl_xmalloc (sizeof (plXFontRecord));
+    fptr->next = *x_fontlist_ptr;
+    *x_fontlist_ptr = fptr;
+
+    if (subsetting)
+      {
+	_charset_subset_list = 
+	  (char *)_pl_xmalloc ((MAX_CHARSET_SUBSET_LIST_LENGTH + 1) * sizeof (char));
+	print_bitvector (bitvec, _charset_subset_list);
+	extra = strlen (_charset_subset_list);
+      }
+    tmpname_perm = (char *)_pl_xmalloc (1 + strlen (name));
+    strcpy (tmpname_perm, name);
+    tmpname = (char *)_pl_xmalloc (1 + strlen (name) + extra);
+    strcpy (tmpname, name);
+    if (subsetting)
+      {
+	/* append X11R6 list-of-ranges to name to be sent to server */
+	strcat (tmpname, _charset_subset_list);
+	free (_charset_subset_list);
+      }
+    
+#ifdef DEBUG
+    fprintf (stderr, "select_x_font(): trying to invoke XLoadQueryFont on \"%s\", subsetting=%d\n", tmpname, subsetting);
+#endif
+    
+    /* attempt to retrieve font from server; return value from
+       XLoadQueryFont() equalling NULL indicates failure */
+    fptr->x_font_struct = 
+      XLoadQueryFont (dpy, tmpname);
+    free (tmpname);
+      
+    /* whether or not there was success, fill in some add'l fields of record */
+    fptr->x_font_name = tmpname_perm; /* don't include subset in stored name */
+    fptr->subset = subsetting;
+    if (subsetting)
+      memcpy (fptr->subset_vector, bitvec, 32 * sizeof (unsigned char));
+
+    /* handle a special case: retrieval from server succeeded, but the
+       retrieved font wasn't an 8-bit font, so we can't use it */
+
+    if (fptr->x_font_struct 
+	&& (fptr->x_font_struct->min_byte1 != 0
+	    || fptr->x_font_struct->max_byte1 != 0))
+      /* treat as if retrieval failed */
+      {
+	XFreeFont (dpy, fptr->x_font_struct);
+	fptr->x_font_struct = (XFontStruct *)NULL;
+      }
+
+    if (fptr->x_font_struct)
+      /* retrieval succeeded */
+      {
+#ifdef DEBUG
+	fprintf (stderr, "select_x_font(): loaded font \"%s\"\n", name);
+#endif	  
+	/* fill in, as well, the x_font_pixel_size, x_font_cap_height,
+	   x_font_iso_8859_1 fields of the font record */
+	set_font_dimensions (dpy, fptr);
+	
+	return fptr;		/* X font selected */
+      }
+    else
+      /* retrieval failed */
+      {
+#ifdef DEBUG
+	fprintf (stderr, "select_x_font(): failed to load font \"%s\"\n", name);
+#endif	  
+	return (plXFontRecord *)NULL;
+      }
+  }
 }
 
-/* _x_set_font_dimensions() is called when an X font has been retrieved and
-   an XFontStruct placed in the x_font_struct field of the
-   _plotter->drawstate structure.  It attempts to compute and fill in
-   several other fields.  This includes (1) the `true_font_size' field
-   (essentially pixel size, see comments at head of file, transformed from
-   the device frame to the user frame; it's what will be returned by
-   e.g. the fontsize() operation), (2) the `pixmatrix' field, and (3) the
-   `x_native_positioning' field.
+/* Complete the filling in of an plXFontRecord, by filling in the fields
+   x_font_pixel_size, x_font_cap_height, and x_font_is_iso8859_1, on the
+   basis of the x_font_struct field.  Called by preceding function.  */
 
-   If the font has a server-returned XLFD name, i.e., a FONT property that
-   is an official XLFD string, the pixel size and pixel matrix are
-   extracted from it; if not, we try to extract (or compute) the PIXEL_SIZE
-   property of the font.  Only if we fail at this do we punt, and fill in
-   the `true_font_size' field from the font height (i.e. font ascent + font
-   descent) provided by the XFontStruct.  The `x_native_positioning' field
-   is set if the pixel matrix is proportional to the identity matrix.
-
-   We also fill in (4) the `font_ascent' field, (5) the `font_descent'
-   field, and (6) the `font_cap_height' field.  Either they are taken from
-   properties, or they are computed from the `x_font_struct' field.  We
-   fill in (7) the `font_is_iso8859_1' field too.
-
-   If the font doesn't have an XLFD name, various kludges are used. */
-
-void
-#ifdef _HAVE_PROTOS
-_x_set_font_dimensions(R___(Plotter *_plotter) bool is_zero[4])
-#else
-_x_set_font_dimensions(R___(_plotter) is_zero)
-     S___(Plotter *_plotter;)
-     bool is_zero[4];
-#endif
+static void
+set_font_dimensions (Display *dpy, plXFontRecord *fptr)
 {
   unsigned long retval;
   char *name, *pixel_field;
-  double size;
   char *charset_major_field, *charset_minor_field;
-  XFontStruct *x_font_struct = _plotter->drawstate->x_font_struct;
 
 #ifdef DEBUG2
   {
     int i;
 
-    for (i = 0; i < x_font_struct->n_properties; i++)
+    for (i = 0; i < fptr->x_font_struct->n_properties; i++)
       fprintf (stderr, "\tproperty %s [atom %lu] is %ld\n", 
-	       XGetAtomName(_plotter->x_dpy, 
-			    x_font_struct->properties[i].name),
-	       x_font_struct->properties[i].name,
-	       x_font_struct->properties[i].card32);
+	       XGetAtomName(dpy, fptr->x_font_struct->properties[i].name),
+	       fptr->x_font_struct->properties[i].name,
+	       fptr->x_font_struct->properties[i].card32);
   }    
 #endif
 
-  if (XGetFontProperty (x_font_struct, XA_FONT, &retval))
+  if (XGetFontProperty (fptr->x_font_struct, XA_FONT, &retval))
     /* this font has a FONT property, as any well behaved font should */
     {
       /* Extract relevant fields from this property (i.e. from X server's
 	 idea of the font name).  This will work if it's an XLFD name. */
-      name = XGetAtomName(_plotter->x_dpy, retval); 
-      /* N.B. it's here that the bogus tiny entries ("4e-311") can show up */
+      name = XGetAtomName (dpy, retval); 
 
 #ifdef DEBUG
-      fprintf (stderr, "_x_set_font_dimensions(): FONT property is \"%s\"\n", name);
+      fprintf (stderr, "set_font_dimensions(): FONT property is \"%s\"\n", name);
 #endif
-      pixel_field = _xlfd_field (name, FIELD_PIXELS);
-      charset_major_field = _xlfd_field (name, FIELD_CHARACTER_SET_MAJOR);
-      charset_minor_field = _xlfd_field (name, FIELD_CHARACTER_SET_MINOR);
+      pixel_field = xlfd_field (name, XLFD_FIELD_PIXELS);
+      charset_major_field = xlfd_field (name, XLFD_FIELD_CHARACTER_SET_MAJOR);
+      charset_minor_field = xlfd_field (name, XLFD_FIELD_CHARACTER_SET_MINOR);
       XFree (name);
 
       /* determine whether font encoding is ISO-Latin-1 */
       if ((charset_major_field != NULL) && (charset_minor_field != NULL)
 	  && strcasecmp (charset_major_field, "iso8859") == 0
-	  && charset_minor_field[0] == (char)'1')
-	_plotter->drawstate->font_is_iso8859_1 = true;
+	  && (charset_minor_field[0] == (char)'1'
+	      && (charset_minor_field[1] == (char)0 /* string terminator */
+		  || charset_minor_field[1] == (char)'[')))
+	  fptr->x_font_is_iso8859_1 = true;
       else
-	_plotter->drawstate->font_is_iso8859_1 = false;
+	  fptr->x_font_is_iso8859_1 = false;
 
       if (charset_major_field)
 	free (charset_major_field);
@@ -817,289 +892,92 @@ _x_set_font_dimensions(R___(_plotter) is_zero)
       if (pixel_field != NULL)	
 	/* font presumably has an XLFD name, since it has a pixel field */
 	{
-	  /* extract x_font_pixmatrix, x_native_positioning from the pixel
-             field; keep track of which elements of pixmatrix should be
-             exactly zero */
-	  _parse_pixmatrix (pixel_field, 
-			    _plotter->drawstate->x_font_pixmatrix, 
-			    &(_plotter->drawstate->x_native_positioning),
-			    is_zero);
+	  /* extract x_font_pixel_size from the pixel field */
+
+	  unsigned int size;
+	  
+	  sscanf (pixel_field, "%u", &size);
+	  fptr->x_font_pixel_size = size;
 	  free (pixel_field);
 	  
-	  /* compute true_font_size from the pixmatrix */
-	  {
-	    double sx, sy;
-	    double ux, uy;
-	    
-	    /* (sx, sy) is a sort of minimum inter-line displacement
-               vector, in the device frame (i.e. in terms of pixel coors) */
-	    sx = _plotter->drawstate->x_font_pixmatrix[2];
-	    sy = - _plotter->drawstate->x_font_pixmatrix[3];	  
-
-	    /* (ux, uy) is the same, in the user frame; it should be
-	       perpendicular to the escapement vector, the angle of which
-	       the user specifies with textangle() */
-	    ux = XUV (sx, sy);
-	    uy = YUV (sx, sy);
-
-	    /* `true_font_size' is length of this vector, in user frame */
-	    _plotter->drawstate->true_font_size = sqrt (ux*ux + uy*uy);
-	  }
+	  /* fill in the font_{cap_height} field; we get it from the ascent
+	     of the `X' character, if it exists */
 	  
-	  /* Try to fill in the font_{descent,ascent,cap_height} fields by
-	     retrieving the RAW_DESCENT, RAW_ASCENT, RAW_CAP_HEIGHT
-	     properties of the font.  (``What descent, ascent, and
-	     cap_height would be for a 1000-pixel untransformed font''.)
-	     If they don't exist, this must be an XLFD font without a
-	     matrix pixmatrix (hence no rotation).  So in that case we get
-	     the descent and ascent from the XFontStruct, instead.  The
-	     RAW_CAP_HEIGHT property seems seldom to be supplied; we get it
-	     from the ascent of the `X' character, which we assume to
-	     exist.
-
-	     These fields are used only for computing vertical offsets when
-	     plotting label strings. */
-	  {
-	    Atom raw_descent_atom, raw_ascent_atom, raw_cap_height_atom;
-	    bool descent_success, ascent_success, cap_height_success;
-	    unsigned long font_raw_descent, font_raw_ascent, font_raw_cap_height;
-	    
-	    raw_descent_atom = XInternAtom (_plotter->x_dpy, 
-					    "RAW_DESCENT", false);
-	    raw_ascent_atom = XInternAtom (_plotter->x_dpy, 
-					   "RAW_ASCENT", false);
-	    raw_cap_height_atom = XInternAtom (_plotter->x_dpy, 
-					       "RAW_CAP_HEIGHT", false);
-	    
-	    descent_success = 
-	      XGetFontProperty (x_font_struct, 
-				raw_descent_atom, 
-				&font_raw_descent) ? true : false;
-	    
-	    ascent_success = 
-	      XGetFontProperty (x_font_struct, 
-				raw_ascent_atom, 
-				&font_raw_ascent) ? true : false;
-	    cap_height_success = 
-	      XGetFontProperty (x_font_struct, 
-				raw_cap_height_atom, 
-				&font_raw_cap_height) ? true : false;
-
-#ifdef DEBUG2
-	    if (descent_success)
-	      fprintf (stderr, "RAW_DESCENT property is \"%lu\"\n", 
-		       font_raw_descent);
-	    else
-	      fprintf (stderr, "RAW_DESCENT property does not exist\n");
-	    if (ascent_success)
-	      fprintf (stderr, "RAW_ASCENT property is \"%lu\"\n", 
-		       font_raw_ascent);
-	    else
-	      fprintf (stderr, "RAW_ASCENT property does not exist\n");
-#endif
-
-	    /* If no success, this must be a pre-X11R6 font of some kind
-	       (so we can assume the transformation from user coordinates
-	       to device coordinates is a multiple of the identity [?]).
-	       So we get the descent and ascent from the XFontStruct and
-	       inverse-transform them to `1000-pixel font units', assuming
-	       that the pixel matrix is a multiple of the identity. */
-
-	    if (!descent_success)
-	      /* no RAW_DESCENT property, take descent from XFontStruct */
-	      {
-		font_raw_descent 
-		  = IROUND(1000.0 * x_font_struct->descent 
-			   / _plotter->drawstate->x_font_pixmatrix[3]);
-#ifdef DEBUG2
-		fprintf (stderr, "kludged RAW_DESCENT property is \"%lu\", from %d\n", 
-			 font_raw_descent, x_font_struct->descent);
-#endif		
-	      }
-
-	    if (!ascent_success)
-	      /* no RAW_ASCENT property, take ascent from XFontStruct */
-	      {
-		font_raw_ascent 
-		  = IROUND(1000.0 * x_font_struct->ascent 
-			   / _plotter->drawstate->x_font_pixmatrix[3]);
-#ifdef DEBUG2
-		fprintf (stderr, "kludged RAW_ASCENT property is \"%lu\", from %d\n", 
-			 font_raw_ascent, x_font_struct->ascent);
-#endif		
-	      }
-
-	    if (!cap_height_success)
-	      /* This one is much harder.  The RAW_CAP_HEIGHT property
-		 seems seldom to be supplied, so we can't be sure that if
-		 it isn't, the pixmatrix is a multiple of the identity.  If
-		 the pixmatrix isn't a multiple of the identity, our
-		 alternative approach (taking the cap height from the
-		 ascent of the `X' character, if it's available) won't
-		 work.  So in that case we punt: we declare the cap height
-		 to be 75% of the font ascent. */
-	      {
-
-		if ('X' >= x_font_struct->min_char_or_byte2
-		    && 'X' <= x_font_struct->max_char_or_byte2)
-		  /* have `X' in the font */
-		  {
-		    int X = 'X' - x_font_struct->min_char_or_byte2;
-
-		    if (is_zero[1] && is_zero[2] &&
-			_plotter->drawstate->x_font_pixmatrix[3] != 0.0)
-		      /* user frame->device frame preserves axes, etc. */
-		      {
-			/* two possibilities, depending on whether or not
-			   map reverses the y coordinate */
-			if (_plotter->drawstate->x_font_pixmatrix[3] > 0.0)
-			  {
-			    if (x_font_struct->per_char)
-			      font_raw_cap_height
-				= IROUND(1000.0 * x_font_struct->per_char[X].ascent
-					 / _plotter->drawstate->x_font_pixmatrix[3]);
-			    else
-			      font_raw_cap_height
-				= IROUND(1000.0 * x_font_struct->min_bounds.ascent
-					 / _plotter->drawstate->x_font_pixmatrix[3]);
-			  }
-			else
-			  {
-			    if (x_font_struct->per_char)
-			      font_raw_cap_height
-				= - IROUND(1000.0 * x_font_struct->per_char[X].descent
-					   / _plotter->drawstate->x_font_pixmatrix[3]);
-			    else
-			      font_raw_cap_height
-				= - IROUND(1000.0 * x_font_struct->min_bounds.descent
-					   / _plotter->drawstate->x_font_pixmatrix[3]);
-			  }
-		      }
-		    else
-		      /* coordinate axes not preserved, so define our
-			 kludged RAW_CAP_HEIGHT to equal (3/4) of
-			 RAW_ASCENT (what else could we do?) */
-		      font_raw_cap_height = IROUND(0.75 * font_raw_ascent);
-		  }
-		else
-		  /* don't have the letter `X' in the font, so define our
-		     kludged RAW_CAP_HEIGHT to equal (3/4) of RAW_ASCENT
-		     (what else can we do?) */
-		  font_raw_cap_height = IROUND(0.75 * font_raw_ascent);
-#ifdef DEBUG2
-		fprintf (stderr, "kludged RAW_CAP_HEIGHT property is \"%lu\"\n", 
-			 font_raw_cap_height);
-#endif		
-	      }
-
-	    /* copy all 3 metrics into drawing state */
-	    _plotter->drawstate->font_ascent 
-	      = ((double)font_raw_ascent / 1000.0) * _plotter->drawstate->true_font_size;
-	    _plotter->drawstate->font_descent
-	      = ((double)font_raw_descent / 1000.0) * _plotter->drawstate->true_font_size;
-	    _plotter->drawstate->font_cap_height
-	      = ((double)font_raw_cap_height / 1000.0) * _plotter->drawstate->true_font_size;
-	  }
-
+	  if ('X' >= fptr->x_font_struct->min_char_or_byte2
+	      && 'X' <= fptr->x_font_struct->max_char_or_byte2
+	      && fptr->x_font_struct->per_char)
+	    /* have `X' char in the font, and have per-char data */
+	    {
+	      int X = 'X' - fptr->x_font_struct->min_char_or_byte2;
+	      
+	      fptr->x_font_cap_height
+		= fptr->x_font_struct->per_char[X].ascent;
+	    }
+	  else		/* do our best */
+	      fptr->x_font_cap_height
+		= fptr->x_font_struct->min_bounds.ascent;
+	  
 	  /* we've set all fields, so we can return */
 	  return;
 	}
-    }
-  else
-    {
 #ifdef DEBUG2
       fprintf (stderr, "FONT property does not exist\n");
 #endif
     }
-  
-  /* if we reached here, font doesn't have an XLFD name (so no pixel size
-     field, and hence no rotation), or there's no FONT property at all (a
-     bad situation) */
-
-  _plotter->drawstate->font_is_iso8859_1 = false;
-
-  {
-    Atom pixel_size_atom;
-    
-    pixel_size_atom = XInternAtom (_plotter->x_dpy, "PIXEL_SIZE", false);
-    if (XGetFontProperty (x_font_struct, pixel_size_atom, &retval))
-      /* there's a PIXEL_SIZE property, so use it to compute font size */
-      {
-#ifdef DEBUG2
-	fprintf (stderr, "PIXEL_SIZE property is \"%lu\"\n", retval);
-#endif	
-	size = (double)retval;
-      }
-    else
-      /* no PIXEL_SIZE, so try to compute size from POINT_SIZE and
-	 RESOLUTION_Y properties */
-      {
-	Atom resolution_y_atom;
-	unsigned long point_size, resolution_y;
-	
-#ifdef DEBUG2
-	fprintf (stderr, "PIXEL_SIZE property does not exist\n");
-#endif
-	resolution_y_atom = XInternAtom (_plotter->x_dpy, "RESOLUTION_Y", false);
-	if (XGetFontProperty (x_font_struct, XA_POINT_SIZE, &point_size)
-	    && (XGetFontProperty (x_font_struct, 
-				  resolution_y_atom, &resolution_y)))
-	  {
-#ifdef DEBUG2
-	    fprintf (stderr, "POINT_SIZE property is \"%lu\"\n", 
-		     point_size);
-	    fprintf (stderr, "RESOLUTION_Y property is \"%lu\"\n", 
-		     resolution_y);
-#endif	
-	    size = (double)point_size * (double)resolution_y / 722.7;
-	  }
-	else 
-	  /* we can't compute the font size legitimately, so punt: estimate
-	     it from the XFontStruct (may not be reliable) */
-	  {
-#ifdef DEBUG2
-	    fprintf (stderr, "POINT_SIZE and/or RESOLUTION_Y properties do not exist\n");
-#endif
-	    size = (double)(x_font_struct->ascent + x_font_struct->descent);
-	  }
-      }
-
-    /* now that the font size is known, handcraft a pixmatrix for this
-       (presumed) pre-XLFD font, as if it were an XLFD font */
-    _plotter->drawstate->x_font_pixmatrix[0] = size;
-    _plotter->drawstate->x_font_pixmatrix[1] = 0.0;
-    _plotter->drawstate->x_font_pixmatrix[2] = 0.0;
-    _plotter->drawstate->x_font_pixmatrix[3] = size;
-
+  else
+  /* font doesn't have an XLFD name (so no pixel size field), or there's no
+     FONT property at all (a bad situation) */
     {
-      double ux, uy;
+      Atom pixel_size_atom, resolution_y_atom;
+      unsigned long point_size, resolution_y;
       
-      /* (ux, uy) is a sort of minimum inter-line displacement vector, in
-	 the user frame */
-      ux = XUV (0.0, size);
-      uy = YUV (0.0, size);
+      fptr->x_font_is_iso8859_1 = false; /* assumed (worst case) */
       
-      /* the true_font_size field is the length of this vector */
-      _plotter->drawstate->true_font_size = sqrt(ux*ux + uy*uy);
-    }
-    
-    /* for non-XLFD fonts, we use these alternative definitions (kludges)
-       for the descent and ascent drawing state fields */
-    _plotter->drawstate->font_descent 
-      = (_plotter->drawstate->true_font_size 
-	 * x_font_struct->descent 
-	 / _plotter->drawstate->x_font_pixmatrix[3]);
-    
-    _plotter->drawstate->font_ascent 
-      = (_plotter->drawstate->true_font_size 
-	 * x_font_struct->ascent 
-	 / _plotter->drawstate->x_font_pixmatrix[3]);
+      pixel_size_atom = XInternAtom (dpy, "PIXEL_SIZE", (Bool)false);
 
-    _plotter->drawstate->font_cap_height
-      = (_plotter->drawstate->true_font_size 
-	 * x_font_struct->per_char['X'-x_font_struct->min_char_or_byte2].ascent
-	 / _plotter->drawstate->x_font_pixmatrix[3]);
-  }
+      if (XGetFontProperty (fptr->x_font_struct, pixel_size_atom, &retval))
+	/* there's a PIXEL_SIZE property, so use it to compute font size */
+	{
+#ifdef DEBUG2
+	  fprintf (stderr, "PIXEL_SIZE property is \"%lu\"\n", retval);
+#endif	
+	  fptr->x_font_pixel_size = retval;
+	}
+      else
+	/* no PIXEL_SIZE, so try to compute pixel size from POINT_SIZE and
+	   RESOLUTION_Y properties */
+	{
+#ifdef DEBUG2
+	  fprintf (stderr, "PIXEL_SIZE property does not exist\n");
+#endif
+	  resolution_y_atom = XInternAtom (dpy, "RESOLUTION_Y", (Bool)false);
+	  if (XGetFontProperty (fptr->x_font_struct, XA_POINT_SIZE, &point_size)
+	      && (XGetFontProperty (fptr->x_font_struct, 
+				    resolution_y_atom, &resolution_y)))
+	    {
+#ifdef DEBUG2
+	      fprintf (stderr, "POINT_SIZE property is \"%lu\"\n", 
+		       point_size);
+	      fprintf (stderr, "RESOLUTION_Y property is \"%lu\"\n", 
+		       resolution_y);
+#endif	
+	      fptr->x_font_pixel_size = 
+		IROUND(((double)point_size * (double)resolution_y / 722.7));
+	    }
+	  else 
+	    /* we can't compute the font size legitimately, so estimate it
+	       from the XFontStruct (may not be reliable) */
+	    {
+#ifdef DEBUG2
+	      fprintf (stderr, "POINT_SIZE and/or RESOLUTION_Y properties do not exist\n");
+#endif
+	      fptr->x_font_pixel_size = fptr->x_font_struct->ascent + fptr->x_font_struct->descent;
+	    }
+	}
+
+      fptr->x_font_cap_height
+	= fptr->x_font_struct->per_char['X' - fptr->x_font_struct->min_char_or_byte2].ascent;
+    }
 }
 
 /* Extract a field from an XLFD name string, by number, and return it, via
@@ -1107,22 +985,16 @@ _x_set_font_dimensions(R___(_plotter) is_zero)
    returned. */
 
 static char *
-#ifdef _HAVE_PROTOS
-_xlfd_field(const char *name, int field)
-#else
-_xlfd_field(name, field)
-     const char *name;
-     int field;
-#endif
+xlfd_field(const char *name, int field)
 {
   const char *p;
-  const char *fields[NUM_XLFD_FIELDS];
+  const char *fields[PL_NUM_XLFD_FIELDS];
   char *retstring;
-  int len[NUM_XLFD_FIELDS];
+  int len[PL_NUM_XLFD_FIELDS];
   int i, n, m;
   /* split into fields at hyphens */
   for (p = name, i = 0, n = 0, m = 0; 
-       *p && (i < NUM_XLFD_FIELDS); 
+       *p && (i < PL_NUM_XLFD_FIELDS); 
        p++, n++, m++)
     {
       if (*p == '-')
@@ -1133,13 +1005,13 @@ _xlfd_field(name, field)
 	  fields[i++] = p;
 	}
     }
-  if (i < NUM_XLFD_FIELDS)
+  if (i < PL_NUM_XLFD_FIELDS)
     return NULL;
 
-  len[NUM_XLFD_FIELDS - 1] = strlen (name) - (m - 1); /* final field exhausts string */
+  len[PL_NUM_XLFD_FIELDS - 1] = strlen (name) - (m - 1); /* final field exhausts string */
 
   /* for len[] and fields[], each field includes initial hyphen */
-  retstring = (char *)_plot_xmalloc (len[field] * sizeof(char));
+  retstring = (char *)_pl_xmalloc (len[field] * sizeof(char));
   strncpy (retstring, fields[field] + 1, 
 	   (unsigned int)(len[field] - 1)); /* skip initial - */
   retstring[len[field] - 1] = '\0';
@@ -1147,100 +1019,15 @@ _xlfd_field(name, field)
   return retstring;
 }     
 
-/* _parse_pixmatrix() parses a string (the pixel string from an XLFD font
-   name).  If the string is a scalar pixel size, the parsed pixel matrix
-   (stored in d[]) is defined to be [size 0.0 0.0 size].  If the string is
-   an actual pixel matrix, its four elements are copied into d[].
-
-   This routine also sets the x_native_positioning field, depending on
-   whether or not the pixel size was a scalar.  In the scalar case, native
-   X11 positioning for characters within a string may be used; in the
-   non-scalar case, it may not.
-
-   It's in this routine that we use the advisory is_zero[] array, which is
-   passed down from several levels above.  If any element of the pixel
-   matrix is, or should be, quite close to zero, we set it to zero exactly.
-   This works around the problem that silly, tiny floating point numbers
-   (e.g., 4e-311) passed back from some X servers are so small they can't
-   be manipulated arithmetically on DEC Alphas. */
+/* Prepare a bit vector (length 256 bits, i.e. 32 bytes) indicating which
+   characters in the range 1..255 are used in string S.  We always include
+   the character 'X', even if it isn't present in the string.  `X' is
+   special because we can subsequently use it to retrieve the cap height.
+   For backward compatibility (not necessary?) we also include the space
+   character. */
 
 static void
-#ifdef _HAVE_PROTOS
-_parse_pixmatrix(const char *pixel_string, double d[4], bool *x_native_positioning, bool is_zero[4]) 
-#else
-_parse_pixmatrix(pixel_string, d, x_native_positioning, is_zero) 
-     const char *pixel_string; 
-     double d[4]; 
-     bool *x_native_positioning; 
-     bool is_zero[4];
-#endif
-{ 
-  int len, i;
-  char *s[4];
-  
-  len = strlen (pixel_string);
-  for (i = 0; i < 4; i++)
-    s[i] = (char *)_plot_xcalloc (1, (len + 1) * sizeof(char));
-  sscanf (pixel_string, "[ %s %s %s %s ]", s[0], s[1], s[2], s[3]);
-
-  if (*(s[0]) && *(s[1]) && *(s[2]) && *(s[3]))
-    /* if we got four nonempty strings, good... */
-    {
-      int j;
-      
-      for (j = 0; j < 4; j++)
-	{
-	  char *p;
-	  
-	  /* convert all hyphens to minuses */
-	  for (p = s[j]; *p; p++)
-	    if (*p == '~')
-	      *p = '-';
-
-	  /* convert strings to doubles */
-	  if (is_zero[j])
-	    /* set to zero _exactly_, no matter what the server says */
-	    d[j] = 0.0;
-	  else
-	    sscanf (s[j], "%lf", &(d[j]));
-	  *x_native_positioning = false;
-	}
-    }
-
-  /* otherwise parse pixel field as a scalar integer size */
-  else
-    {
-      int size;
-      
-      sscanf (pixel_string, "%d", &size);
-      d[0] = (double)size;
-      d[1] = 0.0;
-      d[2] = 0.0;
-      d[3] = (double)size;
-      *x_native_positioning = true;
-    }
-  
-  for (i = 0; i < 4; i++)
-    free (s[i]);
-
-  return;
-}
-
-/* This prepares a bit vector (length 256 bits, i.e. 32 bytes) indicating
-   which characters in the range 1..255 are used in a string.  Final
-   argument `include_X', if true, requests the character `X' should be
-   included, even if it isn't present in the string.  `X' is special
-   because we use it to retrieve the cap height. */
-
-static void
-#ifdef _HAVE_PROTOS
-_string_to_bitvector (const unsigned char *s, unsigned char v[32], bool include_X)
-#else
-_string_to_bitvector (s, v, include_X)
-     const unsigned char *s;
-     unsigned char v[32];
-     bool include_X;
-#endif
+string_to_bitvector (const unsigned char *s, unsigned char v[32])
 {
   unsigned char c;
   unsigned int i, j;
@@ -1249,14 +1036,19 @@ _string_to_bitvector (s, v, include_X)
   for (k = 0; k < 32; k++)
     v[k] = 0;
 
-  if (include_X)
-    {
-      c = 'X';
-      i = c / 8;
-      j = c % 8;
-      v[i] |= (1 << j);
-    }
+  /* include the X character */
+  c = 'X';
+  i = c / 8;
+  j = c % 8;
+  v[i] |= (1 << j);
 
+  /* include the space character too */
+  c = ' ';
+  i = c / 8;
+  j = c % 8;
+  v[i] |= (1 << j);
+
+  /* include all characters in the passed string */
   while ((c = *s) != (unsigned char)'\0')
     {
       i = c / 8;
@@ -1275,13 +1067,7 @@ _string_to_bitvector (s, v, include_X)
    brackets. */
 
 static void
-#ifdef _HAVE_PROTOS
-_print_bitvector (unsigned char v[32], char *s)
-#else
-_print_bitvector (s, v)
-     unsigned char v[32];
-     char *s;
-#endif
+print_bitvector (unsigned char v[32], char *s)
 {
   int i, num_ranges_output = 0, num_chars_output = 0;
   int start_of_range = 0;
@@ -1382,13 +1168,7 @@ _print_bitvector (s, v)
 }
 
 static bool
-#ifdef _HAVE_PROTOS
-_is_a_subset (unsigned char set1[32], unsigned char set2[32])
-#else
-_is_a_subset (set1, set2)
-     unsigned char set1[32];
-     unsigned char set2[32];
-#endif
+is_a_subset (unsigned char set1[32], unsigned char set2[32])
 {
   int i;
   bool retval = true;
@@ -1401,4 +1181,66 @@ _is_a_subset (set1, set2)
       }
 
   return retval;
+}
+
+/* Compute the minimum of the two singular values of a 2x2 matrix.  Used
+   for computing our favored pixel size, at which to retrieve a font; the
+   matrix is the user-space -> device-space transformation matrix. */
+
+static double
+min_sing_val (double m[4])
+{
+  double mm[4], mprod[4];
+  double mag, max_mag = 0.0;
+  double trace, det, b2_4ac, min_sing_val_squared, min_sing_val;
+  int i;
+
+  /* scale the elements of m so that the largest has magnitude unity, to
+     reduce the chance of floating point roundoff error; this scaling will
+     be undone at the end */
+
+  for (i = 0; i < 4; i++)
+    {
+      mag = fabs (m[i]);
+      if (mag > max_mag)
+	max_mag = mag;
+    }
+  if (max_mag <= 0.0)
+    return 0.0;
+  for (i = 0; i < 4; i++)
+    mm[i] = m[i] / max_mag;
+
+  /* Compute M times the transpose of M.  In the absence of floating-point
+     rounding error, this product matrix, which is symmetric, will be
+     "non-negative", i.e., its eigenvalues will be non-negative.  The
+     singular values of M are (square roots of) its eigenvalues. */
+
+  mprod[0] = mm[0]*mm[0] + mm[1]*mm[1];
+  mprod[1] = mm[0]*mm[2] + mm[1]*mm[3];
+  mprod[2] = mm[2]*mm[0] + mm[3]*mm[1];
+  mprod[3] = mm[2]*mm[2] + mm[3]*mm[3];
+  
+  trace = mprod[0] + mprod[3];
+  det = mprod[0] * mprod[3] - mprod[1] * mprod[2];
+
+  if (det < 0.0)		/* rare rounding error problem */
+    return 0.0;
+  
+  /* sing vals are (square roots of) solns of x^2 - trace * x + det = 0 */
+
+  b2_4ac = trace * trace - 4 * det;
+
+  if (b2_4ac < 0.0)
+    /* a common, innocuous rounding error problem */
+    b2_4ac = 0.0;
+
+  min_sing_val_squared = 0.5 * (trace - sqrt (b2_4ac));
+  if (min_sing_val_squared < 0.0) /* rare rounding error problem */
+    return 0.0;
+  
+  min_sing_val = sqrt (min_sing_val_squared);
+
+  /* return minimum singular value, not forgetting to undo the useful
+     scaling with which we began */
+  return min_sing_val * max_mag;
 }

@@ -1,22 +1,30 @@
-#include "sys-defines.h"
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
 
-/* forward references */
-voidptr_t xmalloc ____P((size_t length));
-voidptr_t xrealloc ____P((voidptr_t p, size_t length));
-voidptr_t xcalloc ____P((size_t nmemb, size_t size));
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
 
-voidptr_t 
-#ifdef _HAVE_PROTOS
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
+#include "libcommon.h"
+
+void * 
 xmalloc (size_t length)
-#else
-xmalloc (length)
-     size_t length;
-#endif
 {
-  voidptr_t p;
-  p = (voidptr_t) malloc (length);
+  void * p;
+  p = (void *) malloc (length);
 
-  if (p == (voidptr_t) NULL)
+  if (p == (void *) NULL)
     {
       perror ("out of memory");
       exit (EXIT_FAILURE);
@@ -24,18 +32,12 @@ xmalloc (length)
   return p;
 }
 
-voidptr_t 
-#ifdef _HAVE_PROTOS
-xrealloc (voidptr_t p, size_t length)
-#else
-xrealloc (p, length)
-     voidptr_t p;
-     size_t length;
-#endif
+void * 
+xrealloc (void * p, size_t length)
 {
-  p = (voidptr_t) realloc (p, length);
+  p = (void *) realloc (p, length);
 
-  if (p == (voidptr_t) NULL)
+  if (p == (void *) NULL)
     {
       perror ("out of memory");
       exit (EXIT_FAILURE);
@@ -43,18 +45,13 @@ xrealloc (p, length)
   return p;
 }
 
-voidptr_t 
-#ifdef _HAVE_PROTOS
+void * 
 xcalloc (size_t nmemb, size_t size)
-#else
-xcalloc (nmemb, size)
-     size_t nmemb, size;
-#endif
 {
-  voidptr_t p;
-  p = (voidptr_t) calloc (nmemb, size);
+  void * p;
+  p = (void *) calloc (nmemb, size);
 
-  if (p == (voidptr_t) NULL)
+  if (p == (void *) NULL)
     {
       perror ("out of memory");
       exit (EXIT_FAILURE);

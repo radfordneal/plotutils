@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -59,19 +59,31 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
+AR = @AR@
 AS = @AS@
 CC = @CC@
 CXX = @CXX@
+CXXCPP = @CXXCPP@
 DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
+EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+F77 = @F77@
+GCJ = @GCJ@
+GCJFLAGS = @GCJFLAGS@
+HAVE_LIB = @HAVE_LIB@
 LEX = @LEX@
+LIB = @LIB@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
-LTALLOCA = @LTALLOCA@
+LTLIB = @LTLIB@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+RC = @RC@
+STRIP = @STRIP@
 VERSION = @VERSION@
 X_BASIC_LIBS = @X_BASIC_LIBS@
 X_CFLAGS = @X_CFLAGS@
@@ -86,7 +98,7 @@ lib_LTLIBRARIES = libplot.la
 
 EXTRA_DIST = DEDICATION HUMOR README-cgm README-gif README-hpgl README-tek VERSION
 
-libplot_la_LDFLAGS = -version-info 4:1:2
+libplot_la_LDFLAGS = -version-info 4:2:2
 
 INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT
 
@@ -132,7 +144,7 @@ NSRC = n_defplot.c n_write.c
 
 ZSRC = z_defplot.c z_write.c
 
-XSRC = x_attribs.c x_closepl.c x_color.c x_defplot.c x_erase.c x_flushpl.c x_openpl.c x_path.c x_point.c x_retrieve.c x_savestate.c x_text.c
+XSRC = x_afftext.c x_attribs.c x_closepl.c x_color.c x_defplot.c x_erase.c x_flushpl.c x_openpl.c x_path.c x_point.c x_retrieve.c x_savestate.c x_text.c
 
 
 YSRC = y_closepl.c y_defplot.c y_erase.c y_openpl.c
@@ -141,7 +153,7 @@ YSRC = y_closepl.c y_defplot.c y_erase.c y_openpl.c
 @NO_PNG_FALSE@@NO_X_TRUE@ALLSRC = $(MISRC) $(GSRC) $(BSRC) $(MSRC) $(TSRC) $(RSRC) $(HSRC) $(FSRC) $(CSRC) $(PSRC) $(ASRC) $(SSRC) $(ISRC) $(NSRC) $(ZSRC)
 @NO_PNG_FALSE@@NO_X_FALSE@ALLSRC = $(MISRC) $(GSRC) $(BSRC) $(MSRC) $(TSRC) $(RSRC) $(HSRC) $(FSRC) $(CSRC) $(PSRC) $(ASRC) $(SSRC) $(ISRC) $(NSRC) $(ZSRC) $(XSRC) $(YSRC)
 
-EXTRA_libplot_la_SOURCES = x_attribs.c x_closepl.c x_color.c x_defplot.c x_erase.c x_flushpl.c x_openpl.c x_path.c x_point.c x_retrieve.c	 x_savestate.c x_text.c y_closepl.c y_defplot.c y_erase.c y_openpl.c
+EXTRA_libplot_la_SOURCES = x_afftext.c x_attribs.c x_closepl.c x_color.c x_defplot.c x_erase.c x_flushpl.c x_openpl.c x_path.c x_point.c x_retrieve.c	 x_savestate.c x_text.c y_closepl.c y_defplot.c y_erase.c y_openpl.c
 
 
 libplot_la_SOURCES = apinewc.c apioldc.c apioldcc.c $(ALLSRC)
@@ -149,7 +161,7 @@ libplot_la_SOURCES = apinewc.c apioldc.c apioldcc.c $(ALLSRC)
 MIHEADERS = xmi.h mi_api.h mi_arc.h mi_fllarc.h mi_fply.h mi_gc.h mi_line.h mi_ply.h mi_scanfill.h mi_spans.h mi_widelin.h mi_zerarc.h
 
 
-noinst_HEADERS = extern.h g_arc.h g_colorname.h g_control.h g_cntrlify.h g_her_metr.h g_jis.h g_pagetype.h h_roman8.h i_rle.h p_header.h		 $(MIHEADERS)
+noinst_HEADERS = extern.h g_arc.h g_colorname.h g_control.h g_cntrlify.h g_her_metr.h g_jis.h g_pagetype.h h_roman8.h i_rle.h p_header.h x_afftext.h $(MIHEADERS)
 
 
 CLEANFILES = $(MISRC) $(MIHEADERS)
@@ -171,222 +183,223 @@ LIBS = @LIBS@
 @NO_PNG_TRUE@@NO_X_TRUE@libplot_la_DEPENDENCIES = 
 @NO_PNG_FALSE@@NO_X_TRUE@libplot_la_DEPENDENCIES = 
 @NO_PNG_TRUE@@NO_X_FALSE@libplot_la_DEPENDENCIES = 
-@NO_PNG_FALSE@@NO_X_FALSE@libplot_la_OBJECTS =  apinewc.lo apioldc.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@apioldcc.lo mi_alloc.lo mi_api.lo mi_arc.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@mi_plygen.lo mi_plypnt.lo mi_plyutil.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@mi_spans.lo mi_widelin.lo mi_zerarc.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@mi_zerolin.lo mi_version.lo g_affine.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_alabel.lo g_alab_her.lo g_arc.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_attrib.lo g_bez.lo g_box.lo g_circ.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_clipper.lo g_closepl.lo g_colors.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_cntrlify.lo g_dash.lo g_dash2.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_defplot.lo g_defstate.lo g_ellipse.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_endpath.lo g_error.lo g_erase.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_flushpl.lo g_font.lo g_fontdb.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_fontd2.lo g_havecap.lo g_her_glyph.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_integer.lo g_line.lo g_linewidth.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_mark.lo g_matrix.lo g_miscmi.lo g_move.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_openpl.lo g_outbuf.lo g_outfile.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_pagetype.lo g_param.lo g_param2.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_path.lo g_pentype.lo g_point.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_relative.lo g_range.lo g_retrieve.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_savestate.lo g_space.lo g_subpaths.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_vector.lo g_version.lo g_write.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@g_xmalloc.lo g_xstring.lo b_closepl.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@b_defplot.lo b_erase.lo b_openpl.lo b_path.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@b_point.lo m_attribs.lo m_closepl.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@m_defplot.lo m_emit.lo m_erase.lo m_mark.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@m_openpl.lo m_path.lo m_point.lo m_text.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@t_attribs.lo t_closepl.lo t_color.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@t_color2.lo t_defplot.lo t_erase.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@t_openpl.lo t_path.lo t_point.lo t_tek_md.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@t_tek_mv.lo t_tek_vec.lo r_attribs.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@r_closepl.lo r_color.lo r_defplot.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@r_erase.lo r_openpl.lo r_path.lo r_point.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@h_attribs.lo h_closepl.lo h_color.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@h_defplot.lo h_erase.lo h_font.lo h_openpl.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@h_path.lo h_point.lo h_text.lo f_closepl.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@f_color.lo f_color2.lo f_defplot.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@f_erase.lo f_openpl.lo f_path.lo f_point.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@f_retrieve.lo f_text.lo c_attribs.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@c_closepl.lo c_color.lo c_defplot.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@c_emit.lo c_erase.lo c_mark.lo c_openpl.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@c_path.lo c_point.lo c_text.lo p_closepl.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@p_color.lo p_color2.lo p_defplot.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@p_erase.lo p_openpl.lo p_path.lo p_point.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@p_text.lo a_attribs.lo a_color.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@a_closepl.lo a_defplot.lo a_erase.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@a_openpl.lo a_path.lo a_point.lo a_text.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@s_closepl.lo s_color.lo s_defplot.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@s_erase.lo s_openpl.lo s_path.lo s_point.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@s_text.lo i_closepl.lo i_color.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@i_defplot.lo i_erase.lo i_openpl.lo i_path.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@i_point.lo i_rle.lo n_defplot.lo n_write.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@z_defplot.lo z_write.lo x_attribs.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@x_closepl.lo x_color.lo x_defplot.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@x_erase.lo x_flushpl.lo x_openpl.lo x_path.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@x_point.lo x_retrieve.lo x_savestate.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@x_text.lo y_closepl.lo y_defplot.lo \
-@NO_PNG_FALSE@@NO_X_FALSE@y_erase.lo y_openpl.lo
-@NO_PNG_TRUE@@NO_X_TRUE@libplot_la_OBJECTS =  apinewc.lo apioldc.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@apioldcc.lo mi_alloc.lo mi_api.lo mi_arc.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@mi_plygen.lo mi_plypnt.lo mi_plyutil.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@mi_spans.lo mi_widelin.lo mi_zerarc.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@mi_zerolin.lo mi_version.lo g_affine.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_alabel.lo g_alab_her.lo g_arc.lo g_attrib.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_bez.lo g_box.lo g_circ.lo g_clipper.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_closepl.lo g_colors.lo g_cntrlify.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_dash.lo g_dash2.lo g_defplot.lo g_defstate.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_ellipse.lo g_endpath.lo g_error.lo g_erase.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_flushpl.lo g_font.lo g_fontdb.lo g_fontd2.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_havecap.lo g_her_glyph.lo g_integer.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_line.lo g_linewidth.lo g_mark.lo g_matrix.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_miscmi.lo g_move.lo g_openpl.lo g_outbuf.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_outfile.lo g_pagetype.lo g_param.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_param2.lo g_path.lo g_pentype.lo g_point.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_relative.lo g_range.lo g_retrieve.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_savestate.lo g_space.lo g_subpaths.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_vector.lo g_version.lo g_write.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@g_xmalloc.lo g_xstring.lo b_closepl.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@b_defplot.lo b_erase.lo b_openpl.lo b_path.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@b_point.lo m_attribs.lo m_closepl.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@m_defplot.lo m_emit.lo m_erase.lo m_mark.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@m_openpl.lo m_path.lo m_point.lo m_text.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@t_attribs.lo t_closepl.lo t_color.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@t_color2.lo t_defplot.lo t_erase.lo t_openpl.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@t_path.lo t_point.lo t_tek_md.lo t_tek_mv.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@t_tek_vec.lo r_attribs.lo r_closepl.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@r_color.lo r_defplot.lo r_erase.lo r_openpl.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@r_path.lo r_point.lo h_attribs.lo h_closepl.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@h_color.lo h_defplot.lo h_erase.lo h_font.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@h_openpl.lo h_path.lo h_point.lo h_text.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@f_closepl.lo f_color.lo f_color2.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@f_defplot.lo f_erase.lo f_openpl.lo f_path.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@f_point.lo f_retrieve.lo f_text.lo c_attribs.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@c_closepl.lo c_color.lo c_defplot.lo c_emit.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@c_erase.lo c_mark.lo c_openpl.lo c_path.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@c_point.lo c_text.lo p_closepl.lo p_color.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@p_color2.lo p_defplot.lo p_erase.lo p_openpl.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@p_path.lo p_point.lo p_text.lo a_attribs.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@a_color.lo a_closepl.lo a_defplot.lo a_erase.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@a_openpl.lo a_path.lo a_point.lo a_text.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@s_closepl.lo s_color.lo s_defplot.lo s_erase.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@s_openpl.lo s_path.lo s_point.lo s_text.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@i_closepl.lo i_color.lo i_defplot.lo i_erase.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@i_openpl.lo i_path.lo i_point.lo i_rle.lo \
-@NO_PNG_TRUE@@NO_X_TRUE@n_defplot.lo n_write.lo
-@NO_PNG_TRUE@@NO_X_FALSE@libplot_la_OBJECTS =  apinewc.lo apioldc.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@apioldcc.lo mi_alloc.lo mi_api.lo mi_arc.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@mi_plygen.lo mi_plypnt.lo mi_plyutil.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@mi_spans.lo mi_widelin.lo mi_zerarc.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@mi_zerolin.lo mi_version.lo g_affine.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_alabel.lo g_alab_her.lo g_arc.lo g_attrib.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_bez.lo g_box.lo g_circ.lo g_clipper.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_closepl.lo g_colors.lo g_cntrlify.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_dash.lo g_dash2.lo g_defplot.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_defstate.lo g_ellipse.lo g_endpath.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_error.lo g_erase.lo g_flushpl.lo g_font.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_fontdb.lo g_fontd2.lo g_havecap.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_her_glyph.lo g_integer.lo g_line.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_linewidth.lo g_mark.lo g_matrix.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_miscmi.lo g_move.lo g_openpl.lo g_outbuf.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_outfile.lo g_pagetype.lo g_param.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_param2.lo g_path.lo g_pentype.lo g_point.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_relative.lo g_range.lo g_retrieve.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_savestate.lo g_space.lo g_subpaths.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_vector.lo g_version.lo g_write.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@g_xmalloc.lo g_xstring.lo b_closepl.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@b_defplot.lo b_erase.lo b_openpl.lo b_path.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@b_point.lo m_attribs.lo m_closepl.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@m_defplot.lo m_emit.lo m_erase.lo m_mark.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@m_openpl.lo m_path.lo m_point.lo m_text.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@t_attribs.lo t_closepl.lo t_color.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@t_color2.lo t_defplot.lo t_erase.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@t_openpl.lo t_path.lo t_point.lo t_tek_md.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@t_tek_mv.lo t_tek_vec.lo r_attribs.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@r_closepl.lo r_color.lo r_defplot.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@r_erase.lo r_openpl.lo r_path.lo r_point.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@h_attribs.lo h_closepl.lo h_color.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@h_defplot.lo h_erase.lo h_font.lo h_openpl.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@h_path.lo h_point.lo h_text.lo f_closepl.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@f_color.lo f_color2.lo f_defplot.lo f_erase.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@f_openpl.lo f_path.lo f_point.lo f_retrieve.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@f_text.lo c_attribs.lo c_closepl.lo c_color.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@c_defplot.lo c_emit.lo c_erase.lo c_mark.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@c_openpl.lo c_path.lo c_point.lo c_text.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@p_closepl.lo p_color.lo p_color2.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@p_defplot.lo p_erase.lo p_openpl.lo p_path.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@p_point.lo p_text.lo a_attribs.lo a_color.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@a_closepl.lo a_defplot.lo a_erase.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@a_openpl.lo a_path.lo a_point.lo a_text.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@s_closepl.lo s_color.lo s_defplot.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@s_erase.lo s_openpl.lo s_path.lo s_point.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@s_text.lo i_closepl.lo i_color.lo i_defplot.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@i_erase.lo i_openpl.lo i_path.lo i_point.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@i_rle.lo n_defplot.lo n_write.lo x_attribs.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@x_closepl.lo x_color.lo x_defplot.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@x_erase.lo x_flushpl.lo x_openpl.lo x_path.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@x_point.lo x_retrieve.lo x_savestate.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@x_text.lo y_closepl.lo y_defplot.lo y_erase.lo \
-@NO_PNG_TRUE@@NO_X_FALSE@y_openpl.lo
-@NO_PNG_FALSE@@NO_X_TRUE@libplot_la_OBJECTS =  apinewc.lo apioldc.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@apioldcc.lo mi_alloc.lo mi_api.lo mi_arc.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@mi_plygen.lo mi_plypnt.lo mi_plyutil.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@mi_spans.lo mi_widelin.lo mi_zerarc.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@mi_zerolin.lo mi_version.lo g_affine.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_alabel.lo g_alab_her.lo g_arc.lo g_attrib.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_bez.lo g_box.lo g_circ.lo g_clipper.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_closepl.lo g_colors.lo g_cntrlify.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_dash.lo g_dash2.lo g_defplot.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_defstate.lo g_ellipse.lo g_endpath.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_error.lo g_erase.lo g_flushpl.lo g_font.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_fontdb.lo g_fontd2.lo g_havecap.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_her_glyph.lo g_integer.lo g_line.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_linewidth.lo g_mark.lo g_matrix.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_miscmi.lo g_move.lo g_openpl.lo g_outbuf.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_outfile.lo g_pagetype.lo g_param.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_param2.lo g_path.lo g_pentype.lo g_point.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_relative.lo g_range.lo g_retrieve.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_savestate.lo g_space.lo g_subpaths.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_vector.lo g_version.lo g_write.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@g_xmalloc.lo g_xstring.lo b_closepl.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@b_defplot.lo b_erase.lo b_openpl.lo b_path.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@b_point.lo m_attribs.lo m_closepl.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@m_defplot.lo m_emit.lo m_erase.lo m_mark.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@m_openpl.lo m_path.lo m_point.lo m_text.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@t_attribs.lo t_closepl.lo t_color.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@t_color2.lo t_defplot.lo t_erase.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@t_openpl.lo t_path.lo t_point.lo t_tek_md.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@t_tek_mv.lo t_tek_vec.lo r_attribs.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@r_closepl.lo r_color.lo r_defplot.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@r_erase.lo r_openpl.lo r_path.lo r_point.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@h_attribs.lo h_closepl.lo h_color.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@h_defplot.lo h_erase.lo h_font.lo h_openpl.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@h_path.lo h_point.lo h_text.lo f_closepl.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@f_color.lo f_color2.lo f_defplot.lo f_erase.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@f_openpl.lo f_path.lo f_point.lo f_retrieve.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@f_text.lo c_attribs.lo c_closepl.lo c_color.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@c_defplot.lo c_emit.lo c_erase.lo c_mark.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@c_openpl.lo c_path.lo c_point.lo c_text.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@p_closepl.lo p_color.lo p_color2.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@p_defplot.lo p_erase.lo p_openpl.lo p_path.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@p_point.lo p_text.lo a_attribs.lo a_color.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@a_closepl.lo a_defplot.lo a_erase.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@a_openpl.lo a_path.lo a_point.lo a_text.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@s_closepl.lo s_color.lo s_defplot.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@s_erase.lo s_openpl.lo s_path.lo s_point.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@s_text.lo i_closepl.lo i_color.lo i_defplot.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@i_erase.lo i_openpl.lo i_path.lo i_point.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@i_rle.lo n_defplot.lo n_write.lo z_defplot.lo \
-@NO_PNG_FALSE@@NO_X_TRUE@z_write.lo
+@NO_X_TRUE@@NO_PNG_TRUE@libplot_la_OBJECTS =  apinewc.lo apioldc.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@apioldcc.lo mi_alloc.lo mi_api.lo mi_arc.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@mi_plygen.lo mi_plypnt.lo mi_plyutil.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@mi_spans.lo mi_widelin.lo mi_zerarc.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@mi_zerolin.lo mi_version.lo g_affine.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_alabel.lo g_alab_her.lo g_arc.lo g_attrib.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_bez.lo g_box.lo g_circ.lo g_clipper.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_closepl.lo g_colors.lo g_cntrlify.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_dash.lo g_dash2.lo g_defplot.lo g_defstate.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_ellipse.lo g_endpath.lo g_error.lo g_erase.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_flushpl.lo g_font.lo g_fontdb.lo g_fontd2.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_havecap.lo g_her_glyph.lo g_integer.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_line.lo g_linewidth.lo g_mark.lo g_matrix.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_miscmi.lo g_move.lo g_openpl.lo g_outbuf.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_outfile.lo g_pagetype.lo g_param.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_param2.lo g_path.lo g_pentype.lo g_point.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_relative.lo g_range.lo g_retrieve.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_savestate.lo g_space.lo g_subpaths.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_vector.lo g_version.lo g_write.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@g_xmalloc.lo g_xstring.lo b_closepl.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@b_defplot.lo b_erase.lo b_openpl.lo b_path.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@b_point.lo m_attribs.lo m_closepl.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@m_defplot.lo m_emit.lo m_erase.lo m_mark.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@m_openpl.lo m_path.lo m_point.lo m_text.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@t_attribs.lo t_closepl.lo t_color.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@t_color2.lo t_defplot.lo t_erase.lo t_openpl.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@t_path.lo t_point.lo t_tek_md.lo t_tek_mv.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@t_tek_vec.lo r_attribs.lo r_closepl.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@r_color.lo r_defplot.lo r_erase.lo r_openpl.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@r_path.lo r_point.lo h_attribs.lo h_closepl.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@h_color.lo h_defplot.lo h_erase.lo h_font.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@h_openpl.lo h_path.lo h_point.lo h_text.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@f_closepl.lo f_color.lo f_color2.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@f_defplot.lo f_erase.lo f_openpl.lo f_path.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@f_point.lo f_retrieve.lo f_text.lo c_attribs.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@c_closepl.lo c_color.lo c_defplot.lo c_emit.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@c_erase.lo c_mark.lo c_openpl.lo c_path.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@c_point.lo c_text.lo p_closepl.lo p_color.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@p_color2.lo p_defplot.lo p_erase.lo p_openpl.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@p_path.lo p_point.lo p_text.lo a_attribs.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@a_color.lo a_closepl.lo a_defplot.lo a_erase.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@a_openpl.lo a_path.lo a_point.lo a_text.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@s_closepl.lo s_color.lo s_defplot.lo s_erase.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@s_openpl.lo s_path.lo s_point.lo s_text.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@i_closepl.lo i_color.lo i_defplot.lo i_erase.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@i_openpl.lo i_path.lo i_point.lo i_rle.lo \
+@NO_X_TRUE@@NO_PNG_TRUE@n_defplot.lo n_write.lo
+@NO_X_TRUE@@NO_PNG_FALSE@libplot_la_OBJECTS =  apinewc.lo apioldc.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@apioldcc.lo mi_alloc.lo mi_api.lo mi_arc.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@mi_plygen.lo mi_plypnt.lo mi_plyutil.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@mi_spans.lo mi_widelin.lo mi_zerarc.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@mi_zerolin.lo mi_version.lo g_affine.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_alabel.lo g_alab_her.lo g_arc.lo g_attrib.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_bez.lo g_box.lo g_circ.lo g_clipper.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_closepl.lo g_colors.lo g_cntrlify.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_dash.lo g_dash2.lo g_defplot.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_defstate.lo g_ellipse.lo g_endpath.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_error.lo g_erase.lo g_flushpl.lo g_font.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_fontdb.lo g_fontd2.lo g_havecap.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_her_glyph.lo g_integer.lo g_line.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_linewidth.lo g_mark.lo g_matrix.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_miscmi.lo g_move.lo g_openpl.lo g_outbuf.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_outfile.lo g_pagetype.lo g_param.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_param2.lo g_path.lo g_pentype.lo g_point.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_relative.lo g_range.lo g_retrieve.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_savestate.lo g_space.lo g_subpaths.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_vector.lo g_version.lo g_write.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@g_xmalloc.lo g_xstring.lo b_closepl.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@b_defplot.lo b_erase.lo b_openpl.lo b_path.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@b_point.lo m_attribs.lo m_closepl.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@m_defplot.lo m_emit.lo m_erase.lo m_mark.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@m_openpl.lo m_path.lo m_point.lo m_text.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@t_attribs.lo t_closepl.lo t_color.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@t_color2.lo t_defplot.lo t_erase.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@t_openpl.lo t_path.lo t_point.lo t_tek_md.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@t_tek_mv.lo t_tek_vec.lo r_attribs.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@r_closepl.lo r_color.lo r_defplot.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@r_erase.lo r_openpl.lo r_path.lo r_point.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@h_attribs.lo h_closepl.lo h_color.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@h_defplot.lo h_erase.lo h_font.lo h_openpl.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@h_path.lo h_point.lo h_text.lo f_closepl.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@f_color.lo f_color2.lo f_defplot.lo f_erase.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@f_openpl.lo f_path.lo f_point.lo f_retrieve.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@f_text.lo c_attribs.lo c_closepl.lo c_color.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@c_defplot.lo c_emit.lo c_erase.lo c_mark.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@c_openpl.lo c_path.lo c_point.lo c_text.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@p_closepl.lo p_color.lo p_color2.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@p_defplot.lo p_erase.lo p_openpl.lo p_path.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@p_point.lo p_text.lo a_attribs.lo a_color.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@a_closepl.lo a_defplot.lo a_erase.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@a_openpl.lo a_path.lo a_point.lo a_text.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@s_closepl.lo s_color.lo s_defplot.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@s_erase.lo s_openpl.lo s_path.lo s_point.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@s_text.lo i_closepl.lo i_color.lo i_defplot.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@i_erase.lo i_openpl.lo i_path.lo i_point.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@i_rle.lo n_defplot.lo n_write.lo z_defplot.lo \
+@NO_X_TRUE@@NO_PNG_FALSE@z_write.lo
+@NO_X_FALSE@@NO_PNG_TRUE@libplot_la_OBJECTS =  apinewc.lo apioldc.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@apioldcc.lo mi_alloc.lo mi_api.lo mi_arc.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@mi_plygen.lo mi_plypnt.lo mi_plyutil.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@mi_spans.lo mi_widelin.lo mi_zerarc.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@mi_zerolin.lo mi_version.lo g_affine.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_alabel.lo g_alab_her.lo g_arc.lo g_attrib.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_bez.lo g_box.lo g_circ.lo g_clipper.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_closepl.lo g_colors.lo g_cntrlify.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_dash.lo g_dash2.lo g_defplot.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_defstate.lo g_ellipse.lo g_endpath.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_error.lo g_erase.lo g_flushpl.lo g_font.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_fontdb.lo g_fontd2.lo g_havecap.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_her_glyph.lo g_integer.lo g_line.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_linewidth.lo g_mark.lo g_matrix.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_miscmi.lo g_move.lo g_openpl.lo g_outbuf.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_outfile.lo g_pagetype.lo g_param.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_param2.lo g_path.lo g_pentype.lo g_point.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_relative.lo g_range.lo g_retrieve.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_savestate.lo g_space.lo g_subpaths.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_vector.lo g_version.lo g_write.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@g_xmalloc.lo g_xstring.lo b_closepl.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@b_defplot.lo b_erase.lo b_openpl.lo b_path.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@b_point.lo m_attribs.lo m_closepl.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@m_defplot.lo m_emit.lo m_erase.lo m_mark.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@m_openpl.lo m_path.lo m_point.lo m_text.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@t_attribs.lo t_closepl.lo t_color.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@t_color2.lo t_defplot.lo t_erase.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@t_openpl.lo t_path.lo t_point.lo t_tek_md.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@t_tek_mv.lo t_tek_vec.lo r_attribs.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@r_closepl.lo r_color.lo r_defplot.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@r_erase.lo r_openpl.lo r_path.lo r_point.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@h_attribs.lo h_closepl.lo h_color.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@h_defplot.lo h_erase.lo h_font.lo h_openpl.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@h_path.lo h_point.lo h_text.lo f_closepl.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@f_color.lo f_color2.lo f_defplot.lo f_erase.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@f_openpl.lo f_path.lo f_point.lo f_retrieve.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@f_text.lo c_attribs.lo c_closepl.lo c_color.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@c_defplot.lo c_emit.lo c_erase.lo c_mark.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@c_openpl.lo c_path.lo c_point.lo c_text.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@p_closepl.lo p_color.lo p_color2.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@p_defplot.lo p_erase.lo p_openpl.lo p_path.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@p_point.lo p_text.lo a_attribs.lo a_color.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@a_closepl.lo a_defplot.lo a_erase.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@a_openpl.lo a_path.lo a_point.lo a_text.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@s_closepl.lo s_color.lo s_defplot.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@s_erase.lo s_openpl.lo s_path.lo s_point.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@s_text.lo i_closepl.lo i_color.lo i_defplot.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@i_erase.lo i_openpl.lo i_path.lo i_point.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@i_rle.lo n_defplot.lo n_write.lo x_afftext.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@x_attribs.lo x_closepl.lo x_color.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@x_defplot.lo x_erase.lo x_flushpl.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@x_openpl.lo x_path.lo x_point.lo x_retrieve.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@x_savestate.lo x_text.lo y_closepl.lo \
+@NO_X_FALSE@@NO_PNG_TRUE@y_defplot.lo y_erase.lo y_openpl.lo
+@NO_X_FALSE@@NO_PNG_FALSE@libplot_la_OBJECTS =  apinewc.lo apioldc.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@apioldcc.lo mi_alloc.lo mi_api.lo mi_arc.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@mi_plygen.lo mi_plypnt.lo mi_plyutil.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@mi_spans.lo mi_widelin.lo mi_zerarc.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@mi_zerolin.lo mi_version.lo g_affine.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_alabel.lo g_alab_her.lo g_arc.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_attrib.lo g_bez.lo g_box.lo g_circ.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_clipper.lo g_closepl.lo g_colors.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_cntrlify.lo g_dash.lo g_dash2.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_defplot.lo g_defstate.lo g_ellipse.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_endpath.lo g_error.lo g_erase.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_flushpl.lo g_font.lo g_fontdb.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_fontd2.lo g_havecap.lo g_her_glyph.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_integer.lo g_line.lo g_linewidth.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_mark.lo g_matrix.lo g_miscmi.lo g_move.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_openpl.lo g_outbuf.lo g_outfile.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_pagetype.lo g_param.lo g_param2.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_path.lo g_pentype.lo g_point.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_relative.lo g_range.lo g_retrieve.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_savestate.lo g_space.lo g_subpaths.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_vector.lo g_version.lo g_write.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@g_xmalloc.lo g_xstring.lo b_closepl.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@b_defplot.lo b_erase.lo b_openpl.lo b_path.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@b_point.lo m_attribs.lo m_closepl.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@m_defplot.lo m_emit.lo m_erase.lo m_mark.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@m_openpl.lo m_path.lo m_point.lo m_text.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@t_attribs.lo t_closepl.lo t_color.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@t_color2.lo t_defplot.lo t_erase.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@t_openpl.lo t_path.lo t_point.lo t_tek_md.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@t_tek_mv.lo t_tek_vec.lo r_attribs.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@r_closepl.lo r_color.lo r_defplot.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@r_erase.lo r_openpl.lo r_path.lo r_point.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@h_attribs.lo h_closepl.lo h_color.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@h_defplot.lo h_erase.lo h_font.lo h_openpl.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@h_path.lo h_point.lo h_text.lo f_closepl.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@f_color.lo f_color2.lo f_defplot.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@f_erase.lo f_openpl.lo f_path.lo f_point.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@f_retrieve.lo f_text.lo c_attribs.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@c_closepl.lo c_color.lo c_defplot.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@c_emit.lo c_erase.lo c_mark.lo c_openpl.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@c_path.lo c_point.lo c_text.lo p_closepl.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@p_color.lo p_color2.lo p_defplot.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@p_erase.lo p_openpl.lo p_path.lo p_point.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@p_text.lo a_attribs.lo a_color.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@a_closepl.lo a_defplot.lo a_erase.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@a_openpl.lo a_path.lo a_point.lo a_text.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@s_closepl.lo s_color.lo s_defplot.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@s_erase.lo s_openpl.lo s_path.lo s_point.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@s_text.lo i_closepl.lo i_color.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@i_defplot.lo i_erase.lo i_openpl.lo i_path.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@i_point.lo i_rle.lo n_defplot.lo n_write.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@z_defplot.lo z_write.lo x_afftext.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@x_attribs.lo x_closepl.lo x_color.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@x_defplot.lo x_erase.lo x_flushpl.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@x_openpl.lo x_path.lo x_point.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@x_retrieve.lo x_savestate.lo x_text.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@y_closepl.lo y_defplot.lo y_erase.lo \
+@NO_X_FALSE@@NO_PNG_FALSE@y_openpl.lo
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -399,15 +412,15 @@ DIST_COMMON =  README COPYING Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(libplot_la_SOURCES) $(EXTRA_libplot_la_SOURCES)
 OBJECTS = $(libplot_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .lo .o .s
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+.SUFFIXES: .S .c .lo .o .obj .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps libplot/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
@@ -443,6 +456,11 @@ uninstall-libLTLIBRARIES:
 .c.o:
 	$(COMPILE) -c $<
 
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -451,6 +469,7 @@ uninstall-libLTLIBRARIES:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -499,7 +518,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
 
 mostlyclean-tags:
 
@@ -518,417 +537,13 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-a_attribs.lo a_attribs.o : a_attribs.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-a_closepl.lo a_closepl.o : a_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-a_color.lo a_color.o : a_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-a_defplot.lo a_defplot.o : a_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-a_erase.lo a_erase.o : a_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-a_openpl.lo a_openpl.o : a_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-a_path.lo a_path.o : a_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-a_point.lo a_point.o : a_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-a_text.lo a_text.o : a_text.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-apinewc.lo apinewc.o : apinewc.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h ../include/plot.h
-apioldc.lo apioldc.o : apioldc.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h ../include/plot.h
-apioldcc.lo apioldcc.o : apioldcc.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h ../include/plot.h
-b_closepl.lo b_closepl.o : b_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h
-b_defplot.lo b_defplot.o : b_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h
-b_erase.lo b_erase.o : b_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-b_openpl.lo b_openpl.o : b_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
-b_path.lo b_path.o : b_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
-b_point.lo b_point.o : b_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
-c_attribs.lo c_attribs.o : c_attribs.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-c_closepl.lo c_closepl.o : c_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-c_color.lo c_color.o : c_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-c_defplot.lo c_defplot.o : c_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-c_emit.lo c_emit.o : c_emit.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-c_erase.lo c_erase.o : c_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-c_mark.lo c_mark.o : c_mark.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-c_openpl.lo c_openpl.o : c_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-c_path.lo c_path.o : c_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-c_point.lo c_point.o : c_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-c_text.lo c_text.o : c_text.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-f_closepl.lo f_closepl.o : f_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-f_color.lo f_color.o : f_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-f_color2.lo f_color2.o : f_color2.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-f_defplot.lo f_defplot.o : f_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-f_erase.lo f_erase.o : f_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-f_openpl.lo f_openpl.o : f_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-f_path.lo f_path.o : f_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-f_point.lo f_point.o : f_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-f_retrieve.lo f_retrieve.o : f_retrieve.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-f_text.lo f_text.o : f_text.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_affine.lo g_affine.o : g_affine.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_alab_her.lo g_alab_her.o : g_alab_her.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_control.h \
-	g_her_metr.h
-g_alabel.lo g_alabel.o : g_alabel.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h g_control.h
-g_arc.lo g_arc.o : g_arc.c ../include/sys-defines.h ../config.h extern.h \
-	../include/plotter.h
-g_attrib.lo g_attrib.o : g_attrib.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_bez.lo g_bez.o : g_bez.c ../include/sys-defines.h ../config.h extern.h \
-	../include/plotter.h
-g_box.lo g_box.o : g_box.c ../include/sys-defines.h ../config.h extern.h \
-	../include/plotter.h
-g_circ.lo g_circ.o : g_circ.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_clipper.lo g_clipper.o : g_clipper.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_closepl.lo g_closepl.o : g_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_cntrlify.lo g_cntrlify.o : g_cntrlify.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_control.h \
-	g_cntrlify.h g_jis.h
-g_colors.lo g_colors.o : g_colors.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h g_colorname.h
-g_dash.lo g_dash.o : g_dash.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_dash2.lo g_dash2.o : g_dash2.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_defplot.lo g_defplot.o : g_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_defstate.lo g_defstate.o : g_defstate.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_ellipse.lo g_ellipse.o : g_ellipse.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_endpath.lo g_endpath.o : g_endpath.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_erase.lo g_erase.o : g_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_error.lo g_error.o : g_error.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_flushpl.lo g_flushpl.o : g_flushpl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_font.lo g_font.o : g_font.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_fontd2.lo g_fontd2.o : g_fontd2.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_fontdb.lo g_fontdb.o : g_fontdb.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_havecap.lo g_havecap.o : g_havecap.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_her_glyph.lo g_her_glyph.o : g_her_glyph.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_integer.lo g_integer.o : g_integer.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_line.lo g_line.o : g_line.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_linewidth.lo g_linewidth.o : g_linewidth.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_mark.lo g_mark.o : g_mark.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_matrix.lo g_matrix.o : g_matrix.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_miscmi.lo g_miscmi.o : g_miscmi.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
-g_move.lo g_move.o : g_move.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_openpl.lo g_openpl.o : g_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_outbuf.lo g_outbuf.o : g_outbuf.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_outfile.lo g_outfile.o : g_outfile.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_pagetype.lo g_pagetype.o : g_pagetype.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_pagetype.h
-g_param.lo g_param.o : g_param.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_param2.lo g_param2.o : g_param2.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_path.lo g_path.o : g_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_pentype.lo g_pentype.o : g_pentype.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_point.lo g_point.o : g_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_range.lo g_range.o : g_range.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_relative.lo g_relative.o : g_relative.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_retrieve.lo g_retrieve.o : g_retrieve.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_her_metr.h
-g_savestate.lo g_savestate.o : g_savestate.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_space.lo g_space.o : g_space.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_subpaths.lo g_subpaths.o : g_subpaths.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_arc.h
-g_vector.lo g_vector.o : g_vector.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_version.lo g_version.o : g_version.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_write.lo g_write.o : g_write.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-g_xmalloc.lo g_xmalloc.o : g_xmalloc.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_xstring.lo g_xstring.o : g_xstring.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-h_attribs.lo h_attribs.o : h_attribs.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-h_closepl.lo h_closepl.o : h_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-h_color.lo h_color.o : h_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-h_defplot.lo h_defplot.o : h_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-h_erase.lo h_erase.o : h_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-h_font.lo h_font.o : h_font.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-h_openpl.lo h_openpl.o : h_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-h_path.lo h_path.o : h_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-h_point.lo h_point.o : h_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-h_text.lo h_text.o : h_text.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h h_roman8.h
-i_closepl.lo i_closepl.o : i_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h i_rle.h xmi.h
-i_color.lo i_color.o : i_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-i_defplot.lo i_defplot.o : i_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h
-i_erase.lo i_erase.o : i_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-i_openpl.lo i_openpl.o : i_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
-i_path.lo i_path.o : i_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
-i_point.lo i_point.o : i_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
-i_rle.lo i_rle.o : i_rle.c ../include/sys-defines.h ../config.h extern.h \
-	../include/plotter.h i_rle.h
-m_attribs.lo m_attribs.o : m_attribs.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-m_closepl.lo m_closepl.o : m_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-m_defplot.lo m_defplot.o : m_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-m_emit.lo m_emit.o : m_emit.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-m_erase.lo m_erase.o : m_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-m_mark.lo m_mark.o : m_mark.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-m_openpl.lo m_openpl.o : m_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-m_path.lo m_path.o : m_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-m_point.lo m_point.o : m_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-m_text.lo m_text.o : m_text.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-mi_alloc.lo mi_alloc.o : mi_alloc.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h mi_spans.h mi_api.h
-mi_api.lo mi_api.o : mi_api.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h mi_spans.h mi_gc.h mi_api.h
-mi_arc.lo mi_arc.o : mi_arc.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h mi_spans.h mi_gc.h mi_api.h \
-	mi_arc.h mi_fply.h mi_fllarc.h
-mi_canvas.lo mi_canvas.o : mi_canvas.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_api.h
-mi_fllarc.lo mi_fllarc.o : mi_fllarc.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_gc.h mi_api.h mi_fllarc.h
-mi_fllrct.lo mi_fllrct.o : mi_fllrct.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_gc.h mi_api.h
-mi_fplycon.lo mi_fplycon.o : mi_fplycon.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_api.h mi_fply.h
-mi_gc.lo mi_gc.o : mi_gc.c ../include/sys-defines.h ../config.h extern.h \
-	../include/plotter.h xmi.h mi_spans.h mi_gc.h mi_api.h
-mi_ply.lo mi_ply.o : mi_ply.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h mi_spans.h mi_gc.h mi_api.h
-mi_plycon.lo mi_plycon.o : mi_plycon.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_gc.h mi_api.h mi_scanfill.h
-mi_plygen.lo mi_plygen.o : mi_plygen.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_gc.h mi_api.h mi_scanfill.h mi_ply.h
-mi_plypnt.lo mi_plypnt.o : mi_plypnt.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_gc.h mi_api.h
-mi_plyutil.lo mi_plyutil.o : mi_plyutil.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_api.h mi_scanfill.h mi_ply.h
-mi_spans.lo mi_spans.o : mi_spans.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h mi_spans.h mi_api.h
-mi_version.lo mi_version.o : mi_version.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h
-mi_widelin.lo mi_widelin.o : mi_widelin.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_gc.h mi_api.h mi_widelin.h
-mi_zerarc.lo mi_zerarc.o : mi_zerarc.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_gc.h mi_api.h mi_arc.h mi_zerarc.h
-mi_zerolin.lo mi_zerolin.o : mi_zerolin.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
-	mi_gc.h mi_api.h mi_line.h
-n_defplot.lo n_defplot.o : n_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-n_write.lo n_write.o : n_write.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
-p_closepl.lo p_closepl.o : p_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-p_color.lo p_color.o : p_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-p_color2.lo p_color2.o : p_color2.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-p_defplot.lo p_defplot.o : p_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h p_header.h
-p_erase.lo p_erase.o : p_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-p_openpl.lo p_openpl.o : p_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-p_path.lo p_path.o : p_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-p_point.lo p_point.o : p_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-p_text.lo p_text.o : p_text.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-r_attribs.lo r_attribs.o : r_attribs.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-r_closepl.lo r_closepl.o : r_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-r_color.lo r_color.o : r_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-r_defplot.lo r_defplot.o : r_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-r_erase.lo r_erase.o : r_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-r_openpl.lo r_openpl.o : r_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-r_path.lo r_path.o : r_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-r_point.lo r_point.o : r_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-s_closepl.lo s_closepl.o : s_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-s_color.lo s_color.o : s_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-s_defplot.lo s_defplot.o : s_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-s_erase.lo s_erase.o : s_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-s_openpl.lo s_openpl.o : s_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-s_path.lo s_path.o : s_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-s_point.lo s_point.o : s_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-s_text.lo s_text.o : s_text.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_attribs.lo t_attribs.o : t_attribs.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-t_closepl.lo t_closepl.o : t_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-t_color.lo t_color.o : t_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_color2.lo t_color2.o : t_color2.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_defplot.lo t_defplot.o : t_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-t_erase.lo t_erase.o : t_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_openpl.lo t_openpl.o : t_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_path.lo t_path.o : t_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_point.lo t_point.o : t_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_tek_md.lo t_tek_md.o : t_tek_md.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_tek_mv.lo t_tek_mv.o : t_tek_mv.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-t_tek_vec.lo t_tek_vec.o : t_tek_vec.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-x_attribs.lo x_attribs.o : x_attribs.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-x_closepl.lo x_closepl.o : x_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-x_color.lo x_color.o : x_color.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-x_defplot.lo x_defplot.o : x_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-x_erase.lo x_erase.o : x_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-x_flushpl.lo x_flushpl.o : x_flushpl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-x_openpl.lo x_openpl.o : x_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-x_path.lo x_path.o : x_path.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-x_point.lo x_point.o : x_point.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-x_retrieve.lo x_retrieve.o : x_retrieve.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_her_metr.h
-x_savestate.lo x_savestate.o : x_savestate.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-x_text.lo x_text.o : x_text.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-y_closepl.lo y_closepl.o : y_closepl.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-y_defplot.lo y_defplot.o : y_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-y_erase.lo y_erase.o : y_erase.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-y_openpl.lo y_openpl.o : y_openpl.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
-z_defplot.lo z_defplot.o : z_defplot.c ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-z_write.lo z_write.o : z_write.c ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h xmi.h
 
 info-am:
 info: info-am

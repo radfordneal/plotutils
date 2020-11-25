@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This version is used for CGMPlotters, which emit graphics only after all
    pages of graphics have been drawn, and the Plotter is deleted.  Such
    Plotters maintain a linked list of pages (graphics are only written to
@@ -8,12 +26,7 @@
 #include "extern.h"
 
 bool
-#ifdef _HAVE_PROTOS
-_c_end_page (S___(Plotter *_plotter))
-#else
-_c_end_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_c_end_page (S___(Plotter *_plotter))
 {
   int i, fullstrength, red, green, blue;
 
@@ -27,7 +40,7 @@ _c_end_page (S___(_plotter))
 
     while (line_type_ptr != (plCGMCustomLineType *)NULL)
       {
-	if (line_type_ptr->dash_array_len > CGM_MAX_DASH_ARRAY_LENGTH)
+	if (line_type_ptr->dash_array_len > CGM_PL_MAX_DASH_ARRAY_LENGTH)
 	  violates_profile = true;
 	line_type_ptr = line_type_ptr->next;
 	num_line_types++;
@@ -45,7 +58,7 @@ _c_end_page (S___(_plotter))
      version-3 "FONT PROPERTIES" commands for every font (see c_defplot.c) */
   if (_plotter->cgm_max_version >= 3)
     {
-      for (i = 0; i < NUM_PS_FONTS; i++)
+      for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	{
 	  if (_plotter->data->page->ps_font_used[i] == true)
 	    {

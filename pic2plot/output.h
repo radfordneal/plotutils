@@ -1,4 +1,3 @@
-// -*- C++ -*-
 // The output class: almost pure virtual (a protocol class), but
 // see some definitions in object.cc.
 
@@ -74,7 +73,7 @@ output *make_tpic_output (void);
 
 #ifdef PLOT_SUPPORT
 output *make_plot_output (void);
-extern char *display_type;
+extern char *output_format;
 
 extern char *font_name;
 extern char *pen_color_name;

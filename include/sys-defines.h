@@ -1,42 +1,25 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
+#ifndef _SYS_DEFINES_H_
+#define _SYS_DEFINES_H_ 1
+
 #include <config.h>		/* built by autoconf */
-
-/**********************************************************************/
-/* SUPPORT ANCIENT C/C++ COMPILERS.                                   */
-/**********************************************************************/
-
-#ifdef HAVE_VOID		/* defined in config.h  */
-#define voidptr_t void *
-#else
-#define NO_VOID_SUPPORT
-#define voidptr_t char *
-#define void int
-#endif /* not HAVE_VOID */
-
-#ifdef const			/* may be defined to empty in config.h */
-#define NO_CONST_SUPPORT
-#endif
-
-/* ____P() is a macro used in our source code to wrap function prototypes,
-   so that compilers that don't understand ANSI C prototypes still work,
-   and ANSI C compilers can issue warnings about type mismatches. */
-#ifdef ____P
-#undef ____P
-#endif
-#ifdef _HAVE_PROTOS
-#undef _HAVE_PROTOS
-#endif
-#if defined (__STDC__) || defined (_AIX) \
-	|| (defined (__mips) && defined (_SYSTYPE_SVR4)) \
-	|| defined(WIN32) || defined(__cplusplus)
-#ifdef _SUPPRESS_PROTOS
-#define ____P(protos) ()
-#else  /* not _SUPPRESS_PROTOS */
-#define ____P(protos) protos
-#define _HAVE_PROTOS 1
-#endif /* not _SUPPRESS_PROTOS */
-#else
-#define ____P(protos) ()
-#endif
 
 /**********************************************************************/
 /* SUPPORT C++.                                                       */
@@ -85,13 +68,19 @@
 /* INCLUDE stdio.h, ctype.h, errno.h.  (SUBSTITUTE AS NECESSARY.)     */
 /**********************************************************************/
 
+#ifdef __cplusplus
+
+#include <cstdio>
+#include <cctype>		/* why is this needed? */
+#include <cerrno>
+
+#else  /* not __cplusplus */
+
 #include <stdio.h>
 #include <ctype.h>		/* why is this needed? */
-
 #include <errno.h>
-#ifndef HAVE_STRERROR
-extern __C_LINKAGE char *strerror ____P((int errnum));
-#endif
+
+#endif /* not __cplusplus */
 
 /***************************************************************************/
 /* INCLUDE math.h, float.h, limits.h.  (SUBSTITUTE AS NECESSARY.)          */
@@ -105,8 +94,15 @@ extern __C_LINKAGE char *strerror ____P((int errnum));
 
 /* Include math.h, and whichever other math-related header files we have */
 
-#include <math.h> 
+#ifdef __cplusplus
 
+#include <cmath>
+#include <cfloat>
+#include <climits>
+
+#else  /* not __cplusplus */
+
+#include <math.h> 
 #ifdef HAVE_FLOAT_H
 #include <float.h>		/* for DBL_MAX, FLT_MAX */
 #endif
@@ -116,6 +112,8 @@ extern __C_LINKAGE char *strerror ____P((int errnum));
 #ifdef HAVE_VALUES_H
 #include <values.h>		/* for MAXDOUBLE, MAXFLOAT, MAXINT (backups) */
 #endif
+
+#endif /* not __cplusplus */
 
 /* Bounds on integer datatypes (should be in limits.h, but may not be). */
 
@@ -166,8 +164,17 @@ extern __C_LINKAGE char *strerror ____P((int errnum));
 
 /**********************************************************************/
 /* INCLUDE stdlib.h, string.h.  (SUBSTITUTE AS NECESSARY; if STDC_HEADERS
-   is defined then they're both present, and stdarg.h and float.h too.) */
+   is defined then they're both present, and stdarg.h and float.h too.)
+   Note: on some systems, e.g., Darwin, stdio.h must be included before
+   stdlib.h; which is why we included stdio.h above. */
 /**********************************************************************/
+
+#ifdef __cplusplus
+
+#include <cstdlib>
+#include <cstring>
+
+#else  /* not __cplusplus */
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>		/* for getenv, atoi, atof, etc. */
@@ -176,13 +183,13 @@ extern __C_LINKAGE char *strerror ____P((int errnum));
 #else  /* not STDC_HEADERS, must do a LOT of declarations by hand */
 
 #ifdef HAVE_SYS_STDTYPES_H
-#include <sys/stdtypes.h>	/* SunOS needs this for size_t */
+#include <sys/stdtypes.h>	/* SunOS, at least, needs this for size_t */
 #endif
 
 /* supply declarations for functions declared in stdlib.h */
-extern __C_LINKAGE char *getenv ____P((const char *name));
-extern __C_LINKAGE int atoi ____P((const char *nptr));
-extern __C_LINKAGE double atof ____P((const char *nptr));
+extern __C_LINKAGE char *getenv (const char *name);
+extern __C_LINKAGE int atoi (const char *nptr);
+extern __C_LINKAGE double atof (const char *nptr);
 
 /* supply definitions in stdlib.h */
 #define	EXIT_FAILURE	1	/* Failing exit status.  */
@@ -217,20 +224,22 @@ extern __C_LINKAGE double atof ____P((const char *nptr));
 #endif /* not HAVE_MEMMOVE */
 
 #ifndef HAVE_STRCASECMP		/* will use local version */
-extern __C_LINKAGE int strcasecmp ____P((const char *s1, const char *s2));
+extern __C_LINKAGE int strcasecmp (const char *s1, const char *s2);
 #endif /* not HAVE_STRCASECMP */
 
 /* supply declarations for more functions declared in stdlib.h */
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #else
-extern __C_LINKAGE voidptr_t malloc ____P((size_t size));
-extern __C_LINKAGE voidptr_t realloc ____P((voidptr_t ptr, size_t size));
-extern __C_LINKAGE voidptr_t calloc ____P((size_t nmemb, size_t size));
-extern __C_LINKAGE void free ____P((voidptr_t ptr));
+extern __C_LINKAGE void * malloc (size_t size);
+extern __C_LINKAGE void * realloc (void * ptr, size_t size);
+extern __C_LINKAGE void * calloc (size_t nmemb, size_t size);
+extern __C_LINKAGE void free (void * ptr);
 #endif /* not HAVE_MALLOC_H */
 
 #endif /* not STDC_HEADERS */
+
+#endif /* not __cplusplus */
 
 /**************************************************************************/
 /* Define NULL (necessary on some noncompliant or very old platforms?)    */
@@ -241,22 +250,17 @@ extern __C_LINKAGE void free ____P((voidptr_t ptr));
 #endif
 
 /**************************************************************************/
-/* In both C and C++, support the `bool' datatype.                        */
+/* Support the `bool' datatype, which is used widely in this package.     */
 /**************************************************************************/
 
-/* we are logical */
-#ifdef __cplusplus
-#ifndef HAVE_BOOL	/* old C++ compiler, must declare bool */
-typedef enum { false = 0, true = 1 } bool;
-#endif
-#else  /* not __cplusplus */
+#ifndef __cplusplus
 #ifdef __STDC__
 typedef enum { false = 0, true = 1 } bool;
 #else  /* not __STDC__, do things the old-fashioned way */
 typedef int bool;
 #define false 0
 #define true 1
-#endif
+#endif /* not __STDC__ */
 #endif /* not __cplusplus */
 
 /**************************************************************************/
@@ -346,3 +350,6 @@ typedef int bool;
 #define ICEIL(x) ((int)ceil(x))
 #define IFLOOR(x) ((int)floor(x))
 #endif
+
+
+#endif /* not _SYS_DEFINES_H_ */

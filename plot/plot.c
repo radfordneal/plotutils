@@ -1,12 +1,31 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file is the driving routine for the GNU `plot' program.  It
    includes code to read a stream of commands, in GNU metafile format, and
-   call libplot functions to draw the graphics.
-
-   Copyright (C) 1989-2000 Free Software Foundation, Inc. */
+   call libplot functions to draw the graphics. */
 
 #include "sys-defines.h"
-#include "plot.h"
+#include "libcommon.h"
 #include "getopt.h"
+#include "fontlist.h"
+#include "plot.h"
 
 /* Obsolete op codes (no longer listed in plot.h) */
 #define O_COLOR 'C'
@@ -44,6 +63,8 @@ typedef enum
 } plot_format;
 
 const char *progname = "plot";	/* name of this program */
+const char *written = "Written by Robert S. Maier.";
+const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
@@ -67,16 +88,19 @@ plot_format input_format = GNU_OLD_BINARY;
    of erase()) from the output */
 bool merge_pages = false;
 
-/* Long options we recognize */
+/* options */
 
 #define	ARG_NONE	0
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
+const char *optstring = "shlAIOp:F:f:W:T:";
+
 struct option long_options[] = 
 {
-  /* The most important option */
-  { "display-type",	ARG_REQUIRED,	NULL, 'T'},
+  /* The most important option ("--display-type" is an obsolete variant) */
+  { "output-format",	ARG_REQUIRED,	NULL, 'T'},
+  { "display-type",	ARG_REQUIRED,	NULL, 'T' << 8 }, /* hidden */
   /* Other frequently used options */
   { "font-name",	ARG_REQUIRED,	NULL, 'F' },
   { "font-size",	ARG_REQUIRED,	NULL, 'f' },
@@ -107,39 +131,25 @@ struct option long_options[] =
   { NULL,		0,		NULL,  0}
 };
     
-/* null-terminated list of options that we don't show to the user */
-int hidden_options[] = { (int)'I', 0 };
+/* null-terminated list of options, such as obsolete-but-still-maintained
+   options or undocumented options, which we don't show to the user */
+const int hidden_options[] = { (int)'I', (int)('T' << 8), 0 };
 
 
 /* forward references */
-bool read_plot ____P((plPlotter *plotter, FILE *in_stream));
-char *read_string ____P((FILE *input, bool *badstatus));
-double read_float ____P((FILE *input, bool *badstatus));
-double read_int ____P((FILE *input, bool *badstatus));
-int maybe_closepl ____P((plPlotter *plotter));
-int maybe_openpl ____P((plPlotter *plotter));
-int read_true_int ____P((FILE *input, bool *badstatus));
-unsigned char read_byte_as_unsigned_char ____P((FILE *input, bool *badstatus));
-unsigned int read_byte_as_unsigned_int ____P((FILE *input, bool *badstatus));
-/* from libcommon */
-extern int display_fonts ____P((const char *display_type, const char *progname));
-extern int list_fonts ____P((const char *display_type, const char *progname));
-extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version ____P((const char *progname)); 
-extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
-extern voidptr_t xmalloc ____P ((size_t size));
-extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
-extern char *xstrdup ____P ((const char *s));
+bool read_plot (plPlotter *plotter, FILE *in_stream);
+char *read_string (FILE *input, bool *badstatus);
+double read_float (FILE *input, bool *badstatus);
+double read_int (FILE *input, bool *badstatus);
+int maybe_closepl (plPlotter *plotter);
+int maybe_openpl (plPlotter *plotter);
+int read_true_int (FILE *input, bool *badstatus);
+unsigned char read_byte_as_unsigned_char (FILE *input, bool *badstatus);
+unsigned int read_byte_as_unsigned_int (FILE *input, bool *badstatus);
 
 
 int
-#ifdef _HAVE_PROTOS
 main (int argc, char *argv[])
-#else
-main (argc, argv)
-     int argc;
-     char *argv[];
-#endif
 {
   plPlotter *plotter;
   plPlotterParams *plotter_params;
@@ -147,7 +157,7 @@ main (argc, argv)
   bool show_fonts = false;	/* supply help on fonts? */
   bool show_usage = false;	/* show usage message? */
   bool show_version = false;	/* show version message? */
-  char *display_type = (char *)"meta"; /* default libplot output format */
+  char *output_format = (char *)"meta"; /* default libplot output format */
   int errcnt = 0;		/* errors encountered */
   int local_page_number;	/* temporary storage */
   int opt_index;		/* long option index */
@@ -155,26 +165,27 @@ main (argc, argv)
   int retval;			/* return value */
 
   plotter_params = pl_newplparams ();
-  while ((option = getopt_long (argc, argv, "shlAIOp:F:f:W:T:", long_options, &opt_index)) != EOF)
+  while ((option = getopt_long (argc, argv, optstring, long_options, &opt_index)) != EOF)
     {
       if (option == 0)
 	option = long_options[opt_index].val;
       
       switch (option) 
 	{
-	case 'T':		/* Display type, ARG REQUIRED      */
-	  display_type = (char *)xmalloc (strlen (optarg) + 1);
-	  strcpy (display_type, optarg);
+	case 'T':		/* Output format, ARG REQUIRED      */
+	case 'T' << 8:
+	  output_format = (char *)xmalloc (strlen (optarg) + 1);
+	  strcpy (output_format, optarg);
 	  break;
 	case 'O':		/* Ascii output */
-	  pl_setplparam (plotter_params, "META_PORTABLE", (voidptr_t)"yes");
+	  pl_setplparam (plotter_params, "META_PORTABLE", (void *)"yes");
 	  break;
 	case 'F':		/* set the initial font */
 	  font_name = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (font_name, optarg);
 	  break;
 	case 'e' << 8:		/* emulate color by grayscale */
-	  pl_setplparam (plotter_params, "EMULATE_COLOR", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "EMULATE_COLOR", (void *)optarg);
 	  break;
 	case 'C' << 8:		/* set the initial pen color */
 	  pen_color = (char *)xmalloc (strlen (optarg) + 1);
@@ -185,10 +196,10 @@ main (argc, argv)
 	  strcpy (bg_color, optarg);
 	  break;
 	case 'B' << 8:		/* Bitmap size */
-	  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "BITMAPSIZE", (void *)optarg);
 	  break;
 	case 'P' << 8:		/* Page size */
-	  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "PAGESIZE", (void *)optarg);
 	  break;
 	case 'f':		/* set the initial fontsize */
 	  {
@@ -257,10 +268,10 @@ main (argc, argv)
 	  user_specified_input_format = GNU_OLD_PORTABLE;
 	  break;
 	case 'r' << 8:		/* Plot rotation angle, ARG REQUIRED	*/
-	  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "ROTATION", (void *)optarg);
 	  break;
 	case 'M' << 8:		/* Max line length */
-	  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (void *)optarg);
 	  break;
 	case 's':		/* Merge pages */
 	  merge_pages = true;
@@ -292,14 +303,14 @@ main (argc, argv)
     }
   if (show_version)
     {
-      display_version (progname);
+      display_version (progname, written, copyright);
       return EXIT_SUCCESS;
     }
   if (do_list_fonts)
     {
       int success;
 
-      success = list_fonts (display_type, progname);
+      success = list_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -309,7 +320,7 @@ main (argc, argv)
     {
       int success;
 
-      success = display_fonts (display_type, progname);
+      success = display_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -323,9 +334,9 @@ main (argc, argv)
 
   if (bg_color)
     /* select user-specified background color */
-    pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)bg_color);
+    pl_setplparam (plotter_params, "BG_COLOR", (void *)bg_color);
 
-  if ((plotter = pl_newpl_r (display_type, NULL, stdout, stderr,
+  if ((plotter = pl_newpl_r (output_format, NULL, stdout, stderr,
 			     plotter_params)) == NULL)
     {
       fprintf (stderr, "%s: error: could not create plot device\n", progname);
@@ -417,13 +428,7 @@ main (argc, argv)
    the file.  Return value indicates whether stream was parsed
    successfully. */
 bool
-#ifdef _HAVE_PROTOS
 read_plot (plPlotter *plotter, FILE *in_stream)
-#else
-read_plot (plotter, in_stream)
-     plPlotter *plotter;
-     FILE *in_stream;
-#endif
 {
   bool argerr = false;	/* error occurred while reading argument? */
   bool display_open = false;	/* display device open? */
@@ -1549,12 +1554,7 @@ read_plot (plotter, in_stream)
 }
 
 int
-#ifdef _HAVE_PROTOS
 maybe_openpl (plPlotter *plotter)
-#else
-maybe_openpl (plotter)
-     plPlotter *plotter;
-#endif
 {
   if (merge_pages)
     return 0;
@@ -1563,12 +1563,7 @@ maybe_openpl (plotter)
 }
 
 int
-#ifdef _HAVE_PROTOS
 maybe_closepl (plPlotter *plotter)
-#else
-maybe_closepl (plotter)
-     plPlotter *plotter;
-#endif
 {
   if (merge_pages)
     return 0;
@@ -1579,13 +1574,7 @@ maybe_closepl (plotter)
 
 /* read a single byte from input stream, return as unsigned char (0..255) */
 unsigned char
-#ifdef _HAVE_PROTOS
 read_byte_as_unsigned_char (FILE *input, bool *badstatus)
-#else
-read_byte_as_unsigned_char (input, badstatus)
-     FILE *input;
-     bool *badstatus;
-#endif
 {
   int newint;
 
@@ -1605,13 +1594,7 @@ read_byte_as_unsigned_char (input, badstatus)
 
 /* read a single byte from input stream, return as unsigned int (0..255) */
 unsigned int
-#ifdef _HAVE_PROTOS
 read_byte_as_unsigned_int (FILE *input, bool *badstatus)
-#else
-read_byte_as_unsigned_int (input, badstatus)
-     FILE *input;
-     bool *badstatus;
-#endif
 {
   int newint;
 
@@ -1633,13 +1616,7 @@ read_byte_as_unsigned_int (input, badstatus)
    format for integers or short integers, or perhaps in crufty old 2-byte
    format) */
 int
-#ifdef _HAVE_PROTOS
 read_true_int (FILE *input, bool *badstatus)
-#else
-read_true_int (input, badstatus)
-     FILE *input;
-     bool *badstatus;
-#endif
 {
   int x, zi, returnval;
   short zs;
@@ -1705,13 +1682,7 @@ read_true_int (input, badstatus)
    (human-readable) format is used, a floating point number may substitute
    for the integer */
 double
-#ifdef _HAVE_PROTOS
 read_int (FILE *input, bool *badstatus)
-#else
-read_int (input, badstatus)
-     FILE *input;
-     bool *badstatus;
-#endif
 {
   int x, zi, returnval;
   short zs;
@@ -1780,13 +1751,7 @@ read_int (input, badstatus)
 /* read a floating point quantity from input stream (may be in ascii format
    or system single-precision format) */
 double
-#ifdef _HAVE_PROTOS
 read_float (FILE *input, bool *badstatus)
-#else
-read_float (input, badstatus)
-     FILE *input;
-     bool *badstatus;
-#endif
 {
   float f;
   int returnval;
@@ -1828,13 +1793,7 @@ read_float (input, badstatus)
    string, with \0 replacing \n, is allocated on the heap and may be
    freed. */
 char *
-#ifdef _HAVE_PROTOS
 read_string (FILE *input, bool *badstatus)
-#else
-read_string (input, badstatus)
-     FILE *input;
-     bool *badstatus;
-#endif
 {
   int length = 0, buffer_length = 16; /* initial length */
   char *buffer;

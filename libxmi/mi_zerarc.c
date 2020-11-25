@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* Original author:  Bob Scheifler, MIT X Consortium, mid 1980s.
    Hacked by Robert S. Maier <rsm@math.arizona.edu>, 1998-99 */
 
@@ -66,9 +89,9 @@ typedef struct
 static const miZeroArcPt _oob_arc_pt = {INT_MAX, INT_MAX, 0};
 
 /* forward references */
-static bool miZeroArcSetup ____P((const miArc *arc, miZeroArc *info, bool ok360));
-static miPoint * miZeroArcPts ____P((const miArc *arc, miPoint *pts));
-static void miZeroArcDashPts ____P((const miGC *pGC, const miArc *arc, miDashInfo *dinfo, int maxPts, miPoint **pts));
+static bool miZeroArcSetup (const miArc *arc, miZeroArc *info, bool ok360);
+static miPoint * miZeroArcPts (const miArc *arc, miPoint *pts);
+static void miZeroArcDashPts (const miGC *pGC, const miArc *arc, miDashInfo *dinfo, int maxPts, miPoint **pts);
 
 
 /*
@@ -77,16 +100,7 @@ static void miZeroArcDashPts ____P((const miGC *pGC, const miArc *arc, miDashInf
  * `rasterized ellipse' cache. */
 
 void
-#ifdef _HAVE_PROTOS
 miZeroPolyArc_r (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs, miEllipseCache *ellipseCache)
-#else
-miZeroPolyArc_r (paintedSet, pGC, narcs, parcs, ellipseCache)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-     miEllipseCache *ellipseCache;
-#endif
 {
   const miArc *arc;
   miDashInfo dinfo;
@@ -203,15 +217,7 @@ miZeroPolyArc_r (paintedSet, pGC, narcs, parcs, ellipseCache)
 
 #ifndef NO_NONREENTRANT_POLYARC_SUPPORT
 void
-#ifdef _HAVE_PROTOS
 miZeroPolyArc (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs)
-#else
-miZeroPolyArc (paintedSet, pGC, narcs, parcs)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-#endif
 {
   if (_mi_ellipseCache == (miEllipseCache *)NULL)
     _mi_ellipseCache = miNewEllipseCache ();
@@ -234,13 +240,7 @@ miZeroPolyArc (paintedSet, pGC, narcs, parcs)
    pre-allocated storage; return pointer to miPoint after last-generated
    point.  Storage supplied by caller, should be sufficiently large. */
 static miPoint *
-#ifdef _HAVE_PROTOS
 miZeroArcPts (const miArc *arc, miPoint *pts)
-#else
-miZeroArcPts (arc, pts)
-     const miArc *arc;
-     miPoint *pts;
-#endif
 {
   miZeroArc info;
   int x, y, a, b, d;
@@ -349,17 +349,11 @@ if (mask & (1 << idx)) \
 /* Generate the points that make up a dashed zero-width arc, possibly
    multicolored; write them to pre-allocated storage, indexed by paint
    type. */
+
+/* ARGS: dinfo = updated vars (e.g. dashNum, dashIndex),
+   	 pts[i] = storage for paint type #i */
 static void
-#ifdef _HAVE_PROTOS
 miZeroArcDashPts (const miGC *pGC, const miArc *arc, miDashInfo *dinfo, int maxPts, miPoint **pts)
-#else
-miZeroArcDashPts (pGC, arc, dinfo, maxPts, pts)
-     const miGC *pGC;
-     const miArc *arc;
-     miDashInfo *dinfo;		/* updated vars (e.g. dashNum, dashIndex) */
-     int maxPts;
-     miPoint **pts;		/* pts[i] is storage for paint type #i */
-#endif
 {
   miZeroArc info;
   int x, y, a, b, d;
@@ -585,14 +579,7 @@ miZeroArcDashPts (pGC, arc, dinfo, maxPts, pts)
    Generates a miZeroArc struct for any specified arc. */
 
 static bool
-#ifdef _HAVE_PROTOS
 miZeroArcSetup (const miArc *arc, miZeroArc *info, bool ok360)
-#else
-miZeroArcSetup (arc, info, ok360)
-     const miArc *arc;
-     miZeroArc *info;
-     bool ok360;
-#endif
 {
   int l, i;
   int angle1, angle2;

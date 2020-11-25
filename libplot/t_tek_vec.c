@@ -1,5 +1,23 @@
-/* This file contains the low-level _tek_vector() method, which takes two
-   integer arguments and writes them, in the format used by a Tektronix
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
+/* This file contains the low-level _pl_t_tek_vector() method, which takes
+   two integer arguments and writes them, in the format used by a Tektronix
    4014 terminal for addresses while in vector or point-plot mode, to a
    specified output stream.  It is called by several TekPlotter methods.
    
@@ -41,13 +59,7 @@
 #define TWOBITS 0x03		/* a dollar and six bits for a haircut... */
 
 void
-#ifdef _HAVE_PROTOS
-_tek_vector (R___(Plotter *_plotter) int xx, int yy)
-#else
-_tek_vector (R___(_plotter) xx, yy)
-     S___(Plotter *_plotter;)
-     int xx, yy;
-#endif
+_pl_t_tek_vector (R___(Plotter *_plotter) int xx, int yy)
 {
   unsigned char xx_high, yy_high;
   unsigned char xx_low, yy_low;
@@ -102,14 +114,7 @@ _tek_vector (R___(_plotter) xx, yy)
    length. */
 
 void
-#ifdef _HAVE_PROTOS
-_tek_vector_compressed (R___(Plotter *_plotter) int xx, int yy, int oldxx, int oldyy, bool force)
-#else
-_tek_vector_compressed (R___(_plotter) xx, yy, oldxx, oldyy, force)
-     S___(Plotter *_plotter;) 
-     int xx, yy, oldxx, oldyy;
-     bool force;
-#endif
+_pl_t_tek_vector_compressed (R___(Plotter *_plotter) int xx, int yy, int oldxx, int oldyy, bool force)
 {
   unsigned char xx_high, yy_high, oldxx_high, oldyy_high;
   unsigned char xx_low, yy_low, oldyy_low;

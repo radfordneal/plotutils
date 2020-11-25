@@ -4,14 +4,14 @@
    set' (a set of points with integer coordinates, partitioned by pixel
    value), and merges the painted set onto a 60x35 canvas.
 
-   The painted set consists of a polyline and an arc that subtends 270
-   degrees.  The polyline crosses the arc, and sticks into its interior.
-   Both the polyline and the arc are dashed.  The line type is
+   The painted set consists of a filled rectangle, a polyline, and an arc
+   that subtends 270 degrees.  The rectangle is filled with color 1.  The
+   polyline and the arc are dashed.  Their line type is
    MI_LINE_ON_OFF_DASHED, and the `on' dashes are multicolored: they cycle
-   through colors 2,3,4.  (The `off' dashes are not drawn, but if they were
-   [which would be the case if MI_LINE_ON_OFF_DASHED were replaced by
-   MI_LINE_DOUBLE_DASHED], they would all be in color 1.)  The background
-   color of the canvas onto which the painted set is merged is 0.
+   through colors 1,2,3.  (The `off' dashes are not drawn, but if they were
+   [which would be the case if MI_LINE_DOUBLE_DASHED were the line type],
+   they would all be in color 0.)  The background color of the canvas onto
+   which the painted set is merged is 0.
 
    All these color values are miPixel values, and may be chosen
    arbitrarily.  By default, miPixel is typedef'd to `unsigned int'.  You
@@ -28,20 +28,29 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <xmi.h>            /* public libxmi header file */
+#include <xmi.h>		/* public libxmi header file */
 
 int main ()
 {
-  miPoint points[4];        /* 3 line segments in the polyline */
-  miArc arc;                /* 1 arc to be drawn */
-  miPixel pixels[4];        /* pixel values for drawing and dashing */
-  unsigned int dashes[2];   /* length of `on' and `off' dashes */
-  miGC *pGC;                /* graphics context */
-  miPaintedSet *paintedSet; /* opaque object to be painted */
-  miCanvas *canvas;         /* drawing canvas (including pixmap) */
-  miPoint offset;           /* for miPaintedSet -> miCanvas transfer */
+  miRectangle rect;		/* 1 rectangle to be filled */
+  miPoint points[4];		/* 3 line segments in polyline to be drawn */
+  miArc arc;			/* 1 arc to be drawn */
+  miPixel pixels[4];		/* pixel values for drawing and dashing */
+  unsigned int dashes[2];	/* length of `on' and `off' dashes */
+  miGC *pGC;			/* graphics context */
+  miPaintedSet *paintedSet;	/* opaque object to be painted */
+  miCanvas *canvas;		/* drawing canvas (including pixmap) */
+  miPoint offset;		/* for miPaintedSet -> miCanvas transfer */
   int i, j;
      
+  /* Define rectangle: upper left vertex = (40,0), lower right = (55,5). */
+  /* But note libxmi's convention: right and bottom edges of filled
+     polygons (including rectangles) are never painted, in order that
+     adjacent polygons will abut with no overlaps or gaps.  This filled
+     rectangle, when merged onto the canvas, will extend only to (54,4). */
+  rect.x = 40;		rect.y = 0;
+  rect.width = 15;	rect.height = 5;
+
   /* define polyline: vertices are (25,5) (5,5), (5,25), (35,22) */
   points[0].x = 25;  points[0].y = 5;
   points[1].x = 5;   points[1].y = 5;
@@ -56,10 +65,10 @@ int main ()
   arc.angle2 = 270 * 64;    /* angle range (1/64'ths of a degree) */
      
   /* create and modify graphics context */
-  pixels[0] = 1;            /* pixel value for `off' dashes, if drawn */
-  pixels[1] = 2;            /* default pixel for drawing */
-  pixels[2] = 3;            /* another pixel, for multicolored dashes */
-  pixels[3] = 4;            /* another pixel, for multicolored dashes */
+  pixels[0] = 0;            /* pixel value for `off' dashes, if drawn */
+  pixels[1] = 1;            /* default pixel for drawing */
+  pixels[2] = 2;            /* another pixel, for multicolored dashes */
+  pixels[3] = 3;            /* another pixel, for multicolored dashes */
   dashes[0] = 4;            /* length of `on' dashes */
   dashes[1] = 2;            /* length of `off' dashes */
   pGC = miNewGC (4, pixels);
@@ -70,7 +79,11 @@ int main ()
   /* create empty painted set */
   paintedSet = miNewPaintedSet ();
      
-  /* paint dashed polyline and dashed arc onto painted set */
+  /* Paint filled rectangle, dashed polyline and dashed arc onto painted
+     set.  Rectangle will be filled with the default pixel value for
+     drawing, i.e., pixels[1], i.e., 2, and polyline and arc will be drawn
+     rather than filled: they will be dashed as specified above. */
+  miFillRectangles (paintedSet, pGC, 1, &rect);
   miDrawLines (paintedSet, pGC, MI_COORD_MODE_ORIGIN, 4, points);
   miDrawArcs (paintedSet, pGC, 1, &arc);
      

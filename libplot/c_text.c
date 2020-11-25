@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -5,34 +23,26 @@
 
 /* CGM horizontal alignment styles, indexed by internal number
    (left/center/right) */
-static const int _cgm_horizontal_alignment_style[] =
+static const int cgm_horizontal_alignment_style[PL_NUM_HORIZ_JUST_TYPES] =
 { CGM_ALIGN_LEFT, CGM_ALIGN_CENTER, CGM_ALIGN_RIGHT };
 
 /* corresponding strings, as used in the text encoding */
-static const char * _cgm_horizontal_alignment_style_string[] =
+static const char * const cgm_horizontal_alignment_style_string[PL_NUM_HORIZ_JUST_TYPES] =
 { "left", "ctr", "right" };
 
 /* CGM vertical alignment styles, indexed by internal number
    (top/half/base/bottom/cap) */
-static const int _cgm_vertical_alignment_style[] =
+static const int cgm_vertical_alignment_style[PL_NUM_VERT_JUST_TYPES] =
 { CGM_ALIGN_TOP, CGM_ALIGN_HALF, CGM_ALIGN_BASE, CGM_ALIGN_BOTTOM, CGM_ALIGN_CAP };
 
 /* corresponding strings, as used in the text encoding */
-static const char * _cgm_vertical_alignment_style_string[] =
+static const char * const cgm_vertical_alignment_style_string[PL_NUM_VERT_JUST_TYPES] =
 { "top", "half", "base", "bottom", "cap" };
 
 /* This prints a single-font, single-font-size label. */
 
 double
-#ifdef _HAVE_PROTOS
-_c_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
-#else
-_c_paint_text_string (R___(_plotter) s, h_just, v_just)
-     S___(Plotter *_plotter;)
-     const unsigned char *s;
-     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
-     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
-#endif
+_pl_c_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 {
   int master_font_index, desired_cgm_font_id;
   double theta, costheta, sintheta;
@@ -53,7 +63,7 @@ _c_paint_text_string (R___(_plotter) s, h_just, v_just)
   int byte_count, data_byte_count, data_len;
 
   /* sanity check */
-  if (_plotter->drawstate->font_type != F_POSTSCRIPT)
+  if (_plotter->drawstate->font_type != PL_F_POSTSCRIPT)
     return 0.0;
 
   /* if empty string, nothing to do */
@@ -67,11 +77,11 @@ _c_paint_text_string (R___(_plotter) s, h_just, v_just)
     return 0.0;
 
   /* set CGM text color */
-  _c_set_pen_color (R___(_plotter) CGM_OBJECT_TEXT);
+  _pl_c_set_pen_color (R___(_plotter) CGM_OBJECT_TEXT);
 
   /* compute index of font in master table of PS fonts, in g_fontdb.c */
   master_font_index =
-    (_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+    (_pl_g_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
 
   /* flag current PS font as used on this page */
   _plotter->data->page->ps_font_used[master_font_index] = true;
@@ -79,7 +89,7 @@ _c_paint_text_string (R___(_plotter) s, h_just, v_just)
   /* synchronize CGM's font with our notion of current font, by setting the
      CGM font index (in range 1..35; as explained in g_fontdb.c, the
      traditional `Adobe 13' will be placed in slots 1..13) */
-  desired_cgm_font_id = _ps_font_to_cgm_font_id[master_font_index];
+  desired_cgm_font_id = _pl_g_ps_font_to_cgm_font_id[master_font_index];
   if (_plotter->cgm_font_id != desired_cgm_font_id)
     /* emit "TEXT FONT INDEX" command */
     {
@@ -186,7 +196,7 @@ _c_paint_text_string (R___(_plotter) s, h_just, v_just)
 
   /* cap height as fraction of font height */
   relative_cap_height = 
-    _ps_font_info[master_font_index].font_cap_height / 1000.0;
+    _pl_g_ps_font_info[master_font_index].font_cap_height / 1000.0;
   /* cap height in user frame */
   user_cap_height = relative_cap_height * _plotter->drawstate->true_font_size;
   /* true up vector (pointing up to cap height level) in device frame */
@@ -217,7 +227,7 @@ _c_paint_text_string (R___(_plotter) s, h_just, v_just)
     }
 
   /* is label to be rendered in Symbol font (which has its own charsets)? */
-  if (strcmp (_ps_font_info[master_font_index].ps_name, "Symbol") == 0)
+  if (strcmp (_pl_g_ps_font_info[master_font_index].ps_name, "Symbol") == 0)
     font_is_symbol = true;
   else
     font_is_symbol = false;
@@ -304,8 +314,8 @@ _c_paint_text_string (R___(_plotter) s, h_just, v_just)
     }
 
   /* update CGM text alignment if necessary */
-  desired_cgm_h_alignment = _cgm_horizontal_alignment_style[h_just];
-  desired_cgm_v_alignment = _cgm_vertical_alignment_style[v_just];
+  desired_cgm_h_alignment = cgm_horizontal_alignment_style[h_just];
+  desired_cgm_v_alignment = cgm_vertical_alignment_style[v_just];
   if (_plotter->cgm_horizontal_text_alignment != desired_cgm_h_alignment
       || _plotter->cgm_vertical_text_alignment != desired_cgm_v_alignment)
     /* emit "TEXT ALIGNMENT" command (args = 2 enums, 2 reals) */
@@ -313,9 +323,9 @@ _c_paint_text_string (R___(_plotter) s, h_just, v_just)
       const char *desired_cgm_h_alignment_string, *desired_cgm_v_alignment_string;
 
       desired_cgm_h_alignment_string = 
-	_cgm_horizontal_alignment_style_string[h_just];
+	cgm_horizontal_alignment_style_string[h_just];
       desired_cgm_v_alignment_string = 
-	_cgm_vertical_alignment_style_string[v_just];
+	cgm_vertical_alignment_style_string[v_just];
 
       data_len = 2 * 2 + 2 * 4;	/* 2 bytes per enum, 4 bytes per real */
       byte_count = data_byte_count = 0;

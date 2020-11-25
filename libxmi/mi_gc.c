@@ -1,3 +1,21 @@
+/* This file is part of the GNU libxmi package.  Copyright (C) 1998, 1999,
+   2000, 2005, Free Software Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -15,13 +33,7 @@
    default values that are used by X11) */
 
 miGC * 
-#ifdef _HAVE_PROTOS
 miNewGC (int npixels, const miPixel *pixels)
-#else
-miNewGC (npixels, pixels)
-     int npixels;
-     const miPixel *pixels;
-#endif
 {
   miGC *new_gc;
   int i;
@@ -50,12 +62,7 @@ miNewGC (npixels, pixels)
 /* destroy (deallocate) an miGC */
 
 void
-#ifdef _HAVE_PROTOS
 miDeleteGC (miGC *pGC)
-#else
-miDeleteGC (pGC)
-    miGC *pGC;
-#endif
 {
   if (pGC == (miGC *)NULL)
     return;
@@ -68,12 +75,7 @@ miDeleteGC (pGC)
 /* copy an miGC */
 
 miGC * 
-#ifdef _HAVE_PROTOS
 miCopyGC (const miGC *pGC)
-#else
-miCopyGC (pGC)
-     const miGC *pGC;
-#endif
 {
   miGC *new_gc;
   int i;
@@ -111,14 +113,7 @@ miCopyGC (pGC)
 /* set a single integer-valued miGC attribute */
 
 void
-#ifdef _HAVE_PROTOS
 miSetGCAttrib (miGC *pGC, miGCAttribute attribute, int value)
-#else
-miSetGCAttrib (pGC, attribute, value)
-     miGC *pGC;
-     miGCAttribute attribute;
-     int value;
-#endif
 {
   if (pGC == (miGC *)NULL || value < 0)
     return;
@@ -151,15 +146,7 @@ miSetGCAttrib (pGC, attribute, value)
 /* set many integer-valued miGC attributes, at a single time */
 
 void
-#ifdef _HAVE_PROTOS
 miSetGCAttribs (miGC *pGC, int nattributes, const miGCAttribute *attributes, const int *values)
-#else
-miSetGCAttribs (pGC, nattributes, attributes, values)
-     miGC *pGC;
-     int nattributes;
-     const miGCAttribute *attributes;
-     const int *values;
-#endif
 {
   int i;
   miGCAttribute attribute;
@@ -204,13 +191,7 @@ miSetGCAttribs (pGC, nattributes, attributes, values)
 /* set the only float-valued miGC attribute (the miter limit) */
 
 void
-#ifdef _HAVE_PROTOS
 miSetGCMiterLimit (miGC *pGC, double value)
-#else
-miSetGCMiterLimit (pGC, value)
-     miGC *pGC;
-     double value;
-#endif
 {
   if (pGC == (miGC *)NULL)
     return;
@@ -220,15 +201,7 @@ miSetGCMiterLimit (pGC, value)
 /* set the dash-related attributes in an miGC */
 
 void
-#ifdef _HAVE_PROTOS
 miSetGCDashes (miGC *pGC, int ndashes, const unsigned int *dashes, int offset)
-#else
-miSetGCDashes (pGC, ndashes, dashes, offset)
-     miGC *pGC;
-     int ndashes;
-     const unsigned int *dashes;
-     int offset;
-#endif
 {
   int i;
 
@@ -250,14 +223,7 @@ miSetGCDashes (pGC, ndashes, dashes, offset)
 
 /* set the pixel array in a miGC */
 void 
-#ifdef _HAVE_PROTOS
 miSetGCPixels (miGC *pGC, int npixels, const miPixel *pixels)
-#else
-miSetGCPixels (pGC, npixels, pixels)
-     miGC *pGC;
-     int npixels;
-     const miPixel *pixels;
-#endif
 {
   int i;
 

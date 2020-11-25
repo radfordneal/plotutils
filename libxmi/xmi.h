@@ -1,10 +1,6 @@
 /* This is xmi.h, the public header file for the machine-independent libxmi
    rasterization library, which is based on source files in the X Window
-   System distribution.  Those files are copyright (c) 1985-1989 by the X
-   Consortium.  For the original authors, and an X Consortium permission
-   notice, see the accompanying file README-X.  GNU extensions by 
-   Robert S. Maier <rsm@math.arizona.edu> copyright (c) 1998-2000 by the
-   Free Software Foundation.
+   System distribution.  Written by Robert S. Maier.
 
    The eight painting functions in libxmi's core API, namely 
 
@@ -51,11 +47,6 @@
    functions.  These will affect how the pixels from the miPaintedSet are
    combined with the ones that already exist on the drawable. */
 
-/* This file is written for ANSI C compilers.  If you use it with a
-   pre-ANSI C compiler that does not support the `const' keyword, such as
-   the `cc' compiler supplied with SunOS (i.e., Solaris 1.x), you should
-   use the -DNO_CONST_SUPPORT option when compiling your code. */
-
 #ifndef _XMI_H_
 #define _XMI_H_ 1
 
@@ -68,8 +59,8 @@
    `mi_libxmi_ver'.  The MI_LIBXMI_VER macro is not compiled into it.  Both
    are available to applications that include this header file. */
 
-#define MI_LIBXMI_VER_STRING "1.2"
-#define MI_LIBXMI_VER         120
+#define MI_LIBXMI_VER_STRING "1.3"
+#define MI_LIBXMI_VER         130
 
 extern const char mi_libxmi_ver[8]; /* need room for 99.99aa */
 
@@ -90,48 +81,6 @@ extern const char mi_libxmi_ver[8]; /* need room for 99.99aa */
 # define ___END_DECLS		/* empty */
 #endif
      
-/* ___P is a macro used to wrap function prototypes, so that compilers that
-   don't understand ANSI C prototypes still work, and ANSI C compilers can
-   issue warnings about type mismatches. */
-#ifdef ___P
-#undef ___P
-#endif
-#if defined (__STDC__) || defined (_AIX) \
-	|| (defined (__mips) && defined (_SYSTYPE_SVR4)) \
-	|| defined(WIN32) || defined(__cplusplus)
-#define ___P(protos) protos
-#else
-#define ___P(protos) ()
-#endif
-
-/* Support old compilers with no `const' support (e.g. SunOS cc). */
-#ifdef ___const
-#undef ___const
-#endif
-#ifdef NO_CONST_SUPPORT
-#ifdef const
-#undef const
-#endif /* const */
-#define const
-#define ___const
-#else
-#define ___const const
-#endif
-
-/* Support truly ancient compilers with no `void' support. */
-#ifdef voidptr_t
-#undef voidptr_t
-#endif /* voidptr_t */
-#ifdef NO_VOID_SUPPORT
-#ifdef void
-#undef void
-#endif /* void */
-#define voidptr_t char *
-#define void int
-#else  /* not NO_VOID_SUPPORT */
-#define voidptr_t void *
-#endif /* not NO_VOID_SUPPORT */
-
 /**********************************************************************/
 
 /* Structure that defines a point with integer coordinates. */
@@ -165,11 +114,11 @@ typedef unsigned int miPixel;
 typedef struct lib_miPaintedSet miPaintedSet;
 
 /* Constructor and destructor for the miPaintedSet class. */
-extern miPaintedSet * miNewPaintedSet ___P((void));
-extern void miDeletePaintedSet ___P((miPaintedSet *paintedSet));
+extern miPaintedSet * miNewPaintedSet (void);
+extern void miDeletePaintedSet (miPaintedSet *paintedSet);
 
 /* A function that clears any miPaintedSet (i.e. makes it the empty set). */
-extern void miClearPaintedSet ___P((miPaintedSet *paintedSet));
+extern void miClearPaintedSet (miPaintedSet *paintedSet);
 
 /**********************************************************************/
 
@@ -179,9 +128,9 @@ extern void miClearPaintedSet ___P((miPaintedSet *paintedSet));
 typedef struct lib_miGC miGC;
 
 /* Constructor, destructor, and copy constructor for the miGC class. */
-extern miGC * miNewGC ___P((int npixels, ___const miPixel *pixels)); /* npixels >= 2 */
-extern void miDeleteGC ___P((miGC *pGC));
-extern miGC * miCopyGC ___P((___const miGC *pGC));
+extern miGC * miNewGC (int npixels, const miPixel *pixels); /* npixels >= 2 */
+extern void miDeleteGC (miGC *pGC);
+extern miGC * miCopyGC (const miGC *pGC);
 
 /* Values for an miGC's miGCLineStyle attribute (default=MI_LINE_SOLID). */
 enum { MI_LINE_SOLID, MI_LINE_ON_OFF_DASH, MI_LINE_DOUBLE_DASH };
@@ -208,24 +157,24 @@ typedef enum { MI_GC_FILL_RULE, MI_GC_JOIN_STYLE, MI_GC_CAP_STYLE, MI_GC_LINE_ST
 /* A function that sets a single integer-valued miGC attribute.  `value'
    must be one of the preceding enum's, except when
    attribute=MI_GC_LINE_WIDTH, in which case value>=0 is required. */
-extern void miSetGCAttrib ___P((miGC *pGC, miGCAttribute attribute, int value));
+extern void miSetGCAttrib (miGC *pGC, miGCAttribute attribute, int value);
 
 /* A function that sets a list of integer-value miGC attributes. */
-extern void miSetGCAttribs ___P((miGC *pGC, int nattributes, ___const miGCAttribute *attributes, ___const int *values));
+extern void miSetGCAttribs (miGC *pGC, int nattributes, const miGCAttribute *attributes, const int *values);
 
 /* Functions that set miGC attributes that are not integer-valued.
    Note: currently, `offset' must be nonnegative. */
-extern void miSetGCDashes ___P((miGC *pGC, int ndashes, ___const unsigned int *dashes, int offset));
-extern void miSetGCMiterLimit ___P((miGC *pGC, double miter_limit));
-extern void miSetGCPixels ___P((miGC *pGC, int npixels, ___const miPixel *pixels)); /* npixels >=2 */
+extern void miSetGCDashes (miGC *pGC, int ndashes, const unsigned int *dashes, int offset);
+extern void miSetGCMiterLimit (miGC *pGC, double miter_limit);
+extern void miSetGCPixels (miGC *pGC, int npixels, const miPixel *pixels); /* npixels >=2 */
 
 /* Additional functions that set miGC attributes: in particular, functions
    that set the paint style that will be used.  Only in the case of `solid'
    painting (the default) is the above pixel array relevant. */
-extern void miSetGCPaintSolid ___P((void));
-extern void miSetGCPaintInterpParallel ___P((miPoint pts[2], miPixel pixels[2]));
-extern void miSetGCPaintInterpTriangular ___P((miPoint pts[3], miPixel pixels[3]));
-extern void miSetGCPaintInterpElliptical ___P((void));
+extern void miSetGCPaintSolid (void);
+extern void miSetGCPaintInterpParallel (miPoint pts[2], miPixel pixels[2]);
+extern void miSetGCPaintInterpTriangular (miPoint pts[3], miPixel pixels[3]);
+extern void miSetGCPaintInterpElliptical (void);
 
 /*********** DECLARATIONS OF PUBLIC DRAWING FUNCTIONS ******************/
 
@@ -268,9 +217,9 @@ typedef enum { MI_SHAPE_GENERAL, MI_SHAPE_CONVEX } miPolygonShape;
 
 ___BEGIN_DECLS
 
-extern void miDrawPoints ___P((miPaintedSet *paintedSet, ___const miGC *pGC, miCoordMode mode, int npts, ___const miPoint *pPts));
-extern void miDrawLines ___P((miPaintedSet *paintedSet, ___const miGC *pGC, miCoordMode mode, int npts, ___const miPoint *pPts));
-extern void miFillPolygon ___P((miPaintedSet *paintedSet, ___const miGC *pGC, miPolygonShape shape, miCoordMode mode, int npts, ___const miPoint *pPts));
+extern void miDrawPoints (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npts, const miPoint *pPts);
+extern void miDrawLines (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npts, const miPoint *pPts);
+extern void miFillPolygon (miPaintedSet *paintedSet, const miGC *pGC, miPolygonShape shape, miCoordMode mode, int npts, const miPoint *pPts);
 
 /* 2. Rectangle-related drawing functions.
 
@@ -285,8 +234,8 @@ typedef struct
   unsigned int width, height;	/* width >= 1 and height >= 1 */
 } miRectangle;
 
-extern void miDrawRectangles ___P((miPaintedSet *paintedSet, ___const miGC *pGC, int nrects, ___const miRectangle *pRects));
-extern void miFillRectangles ___P((miPaintedSet *paintedSet, ___const miGC *pGC, int nrects, ___const miRectangle *pRects));
+extern void miDrawRectangles (miPaintedSet *paintedSet, const miGC *pGC, int nrects, const miRectangle *pRects);
+extern void miFillRectangles (miPaintedSet *paintedSet, const miGC *pGC, int nrects, const miRectangle *pRects);
 
 /* 3. Arc-related drawing functions.
 
@@ -315,8 +264,8 @@ typedef struct
   int angle1, angle2;	/* starting angle and angle range, in 1/64 degrees */
 } miArc;
 
-extern void miDrawArcs ___P((miPaintedSet *paintedSet, ___const miGC *pGC, int narcs, ___const miArc *parcs));
-extern void miFillArcs ___P((miPaintedSet *paintedSet, ___const miGC *pGC, int narcs, ___const miArc *parcs));
+extern void miDrawArcs (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs);
+extern void miFillArcs (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs);
 
 /* 4. A reentrant (thread-safe) arc-drawing function.  A special function
    is necessary because the normal arc-drawing function miDrawArcs
@@ -332,10 +281,10 @@ extern void miFillArcs ___P((miPaintedSet *paintedSet, ___const miGC *pGC, int n
    miDeleteEllipseCache. */
 
 typedef struct lib_miEllipseCache miEllipseCache;
-extern miEllipseCache * miNewEllipseCache ___P((void));
-extern void miDeleteEllipseCache ___P((miEllipseCache *ellipseCache));
+extern miEllipseCache * miNewEllipseCache (void);
+extern void miDeleteEllipseCache (miEllipseCache *ellipseCache);
 
-extern void miDrawArcs_r ___P((miPaintedSet *paintedSet, ___const miGC *pGC, int narcs, ___const miArc *parcs, miEllipseCache *ellipseCache));
+extern void miDrawArcs_r (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs, miEllipseCache *ellipseCache);
 
 ___END_DECLS
 
@@ -350,12 +299,12 @@ ___END_DECLS
 
 /* Binary pixel-merging function type.  Such a function maps a source pixel
    and a destination pixel to a new, merged pixel. */
-typedef miPixel (*miPixelMerge2) ___P((miPixel source, miPixel destination));
+typedef miPixel (*miPixelMerge2) (miPixel source, miPixel destination);
 
 /* Ternary pixel-merging function type.  Such a function maps a texture
    pixel, a source pixel, and a destination pixel, to a new, merged
    pixel. */
-typedef miPixel (*miPixelMerge3) ___P((miPixel texture, miPixel source, miPixel destination));
+typedef miPixel (*miPixelMerge3) (miPixel texture, miPixel source, miPixel destination);
 
 /* Definitions of miBitmap and miPixmap.  By convention, (0,0) is upper
    left hand corner. */
@@ -419,7 +368,7 @@ typedef struct
 /* The public function that merges pixels from a miPaintedSet onto a
    miCanvas.  `origin' is the point on the miCanvas to which the point
    (0,0) in the miPaintedSet is mapped.  (It could be called `offset'.) */
-extern void miCopyPaintedSetToCanvas ___P((const miPaintedSet *paintedSet, miCanvas *canvas, miPoint origin));
+extern void miCopyPaintedSetToCanvas (const miPaintedSet *paintedSet, miCanvas *canvas, miPoint origin);
 
 /* If MI_CANVAS_DRAWABLE_TYPE is defined by the libxmi installer (see
    above), then the accessor macros MI_GET_CANVAS_DRAWABLE_PIXEL() and
@@ -443,14 +392,14 @@ extern void miCopyPaintedSetToCanvas ___P((const miPaintedSet *paintedSet, miCan
 #endif
 
 /* Functions that set data elements of a miCanvas. */
-extern void miSetCanvasStipple ___P((miCanvas *pCanvas, ___const miBitmap *pStipple, miPoint stippleOrigin));
-extern void miSetCanvasTexture ___P((miCanvas *pCanvas, ___const miPixmap *pTexture, miPoint textureOrigin));
+extern void miSetCanvasStipple (miCanvas *pCanvas, const miBitmap *pStipple, miPoint stippleOrigin);
+extern void miSetCanvasTexture (miCanvas *pCanvas, const miPixmap *pTexture, miPoint textureOrigin);
 
 /* Functions that set the binary and ternary pixel-merging functions to be
    used when pixels from a miPaintedSet are applied to a miCanvas.  The
    defaults are NULL; for the meaning of NULL, see above. */
-extern void miSetPixelMerge2 ___P((miCanvas *pCanvas, miPixelMerge2 pixelMerge2));
-extern void miSetPixelMerge3 ___P((miCanvas *pCanvas, miPixelMerge3 pixelMerge3));
+extern void miSetPixelMerge2 (miCanvas *pCanvas, miPixelMerge2 pixelMerge2);
+extern void miSetPixelMerge3 (miCanvas *pCanvas, miPixelMerge3 pixelMerge3);
 
 /* The libxmi installer may request that the default algorithm used when
    applying pixels to a miPaintCanvas be something other than the Painter's
@@ -473,9 +422,9 @@ extern void miSetPixelMerge3 ___P((miCanvas *pCanvas, miPixelMerge3 pixelMerge3)
 /* Constructor, destructor, and copy constructor for the miCanvas class.
    These are declared (and defined) only if the libxmi installer doesn't
    redefine the type of the drawable encapsulated within a miCanvas. */
-extern miCanvas * miNewCanvas ___P((unsigned int width, unsigned int height, miPixel initPixel));
-extern void miDeleteCanvas ___P((miCanvas *pCanvas));
-extern miCanvas * miCopyCanvas ___P((___const miCanvas *pCanvas));
+extern miCanvas * miNewCanvas (unsigned int width, unsigned int height, miPixel initPixel);
+extern void miDeleteCanvas (miCanvas *pCanvas);
+extern miCanvas * miCopyCanvas (const miCanvas *pCanvas);
 #endif /* not MI_CANVAS_DRAWABLE_TYPE */
 
 /**********************************************************************/

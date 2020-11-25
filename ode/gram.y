@@ -1,4 +1,9 @@
 %{
+/* Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1999, 2005, Free Software 
+ * Foundation, Inc.
+ */
 /*
  * Grammar for ode:
  * Most things are self-explanatory.
@@ -9,8 +14,6 @@
  * for evaluating operators and functions are the
  * most important thing to be familiar with before
  * toying with the semantics.
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
  */
 #include "sys-defines.h"
 #include "ode.h"
@@ -868,12 +871,7 @@ expr            : '(' expr ')'
 %%
 
 int
-#ifdef _HAVE_PROTOS
 yyerror (const char *s)
-#else
-yyerror (s)
-     const char *s;
-#endif
 {
   return 0;
 }
@@ -885,13 +883,7 @@ yyerror (s)
  * lists, hence the silly count.
  */
 void
-#ifdef _HAVE_PROTOS
 concat (struct expr *e0, struct expr *e1)
-#else
-concat (e0, e1)
-     struct expr *e0;
-     struct expr *e1;
-#endif
 {
   int count;
   
@@ -910,12 +902,7 @@ concat (e0, e1)
  * called when EXAMINE is invoked on a variable (see above)
  */
 void
-#ifdef _HAVE_PROTOS
 prexq (const struct expr *ep)
-#else
-prexq (ep)
-     const struct expr *ep;
-#endif
 {
   const char *s;
   

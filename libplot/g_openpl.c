@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the openpl method, which is a standard part of
    libplot.  It opens a Plotter object. */
 
@@ -5,12 +23,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 _API_openpl (S___(Plotter *_plotter))
-#else
-_API_openpl (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
 {
   bool retval;
 
@@ -87,7 +100,7 @@ _API_openpl (S___(_plotter))
 
   /* create first drawing state, add it to the linked list of drawing
      states (this fills in only the device-independent part of the state) */
-  _create_first_drawing_state (S___(_plotter));
+  _pl_g_create_first_drawing_state (S___(_plotter));
 
   /* copy background color, accessible to the user as a Plotter parameter,
      to the drawing state */
@@ -100,18 +113,22 @@ _API_openpl (S___(_plotter))
       _API_bgcolorname (R___(_plotter) bg_color_name_s);
   }
 
-  /* invoke Plotter-specific `begin page' method, to do device-dependent
-     initializations of Plotter variables, such as the
-     (NDC_frame)->(device_frame) map, and also to create device-dependent
-     part of drawing state, if any */
+  /* invoke Plotter-specific `begin page' method, to create
+     device-dependent part of drawing state, if any; and possibly, do
+     device-specific initializations of Plotter variables, such as the
+     (NDC_frame)->(device_frame) map, which some Plotters initialize, once
+     they've realized how large their device-space drawing region will be,
+     by calling _compute_ndc_to_device_map() in g_space.c */
   retval = _plotter->begin_page (S___(_plotter));
 
-  /* Set the (user frame)->(device frame) map in the drawing state, as if
-     fsetmatrix() had been called.  At this point, the
+  /* Set the composite (user frame)->(NDC_frame->(device frame) map in the
+     drawing state, as if fsetmatrix() had been called.  At this point, the
      (user_frame)->(NDC_frame) map is the default, i.e., the identity, and
-     it won't be altered (since we pass it to fsetmatrix as the argument).
-     However, fsetmatrix computes the (user_frame)->(device_frame) map by
-     composing it with the (NDC_frame)->(device_frame) map (see above). */
+     we pass it to fsetmatrix as its argument.  The fsetmatrix method
+     computes the (user_frame)->(NDC_frame)->(device_frame) map by
+     composing the (user_frame)->(NDC frame) map with the
+     (NDC_frame)->(device_frame) map (mentioned above).  Any subsequent
+     user invocations of fsetmatrix() will not affect the latter. */
   _API_fsetmatrix (R___(_plotter) 
 		   _plotter->drawstate->transform.m_user_to_ndc[0],
 		   _plotter->drawstate->transform.m_user_to_ndc[1],
@@ -127,12 +144,7 @@ _API_openpl (S___(_plotter))
    invoked.  In a generic Plotter, this does nothing. */
 
 bool
-#ifdef _HAVE_PROTOS
-_g_begin_page (S___(Plotter *_plotter))
-#else
-_g_begin_page (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_begin_page (S___(Plotter *_plotter))
 {
   return true;
 }
@@ -141,29 +153,24 @@ _g_begin_page (S___(_plotter))
    Plotter's linked list of drawing states.  See above. */
 
 void
-#ifdef _HAVE_PROTOS
-_create_first_drawing_state (S___(Plotter *_plotter))
-#else
-_create_first_drawing_state (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_create_first_drawing_state (S___(Plotter *_plotter))
 {
   plDrawState *drawstate;
   const plDrawState *copyfrom;
   char *fill_rule, *line_mode, *join_mode, *cap_mode;
 
   /* create a new state */
-  drawstate = (plDrawState *)_plot_xmalloc (sizeof(plDrawState));
+  drawstate = (plDrawState *)_pl_xmalloc (sizeof(plDrawState));
   
   /* copy from default drawing state (see g_defstate.c) */
   copyfrom = &_default_drawstate;
   memcpy (drawstate, copyfrom, sizeof(plDrawState));
 
   /* elements of state that are strings are treated specially */
-  fill_rule = (char *)_plot_xmalloc (strlen (copyfrom->fill_rule) + 1);
-  line_mode = (char *)_plot_xmalloc (strlen (copyfrom->line_mode) + 1);
-  join_mode = (char *)_plot_xmalloc (strlen (copyfrom->join_mode) + 1);
-  cap_mode = (char *)_plot_xmalloc (strlen (copyfrom->cap_mode) + 1);
+  fill_rule = (char *)_pl_xmalloc (strlen (copyfrom->fill_rule) + 1);
+  line_mode = (char *)_pl_xmalloc (strlen (copyfrom->line_mode) + 1);
+  join_mode = (char *)_pl_xmalloc (strlen (copyfrom->join_mode) + 1);
+  cap_mode = (char *)_pl_xmalloc (strlen (copyfrom->cap_mode) + 1);
   strcpy (fill_rule, copyfrom->fill_rule);
   strcpy (line_mode, copyfrom->line_mode);
   strcpy (join_mode, copyfrom->join_mode);
@@ -179,7 +186,7 @@ _create_first_drawing_state (S___(_plotter))
       int i;
       double *dash_array;
 
-      dash_array = (double *)_plot_xmalloc (copyfrom->dash_array_len * sizeof(double));
+      dash_array = (double *)_pl_xmalloc (copyfrom->dash_array_len * sizeof(double));
       for (i = 0; i < copyfrom->dash_array_len; i++)
 	dash_array[i] = copyfrom->dash_array[i];
       drawstate->dash_array = dash_array;
@@ -199,34 +206,34 @@ _create_first_drawing_state (S___(_plotter))
     
     switch (_plotter->data->default_font_type)
       {
-      case F_HERSHEY:
+      case PL_F_HERSHEY:
       default:
-	font_name_init = DEFAULT_HERSHEY_FONT;
-	typeface_index = DEFAULT_HERSHEY_TYPEFACE_INDEX;
-	font_index = DEFAULT_HERSHEY_FONT_INDEX;	  
+	font_name_init = PL_DEFAULT_HERSHEY_FONT;
+	typeface_index = PL_DEFAULT_HERSHEY_TYPEFACE_INDEX;
+	font_index = PL_DEFAULT_HERSHEY_FONT_INDEX;	  
 	break;
-      case F_POSTSCRIPT:
-	font_name_init = DEFAULT_POSTSCRIPT_FONT;
-	typeface_index = DEFAULT_POSTSCRIPT_TYPEFACE_INDEX;
-	font_index = DEFAULT_POSTSCRIPT_FONT_INDEX;	  
+      case PL_F_POSTSCRIPT:
+	font_name_init = PL_DEFAULT_POSTSCRIPT_FONT;
+	typeface_index = PL_DEFAULT_POSTSCRIPT_TYPEFACE_INDEX;
+	font_index = PL_DEFAULT_POSTSCRIPT_FONT_INDEX;	  
 	break;
-      case F_PCL:
-	font_name_init = DEFAULT_PCL_FONT;
-	typeface_index = DEFAULT_PCL_TYPEFACE_INDEX;
-	font_index = DEFAULT_PCL_FONT_INDEX;	  
+      case PL_F_PCL:
+	font_name_init = PL_DEFAULT_PCL_FONT;
+	typeface_index = PL_DEFAULT_PCL_TYPEFACE_INDEX;
+	font_index = PL_DEFAULT_PCL_FONT_INDEX;	  
 	break;
-      case F_STICK:
-	font_name_init = DEFAULT_STICK_FONT;
-	typeface_index = DEFAULT_STICK_TYPEFACE_INDEX;
-	font_index = DEFAULT_STICK_FONT_INDEX;	  
+      case PL_F_STICK:
+	font_name_init = PL_DEFAULT_STICK_FONT;
+	typeface_index = PL_DEFAULT_STICK_TYPEFACE_INDEX;
+	font_index = PL_DEFAULT_STICK_FONT_INDEX;	  
 	break;
       }
     
-    font_name = (char *)_plot_xmalloc (strlen (font_name_init) + 1);
+    font_name = (char *)_pl_xmalloc (strlen (font_name_init) + 1);
     strcpy (font_name, font_name_init);  
     drawstate->font_name = font_name;
 
-    true_font_name = (char *)_plot_xmalloc (strlen (font_name_init) + 1);
+    true_font_name = (char *)_pl_xmalloc (strlen (font_name_init) + 1);
     strcpy (true_font_name, font_name_init);  
     drawstate->true_font_name = true_font_name;
 
@@ -236,12 +243,12 @@ _create_first_drawing_state (S___(_plotter))
     
     /* Examine default fill mode.  If Plotter doesn't support it, use the
        other fill mode. */
-    if (drawstate->fill_rule_type == FILL_ODD_WINDING
+    if (drawstate->fill_rule_type == PL_FILL_ODD_WINDING
 	&& _plotter->data->have_odd_winding_fill == 0)
-      drawstate->fill_rule_type = FILL_NONZERO_WINDING;
-    else if (drawstate->fill_rule_type == FILL_NONZERO_WINDING
+      drawstate->fill_rule_type = PL_FILL_NONZERO_WINDING;
+    else if (drawstate->fill_rule_type == PL_FILL_NONZERO_WINDING
 	     && _plotter->data->have_nonzero_winding_fill == 0)
-      drawstate->fill_rule_type = FILL_ODD_WINDING;
+      drawstate->fill_rule_type = PL_FILL_ODD_WINDING;
   }
 
   /* page begins with no compound path under construction */

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the closepl method, which is a standard part of
    libplot.  It closes a Plotter object.
 
@@ -30,12 +48,7 @@ static const char * const _ai_symbol_reencoding = "32/space\n/exclam\n/universal
 static const char * const _ai_zapf_dingbats_reencoding = "32/space\n/a1\n/a2\n/a202\n/a3\n/a4\n/a5\n/a119\n/a118\n/a117\n/a11\n/a12\n/a13\n/a14\n/a15\n/a16\n/a105\n/a17\n/a18\n/a19\n/a20\n/a21\n/a22\n/a23\n/a24\n/a25\n/a26\n/a27\n/a28\n/a6\n/a7\n/a8\n/a9\n/a10\n/a29\n/a30\n/a31\n/a32\n/a33\n/a34\n/a35\n/a36\n/a37\n/a38\n/a39\n/a40\n/a41\n/a42\n/a43\n/a44\n/a45\n/a46\n/a47\n/a48\n/a49\n/a50\n/a51\n/a52\n/a53\n/a54\n/a55\n/a56\n/a57\n/a58\n/a59\n/a60\n/a61\n/a62\n/a63\n/a64\n/a65\n/a66\n/a67\n/a68\n/a69\n/a70\n/a71\n/a72\n/a73\n/a74\n/a203\n/a75\n/a204\n/a76\n/a77\n/a78\n/a79\n/a81\n/a82\n/a83\n/a84\n/a97\n/a98\n/a99\n/a100\n160/space\n/a101\n/a102\n/a103\n/a104\n/a106\n/a107\n/a108\n/a112\n/a111\n/a110\n/a109\n/a120\n/a121\n/a122\n/a123\n/a124\n/a125\n/a126\n/a127\n/a128\n/a129\n/a130\n/a131\n/a132\n/a133\n/a134\n/a135\n/a136\n/a137\n/a138\n/a139\n/a140\n/a141\n/a142\n/a143\n/a144\n/a145\n/a146\n/a147\n/a148\n/a149\n/a150\n/a151\n/a152\n/a153\n/a154\n/a155\n/a156\n/a157\n/a158\n/a159\n/a160\n/a161\n/a163\n/a164\n/a196\n/a165\n/a192\n/a166\n/a167\n/a168\n/a169\n/a170\n/a171\n/a172\n/a173\n/a162\n/a174\n/a175\n/a176\n/a177\n/a178\n/a179\n/a193\n/a180\n/a199\n/a181\n/a200\n/a182\n241/a201\n/a183\n/a184\n/a197\n/a185\n/a194\n/a198\n/a186\n/a195\n/a187\n/a188\n/a189\n/a190\n/a191\n";
 
 bool
-#ifdef _HAVE_PROTOS
-_a_end_page (S___(Plotter *_plotter))
-#else
-_a_end_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_a_end_page (S___(Plotter *_plotter))
 {
   bool fonts_used = false;
   int i;
@@ -147,27 +160,27 @@ _a_end_page (S___(_plotter))
     sprintf (page_header->point, "\
 %%%%DocumentFonts: ");
     _update_buffer (page_header);
-    for (i = 0; i < NUM_PS_FONTS; i++)
+    for (i = 0; i < PL_NUM_PS_FONTS; i++)
       if (_plotter->data->page->ps_font_used[i])
 	{
 	  if (fonts_used)	/* not first font */
 	    sprintf (page_header->point, 
-		     "%%%%+ %s\n", _ps_font_info[i].ps_name);
+		     "%%%%+ %s\n", _pl_g_ps_font_info[i].ps_name);
 	  else		/* first font */
 	    sprintf (page_header->point, 
-		     "%s\n", _ps_font_info[i].ps_name);
+		     "%s\n", _pl_g_ps_font_info[i].ps_name);
 	  _update_buffer (page_header);
 	  fonts_used = true;
 	}
-    for (i = 0; i < NUM_PCL_FONTS; i++)
+    for (i = 0; i < PL_NUM_PCL_FONTS; i++)
       if (_plotter->data->page->pcl_font_used[i])
 	{
 	  if (fonts_used)	/* not first font */
 	    sprintf (page_header->point, 
-		     "%%%%+ %s\n", _pcl_font_info[i].ps_name);
+		     "%%%%+ %s\n", _pl_g_pcl_font_info[i].ps_name);
 	  else		/* first font */
 	    sprintf (page_header->point, 
-		     "%s\n", _pcl_font_info[i].ps_name);
+		     "%s\n", _pl_g_pcl_font_info[i].ps_name);
 	  _update_buffer (page_header);
 	  fonts_used = true;
 	}
@@ -383,20 +396,20 @@ Adobe_packedarray /initialize get exec\n\
     /* include fonts if any */
     if (fonts_used)
       {
-	for (i = 0; i < NUM_PS_FONTS; i++)
+	for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	  if (_plotter->data->page->ps_font_used[i])
 	    {
 	      sprintf (page_header->point, "\
 %%%%IncludeFont: %s\n", 
-		       _ps_font_info[i].ps_name);
+		       _pl_g_ps_font_info[i].ps_name);
 	      _update_buffer (page_header);
 	    }
-	for (i = 0; i < NUM_PCL_FONTS; i++)
+	for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 	  if (_plotter->data->page->pcl_font_used[i])
 	    {
 	      sprintf (page_header->point, "\
 %%%%IncludeFont: %s\n", 
-		       _pcl_font_info[i].ps_name);
+		       _pl_g_pcl_font_info[i].ps_name);
 	      _update_buffer (page_header);
 	    }
       }
@@ -427,16 +440,16 @@ TE\n");
 	_update_buffer (page_header);
 	
 	/* reencode each used font */
-	for (i = 0; i < NUM_PS_FONTS; i++)
+	for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	  if (_plotter->data->page->ps_font_used[i])
 	    {
 	      const char *reencoding;
 	      
-	      if (_ps_font_info[i].iso8859_1)	/* ISO-Latin-1 font */
+	      if (_pl_g_ps_font_info[i].iso8859_1)	/* ISO-Latin-1 font */
 		reencoding = "";
-	      else if (strcmp (_ps_font_info[i].ps_name, "ZapfDingbats")== 0)
+	      else if (strcmp (_pl_g_ps_font_info[i].ps_name, "ZapfDingbats")== 0)
 		reencoding = _ai_zapf_dingbats_reencoding;
-	      else if (strcmp (_ps_font_info[i].ps_name, "Symbol") == 0)
+	      else if (strcmp (_pl_g_ps_font_info[i].ps_name, "Symbol") == 0)
 		reencoding = _ai_symbol_reencoding;
 	      else		/* don't know what to do */
 		reencoding = "";
@@ -444,20 +457,20 @@ TE\n");
 %%AI3_BeginEncoding: _%s %s\n\
 [%s/_%s/%s 0 0 0 TZ\n\
 %%AI3_EndEncoding AdobeType\n",
-		       _ps_font_info[i].ps_name, _ps_font_info[i].ps_name,
+		       _pl_g_ps_font_info[i].ps_name, _pl_g_ps_font_info[i].ps_name,
                        reencoding,
-		       _ps_font_info[i].ps_name, _ps_font_info[i].ps_name);
+		       _pl_g_ps_font_info[i].ps_name, _pl_g_ps_font_info[i].ps_name);
 	      _update_buffer (page_header);
 	    }
-	for (i = 0; i < NUM_PCL_FONTS; i++)
+	for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 	  if (_plotter->data->page->pcl_font_used[i])
 	    {
 	      sprintf (page_header->point, "\
 %%AI3_BeginEncoding: _%s %s\n\
 [/_%s/%s 0 0 0 TZ\n\
 %%AI3_EndEncoding TrueType\n",
-		       _pcl_font_info[i].ps_name, _pcl_font_info[i].ps_name,
-		       _pcl_font_info[i].ps_name, _pcl_font_info[i].ps_name);
+		       _pl_g_pcl_font_info[i].ps_name, _pl_g_pcl_font_info[i].ps_name,
+		       _pl_g_pcl_font_info[i].ps_name, _pl_g_pcl_font_info[i].ps_name);
 	      _update_buffer (page_header);
 	    }
       }

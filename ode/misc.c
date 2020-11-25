@@ -1,14 +1,17 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999, 2005, Free
+ * Software Foundation, Inc.
+ */
+
+/* stuff that doesn't go anywhere else in particular */
+
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
-
-/*
- * stuff
- * that doesn't go anywhere
- * else in particular
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
- */
 
 /*
  * check checks internal consistency prior to calling the
@@ -20,11 +23,7 @@
  *	each dependent variable has an ODE and an initial value
  */
 bool
-#ifdef _HAVE_PROTOS
 check (void)
-#else
-check ()
-#endif
 {
   struct sym *sp, *ivp, *prevp;
   struct prt *pp;
@@ -143,11 +142,7 @@ check ()
  * initialize values for printq() and numerical routines
  */
 void
-#ifdef _HAVE_PROTOS
 defalt (void)
-#else
-defalt ()
-#endif
 {
   if (!sawfrom)
     tfrom = tstart;
@@ -164,11 +159,7 @@ defalt ()
  * evaluate all the derivatives
  */
 void
-#ifdef _HAVE_PROTOS
 field(void)
-#else
-field()
-#endif
 {
   for (fsp = symtab->sy_link; fsp!=NULL; fsp = fsp->sy_link)
     fsp->sy_prime = eval(fsp->sy_expr);
@@ -178,25 +169,14 @@ field()
  * internal error (fatal)
  */
 void
-#ifdef _HAVE_PROTOS
 panic (const char *s)
-#else
-panic (s)
-     const char *s;
-#endif
 {
   fprintf (stderr, "%s panic: %s\n", progname, s);
   exit (EXIT_FAILURE);
 }
 
 void
-#ifdef _HAVE_PROTOS
 panicn (const char *fmt, int n)
-#else
-panicn (fmt, n)
-     const char *fmt;
-     int n;
-#endif
 {
   fprintf (stderr, "%s panic: ", progname);
   fprintf (stderr, fmt, n);
@@ -209,11 +189,7 @@ panicn (fmt, n)
 #define	PRFROM	(tstep>0 ? t >= TFROM : t<= TFROM)
 
 void
-#ifdef _HAVE_PROTOS
 printq (void)
-#else
-printq ()
-#endif
 {
   double f = 0.0;
   double t;
@@ -267,12 +243,7 @@ printq ()
  * kludge for Pascal compatibility
  */
 void
-#ifdef _HAVE_PROTOS
 prval (double x)
-#else
-prval (x)
-     double x;
-#endif
 {
   if (prec < 0) 
     {
@@ -296,11 +267,10 @@ prval (x)
  */
 #ifdef HAVE_MATHERR
 int 
-#ifdef _HAVE_PROTOS
-matherr (struct exception *x)
+# ifdef __cplusplus
+matherr (struct __exception *x)
 #else
-matherr (x)
-     struct exception *x;
+matherr (struct exception *x)
 #endif
 {
   switch (x->type) 
@@ -343,12 +313,7 @@ matherr (x)
  * uses fsp to decide which dependent variable was being worked
  */
 void
-#ifdef _HAVE_PROTOS
 rterror (const char *s)
-#else
-rterror (s)
-     const char *s;
-#endif
 {
   if (fsp == NULL)		/* no computation, just print message */
     fprintf (stderr, "%s: %s\n", progname, s);
@@ -361,12 +326,7 @@ rterror (s)
 }
 
 void
-#ifdef _HAVE_PROTOS
 rterrors (const char *fmt, const char *s)
-#else
-rterrors (fmt, s)
-     const char *fmt, *s;
-#endif
 {
   if (fsp != NULL)		/* interrupt computation */
     {
@@ -388,12 +348,7 @@ rterrors (fmt, s)
  * computation continues
  */
 void
-#ifdef _HAVE_PROTOS
 rtsquawks (const char *fmt, const char *s)
-#else
-rtsquawks (fmt, s)
-     const char *fmt, *s;
-#endif
 {
   fprintf (stderr, "%s: ", progname);
   fprintf (stderr, fmt, s);
@@ -410,11 +365,7 @@ rtsquawks (fmt, s)
  * 'step' statement.
  */
 void
-#ifdef _HAVE_PROTOS
 solve (void)
-#else
-solve ()
-#endif
 {
   struct sym *sp;
   bool adapt;
@@ -469,11 +420,7 @@ solve ()
  * choose step size at tstart
  */
 void
-#ifdef _HAVE_PROTOS
 startstep (void)
-#else
-startstep ()
-#endif
 {
   if (!hflag)
     hmax = fabs ((tstop-tstart)/2);
@@ -493,11 +440,7 @@ startstep ()
  * Try to center the headings over the columns
  */
 void
-#ifdef _HAVE_PROTOS
 title (void)
-#else
-title ()
-#endif
 {
   struct prt *pp;
   char tag = '\0';

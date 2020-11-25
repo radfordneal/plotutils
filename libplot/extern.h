@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This is the chief include file for GNU libplot/libplotter.  It
    supplements the include files ../include/sys-defines.h,
    ../include/plot.h and ../include/plotter.h.  plot.h is libplot-specific,
@@ -13,16 +31,16 @@
    In libplot, the plotter operations are implemented as global functions
    that are members of the Plotter struct.  They are set up differently for
    the different types of Plotter; for example, the `openpl' slot in the
-   struct contains the method _g_openpl for generic [i.e. base] Plotters,
-   the method _m_openpl for MetaPlotters, etc.  The files ?_defplot.c
-   contain the initializations that are used for the different types of
-   Plotter.  In this file, if NOT_LIBPLOTTER is defined then each of these
-   many methods is declared as a global function.
+   struct contains the method _pl_g_openpl for generic [i.e. base]
+   Plotters, the method _pl_m_openpl for MetaPlotters, etc.  The files
+   ?_defplot.c contain the initializations that are used for the different
+   types of Plotter.  In this file, if NOT_LIBPLOTTER is defined then each
+   of these many methods is declared as a global function.
 
    In libplotter, the different types of Plotter are implemented as
    distinct classes, which are derived from the generic [i.e. base] Plotter
    class.  This file contains a great many #defines that are appropriate to
-   that situation.  For example, _m_openpl is #defined to be
+   that situation.  For example, _pl_m_openpl is #defined to be
    MetaPlotter::openpl if NOT_LIBPLOTTER is not defined.  The MetaPlotter
    class, like all other Plotter classes, is defined in plotter.h. */
 
@@ -72,41 +90,41 @@
 /* The types of font we support.  The final type (`other') is a catchall,
    currently used for any user-specified font, with a name not contained in
    our font database, that can be retrieved from an X server. */
-#define F_HERSHEY 0
-#define F_POSTSCRIPT 1
-#define F_PCL 2
-#define F_STICK 3
-#define F_OTHER 4
+#define PL_F_HERSHEY 0
+#define PL_F_POSTSCRIPT 1
+#define PL_F_PCL 2
+#define PL_F_STICK 3
+#define PL_F_OTHER 4
 
-/* NUM_PS_FONTS and NUM_PCL_FONTS should agree with the number of fonts of
-   those two types found in g_fontdb.c/g_fontd2.c.  These are also defined
-   in plotter.h. */
-#define NUM_PS_FONTS 35
-#define NUM_PCL_FONTS 45
+/* PL_NUM_PS_FONTS and PL_NUM_PCL_FONTS should agree with the number of
+   fonts of those two types found in g_fontdb.c/g_fontd2.c.  These are also
+   defined in plotter.h. */
+#define PL_NUM_PS_FONTS 35
+#define PL_NUM_PCL_FONTS 45
 
 /* Default fonts, of each type.  Any Plotter has a `default_font_type'
    field, and the appropriate values are copied into the Plotter drawing
    state when the Plotter is first opened (see g_savestate.c).  The
    typeface and font indices index into the tables in
-   g_fontdb.c/g_fontd2.c.  DEFAULT_HERSHEY_FONT is also used as a backup by
-   some Plotters if no scalable (or anamorphically transformed, etc.) font
-   can be retrieved; see e.g. f_retrieve.c and x_retrieve.c. */
+   g_fontdb.c/g_fontd2.c.  PL_DEFAULT_HERSHEY_FONT is also used as a backup
+   by some Plotters if no scalable (or anamorphically transformed, etc.)
+   font can be retrieved; see e.g. f_retrieve.c and x_retrieve.c. */
 
-#define DEFAULT_HERSHEY_FONT "HersheySerif"
-#define DEFAULT_HERSHEY_TYPEFACE_INDEX 0
-#define DEFAULT_HERSHEY_FONT_INDEX 1
+#define PL_DEFAULT_HERSHEY_FONT "HersheySerif"
+#define PL_DEFAULT_HERSHEY_TYPEFACE_INDEX 0
+#define PL_DEFAULT_HERSHEY_FONT_INDEX 1
 
-#define DEFAULT_POSTSCRIPT_FONT "Helvetica"
-#define DEFAULT_POSTSCRIPT_TYPEFACE_INDEX 0
-#define DEFAULT_POSTSCRIPT_FONT_INDEX 1
+#define PL_DEFAULT_POSTSCRIPT_FONT "Helvetica"
+#define PL_DEFAULT_POSTSCRIPT_TYPEFACE_INDEX 0
+#define PL_DEFAULT_POSTSCRIPT_FONT_INDEX 1
 
-#define DEFAULT_PCL_FONT "Univers"
-#define DEFAULT_PCL_TYPEFACE_INDEX 0
-#define DEFAULT_PCL_FONT_INDEX 1
+#define PL_DEFAULT_PCL_FONT "Univers"
+#define PL_DEFAULT_PCL_TYPEFACE_INDEX 0
+#define PL_DEFAULT_PCL_FONT_INDEX 1
 
-#define DEFAULT_STICK_FONT "Stick"
-#define DEFAULT_STICK_TYPEFACE_INDEX 3
-#define DEFAULT_STICK_FONT_INDEX 1
+#define PL_DEFAULT_STICK_FONT "Stick"
+#define PL_DEFAULT_STICK_TYPEFACE_INDEX 3
+#define PL_DEFAULT_STICK_FONT_INDEX 1
 
 /* HERSHEY FONTS */
 
@@ -125,19 +143,19 @@ struct plHersheyFontInfoStruct
   bool visible;			/* whether font is visible, i.e. not internal*/
 };
 
-extern const struct plHersheyFontInfoStruct _hershey_font_info[];
+extern const struct plHersheyFontInfoStruct _pl_g_hershey_font_info[];
 
 /* This numbering should agree with the numbering of Hershey fonts in the
-   _hershey_font_info[] array in g_fontdb.c. */
-#define HERSHEY_SERIF 0
-#define HERSHEY_SERIF_ITALIC 1
-#define HERSHEY_SERIF_BOLD 2
-#define HERSHEY_CYRILLIC 4
-#define HERSHEY_HIRAGANA 6	/* hidden font */
-#define HERSHEY_KATAKANA 7	/* hidden font */
-#define HERSHEY_EUC 8
-#define HERSHEY_GOTHIC_GERMAN 16
-#define HERSHEY_SERIF_SYMBOL 18
+   _pl_g_hershey_font_info[] array in g_fontdb.c. */
+#define PL_HERSHEY_SERIF 0
+#define PL_HERSHEY_SERIF_ITALIC 1
+#define PL_HERSHEY_SERIF_BOLD 2
+#define PL_HERSHEY_CYRILLIC 4
+#define PL_HERSHEY_HIRAGANA 6	/* hidden font */
+#define PL_HERSHEY_KATAKANA 7	/* hidden font */
+#define PL_HERSHEY_EUC 8
+#define PL_HERSHEY_GOTHIC_GERMAN 16
+#define PL_HERSHEY_SERIF_SYMBOL 18
 
 /* accented character information (used in constructing Hershey ISO-Latin-1
    accented characters, see table in g_fontdb.c) */
@@ -146,7 +164,7 @@ struct plHersheyAccentedCharInfoStruct
   unsigned char composite, character, accent;
 };
 
-extern const struct plHersheyAccentedCharInfoStruct _hershey_accented_char_info[];
+extern const struct plHersheyAccentedCharInfoStruct _pl_g_hershey_accented_char_info[];
 
 /* types of accent, for a composite character in a Hershey font */
 #define ACC0 (16384 + 0)	/* superimpose on character */
@@ -159,11 +177,11 @@ extern const struct plHersheyAccentedCharInfoStruct _hershey_accented_char_info[
 /* HERSHEY VECTOR GLYPHS */
 
 /* arrays of Hershey vector glyphs in g_her_glyph.c */
-extern const char * const _occidental_hershey_glyphs[];
-extern const char * const _oriental_hershey_glyphs[];
+extern const char * const _pl_g_occidental_hershey_glyphs[];
+extern const char * const _pl_g_oriental_hershey_glyphs[];
 
 /* position of `undefined character' symbol (a bundle of horizontal lines)
-   in the Hershey _occidental_hershey_glyphs[] array */
+   in the Hershey _pl_g_occidental_hershey_glyphs[] array */
 #define UNDE 4023
 
 /* POSTSCRIPT FONTS */
@@ -177,6 +195,8 @@ struct plPSFontInfoStruct
   const char *ps_name_alt2;	/* 2nd alternative PS font name, if non-NULL */
   const char *x_name;		/* the X Windows font name */
   const char *x_name_alt;	/* alternative X Windows font name */
+  const char *x_name_alt2;	/* 2nd alternative X Windows font name */
+  const char *x_name_alt3;	/* 3rd alternative X Windows font name */
   const char *css_family;	/* CSS font family */
   const char *css_generic_family; /* CSS generic font family */
   const char *css_style;	/* CSS font style */
@@ -199,7 +219,7 @@ struct plPSFontInfoStruct
   bool iso8859_1;		/* whether font encoding is iso8859-1 */
 };
 
-extern const struct plPSFontInfoStruct _ps_font_info[];
+extern const struct plPSFontInfoStruct _pl_g_ps_font_info[];
 
 /* PCL FONTS */
 
@@ -233,7 +253,7 @@ struct plPCLFontInfoStruct
   bool iso8859_1;		/* whether font encoding is iso8859-1 */
 };
 
-extern const struct plPCLFontInfoStruct _pcl_font_info[];
+extern const struct plPCLFontInfoStruct _pl_g_pcl_font_info[];
 
 /* STICK FONTS */
 
@@ -267,7 +287,7 @@ struct plStickFontInfoStruct
   bool iso8859_1;		/* encoding is iso8859-1? (after reencoding) */
 };
 
-extern const struct plStickFontInfoStruct _stick_font_info[];
+extern const struct plStickFontInfoStruct _pl_g_stick_font_info[];
 
 /* Device-resident kerning data (`spacing table' in HP documentation),
    indexed by `right edge character class' and `left edge character class',
@@ -281,7 +301,7 @@ struct plStickCharSpacingTableStruct
   const short *kerns;
 };
 
-extern const struct plStickCharSpacingTableStruct _stick_spacing_tables[];
+extern const struct plStickCharSpacingTableStruct _pl_g_stick_spacing_tables[];
 
 /* Kerning tables for 128-character halves of our Stick fonts.  A kerning
    table for the lower or upper half of one of our 256-character fonts
@@ -293,25 +313,25 @@ struct plStickFontSpacingTableStruct
   char row[128], col[128];	/* we use char's as very short int's */
 };
 
-extern const struct plStickFontSpacingTableStruct _stick_kerning_tables[];
+extern const struct plStickFontSpacingTableStruct _pl_g_stick_kerning_tables[];
 
 /* TYPEFACES */
 
 /* typeface information, applicable to all four sorts of font in our font
    database (Hershey, PS, PCL, Stick) */
 
-#define FONTS_PER_TYPEFACE 10	/* maximum */
+#define PL_MAX_FONTS_PER_TYPEFACE 10
 
 struct plTypefaceInfoStruct
 {
   int numfonts;
-  int fonts[FONTS_PER_TYPEFACE];
+  int fonts[PL_MAX_FONTS_PER_TYPEFACE];
 };
 
-extern const struct plTypefaceInfoStruct _hershey_typeface_info[];
-extern const struct plTypefaceInfoStruct _ps_typeface_info[];
-extern const struct plTypefaceInfoStruct _pcl_typeface_info[];
-extern const struct plTypefaceInfoStruct _stick_typeface_info[];
+extern const struct plTypefaceInfoStruct _pl_g_hershey_typeface_info[];
+extern const struct plTypefaceInfoStruct _pl_g_ps_typeface_info[];
+extern const struct plTypefaceInfoStruct _pl_g_pcl_typeface_info[];
+extern const struct plTypefaceInfoStruct _pl_g_stick_typeface_info[];
 
 
 /***********************************************************************/
@@ -328,68 +348,72 @@ typedef plIntPoint plIntVector;
    device models have type DISP_DEVICE_COORS_INTEGER_LIBXMI; the default
    for such Plotters is to use zero-width (i.e. Bresenham) lines.  See
    g_space.c. */
-#define DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE (1.0/50.0)
-#define DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (1.0/850.0)
+#define PL_DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE (1.0/50.0)
+#define PL_DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (1.0/850.0)
 
-/* horizontal justification types for labels (our numbering, but it's the
-   same as xfig's; don't alter without checking the code) */
-#define JUST_LEFT 0
-#define JUST_CENTER 1
-#define JUST_RIGHT 2
+/* horizontal justification types for labels (our numbering) */
+#define PL_NUM_HORIZ_JUST_TYPES 3
+#define PL_JUST_LEFT 0
+#define PL_JUST_CENTER 1
+#define PL_JUST_RIGHT 2
 
 /* vertical justification types for labels (our numbering) */
-#define JUST_TOP 0
-#define JUST_HALF 1
-#define JUST_BASE 2
-#define JUST_BOTTOM 3
-#define JUST_CAP 4
+#define PL_NUM_VERT_JUST_TYPES 5
+#define PL_JUST_TOP 0
+#define PL_JUST_HALF 1
+#define PL_JUST_BASE 2
+#define PL_JUST_BOTTOM 3
+#define PL_JUST_CAP 4
 
-/* fill rules (our internal numbering) */
-#define FILL_ODD_WINDING 0	/* i.e. `even-odd' fill */
-#define FILL_NONZERO_WINDING 1
+/* fill rules (our numbering) */
+#define PL_NUM_FILL_RULES 2
+#define PL_FILL_ODD_WINDING 0	/* i.e. `even-odd' fill */
+#define PL_FILL_NONZERO_WINDING 1
 
-/* canonical line styles (our internal numbering, must agree with the
-   ordering in g_dash2.c) */
-#define NUM_LINE_STYLES 7
-#define L_SOLID 0
-#define L_DOTTED 1
-#define L_DOTDASHED 2
-#define L_SHORTDASHED 3
-#define L_LONGDASHED 4
-#define L_DOTDOTDASHED 5
-#define L_DOTDOTDOTDASHED 6
+/* canonical line types, or styles (our numbering, used to index the dash
+   patterns in g_dash2.c) */
+#define PL_NUM_LINE_TYPES 7
+#define PL_L_SOLID 0
+#define PL_L_DOTTED 1
+#define PL_L_DOTDASHED 2
+#define PL_L_SHORTDASHED 3
+#define PL_L_LONGDASHED 4
+#define PL_L_DOTDOTDASHED 5
+#define PL_L_DOTDOTDOTDASHED 6
 
 /* maximum length of dash array for our canonical line styles (see line
    style database in g_dash2.c; for example "dotted" corresponds to
    length-2 dash array [ 1 3 ] ) */
-#define MAX_DASH_ARRAY_LEN 8
+#define PL_MAX_DASH_ARRAY_LEN 8
 
 typedef struct
 {
   const char *name;		/* user-level name (e.g. "dotted") */
-  int type;			/* internal number (e.g. L_DOTTED) */
+  int type;			/* internal number (e.g. PL_L_DOTTED) */
   int dash_array_len;		/* length of dash array for this style */
-  int dash_array[MAX_DASH_ARRAY_LEN]; /* dash array for this style */
+  int dash_array[PL_MAX_DASH_ARRAY_LEN]; /* dash array for this style */
 } plLineStyle;
 
-extern const plLineStyle _line_styles[NUM_LINE_STYLES];
+extern const plLineStyle _pl_g_line_styles[PL_NUM_LINE_TYPES];
 
 /* when using a canonical line style, numbers appearing in the dash array,
    specifying dash/gap distances, mean multiples of the line width, except
    the following floor is put on the line width */
-#define MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE (1.0/576.0)
+#define PL_MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE (1.0/576.0)
 
 /* cap and join types (our internal numbering) */
 
-#define JOIN_MITER 0
-#define JOIN_ROUND 1
-#define JOIN_BEVEL 2
-#define JOIN_TRIANGULAR 3
+#define PL_NUM_JOIN_TYPES 4
+#define PL_JOIN_MITER 0
+#define PL_JOIN_ROUND 1
+#define PL_JOIN_BEVEL 2
+#define PL_JOIN_TRIANGULAR 3
 
-#define CAP_BUTT 0
-#define CAP_ROUND 1
-#define CAP_PROJECT 2
-#define CAP_TRIANGULAR 3
+#define PL_NUM_CAP_TYPES 4
+#define PL_CAP_BUTT 0
+#define PL_CAP_ROUND 1
+#define PL_CAP_PROJECT 2
+#define PL_CAP_TRIANGULAR 3
 
 /* A Plotter type is first classified according to its `display device
    model', i.e., according to whether the display device to which the user
@@ -460,18 +484,18 @@ enum { DISP_DEVICE_COORS_REAL, DISP_DEVICE_COORS_INTEGER_LIBXMI, DISP_DEVICE_COO
 /* MISC. DEFS on POLYLINES and PATHS(relevant to all or most display devices)*/
 /*************************************************************************/
 
-/* Default value for the miter limit (see comments in g_miter.c).  This
-   is the value used by X11: it chops off all mitered line joins if the
-   join angle is less than 11 degrees. */
-#define DEFAULT_MITER_LIMIT 10.4334305246
+/* Default value for libplot's miter limit (see comments in g_miter.c).
+   This is the same as the value used by X11: it chops off all mitered line
+   joins if the join angle is less than 11 degrees. */
+#define PL_DEFAULT_MITER_LIMIT 10.4334305246
 
 /* Default length an unfilled path (stored in the path buffer's segment
    list) is allowed to grow to, before it is flushed out by an automatic
    invocation of endpath().  (We don't flush filled paths, since they need
    to be preserved as discrete objects if filling is to be performed
    properly). */
-#define MAX_UNFILLED_PATH_LENGTH 500
-#define MAX_UNFILLED_PATH_LENGTH_STRING "500"
+#define PL_MAX_UNFILLED_PATH_LENGTH 500
+#define PL_MAX_UNFILLED_PATH_LENGTH_STRING "500"
 
 
 /************************************************************************/
@@ -484,7 +508,7 @@ enum { DISP_DEVICE_COORS_REAL, DISP_DEVICE_COORS_INTEGER_LIBXMI, DISP_DEVICE_COO
 
 /* string with which to begin each metafile, must begin with '#' to permit
    parsing by our plot filters */
-#define PLOT_MAGIC "#PLOT"
+#define PL_PLOT_MAGIC "#PLOT"
 
 /* bit fields for specifying, via a mask, which libplot attributes should
    be updated (see m_attribs.c) */
@@ -549,27 +573,28 @@ enum { DISP_DEVICE_COORS_REAL, DISP_DEVICE_COORS_INTEGER_LIBXMI, DISP_DEVICE_COO
 
 /* Tektronix modes (our private numbering, values are not important but
    order is, see t_tek_md.c) */
-#define MODE_ALPHA 0
-#define MODE_PLOT 1
-#define MODE_POINT 2
-#define MODE_INCREMENTAL 3	/* currently not used */
+#define TEK_MODE_ALPHA 0
+#define TEK_MODE_PLOT 1
+#define TEK_MODE_POINT 2
+#define TEK_MODE_INCREMENTAL 3	/* currently not used */
 
-/* Tektronix display types */
-#define D_GENERIC 0
-#define D_KERMIT 1
-#define D_XTERM 2
+/* Tektronix display types (generic / Tek emulation in MS-DOS kermit / Tek
+   emulation in `xterm -t') */
+#define TEK_DPY_GENERIC 0
+#define TEK_DPY_KERMIT 1
+#define TEK_DPY_XTERM 2
 
 /* colors supported by MS-DOS kermit Tek emulation, see t_color2.c */
 
-#define KERMIT_NUM_STD_COLORS 16
-extern const plColor _kermit_stdcolors[KERMIT_NUM_STD_COLORS];
-extern const char * const _kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS];
-extern const char * const _kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS];
+#define TEK_NUM_ANSI_SYS_COLORS 16
+extern const plColor _pl_t_kermit_stdcolors[TEK_NUM_ANSI_SYS_COLORS];
+extern const char * const _pl_t_kermit_fgcolor_escapes[TEK_NUM_ANSI_SYS_COLORS];
+extern const char * const _pl_t_kermit_bgcolor_escapes[TEK_NUM_ANSI_SYS_COLORS];
 /* must agree with the ordering in t_color2.c */
-#define ANSI_SYS_BLACK   0
-#define ANSI_SYS_GRAY30  8
-#define ANSI_SYS_GRAY55  7
-#define ANSI_SYS_WHITE  15
+#define TEK_ANSI_SYS_BLACK   0
+#define TEK_ANSI_SYS_GRAY30  8
+#define TEK_ANSI_SYS_GRAY55  7
+#define TEK_ANSI_SYS_WHITE  15
 
 
 /************************************************************************/
@@ -661,30 +686,30 @@ extern const char * const _kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS];
 
 /* default values for HPGL_PENS environment variable, for HP-GL[/2]; this
    lists available pens and their positions in carousel */
-#define DEFAULT_HPGL_PEN_STRING "1=black"
-#define DEFAULT_HPGL2_PEN_STRING "1=black:2=red:3=green:4=yellow:5=blue:6=magenta:7=cyan"
+#define HPGL_DEFAULT_PEN_STRING "1=black"
+#define HPGL2_DEFAULT_PEN_STRING "1=black:2=red:3=green:4=yellow:5=blue:6=magenta:7=cyan"
 
 /* PCL 5 font information: symbol set, i.e. encoding */
 #define PCL_ISO_8859_1 14
 #define PCL_ROMAN_8 277
 
 /* PCL typeface number for default HP-GL/2 typeface */
-#define STICK_TYPEFACE 48
+#define PCL_STICK_TYPEFACE 48
 
 /* Old (pre-HP-GL/2) 7-bit HP-GL character sets */
-#define HP_ASCII 0
-#define HP_ROMAN_EXTENSIONS 7
+#define HPGL_CHARSET_ASCII 0
+#define HPGL_CHARSET_ROMAN_EXTENSIONS 7
 
 /* The nominal HP-GL/2 fontsize we use for drawing a label (for fixed-width
    and proportional fonts, respectively).  We retrieve fonts in the size
    specified by whichever of the two following parameters is relevant, and
    then rescale it as needed before drawing the label. */
-#define NOMINAL_CHARS_PER_INCH 8.0
-#define NOMINAL_POINT_SIZE 18
+#define HPGL2_NOMINAL_CHARS_PER_INCH 8.0
+#define HPGL2_NOMINAL_POINT_SIZE 18
 
 /* Spacing characteristic of the PCL and Stick fonts, in HP-GL/2 */
-#define FIXED_SPACING 0
-#define PROPORTIONAL_SPACING 1
+#define HPGL2_FIXED_SPACING 0
+#define HPGL2_PROPORTIONAL_SPACING 1
 
 
 /************************************************************************/
@@ -720,15 +745,10 @@ extern const char * const _kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS];
 #define FIG_L_DASHDOUBLEDOTTED 4
 #define FIG_L_DASHTRIPLEDOTTED 5
 
-/* Fig's line styles, indexed into by internal line style number
-   (L_SOLID/L_DOTTED/ L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED. */
-extern const int _fig_line_style[NUM_LINE_STYLES];
-
-/* Fig's `style value', i.e. inter-dot length or dash length, indexed into
-   by internal line style number (L_SOLID/L_DOTTED/
-   L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED; dash length ignored for
-   L_SOLID).  Units are Fig display units.  See f_path.c. */
-extern const double _fig_dash_length[NUM_LINE_STYLES];
+/* Fig's line styles, indexed into by internal line type number
+   (PL_L_SOLID/PL_L_DOTTED/
+   PL_L_DOTDASHED/PL_L_SHORTDASHED/PL_L_LONGDASHED. */
+extern const int _pl_f_fig_line_style[PL_NUM_LINE_TYPES];
 
 #define FIG_JOIN_MITER 0
 #define FIG_JOIN_ROUND 1
@@ -739,17 +759,19 @@ extern const double _fig_dash_length[NUM_LINE_STYLES];
 #define FIG_CAP_PROJECT 2
 
 /* Fig join and cap styles, see f_path.c, indexed by our internal join and
-   cap type numbers (miter/rd./bevel and butt/rd./project) */
-extern const int _fig_join_style[], _fig_cap_style[];
+   cap type numbers (miter/rd./bevel/triangular and
+   butt/rd./project/triangular) */
+extern const int _pl_f_fig_join_style[PL_NUM_JOIN_TYPES];
+extern const int _pl_f_fig_cap_style[PL_NUM_CAP_TYPES];
 
 /* these constants for Fig colors are hardcoded in xfig */
 
 #define FIG_STD_COLOR_MIN 0	/* see f_color2.c for colors 0,...,31 */
-#define C_BLACK 0		/* i.e. #0 in table in f_color2.c */
-#define C_WHITE 7		/* i.e. #7 in table */
+#define FIG_C_BLACK 0		/* i.e. #0 in table in f_color2.c */
+#define FIG_C_WHITE 7		/* i.e. #7 in table */
 #define FIG_NUM_STD_COLORS 32
 #define FIG_USER_COLOR_MIN 32
-extern const plColor _fig_stdcolors[FIG_NUM_STD_COLORS];
+extern const plColor _pl_f_fig_stdcolors[FIG_NUM_STD_COLORS];
 
 /* xfig's depth attribute ranges from 0 to FIG_MAXDEPTH. */
 #define FIG_MAXDEPTH 999
@@ -924,8 +946,8 @@ extern const plColor _fig_stdcolors[FIG_NUM_STD_COLORS];
 
 /* mappings from internal PS font number to CGM font id, as used in output
    file; see g_fontdb.c */
-extern const int _ps_font_to_cgm_font_id[];
-extern const int _cgm_font_id_to_ps_font[];
+extern const int _pl_g_ps_font_to_cgm_font_id[PL_NUM_PS_FONTS];
+extern const int _pl_g_cgm_font_id_to_ps_font[PL_NUM_PS_FONTS];
 
 /* structure used to store the CGM properties for a font; see g_fontdb.c */
 typedef struct
@@ -940,7 +962,7 @@ typedef struct
   int structure;		/* 1=filled, 2=outline */
 } plCGMFontProperties;
 
-extern const plCGMFontProperties _cgm_font_properties[];
+extern const plCGMFontProperties _pl_g_cgm_font_properties[PL_NUM_PS_FONTS];
 
 /* structure used to store a user-defined line type; see g_attribs.c */
 typedef struct plCGMCustomLineTypeStruct
@@ -954,7 +976,7 @@ typedef struct plCGMCustomLineTypeStruct
    array length a user can specify per line type, without violating the
    WebCGM or Model CGM profiles */
 #define CGM_MAX_CUSTOM_LINE_TYPES 16
-#define CGM_MAX_DASH_ARRAY_LENGTH 8
+#define CGM_PL_MAX_DASH_ARRAY_LENGTH 8
 
 
 /************************************************************************/
@@ -964,14 +986,11 @@ typedef struct plCGMCustomLineTypeStruct
 /* minimum desired resolution in device frame (i.e. in printer's points) */
 #define PS_MIN_RESOLUTION 0.05
 
-#define POINT_PS_SIZE 0.5  /* em size (in printer's points) for a font in
-			      which a `point' could appear as a symbol */
+/* em size (in printer's points) for a font in which a `point' could appear
+   as a symbol */
+#define PS_SIZE_OF_POINT 0.5
 
-/* 16-bit line style brush arrays for idraw, see p_path.c/p_ellipse.c,
-   indexed by our internal line style numbering (L_SOLID, L_DOTTED, etc.)  */
-extern const long _idraw_brush_pattern[NUM_LINE_STYLES];
-
-/* PS line join and line cap styles [also used by AI device driver] */
+/* PS line join and line cap styles */
 
 #define PS_LINE_JOIN_MITER 0
 #define PS_LINE_JOIN_ROUND 1
@@ -981,21 +1000,16 @@ extern const long _idraw_brush_pattern[NUM_LINE_STYLES];
 #define PS_LINE_CAP_ROUND 1
 #define PS_LINE_CAP_PROJECT 2
 
-/* PS join and cap styles, see p_path.c, indexed by our internal join and
-   cap type numbering (miter/rd./bevel/triangular and
-   butt/rd./project/triangular) */
-extern const int _ps_join_style[], _ps_cap_style[];
-
 /* information on colors known to idraw, see p_color2.c */
 
-#define IDRAW_NUM_STD_COLORS 12
-extern const plColor _idraw_stdcolors[IDRAW_NUM_STD_COLORS];
-extern const char * const _idraw_stdcolornames[IDRAW_NUM_STD_COLORS];
+#define PS_NUM_IDRAW_STD_COLORS 12
+extern const plColor _pl_p_idraw_stdcolors[PS_NUM_IDRAW_STD_COLORS];
+extern const char * const _pl_p_idraw_stdcolornames[PS_NUM_IDRAW_STD_COLORS];
 
 /* information on shadings known to idraw, see p_color2.c */
 
-#define IDRAW_NUM_STD_SHADINGS 5
-extern const double _idraw_stdshadings[IDRAW_NUM_STD_SHADINGS];
+#define PS_NUM_IDRAW_STD_SHADINGS 5
+extern const double _pl_p_idraw_stdshadings[PS_NUM_IDRAW_STD_SHADINGS];
 
 
 /************************************************************************/
@@ -1006,8 +1020,19 @@ extern const double _idraw_stdshadings[IDRAW_NUM_STD_SHADINGS];
 #define AI_VERSION_3 0
 #define AI_VERSION_5 1
 
-#define POINT_AI_SIZE 0.5  /* em size (in printer's points) for a font in
-			      which a `point' could appear as a symbol */
+/* em size (in printer's points) for a font in which a `point' could appear
+   as a symbol */
+#define AI_SIZE_OF_POINT 0.5
+
+/* AI line join and line cap styles (same as for PS) */
+
+#define AI_LINE_JOIN_MITER 0
+#define AI_LINE_JOIN_ROUND 1
+#define AI_LINE_JOIN_BEVEL 2
+
+#define AI_LINE_CAP_BUTT 0
+#define AI_LINE_CAP_ROUND 1
+#define AI_LINE_CAP_PROJECT 2
 
 /* AI fill rule types (in AI version 5 and later) */
 #define AI_FILL_NONZERO_WINDING 0
@@ -1021,20 +1046,20 @@ extern const double _idraw_stdshadings[IDRAW_NUM_STD_SHADINGS];
 #ifndef X_DISPLAY_MISSING 
 
 /* X11 colormap types (XDrawable Plotters use only the first of these) */
-#define CMAP_ORIG 0
-#define CMAP_NEW 1
-#define CMAP_BAD 2  /* colormap full, can't allocate new colors */
+#define X_CMAP_ORIG 0
+#define X_CMAP_NEW 1
+#define X_CMAP_BAD 2	     /* colormap full, can't allocate new colors */
 
 /* sixteen-bit restriction on X11 protocol parameters */
-#define XOOB_UNSIGNED(x) ((x) > (int)0xffff)
-#define XOOB_INT(x) ((x) > (int)0x7fff || (x) < (int)(-0x8000))
+#define X_OOB_UNSIGNED(x) ((x) > (int)0xffff)
+#define X_OOB_INT(x) ((x) > (int)0x7fff || (x) < (int)(-0x8000))
 
 /* double buffering types, used in XDrawablePlotter `x_double_buffering'
    data member */
-#define DBL_NONE 0
-#define DBL_BY_HAND 1
-#define DBL_MBX 2		/* X11 MBX extension */
-#define DBL_DBE 3		/* X11 DBE extension */
+#define X_DBL_BUF_NONE 0
+#define X_DBL_BUF_BY_HAND 1
+#define X_DBL_BUF_MBX 2		/* X11 MBX extension */
+#define X_DBL_BUF_DBE 3		/* X11 DBE extension */
 
 /* numbering of our X GC's (graphics contexts); this is the numbering we
    use when passing an argument to _x_set_attributes() indicating which GC
@@ -1086,7 +1111,7 @@ extern int _xplotters_len;
 /* In libplot, these are the initializations of the function-pointer parts
    of the different types of Plotter.  They are copied to the Plotter at
    creation time (in apinewc.c, which is libplot-specific). */
-extern const Plotter _g_default_plotter, _b_default_plotter, _m_default_plotter, _r_default_plotter, _t_default_plotter, _h_default_plotter, _q_default_plotter, _f_default_plotter, _c_default_plotter, _p_default_plotter, _a_default_plotter, _s_default_plotter, _i_default_plotter, _n_default_plotter, _z_default_plotter, _x_default_plotter, _y_default_plotter;
+extern const Plotter _pl_g_default_plotter, _pl_b_default_plotter, _pl_m_default_plotter, _pl_r_default_plotter, _pl_t_default_plotter, _pl_h_default_plotter, _pl_q_default_plotter, _pl_f_default_plotter, _pl_c_default_plotter, _pl_p_default_plotter, _pl_a_default_plotter, _pl_s_default_plotter, _pl_i_default_plotter, _pl_n_default_plotter, _pl_z_default_plotter, _pl_x_default_plotter, _pl_y_default_plotter;
 
 /* Similarly, in libplot this is the initialization of the function-pointer
    part of any PlotterParams object. */
@@ -1098,7 +1123,7 @@ extern const PlotterParams _default_plotter_params;
 struct plParamRecord
 {
   const char *parameter;	/* parameter name */
-  voidptr_t default_value;	/* default value (applies if string-valued) */
+  void * default_value;	     /* default value (applies if string-valued) */
   bool is_string;		/* whether or not value must be a string */
 };
 
@@ -1121,199 +1146,185 @@ extern PlotterParams *_old_api_global_plotter_params;
 /* PROTOTYPES ETC. for libplot and libplotter */
 /**************************************************************************/
 
-/* The P___ macro elides the argument prototypes if the compiler does not
-   support them. */
-#ifdef P___
-#undef P___
-#endif
-#if defined (__STDC__) || defined (_AIX) \
-	|| (defined (__mips) && defined (_SYSTYPE_SVR4)) \
-	|| defined(WIN32) || defined(__cplusplus)
-#define P___(protos) protos
-#else
-#define P___(protos) ()
-#endif
-
 /* Miscellaneous internal functions that aren't Plotter class methods, so
    they're declared the same for both libplot and libplotter. */
 
 /* wrappers for malloc and friends */
-extern voidptr_t _plot_xcalloc P___((size_t nmemb, size_t size));
-extern voidptr_t _plot_xmalloc P___((size_t size));
-extern voidptr_t _plot_xrealloc P___((voidptr_t p, size_t size));
+extern void * _pl_xcalloc (size_t nmemb, size_t size);
+extern void * _pl_xmalloc (size_t size);
+extern void * _pl_xrealloc (void * p, size_t size);
 
 /* misc. utility functions, mostly geometry-related */
 
-extern plPoint _truecenter P___((plPoint p0, plPoint p1, plPoint pc));
-extern plVector *_vscale P___((plVector *v, double newlen));
-extern double _angle_of_arc P___((plPoint p0, plPoint p1, plPoint pc));
-extern double _matrix_norm P___((const double m[6]));
-extern double _xatan2 P___((double y, double x));
-extern int _clip_line P___((double *x0_p, double *y0_p, double *x1_p, double *y1_p, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip));
-extern int _codestring_len P___((const unsigned short *codestring));
-extern int _grayscale_approx P___((int red, int green, int blue));
-extern void _matrix_product P___((const double m[6], const double n[6], double product[6]));
-extern void _matrix_inverse P___((const double m[6], double inverse[6]));
-extern void _matrix_sing_vals P___((const double m[6], double *min_sing_val, double *max_sing_val));
-extern void _set_common_mi_attributes P___((plDrawState *drawstate, voidptr_t ptr));
-extern voidptr_t _get_default_plot_param P___((const char *parameter)); 
+extern plPoint _truecenter (plPoint p0, plPoint p1, plPoint pc);
+extern plVector *_vscale (plVector *v, double newlen);
+extern double _angle_of_arc (plPoint p0, plPoint p1, plPoint pc);
+extern double _matrix_norm (const double m[6]);
+extern double _xatan2 (double y, double x);
+extern int _clip_line (double *x0_p, double *y0_p, double *x1_p, double *y1_p, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip);
+extern int _codestring_len (const unsigned short *codestring);
+extern int _grayscale_approx (int red, int green, int blue);
+extern void _matrix_product (const double m[6], const double n[6], double product[6]);
+extern void _matrix_inverse (const double m[6], double inverse[6]);
+extern void _matrix_sing_vals (const double m[6], double *min_sing_val, double *max_sing_val);
+extern void _set_common_mi_attributes (plDrawState *drawstate, void * ptr);
+extern void * _get_default_plot_param (const char *parameter); 
 
 /* plPlotterData methods */
 /* lowest-level output routines used by Plotters */
-extern void _write_byte P___((const plPlotterData *data, unsigned char c));
-extern void _write_bytes P___((const plPlotterData *data, int n, const unsigned char *c));
-extern void _write_string P___((const plPlotterData *data, const char *s));
+extern void _write_byte (const plPlotterData *data, unsigned char c);
+extern void _write_bytes (const plPlotterData *data, int n, const unsigned char *c);
+extern void _write_string (const plPlotterData *data, const char *s);
 /* other plPlotterData methods */
-extern bool _compute_ndc_to_device_map P___((plPlotterData *data));
-extern void _set_page_type P___((plPlotterData *data));
-extern voidptr_t _get_plot_param P___((const plPlotterData *data, const char *parameter)); 
+extern bool _compute_ndc_to_device_map (plPlotterData *data);
+extern void _set_page_type (plPlotterData *data);
+extern void * _get_plot_param (const plPlotterData *data, const char *parameter); 
 
 /* plPath methods (see g_subpaths.c) */
-extern plPath * _flatten_path P___((const plPath *path));
-extern plPath * _new_plPath P___((void));
-extern plPath ** _merge_paths P___((const plPath **paths, int num_paths));
-extern void _add_arc P___((plPath *path, plPoint pc, plPoint p1));
-extern void _add_arc_as_bezier3 P___((plPath *path, plPoint pc, plPoint p1));
-extern void _add_arc_as_lines P___((plPath *path, plPoint pc, plPoint p1));
-extern void _add_bezier2 P___((plPath *path, plPoint pc, plPoint p));
-extern void _add_bezier2_as_lines P___((plPath *path, plPoint pc, plPoint p));
-extern void _add_bezier3 P___((plPath *path, plPoint pc, plPoint pd, plPoint p));
-extern void _add_bezier3_as_lines P___((plPath *path, plPoint pc, plPoint pd, plPoint p));
-extern void _add_box P___((plPath *path, plPoint p0, plPoint p1, bool clockwise));
-extern void _add_box_as_lines P___((plPath *path, plPoint p0, plPoint p1, bool clockwise));
-extern void _add_circle P___((plPath *path, plPoint pc, double radius, bool clockwise));
-extern void _add_circle_as_bezier3s P___((plPath *path, plPoint pc, double radius, bool clockwise));
-extern void _add_circle_as_ellarcs P___((plPath *path, plPoint pc, double radius, bool clockwise));
-extern void _add_circle_as_lines P___((plPath *path, plPoint pc, double radius, bool clockwise));
-extern void _add_ellarc P___((plPath *path, plPoint pc, plPoint p1));
-extern void _add_ellarc_as_bezier3 P___((plPath *path, plPoint pc, plPoint p1));
-extern void _add_ellarc_as_lines P___((plPath *path, plPoint pc, plPoint p1));
-extern void _add_ellipse P___((plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise));
-extern void _add_ellipse_as_bezier3s P___((plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise));
-extern void _add_ellipse_as_ellarcs P___((plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise));
-extern void _add_ellipse_as_lines P___((plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise));
-extern void _add_line P___((plPath *path, plPoint p));
-extern void _add_moveto P___((plPath *path, plPoint p));
-extern void _delete_plPath P___((plPath *path));
-extern void _reset_plPath P___((plPath *path));
+extern plPath * _flatten_path (const plPath *path);
+extern plPath * _new_plPath (void);
+extern plPath ** _merge_paths (const plPath **paths, int num_paths);
+extern void _add_arc (plPath *path, plPoint pc, plPoint p1);
+extern void _add_arc_as_bezier3 (plPath *path, plPoint pc, plPoint p1);
+extern void _add_arc_as_lines (plPath *path, plPoint pc, plPoint p1);
+extern void _add_bezier2 (plPath *path, plPoint pc, plPoint p);
+extern void _add_bezier2_as_lines (plPath *path, plPoint pc, plPoint p);
+extern void _add_bezier3 (plPath *path, plPoint pc, plPoint pd, plPoint p);
+extern void _add_bezier3_as_lines (plPath *path, plPoint pc, plPoint pd, plPoint p);
+extern void _add_box (plPath *path, plPoint p0, plPoint p1, bool clockwise);
+extern void _add_box_as_lines (plPath *path, plPoint p0, plPoint p1, bool clockwise);
+extern void _add_circle (plPath *path, plPoint pc, double radius, bool clockwise);
+extern void _add_circle_as_bezier3s (plPath *path, plPoint pc, double radius, bool clockwise);
+extern void _add_circle_as_ellarcs (plPath *path, plPoint pc, double radius, bool clockwise);
+extern void _add_circle_as_lines (plPath *path, plPoint pc, double radius, bool clockwise);
+extern void _add_ellarc (plPath *path, plPoint pc, plPoint p1);
+extern void _add_ellarc_as_bezier3 (plPath *path, plPoint pc, plPoint p1);
+extern void _add_ellarc_as_lines (plPath *path, plPoint pc, plPoint p1);
+extern void _add_ellipse (plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise);
+extern void _add_ellipse_as_bezier3s (plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise);
+extern void _add_ellipse_as_ellarcs (plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise);
+extern void _add_ellipse_as_lines (plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise);
+extern void _add_line (plPath *path, plPoint p);
+extern void _add_moveto (plPath *path, plPoint p);
+extern void _delete_plPath (plPath *path);
+extern void _reset_plPath (plPath *path);
 
 /* plOutbuf methods (see g_outbuf.c) */
-extern plOutbuf * _new_outbuf P___((void));
-extern void _bbox_of_outbuf P___((plOutbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
-extern void _bbox_of_outbufs P___((plOutbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
-extern void _delete_outbuf P___((plOutbuf *outbuf));
-extern void _freeze_outbuf P___((plOutbuf *outbuf));
-extern void _reset_outbuf P___((plOutbuf *outbuf));
-extern void _update_bbox P___((plOutbuf *bufp, double x, double y));
-extern void _update_buffer P___((plOutbuf *outbuf));
-extern void _update_buffer_by_added_bytes P___((plOutbuf *outbuf, int additional));
+extern plOutbuf * _new_outbuf (void);
+extern void _bbox_of_outbuf (plOutbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax);
+extern void _bbox_of_outbufs (plOutbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax);
+extern void _delete_outbuf (plOutbuf *outbuf);
+extern void _freeze_outbuf (plOutbuf *outbuf);
+extern void _reset_outbuf (plOutbuf *outbuf);
+extern void _update_bbox (plOutbuf *bufp, double x, double y);
+extern void _update_buffer (plOutbuf *outbuf);
+extern void _update_buffer_by_added_bytes (plOutbuf *outbuf, int additional);
 
 /* functions that update a device-frame bounding box for a page, as stored
    in a plOutbuf */
-extern void _set_bezier2_bbox P___((plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double device_line_width, double m[6]));
-extern void _set_bezier3_bbox P___((plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3, double device_line_width, double m[6]));
-extern void _set_ellipse_bbox P___((plOutbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth, double m[6]));
-extern void _set_line_end_bbox P___((plOutbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle, double m[6]));
-extern void _set_line_join_bbox P___((plOutbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit, double m[6]));
+extern void _set_bezier2_bbox (plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double device_line_width, double m[6]);
+extern void _set_bezier3_bbox (plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3, double device_line_width, double m[6]);
+extern void _set_ellipse_bbox (plOutbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth, double m[6]);
+extern void _set_line_end_bbox (plOutbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle, double m[6]);
+extern void _set_line_join_bbox (plOutbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit, double m[6]);
 
 /* CGMPlotter-related functions, which write a CGM command, or an argument
    of same, alternatively to a plOutbuf or to a string (see c_emit.c) */
-extern void _cgm_emit_command_header P___((plOutbuf *outbuf, int cgm_encoding, int element_class, int id, int data_len, int *byte_count, const char *op_code));
-extern void _cgm_emit_color_component P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_enum P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count, const char *text_string)); 
-extern void _cgm_emit_index P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_integer P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_point P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int y, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_points P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, const int *x, const int *y, int npoints, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_real_fixed_point P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, double x, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_real_floating_point P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, double x, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_string P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, const char *s, int string_length, bool use_double_quotes, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_unsigned_integer P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_unsigned_integer_8bit P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count));
-extern void _cgm_emit_command_terminator P___((plOutbuf *outbuf, int cgm_encoding, int *byte_count));
+extern void _cgm_emit_command_header (plOutbuf *outbuf, int cgm_encoding, int element_class, int id, int data_len, int *byte_count, const char *op_code);
+extern void _cgm_emit_color_component (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_enum (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count, const char *text_string); 
+extern void _cgm_emit_index (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_integer (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_point (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int y, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_points (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, const int *x, const int *y, int npoints, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_real_fixed_point (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, double x, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_real_floating_point (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, double x, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_string (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, const char *s, int string_length, bool use_double_quotes, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_unsigned_integer (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_unsigned_integer_8bit (plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count);
+extern void _cgm_emit_command_terminator (plOutbuf *outbuf, int cgm_encoding, int *byte_count);
 
 /* SVGPlotter-related functions */
-extern const char * _libplot_color_to_svg_color P___((plColor color_48, char charbuf[8]));
+extern const char * _libplot_color_to_svg_color (plColor color_48, char charbuf[8]);
 
 /* plColorNameCache methods */
-extern bool _string_to_color P___((const char *name, plColor *color_p, plColorNameCache *color_name_cache));
-extern plColorNameCache * _create_color_name_cache P___((void));
-extern void _delete_color_name_cache P___((plColorNameCache *color_cache));
+extern bool _string_to_color (const char *name, plColor *color_p, plColorNameCache *color_name_cache);
+extern plColorNameCache * _create_color_name_cache (void);
+extern void _delete_color_name_cache (plColorNameCache *color_cache);
 
 /* Renaming of the global symbols in the libxmi scan conversion library,
    which we include in libplot/libplotter as a rendering module.  We
-   prepend each name with one or two underscores.  Doing this prevents
-   pollution of the user-level namespace, and allows an application to link
-   with both libplot/libplotter and a separate version of libxmi. */
+   prepend each name with "_pl".  Doing this keeps the user-level namespace
+   clean, and allows an application to link with both libplot/libplotter
+   and a separate version of libxmi. */
 
-/* libxmi API functions get one underscore, since in libxmi itself, they
-   get no underscores.  */
+/* libxmi API functions */
 
-#define miClearPaintedSet _miClearPaintedSet
-#define miCopyCanvas _miCopyCanvas
-#define miCopyGC _miCopyGC
-#define miCopyPaintedSetToCanvas _miCopyPaintedSetToCanvas
-#define miDeleteCanvas _miDeleteCanvas
-#define miDeleteEllipseCache _miDeleteEllipseCache
-#define miDeleteGC _miDeleteGC
-#define miDeletePaintedSet _miDeletePaintedSet
-#define miDrawArcs_r _miDrawArcs_r
-#define miDrawLines _miDrawLines
-#define miDrawPoints _miDrawPoints
-#define miDrawRectangles _miDrawRectangles
-#define miFillArcs _miFillArcs
-#define miFillPolygon _miFillPolygon
-#define miFillRectangles _miFillRectangles
-#define miNewCanvas _miNewCanvas
-#define miNewEllipseCache _miNewEllipseCache
-#define miNewGC _miNewGC
-#define miNewPaintedSet _miNewPaintedSet
-#define miSetCanvasStipple _miSetCanvasStipple
-#define miSetCanvasTexture _miSetCanvasTexture
-#define miSetGCAttrib _miSetGCAttrib
-#define miSetGCAttribs _miSetGCAttribs
-#define miSetGCDashes _miSetGCDashes
-#define miSetGCMiterLimit _miSetGCMiterLimit
-#define miSetGCPixels _miSetGCPixels
-#define miSetPixelMerge2 _miSetPixelMerge2
-#define miSetPixelMerge3 _miSetPixelMerge3
+#define miClearPaintedSet _pl_miClearPaintedSet
+#define miCopyCanvas _pl_miCopyCanvas
+#define miCopyGC _pl_miCopyGC
+#define miCopyPaintedSetToCanvas _pl_miCopyPaintedSetToCanvas
+#define miDeleteCanvas _pl_miDeleteCanvas
+#define miDeleteEllipseCache _pl_miDeleteEllipseCache
+#define miDeleteGC _pl_miDeleteGC
+#define miDeletePaintedSet _pl_miDeletePaintedSet
+#define miDrawArcs_r _pl_miDrawArcs_r
+#define miDrawLines _pl_miDrawLines
+#define miDrawPoints _pl_miDrawPoints
+#define miDrawRectangles _pl_miDrawRectangles
+#define miFillArcs _pl_miFillArcs
+#define miFillPolygon _pl_miFillPolygon
+#define miFillRectangles _pl_miFillRectangles
+#define miNewCanvas _pl_miNewCanvas
+#define miNewEllipseCache _pl_miNewEllipseCache
+#define miNewGC _pl_miNewGC
+#define miNewPaintedSet _pl_miNewPaintedSet
+#define miSetCanvasStipple _pl_miSetCanvasStipple
+#define miSetCanvasTexture _pl_miSetCanvasTexture
+#define miSetGCAttrib _pl_miSetGCAttrib
+#define miSetGCAttribs _pl_miSetGCAttribs
+#define miSetGCDashes _pl_miSetGCDashes
+#define miSetGCMiterLimit _pl_miSetGCMiterLimit
+#define miSetGCPixels _pl_miSetGCPixels
+#define miSetPixelMerge2 _pl_miSetPixelMerge2
+#define miSetPixelMerge3 _pl_miSetPixelMerge3
 
-/* An external libxmi symbol; add an underscore to it, similarly. */
-#define mi_libxmi_ver _mi_libxmi_ver
+/* an external libxmi symbol */
+#define mi_libxmi_ver _pl_mi_libxmi_ver
 
-/* Internal libxmi functions get two underscores, since in libxmi itself,
-   they get one underscore. */
-#define mi_xmalloc __mi_xmalloc
-#define mi_xcalloc __mi_xcalloc
-#define mi_xrealloc __mi_xrealloc
-#define miAddSpansToPaintedSet _miAddSpansToPaintedSet
-#define miDrawArcs_r_internal __miDrawArcs_r_internal
-#define miDrawArcs_internal __miDrawArcs_internal
-#define miDrawLines_internal __miDrawLines_internal
-#define miDrawRectangles_internal __miDrawRectangles_internal
-#define miPolyArc_r __miPolyArc_r
-#define miPolyArc __miPolyArc
-#define miFillArcs_internal __miFillArcs_internal
-#define miFillRectangles_internal __miFillRectangles_internal
-#define miFillSppPoly __miFillSppPoly
-#define miFillPolygon_internal __miFillPolygon_internal
-#define miFillConvexPoly __miFillConvexPoly
-#define miFillGeneralPoly __miFillGeneralPoly
-#define miDrawPoints_internal __miDrawPoints_internal
-#define miCreateETandAET __miCreateETandAET
-#define miloadAET __miloadAET
-#define micomputeWAET __micomputeWAET
-#define miInsertionSort __miInsertionSort
-#define miFreeStorage __miFreeStorage
-#define miQuickSortSpansY __miQuickSortSpansY
-#define miUniquifyPaintedSet __miUniquifyPaintedSet
-#define miWideDash __miWideDash
-#define miStepDash __miStepDash
-#define miWideLine __miWideLine
-#define miZeroPolyArc_r __miZeroPolyArc_r
-#define miZeroPolyArc __miZeroPolyArc
-#define miZeroLine __miZeroLine
-#define miZeroDash __miZeroDash
+/* internal libxmi functions (which incidentally in libxmi are given an
+   initial underscore, in much the same way) */
+#define mi_xmalloc _pl_mi_xmalloc
+#define mi_xcalloc _pl_mi_xcalloc
+#define mi_xrealloc _pl_mi_xrealloc
+#define miAddSpansToPaintedSet _pl_miAddSpansToPaintedSet
+#define miDrawArcs_r_internal _pl_miDrawArcs_r_internal
+#define miDrawArcs_internal _pl_miDrawArcs_internal
+#define miDrawLines_internal _pl_miDrawLines_internal
+#define miDrawRectangles_internal _pl_miDrawRectangles_internal
+#define miPolyArc_r _pl_miPolyArc_r
+#define miPolyArc _pl_miPolyArc
+#define miFillArcs_internal _pl_miFillArcs_internal
+#define miFillRectangles_internal _pl_miFillRectangles_internal
+#define miFillSppPoly _pl_miFillSppPoly
+#define miFillPolygon_internal _pl_miFillPolygon_internal
+#define miFillConvexPoly _pl_miFillConvexPoly
+#define miFillGeneralPoly _pl_miFillGeneralPoly
+#define miDrawPoints_internal _pl_miDrawPoints_internal
+#define miCreateETandAET _pl_miCreateETandAET
+#define miloadAET _pl_miloadAET
+#define micomputeWAET _pl_micomputeWAET
+#define miInsertionSort _pl_miInsertionSort
+#define miFreeStorage _pl_miFreeStorage
+#define miQuickSortSpansY _pl_miQuickSortSpansY
+#define miUniquifyPaintedSet _pl_miUniquifyPaintedSet
+#define miWideDash _pl_miWideDash
+#define miStepDash _pl_miStepDash
+#define miWideLine _pl_miWideLine
+#define miZeroPolyArc_r _pl_miZeroPolyArc_r
+#define miZeroPolyArc _pl_miZeroPolyArc
+#define miZeroLine _pl_miZeroLine
+#define miZeroDash _pl_miZeroDash
 
 /* Don't include unneeded non-reentrant libxmi functions, such as the
    function miPolyArc().  We use the reentrant version miPolyArc_r()
@@ -1321,11 +1332,10 @@ extern void _delete_color_name_cache P___((plColorNameCache *color_cache));
 #define NO_NONREENTRANT_POLYARC_SUPPORT
 
 /* Internal functions that aren't Plotter class methods, but which need to
-   be renamed in libplotter, so that both libplot and libplotter can be
-   loaded simultaneously. */
+   be renamed in libplotter. */
 #ifdef LIBPLOTTER
-#define libplot_warning_handler libplotter_warning_handler
-#define libplot_error_handler libplotter_error_handler
+#define pl_libplot_warning_handler pl_libplotter_warning_handler
+#define pl_libplot_error_handler pl_libplotter_error_handler
 #endif
 
 /* Declarations of forwarding functions used in libplot (not libplotter). */
@@ -1336,12 +1346,12 @@ extern void _delete_color_name_cache P___((plColorNameCache *color_cache));
    XPlotter class from the XDrawablePlotter class.  */
 
 #ifndef LIBPLOTTER
-extern int _maybe_output_image P___((Plotter *_plotter));
-extern void _maybe_switch_to_hpgl P___((Plotter *_plotter));
-extern void _maybe_switch_from_hpgl P___((Plotter *_plotter));
+extern int _maybe_output_image (Plotter *_plotter);
+extern void _maybe_switch_to_hpgl (Plotter *_plotter);
+extern void _maybe_switch_from_hpgl (Plotter *_plotter);
 #ifndef X_DISPLAY_MISSING
-extern void _maybe_get_new_colormap P___((Plotter *_plotter));
-extern void _maybe_handle_x_events P___((Plotter *_plotter));
+extern void _maybe_get_new_colormap (Plotter *_plotter);
+extern void _maybe_handle_x_events (Plotter *_plotter);
 #endif /* not X_DISPLAY_MISSING */
 #endif /* not LIBPLOTTER */
 
@@ -1353,7 +1363,32 @@ extern void _maybe_handle_x_events P___((Plotter *_plotter));
 
    In libplot, these are declarations of global functions.  But in
    libplotter, we use #define and the double colon notation to make them
-   function members of the appropriate Plotter classes. */
+   function members of the appropriate Plotter classes.
+
+   The declarations-for-libplot are encapsulated within
+   ___BEGIN_DECLS...___END_DECLS pairs, which do nothing if a C compiler is
+   used to compile libplot.  If on the other hand libplot is compiled by a
+   C++ compiler, which is easy to arrange by doing `CC=g++ ./configure',
+   then this will require each libplot function to have C linkage rather
+   than C++ linkage.  Libplot functions should have C linkage, of course
+   (cf. libplot's external header file plot.h).  */
+
+#ifndef LIBPLOTTER
+/* support C++ */
+#ifdef ___BEGIN_DECLS
+#undef ___BEGIN_DECLS
+#endif
+#ifdef ___END_DECLS
+#undef ___END_DECLS
+#endif
+#ifdef __cplusplus
+# define ___BEGIN_DECLS extern "C" {
+# define ___END_DECLS }
+#else
+# define ___BEGIN_DECLS		/* empty */
+# define ___END_DECLS		/* empty */
+#endif
+#endif /* not LIBPLOTTER */
 
 #ifndef LIBPLOTTER
 /* Plotter public methods, for libplot */
@@ -1455,151 +1490,153 @@ extern void _maybe_handle_x_events P___((Plotter *_plotter));
 #define _API_space pl_space_r
 #define _API_space2 pl_space2_r
 #define _API_textangle pl_textangle_r
-extern FILE* _API_outfile P___((Plotter *_plotter, FILE* newstream));/* OBSOLESCENT */
-extern double _API_ffontname P___((Plotter *_plotter, const char *s));
-extern double _API_ffontsize P___((Plotter *_plotter, double size));
-extern double _API_flabelwidth P___((Plotter *_plotter, const char *s));
-extern double _API_ftextangle P___((Plotter *_plotter, double angle));
-extern int _API_alabel P___((Plotter *_plotter, int x_justify, int y_justify, const char *s));
-extern int _API_arc P___((Plotter *_plotter, int xc, int yc, int x0, int y0, int x1, int y1));
-extern int _API_arcrel P___((Plotter *_plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-extern int _API_bezier2 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2));
-extern int _API_bezier2rel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1, int dx2, int dy2));
-extern int _API_bezier3 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3));
-extern int _API_bezier3rel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3));
-extern int _API_bgcolor P___((Plotter *_plotter, int red, int green, int blue));
-extern int _API_bgcolorname P___((Plotter *_plotter, const char *name));
-extern int _API_box P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
-extern int _API_boxrel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1));
-extern int _API_capmod P___((Plotter *_plotter, const char *s));
-extern int _API_circle P___((Plotter *_plotter, int x, int y, int r));
-extern int _API_circlerel P___((Plotter *_plotter, int dx, int dy, int r));
-extern int _API_closepath P___((Plotter *_plotter));
-extern int _API_closepl P___((Plotter *_plotter));
-extern int _API_color P___((Plotter *_plotter, int red, int green, int blue));
-extern int _API_colorname P___((Plotter *_plotter, const char *name));
-extern int _API_cont P___((Plotter *_plotter, int x, int y));
-extern int _API_contrel P___((Plotter *_plotter, int x, int y));
-extern int _API_ellarc P___((Plotter *_plotter, int xc, int yc, int x0, int y0, int x1, int y1));
-extern int _API_ellarcrel P___((Plotter *_plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-extern int _API_ellipse P___((Plotter *_plotter, int x, int y, int rx, int ry, int angle));
-extern int _API_ellipserel P___((Plotter *_plotter, int dx, int dy, int rx, int ry, int angle));
-extern int _API_endpath P___((Plotter *_plotter));
-extern int _API_endsubpath P___((Plotter *_plotter));
-extern int _API_erase P___((Plotter *_plotter));
-extern int _API_farc P___((Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1));
-extern int _API_farcrel P___((Plotter *_plotter, double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-extern int _API_fbezier2 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2));
-extern int _API_fbezier2rel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2));
-extern int _API_fbezier3 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
-extern int _API_fbezier3rel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3));
-extern int _API_fbox P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
-extern int _API_fboxrel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1));
-extern int _API_fcircle P___((Plotter *_plotter, double x, double y, double r));
-extern int _API_fcirclerel P___((Plotter *_plotter, double dx, double dy, double r));
-extern int _API_fconcat P___((Plotter *_plotter, double m0, double m1, double m2, double m3, double m4, double m5));
-extern int _API_fcont P___((Plotter *_plotter, double x, double y));
-extern int _API_fcontrel P___((Plotter *_plotter, double x, double y));
-extern int _API_fellarc P___((Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1));
-extern int _API_fellarcrel P___((Plotter *_plotter, double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-extern int _API_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
-extern int _API_fellipserel P___((Plotter *_plotter, double dx, double dy, double rx, double ry, double angle));
-extern int _API_fillcolor P___((Plotter *_plotter, int red, int green, int blue));
-extern int _API_fillcolorname P___((Plotter *_plotter, const char *name));
-extern int _API_fillmod P___((Plotter *_plotter, const char *s));
-extern int _API_filltype P___((Plotter *_plotter, int level));
-extern int _API_fline P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
-extern int _API_flinedash P___((Plotter *_plotter, int n, const double *dashes, double offset));
-extern int _API_flinerel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1));
-extern int _API_flinewidth P___((Plotter *_plotter, double size));
-extern int _API_flushpl P___((Plotter *_plotter));
-extern int _API_fmarker P___((Plotter *_plotter, double x, double y, int type, double size));
-extern int _API_fmarkerrel P___((Plotter *_plotter, double dx, double dy, int type, double size));
-extern int _API_fmiterlimit P___((Plotter *_plotter, double limit));
-extern int _API_fmove P___((Plotter *_plotter, double x, double y));
-extern int _API_fmoverel P___((Plotter *_plotter, double x, double y));
-extern int _API_fontname P___((Plotter *_plotter, const char *s));
-extern int _API_fontsize P___((Plotter *_plotter, int size));
-extern int _API_fpoint P___((Plotter *_plotter, double x, double y));
-extern int _API_fpointrel P___((Plotter *_plotter, double dx, double dy));
-extern int _API_frotate P___((Plotter *_plotter, double theta));
-extern int _API_fscale P___((Plotter *_plotter, double x, double y));
-extern int _API_fsetmatrix P___((Plotter *_plotter, double m0, double m1, double m2, double m3, double m4, double m5));
-extern int _API_fspace P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
-extern int _API_fspace2 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2));
-extern int _API_ftranslate P___((Plotter *_plotter, double x, double y));
-extern int _API_havecap P___((Plotter *_plotter, const char *s));
-extern int _API_joinmod P___((Plotter *_plotter, const char *s));
-extern int _API_label P___((Plotter *_plotter, const char *s));
-extern int _API_labelwidth P___((Plotter *_plotter, const char *s));
-extern int _API_line P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
-extern int _API_linedash P___((Plotter *_plotter, int n, const int *dashes, int offset));
-extern int _API_linemod P___((Plotter *_plotter, const char *s));
-extern int _API_linerel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1));
-extern int _API_linewidth P___((Plotter *_plotter, int size));
-extern int _API_marker P___((Plotter *_plotter, int x, int y, int type, int size));
-extern int _API_markerrel P___((Plotter *_plotter, int dx, int dy, int type, int size));
-extern int _API_move P___((Plotter *_plotter, int x, int y));
-extern int _API_moverel P___((Plotter *_plotter, int x, int y));
-extern int _API_openpl P___((Plotter *_plotter));
-extern int _API_orientation P___((Plotter *_plotter, int direction));
-extern int _API_pencolor P___((Plotter *_plotter, int red, int green, int blue));
-extern int _API_pencolorname P___((Plotter *_plotter, const char *name));
-extern int _API_pentype P___((Plotter *_plotter, int level));
-extern int _API_point P___((Plotter *_plotter, int x, int y));
-extern int _API_pointrel P___((Plotter *_plotter, int dx, int dy));
-extern int _API_restorestate P___((Plotter *_plotter));
-extern int _API_savestate P___((Plotter *_plotter));
-extern int _API_space P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
-extern int _API_space2 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2));
-extern int _API_textangle P___((Plotter *_plotter, int angle));
+___BEGIN_DECLS
+extern FILE* _API_outfile (Plotter *_plotter, FILE* newstream);/* OBSOLESCENT */
+extern double _API_ffontname (Plotter *_plotter, const char *s);
+extern double _API_ffontsize (Plotter *_plotter, double size);
+extern double _API_flabelwidth (Plotter *_plotter, const char *s);
+extern double _API_ftextangle (Plotter *_plotter, double angle);
+extern int _API_alabel (Plotter *_plotter, int x_justify, int y_justify, const char *s);
+extern int _API_arc (Plotter *_plotter, int xc, int yc, int x0, int y0, int x1, int y1);
+extern int _API_arcrel (Plotter *_plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1);
+extern int _API_bezier2 (Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2);
+extern int _API_bezier2rel (Plotter *_plotter, int dx0, int dy0, int dx1, int dy1, int dx2, int dy2);
+extern int _API_bezier3 (Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3);
+extern int _API_bezier3rel (Plotter *_plotter, int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3);
+extern int _API_bgcolor (Plotter *_plotter, int red, int green, int blue);
+extern int _API_bgcolorname (Plotter *_plotter, const char *name);
+extern int _API_box (Plotter *_plotter, int x0, int y0, int x1, int y1);
+extern int _API_boxrel (Plotter *_plotter, int dx0, int dy0, int dx1, int dy1);
+extern int _API_capmod (Plotter *_plotter, const char *s);
+extern int _API_circle (Plotter *_plotter, int x, int y, int r);
+extern int _API_circlerel (Plotter *_plotter, int dx, int dy, int r);
+extern int _API_closepath (Plotter *_plotter);
+extern int _API_closepl (Plotter *_plotter);
+extern int _API_color (Plotter *_plotter, int red, int green, int blue);
+extern int _API_colorname (Plotter *_plotter, const char *name);
+extern int _API_cont (Plotter *_plotter, int x, int y);
+extern int _API_contrel (Plotter *_plotter, int x, int y);
+extern int _API_ellarc (Plotter *_plotter, int xc, int yc, int x0, int y0, int x1, int y1);
+extern int _API_ellarcrel (Plotter *_plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1);
+extern int _API_ellipse (Plotter *_plotter, int x, int y, int rx, int ry, int angle);
+extern int _API_ellipserel (Plotter *_plotter, int dx, int dy, int rx, int ry, int angle);
+extern int _API_endpath (Plotter *_plotter);
+extern int _API_endsubpath (Plotter *_plotter);
+extern int _API_erase (Plotter *_plotter);
+extern int _API_farc (Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1);
+extern int _API_farcrel (Plotter *_plotter, double dxc, double dyc, double dx0, double dy0, double dx1, double dy1);
+extern int _API_fbezier2 (Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2);
+extern int _API_fbezier2rel (Plotter *_plotter, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2);
+extern int _API_fbezier3 (Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3);
+extern int _API_fbezier3rel (Plotter *_plotter, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3);
+extern int _API_fbox (Plotter *_plotter, double x0, double y0, double x1, double y1);
+extern int _API_fboxrel (Plotter *_plotter, double dx0, double dy0, double dx1, double dy1);
+extern int _API_fcircle (Plotter *_plotter, double x, double y, double r);
+extern int _API_fcirclerel (Plotter *_plotter, double dx, double dy, double r);
+extern int _API_fconcat (Plotter *_plotter, double m0, double m1, double m2, double m3, double m4, double m5);
+extern int _API_fcont (Plotter *_plotter, double x, double y);
+extern int _API_fcontrel (Plotter *_plotter, double x, double y);
+extern int _API_fellarc (Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1);
+extern int _API_fellarcrel (Plotter *_plotter, double dxc, double dyc, double dx0, double dy0, double dx1, double dy1);
+extern int _API_fellipse (Plotter *_plotter, double x, double y, double rx, double ry, double angle);
+extern int _API_fellipserel (Plotter *_plotter, double dx, double dy, double rx, double ry, double angle);
+extern int _API_fillcolor (Plotter *_plotter, int red, int green, int blue);
+extern int _API_fillcolorname (Plotter *_plotter, const char *name);
+extern int _API_fillmod (Plotter *_plotter, const char *s);
+extern int _API_filltype (Plotter *_plotter, int level);
+extern int _API_fline (Plotter *_plotter, double x0, double y0, double x1, double y1);
+extern int _API_flinedash (Plotter *_plotter, int n, const double *dashes, double offset);
+extern int _API_flinerel (Plotter *_plotter, double dx0, double dy0, double dx1, double dy1);
+extern int _API_flinewidth (Plotter *_plotter, double size);
+extern int _API_flushpl (Plotter *_plotter);
+extern int _API_fmarker (Plotter *_plotter, double x, double y, int type, double size);
+extern int _API_fmarkerrel (Plotter *_plotter, double dx, double dy, int type, double size);
+extern int _API_fmiterlimit (Plotter *_plotter, double limit);
+extern int _API_fmove (Plotter *_plotter, double x, double y);
+extern int _API_fmoverel (Plotter *_plotter, double x, double y);
+extern int _API_fontname (Plotter *_plotter, const char *s);
+extern int _API_fontsize (Plotter *_plotter, int size);
+extern int _API_fpoint (Plotter *_plotter, double x, double y);
+extern int _API_fpointrel (Plotter *_plotter, double dx, double dy);
+extern int _API_frotate (Plotter *_plotter, double theta);
+extern int _API_fscale (Plotter *_plotter, double x, double y);
+extern int _API_fsetmatrix (Plotter *_plotter, double m0, double m1, double m2, double m3, double m4, double m5);
+extern int _API_fspace (Plotter *_plotter, double x0, double y0, double x1, double y1);
+extern int _API_fspace2 (Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2);
+extern int _API_ftranslate (Plotter *_plotter, double x, double y);
+extern int _API_havecap (Plotter *_plotter, const char *s);
+extern int _API_joinmod (Plotter *_plotter, const char *s);
+extern int _API_label (Plotter *_plotter, const char *s);
+extern int _API_labelwidth (Plotter *_plotter, const char *s);
+extern int _API_line (Plotter *_plotter, int x0, int y0, int x1, int y1);
+extern int _API_linedash (Plotter *_plotter, int n, const int *dashes, int offset);
+extern int _API_linemod (Plotter *_plotter, const char *s);
+extern int _API_linerel (Plotter *_plotter, int dx0, int dy0, int dx1, int dy1);
+extern int _API_linewidth (Plotter *_plotter, int size);
+extern int _API_marker (Plotter *_plotter, int x, int y, int type, int size);
+extern int _API_markerrel (Plotter *_plotter, int dx, int dy, int type, int size);
+extern int _API_move (Plotter *_plotter, int x, int y);
+extern int _API_moverel (Plotter *_plotter, int x, int y);
+extern int _API_openpl (Plotter *_plotter);
+extern int _API_orientation (Plotter *_plotter, int direction);
+extern int _API_pencolor (Plotter *_plotter, int red, int green, int blue);
+extern int _API_pencolorname (Plotter *_plotter, const char *name);
+extern int _API_pentype (Plotter *_plotter, int level);
+extern int _API_point (Plotter *_plotter, int x, int y);
+extern int _API_pointrel (Plotter *_plotter, int dx, int dy);
+extern int _API_restorestate (Plotter *_plotter);
+extern int _API_savestate (Plotter *_plotter);
+extern int _API_space (Plotter *_plotter, int x0, int y0, int x1, int y1);
+extern int _API_space2 (Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2);
+extern int _API_textangle (Plotter *_plotter, int angle);
 /* Plotter protected methods, for libplot */
-extern bool _g_begin_page P___((Plotter *_plotter));
-extern bool _g_end_page P___((Plotter *_plotter));
-extern bool _g_erase_page P___((Plotter *_plotter));
-extern bool _g_flush_output P___((Plotter *_plotter));
-extern bool _g_paint_marker P___((Plotter *_plotter, int type, double size));
-extern bool _g_paint_paths P___((Plotter *_plotter));
-extern bool _g_path_is_flushable P___((Plotter *_plotter));
-extern bool _g_retrieve_font P___((Plotter *_plotter));
-extern double _g_get_text_width P___((Plotter *_plotter, const unsigned char *s));
-extern double _g_paint_text_string P___((Plotter *_plotter, const unsigned char *s, int x_justify, int y_justify));
-extern void _g_error P___((Plotter *_plotter, const char *msg));
-extern void _g_initialize P___((Plotter *_plotter));
-extern void _g_maybe_prepaint_segments P___((Plotter *_plotter, int prev_num_segments));
-extern void _g_paint_path P___((Plotter *_plotter));
-extern void _g_paint_point P___((Plotter *_plotter));
-extern void _g_paint_text_string_with_escapes P___((Plotter *_plotter, const unsigned char *s, int x_justify, int y_justify));
-extern void _g_pop_state P___((Plotter *_plotter));
-extern void _g_push_state P___((Plotter *_plotter));
-extern void _g_terminate P___((Plotter *_plotter));
-extern void _g_warning P___((Plotter *_plotter, const char *msg));
+extern bool _pl_g_begin_page (Plotter *_plotter);
+extern bool _pl_g_end_page (Plotter *_plotter);
+extern bool _pl_g_erase_page (Plotter *_plotter);
+extern bool _pl_g_flush_output (Plotter *_plotter);
+extern bool _pl_g_paint_marker (Plotter *_plotter, int type, double size);
+extern bool _pl_g_paint_paths (Plotter *_plotter);
+extern bool _pl_g_path_is_flushable (Plotter *_plotter);
+extern bool _pl_g_retrieve_font (Plotter *_plotter);
+extern double _pl_g_get_text_width (Plotter *_plotter, const unsigned char *s);
+extern double _pl_g_paint_text_string (Plotter *_plotter, const unsigned char *s, int x_justify, int y_justify);
+extern void _pl_g_error (Plotter *_plotter, const char *msg);
+extern void _pl_g_initialize (Plotter *_plotter);
+extern void _pl_g_maybe_prepaint_segments (Plotter *_plotter, int prev_num_segments);
+extern void _pl_g_paint_path (Plotter *_plotter);
+extern void _pl_g_paint_point (Plotter *_plotter);
+extern void _pl_g_paint_text_string_with_escapes (Plotter *_plotter, const unsigned char *s, int x_justify, int y_justify);
+extern void _pl_g_pop_state (Plotter *_plotter);
+extern void _pl_g_push_state (Plotter *_plotter);
+extern void _pl_g_terminate (Plotter *_plotter);
+extern void _pl_g_warning (Plotter *_plotter, const char *msg);
 /* undocumented public methods that provide access to the font tables
    within libplot/libplotter; for libplot */
-extern voidptr_t pl_get_hershey_font_info P___((Plotter *_plotter));
-extern voidptr_t pl_get_ps_font_info P___((Plotter *_plotter));
-extern voidptr_t pl_get_pcl_font_info P___((Plotter *_plotter));
-extern voidptr_t pl_get_stick_font_info P___((Plotter *_plotter));
+extern void * _pl_get_hershey_font_info (Plotter *_plotter);
+extern void * _pl_get_ps_font_info (Plotter *_plotter);
+extern void * _pl_get_pcl_font_info (Plotter *_plotter);
+extern void * _pl_get_stick_font_info (Plotter *_plotter);
 /* private functions related to the drawing of text strings in Hershey
    fonts (defined in g_alab_her.c); for libplot */
-extern double _alabel_hershey P___((Plotter *_plotter, const unsigned char *s, int x_justify, int y_justify));
-extern double _flabelwidth_hershey P___((Plotter *_plotter, const unsigned char *s));
-extern void _draw_hershey_glyph P___((Plotter *_plotter, int num, double charsize, int type, bool oblique));
-extern void _draw_hershey_penup_stroke P___((Plotter *_plotter, double dx, double dy, double charsize, bool oblique));
-extern void _draw_hershey_string P___((Plotter *_plotter, const unsigned short *string));
-extern void _draw_hershey_stroke P___((Plotter *_plotter, bool pendown, double deltax, double deltay));
+extern double _pl_g_alabel_hershey (Plotter *_plotter, const unsigned char *s, int x_justify, int y_justify);
+extern double _pl_g_flabelwidth_hershey (Plotter *_plotter, const unsigned char *s);
+extern void _pl_g_draw_hershey_glyph (Plotter *_plotter, int num, double charsize, int type, bool oblique);
+extern void _pl_g_draw_hershey_penup_stroke (Plotter *_plotter, double dx, double dy, double charsize, bool oblique);
+extern void _pl_g_draw_hershey_string (Plotter *_plotter, const unsigned short *string);
+extern void _pl_g_draw_hershey_stroke (Plotter *_plotter, bool pendown, double deltax, double deltay);
 /* other private Plotter functions (a mixed bag), for libplot */
-extern double _render_non_hershey_string P___((Plotter *_plotter, const char *s, bool do_render, int x_justify, int y_justify));
-extern double _render_simple_string P___((Plotter *_plotter, const unsigned char *s, bool do_render, int h_just, int v_just));
-extern unsigned short * _controlify P___((Plotter *_plotter, const unsigned char *));
-extern void _copy_params_to_plotter P___((Plotter *_plotter, const PlotterParams *params));
-extern void _create_first_drawing_state P___((Plotter *_plotter));
-extern void _delete_first_drawing_state P___((Plotter *_plotter));
-extern void _free_params_in_plotter P___((Plotter *_plotter));
-extern void _maybe_replace_arc P___((Plotter *_plotter));
-extern void _set_font P___((Plotter *_plotter));
+extern double _pl_g_render_non_hershey_string (Plotter *_plotter, const char *s, bool do_render, int x_justify, int y_justify);
+extern double _pl_g_render_simple_string (Plotter *_plotter, const unsigned char *s, bool do_render, int h_just, int v_just);
+extern unsigned short * _pl_g_controlify (Plotter *_plotter, const unsigned char *);
+extern void _pl_g_copy_params_to_plotter (Plotter *_plotter, const PlotterParams *params);
+extern void _pl_g_create_first_drawing_state (Plotter *_plotter);
+extern void _pl_g_delete_first_drawing_state (Plotter *_plotter);
+extern void _pl_g_free_params_in_plotter (Plotter *_plotter);
+extern void _pl_g_maybe_replace_arc (Plotter *_plotter);
+extern void _pl_g_set_font (Plotter *_plotter);
 /* other protected Plotter functions (a mixed bag), for libplot */
-extern void _flush_plotter_outstreams P___((Plotter *_plotter));
+extern void _pl_g_flush_plotter_outstreams (Plotter *_plotter);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* static Plotter public method (libplotter only) */
 #define parampl Plotter::parampl
@@ -1703,669 +1740,698 @@ extern void _flush_plotter_outstreams P___((Plotter *_plotter));
 #define _API_space2 Plotter::space2
 #define _API_textangle Plotter::textangle
 /* Plotter protected methods, for libplotter */
-#define _g_begin_page Plotter::begin_page
-#define _g_end_page Plotter::end_page
-#define _g_erase_page Plotter::erase_page
-#define _g_error Plotter::error
-#define _g_paint_text_string_with_escapes Plotter::paint_text_string_with_escapes
-#define _g_paint_text_string Plotter::paint_text_string
-#define _g_get_text_width Plotter::get_text_width
-#define _g_flush_output Plotter::flush_output
-#define _g_initialize Plotter::initialize
-#define _g_path_is_flushable Plotter::path_is_flushable
-#define _g_maybe_prepaint_segments Plotter::maybe_prepaint_segments
-#define _g_paint_marker Plotter::paint_marker
-#define _g_paint_path Plotter::paint_path
-#define _g_paint_paths Plotter::paint_paths
-#define _g_paint_point Plotter::paint_point
-#define _g_pop_state Plotter::pop_state
-#define _g_push_state Plotter::push_state
-#define _g_retrieve_font Plotter::retrieve_font
-#define _g_terminate Plotter::terminate
-#define _g_warning Plotter::warning
+#define _pl_g_begin_page Plotter::begin_page
+#define _pl_g_end_page Plotter::end_page
+#define _pl_g_erase_page Plotter::erase_page
+#define _pl_g_error Plotter::error
+#define _pl_g_paint_text_string_with_escapes Plotter::paint_text_string_with_escapes
+#define _pl_g_paint_text_string Plotter::paint_text_string
+#define _pl_g_get_text_width Plotter::get_text_width
+#define _pl_g_flush_output Plotter::flush_output
+#define _pl_g_initialize Plotter::initialize
+#define _pl_g_path_is_flushable Plotter::path_is_flushable
+#define _pl_g_maybe_prepaint_segments Plotter::maybe_prepaint_segments
+#define _pl_g_paint_marker Plotter::paint_marker
+#define _pl_g_paint_path Plotter::paint_path
+#define _pl_g_paint_paths Plotter::paint_paths
+#define _pl_g_paint_point Plotter::paint_point
+#define _pl_g_pop_state Plotter::pop_state
+#define _pl_g_push_state Plotter::push_state
+#define _pl_g_retrieve_font Plotter::retrieve_font
+#define _pl_g_terminate Plotter::terminate
+#define _pl_g_warning Plotter::warning
 /* undocumented public methods that provide access to the font tables
    within libplot/libplotter; for libplotter */
-#define pl_get_hershey_font_info Plotter::get_hershey_font_info
-#define pl_get_ps_font_info Plotter::get_ps_font_info
-#define pl_get_pcl_font_info Plotter::get_pcl_font_info
-#define pl_get_stick_font_info Plotter::get_stick_font_info
+#define _pl_get_hershey_font_info Plotter::_get_hershey_font_info
+#define _pl_get_ps_font_info Plotter::_get_ps_font_info
+#define _pl_get_pcl_font_info Plotter::_get_pcl_font_info
+#define _pl_get_stick_font_info Plotter::_get_stick_font_info
 /* private functions related to the drawing of text strings in Hershey
    fonts (defined in g_alab_her.c), for libplotter  */
-#define _alabel_hershey Plotter::_alabel_hershey
-#define _draw_hershey_glyph Plotter::_draw_hershey_glyph
-#define _draw_hershey_penup_stroke Plotter::_draw_hershey_penup_stroke
-#define _draw_hershey_string Plotter::_draw_hershey_string
-#define _draw_hershey_stroke Plotter::_draw_hershey_stroke
-#define _flabelwidth_hershey Plotter::_flabelwidth_hershey
+#define _pl_g_alabel_hershey Plotter::_g_alabel_hershey
+#define _pl_g_draw_hershey_glyph Plotter::_g_draw_hershey_glyph
+#define _pl_g_draw_hershey_penup_stroke Plotter::_g_draw_hershey_penup_stroke
+#define _pl_g_draw_hershey_string Plotter::_g_draw_hershey_string
+#define _pl_g_draw_hershey_stroke Plotter::_g_draw_hershey_stroke
+#define _pl_g_flabelwidth_hershey Plotter::_g_flabelwidth_hershey
 /* other private functions (a mixed bag), for libplotter */
-#define _controlify Plotter::_controlify
-#define _copy_params_to_plotter Plotter::_copy_params_to_plotter
-#define _create_first_drawing_state Plotter::_create_first_drawing_state
-#define _delete_first_drawing_state Plotter::_delete_first_drawing_state
-#define _free_params_in_plotter Plotter::_free_params_in_plotter
-#define _maybe_replace_arc Plotter::_maybe_replace_arc
-#define _render_non_hershey_string Plotter::_render_non_hershey_string
-#define _render_simple_string Plotter::_render_simple_string
-#define _set_font Plotter::_set_font
+#define _pl_g_controlify Plotter::_g_controlify
+#define _pl_g_copy_params_to_plotter Plotter::_g_copy_params_to_plotter
+#define _pl_g_create_first_drawing_state Plotter::_g_create_first_drawing_state
+#define _pl_g_delete_first_drawing_state Plotter::_g_delete_first_drawing_state
+#define _pl_g_free_params_in_plotter Plotter::_g_free_params_in_plotter
+#define _pl_g_maybe_replace_arc Plotter::_g_maybe_replace_arc
+#define _pl_g_render_non_hershey_string Plotter::_g_render_non_hershey_string
+#define _pl_g_render_simple_string Plotter::_g_render_simple_string
+#define _pl_g_set_font Plotter::_g_set_font
 /* other protected functions (a mixed bag), for libplotter */
-#define _flush_plotter_outstreams Plotter::_flush_plotter_outstreams
+#define _pl_g_flush_plotter_outstreams Plotter::_flush_plotter_outstreams
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* MetaPlotter protected methods, for libplot */
-extern bool _m_begin_page P___((Plotter *_plotter));
-extern bool _m_end_page P___((Plotter *_plotter));
-extern bool _m_erase_page P___((Plotter *_plotter));
-extern bool _m_paint_marker P___((Plotter *_plotter, int type, double size));
-extern bool _m_paint_paths P___((Plotter *_plotter));
-extern bool _m_path_is_flushable P___((Plotter *_plotter));
-extern void _m_initialize P___((Plotter *_plotter));
-extern void _m_maybe_prepaint_segments P___((Plotter *_plotter, int prev_num_segments));
-extern void _m_paint_path P___((Plotter *_plotter));
-extern void _m_paint_point P___((Plotter *_plotter));
-extern void _m_paint_text_string_with_escapes P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
-extern void _m_terminate P___((Plotter *_plotter));
+extern bool _pl_m_begin_page (Plotter *_plotter);
+extern bool _pl_m_end_page (Plotter *_plotter);
+extern bool _pl_m_erase_page (Plotter *_plotter);
+extern bool _pl_m_paint_marker (Plotter *_plotter, int type, double size);
+extern bool _pl_m_paint_paths (Plotter *_plotter);
+extern bool _pl_m_path_is_flushable (Plotter *_plotter);
+extern void _pl_m_initialize (Plotter *_plotter);
+extern void _pl_m_maybe_prepaint_segments (Plotter *_plotter, int prev_num_segments);
+extern void _pl_m_paint_path (Plotter *_plotter);
+extern void _pl_m_paint_point (Plotter *_plotter);
+extern void _pl_m_paint_text_string_with_escapes (Plotter *_plotter, const unsigned char *s, int h_just, int v_just);
+extern void _pl_m_terminate (Plotter *_plotter);
 /* MetaPlotter-specific internal functions, for libplot */
-extern void _m_emit_integer P___((Plotter *_plotter, int x));
-extern void _m_emit_float P___((Plotter *_plotter, double x));
-extern void _m_emit_op_code P___((Plotter *_plotter, int c));
-extern void _m_emit_string P___((Plotter *_plotter, const char *s));
-extern void _m_emit_terminator P___((Plotter *_plotter));
-extern void _m_paint_path_internal P___((Plotter *_plotter, const plPath *path));
-extern void _m_set_attributes P___((Plotter *_plotter, unsigned int mask));
+extern void _pl_m_emit_integer (Plotter *_plotter, int x);
+extern void _pl_m_emit_float (Plotter *_plotter, double x);
+extern void _pl_m_emit_op_code (Plotter *_plotter, int c);
+extern void _pl_m_emit_string (Plotter *_plotter, const char *s);
+extern void _pl_m_emit_terminator (Plotter *_plotter);
+extern void _pl_m_paint_path_internal (Plotter *_plotter, const plPath *path);
+extern void _pl_m_set_attributes (Plotter *_plotter, unsigned int mask);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* MetaPlotter protected methods, for libplotter */
-#define _m_begin_page MetaPlotter::begin_page
-#define _m_end_page MetaPlotter::end_page
-#define _m_erase_page MetaPlotter::erase_page
-#define _m_paint_text_string_with_escapes MetaPlotter::paint_text_string_with_escapes
-#define _m_initialize MetaPlotter::initialize
-#define _m_path_is_flushable MetaPlotter::path_is_flushable
-#define _m_maybe_prepaint_segments MetaPlotter::maybe_prepaint_segments
-#define _m_paint_marker MetaPlotter::paint_marker
-#define _m_paint_path MetaPlotter::paint_path
-#define _m_paint_paths MetaPlotter::paint_paths
-#define _m_paint_point MetaPlotter::paint_point
-#define _m_terminate MetaPlotter::terminate
+#define _pl_m_begin_page MetaPlotter::begin_page
+#define _pl_m_end_page MetaPlotter::end_page
+#define _pl_m_erase_page MetaPlotter::erase_page
+#define _pl_m_paint_text_string_with_escapes MetaPlotter::paint_text_string_with_escapes
+#define _pl_m_initialize MetaPlotter::initialize
+#define _pl_m_path_is_flushable MetaPlotter::path_is_flushable
+#define _pl_m_maybe_prepaint_segments MetaPlotter::maybe_prepaint_segments
+#define _pl_m_paint_marker MetaPlotter::paint_marker
+#define _pl_m_paint_path MetaPlotter::paint_path
+#define _pl_m_paint_paths MetaPlotter::paint_paths
+#define _pl_m_paint_point MetaPlotter::paint_point
+#define _pl_m_terminate MetaPlotter::terminate
 /* MetaPlotter-specific internal functions, for libplotter */
-#define _m_emit_integer MetaPlotter::_m_emit_integer
-#define _m_emit_float MetaPlotter::_m_emit_float
-#define _m_emit_op_code MetaPlotter::_m_emit_op_code
-#define _m_emit_string MetaPlotter::_m_emit_string
-#define _m_emit_terminator MetaPlotter::_m_emit_terminator
-#define _m_paint_path_internal MetaPlotter::_m_paint_path_internal
-#define _m_set_attributes MetaPlotter::_m_set_attributes
+#define _pl_m_emit_integer MetaPlotter::_m_emit_integer
+#define _pl_m_emit_float MetaPlotter::_m_emit_float
+#define _pl_m_emit_op_code MetaPlotter::_m_emit_op_code
+#define _pl_m_emit_string MetaPlotter::_m_emit_string
+#define _pl_m_emit_terminator MetaPlotter::_m_emit_terminator
+#define _pl_m_paint_path_internal MetaPlotter::_m_paint_path_internal
+#define _pl_m_set_attributes MetaPlotter::_m_set_attributes
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* BitmapPlotter protected methods, for libplot */
-extern bool _b_begin_page P___((Plotter *_plotter));
-extern bool _b_end_page P___((Plotter *_plotter));
-extern bool _b_erase_page P___((Plotter *_plotter));
-extern bool _b_paint_paths P___((Plotter *_plotter));
-extern void _b_initialize P___((Plotter *_plotter));
-extern void _b_paint_path P___((Plotter *_plotter));
-extern void _b_paint_point P___((Plotter *_plotter));
-extern void _b_terminate P___((Plotter *_plotter));
+extern bool _pl_b_begin_page (Plotter *_plotter);
+extern bool _pl_b_end_page (Plotter *_plotter);
+extern bool _pl_b_erase_page (Plotter *_plotter);
+extern bool _pl_b_paint_paths (Plotter *_plotter);
+extern void _pl_b_initialize (Plotter *_plotter);
+extern void _pl_b_paint_path (Plotter *_plotter);
+extern void _pl_b_paint_point (Plotter *_plotter);
+extern void _pl_b_terminate (Plotter *_plotter);
 /* BitmapPlotter internal functions, for libplot (overridden in subclasses) */
-extern int _b_maybe_output_image P___((Plotter *_plotter));
+extern int _pl_b_maybe_output_image (Plotter *_plotter);
 /* other BitmapPlotter internal functions, for libplot */
-extern void _b_delete_image P___((Plotter *_plotter));
-extern void _b_draw_elliptic_arc P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
-extern void _b_draw_elliptic_arc_2 P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
-extern void _b_draw_elliptic_arc_internal P___((Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
-extern void _b_new_image P___((Plotter *_plotter));
+extern void _pl_b_delete_image (Plotter *_plotter);
+extern void _pl_b_draw_elliptic_arc (Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc);
+extern void _pl_b_draw_elliptic_arc_2 (Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc);
+extern void _pl_b_draw_elliptic_arc_internal (Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange);
+extern void _pl_b_new_image (Plotter *_plotter);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* BitmapPlotter protected methods, for libplotter */
-#define _b_begin_page BitmapPlotter::begin_page
-#define _b_end_page BitmapPlotter::end_page
-#define _b_erase_page BitmapPlotter::erase_page
-#define _b_initialize BitmapPlotter::initialize
-#define _b_paint_path BitmapPlotter::paint_path
-#define _b_paint_paths BitmapPlotter::paint_paths
-#define _b_paint_point BitmapPlotter::paint_point
-#define _b_terminate BitmapPlotter::terminate
+#define _pl_b_begin_page BitmapPlotter::begin_page
+#define _pl_b_end_page BitmapPlotter::end_page
+#define _pl_b_erase_page BitmapPlotter::erase_page
+#define _pl_b_initialize BitmapPlotter::initialize
+#define _pl_b_paint_path BitmapPlotter::paint_path
+#define _pl_b_paint_paths BitmapPlotter::paint_paths
+#define _pl_b_paint_point BitmapPlotter::paint_point
+#define _pl_b_terminate BitmapPlotter::terminate
 /* BitmapPlotter internal functions (overriden in subclasses) */
-#define _b_maybe_output_image BitmapPlotter::_maybe_output_image
+#define _pl_b_maybe_output_image BitmapPlotter::_maybe_output_image
 /* other BitmapPlotter internal functions, for libplotter */
-#define _b_delete_image BitmapPlotter::_b_delete_image
-#define _b_draw_elliptic_arc BitmapPlotter::_b_draw_elliptic_arc
-#define _b_draw_elliptic_arc_2 BitmapPlotter::_b_draw_elliptic_arc_2
-#define _b_draw_elliptic_arc_internal BitmapPlotter::_b_draw_elliptic_arc_internal
-#define _b_new_image BitmapPlotter::_b_new_image 
+#define _pl_b_delete_image BitmapPlotter::_b_delete_image
+#define _pl_b_draw_elliptic_arc BitmapPlotter::_b_draw_elliptic_arc
+#define _pl_b_draw_elliptic_arc_2 BitmapPlotter::_b_draw_elliptic_arc_2
+#define _pl_b_draw_elliptic_arc_internal BitmapPlotter::_b_draw_elliptic_arc_internal
+#define _pl_b_new_image BitmapPlotter::_b_new_image 
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* TekPlotter protected methods, for libplot */
-extern bool _t_begin_page P___((Plotter *_plotter));
-extern bool _t_end_page P___((Plotter *_plotter));
-extern bool _t_erase_page P___((Plotter *_plotter));
-extern bool _t_path_is_flushable P___((Plotter *_plotter));
-extern void _t_initialize P___((Plotter *_plotter));
-extern void _t_maybe_prepaint_segments P___((Plotter *_plotter, int prev_num_segments));
-extern void _t_paint_point P___((Plotter *_plotter));
-extern void _t_terminate P___((Plotter *_plotter));
+extern bool _pl_t_begin_page (Plotter *_plotter);
+extern bool _pl_t_end_page (Plotter *_plotter);
+extern bool _pl_t_erase_page (Plotter *_plotter);
+extern bool _pl_t_path_is_flushable (Plotter *_plotter);
+extern void _pl_t_initialize (Plotter *_plotter);
+extern void _pl_t_maybe_prepaint_segments (Plotter *_plotter, int prev_num_segments);
+extern void _pl_t_paint_point (Plotter *_plotter);
+extern void _pl_t_terminate (Plotter *_plotter);
 /* TekPlotter internal functions, for libplot */
-extern void _t_set_attributes P___((Plotter *_plotter));
-extern void _t_set_bg_color P___((Plotter *_plotter));
-extern void _t_set_pen_color P___((Plotter *_plotter));
-extern void _tek_mode P___((Plotter *_plotter, int newmode));
-extern void _tek_move P___((Plotter *_plotter, int xx, int yy));
-extern void _tek_vector P___((Plotter *_plotter, int xx, int yy));
-extern void _tek_vector_compressed P___((Plotter *_plotter, int xx, int yy, int oldxx, int oldyy, bool force));
+extern void _pl_t_set_attributes (Plotter *_plotter);
+extern void _pl_t_set_bg_color (Plotter *_plotter);
+extern void _pl_t_set_pen_color (Plotter *_plotter);
+extern void _pl_t_tek_mode (Plotter *_plotter, int newmode);
+extern void _pl_t_tek_move (Plotter *_plotter, int xx, int yy);
+extern void _pl_t_tek_vector_compressed (Plotter *_plotter, int xx, int yy, int oldxx, int oldyy, bool force);
+extern void _pl_t_tek_vector (Plotter *_plotter, int xx, int yy);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* TekPlotter protected methods, for libplotter */
-#define _t_begin_page TekPlotter::begin_page
-#define _t_end_page TekPlotter::end_page
-#define _t_erase_page TekPlotter::erase_page
-#define _t_initialize TekPlotter::initialize
-#define _t_path_is_flushable TekPlotter::path_is_flushable
-#define _t_maybe_prepaint_segments TekPlotter::maybe_prepaint_segments
-#define _t_paint_point TekPlotter::paint_point
-#define _t_terminate TekPlotter::terminate
+#define _pl_t_begin_page TekPlotter::begin_page
+#define _pl_t_end_page TekPlotter::end_page
+#define _pl_t_erase_page TekPlotter::erase_page
+#define _pl_t_initialize TekPlotter::initialize
+#define _pl_t_path_is_flushable TekPlotter::path_is_flushable
+#define _pl_t_maybe_prepaint_segments TekPlotter::maybe_prepaint_segments
+#define _pl_t_paint_point TekPlotter::paint_point
+#define _pl_t_terminate TekPlotter::terminate
 /* TekPlotter internal functions, for libplotter */
-#define _t_set_attributes TekPlotter::_t_set_attributes
-#define _t_set_bg_color TekPlotter::_t_set_bg_color
-#define _t_set_pen_color TekPlotter::_t_set_pen_color
-#define _tek_mode TekPlotter::_tek_mode
-#define _tek_move TekPlotter::_tek_move
-#define _tek_vector TekPlotter::_tek_vector
-#define _tek_vector_compressed TekPlotter::_tek_vector_compressed
+#define _pl_t_set_attributes TekPlotter::_t_set_attributes
+#define _pl_t_set_bg_color TekPlotter::_t_set_bg_color
+#define _pl_t_set_pen_color TekPlotter::_t_set_pen_color
+#define _pl_t_tek_mode TekPlotter::_t_tek_mode
+#define _pl_t_tek_move TekPlotter::_t_tek_move
+#define _pl_t_tek_vector TekPlotter::_t_tek_vector
+#define _pl_t_tek_vector_compressed TekPlotter::_t_tek_vector_compressed
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* ReGISPlotter protected methods, for libplot */
-extern bool _r_begin_page P___((Plotter *_plotter));
-extern bool _r_end_page P___((Plotter *_plotter));
-extern bool _r_erase_page P___((Plotter *_plotter));
-extern bool _r_paint_paths P___((Plotter *_plotter));
-extern bool _r_path_is_flushable P___((Plotter *_plotter));
-extern void _r_initialize P___((Plotter *_plotter));
-extern void _r_maybe_prepaint_segments P___((Plotter *_plotter, int prev_num_segments));
-extern void _r_paint_path P___((Plotter *_plotter));
-extern void _r_paint_point P___((Plotter *_plotter));
-extern void _r_terminate P___((Plotter *_plotter));
+extern bool _pl_r_begin_page (Plotter *_plotter);
+extern bool _pl_r_end_page (Plotter *_plotter);
+extern bool _pl_r_erase_page (Plotter *_plotter);
+extern bool _pl_r_paint_paths (Plotter *_plotter);
+extern bool _pl_r_path_is_flushable (Plotter *_plotter);
+extern void _pl_r_initialize (Plotter *_plotter);
+extern void _pl_r_maybe_prepaint_segments (Plotter *_plotter, int prev_num_segments);
+extern void _pl_r_paint_path (Plotter *_plotter);
+extern void _pl_r_paint_point (Plotter *_plotter);
+extern void _pl_r_terminate (Plotter *_plotter);
 /* ReGISPlotter internal functions, for libplot */
-extern void _r_set_attributes P___((Plotter *_plotter));
-extern void _r_set_bg_color P___((Plotter *_plotter));
-extern void _r_set_fill_color P___((Plotter *_plotter));
-extern void _r_set_pen_color P___((Plotter *_plotter));
-extern void _regis_move P___((Plotter *_plotter, int xx, int yy));
+extern void _pl_r_regis_move (Plotter *_plotter, int xx, int yy);
+extern void _pl_r_set_attributes (Plotter *_plotter);
+extern void _pl_r_set_bg_color (Plotter *_plotter);
+extern void _pl_r_set_fill_color (Plotter *_plotter);
+extern void _pl_r_set_pen_color (Plotter *_plotter);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* ReGISPlotter protected methods, for libplotter */
-#define _r_begin_page ReGISPlotter::begin_page
-#define _r_end_page ReGISPlotter::end_page
-#define _r_erase_page ReGISPlotter::erase_page
-#define _r_initialize ReGISPlotter::initialize
-#define _r_path_is_flushable ReGISPlotter::path_is_flushable
-#define _r_maybe_prepaint_segments ReGISPlotter::maybe_prepaint_segments
-#define _r_paint_path ReGISPlotter::paint_path
-#define _r_paint_paths ReGISPlotter::paint_paths
-#define _r_paint_point ReGISPlotter::paint_point
-#define _r_terminate ReGISPlotter::terminate
+#define _pl_r_begin_page ReGISPlotter::begin_page
+#define _pl_r_end_page ReGISPlotter::end_page
+#define _pl_r_erase_page ReGISPlotter::erase_page
+#define _pl_r_initialize ReGISPlotter::initialize
+#define _pl_r_path_is_flushable ReGISPlotter::path_is_flushable
+#define _pl_r_maybe_prepaint_segments ReGISPlotter::maybe_prepaint_segments
+#define _pl_r_paint_path ReGISPlotter::paint_path
+#define _pl_r_paint_paths ReGISPlotter::paint_paths
+#define _pl_r_paint_point ReGISPlotter::paint_point
+#define _pl_r_terminate ReGISPlotter::terminate
 /* ReGISPlotter internal functions, for libplotter */
-#define _r_set_attributes ReGISPlotter::_r_set_attributes
-#define _r_set_bg_color ReGISPlotter::_r_set_bg_color
-#define _r_set_fill_color ReGISPlotter::_r_set_fill_color
-#define _r_set_pen_color ReGISPlotter::_r_set_pen_color
-#define _regis_move ReGISPlotter::_regis_move
+#define _pl_r_regis_move ReGISPlotter::_r_regis_move
+#define _pl_r_set_attributes ReGISPlotter::_r_set_attributes
+#define _pl_r_set_bg_color ReGISPlotter::_r_set_bg_color
+#define _pl_r_set_fill_color ReGISPlotter::_r_set_fill_color
+#define _pl_r_set_pen_color ReGISPlotter::_r_set_pen_color
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* HPGLPlotter/PCLPlotter protected methods, for libplot */
-extern bool _h_begin_page P___((Plotter *_plotter));
-extern bool _h_end_page P___((Plotter *_plotter));
-extern bool _h_erase_page P___((Plotter *_plotter));
-extern bool _h_paint_paths P___((Plotter *_plotter));
-extern double _h_paint_text_string P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
-extern void _h_paint_point P___((Plotter *_plotter));
-extern void _h_paint_path P___((Plotter *_plotter));
+extern bool _pl_h_begin_page (Plotter *_plotter);
+extern bool _pl_h_end_page (Plotter *_plotter);
+extern bool _pl_h_erase_page (Plotter *_plotter);
+extern bool _pl_h_paint_paths (Plotter *_plotter);
+extern double _pl_h_paint_text_string (Plotter *_plotter, const unsigned char *s, int h_just, int v_just);
+extern void _pl_h_paint_point (Plotter *_plotter);
+extern void _pl_h_paint_path (Plotter *_plotter);
 /* HPGLPlotter protected methods, for libplot */
-extern void _h_initialize P___((Plotter *_plotter));
-extern void _h_terminate P___((Plotter *_plotter));
+extern void _pl_h_initialize (Plotter *_plotter);
+extern void _pl_h_terminate (Plotter *_plotter);
 /* PCLPlotter protected methods, for libplot */
-extern void _q_initialize P___((Plotter *_plotter));
-extern void _q_terminate P___((Plotter *_plotter));
+extern void _pl_q_initialize (Plotter *_plotter);
+extern void _pl_q_terminate (Plotter *_plotter);
 /* HPGLPlotter/PCLPlotter internal functions, for libplot */
-extern bool _hpgl2_maybe_update_font P___((Plotter *_plotter));
-extern bool _hpgl_maybe_update_font P___((Plotter *_plotter));
-extern bool _parse_pen_string P___((Plotter *_plotter, const char *pen_s));
-extern int _hpgl_pseudocolor P___((Plotter *_plotter, int red, int green, int blue, bool restrict_white));
-extern void _h_set_attributes P___((Plotter *_plotter));
-extern void _h_set_fill_color P___((Plotter *_plotter, bool force_pen_color));
-extern void _h_set_font P___((Plotter *_plotter));
-extern void _h_set_pen_color P___((Plotter *_plotter, int hpgl_object_type));
-extern void _h_set_position P___((Plotter *_plotter));
-extern void _hpgl_shaded_pseudocolor P___((Plotter *_plotter, int red, int green, int blue, int *pen, double *shading));
-extern void _set_hpgl_fill_type P___((Plotter *_plotter, int fill_type, double option1, double option2));
-extern void _set_hpgl_pen P___((Plotter *_plotter, int pen));
-extern void _set_hpgl_pen_type P___((Plotter *_plotter, int pen_type, double option1, double option2));
+extern bool _pl_h_hpgl2_maybe_update_font (Plotter *_plotter);
+extern bool _pl_h_hpgl_maybe_update_font (Plotter *_plotter);
+extern bool _pl_h_parse_pen_string (Plotter *_plotter, const char *pen_s);
+extern int _pl_h_hpgl_pseudocolor (Plotter *_plotter, int red, int green, int blue, bool restrict_white);
+extern void _pl_h_hpgl_shaded_pseudocolor (Plotter *_plotter, int red, int green, int blue, int *pen, double *shading);
+extern void _pl_h_set_attributes (Plotter *_plotter);
+extern void _pl_h_set_fill_color (Plotter *_plotter, bool force_pen_color);
+extern void _pl_h_set_font (Plotter *_plotter);
+extern void _pl_h_set_hpgl_fill_type (Plotter *_plotter, int fill_type, double option1, double option2);
+extern void _pl_h_set_hpgl_pen (Plotter *_plotter, int pen);
+extern void _pl_h_set_hpgl_pen_type (Plotter *_plotter, int pen_type, double option1, double option2);
+extern void _pl_h_set_pen_color (Plotter *_plotter, int hpgl_object_type);
+extern void _pl_h_set_position (Plotter *_plotter);
 /* HPGLPlotter functions (overridden in PCLPlotter class), for libplotter */
-extern void _h_maybe_switch_to_hpgl P___((Plotter *_plotter)); 
-extern void _h_maybe_switch_from_hpgl P___((Plotter *_plotter)); 
+extern void _pl_h_maybe_switch_to_hpgl (Plotter *_plotter); 
+extern void _pl_h_maybe_switch_from_hpgl (Plotter *_plotter); 
 /* PCLPlotter functions (overriding the above), for libplotter */
-extern void _q_maybe_switch_to_hpgl P___((Plotter *_plotter)); 
-extern void _q_maybe_switch_from_hpgl P___((Plotter *_plotter)); 
+extern void _pl_q_maybe_switch_to_hpgl (Plotter *_plotter); 
+extern void _pl_q_maybe_switch_from_hpgl (Plotter *_plotter); 
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* HPGLPlotter/PCLPlotter protected methods, for libplotter */
-#define _h_begin_page HPGLPlotter::begin_page
-#define _h_end_page HPGLPlotter::end_page
-#define _h_erase_page HPGLPlotter::erase_page
-#define _h_paint_text_string HPGLPlotter::paint_text_string
-#define _h_paint_path HPGLPlotter::paint_path
-#define _h_paint_paths HPGLPlotter::paint_paths
-#define _h_paint_point HPGLPlotter::paint_point
+#define _pl_h_begin_page HPGLPlotter::begin_page
+#define _pl_h_end_page HPGLPlotter::end_page
+#define _pl_h_erase_page HPGLPlotter::erase_page
+#define _pl_h_paint_text_string HPGLPlotter::paint_text_string
+#define _pl_h_paint_path HPGLPlotter::paint_path
+#define _pl_h_paint_paths HPGLPlotter::paint_paths
+#define _pl_h_paint_point HPGLPlotter::paint_point
 /* HPGLPlotter protected methods, for libplotter */
-#define _h_initialize HPGLPlotter::initialize
-#define _h_terminate HPGLPlotter::terminate
+#define _pl_h_initialize HPGLPlotter::initialize
+#define _pl_h_terminate HPGLPlotter::terminate
 /* PCLPlotter protected methods, for libplotter */
-#define _q_initialize PCLPlotter::initialize
-#define _q_terminate PCLPlotter::terminate
+#define _pl_q_initialize PCLPlotter::initialize
+#define _pl_q_terminate PCLPlotter::terminate
 /* HPGLPlotter/PCLPlotter internal functions, for libplotter */
-#define _hpgl_shaded_pseudocolor HPGLPlotter::_hpgl_shaded_pseudocolor
-#define _hpgl2_maybe_update_font HPGLPlotter::_hpgl2_maybe_update_font
-#define _hpgl_maybe_update_font HPGLPlotter::_hpgl_maybe_update_font
-#define _hpgl_pseudocolor HPGLPlotter::_hpgl_pseudocolor
-#define _parse_pen_string HPGLPlotter::_parse_pen_string
-#define _h_set_attributes HPGLPlotter::_h_set_attributes
-#define _h_set_fill_color HPGLPlotter::_h_set_fill_color
-#define _h_set_font HPGLPlotter::_h_set_font
-#define _h_set_pen_color HPGLPlotter::_h_set_pen_color
-#define _h_set_position HPGLPlotter::_h_set_position
-#define _set_hpgl_fill_type HPGLPlotter::_set_hpgl_fill_type
-#define _set_hpgl_pen HPGLPlotter::_set_hpgl_pen
-#define _set_hpgl_pen_type HPGLPlotter::_set_hpgl_pen_type
+#define _pl_h_hpgl2_maybe_update_font HPGLPlotter::_h_hpgl2_maybe_update_font
+#define _pl_h_hpgl_maybe_update_font HPGLPlotter::_h_hpgl_maybe_update_font
+#define _pl_h_hpgl_pseudocolor HPGLPlotter::_h_hpgl_pseudocolor
+#define _pl_h_hpgl_shaded_pseudocolor HPGLPlotter::_h_hpgl_shaded_pseudocolor
+#define _pl_h_parse_pen_string HPGLPlotter::_h_parse_pen_string
+#define _pl_h_set_attributes HPGLPlotter::_h_set_attributes
+#define _pl_h_set_fill_color HPGLPlotter::_h_set_fill_color
+#define _pl_h_set_font HPGLPlotter::_h_set_font
+#define _pl_h_set_hpgl_fill_type HPGLPlotter::_h_set_hpgl_fill_type
+#define _pl_h_set_hpgl_pen HPGLPlotter::_h_set_hpgl_pen
+#define _pl_h_set_hpgl_pen_type HPGLPlotter::_h_set_hpgl_pen_type
+#define _pl_h_set_pen_color HPGLPlotter::_h_set_pen_color
+#define _pl_h_set_position HPGLPlotter::_h_set_position
 /* HPGLPlotter functions (overridden in PCLPlotter class), for libplotter */
-#define _h_maybe_switch_to_hpgl HPGLPlotter::_maybe_switch_to_hpgl
-#define _h_maybe_switch_from_hpgl HPGLPlotter::_maybe_switch_from_hpgl
+#define _pl_h_maybe_switch_to_hpgl HPGLPlotter::_maybe_switch_to_hpgl
+#define _pl_h_maybe_switch_from_hpgl HPGLPlotter::_maybe_switch_from_hpgl
 /* PCLPlotter functions (overriding the above), for libplotter */
-#define _q_maybe_switch_to_hpgl PCLPlotter::_maybe_switch_to_hpgl
-#define _q_maybe_switch_from_hpgl PCLPlotter::_maybe_switch_from_hpgl
+#define _pl_q_maybe_switch_to_hpgl PCLPlotter::_maybe_switch_to_hpgl
+#define _pl_q_maybe_switch_from_hpgl PCLPlotter::_maybe_switch_from_hpgl
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* FigPlotter protected methods, for libplot */
-extern bool _f_begin_page P___((Plotter *_plotter));
-extern bool _f_end_page P___((Plotter *_plotter));
-extern bool _f_erase_page P___((Plotter *_plotter));
-extern bool _f_paint_paths P___((Plotter *_plotter));
-extern bool _f_retrieve_font P___((Plotter *_plotter));
-extern double _f_paint_text_string P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
-extern void _f_initialize P___((Plotter *_plotter));
-extern void _f_paint_path P___((Plotter *_plotter));
-extern void _f_paint_point P___((Plotter *_plotter));
-extern void _f_terminate P___((Plotter *_plotter));
+extern bool _pl_f_begin_page (Plotter *_plotter);
+extern bool _pl_f_end_page (Plotter *_plotter);
+extern bool _pl_f_erase_page (Plotter *_plotter);
+extern bool _pl_f_paint_paths (Plotter *_plotter);
+extern bool _pl_f_retrieve_font (Plotter *_plotter);
+extern double _pl_f_paint_text_string (Plotter *_plotter, const unsigned char *s, int h_just, int v_just);
+extern void _pl_f_initialize (Plotter *_plotter);
+extern void _pl_f_paint_path (Plotter *_plotter);
+extern void _pl_f_paint_point (Plotter *_plotter);
+extern void _pl_f_terminate (Plotter *_plotter);
 /* FigPlotter internal functions, for libplot */
-extern int _fig_color P___((Plotter *_plotter, int red, int green, int blue));
-extern void _f_compute_line_style P___((Plotter *_plotter, int *style, double *spacing));
-extern void _f_draw_arc_internal P___((Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1));
-extern void _f_draw_box_internal P___((Plotter *_plotter, plPoint p0, plPoint p1));
-extern void _f_draw_ellipse_internal P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle, int subtype));
-extern void _f_set_fill_color P___((Plotter *_plotter));
-extern void _f_set_pen_color P___((Plotter *_plotter));
+extern int _pl_f_fig_color (Plotter *_plotter, int red, int green, int blue);
+extern void _pl_f_compute_line_style (Plotter *_plotter, int *style, double *spacing);
+extern void _pl_f_draw_arc_internal (Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1);
+extern void _pl_f_draw_box_internal (Plotter *_plotter, plPoint p0, plPoint p1);
+extern void _pl_f_draw_ellipse_internal (Plotter *_plotter, double x, double y, double rx, double ry, double angle, int subtype);
+extern void _pl_f_set_fill_color (Plotter *_plotter);
+extern void _pl_f_set_pen_color (Plotter *_plotter);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* FigPlotter protected methods, for libplotter */
-#define _f_begin_page FigPlotter::begin_page
-#define _f_end_page FigPlotter::end_page
-#define _f_erase_page FigPlotter::erase_page
-#define _f_paint_text_string FigPlotter::paint_text_string
-#define _f_initialize FigPlotter::initialize
-#define _f_paint_path FigPlotter::paint_path
-#define _f_paint_paths FigPlotter::paint_paths
-#define _f_paint_point FigPlotter::paint_point
-#define _f_retrieve_font FigPlotter::retrieve_font
-#define _f_terminate FigPlotter::terminate
+#define _pl_f_begin_page FigPlotter::begin_page
+#define _pl_f_end_page FigPlotter::end_page
+#define _pl_f_erase_page FigPlotter::erase_page
+#define _pl_f_paint_text_string FigPlotter::paint_text_string
+#define _pl_f_initialize FigPlotter::initialize
+#define _pl_f_paint_path FigPlotter::paint_path
+#define _pl_f_paint_paths FigPlotter::paint_paths
+#define _pl_f_paint_point FigPlotter::paint_point
+#define _pl_f_retrieve_font FigPlotter::retrieve_font
+#define _pl_f_terminate FigPlotter::terminate
 /* FigPlotter internal functions, for libplotter */
-#define _f_compute_line_style FigPlotter::_f_compute_line_style
-#define _f_draw_arc_internal FigPlotter::_f_draw_arc_internal
-#define _f_draw_box_internal FigPlotter::_f_draw_box_internal
-#define _f_draw_ellipse_internal FigPlotter::_f_draw_ellipse_internal
-#define _f_set_fill_color FigPlotter::_f_set_fill_color
-#define _f_set_pen_color FigPlotter::_f_set_pen_color
-#define _fig_color FigPlotter::_fig_color
+#define _pl_f_compute_line_style FigPlotter::_f_compute_line_style
+#define _pl_f_draw_arc_internal FigPlotter::_f_draw_arc_internal
+#define _pl_f_draw_box_internal FigPlotter::_f_draw_box_internal
+#define _pl_f_draw_ellipse_internal FigPlotter::_f_draw_ellipse_internal
+#define _pl_f_fig_color FigPlotter::_f_fig_color
+#define _pl_f_set_fill_color FigPlotter::_f_set_fill_color
+#define _pl_f_set_pen_color FigPlotter::_f_set_pen_color
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* CGMPlotter protected methods, for libplot */
-extern bool _c_begin_page P___((Plotter *_plotter));
-extern bool _c_end_page P___((Plotter *_plotter));
-extern bool _c_erase_page P___((Plotter *_plotter));
-extern bool _c_paint_marker P___((Plotter *_plotter, int type, double size));
-extern bool _c_paint_paths P___((Plotter *_plotter));
-extern double _c_paint_text_string P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
-extern void _c_initialize P___((Plotter *_plotter));
-extern void _c_paint_path P___((Plotter *_plotter));
-extern void _c_paint_point P___((Plotter *_plotter));
-extern void _c_terminate P___((Plotter *_plotter));
+extern bool _pl_c_begin_page (Plotter *_plotter);
+extern bool _pl_c_end_page (Plotter *_plotter);
+extern bool _pl_c_erase_page (Plotter *_plotter);
+extern bool _pl_c_paint_marker (Plotter *_plotter, int type, double size);
+extern bool _pl_c_paint_paths (Plotter *_plotter);
+extern double _pl_c_paint_text_string (Plotter *_plotter, const unsigned char *s, int h_just, int v_just);
+extern void _pl_c_initialize (Plotter *_plotter);
+extern void _pl_c_paint_path (Plotter *_plotter);
+extern void _pl_c_paint_point (Plotter *_plotter);
+extern void _pl_c_terminate (Plotter *_plotter);
 /* CGMPlotter internal functions, for libplot */
-extern void _c_set_attributes P___((Plotter *_plotter, int cgm_object_type));
-extern void _c_set_bg_color P___((Plotter *_plotter));
-extern void _c_set_fill_color P___((Plotter *_plotter, int cgm_object_type));
-extern void _c_set_pen_color P___((Plotter *_plotter, int cgm_object_type));
+extern void _pl_c_set_attributes (Plotter *_plotter, int cgm_object_type);
+extern void _pl_c_set_bg_color (Plotter *_plotter);
+extern void _pl_c_set_fill_color (Plotter *_plotter, int cgm_object_type);
+extern void _pl_c_set_pen_color (Plotter *_plotter, int cgm_object_type);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* CGMPlotter protected methods, for libplotter */
-#define _c_begin_page CGMPlotter::begin_page
-#define _c_end_page CGMPlotter::end_page
-#define _c_erase_page CGMPlotter::erase_page
-#define _c_paint_text_string CGMPlotter::paint_text_string
-#define _c_initialize CGMPlotter::initialize
-#define _c_paint_marker CGMPlotter::paint_marker
-#define _c_paint_path CGMPlotter::paint_path
-#define _c_paint_paths CGMPlotter::paint_paths
-#define _c_paint_point CGMPlotter::paint_point
-#define _c_terminate CGMPlotter::terminate
+#define _pl_c_begin_page CGMPlotter::begin_page
+#define _pl_c_end_page CGMPlotter::end_page
+#define _pl_c_erase_page CGMPlotter::erase_page
+#define _pl_c_paint_text_string CGMPlotter::paint_text_string
+#define _pl_c_initialize CGMPlotter::initialize
+#define _pl_c_paint_marker CGMPlotter::paint_marker
+#define _pl_c_paint_path CGMPlotter::paint_path
+#define _pl_c_paint_paths CGMPlotter::paint_paths
+#define _pl_c_paint_point CGMPlotter::paint_point
+#define _pl_c_terminate CGMPlotter::terminate
 /* CGMPlotter internal functions, for libplotter */
-#define _c_set_attributes CGMPlotter::_c_set_attributes
-#define _c_set_bg_color CGMPlotter::_c_set_bg_color
-#define _c_set_fill_color CGMPlotter::_c_set_fill_color
-#define _c_set_pen_color CGMPlotter::_c_set_pen_color
+#define _pl_c_set_attributes CGMPlotter::_c_set_attributes
+#define _pl_c_set_bg_color CGMPlotter::_c_set_bg_color
+#define _pl_c_set_fill_color CGMPlotter::_c_set_fill_color
+#define _pl_c_set_pen_color CGMPlotter::_c_set_pen_color
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* PSPlotter protected methods, for libplot */
-extern bool _p_begin_page P___((Plotter *_plotter));
-extern bool _p_end_page P___((Plotter *_plotter));
-extern bool _p_erase_page P___((Plotter *_plotter));
-extern bool _p_paint_paths P___((Plotter *_plotter));
-extern double _p_paint_text_string P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
-extern void _p_initialize P___((Plotter *_plotter));
-extern void _p_paint_path P___((Plotter *_plotter));
-extern void _p_paint_point P___((Plotter *_plotter));
-extern void _p_terminate P___((Plotter *_plotter));
+extern bool _pl_p_begin_page (Plotter *_plotter);
+extern bool _pl_p_end_page (Plotter *_plotter);
+extern bool _pl_p_erase_page (Plotter *_plotter);
+extern bool _pl_p_paint_paths (Plotter *_plotter);
+extern double _pl_p_paint_text_string (Plotter *_plotter, const unsigned char *s, int h_just, int v_just);
+extern void _pl_p_initialize (Plotter *_plotter);
+extern void _pl_p_paint_path (Plotter *_plotter);
+extern void _pl_p_paint_point (Plotter *_plotter);
+extern void _pl_p_terminate (Plotter *_plotter);
 /* PSPlotter internal functions, for libplot */
-extern double _p_emit_common_attributes P___((Plotter *_plotter));
-extern void _p_compute_idraw_bgcolor P___((Plotter *_plotter));
-extern void _p_fellipse_internal P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle, bool circlep));
-extern void _p_set_fill_color P___((Plotter *_plotter));
-extern void _p_set_pen_color P___((Plotter *_plotter));
+extern double _pl_p_emit_common_attributes (Plotter *_plotter);
+extern void _pl_p_compute_idraw_bgcolor (Plotter *_plotter);
+extern void _pl_p_fellipse_internal (Plotter *_plotter, double x, double y, double rx, double ry, double angle, bool circlep);
+extern void _pl_p_set_fill_color (Plotter *_plotter);
+extern void _pl_p_set_pen_color (Plotter *_plotter);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* PSPlotter protected methods, for libplotter */
-#define _p_begin_page PSPlotter::begin_page
-#define _p_end_page PSPlotter::end_page
-#define _p_erase_page PSPlotter::erase_page
-#define _p_paint_text_string PSPlotter::paint_text_string
-#define _p_initialize PSPlotter::initialize
-#define _p_paint_path PSPlotter::paint_path
-#define _p_paint_paths PSPlotter::paint_paths
-#define _p_paint_point PSPlotter::paint_point
-#define _p_terminate PSPlotter::terminate
+#define _pl_p_begin_page PSPlotter::begin_page
+#define _pl_p_end_page PSPlotter::end_page
+#define _pl_p_erase_page PSPlotter::erase_page
+#define _pl_p_paint_text_string PSPlotter::paint_text_string
+#define _pl_p_initialize PSPlotter::initialize
+#define _pl_p_paint_path PSPlotter::paint_path
+#define _pl_p_paint_paths PSPlotter::paint_paths
+#define _pl_p_paint_point PSPlotter::paint_point
+#define _pl_p_terminate PSPlotter::terminate
 /* PSPlotter internal functions, for libplotter */
-#define _p_compute_idraw_bgcolor PSPlotter::_p_compute_idraw_bgcolor
-#define _p_emit_common_attributes PSPlotter::_p_emit_common_attributes
-#define _p_fellipse_internal PSPlotter::_p_fellipse_internal
-#define _p_set_fill_color PSPlotter::_p_set_fill_color
-#define _p_set_pen_color PSPlotter::_p_set_pen_color
+#define _pl_p_compute_idraw_bgcolor PSPlotter::_p_compute_idraw_bgcolor
+#define _pl_p_emit_common_attributes PSPlotter::_p_emit_common_attributes
+#define _pl_p_fellipse_internal PSPlotter::_p_fellipse_internal
+#define _pl_p_set_fill_color PSPlotter::_p_set_fill_color
+#define _pl_p_set_pen_color PSPlotter::_p_set_pen_color
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* AIPlotter protected methods, for libplot */
-extern bool _a_begin_page P___((Plotter *_plotter));
-extern bool _a_end_page P___((Plotter *_plotter));
-extern bool _a_erase_page P___((Plotter *_plotter));
-extern bool _a_paint_paths P___((Plotter *_plotter));
-extern double _a_paint_text_string P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
-extern void _a_initialize P___((Plotter *_plotter));
-extern void _a_paint_path P___((Plotter *_plotter));
-extern void _a_paint_point P___((Plotter *_plotter));
-extern void _a_terminate P___((Plotter *_plotter));
+extern bool _pl_a_begin_page (Plotter *_plotter);
+extern bool _pl_a_end_page (Plotter *_plotter);
+extern bool _pl_a_erase_page (Plotter *_plotter);
+extern bool _pl_a_paint_paths (Plotter *_plotter);
+extern double _pl_a_paint_text_string (Plotter *_plotter, const unsigned char *s, int h_just, int v_just);
+extern void _pl_a_initialize (Plotter *_plotter);
+extern void _pl_a_paint_path (Plotter *_plotter);
+extern void _pl_a_paint_point (Plotter *_plotter);
+extern void _pl_a_terminate (Plotter *_plotter);
 /* AIPlotter internal functions, for libplot */
-extern void _a_set_attributes P___((Plotter *_plotter));
-extern void _a_set_fill_color P___((Plotter *_plotter, bool force_pen_color));
-extern void _a_set_pen_color P___((Plotter *_plotter));
+extern void _pl_a_set_attributes (Plotter *_plotter);
+extern void _pl_a_set_fill_color (Plotter *_plotter, bool force_pen_color);
+extern void _pl_a_set_pen_color (Plotter *_plotter);
+___END_DECLS
 #else /* LIBPLOTTER */
 /* AIPlotter protected methods, for libplotter */
-#define _a_begin_page AIPlotter::begin_page
-#define _a_end_page AIPlotter::end_page
-#define _a_erase_page AIPlotter::erase_page
-#define _a_paint_text_string AIPlotter::paint_text_string
-#define _a_initialize AIPlotter::initialize
-#define _a_paint_path AIPlotter::paint_path
-#define _a_paint_paths AIPlotter::paint_paths
-#define _a_paint_point AIPlotter::paint_point
-#define _a_terminate AIPlotter::terminate
+#define _pl_a_begin_page AIPlotter::begin_page
+#define _pl_a_end_page AIPlotter::end_page
+#define _pl_a_erase_page AIPlotter::erase_page
+#define _pl_a_paint_text_string AIPlotter::paint_text_string
+#define _pl_a_initialize AIPlotter::initialize
+#define _pl_a_paint_path AIPlotter::paint_path
+#define _pl_a_paint_paths AIPlotter::paint_paths
+#define _pl_a_paint_point AIPlotter::paint_point
+#define _pl_a_terminate AIPlotter::terminate
 /* AIPlotter internal functions, for libplotter */
-#define _a_set_attributes AIPlotter::_a_set_attributes
-#define _a_set_fill_color AIPlotter::_a_set_fill_color
-#define _a_set_pen_color AIPlotter::_a_set_pen_color
+#define _pl_a_set_attributes AIPlotter::_a_set_attributes
+#define _pl_a_set_fill_color AIPlotter::_a_set_fill_color
+#define _pl_a_set_pen_color AIPlotter::_a_set_pen_color
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* SVGPlotter protected methods, for libplot */
-extern bool _s_begin_page P___((Plotter *_plotter));
-extern bool _s_end_page P___((Plotter *_plotter));
-extern bool _s_erase_page P___((Plotter *_plotter));
-extern bool _s_paint_paths P___((Plotter *_plotter));
-extern double _s_paint_text_string P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
-extern void _s_initialize P___((Plotter *_plotter));
-extern void _s_paint_path P___((Plotter *_plotter));
-extern void _s_paint_point P___((Plotter *_plotter));
-extern void _s_terminate P___((Plotter *_plotter));
+extern bool _pl_s_begin_page (Plotter *_plotter);
+extern bool _pl_s_end_page (Plotter *_plotter);
+extern bool _pl_s_erase_page (Plotter *_plotter);
+extern bool _pl_s_paint_paths (Plotter *_plotter);
+extern double _pl_s_paint_text_string (Plotter *_plotter, const unsigned char *s, int h_just, int v_just);
+extern void _pl_s_initialize (Plotter *_plotter);
+extern void _pl_s_paint_path (Plotter *_plotter);
+extern void _pl_s_paint_point (Plotter *_plotter);
+extern void _pl_s_terminate (Plotter *_plotter);
 /* PSPlotter internal functions, for libplot */
-extern void _s_set_matrix P___((Plotter *_plotter, const double m_base[6], const double m_local[6]));
+extern void _pl_s_set_matrix (Plotter *_plotter, const double m_local[6]);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* SVGPlotter protected methods, for libplotter */
-#define _s_begin_page SVGPlotter::begin_page
-#define _s_end_page SVGPlotter::end_page
-#define _s_erase_page SVGPlotter::erase_page
-#define _s_paint_text_string SVGPlotter::paint_text_string
-#define _s_initialize SVGPlotter::initialize
-#define _s_paint_path SVGPlotter::paint_path
-#define _s_paint_paths SVGPlotter::paint_paths
-#define _s_paint_point SVGPlotter::paint_point
-#define _s_terminate SVGPlotter::terminate
+#define _pl_s_begin_page SVGPlotter::begin_page
+#define _pl_s_end_page SVGPlotter::end_page
+#define _pl_s_erase_page SVGPlotter::erase_page
+#define _pl_s_paint_text_string SVGPlotter::paint_text_string
+#define _pl_s_initialize SVGPlotter::initialize
+#define _pl_s_paint_path SVGPlotter::paint_path
+#define _pl_s_paint_paths SVGPlotter::paint_paths
+#define _pl_s_paint_point SVGPlotter::paint_point
+#define _pl_s_terminate SVGPlotter::terminate
 /* SVGPlotter internal functions, for libplotter */
-#define _s_set_matrix SVGPlotter::_s_set_matrix
+#define _pl_s_set_matrix SVGPlotter::_s_set_matrix
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* PNMPlotter protected methods, for libplot */
-extern void _n_initialize P___((Plotter *_plotter));
-extern void _n_terminate P___((Plotter *_plotter));
+extern void _pl_n_initialize (Plotter *_plotter);
+extern void _pl_n_terminate (Plotter *_plotter);
 /* PNMPlotter internal functions (which override BitmapPlotter functions) */
-extern int _n_maybe_output_image P___((Plotter *_plotter));
+extern int _pl_n_maybe_output_image (Plotter *_plotter);
 /* other PNMPlotter internal functions, for libplot */
-extern void _n_write_pnm P___((Plotter *_plotter));
-extern void _n_write_pbm P___((Plotter *_plotter));
-extern void _n_write_pgm P___((Plotter *_plotter));
-extern void _n_write_ppm P___((Plotter *_plotter));
+extern void _pl_n_write_pnm (Plotter *_plotter);
+extern void _pl_n_write_pbm (Plotter *_plotter);
+extern void _pl_n_write_pgm (Plotter *_plotter);
+extern void _pl_n_write_ppm (Plotter *_plotter);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* PNMPlotter protected methods, for libplotter */
-#define _n_initialize PNMPlotter::initialize
-#define _n_terminate PNMPlotter::terminate
+#define _pl_n_initialize PNMPlotter::initialize
+#define _pl_n_terminate PNMPlotter::terminate
 /* PNMPlotter internal methods (which override BitmapPlotter methods) */
-#define _n_maybe_output_image PNMPlotter::_maybe_output_image
+#define _pl_n_maybe_output_image PNMPlotter::_maybe_output_image
 /* other PNMPlotter internal functions, for libplotter */
-#define _n_write_pnm PNMPlotter::_n_write_pnm
-#define _n_write_pbm PNMPlotter::_n_write_pbm
-#define _n_write_pgm PNMPlotter::_n_write_pgm
-#define _n_write_ppm PNMPlotter::_n_write_ppm
+#define _pl_n_write_pnm PNMPlotter::_n_write_pnm
+#define _pl_n_write_pbm PNMPlotter::_n_write_pbm
+#define _pl_n_write_pgm PNMPlotter::_n_write_pgm
+#define _pl_n_write_ppm PNMPlotter::_n_write_ppm
 #endif /* LIBPLOTTER */
 
 #ifdef INCLUDE_PNG_SUPPORT
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* PNGPlotter protected methods, for libplot */
-extern void _z_initialize P___((Plotter *_plotter));
-extern void _z_terminate P___((Plotter *_plotter));
+extern void _pl_z_initialize (Plotter *_plotter);
+extern void _pl_z_terminate (Plotter *_plotter);
 /* PNGPlotter internal functions (which override BitmapPlotter functions) */
-extern int _z_maybe_output_image P___((Plotter *_plotter));
+extern int _pl_z_maybe_output_image (Plotter *_plotter);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* PNGPlotter protected methods, for libplotter */
-#define _z_initialize PNGPlotter::initialize
-#define _z_terminate PNGPlotter::terminate
+#define _pl_z_initialize PNGPlotter::initialize
+#define _pl_z_terminate PNGPlotter::terminate
 /* PNGPlotter internal methods (which override BitmapPlotter methods) */
-#define _z_maybe_output_image PNGPlotter::_maybe_output_image
+#define _pl_z_maybe_output_image PNGPlotter::_maybe_output_image
 #endif /* LIBPLOTTER */
 #endif /* INCLUDE_PNG_SUPPORT */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* GIFPlotter protected methods, for libplot */
-extern bool _i_begin_page P___((Plotter *_plotter));
-extern bool _i_end_page P___((Plotter *_plotter));
-extern bool _i_erase_page P___((Plotter *_plotter));
-extern bool _i_paint_paths P___((Plotter *_plotter));
-extern void _i_initialize P___((Plotter *_plotter));
-extern void _i_paint_path P___((Plotter *_plotter));
-extern void _i_paint_point P___((Plotter *_plotter));
-extern void _i_terminate P___((Plotter *_plotter));
+extern bool _pl_i_begin_page (Plotter *_plotter);
+extern bool _pl_i_end_page (Plotter *_plotter);
+extern bool _pl_i_erase_page (Plotter *_plotter);
+extern bool _pl_i_paint_paths (Plotter *_plotter);
+extern void _pl_i_initialize (Plotter *_plotter);
+extern void _pl_i_paint_path (Plotter *_plotter);
+extern void _pl_i_paint_point (Plotter *_plotter);
+extern void _pl_i_terminate (Plotter *_plotter);
 /* GIFPlotter internal functions, for libplot */
-extern int _i_scan_pixel P___((Plotter *_plotter));
-extern unsigned char _i_new_color_index P___((Plotter *_plotter, int red, int green, int blue));
-extern void _i_delete_image P___((Plotter *_plotter));
-extern void _i_draw_elliptic_arc P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
-extern void _i_draw_elliptic_arc_2 P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
-extern void _i_draw_elliptic_arc_internal P___((Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
-extern void _i_new_image P___((Plotter *_plotter));
-extern void _i_set_bg_color P___((Plotter *_plotter));
-extern void _i_set_fill_color P___((Plotter *_plotter));
-extern void _i_set_pen_color P___((Plotter *_plotter));
-extern void _i_start_scan P___((Plotter *_plotter));
-extern void _i_write_gif_header P___((Plotter *_plotter));
-extern void _i_write_gif_image P___((Plotter *_plotter));
-extern void _i_write_gif_trailer P___((Plotter *_plotter));
-extern void _i_write_short_int P___((Plotter *_plotter, unsigned int i));
+extern int _pl_i_scan_pixel (Plotter *_plotter);
+extern unsigned char _pl_i_new_color_index (Plotter *_plotter, int red, int green, int blue);
+extern void _pl_i_delete_image (Plotter *_plotter);
+extern void _pl_i_draw_elliptic_arc (Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc);
+extern void _pl_i_draw_elliptic_arc_2 (Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc);
+extern void _pl_i_draw_elliptic_arc_internal (Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange);
+extern void _pl_i_new_image (Plotter *_plotter);
+extern void _pl_i_set_bg_color (Plotter *_plotter);
+extern void _pl_i_set_fill_color (Plotter *_plotter);
+extern void _pl_i_set_pen_color (Plotter *_plotter);
+extern void _pl_i_start_scan (Plotter *_plotter);
+extern void _pl_i_write_gif_header (Plotter *_plotter);
+extern void _pl_i_write_gif_image (Plotter *_plotter);
+extern void _pl_i_write_gif_trailer (Plotter *_plotter);
+extern void _pl_i_write_short_int (Plotter *_plotter, unsigned int i);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* GIFPlotter protected methods, for libplotter */
-#define _i_begin_page GIFPlotter::begin_page
-#define _i_end_page GIFPlotter::end_page
-#define _i_erase_page GIFPlotter::erase_page
-#define _i_initialize GIFPlotter::initialize
-#define _i_paint_path GIFPlotter::paint_path
-#define _i_paint_paths GIFPlotter::paint_paths
-#define _i_paint_point GIFPlotter::paint_point
-#define _i_terminate GIFPlotter::terminate
+#define _pl_i_begin_page GIFPlotter::begin_page
+#define _pl_i_end_page GIFPlotter::end_page
+#define _pl_i_erase_page GIFPlotter::erase_page
+#define _pl_i_initialize GIFPlotter::initialize
+#define _pl_i_paint_path GIFPlotter::paint_path
+#define _pl_i_paint_paths GIFPlotter::paint_paths
+#define _pl_i_paint_point GIFPlotter::paint_point
+#define _pl_i_terminate GIFPlotter::terminate
 /* GIFPlotter internal functions, for libplotter */
-#define _i_scan_pixel GIFPlotter::_i_scan_pixel
-#define _i_new_color_index GIFPlotter::_i_new_color_index
-#define _i_delete_image GIFPlotter::_i_delete_image
-#define _i_draw_elliptic_arc GIFPlotter::_i_draw_elliptic_arc
-#define _i_draw_elliptic_arc_2 GIFPlotter::_i_draw_elliptic_arc_2
-#define _i_draw_elliptic_arc_internal GIFPlotter::_i_draw_elliptic_arc_internal
-#define _i_new_image GIFPlotter::_i_new_image 
-#define _i_set_bg_color GIFPlotter::_i_set_bg_color
-#define _i_set_fill_color GIFPlotter::_i_set_fill_color
-#define _i_set_pen_color GIFPlotter::_i_set_pen_color
-#define _i_start_scan GIFPlotter::_i_start_scan
-#define _i_write_gif_header GIFPlotter::_i_write_gif_header
-#define _i_write_gif_image GIFPlotter::_i_write_gif_image
-#define _i_write_gif_trailer GIFPlotter::_i_write_gif_trailer
-#define _i_write_short_int GIFPlotter::_i_write_short_int
+#define _pl_i_scan_pixel GIFPlotter::_i_scan_pixel
+#define _pl_i_new_color_index GIFPlotter::_i_new_color_index
+#define _pl_i_delete_image GIFPlotter::_i_delete_image
+#define _pl_i_draw_elliptic_arc GIFPlotter::_i_draw_elliptic_arc
+#define _pl_i_draw_elliptic_arc_2 GIFPlotter::_i_draw_elliptic_arc_2
+#define _pl_i_draw_elliptic_arc_internal GIFPlotter::_i_draw_elliptic_arc_internal
+#define _pl_i_new_image GIFPlotter::_i_new_image 
+#define _pl_i_set_bg_color GIFPlotter::_i_set_bg_color
+#define _pl_i_set_fill_color GIFPlotter::_i_set_fill_color
+#define _pl_i_set_pen_color GIFPlotter::_i_set_pen_color
+#define _pl_i_start_scan GIFPlotter::_i_start_scan
+#define _pl_i_write_gif_header GIFPlotter::_i_write_gif_header
+#define _pl_i_write_gif_image GIFPlotter::_i_write_gif_image
+#define _pl_i_write_gif_trailer GIFPlotter::_i_write_gif_trailer
+#define _pl_i_write_short_int GIFPlotter::_i_write_short_int
 #endif /* LIBPLOTTER */
 
 #ifndef X_DISPLAY_MISSING
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* XDrawablePlotter/XPlotter protected methods, for libplot */
-extern bool _x_begin_page P___((Plotter *_plotter));
-extern bool _x_end_page P___((Plotter *_plotter));
-extern bool _x_erase_page P___((Plotter *_plotter));
-extern bool _x_flush_output P___((Plotter *_plotter));
-extern bool _x_paint_paths P___((Plotter *_plotter));
-extern bool _x_path_is_flushable P___((Plotter *_plotter));
-extern bool _x_retrieve_font P___((Plotter *_plotter));
-extern double _x_paint_text_string P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
-extern double _x_get_text_width P___((Plotter *_plotter, const unsigned char *s));
-extern void _x_initialize P___((Plotter *_plotter));
-extern void _x_maybe_prepaint_segments P___((Plotter *_plotter, int prev_num_segments));
-extern void _x_paint_path P___((Plotter *_plotter));
-extern void _x_paint_point P___((Plotter *_plotter));
-extern void _x_pop_state P___((Plotter *_plotter));
-extern void _x_push_state P___((Plotter *_plotter));
-extern void _x_terminate P___((Plotter *_plotter));
+extern bool _pl_x_begin_page (Plotter *_plotter);
+extern bool _pl_x_end_page (Plotter *_plotter);
+extern bool _pl_x_erase_page (Plotter *_plotter);
+extern bool _pl_x_flush_output (Plotter *_plotter);
+extern bool _pl_x_paint_paths (Plotter *_plotter);
+extern bool _pl_x_path_is_flushable (Plotter *_plotter);
+extern bool _pl_x_retrieve_font (Plotter *_plotter);
+extern double _pl_x_paint_text_string (Plotter *_plotter, const unsigned char *s, int h_just, int v_just);
+extern double _pl_x_get_text_width (Plotter *_plotter, const unsigned char *s);
+extern void _pl_x_initialize (Plotter *_plotter);
+extern void _pl_x_maybe_prepaint_segments (Plotter *_plotter, int prev_num_segments);
+extern void _pl_x_paint_path (Plotter *_plotter);
+extern void _pl_x_paint_point (Plotter *_plotter);
+extern void _pl_x_pop_state (Plotter *_plotter);
+extern void _pl_x_push_state (Plotter *_plotter);
+extern void _pl_x_terminate (Plotter *_plotter);
 /* XDrawablePlotter/XPlotter internal functions, for libplot */
-extern bool _x_retrieve_color P___((Plotter *_plotter, XColor *rgb_ptr));
-extern bool _x_select_font P___((Plotter *_plotter, const char *name, bool is_zero[4], const unsigned char *s));
-extern bool _x_select_font_carefully P___((Plotter *_plotter, const char *name, bool is_zero[4], const unsigned char *s));
-extern bool _x_select_xlfd_font_carefully P___((Plotter *_plotter, const char *x_name, const char *x_name_alt, double user_size, double rotation));
-extern void _x_add_gcs_to_first_drawing_state P___((Plotter *_plotter));
-extern void _x_delete_gcs_from_first_drawing_state P___((Plotter *_plotter));
-extern void _x_draw_elliptic_arc P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
-extern void _x_draw_elliptic_arc_2 P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
-extern void _x_draw_elliptic_arc_internal P___((Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
-extern void _x_set_attributes P___((Plotter *_plotter, int x_gc_type));
-extern void _x_set_bg_color P___((Plotter *_plotter));
-extern void _x_set_fill_color P___((Plotter *_plotter));
-extern void _x_set_font_dimensions P___((Plotter *_plotter, bool is_zero[4]));
-extern void _x_set_pen_color P___((Plotter *_plotter));
+extern bool _pl_x_retrieve_color (Plotter *_plotter, XColor *rgb_ptr);
+extern bool _pl_x_select_font_carefully (Plotter *_plotter, const char *name, const unsigned char *s, bool subsetting);
+extern bool _pl_x_select_xlfd_font_carefully (Plotter *_plotter, const char *x_name, const char *x_name_alt, const char *x_name_alt2, const char *x_name_alt3);
+extern void _pl_x_add_gcs_to_first_drawing_state (Plotter *_plotter);
+extern void _pl_x_delete_gcs_from_first_drawing_state (Plotter *_plotter);
+extern void _pl_x_draw_elliptic_arc (Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc);
+extern void _pl_x_draw_elliptic_arc_2 (Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc);
+extern void _pl_x_draw_elliptic_arc_internal (Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange);
+extern void _pl_x_set_attributes (Plotter *_plotter, int x_gc_type);
+extern void _pl_x_set_bg_color (Plotter *_plotter);
+extern void _pl_x_set_fill_color (Plotter *_plotter);
+extern void _pl_x_set_pen_color (Plotter *_plotter);
 /* XDrawablePlotter internal functions, for libplot */
-extern void _x_maybe_get_new_colormap P___((Plotter *_plotter));
-extern void _x_maybe_handle_x_events P___((Plotter *_plotter));
+extern void _pl_x_maybe_get_new_colormap (Plotter *_plotter);
+extern void _pl_x_maybe_handle_x_events (Plotter *_plotter);
 /* XPlotter protected methods, for libplot */
-extern bool _y_begin_page P___((Plotter *_plotter));
-extern bool _y_end_page P___((Plotter *_plotter));
-extern bool _y_erase_page P___((Plotter *_plotter));
-extern void _y_initialize P___((Plotter *_plotter));
-extern void _y_terminate P___((Plotter *_plotter));
+extern bool _pl_y_begin_page (Plotter *_plotter);
+extern bool _pl_y_end_page (Plotter *_plotter);
+extern bool _pl_y_erase_page (Plotter *_plotter);
+extern void _pl_y_initialize (Plotter *_plotter);
+extern void _pl_y_terminate (Plotter *_plotter);
 /* XPlotter internal functions, for libplot */
-extern void _y_flush_plotter_outstreams P___((Plotter *_plotter));
-extern void _y_maybe_get_new_colormap P___((Plotter *_plotter));
-extern void _y_maybe_handle_x_events P___((Plotter *_plotter));
-extern void _y_set_data_for_quitting P___((Plotter *_plotter));
+extern void _pl_y_flush_plotter_outstreams (Plotter *_plotter);
+extern void _pl_y_maybe_get_new_colormap (Plotter *_plotter);
+extern void _pl_y_maybe_handle_x_events (Plotter *_plotter);
+extern void _pl_y_set_data_for_quitting (Plotter *_plotter);
+___END_DECLS
 #else  /* LIBPLOTTER */
 /* XDrawablePlotter/XPlotter protected methods, for libplotter */
-#define _x_begin_page XDrawablePlotter::begin_page
-#define _x_end_page XDrawablePlotter::end_page
-#define _x_erase_page XDrawablePlotter::erase_page
-#define _x_paint_text_string XDrawablePlotter::paint_text_string
-#define _x_get_text_width XDrawablePlotter::get_text_width
-#define _x_flush_output XDrawablePlotter::flush_output
-#define _x_path_is_flushable XDrawablePlotter::path_is_flushable
-#define _x_maybe_prepaint_segments XDrawablePlotter::maybe_prepaint_segments
-#define _x_paint_path XDrawablePlotter::paint_path
-#define _x_paint_paths XDrawablePlotter::paint_paths
-#define _x_paint_point XDrawablePlotter::paint_point
-#define _x_pop_state XDrawablePlotter::pop_state
-#define _x_push_state XDrawablePlotter::push_state
-#define _x_retrieve_font XDrawablePlotter::retrieve_font
+#define _pl_x_begin_page XDrawablePlotter::begin_page
+#define _pl_x_end_page XDrawablePlotter::end_page
+#define _pl_x_erase_page XDrawablePlotter::erase_page
+#define _pl_x_paint_text_string XDrawablePlotter::paint_text_string
+#define _pl_x_get_text_width XDrawablePlotter::get_text_width
+#define _pl_x_flush_output XDrawablePlotter::flush_output
+#define _pl_x_path_is_flushable XDrawablePlotter::path_is_flushable
+#define _pl_x_maybe_prepaint_segments XDrawablePlotter::maybe_prepaint_segments
+#define _pl_x_paint_path XDrawablePlotter::paint_path
+#define _pl_x_paint_paths XDrawablePlotter::paint_paths
+#define _pl_x_paint_point XDrawablePlotter::paint_point
+#define _pl_x_pop_state XDrawablePlotter::pop_state
+#define _pl_x_push_state XDrawablePlotter::push_state
+#define _pl_x_retrieve_font XDrawablePlotter::retrieve_font
 /* XDrawablePlotter protected methods (overridden in XPlotter class) */
-#define _x_initialize XDrawablePlotter::initialize
-#define _x_terminate XDrawablePlotter::terminate
+#define _pl_x_initialize XDrawablePlotter::initialize
+#define _pl_x_terminate XDrawablePlotter::terminate
 /* XPlotter protected methods (which override the preceding) */
-#define _y_begin_page XPlotter::begin_page
-#define _y_end_page XPlotter::end_page
-#define _y_erase_page XPlotter::erase_page
-#define _y_initialize XPlotter::initialize
-#define _y_terminate XPlotter::terminate
+#define _pl_y_begin_page XPlotter::begin_page
+#define _pl_y_end_page XPlotter::end_page
+#define _pl_y_erase_page XPlotter::erase_page
+#define _pl_y_initialize XPlotter::initialize
+#define _pl_y_terminate XPlotter::terminate
 /* XDrawablePlotter/XPlotter internal functions, for libplotter */
-#define _x_add_gcs_to_first_drawing_state XDrawablePlotter::_x_add_gcs_to_first_drawing_state
-#define _x_delete_gcs_from_first_drawing_state XDrawablePlotter::_x_delete_gcs_from_first_drawing_state
-#define _x_draw_elliptic_arc XDrawablePlotter::_x_draw_elliptic_arc
-#define _x_draw_elliptic_arc_2 XDrawablePlotter::_x_draw_elliptic_arc_2
-#define _x_draw_elliptic_arc_internal XDrawablePlotter::_x_draw_elliptic_arc_internal
-#define _x_retrieve_color XDrawablePlotter::_x_retrieve_color
-#define _x_select_font XDrawablePlotter::_x_select_font
-#define _x_select_font_carefully XDrawablePlotter::_x_select_font_carefully
-#define _x_select_xlfd_font_carefully XDrawablePlotter::_x_select_xlfd_font_carefully
-#define _x_set_attributes XDrawablePlotter::_x_set_attributes
-#define _x_set_bg_color XDrawablePlotter::_x_set_bg_color
-#define _x_set_fill_color XDrawablePlotter::_x_set_fill_color
-#define _x_set_font_dimensions XDrawablePlotter::_x_set_font_dimensions
-#define _x_set_pen_color XDrawablePlotter::_x_set_pen_color
+#define _pl_x_add_gcs_to_first_drawing_state XDrawablePlotter::_x_add_gcs_to_first_drawing_state
+#define _pl_x_delete_gcs_from_first_drawing_state XDrawablePlotter::_x_delete_gcs_from_first_drawing_state
+#define _pl_x_draw_elliptic_arc XDrawablePlotter::_x_draw_elliptic_arc
+#define _pl_x_draw_elliptic_arc_2 XDrawablePlotter::_x_draw_elliptic_arc_2
+#define _pl_x_draw_elliptic_arc_internal XDrawablePlotter::_x_draw_elliptic_arc_internal
+#define _pl_x_retrieve_color XDrawablePlotter::_x_retrieve_color
+#define _pl_x_select_font XDrawablePlotter::_x_select_font
+#define _pl_x_select_font_carefully XDrawablePlotter::_x_select_font_carefully
+#define _pl_x_select_xlfd_font_carefully XDrawablePlotter::_x_select_xlfd_font_carefully
+#define _pl_x_set_attributes XDrawablePlotter::_x_set_attributes
+#define _pl_x_set_bg_color XDrawablePlotter::_x_set_bg_color
+#define _pl_x_set_fill_color XDrawablePlotter::_x_set_fill_color
+#define _pl_x_set_font_dimensions XDrawablePlotter::_x_set_font_dimensions
+#define _pl_x_set_pen_color XDrawablePlotter::_x_set_pen_color
 /* XDrawablePlotter internal functions (overridden in XPlotter class) */
-#define _x_maybe_get_new_colormap XDrawablePlotter::_maybe_get_new_colormap
-#define _x_maybe_handle_x_events XDrawablePlotter::_maybe_handle_x_events
+#define _pl_x_maybe_get_new_colormap XDrawablePlotter::_maybe_get_new_colormap
+#define _pl_x_maybe_handle_x_events XDrawablePlotter::_maybe_handle_x_events
 /* XPlotter internal functions (which override the preceding) */
-#define _y_maybe_get_new_colormap XPlotter::_maybe_get_new_colormap
-#define _y_maybe_handle_x_events XPlotter::_maybe_handle_x_events
+#define _pl_y_maybe_get_new_colormap XPlotter::_maybe_get_new_colormap
+#define _pl_y_maybe_handle_x_events XPlotter::_maybe_handle_x_events
 /* other XPlotter internal functions, for libplotter */
-#define _y_flush_plotter_outstreams XPlotter::_y_flush_plotter_outstreams
-#define _y_set_data_for_quitting XPlotter::_y_set_data_for_quitting
+#define _pl_y_flush_plotter_outstreams XPlotter::_y_flush_plotter_outstreams
+#define _pl_y_set_data_for_quitting XPlotter::_y_set_data_for_quitting
 #endif  /* LIBPLOTTER */
 #endif /* not X_DISPLAY_MISSING */
 
 /* Declarations of the PlotterParams methods.  In libplot, these are
    declarations of global functions.  But in libplotter, we use #define and
    the double colon notation to make them function members of the
-   PlotterParams class. */
+   PlotterParams class.
+
+   The ___BEGIN_DECLS...___END_DECLS is to support compilation of libplot
+   by a C++ compiler; see the remarks above. */
 
 #ifndef LIBPLOTTER
+___BEGIN_DECLS
 /* PlotterParams public methods, for libplot */
-extern int _setplparam P___((PlotterParams *_plotter_params, const char *parameter, voidptr_t value));
-extern int _pushplparams P___((PlotterParams *_plotter_params));
-extern int _popplparams P___((PlotterParams *_plotter_params));
+extern int _setplparam (PlotterParams *_plotter_params, const char *parameter, void * value);
+extern int _pushplparams (PlotterParams *_plotter_params);
+extern int _popplparams (PlotterParams *_plotter_params);
+___END_DECLS
 #else /* LIBPLOTTER */
 /* PlotterParams public methods, for libplotter */
 #define _setplparam PlotterParams::setplparam
 #define _pushplparams PlotterParams::pushplparams
 #define _popplparams PlotterParams::popplparams
 #endif /* LIBPLOTTER */
-
-#undef P___

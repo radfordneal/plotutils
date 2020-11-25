@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the havecap method, which is a GNU extension to
    libplot.  It queries the current plotter to determine whether or not it
    has a specified capability, specified by a string.
@@ -10,13 +28,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 _API_havecap (R___(Plotter *_plotter) const char *s)
-#else
-_API_havecap (R___(_plotter) s)
-     S___(Plotter *_plotter;) 
-     const char *s;
-#endif
 {
   if (strcasecmp (s, "WIDE_LINES") == 0)
     return _plotter->data->have_wide_lines;

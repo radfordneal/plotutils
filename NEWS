@@ -1,3 +1,73 @@
+Version 2.5 released, 12/2005.  [Includes libplot 4.2, interface age=2.]
+
+package: bug reporting address has changed to bug-plotutils@gnu.org.
+libplot: support for rotated and sheared (i.e., "anamorphically
+	 transformed") X Window System fonts has been completely rewritten.
+	 Core X fonts are still used, but it is no longer assumed that the
+	 X display has the ability to rasterize rotated and sheared glyphs.
+	 (Recent releases of XFree86 are broken in this regard.)  Instead,
+	 unrotated glyphs are retrieved from the server, and rotated or
+	 transformed within libplot.  See new module libplot/x_afftext.c.
+graph: plotting of rotated y-axis labels by the `-Y' option, when `-T X' is
+         specified (so that output is to an X Window System display) should
+         now work, even when recent broken releases of XFree86 are used.
+         This is due to the above change to libplot.
+libplot: URW versions of the standard 35 Adobe fonts (Helvetica,
+	 Times-Roman etc.) are now checked for under their own names on any
+	 X Window System display, as well as under the Adobe names.  This
+	 fixes a problem with recent SuSE GNU/Linux distributions, of
+	 `graph -T X' being unable to use even the default Helvetica font.
+libplot: SVG output is now conformant SVG 1.1, and should not be rejected
+	 by the Firefox browser.
+libplot: vertical positioning of text strings by the SVG driver is
+	 improved; libplot now does vertical positioning itself, since
+	 many SVG renderers, e.g. Firefox 1.5, can't do it properly.
+libplot: the ROTATION parameter, which is the angle in degrees at which the
+	 viewport in the output (device) frame should be rotated, can now
+	 take values other than 0, 90, 180, and 270.
+graph,plot,tek2plot,plotfont,pic2plot: the --rotation option no longer
+         requires that the specified angle be 0, 90, 180, or 270 degrees.
+         Some quite postmodern effects can now be obtained.
+libplot: modifiers such as "xsize=6in", "yoffset=8cm" appended to the
+	 PAGESIZE parameter by the user, to do fine positioning of the
+	 viewport on the output page, are no longer sometimes ignored.
+graph,plot,tek2plot,plotfont,pic2plot: modifiers such as "xsize=6in",
+         "yoffset=8cm" appended to the argument of the --page-size option,
+         by the user, to do fine positioning of the viewport on the output
+         page, are no longer sometimes ignored.
+libplotter,pic2plot: problems with compilation by recent C++ compilers now
+	 fixed: unsigned char* is cast to char* as needed, deprecated C++
+	 headers have had their names modernized, etc.  Support for `bool'
+	 in the C++ compiler is now assumed (this could be trivially backed
+	 out of, if needed).
+installation: entire package can now be compiled by a C++ compiler if
+	 desired; request this by doing e.g. `CC=g++ ./configure'.
+installation: support for pre-ANSI C compilers, such the SunOS 4.1.3 one,
+	 now largely dropped.  Non-working `const' is still checked for,
+	 but compiler support for prototypes and void is now assumed.
+	 Removal of preprocessor macros that supported pre-ANSI C, from
+	 many source files, considerably improved maintainability.
+installation: updated GNU autotools now used (autoconf-2.59, libtool-1.5.6,
+	 and the older automake-1.4-p6 for safety's sake).  Also, recent
+	 flex/bison have been used to prepare the scanner and parser supplied
+	 with the ode source (flex-2.5.31 and bison-1.875d).
+graph: new short `-Q' option, which is equivalent to the long option
+	 `--toggle-rotate-y-axis-label'.
+graph,plot,tek2plot,plotfont,pic2plot: `--display-type' long option, the
+	 name of which confused some users, has been changed to
+	 `--output-format'.  The old option is still supported but is now
+	 deprecated.  The short option `-T' continues to work.
+libplot: problems with PS output triggering an error in some versions of
+	 ghostscript (and hence ghostview, gv), due to changes in the way
+	 ghostscript handles FontBBox, now fixed.  Thanks, Brian Gough (and
+	 also Alex Cherepanov, who found the fix to idraw's PS prologue).
+libplot: most external symbols not meant to be publicly accessible now have
+	 names beginning with the prefix "_pl_", to reduce the possibility
+	 of namespace collisions.  This will be completed in a later release.
+executables: output of "--help" has been altered to agree with current GNU
+	 coding standards.
+package: copyright and license notices added to nearly all source files.
+
 Version 2.4.1 released, 7/2000.  [Includes libplot 4.1, interface age=2.]
 
 graph,plot,tek2plot,plotfont,pic2plot: `--page-size' option and PAGESIZE

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* We call these routines, which set the Illustrator pen and fill colors,
    lazily i.e. only when needed (just before an object is written to the
    output buffer). */
@@ -6,12 +24,7 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_a_set_pen_color(S___(Plotter *_plotter))
-#else
-_a_set_pen_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_a_set_pen_color(S___(Plotter *_plotter))
 {
   double red, green, blue;
   double cyan, magenta, yellow, black, temp;
@@ -56,13 +69,7 @@ _a_set_pen_color(S___(_plotter))
 }
 
 void
-#ifdef _HAVE_PROTOS
-_a_set_fill_color(R___(Plotter *_plotter) bool force_pen_color)
-#else
-_a_set_fill_color(R___(_plotter) force_pen_color)
-     S___(Plotter *_plotter;)
-     bool force_pen_color;
-#endif
+_pl_a_set_fill_color(R___(Plotter *_plotter) bool force_pen_color)
 {
   double red, green, blue;
   double cyan, magenta, yellow, black, temp;

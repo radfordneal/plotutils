@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains device-specific color computation routines.  They are
    called by various PSPlotter methods, before drawing objects.  They set
    the appropriate PSPlotter-specific fields in the drawing state. */
@@ -6,7 +24,7 @@
 #include "extern.h"
 
 /* forward references */
-static int _idraw_pseudocolor ____P((int red, int green, int blue));
+static int _idraw_pseudocolor (int red, int green, int blue);
 
 /* We call this routine to evaluate _plotter->drawstate->ps_fgcolor lazily,
    i.e. only when needed (just before an object is written to the output
@@ -14,12 +32,7 @@ static int _idraw_pseudocolor ____P((int red, int green, int blue));
    colors", i.e., pen colors.  See p_color2.c for the list of colors. */
 
 void
-#ifdef _HAVE_PROTOS
-_p_set_pen_color(S___(Plotter *_plotter))
-#else
-_p_set_pen_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_p_set_pen_color(S___(Plotter *_plotter))
 {
   _plotter->drawstate->ps_fgcolor_red = 
     ((double)((_plotter->drawstate->fgcolor).red))/0xFFFF;
@@ -45,12 +58,7 @@ _p_set_pen_color(S___(_plotter))
    from a fixed set.  See p_color2.c. */
 
 void
-#ifdef _HAVE_PROTOS
-_p_set_fill_color(S___(Plotter *_plotter))
-#else
-_p_set_fill_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_p_set_fill_color(S___(Plotter *_plotter))
 {
   double red, green, blue;
 
@@ -67,7 +75,7 @@ _p_set_fill_color(S___(_plotter))
   _plotter->drawstate->ps_fillcolor_blue = blue;
 
   /* next subroutine needs fields that this will fill in... */
-  _p_set_pen_color (S___(_plotter));
+  _pl_p_set_pen_color (S___(_plotter));
 
   /* Quantize for idraw, in a complicated way; we can choose from among a
      finite discrete set of values for ps_idraw_bgcolor and
@@ -75,7 +83,7 @@ _p_set_fill_color(S___(_plotter))
      ps_fillcolor_* because the PS interpreter will use the
      ps_idraw_shading variable to interpolate between fgcolor and bgcolor,
      i.e. fgcolor and fillcolor. */
-  _p_compute_idraw_bgcolor (S___(_plotter));
+  _pl_p_compute_idraw_bgcolor (S___(_plotter));
   
   return;
 }
@@ -85,25 +93,20 @@ _p_set_fill_color(S___(_plotter))
    distance is our metric.  Our convention: no non-white color should be
    mapped to white. */
 static int
-#ifdef _HAVE_PROTOS
 _idraw_pseudocolor (int red, int green, int blue)
-#else
-_idraw_pseudocolor (red, green, blue)
-     int red, green, blue;
-#endif
 {
   double difference;
   int i;
   int best = 0;
   
   difference = DBL_MAX;
-  for (i = 0; i < IDRAW_NUM_STD_COLORS; i++)
+  for (i = 0; i < PS_NUM_IDRAW_STD_COLORS; i++)
     {
       double newdifference;
       
-      if (_idraw_stdcolors[i].red == 0xffff
-	  && _idraw_stdcolors[i].green == 0xffff
-	  && _idraw_stdcolors[i].blue == 0xffff)
+      if (_pl_p_idraw_stdcolors[i].red == 0xffff
+	  && _pl_p_idraw_stdcolors[i].green == 0xffff
+	  && _pl_p_idraw_stdcolors[i].blue == 0xffff)
 	/* white is a possible quantization only for white itself (our
            convention) */
 	{
@@ -115,12 +118,12 @@ _idraw_pseudocolor (red, green, blue)
 	  continue;
 	}
 
-      newdifference = ((double)(_idraw_stdcolors[i].red - red)
-		       * (double)(_idraw_stdcolors[i].red - red))
-		    + ((double)(_idraw_stdcolors[i].green - green) 
-		       * (double)(_idraw_stdcolors[i].green - green)) 
-		    + ((double)(_idraw_stdcolors[i].blue - blue)
-		       * (double)(_idraw_stdcolors[i].blue - blue));
+      newdifference = ((double)(_pl_p_idraw_stdcolors[i].red - red)
+		       * (double)(_pl_p_idraw_stdcolors[i].red - red))
+		    + ((double)(_pl_p_idraw_stdcolors[i].green - green) 
+		       * (double)(_pl_p_idraw_stdcolors[i].green - green)) 
+		    + ((double)(_pl_p_idraw_stdcolors[i].blue - blue)
+		       * (double)(_pl_p_idraw_stdcolors[i].blue - blue));
       
       if (newdifference < difference)
 	{
@@ -147,12 +150,7 @@ _idraw_pseudocolor (red, green, blue)
    is very close to the user-specified pen color. */
 
 void
-#ifdef _HAVE_PROTOS
-_p_compute_idraw_bgcolor(S___(Plotter *_plotter))
-#else
-_p_compute_idraw_bgcolor(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_p_compute_idraw_bgcolor(S___(Plotter *_plotter))
 {
   double truered, truegreen, trueblue;
   double fgred, fggreen, fgblue;
@@ -165,24 +163,24 @@ _p_compute_idraw_bgcolor(S___(_plotter))
   truegreen = 0xFFFF * _plotter->drawstate->ps_fillcolor_green;
   trueblue = 0xFFFF * _plotter->drawstate->ps_fillcolor_blue;
 
-  fgred = (double)(_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].red);
-  fggreen = (double)(_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].green);
-  fgblue = (double)(_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].blue);
+  fgred = (double)(_pl_p_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].red);
+  fggreen = (double)(_pl_p_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].green);
+  fgblue = (double)(_pl_p_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].blue);
 
-  for (i = 0; i < IDRAW_NUM_STD_COLORS; i++)
+  for (i = 0; i < PS_NUM_IDRAW_STD_COLORS; i++)
     {
       double bgred, bggreen, bgblue;
 
-      bgred = (double)(_idraw_stdcolors[i].red);
-      bggreen = (double)(_idraw_stdcolors[i].green);
-      bgblue = (double)(_idraw_stdcolors[i].blue);
+      bgred = (double)(_pl_p_idraw_stdcolors[i].red);
+      bggreen = (double)(_pl_p_idraw_stdcolors[i].green);
+      bgblue = (double)(_pl_p_idraw_stdcolors[i].blue);
 
-      for (j = 0; j < IDRAW_NUM_STD_SHADINGS; j++)
+      for (j = 0; j < PS_NUM_IDRAW_STD_SHADINGS; j++)
 	{
 	  double approxred, approxgreen, approxblue;
 	  double shade, newdifference;
 	  
-	  shade = _idraw_stdshadings[j];
+	  shade = _pl_p_idraw_stdshadings[j];
 	  
 	  approxred = shade * bgred + (1.0 - shade) * fgred;
 	  approxgreen = shade * bggreen + (1.0 - shade) * fggreen;

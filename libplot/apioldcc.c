@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file belongs to both libplot and libplotter.  It contains a
    function that appears in both the old (non-thread-safe) C and C++
    bindings.  It is named pl_parampl() and parampl(), respectively.
@@ -22,30 +40,10 @@
 #endif
 
 int
-#ifdef _HAVE_PROTOS
-#ifdef NO_VOID_SUPPORT
-#ifdef LIBPLOTTER
-parampl (const char *parameter, char *value)
-#else  /* not LIBPLOTTER */
-pl_parampl (const char *parameter, char *value)
-#endif /* not LIBPLOTTER */
-#else
 #ifdef LIBPLOTTER
 parampl (const char *parameter, void *value)
 #else  /* not LIBPLOTTER */
 pl_parampl (const char *parameter, void *value)
-#endif /* not LIBPLOTTER */
-#endif
-#else  /* not _HAVE_PROTOS, possible only if this is libplot, not libplotter */
-#ifdef NO_VOID_SUPPORT
-pl_parampl (parameter, value)
-     const char *parameter;
-     char *value;
-#else
-pl_parampl (parameter, value)
-     const char *parameter;
-     void *value;
-#endif /* not NO_VOID_SUPPORT */
 #endif
 {
   /* create global object if necessary (via different routes for libplotter
@@ -60,4 +58,3 @@ pl_parampl (parameter, value)
   return _old_api_global_plotter_params->setplparam (R___(_old_api_global_plotter_params)
 						     parameter, value);
 }
-

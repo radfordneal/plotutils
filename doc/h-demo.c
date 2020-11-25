@@ -24,12 +24,6 @@
    If you are using a C compiler other than gcc, consult your system
    administrator.
    
-   (The -DNO_CONST_SUPPORT option may need to be used if the C compiler,
-   like the version of `cc' supplied with SunOS 4.1.x, is so old that it
-   does not understand the `const' type qualifier.  If compiling under
-   SunOS 4.1.x, you may also need to specify the `-static' option, to work
-   around problems with undefined symbols in the SunOS X libraries.)
-
    If you have any trouble running the demo after compiling it, be sure
    your LD_LIBRARY_PATH environment variable includes the directory in
    which libplot is stored.  This only applies on systems in which libplot

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -10,32 +28,27 @@
 
 /* SVG join styles, i.e., stroke-linejoin attribute, indexed by internal
    number (miter/rd./bevel/triangular) */
-static const char * _svg_join_style[] =
+static const char * const svg_join_style[PL_NUM_JOIN_TYPES] =
 { "miter", "round", "bevel", "round" };
 
 /* SVG cap styles, i.e., stroke-linecap attribute, indexed by internal
    number (butt/rd./project/triangular) */
-static const char * _svg_cap_style[] =
+static const char * const svg_cap_style[PL_NUM_CAP_TYPES] =
 { "butt", "round", "square", "round" };
 
 /* SVG fill rule styles, i.e., fill-rule attribute, indexed by internal
    number (even-odd/nonzero winding number) */
-static const char * _svg_fill_style[] =
+static const char * const svg_fill_style[PL_NUM_FILL_RULES] =
 { "evenodd", "nonzero" };
 
-static const double _identity_matrix[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+static const double identity_matrix[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
 
 /* forward references */
-static void _write_svg_path_data ____P((plOutbuf *page, const plPath *path));
-static void _write_svg_path_style ____P((plOutbuf *page, const plDrawState *drawstate, bool need_cap, bool need_join));
+static void write_svg_path_data (plOutbuf *page, const plPath *path);
+static void write_svg_path_style (plOutbuf *page, const plDrawState *drawstate, bool need_cap, bool need_join);
 
 void
-#ifdef _HAVE_PROTOS
-_s_paint_path (S___(Plotter *_plotter))
-#else
-_s_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_s_paint_path (S___(Plotter *_plotter))
 {
   switch ((int)_plotter->drawstate->path->type)
     {
@@ -79,9 +92,7 @@ _s_paint_path (S___(_plotter))
 	    sprintf (_plotter->data->page->point, "<line ");
 	    _update_buffer (_plotter->data->page);
 
-	    _s_set_matrix (R___(_plotter) 
-			   _plotter->drawstate->transform.m_user_to_ndc,
-			   _identity_matrix); 
+	    _pl_s_set_matrix (R___(_plotter) identity_matrix); 
 
 	    sprintf (_plotter->data->page->point,
 		     "x1=\"%.5g\" y1=\"%.5g\" x2=\"%.5g\" y2=\"%.5g\" ",
@@ -91,7 +102,7 @@ _s_paint_path (S___(_plotter))
 		     _plotter->drawstate->path->segments[1].p.y);
 	    _update_buffer (_plotter->data->page);
 
-	    _write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
+	    write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
 				   true, false);
 
 	    sprintf (_plotter->data->page->point, "/>\n");
@@ -104,9 +115,7 @@ _s_paint_path (S___(_plotter))
 	    sprintf (_plotter->data->page->point, "<polyline ");
 	    _update_buffer (_plotter->data->page);
 
-	    _s_set_matrix (R___(_plotter) 
-			   _plotter->drawstate->transform.m_user_to_ndc,
-			   _identity_matrix); 
+	    _pl_s_set_matrix (R___(_plotter) identity_matrix); 
 
 	    sprintf (_plotter->data->page->point,
 		     "points=\"");
@@ -125,7 +134,7 @@ _s_paint_path (S___(_plotter))
 		     "\" ");
 	    _update_buffer (_plotter->data->page);
 
-	    _write_svg_path_style (_plotter->data->page, _plotter->drawstate,
+	    write_svg_path_style (_plotter->data->page, _plotter->drawstate,
 				   true, true);
 
 	    sprintf (_plotter->data->page->point,
@@ -139,9 +148,7 @@ _s_paint_path (S___(_plotter))
 	    sprintf (_plotter->data->page->point, "<polygon ");
 	    _update_buffer (_plotter->data->page);
 
-	    _s_set_matrix (R___(_plotter) 
-			   _plotter->drawstate->transform.m_user_to_ndc,
-			   _identity_matrix); 
+	    _pl_s_set_matrix (R___(_plotter) identity_matrix); 
 
 	    sprintf (_plotter->data->page->point,
 		     "points=\"");
@@ -160,7 +167,7 @@ _s_paint_path (S___(_plotter))
 		     "\" ");
 	    _update_buffer (_plotter->data->page);
 
-	    _write_svg_path_style (_plotter->data->page, _plotter->drawstate,
+	    write_svg_path_style (_plotter->data->page, _plotter->drawstate,
 				   false, true);
 
 	    sprintf (_plotter->data->page->point,
@@ -174,23 +181,21 @@ _s_paint_path (S___(_plotter))
 	    sprintf (_plotter->data->page->point, "<path ");
 	    _update_buffer (_plotter->data->page);
 
-	    _s_set_matrix (R___(_plotter) 
-			   _plotter->drawstate->transform.m_user_to_ndc,
-			   _identity_matrix); 
+	    _pl_s_set_matrix (R___(_plotter) identity_matrix); 
 
 	    sprintf (_plotter->data->page->point,
 		     "d=\"");
 	    _update_buffer (_plotter->data->page);
 	    
 	    /* write SVG path data string */
-	    _write_svg_path_data (_plotter->data->page, 
+	    write_svg_path_data (_plotter->data->page, 
 				  _plotter->drawstate->path);
 
 	    sprintf (_plotter->data->page->point,
 		     "\" ");
 	    _update_buffer (_plotter->data->page);
 
-	    _write_svg_path_style (_plotter->data->page, _plotter->drawstate,
+	    write_svg_path_style (_plotter->data->page, _plotter->drawstate,
 				   true, true);
 
 	    sprintf (_plotter->data->page->point,
@@ -215,16 +220,14 @@ _s_paint_path (S___(_plotter))
 	sprintf (_plotter->data->page->point, "<rect ");
 	_update_buffer (_plotter->data->page);
 
-	_s_set_matrix (R___(_plotter) 
-		       _plotter->drawstate->transform.m_user_to_ndc,
-		       _identity_matrix); 
+	_pl_s_set_matrix (R___(_plotter) identity_matrix); 
 
 	sprintf (_plotter->data->page->point,
 		 "x=\"%.5g\" y=\"%.5g\" width=\"%.5g\" height=\"%.5g\" ",
 		 xmin, ymin, xmax - xmin, ymax - ymin);
 	_update_buffer (_plotter->data->page);
 
-	_write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
+	write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
 			       false, true);
 	sprintf (_plotter->data->page->point,
 		 "/>\n");
@@ -240,9 +243,7 @@ _s_paint_path (S___(_plotter))
 	sprintf (_plotter->data->page->point, "<circle ");
 	_update_buffer (_plotter->data->page);
 
-	_s_set_matrix (R___(_plotter) 
-		       _plotter->drawstate->transform.m_user_to_ndc,
-		       _identity_matrix); 
+	_pl_s_set_matrix (R___(_plotter) identity_matrix); 
 
 	pc = _plotter->drawstate->path->pc;
 	sprintf (_plotter->data->page->point,
@@ -250,7 +251,7 @@ _s_paint_path (S___(_plotter))
 		 pc.x, pc.y, radius);
 	_update_buffer (_plotter->data->page);
 
-	_write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
+	write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
 			       false, false);
 
 	sprintf (_plotter->data->page->point,
@@ -277,15 +278,13 @@ _s_paint_path (S___(_plotter))
 	local_matrix[3] = cos (M_PI * angle / 180.0);
 	local_matrix[4] = pc.x;
 	local_matrix[5] = pc.y;
-	_s_set_matrix (R___(_plotter) 
-		       _plotter->drawstate->transform.m_user_to_ndc,
-		       local_matrix);
+	_pl_s_set_matrix (R___(_plotter) local_matrix);
 
 	sprintf (_plotter->data->page->point, "rx=\"%.5g\" ry=\"%.5g\" ",
 		 rx, ry);
 	_update_buffer (_plotter->data->page);
 
-	_write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
+	write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
 			       false, false);
 
 	sprintf (_plotter->data->page->point, "/>\n");
@@ -299,12 +298,7 @@ _s_paint_path (S___(_plotter))
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_s_paint_paths (S___(Plotter *_plotter))
-#else
-_s_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_s_paint_paths (S___(Plotter *_plotter))
 {
   int i;
 
@@ -312,9 +306,7 @@ _s_paint_paths (S___(_plotter))
 	   "<path ");
   _update_buffer (_plotter->data->page);
   
-  _s_set_matrix (R___(_plotter) 
-		 _plotter->drawstate->transform.m_user_to_ndc,
-		 _identity_matrix); 
+  _pl_s_set_matrix (R___(_plotter) identity_matrix); 
 
   sprintf (_plotter->data->page->point,
 	   "d=\"");
@@ -328,7 +320,7 @@ _s_paint_paths (S___(_plotter))
 	{
 	case (int)PATH_SEGMENT_LIST:
 	  /* write SVG path data string */
-	  _write_svg_path_data (_plotter->data->page, path);
+	  write_svg_path_data (_plotter->data->page, path);
 	  break;
 	  
 	case (int)PATH_CIRCLE:
@@ -452,7 +444,7 @@ A%.5g,%.5g,%.5g,%d,%d,%.5g,%.5g Z ",
 	   "\" ");
   _update_buffer (_plotter->data->page);
 
-  _write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
+  write_svg_path_style (_plotter->data->page, _plotter->drawstate, 
 			 true, true);
 
   sprintf (_plotter->data->page->point,
@@ -467,13 +459,7 @@ A%.5g,%.5g,%.5g,%d,%d,%.5g,%.5g Z ",
    that consists of a single closed path primitive (box/circle/ellipse). */
 
 static void
-#ifdef _HAVE_PROTOS
-_write_svg_path_data (plOutbuf *page, const plPath *path)
-#else
-_write_svg_path_data (page, path)
-     plOutbuf *page;
-     const plPath *path;
-#endif
+write_svg_path_data (plOutbuf *page, const plPath *path)
 {
   bool closed;
   plPoint p, oldpoint;
@@ -623,19 +609,9 @@ _write_svg_path_data (page, path)
 }
 
 static void
-#ifdef _HAVE_PROTOS
-_write_svg_path_style (plOutbuf *page, const plDrawState *drawstate, bool need_cap, bool need_join)
-#else
-_write_svg_path_style (page, drawstate, need_cap, need_join)
-     plOutbuf *page; 
-     const plDrawState *drawstate; 
-     bool need_cap, need_join;
-#endif
+write_svg_path_style (plOutbuf *page, const plDrawState *drawstate, bool need_cap, bool need_join)
 {
   char color_buf[8];		/* enough room for "#ffffff", incl. NUL */
-
-  sprintf (page->point, "style=\"");
-  _update_buffer (page);
 
   if (drawstate->pen_type)
     {
@@ -644,39 +620,41 @@ _write_svg_path_style (page, drawstate, need_cap, need_join)
 	  || drawstate->fgcolor.blue != 0)
 	/* non-black, i.e. non-default */
 	{
-	  sprintf (page->point, "stroke:%s;",
+	  sprintf (page->point, "stroke=\"%s\" ",
 		   _libplot_color_to_svg_color (drawstate->fgcolor, 
 						color_buf));
 	  _update_buffer (page);
 	}
       
-      sprintf (page->point, "stroke-width:%.5g;",
+      /* should use `px' here to specify user units, per the SVG Authoring
+	 Guide, but ImageMagick objects to that */
+      sprintf (page->point, "stroke-width=\"%.5g\" ",
 	       drawstate->line_width);
       _update_buffer (page);
       
       if (need_cap)
 	{
-	  if (drawstate->cap_type != CAP_BUTT) /* i.e. not default */
+	  if (drawstate->cap_type != PL_CAP_BUTT) /* i.e. not default */
 	    {
-	      sprintf (page->point, "stroke-linecap:%s;",
-		       _svg_cap_style[drawstate->cap_type]);
+	      sprintf (page->point, "stroke-linecap=\"%s\" ",
+		       svg_cap_style[drawstate->cap_type]);
 	      _update_buffer (page);
 	    }
 	}
       
       if (need_join)
 	{
-	  if (drawstate->join_type != JOIN_MITER) /* i.e. not default */
+	  if (drawstate->join_type != PL_JOIN_MITER) /* i.e. not default */
 	    {
-	      sprintf (page->point, "stroke-linejoin:%s;",
-		       _svg_join_style[drawstate->join_type]);
+	      sprintf (page->point, "stroke-linejoin=\"%s\" ",
+		       svg_join_style[drawstate->join_type]);
 	      _update_buffer (page);
 	    }
 	  
-	  if (drawstate->join_type == JOIN_MITER
-	      && drawstate->miter_limit != DEFAULT_MITER_LIMIT)
+	  if (drawstate->join_type == PL_JOIN_MITER
+	      && drawstate->miter_limit != PL_DEFAULT_MITER_LIMIT)
 	    {
-	      sprintf (page->point, "stroke-miterlimit:%.5g;",
+	      sprintf (page->point, "stroke-miterlimit=\"%.5g\" ",
 		       drawstate->miter_limit);
 	      _update_buffer (page);
 	    }
@@ -686,7 +664,7 @@ _write_svg_path_style (page, drawstate, need_cap, need_join)
 	   && drawstate->dash_array_len > 0)
 	  ||
 	  (drawstate->dash_array_in_effect == false
-	   && drawstate->line_type != L_SOLID)) /* non-solid builtin linetype*/
+	   && drawstate->line_type != PL_L_SOLID)) /* non-solid builtin linetype*/
 	/* need to specify stroke-array, maybe stroke-offset too */
 	{
 	  int i;
@@ -712,7 +690,7 @@ _write_svg_path_style (page, drawstate, need_cap, need_join)
 				 &min_sing_val, &max_sing_val);
 	      if (max_sing_val != 0.0)
 		min_width = 
-		 DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE / max_sing_val;
+		 PL_DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE / max_sing_val;
 	      else
 		min_width = 0.0;
 	      scale = DMAX(drawstate->line_width, min_width);
@@ -720,10 +698,10 @@ _write_svg_path_style (page, drawstate, need_cap, need_join)
 	      /* take normalized dash array (linemode-specific) from
                  internal table */
 	      dash_array = 
-		_line_styles[drawstate->line_type].dash_array;
+		_pl_g_line_styles[drawstate->line_type].dash_array;
 	      num_dashes =
-		_line_styles[drawstate->line_type].dash_array_len;
-	      dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+		_pl_g_line_styles[drawstate->line_type].dash_array_len;
+	      dashbuf = (double *)_pl_xmalloc (num_dashes * sizeof(double));
 
 	      /* scale length of each dash by current line width, unless
 		 it's too small (see above computation) */
@@ -732,19 +710,21 @@ _write_svg_path_style (page, drawstate, need_cap, need_join)
 	      offset = 0.0;	/* true for all builtin line types */
 	    }
 
-	  sprintf (page->point, "stroke-dasharray:");
+	  sprintf (page->point, "stroke-dasharray=\"");
 	  _update_buffer (page);
 	  for (i = 0; i < num_dashes; i++)
 	    {
 	      sprintf (page->point, "%.5g%s",
 		       dashbuf[i],
-		       i < num_dashes - 1 ? " " : ";");
+		       i < num_dashes - 1 ? " " : "\"");
 	      _update_buffer (page);
 	    }
 
 	  if (offset != 0.0) /* not default */
 	    {
-	      sprintf (page->point, "stroke-dashoffset:%.5g;",
+	      /* should use `px' here to specify user units, per the SVG
+		 Authoring Guide, but ImageMagick objects to that */
+	      sprintf (page->point, "stroke-dashoffset=\"%.5g\" ",
 		       offset);
 	      _update_buffer (page);
 	    }
@@ -760,24 +740,21 @@ _write_svg_path_style (page, drawstate, need_cap, need_join)
     }
   else
     {
-      sprintf (page->point, "stroke:none;");
+      sprintf (page->point, "stroke=\"none\" ");
       _update_buffer (page);
     }
 
   if (drawstate->fill_type)
     {
-      sprintf (page->point, "fill:%s;",
+      sprintf (page->point, "fill=\"%s\" ",
 	       _libplot_color_to_svg_color (drawstate->fillcolor, color_buf));
       _update_buffer (page);
 
-      if (drawstate->fill_rule_type != FILL_ODD_WINDING) /* not default */
+      if (drawstate->fill_rule_type != PL_FILL_ODD_WINDING) /* not default */
 	{
-	  sprintf (page->point, "fill-rule:%s;",
-		   _svg_fill_style[drawstate->fill_rule_type]);
+	  sprintf (page->point, "fill-rule=\"%s\" ",
+		   svg_fill_style[drawstate->fill_rule_type]);
 	  _update_buffer (page);
 	}
     }
-  
-  sprintf (page->point, "\"");
-  _update_buffer (page);
 }

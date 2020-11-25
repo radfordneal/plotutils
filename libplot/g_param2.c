@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This database lists the Plotter parameters parameters (i.e. device
    driver parameters) that are recognized, and their default values.
    Whether or not a parameter is a string is listed too. */
@@ -34,7 +52,7 @@ const struct plParamRecord _known_params[NUM_PLOTTER_PARAMETERS] =
   {"HPGL_ROTATE", (char *)"no", true},	/* hpgl */
   {"HPGL_VERSION", (char *)"2", true},	/* hpgl */
   {"INTERLACE", (char *)"no", true}, /* gif */
-  {"MAX_LINE_LENGTH", (char *)MAX_UNFILLED_PATH_LENGTH_STRING, true}, /* all but tek and meta */
+  {"MAX_LINE_LENGTH", (char *)PL_MAX_UNFILLED_PATH_LENGTH_STRING, true}, /* all but tek and meta */
   {"META_PORTABLE", (char *)"no", true}, /* meta */
   {"PAGESIZE", (char *)"letter", true}, /* hpgl, pcl, fig, cgm, ps, ai */
   {"PCL_ASSIGN_COLORS", (char *)"no", true}, /* pcl */

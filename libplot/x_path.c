@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -41,18 +59,13 @@
 
 /* number of XPoint structs we can store on the stack, for speed, without
    invoking malloc */
-#define MAX_NUM_X_POINTS_ON_STACK 128
+#define MAX_NUM_POINTS_ON_STACK 128
 
 #define DIST(p1, p2) sqrt( ((p1).x - (p2).x) * ((p1).x - (p2).x) \
 			  + ((p1).y - (p2).y) * ((p1).y - (p2).y))
 
 void
-#ifdef _HAVE_PROTOS
-_x_paint_path (S___(Plotter *_plotter))
-#else
-_x_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_paint_path (S___(Plotter *_plotter))
 {
   if (_plotter->drawstate->pen_type == 0
       && _plotter->drawstate->fill_type == 0)
@@ -67,7 +80,7 @@ _x_paint_path (S___(_plotter))
 	int is_a_rectangle;
 	int i, polyline_len;
 	plPoint p0, p1, pc;
-	XPoint *xarray, local_xarray[MAX_NUM_X_POINTS_ON_STACK];
+	XPoint *xarray, local_xarray[MAX_NUM_POINTS_ON_STACK];
 	bool heap_storage;
 	double xu_last, yu_last;
 	bool identical_user_coordinates;
@@ -88,7 +101,7 @@ _x_paint_path (S___(_plotter))
 	    
 	    /* use native X rendering to draw the (transformed) circular
                arc */
-	    _x_draw_elliptic_arc (R___(_plotter) p0, p1, pc);
+	    _pl_x_draw_elliptic_arc (R___(_plotter) p0, p1, pc);
 
 	    break;
 	  }
@@ -103,7 +116,7 @@ _x_paint_path (S___(_plotter))
 	    
 	    /* use native X rendering to draw the (transformed) elliptic
                arc */
-	    _x_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc);
+	    _pl_x_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc);
 	    
 	    break;
 	  }
@@ -129,7 +142,7 @@ _x_paint_path (S___(_plotter))
 	   to be done.  If so, we'll fill the polyline and re-edge it.  */
 
 	if ((_plotter->drawstate->pen_type != 0 /* pen is present */
-	     && _plotter->drawstate->line_type == L_SOLID
+	     && _plotter->drawstate->line_type == PL_L_SOLID
 	     && !_plotter->drawstate->dash_array_in_effect /* really solid */
 	     && _plotter->drawstate->points_are_connected /* really, really */
 	     && _plotter->drawstate->quantized_device_line_width == 0
@@ -147,7 +160,7 @@ _x_paint_path (S___(_plotter))
 	/* prepare an array of XPoint structures (X11 uses short ints for
 	   these) */
 	if (_plotter->drawstate->path->num_segments 
-	    <= MAX_NUM_X_POINTS_ON_STACK)
+	    <= MAX_NUM_POINTS_ON_STACK)
 	  /* store XPoints on stack, for speed */
 	  {
 	    xarray = local_xarray;
@@ -156,7 +169,7 @@ _x_paint_path (S___(_plotter))
 	else
 	  /* store XPoints in heap */
 	  {
-	    xarray = (XPoint *)_plot_xmalloc (_plotter->drawstate->path->num_segments * sizeof(XPoint));
+	    xarray = (XPoint *)_pl_xmalloc (_plotter->drawstate->path->num_segments * sizeof(XPoint));
 	    heap_storage = true;
 	  }
 	
@@ -181,7 +194,7 @@ _x_paint_path (S___(_plotter))
 	    device_x = IROUND(xd);
 	    device_y = IROUND(yd);
 	    
-	    if (XOOB_INT(device_x) || XOOB_INT(device_y))
+	    if (X_OOB_INT(device_x) || X_OOB_INT(device_y))
 	      /* point position can't be represented using X11's 2-byte
 		 ints, so truncate the polyline right here */
 	      {
@@ -252,12 +265,12 @@ _x_paint_path (S___(_plotter))
 	      = (_plotter->drawstate->path->primitive ? Convex : Complex);
 	    
 	    /* update GC used for filling */
-	    _x_set_attributes (R___(_plotter) X_GC_FOR_FILLING);
+	    _pl_x_set_attributes (R___(_plotter) X_GC_FOR_FILLING);
 	    
 	    /* select fill color as foreground color in GC used for filling */
-	    _x_set_fill_color (S___(_plotter));
+	    _pl_x_set_fill_color (S___(_plotter));
 		    
-	    if (_plotter->x_double_buffering != DBL_NONE)
+	    if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 	      {
 		if (_plotter->drawstate->path->num_segments > 1 
 		      && polyline_len == 1)
@@ -349,10 +362,10 @@ _x_paint_path (S___(_plotter))
 	    unsigned int sp_size = 1;
 
 	    /* update GC used for drawing */
-	    _x_set_attributes (R___(_plotter) X_GC_FOR_DRAWING);
+	    _pl_x_set_attributes (R___(_plotter) X_GC_FOR_DRAWING);
 	    
 	    /* select pen color as foreground color in GC used for drawing */
-	    _x_set_pen_color (S___(_plotter));
+	    _pl_x_set_pen_color (S___(_plotter));
 	    
 	    /* Check first for the special case: all points in the polyline
 	       were mapped to a single integer X pixel.  If (1) they
@@ -377,7 +390,7 @@ _x_paint_path (S___(_plotter))
 		yloc = xarray[0].y - sp_offset;
 	      }
 
-	    if (_plotter->x_double_buffering != DBL_NONE)
+	    if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 	      /* double buffering, have a `x_drawable3' to draw into */
 	      {
 		if (_plotter->drawstate->path->num_segments > 1 
@@ -385,7 +398,7 @@ _x_paint_path (S___(_plotter))
 		  /* special case */
 		  {
 		    if (identical_user_coordinates == false
-			|| _plotter->drawstate->cap_type == CAP_ROUND)
+			|| _plotter->drawstate->cap_type == PL_CAP_ROUND)
 		      {
 			if (sp_size == 1)
 			  /* subcase: just draw a point */
@@ -407,7 +420,7 @@ _x_paint_path (S___(_plotter))
 		  {
 		    if (is_a_rectangle
 			&& _plotter->drawstate->dash_array_in_effect == false
-			&& _plotter->drawstate->line_type == L_SOLID)
+			&& _plotter->drawstate->line_type == PL_L_SOLID)
 		      /* call XDrawRectangle, for speed */
 		      XDrawRectangle (_plotter->x_dpy, _plotter->x_drawable3, 
 				      _plotter->drawstate->x_gc_fg, 
@@ -431,7 +444,7 @@ _x_paint_path (S___(_plotter))
 		  /* special case */
 		  {
 		    if (identical_user_coordinates == false
-			|| _plotter->drawstate->cap_type == CAP_ROUND)
+			|| _plotter->drawstate->cap_type == PL_CAP_ROUND)
 		      {
 			if (sp_size == 1)
 			  /* subcase: just draw a point */
@@ -468,7 +481,7 @@ _x_paint_path (S___(_plotter))
 		  {
 		    if (is_a_rectangle
 			&& _plotter->drawstate->dash_array_in_effect == false
-			&& _plotter->drawstate->line_type == L_SOLID)
+			&& _plotter->drawstate->line_type == PL_L_SOLID)
 		      /* call XDrawRectangle, for speed */
 		      {
 			if (_plotter->x_drawable1)
@@ -568,7 +581,7 @@ _x_paint_path (S___(_plotter))
 
 	/* draw ellipse (elliptic arc aligned with the coordinate axes, arc
 	   range = 64*360 64'ths of a degree) */
-	_x_draw_elliptic_arc_internal (R___(_plotter) 
+	_pl_x_draw_elliptic_arc_internal (R___(_plotter) 
 				       xorigin, yorigin, 
 				       squaresize_x, squaresize_y, 
 				       0, 64 * 360);
@@ -592,13 +605,7 @@ _x_paint_path (S___(_plotter))
    elliptic arc in the device frame, of the sort that X11 supports. */
 
 void
-#ifdef _HAVE_PROTOS
-_x_draw_elliptic_arc (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
-#else
-_x_draw_elliptic_arc (R___(_plotter) p0, p1, pc)
-     S___(Plotter *_plotter;)
-     plPoint p0, p1, pc;
-#endif
+_pl_x_draw_elliptic_arc (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
 {
   double radius;
   double theta0, theta1;
@@ -656,7 +663,7 @@ _x_draw_elliptic_arc (R___(_plotter) p0, p1, pc)
   startangle = IROUND(64 * theta0 * 180.0); /* in 64'ths of a degree */
   anglerange = IROUND(64 * (theta1 - theta0) * 180.0); /* likewise */
 
-  _x_draw_elliptic_arc_internal (R___(_plotter)
+  _pl_x_draw_elliptic_arc_internal (R___(_plotter)
 				 xorigin, yorigin, 
 				 squaresize_x, squaresize_y, 
 				 startangle, anglerange);
@@ -670,13 +677,7 @@ _x_draw_elliptic_arc (R___(_plotter) p0, p1, pc)
    quarter-ellipse in the device frame, of the sort that the X11 drawing
    protocol supports. */
 void
-#ifdef _HAVE_PROTOS
-_x_draw_elliptic_arc_2 (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
-#else
-_x_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc)
-     S___(Plotter *_plotter;)
-     plPoint p0, p1, pc;
-#endif
+_pl_x_draw_elliptic_arc_2 (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
 {
   double rx, ry;
   double x0, y0, x1, y1, xc, yc;
@@ -747,7 +748,7 @@ _x_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc)
   startangle *= 64;
   anglerange *= 64;
 
-  _x_draw_elliptic_arc_internal (R___(_plotter)
+  _pl_x_draw_elliptic_arc_internal (R___(_plotter)
 				 xorigin, yorigin, 
 				 squaresize_x, squaresize_y, 
 				 startangle, anglerange);
@@ -763,18 +764,10 @@ _x_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc)
    squaresize_{x,y} = 1 in the way we'd like (undocumented). */
 
 void
-#ifdef _HAVE_PROTOS
-_x_draw_elliptic_arc_internal (R___(Plotter *_plotter) int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange)
-#else
-_x_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, squaresize_y, startangle, anglerange)
-     S___(Plotter *_plotter;)
-     int xorigin, yorigin; 
-     unsigned int squaresize_x, squaresize_y; 
-     int startangle, anglerange;
-#endif
+_pl_x_draw_elliptic_arc_internal (R___(Plotter *_plotter) int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange)
 {
-  if (XOOB_INT(xorigin) || XOOB_INT(yorigin) || XOOB_UNSIGNED(squaresize_x)
-      || XOOB_UNSIGNED(squaresize_y))
+  if (X_OOB_INT(xorigin) || X_OOB_INT(yorigin) || X_OOB_UNSIGNED(squaresize_x)
+      || X_OOB_UNSIGNED(squaresize_y))
     /* dimensions can't be represented using X11's 2-byte ints, so punt */
     {
       _plotter->warning (R___(_plotter) 
@@ -786,16 +779,16 @@ _x_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
     /* not transparent, so fill the arc */
     {
       /* update GC used for filling */
-      _x_set_attributes (R___(_plotter) X_GC_FOR_FILLING);
+      _pl_x_set_attributes (R___(_plotter) X_GC_FOR_FILLING);
 
       /* select fill color as foreground color in GC used for filling */
-      _x_set_fill_color (S___(_plotter));
+      _pl_x_set_fill_color (S___(_plotter));
 
       if (squaresize_x <= 1 || squaresize_y <= 1)
 	/* a special case, which XFillArc() doesn't handle in the way we'd
 	   like; just paint a single pixel, irrespective of angle range */
 	{
-	  if (_plotter->x_double_buffering != DBL_NONE)
+	  if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 	    XDrawPoint (_plotter->x_dpy, _plotter->x_drawable3, 
 			_plotter->drawstate->x_gc_fill, 
 			xorigin, yorigin);
@@ -814,7 +807,7 @@ _x_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
       else
 	/* default case, almost always used */
 	{
-	  if (_plotter->x_double_buffering != DBL_NONE)
+	  if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 	    XFillArc(_plotter->x_dpy, _plotter->x_drawable3, 
 		     _plotter->drawstate->x_gc_fill, 
 		     xorigin, yorigin, squaresize_x, squaresize_y,
@@ -841,10 +834,10 @@ _x_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
       unsigned int sp_size = 0;	/* keep compiler happy */
 
       /* update GC used for drawing */
-      _x_set_attributes (R___(_plotter) X_GC_FOR_DRAWING);
+      _pl_x_set_attributes (R___(_plotter) X_GC_FOR_DRAWING);
       
       /* select pen color as foreground color in GC used for drawing */
-      _x_set_pen_color (S___(_plotter));
+      _pl_x_set_pen_color (S___(_plotter));
       
       if (squaresize_x <= 1 || squaresize_y <= 1)
 	/* Won't call XDrawArc in the usual way, because it performs poorly
@@ -871,7 +864,7 @@ _x_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
 	    /* special subcase: line width is small too, so just paint a
 	       single pixel rather than filling abovementioned disk */
 	    {
-	      if (_plotter->x_double_buffering != DBL_NONE)
+	      if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 		XDrawPoint (_plotter->x_dpy, _plotter->x_drawable3, 
 			    _plotter->drawstate->x_gc_fg, 
 			    xorigin, yorigin);
@@ -891,7 +884,7 @@ _x_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
 	    /* normal version of special case: fill a disk of diameter
 	       equal to line width */
 	    {
-	      if (_plotter->x_double_buffering != DBL_NONE)
+	      if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 		XFillArc(_plotter->x_dpy, _plotter->x_drawable3, 
 			 _plotter->drawstate->x_gc_fg, 
 			 xorigin, yorigin, sp_size, sp_size,
@@ -914,7 +907,7 @@ _x_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
       else
 	/* default case, which is what is almost always used */
 	{
-	  if (_plotter->x_double_buffering != DBL_NONE)
+	  if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 	    XDrawArc(_plotter->x_dpy, _plotter->x_drawable3, 
 		     _plotter->drawstate->x_gc_fg, 
 		     xorigin, yorigin, squaresize_x, squaresize_y,
@@ -945,15 +938,10 @@ _x_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
    will return true. */
 
 bool
-#ifdef _HAVE_PROTOS
-_x_path_is_flushable (S___(Plotter *_plotter))
-#else
-_x_path_is_flushable (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_path_is_flushable (S___(Plotter *_plotter))
 {
   if (_plotter->drawstate->pen_type != 0 /* pen is present */
-      && _plotter->drawstate->line_type == L_SOLID
+      && _plotter->drawstate->line_type == PL_L_SOLID
       && !_plotter->drawstate->dash_array_in_effect /* really solid */
       && _plotter->drawstate->points_are_connected /* really, really */
       && _plotter->drawstate->quantized_device_line_width == 0
@@ -982,13 +970,7 @@ _x_path_is_flushable (S___(_plotter))
    must of course be specified too, to set the axis limits in advance. */
 
 void
-#ifdef _HAVE_PROTOS
-_x_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
-#else
-_x_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
-     S___(Plotter *_plotter;)
-     int prev_num_segments;
-#endif
+_pl_x_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
 {
   int i;
   bool something_drawn = false;
@@ -1012,7 +994,7 @@ _x_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
      time, we'll fill it and re-edge it. */
 
   if (!(_plotter->drawstate->pen_type != 0 /* pen is present */
-	&& _plotter->drawstate->line_type == L_SOLID
+	&& _plotter->drawstate->line_type == PL_L_SOLID
 	&& !_plotter->drawstate->dash_array_in_effect /* really solid */
 	&& _plotter->drawstate->points_are_connected /* really, really */
 	&& _plotter->drawstate->quantized_device_line_width == 0
@@ -1048,10 +1030,10 @@ _x_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
     /* first segment of path; this must be a `moveto' */
     {
       /* update GC used for drawing */
-      _x_set_attributes (R___(_plotter) X_GC_FOR_DRAWING);
+      _pl_x_set_attributes (R___(_plotter) X_GC_FOR_DRAWING);
       
       /* select pen color as foreground color in GC used for drawing */
-      _x_set_pen_color (S___(_plotter));
+      _pl_x_set_pen_color (S___(_plotter));
     }
   
   /* Iterate over all segments to be painted.  Because X/XDrawable Plotters
@@ -1089,7 +1071,7 @@ _x_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
       if (x1 != x2 || y1 != y2)
 	/* line segment has nonzero length, so draw it */
 	{
-	  if (_plotter->x_double_buffering != DBL_NONE)
+	  if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 	    /* double buffering, have a `x_drawable3' to draw into */
 	    XDrawLine (_plotter->x_dpy, _plotter->x_drawable3, 
 		       _plotter->drawstate->x_gc_fg, x1, y1, x2, y2);
@@ -1109,10 +1091,10 @@ _x_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
 	/* line segment in terms of integer device coordinates has zero
 	   length; but if it has nonzero length in user coordinates, draw
 	   it as a single pixel unless cap type is "butt" */
-	if (!(_plotter->drawstate->cap_type == CAP_BUTT
+	if (!(_plotter->drawstate->cap_type == PL_CAP_BUTT
 	      && xu == x && yu == y))
 	  {
-	    if (_plotter->x_double_buffering != DBL_NONE)
+	    if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 	      /* double buffering, have a `x_drawable3' to draw into */
 	      XDrawPoint (_plotter->x_dpy, _plotter->x_drawable3,
 			  _plotter->drawstate->x_gc_fg, 
@@ -1141,12 +1123,7 @@ _x_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_x_paint_paths (S___(Plotter *_plotter))
-#else
-_x_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_paint_paths (S___(Plotter *_plotter))
 {
   return false;
 }

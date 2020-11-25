@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains a low-level routine for shifting a Tektronix graphics
    device to a specified display mode, by emitting an escape sequence if
    necessary. */
@@ -75,41 +93,35 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_tek_mode(R___(Plotter *_plotter) int newmode)
-#else
-_tek_mode(R___(_plotter) newmode)
-     S___(Plotter *_plotter;)
-     int newmode;
-#endif
+_pl_t_tek_mode(R___(Plotter *_plotter) int newmode)
 {
   if (_plotter->tek_mode_is_unknown || _plotter->tek_mode != newmode)
     /* need to emit escape sequence */
     {
       switch (newmode)
 	{
-	case MODE_ALPHA:
+	case TEK_MODE_ALPHA:
 	  /* ASCII US, i.e. ^_ (enter alpha mode) */
 	  _write_byte (_plotter->data, '\037');
 	  break;
-	case MODE_PLOT:
+	case TEK_MODE_PLOT:
 	  if ((_plotter->tek_mode_is_unknown) 
-	      || (_plotter->tek_mode == MODE_POINT)
-	      || (_plotter->tek_mode == MODE_INCREMENTAL))
+	      || (_plotter->tek_mode == TEK_MODE_POINT)
+	      || (_plotter->tek_mode == TEK_MODE_INCREMENTAL))
 	    /* ASCII US, i.e. ^_ (enter alpha) */
 	    _write_byte (_plotter->data, '\037');
 	  /* ASCII GS, i.e. ^] (enter vector mode)*/
 	  _write_byte (_plotter->data, '\035');
 	  break;
-	case MODE_POINT:
+	case TEK_MODE_POINT:
 	  if ((_plotter->tek_mode_is_unknown) || 
-	      (_plotter->tek_mode == MODE_INCREMENTAL))
+	      (_plotter->tek_mode == TEK_MODE_INCREMENTAL))
 	    /* ASCII US, i.e. ^_ (enter alpha) */
 	    _write_byte (_plotter->data, '\037'); 
 	  /* ASCII FS, i.e. ^\ (enter point mode) */
 	  _write_byte (_plotter->data, '\034'); 
 	  break;
-	case MODE_INCREMENTAL:
+	case TEK_MODE_INCREMENTAL:
 	  /* ASCII RS, i.e. ^^ (enter incplot mode)*/
 	  _write_byte (_plotter->data, '\036'); 
 	  break;

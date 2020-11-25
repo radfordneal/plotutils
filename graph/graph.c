@@ -1,20 +1,44 @@
-/* This file contains the main routine, and a few support subroutines, for
-   GNU graph.
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
 
-   Copyright (C) 1989-1999 Free Software Foundation, Inc. */
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
+/* This file contains the main routine, and a few support subroutines, for
+   GNU graph. */
 
 #include "sys-defines.h"
 #include "extern.h"
+#include "libcommon.h"
 #include "getopt.h"
+#include "fontlist.h"
+
+/* options */
 
 #define	ARG_NONE	0
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
+const char *optstring = "-BCHOQVstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::"; /* initial hyphen requests no reordering */
+
 struct option long_options[] =
 {
-  /* The most important option */
-  {"display-type",	ARG_REQUIRED,	NULL, 'T'},
+  /* The most important option ("--display-type" is an obsolete variant) */
+  { "output-format",	ARG_REQUIRED,	NULL, 'T'},
+  { "display-type",	ARG_REQUIRED,	NULL, 'T' << 8 }, /* hidden */
   /* Other frequently used options */
   {"auto-abscissa",	ARG_OPTIONAL,	NULL, 'a'}, /* 0 or 1 or 2 */
   {"clip-mode",		ARG_REQUIRED,	NULL, 'K'},
@@ -35,6 +59,7 @@ struct option long_options[] =
   {"toggle-frame-on-top",	ARG_NONE,	NULL, 'H'},
   {"toggle-log-axis",	ARG_REQUIRED,	NULL, 'l'},
   {"toggle-no-ticks",	ARG_REQUIRED,	NULL, 'N'},
+  {"toggle-rotate-y-label",	ARG_NONE,	NULL, 'Q'},
   {"toggle-round-to-next-tick",	ARG_REQUIRED,	NULL, 'R'},
   {"toggle-transpose-axes",	ARG_NONE,	NULL, 't'},
   {"toggle-use-color",	ARG_NONE,	NULL, 'C'},
@@ -59,7 +84,6 @@ struct option long_options[] =
   {"symbol-font-name",	ARG_REQUIRED,	NULL, 'G' << 8},
   {"title-font-name",	ARG_REQUIRED,	NULL, 'Z' << 8},
   {"title-font-size",	ARG_REQUIRED,	NULL, 'F' << 8},
-  {"toggle-rotate-y-label",	ARG_NONE,	NULL, 'N' << 8},
   {"page-size",		ARG_REQUIRED,	NULL, 'P' << 8},
   /* Options relevant only to raw graph (refers to plot(5) output) */
   {"portable-output",	ARG_NONE,	NULL, 'O'},
@@ -71,27 +95,24 @@ struct option long_options[] =
   {NULL, 0, 0, 0}
 };
 
-/* null-terminated list of options that we don't show to the user */
-int hidden_options[] = { 0 };
+/* null-terminated list of options, such as obsolete-but-still-maintained
+   options or undocumented options, which we don't show to the user */
+const int hidden_options[] = { (int)('T' << 8), 0 };
 
 const char *progname = "graph";	/* name of this program */
+const char *written = "Written by Robert S. Maier.";
+const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
 
 /* forward references */
-static void close_file ____P ((char *filename, FILE *stream));
-static void open_file_for_reading ____P ((char *filename, FILE **input));
-static bool parse_pen_string ____P ((const char *pen_s));
+static void close_file (char *filename, FILE *stream);
+static void open_file_for_reading (char *filename, FILE **input);
+static bool parse_pen_string (const char *pen_s);
 
 int
-#ifdef _HAVE_PROTOS
 main (int argc, char *argv[])
-#else
-main (argc, argv)
-     int argc;
-     char *argv[];
-#endif
 {
   /* Variables related to getopt parsing */
 
@@ -142,7 +163,7 @@ main (argc, argv)
   Multigrapher *multigrapher = NULL;
   
   /* command-line parameters (constant over multigrapher operation) */
-  const char *display_type = "meta";/* libplot output format */
+  const char *output_format = "meta";/* libplot output format */
   const char *bg_color = NULL;	/* color of background, if non-NULL */
   const char *bitmap_size = NULL;
   const char *emulate_color = NULL;
@@ -259,8 +280,8 @@ main (argc, argv)
 	{
 	  option = getopt_long (argc, argv, 
 				/* initial hyphen requests no reordering */
-				"-BCHOVstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::", 
-			    long_options, &opt_index);
+				optstring, 
+				long_options, &opt_index);
 	  if (option == EOF)	/* end of options */
 	    {
 	      using_getopt = false;
@@ -348,7 +369,7 @@ main (argc, argv)
 	  do_list_fonts = true;
 	  continue_parse = false;
 	  break;
-	case 'N' << 8:		/* Toggle rotation of y-label, ARG NONE */
+	case 'Q':		/* Toggle rotation of y-label, ARG NONE */
 	  no_rotate_y_label = (no_rotate_y_label == true ? false : true);
 	  break;
 
@@ -573,8 +594,9 @@ main (argc, argv)
 	      errcnt++;
 	    }
 	  break;
-	case 'T':		/* Display type, ARG REQUIRED      */
-	  display_type = xstrdup (optarg);
+	case 'T':		/* Output format, ARG REQUIRED      */
+	case 'T' << 8:
+	  output_format = xstrdup (optarg);
 	  break;
 	case 'F':		/* Font name, ARG REQUIRED      */
 	  font_name = xstrdup (optarg);
@@ -969,7 +991,7 @@ main (argc, argv)
 		  if (first_graph_of_multigraph)
 		    /* haven't created multigrapher yet, do so now */
 		    {
-		      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+		      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 			{
 			  fprintf (stderr, 
 				   "%s: error: couldn't open graphing device\n", progname);
@@ -1185,7 +1207,7 @@ main (argc, argv)
 		  if (first_graph_of_multigraph)
 		    /* need to create the multigrapher */
 		    {
-		      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+		      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 			{
 			  fprintf (stderr, 
 				   "%s: error: couldn't open graphing device\n", 
@@ -1370,14 +1392,14 @@ main (argc, argv)
     }
   if (show_version)
     {
-      display_version (progname);
+      display_version (progname, written, copyright);
       return EXIT_SUCCESS;
     }
   if (do_list_fonts)
     {
       int success;
 
-      success = list_fonts (display_type, progname);
+      success = list_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -1387,7 +1409,7 @@ main (argc, argv)
     {
       int success;
 
-      success = display_fonts (display_type, progname);
+      success = display_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -1425,7 +1447,7 @@ main (argc, argv)
 	  if (first_graph_of_multigraph)
 	    /* still haven't created multigrapher, do so now */
 	    {
-	      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+	      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 		{
 		  fprintf (stderr, 
 			   "%s: error: couldn't open graphing device\n", progname);
@@ -1512,13 +1534,7 @@ main (argc, argv)
 
 
 static void
-#ifdef _HAVE_PROTOS
 open_file_for_reading (char *filename, FILE **input)
-#else
-open_file_for_reading (filename, input)
-     char *filename;
-     FILE **input;
-#endif
 {
   FILE *data_file;
 		
@@ -1533,13 +1549,7 @@ open_file_for_reading (filename, input)
 }  
 
 static void
-#ifdef _HAVE_PROTOS
 close_file (char *filename, FILE *stream)
-#else
-close_file (filename, stream)
-     char *filename;
-     FILE *stream;
-#endif
 {
   if (fclose (stream) < 0)
     fprintf (stderr, 
@@ -1548,12 +1558,7 @@ close_file (filename, stream)
 }
 
 static bool
-#ifdef _HAVE_PROTOS
 parse_pen_string (const char *pen_s)
-#else
-parse_pen_string (pen_s)
-     const char *pen_s;
-#endif
 {
   const char *charp;
   char name[MAX_COLOR_NAME_LEN];

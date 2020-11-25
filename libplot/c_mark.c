@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* The paint_marker method, which is an internal function that is called
    when the marker() method is invoked.  It plots an object: a marker of a
    specified type, at a specified size, at the current location.
@@ -16,14 +34,7 @@
 #define MAXIMUM_MARKER_DIMENSION (5.0/8.0)
 
 bool
-#ifdef _HAVE_PROTOS
-_c_paint_marker (R___(Plotter *_plotter) int type, double size)
-#else
-_c_paint_marker (R___(_plotter) type, size)
-     S___(Plotter *_plotter;)
-     int type;
-     double size;
-#endif
+_pl_c_paint_marker (R___(Plotter *_plotter) int type, double size)
 {
   int desired_marker_type, desired_marker_size;
   double xd, yd, size_d;
@@ -103,7 +114,7 @@ _c_paint_marker (R___(_plotter) type, size)
 	}
   
       /* set CGM marker color */
-      _c_set_pen_color (R___(_plotter) CGM_OBJECT_MARKER);
+      _pl_c_set_pen_color (R___(_plotter) CGM_OBJECT_MARKER);
       
       /* compute location in device frame */
       xd = XD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y);

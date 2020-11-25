@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains all of libplot's low-level code for constructing and
    manipulating paths, both simple and compound.  It includes functions
    that construct polygonal and Bezier approximations to a given path.
@@ -39,28 +57,24 @@
 #define REL_QUAD_FLATNESS 5e-4
 #define REL_CUBIC_FLATNESS 5e-4
 
-#define DATAPOINTS_BUFSIZ MAX_UNFILLED_PATH_LENGTH
+#define DATAPOINTS_BUFSIZ PL_MAX_UNFILLED_PATH_LENGTH
 #define DIST(p0,p1) (sqrt( ((p0).x - (p1).x)*((p0).x - (p1).x) \
 			  + ((p0).y - (p1).y)*((p0).y - (p1).y)))
 
 #define MIDWAY(x0, x1) (0.5 * ((x0) + (x1)))
 
 /* forward references */
-static void _prepare_chord_table ____P ((double sagitta, double custom_chord_table[TABULATED_ARC_SUBDIVISIONS]));
-static void _fakearc ____P ((plPath *path, plPoint p0, plPoint p1, int arc_type, const double *custom_chord_table, const double m[4]));
+static void _prepare_chord_table (double sagitta, double custom_chord_table[TABULATED_ARC_SUBDIVISIONS]);
+static void _fakearc (plPath *path, plPoint p0, plPoint p1, int arc_type, const double *custom_chord_table, const double m[4]);
 
 /* ctor for plPath class; constructs an empty plPath, with type set to
    PATH_SEGMENT_LIST (default type) */
 plPath *
-#ifdef _HAVE_PROTOS
 _new_plPath (void)
-#else
-_new_plPath ()
-#endif
 {
   plPath *path;
   
-  path = (plPath *)_plot_xmalloc (sizeof (plPath));
+  path = (plPath *)_pl_xmalloc (sizeof (plPath));
 
   path->type = PATH_SEGMENT_LIST;
   path->segments = (plPathSegment *)NULL;
@@ -78,12 +92,7 @@ _new_plPath ()
   
 /* dtor for plPath class */
 void
-#ifdef _HAVE_PROTOS
 _delete_plPath (plPath *path)
-#else
-_delete_plPath (path)
-     plPath *path;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -96,12 +105,7 @@ _delete_plPath (path)
 
 /* reset function for plPath class */
 void
-#ifdef _HAVE_PROTOS
 _reset_plPath (plPath *path)
-#else
-_reset_plPath (path)
-     plPath *path;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -122,13 +126,7 @@ _reset_plPath (path)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_moveto (plPath *path, plPoint p)
-#else
-_add_moveto (path, p)
-     plPath *path;
-     plPoint p;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -138,7 +136,7 @@ _add_moveto (path, p)
   
   /* empty, so allocate a segment buffer */
   path->segments = (plPathSegment *) 
-    _plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
+    _pl_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
   path->segments_len = DATAPOINTS_BUFSIZ;
   
   path->segments[0].type = S_MOVETO;
@@ -152,13 +150,7 @@ _add_moveto (path, p)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_line (plPath *path, plPoint p)
-#else
-_add_line (path, p)
-     plPath *path;
-     plPoint p;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -170,7 +162,7 @@ _add_line (path, p)
     /* empty, so allocate a segment buffer */
     {
       path->segments = (plPathSegment *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
+	_pl_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
       path->segments_len = DATAPOINTS_BUFSIZ;
     }
   
@@ -178,7 +170,7 @@ _add_line (path, p)
     /* full, so reallocate */
     {
       path->segments = (plPathSegment *) 
-	_plot_xrealloc (path->segments, 
+	_pl_xrealloc (path->segments, 
 			2 * path->segments_len * sizeof(plPathSegment));
       path->segments_len *= 2;
     }
@@ -194,12 +186,7 @@ _add_line (path, p)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_closepath (plPath *path)
-#else
-_add_closepath (path)
-     plPath *path;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -214,7 +201,7 @@ _add_closepath (path)
     /* full, so reallocate */
     {
       path->segments = (plPathSegment *) 
-	_plot_xrealloc (path->segments, 
+	_pl_xrealloc (path->segments, 
 			2 * path->segments_len * sizeof(plPathSegment));
       path->segments_len *= 2;
     }
@@ -225,13 +212,7 @@ _add_closepath (path)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_bezier2 (plPath *path, plPoint pc, plPoint p)
-#else
-_add_bezier2 (path, pc, p)
-     plPath *path;
-     plPoint pc, p;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -243,7 +224,7 @@ _add_bezier2 (path, pc, p)
     /* empty, so allocate a segment buffer */
     {
       path->segments = (plPathSegment *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
+	_pl_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
       path->segments_len = DATAPOINTS_BUFSIZ;
     }
   
@@ -251,7 +232,7 @@ _add_bezier2 (path, pc, p)
     /* full, so reallocate */
     {
       path->segments = (plPathSegment *) 
-	_plot_xrealloc (path->segments, 
+	_pl_xrealloc (path->segments, 
 			2 * path->segments_len * sizeof(plPathSegment));
       path->segments_len *= 2;
     }
@@ -263,13 +244,7 @@ _add_bezier2 (path, pc, p)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_bezier3 (plPath *path, plPoint pc, plPoint pd, plPoint p)
-#else
-_add_bezier3 (path, pc, pd, p)
-     plPath *path;
-     plPoint pc, pd, p;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -281,7 +256,7 @@ _add_bezier3 (path, pc, pd, p)
     /* empty, so allocate a segment buffer */
     {
       path->segments = (plPathSegment *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
+	_pl_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
       path->segments_len = DATAPOINTS_BUFSIZ;
     }
   
@@ -289,7 +264,7 @@ _add_bezier3 (path, pc, pd, p)
     /* full, so reallocate */
     {
       path->segments = (plPathSegment *) 
-	_plot_xrealloc (path->segments, 
+	_pl_xrealloc (path->segments, 
 			2 * path->segments_len * sizeof(plPathSegment));
       path->segments_len *= 2;
     }
@@ -302,13 +277,7 @@ _add_bezier3 (path, pc, pd, p)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_arc (plPath *path, plPoint pc, plPoint p1)
-#else
-_add_arc (path, pc, p1)
-     plPath *path;
-     plPoint pc, p1;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -320,7 +289,7 @@ _add_arc (path, pc, p1)
     /* empty, so allocate a segment buffer */
     {
       path->segments = (plPathSegment *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
+	_pl_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
       path->segments_len = DATAPOINTS_BUFSIZ;
     }
   
@@ -328,7 +297,7 @@ _add_arc (path, pc, p1)
     /* full, so reallocate */
     {
       path->segments = (plPathSegment *) 
-	_plot_xrealloc (path->segments, 
+	_pl_xrealloc (path->segments, 
 			2 * path->segments_len * sizeof(plPathSegment));
       path->segments_len *= 2;
     }
@@ -340,13 +309,7 @@ _add_arc (path, pc, p1)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_ellarc (plPath *path, plPoint pc, plPoint p1)
-#else
-_add_ellarc (path, pc, p1)
-     plPath *path;
-     plPoint pc, p1;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -358,7 +321,7 @@ _add_ellarc (path, pc, p1)
     /* empty, so allocate a segment buffer */
     {
       path->segments = (plPathSegment *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
+	_pl_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plPathSegment));
       path->segments_len = DATAPOINTS_BUFSIZ;
     }
   
@@ -366,7 +329,7 @@ _add_ellarc (path, pc, p1)
     /* full, so reallocate */
     {
       path->segments = (plPathSegment *) 
-	_plot_xrealloc (path->segments, 
+	_pl_xrealloc (path->segments, 
 			2 * path->segments_len * sizeof(plPathSegment));
       path->segments_len *= 2;
     }
@@ -378,14 +341,7 @@ _add_ellarc (path, pc, p1)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_box (plPath *path, plPoint p0, plPoint p1, bool clockwise)
-#else
-_add_box (path, p0, p1, clockwise)
-     plPath *path;
-     plPoint p0, p1;
-     bool clockwise;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -410,15 +366,7 @@ _add_box (path, p0, p1, clockwise)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_circle (plPath *path, plPoint pc, double radius, bool clockwise)
-#else
-_add_circle (path, pc, radius, clockwise)
-     plPath *path;
-     plPoint pc;
-     double radius;
-     bool clockwise;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -433,15 +381,7 @@ _add_circle (path, pc, radius, clockwise)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_ellipse (plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise)
-#else
-_add_ellipse (path, pc, rx, ry, angle, clockwise)
-     plPath *path;
-     plPoint pc;
-     double rx, ry, angle;
-     bool clockwise;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -463,13 +403,7 @@ _add_ellipse (path, pc, rx, ry, angle, clockwise)
    that pc is on the perpendicular bisector of the line segment joining
    them, and that the graphics cursor is initially located at p0. */
 void
-#ifdef _HAVE_PROTOS
 _add_arc_as_lines (plPath *path, plPoint pc, plPoint p1)
-#else
-_add_arc_as_lines (path, pc, p1)
-     plPath *path;
-     plPoint pc, p1; 
-#endif
 {
   /* starting point */
   plPoint p0;
@@ -550,13 +484,7 @@ _add_arc_as_lines (path, pc, p1)
    p1, and will be tangent at p0 to the edge from p0 to K, and at p1 to the
    edge from p1 to K. */
 void 
-#ifdef _HAVE_PROTOS
 _add_ellarc_as_lines (plPath *path, plPoint pc, plPoint p1)
-#else
-_add_ellarc_as_lines (path, pc, p1)
-     plPath *path;
-     plPoint pc, p1; 
-#endif
 { 
   plPoint p0;
   plVector v0, v1; 
@@ -624,13 +552,7 @@ _add_ellarc_as_lines (path, pc, p1)
    He doesn't have an improved value of KAPPA for a general arc, though.  */
 
 void 
-#ifdef _HAVE_PROTOS
 _add_arc_as_bezier3 (plPath *path, plPoint pc, plPoint p1)
-#else
-_add_arc_as_bezier3 (path, pc, p1)
-     plPath *path;
-     plPoint pc, p1; 
-#endif
 { 
   plPoint p0;
   plVector v0, v1;
@@ -726,13 +648,7 @@ _add_arc_as_bezier3 (path, pc, p1)
 #define KAPPA_FOR_QUARTER_CIRCLE 0.552284749825
 
 void 
-#ifdef _HAVE_PROTOS
 _add_ellarc_as_bezier3 (plPath *path, plPoint pc, plPoint p1)
-#else
-_add_ellarc_as_bezier3 (path, pc, p1)
-     plPath *path;
-     plPoint pc, p1; 
-#endif
 { 
   plPoint p0, pc_bezier3, pd_bezier3;
   plVector v0, v1;
@@ -768,13 +684,7 @@ _add_ellarc_as_bezier3 (path, pc, p1)
    endpoints of the original Bezier. */
 
 void
-#ifdef _HAVE_PROTOS
 _add_bezier2_as_lines (plPath *path, plPoint pc, plPoint p)
-#else
-_add_bezier2_as_lines (path, pc, p)
-     plPath *path;
-     plPoint pc, p;
-#endif
 {
   plPoint r0[MAX_NUM_BEZIER2_SUBDIVISIONS + 1], r1[MAX_NUM_BEZIER2_SUBDIVISIONS + 1], r2[MAX_NUM_BEZIER2_SUBDIVISIONS + 1];
   int level[MAX_NUM_BEZIER2_SUBDIVISIONS + 1];
@@ -872,13 +782,7 @@ _add_bezier2_as_lines (path, pc, p)
    the endpoints of the original Bezier. */
 
 void
-#ifdef _HAVE_PROTOS
 _add_bezier3_as_lines (plPath *path, plPoint pc, plPoint pd, plPoint p)
-#else
-_add_bezier3_as_lines (path, pc, pd, p)
-     plPath *path;
-     plPoint pc, pd, p;
-#endif
 {
   plPoint r0[MAX_NUM_BEZIER3_SUBDIVISIONS + 1], r1[MAX_NUM_BEZIER3_SUBDIVISIONS + 1], r2[MAX_NUM_BEZIER3_SUBDIVISIONS + 1], r3[MAX_NUM_BEZIER3_SUBDIVISIONS + 1];
   int level[MAX_NUM_BEZIER3_SUBDIVISIONS + 1];
@@ -985,14 +889,7 @@ _add_bezier3_as_lines (path, pc, pd, p)
 }
   
 void
-#ifdef _HAVE_PROTOS
 _add_box_as_lines (plPath *path, plPoint p0, plPoint p1, bool clockwise)
-#else
-_add_box_as_lines (path, p0, p1, clockwise)
-     plPath *path;
-     plPoint p0, p1;
-     bool clockwise;
-#endif
 {
   bool x_move_is_first;
   plPoint newpoint;
@@ -1045,15 +942,7 @@ _add_box_as_lines (path, p0, p1, clockwise)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_ellipse_as_bezier3s (plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise)
-#else
-_add_ellipse_as_bezier3s (path, pc, rx, ry, angle, clockwise)
-     plPath *path;
-     plPoint pc;
-     double rx, ry, angle;
-     bool clockwise;
-#endif
 {
   plPoint startpoint, newpoint;
   double theta, costheta, sintheta;
@@ -1110,15 +999,7 @@ _add_ellipse_as_bezier3s (path, pc, rx, ry, angle, clockwise)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_ellipse_as_ellarcs (plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise)
-#else
-_add_ellipse_as_ellarcs (path, pc, rx, ry, angle, clockwise)
-     plPath *path;
-     plPoint pc;
-     double rx, ry, angle;
-     bool clockwise;
-#endif
 {
   plPoint startpoint, newpoint;
   double theta, costheta, sintheta;
@@ -1175,15 +1056,7 @@ _add_ellipse_as_ellarcs (path, pc, rx, ry, angle, clockwise)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_ellipse_as_lines (plPath *path, plPoint pc, double rx, double ry, double angle, bool clockwise)
-#else
-_add_ellipse_as_lines (path, pc, rx, ry, angle, clockwise)
-     plPath *path;
-     plPoint pc;
-     double rx, ry, angle;
-     bool clockwise;
-#endif
 {
   plPoint startpoint, newpoint;
   double theta, costheta, sintheta;
@@ -1240,15 +1113,7 @@ _add_ellipse_as_lines (path, pc, rx, ry, angle, clockwise)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_circle_as_bezier3s (plPath *path, plPoint pc, double radius, bool clockwise)
-#else
-_add_circle_as_bezier3s (path, pc, radius, clockwise)
-     plPath *path;
-     plPoint pc;
-     double radius;
-     bool clockwise;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -1258,15 +1123,7 @@ _add_circle_as_bezier3s (path, pc, radius, clockwise)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_circle_as_ellarcs (plPath *path, plPoint pc, double radius, bool clockwise)
-#else
-_add_circle_as_ellarcs (path, pc, radius, clockwise)
-     plPath *path;
-     plPoint pc;
-     double radius;
-     bool clockwise;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -1276,15 +1133,7 @@ _add_circle_as_ellarcs (path, pc, radius, clockwise)
 }
 
 void
-#ifdef _HAVE_PROTOS
 _add_circle_as_lines (plPath *path, plPoint pc, double radius, bool clockwise)
-#else
-_add_circle_as_lines (path, pc, radius, clockwise)
-     plPath *path;
-     plPoint pc;
-     double radius;
-     bool clockwise;
-#endif
 {
   if (path == (plPath *)NULL)
     return;
@@ -1349,16 +1198,7 @@ _add_circle_as_lines (path, pc, radius, clockwise)
    points). */
 
 static void 
-#ifdef _HAVE_PROTOS
 _fakearc (plPath *path, plPoint p0, plPoint p1, int arc_type, const double *custom_chord_table, const double m[4])
-#else
-_fakearc (path, p0, p1, arc_type, custom_chord_table, m)
-     plPath *path;
-     plPoint p0, p1;
-     int arc_type;  /* {QUARTER,HALF,THREE_QUARTER,USER_DEFINED}_ARC */
-     const double *custom_chord_table; /* user-supplied lookup table */
-     const double m[4];
-#endif
 {
   plPoint p[NUM_ARC_SUBDIVISIONS + 1], q[NUM_ARC_SUBDIVISIONS + 1];
   int level[NUM_ARC_SUBDIVISIONS + 1];
@@ -1421,13 +1261,7 @@ _fakearc (path, p0, p1, arc_type, custom_chord_table, m)
    that _fakearc() needs when it is employed to draw a circular arc of
    subtended angle other than the default angles it supports */
 static void
-#ifdef _HAVE_PROTOS
 _prepare_chord_table (double sagitta, double custom_chord_table[TABULATED_ARC_SUBDIVISIONS])
-#else
-_prepare_chord_table (sagitta, custom_chord_table)
-     double sagitta;
-     double custom_chord_table[TABULATED_ARC_SUBDIVISIONS];
-#endif
 {
   double half_chord_length;
   int i;
@@ -1453,12 +1287,7 @@ _prepare_chord_table (sagitta, custom_chord_table)
    freed with _delete_plPath(). */
 
 plPath *
-#ifdef _HAVE_PROTOS
 _flatten_path (const plPath *path)
-#else
-_flatten_path (path)
-     const plPath *path;
-#endif
 {
   plPath *newpath;
   
@@ -1614,35 +1443,31 @@ typedef struct subpath_struct
 /* forward references */
 
 /* 0. ctors, dtors */
-static subpath * new_subpath ____P ((void));
-static subpath ** new_subpath_array ____P ((int n));
-static void delete_subpath ____P ((subpath *s));
-static void delete_subpath_array ____P ((subpath **s, int n));
+static subpath * new_subpath (void);
+static subpath ** new_subpath_array (int n);
+static void delete_subpath (subpath *s);
+static void delete_subpath_array (subpath **s, int n);
 
 /* 1. functions that act on a subpath, i.e. an `annotated path' */
-static bool is_inside_of ____P ((const subpath *s, const subpath *other));
-static double _cheap_lower_bound_on_distance ____P ((const subpath *path1, const subpath *path2));
-static void linearize_subpath ____P ((subpath *s));
-static void read_into_subpath ____P ((subpath *s, const plPath *path));
+static bool is_inside_of (const subpath *s, const subpath *other);
+static double _cheap_lower_bound_on_distance (const subpath *path1, const subpath *path2);
+static void linearize_subpath (subpath *s);
+static void read_into_subpath (subpath *s, const plPath *path);
 
 /* 2. miscellaneous */
-static void find_parents_in_subpath_list ____P ((subpath **annotated_paths, int num_paths));
-static void insert_subpath ____P ((plPathSegment *parent_segments, const plPathSegment *child_segments, int parent_size, int child_size, int parent_index, int child_index));
-static void _compute_closest ____P ((const plPathSegment *p1, const plPathSegment *p2, int size1, int size2, double *distance, int *index1, int *index2));
+static void find_parents_in_subpath_list (subpath **annotated_paths, int num_paths);
+static void insert_subpath (plPathSegment *parent_segments, const plPathSegment *child_segments, int parent_size, int child_size, int parent_index, int child_index);
+static void _compute_closest (const plPathSegment *p1, const plPathSegment *p2, int size1, int size2, double *distance, int *index1, int *index2);
 
 /**********************************************************************/
 
 /* ctor for subpath class */
 static subpath * 
-#ifdef _HAVE_PROTOS
 new_subpath (void)
-#else
-new_subpath ()
-#endif
 {
   subpath *s;
   
-  s = (subpath *)_plot_xmalloc (sizeof (subpath));
+  s = (subpath *)_pl_xmalloc (sizeof (subpath));
 
   s->segments = (plPathSegment *)NULL;
   s->num_segments = 0;
@@ -1662,17 +1487,12 @@ new_subpath ()
   
 /* corresponding ctor for a subpath array */
 static subpath **
-#ifdef _HAVE_PROTOS
 new_subpath_array (int n)
-#else
-new_subpath_array (n)
-     int n;
-#endif
 {
   int i;
   subpath **s;
   
-  s = (subpath **)_plot_xmalloc (n * sizeof (subpath *));
+  s = (subpath **)_pl_xmalloc (n * sizeof (subpath *));
   for (i = 0; i < n; i++)
     s[i] = new_subpath ();
 
@@ -1681,12 +1501,7 @@ new_subpath_array (n)
   
 /* dtor for subpath class */
 static void
-#ifdef _HAVE_PROTOS
 delete_subpath (subpath *s)
-#else
-delete_subpath (s)
-     subpath *s;
-#endif
 {
   if (s)
     {
@@ -1703,13 +1518,7 @@ delete_subpath (s)
 
 /* corresponding dtor for a subpath array */
 static void
-#ifdef _HAVE_PROTOS
 delete_subpath_array (subpath **s, int n)
-#else
-delete_subpath_array (s, n)
-     subpath **s;
-     int n;
-#endif
 {
   int i;
 
@@ -1724,12 +1533,7 @@ delete_subpath_array (s, n)
 /* replace every segment in a subpath by a lineto (invoked only on a child
    subpath, i.e. a subpath with an identified parent) */
 static void 
-#ifdef _HAVE_PROTOS
 linearize_subpath (subpath *s)
-#else
-linearize_subpath (s)
-     subpath *s;
-#endif
 {
   /* replace first segment (moveto) with a lineto */
   s->segments[0].type = S_LINE;
@@ -1755,13 +1559,7 @@ linearize_subpath (s)
    same purpose.  THIS IS A LIBPLOT CONVENTION THAT WILL GO AWAY. */
 
 static void
-#ifdef _HAVE_PROTOS
 read_into_subpath (subpath *s, const plPath *path)
-#else
-read_into_subpath (s, path)
-     subpath *s;
-     const plPath *path;
-#endif
 {
   bool need_to_close = false;
   int i;
@@ -1772,7 +1570,7 @@ read_into_subpath (s, path)
 
   /* allocate space for segment array of subpath; add 1 extra slot for
      manual closure, if needed */
-  s->segments = (plPathSegment *)_plot_xmalloc((path->num_segments + 1) * sizeof (plPathSegment));
+  s->segments = (plPathSegment *)_pl_xmalloc((path->num_segments + 1) * sizeof (plPathSegment));
   s->num_segments = path->num_segments;
 
   /* sanity check */
@@ -1821,12 +1619,7 @@ read_into_subpath (s, path)
 
 /* check if a subpath is inside another subpath */
 static bool 
-#ifdef _HAVE_PROTOS
 is_inside_of (const subpath *s, const subpath *other)
-#else
-is_inside_of (s, other)
-     const subpath *s, *other;
-#endif
 {
   int inside = 0;
   int outside = 0;
@@ -1978,13 +1771,7 @@ is_inside_of (s, other)
    one lineto, and a closepath (not currently enforced). */
 
 static void 
-#ifdef _HAVE_PROTOS
 find_parents_in_subpath_list (subpath **annotated_paths, int num_paths)
-#else
-find_parents_in_subpath_list (annotated_paths, num_paths)
-     subpath **annotated_paths;
-     int num_paths;
-#endif
 {
   int i, j;
   subpath *parent;
@@ -2066,15 +1853,7 @@ find_parents_in_subpath_list (annotated_paths, num_paths)
    segment type is S_LINE. */
 
 static void
-#ifdef _HAVE_PROTOS
 _compute_closest (const plPathSegment *p1, const plPathSegment *p2, int size1, int size2, double *distance, int *index1, int *index2)
-#else
-_compute_closest (p1, p2, size1, size2, distance, index1, index2)
-     const plPathSegment *p1, *p2;
-     int size1, size2;
-     double *distance;
-     int *index1, *index2;
-#endif
 {
   int best_i = 0, best_j = 0;	/* keep compiler happy */
   double best_distance = DBL_MAX;
@@ -2113,12 +1892,7 @@ _compute_closest (p1, p2, size1, size2, distance, index1, index2)
    subpaths, by looking at their bounding boxes. */
 
 static double
-#ifdef _HAVE_PROTOS
 _cheap_lower_bound_on_distance (const subpath *path1, const subpath *path2)
-#else
-_cheap_lower_bound_on_distance (path1, path2)
-     const subpath *path1, *path2;
-#endif
 {
   double xdist = 0.0, ydist = 0.0, dist;
   
@@ -2192,15 +1966,7 @@ _cheap_lower_bound_on_distance (path1, path2)
 
 
 static void 
-#ifdef _HAVE_PROTOS
 insert_subpath (plPathSegment *parent, const plPathSegment *child, int parent_size, int child_size, int parent_index, int child_index)
-#else
-insert_subpath (parent, child, parent_size, child_size, parent_index, child_index)
-     plPathSegment *parent;
-     const plPathSegment *child;
-     int parent_size, child_size;
-     int parent_index, child_index;
-#endif
 {
   int i;
   plPathSegment e1, e2;
@@ -2244,13 +2010,7 @@ insert_subpath (parent, child, parent_size, child_size, parent_index, child_inde
    filling compound paths. */
 
 plPath **
-#ifdef _HAVE_PROTOS
 _merge_paths (const plPath **paths, int num_paths)
-#else
-_merge_paths (paths, num_paths)
-     const plPath **paths;
-     int num_paths;
-#endif
 {
   int i;
   subpath **annotated_paths;
@@ -2259,7 +2019,7 @@ _merge_paths (paths, num_paths)
 
   /* flatten every path to a list of line segments (some paths may come
      back unaltered; will be able to compare pointers to check for that) */
-  flattened_paths = (plPath **)_plot_xmalloc (num_paths * sizeof(plPath *));
+  flattened_paths = (plPath **)_pl_xmalloc (num_paths * sizeof(plPath *));
   for (i = 0; i < num_paths; i++)
     {
       flattened_paths[i] = _flatten_path (paths[i]);
@@ -2297,7 +2057,7 @@ _merge_paths (paths, num_paths)
      merged into them, and child paths won't appear */
 
   /* allocate space for new array, to be returned */
-  merged_paths = (plPath **)_plot_xmalloc (num_paths * sizeof(plPath *));
+  merged_paths = (plPath **)_pl_xmalloc (num_paths * sizeof(plPath *));
 
   for (i = 0; i < num_paths; i++)
     {
@@ -2332,7 +2092,7 @@ _merge_paths (paths, num_paths)
 	  += (parent->children[j]->num_segments + 1);
 
       merged_path = _new_plPath ();
-      merged_path->segments = (plPathSegment *)_plot_xmalloc(num_segments_in_merged_path * sizeof (plPathSegment));
+      merged_path->segments = (plPathSegment *)_pl_xmalloc(num_segments_in_merged_path * sizeof (plPathSegment));
       merged_path->num_segments = 0;
       merged_path->segments_len = num_segments_in_merged_path;
 
@@ -2348,9 +2108,9 @@ _merge_paths (paths, num_paths)
 	 each child and the merged path being constructed, and update it
 	 when any child is added.  */
 
-      parent_to_child_distances = (double *)_plot_xmalloc(parent->num_children * sizeof (double));
-      parent_best_indices = (int *)_plot_xmalloc(parent->num_children * sizeof (int));
-      child_best_indices = (int *)_plot_xmalloc(parent->num_children * sizeof (int));
+      parent_to_child_distances = (double *)_pl_xmalloc(parent->num_children * sizeof (double));
+      parent_best_indices = (int *)_pl_xmalloc(parent->num_children * sizeof (int));
+      child_best_indices = (int *)_pl_xmalloc(parent->num_children * sizeof (int));
 
       /* compute closest vertices between merged path (i.e., right now, the
 	 parent) and any child; these arrays will be updated when any child
@@ -2376,9 +2136,9 @@ _merge_paths (paths, num_paths)
 
 	  /* allocate storage for arrays that will be used to update the
 	     three abovementioned arrays, with each pass through the loop */
-	  new_parent_to_child_distances = (double *)_plot_xmalloc(parent->num_children * sizeof (double));
-	  new_parent_best_indices = (int *)_plot_xmalloc(parent->num_children * sizeof (int));
-	  new_child_best_indices = (int *)_plot_xmalloc(parent->num_children * sizeof (int));
+	  new_parent_to_child_distances = (double *)_pl_xmalloc(parent->num_children * sizeof (double));
+	  new_parent_best_indices = (int *)_pl_xmalloc(parent->num_children * sizeof (int));
+	  new_child_best_indices = (int *)_pl_xmalloc(parent->num_children * sizeof (int));
 
 	  /* initially, they're the same as the current arrays */
 	  for (j = 0; j < parent->num_children; j++)

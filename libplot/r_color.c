@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -5,7 +23,7 @@
 #define REGIS_NUM_STD_COLORS 8
 
 /* standard ReGIS colors */
-const plColor _regis_stdcolors[REGIS_NUM_STD_COLORS] = 
+static const plColor regis_stdcolors[REGIS_NUM_STD_COLORS] = 
 {
   {0xff, 0x00, 0x00},		/* Red */
   {0x00, 0xff, 0x00},		/* Green */
@@ -18,30 +36,25 @@ const plColor _regis_stdcolors[REGIS_NUM_STD_COLORS] =
 };
 
 /* corresponding one-letter abbreviations (in same order as preceding) */
-const char _regis_color_chars[REGIS_NUM_STD_COLORS] =
+static const char regis_color_chars[REGIS_NUM_STD_COLORS] =
 { 'r', 'g', 'b', 'c', 'm', 'y', 'd', 'w' };
 
 /* forward references */
-static int _rgb_to_stdcolor ____P((plColor rgb));
+static int rgb_to_best_stdcolor (plColor rgb);
 
 void
-#ifdef _HAVE_PROTOS
-_r_set_pen_color(S___(Plotter *_plotter))
-#else
-_r_set_pen_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_r_set_pen_color(S___(Plotter *_plotter))
 {
   int new_color;
 
-  new_color = _rgb_to_stdcolor (_plotter->drawstate->fgcolor);
+  new_color = rgb_to_best_stdcolor (_plotter->drawstate->fgcolor);
   if (_plotter->regis_fgcolor_is_unknown
       || _plotter->regis_fgcolor != new_color)
     {
       char tmpbuf[32];
 
       sprintf (tmpbuf, "W(I(%c))\n", 
-	       _regis_color_chars[new_color]);
+	       regis_color_chars[new_color]);
       _write_string (_plotter->data, tmpbuf);
       _plotter->regis_fgcolor = new_color;
       _plotter->regis_fgcolor_is_unknown = false;
@@ -49,12 +62,7 @@ _r_set_pen_color(S___(_plotter))
 }
 
 void
-#ifdef _HAVE_PROTOS
-_r_set_fill_color(S___(Plotter *_plotter))
-#else
-_r_set_fill_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_r_set_fill_color(S___(Plotter *_plotter))
 {
   int new_color;
 
@@ -62,14 +70,14 @@ _r_set_fill_color(S___(_plotter))
   if (_plotter->drawstate->fill_type == 0)
     return;
 
-  new_color = _rgb_to_stdcolor (_plotter->drawstate->fillcolor);
+  new_color = rgb_to_best_stdcolor (_plotter->drawstate->fillcolor);
   if (_plotter->regis_fgcolor_is_unknown
       || _plotter->regis_fgcolor != new_color)
     {
       char tmpbuf[32];
 
       sprintf (tmpbuf, "W(I(%c))\n", 
-	       _regis_color_chars[new_color]);
+	       regis_color_chars[new_color]);
       _write_string (_plotter->data, tmpbuf);
       _plotter->regis_fgcolor = new_color;
       _plotter->regis_fgcolor_is_unknown = false;
@@ -77,23 +85,18 @@ _r_set_fill_color(S___(_plotter))
 }
 
 void
-#ifdef _HAVE_PROTOS
-_r_set_bg_color(S___(Plotter *_plotter))
-#else
-_r_set_bg_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_r_set_bg_color(S___(Plotter *_plotter))
 {
   int new_color;
 
-  new_color = _rgb_to_stdcolor (_plotter->drawstate->bgcolor);
+  new_color = rgb_to_best_stdcolor (_plotter->drawstate->bgcolor);
   if (_plotter->regis_bgcolor_is_unknown
       || _plotter->regis_bgcolor != new_color)
     {
       char tmpbuf[32];
 
       sprintf (tmpbuf, "S(I(%c))\n", 
-	       _regis_color_chars[new_color]);
+	       regis_color_chars[new_color]);
       _write_string (_plotter->data, tmpbuf);
       _plotter->regis_bgcolor = new_color;
       _plotter->regis_bgcolor_is_unknown = false;
@@ -105,12 +108,7 @@ _r_set_bg_color(S___(_plotter))
 
 /* compute best approximation, in color table, to a specified 48-bit color */
 static int
-#ifdef _HAVE_PROTOS
-_rgb_to_stdcolor (plColor rgb)
-#else
-_rgb_to_stdcolor (rgb)
-     plColor rgb;
-#endif
+rgb_to_best_stdcolor (plColor rgb)
 {
   int red, green, blue;
   unsigned long int difference = INT_MAX;
@@ -128,12 +126,12 @@ _rgb_to_stdcolor (rgb)
     {
       unsigned long int newdifference;
       
-      newdifference = (((_regis_stdcolors[i].red - red) 
-			* (_regis_stdcolors[i].red - red))
-		       + ((_regis_stdcolors[i].green - green) 
-			  * (_regis_stdcolors[i].green - green))
-		       + ((_regis_stdcolors[i].blue - blue) 
-			  * (_regis_stdcolors[i].blue - blue)));
+      newdifference = (((regis_stdcolors[i].red - red) 
+			* (regis_stdcolors[i].red - red))
+		       + ((regis_stdcolors[i].green - green) 
+			  * (regis_stdcolors[i].green - green))
+		       + ((regis_stdcolors[i].blue - blue) 
+			  * (regis_stdcolors[i].blue - blue)));
       
       if (newdifference < difference)
 	{

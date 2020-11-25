@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the pentype method, which is a GNU extension to
    libplot.  It sets a drawing attribute: whether or not a pen should be
    used.  (Objects drawn without a pen may still be filled.) */
@@ -20,13 +38,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 _API_pentype (R___(Plotter *_plotter) int level)
-#else
-_API_pentype (R___(_plotter) level)
-     S___(Plotter *_plotter;) 
-     int level;
-#endif
 {
   if (!_plotter->data->open)
     {
@@ -47,13 +59,7 @@ _API_pentype (R___(_plotter) level)
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_filltype (R___(Plotter *_plotter) int level)
-#else
-_API_filltype (R___(_plotter) level)
-     S___(Plotter *_plotter;) 
-     int level;
-#endif
 {
   int red, green, blue;
   double red_d, green_d, blue_d;

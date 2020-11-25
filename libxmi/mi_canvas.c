@@ -28,15 +28,15 @@
 #include "mi_api.h"
 
 /* forward references (these are currently used only in this file) */
-static miPixmap * miNewPixmap ____P((unsigned int width, unsigned int height, miPixel initPixel));
-static miPixmap * miCopyPixmap ____P((const miPixmap *pPixmap));
-static void miDeletePixmap ____P((miPixmap *pPixmap));
+static miPixmap * miNewPixmap (unsigned int width, unsigned int height, miPixel initPixel);
+static miPixmap * miCopyPixmap (const miPixmap *pPixmap);
+static void miDeletePixmap (miPixmap *pPixmap);
 #if 0		/* not currently used, so commented out */
-static miBitmap * miNewBitmap ____P((unsigned int width, unsigned int height, int initBit));
+static miBitmap * miNewBitmap (unsigned int width, unsigned int height, int initBit);
 #endif
-static miBitmap * miCopyBitmap ____P((const miBitmap *pBitmap));
-static void miDeleteBitmap ____P((miBitmap *pBitmap));
-static void miPaintCanvas ___P((miCanvas *canvas, miPixel pixel, int n, const miPoint *ppt, const unsigned int *pwidth, miPoint offset));
+static miBitmap * miCopyBitmap (const miBitmap *pBitmap);
+static void miDeleteBitmap (miBitmap *pBitmap);
+static void miPaintCanvas (miCanvas *canvas, miPixel pixel, int n, const miPoint *ppt, const unsigned int *pwidth, miPoint offset);
 
 /* Ctor/dtor/copy ctor for the miCanvas class.  These are defined only if
    the symbol MI_CANVAS_DRAWABLE_TYPE hasn't been defined by the libxmi
@@ -48,13 +48,7 @@ static void miPaintCanvas ___P((miCanvas *canvas, miPixel pixel, int n, const mi
 
 /* create (allocate) a new miCanvas */
 miCanvas * 
-#ifdef _HAVE_PROTOS
 miNewCanvas (unsigned int width, unsigned int height, miPixel initPixel)
-#else
-miNewCanvas (width, height, initPixel)
-     unsigned int width, height;
-     miPixel initPixel;
-#endif
 {
   miCanvas *new_pCanvas;
   
@@ -75,12 +69,7 @@ miNewCanvas (width, height, initPixel)
 
 /* copy a miCanvas */
 miCanvas * 
-#ifdef _HAVE_PROTOS
 miCopyCanvas (const miCanvas *pCanvas)
-#else
-miCopyCanvas (pCanvas)
-     const miCanvas *pCanvas;
-#endif
 {
   miCanvas *new_pCanvas;
   
@@ -99,12 +88,7 @@ miCopyCanvas (pCanvas)
 
 /* destroy (deallocate) an miCanvas */
 void
-#ifdef _HAVE_PROTOS
 miDeleteCanvas (miCanvas *pCanvas)
-#else
-miDeleteCanvas (pCanvas)
-    miCanvas *pCanvas;
-#endif
 {
   if (pCanvas == (miCanvas *)NULL)
     return;
@@ -119,13 +103,7 @@ miDeleteCanvas (pCanvas)
 
 /* create a new miPixmap, and fill it with a specified miPixel */
 static miPixmap * 
-#ifdef _HAVE_PROTOS
 miNewPixmap (unsigned int width, unsigned int height, miPixel initPixel)
-#else
-miNewPixmap (width, height, initPixel)
-     unsigned int width, height;
-     miPixel initPixel;
-#endif
 {
   miPixmap *new_pPixmap;
   miPixel **pixmap;
@@ -151,12 +129,7 @@ miNewPixmap (width, height, initPixel)
 
 /* copy a miPixmap */
 static miPixmap * 
-#ifdef _HAVE_PROTOS
 miCopyPixmap (const miPixmap *pPixmap)
-#else
-miCopyPixmap (pPixmap)
-     const miPixmap *pPixmap;
-#endif
 {
   miPixmap *new_pPixmap;
   miPixel **pixmap;
@@ -187,12 +160,7 @@ miCopyPixmap (pPixmap)
 
 /* destroy (deallocate) an miPixmap */
 static void
-#ifdef _HAVE_PROTOS
 miDeletePixmap (miPixmap *pPixmap)
-#else
-miDeletePixmap (pPixmap)
-    miPixmap *pPixmap;
-#endif
 {
   int j;
 
@@ -211,13 +179,7 @@ miDeletePixmap (pPixmap)
 /* create a new miBitmap, and fill it with a specified value (only 0 and 1
    are meaningful) */
 static miBitmap * 
-#ifdef _HAVE_PROTOS
 miNewBitmap (unsigned int width, unsigned int height, int initBit)
-#else
-miNewBitmap (width, height, initBit)
-     unsigned int width, height;
-     int initBit;
-#endif
 {
   miBitmap *new_pBitmap;
   int **bitmap;
@@ -244,12 +206,7 @@ miNewBitmap (width, height, initBit)
 
 /* copy a miBitmap */
 static miBitmap * 
-#ifdef _HAVE_PROTOS
 miCopyBitmap (const miBitmap *pBitmap)
-#else
-miCopyBitmap (pBitmap)
-     const miBitmap *pBitmap;
-#endif
 {
   miBitmap *new_pBitmap;
   int **bitmap;
@@ -280,12 +237,7 @@ miCopyBitmap (pBitmap)
 
 /* destroy (deallocate) an miBitmap */
 static void
-#ifdef _HAVE_PROTOS
 miDeleteBitmap (miBitmap *pBitmap)
-#else
-miDeleteBitmap (pBitmap)
-    miBitmap *pBitmap;
-#endif
 {
   int j;
 
@@ -302,13 +254,7 @@ miDeleteBitmap (pBitmap)
 
 /* set the binary pixel-merging function in an miCanvas */
 void 
-#ifdef _HAVE_PROTOS
 miSetPixelMerge2 (miCanvas *pCanvas, miPixelMerge2 pixelMerge2)
-#else
-miSetPixelMerge2 (pCanvas, pixelMerge2)
-     miCanvas *pCanvas;
-     miPixelMerge2 pixelMerge2;
-#endif
 {
   if (pCanvas == (miCanvas *)NULL)
     return;
@@ -317,13 +263,7 @@ miSetPixelMerge2 (pCanvas, pixelMerge2)
 
 /* set the ternary pixel-merging function in an miCanvas */
 void 
-#ifdef _HAVE_PROTOS
 miSetPixelMerge3 (miCanvas *pCanvas, miPixelMerge3 pixelMerge3)
-#else
-miSetPixelMerge3 (pCanvas, pixelMerge3)
-     miCanvas *pCanvas;
-     miPixelMerge3 pixelMerge3;
-#endif
 {
   if (pCanvas == (miCanvas *)NULL)
     return;
@@ -333,14 +273,7 @@ miSetPixelMerge3 (pCanvas, pixelMerge3)
 /* Copy a stipple miBitmap into an miCanvas.  The old stipple, if any, is
    deallocated. */
 void 
-#ifdef _HAVE_PROTOS
 miSetCanvasStipple (miCanvas *pCanvas, const miBitmap *pstipple, miPoint stippleOrigin)
-#else
-miSetCanvasStipple (pCanvas, pstipple, stippleOrigin)
-     miCanvas *pCanvas;
-     const miBitmap *pstipple;
-     miPoint stippleOrigin;
-#endif
 {
   if (pCanvas == (miCanvas *)NULL)
     return;
@@ -353,14 +286,7 @@ miSetCanvasStipple (pCanvas, pstipple, stippleOrigin)
 /* Copy a texture miPixmap into an miCanvas.  The old texture, if any, is
    deallocated. */
 void 
-#ifdef _HAVE_PROTOS
 miSetCanvasTexture (miCanvas *pCanvas, const miPixmap *pTexture, miPoint textureOrigin)
-#else
-miSetCanvasTexture (pCanvas, pTexture, textureOrigin)
-     miCanvas *pCanvas;
-     const miPixmap *pTexture;
-     miPoint textureOrigin;
-#endif
 {
   if (pCanvas == (miCanvas *)NULL)
     return;
@@ -372,18 +298,15 @@ miSetCanvasTexture (pCanvas, pTexture, textureOrigin)
 
 /* Paint a list of spans, in a specified miPixel color, to a canvas.  The
    spans must be in y-increasing order. */
+
+/* ARGS: canvas = canvas
+   	 pixel = source pixel color
+	 n = number of spans to be painted
+	 ppt = array of starting points of spans
+	 pwidth = array of widths of spans
+	 offset = point that (0,0) gets mapped to */
 static void 
-#ifdef _HAVE_PROTOS
 miPaintCanvas (miCanvas *canvas, miPixel pixel, int n, const miPoint *ppt, const unsigned int *pwidth, miPoint offset)
-#else
-miPaintCanvas (canvas, pixel, n, ppt, pwidth, offset)
-     miCanvas *canvas;		/* canvas */
-     miPixel pixel;		/* source pixel color */
-     int n;			/* number of spans to be painted */
-     const miPoint *ppt;	/* array of starting points of spans */
-     const unsigned int *pwidth; /* array of widths of spans */
-     miPoint offset;		/* point that (0,0) gets mapped to */
-#endif
 {
   int i;
   int xleft, xright, ybottom, ytop;
@@ -500,15 +423,10 @@ miPaintCanvas (canvas, pixel, n, ppt, pwidth, offset)
    eight core drawing functions in the libxmi API has been invoked.  So
    there is at most one Spans per SpanGroup (i.e., Spans #0), and copying
    pixels out of it trivial. */
+
+/* ARGS: offset = point that (0,0) is mapped to */
 void
-#ifdef _HAVE_PROTOS
 miCopyPaintedSetToCanvas (const miPaintedSet *paintedSet, miCanvas *canvas, miPoint offset)
-#else
-miCopyPaintedSetToCanvas (paintedSet, canvas, offset)
-     const miPaintedSet *paintedSet;
-     miCanvas *canvas;
-     miPoint offset;		/* point that (0,0) is mapped to */
-#endif
 {
   int i;
 

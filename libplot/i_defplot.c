@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any GIFPlotter object,
    including both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -8,33 +26,33 @@
 #include "xmi.h"		/* use libxmi scan conversion module */
 
 /* forward references */
-static bool _parse_bitmap_size ____P((const char *bitmap_size_s, int *width, int *height));
+static bool parse_bitmap_size (const char *bitmap_size_s, int *width, int *height);
 
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    a GIFPlotter struct. */
-const Plotter _i_default_plotter = 
+const Plotter _pl_i_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _i_initialize, _i_terminate,
+  _pl_i_initialize, _pl_i_terminate,
   /* page manipulation */
-  _i_begin_page, _i_erase_page, _i_end_page,
+  _pl_i_begin_page, _pl_i_erase_page, _pl_i_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _i_paint_path, _i_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_i_paint_path, _pl_i_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _i_paint_point,
+  _pl_g_paint_marker, _pl_i_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _g_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_g_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -45,16 +63,11 @@ const Plotter _i_default_plotter =
    created. */
 
 void
-#ifdef _HAVE_PROTOS
-_i_initialize (S___(Plotter *_plotter))
-#else
-_i_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_i_initialize (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override superclass initializations, as necessary */
@@ -85,7 +98,7 @@ _i_initialize (S___(_plotter))
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->data->default_font_type = F_HERSHEY;
+  _plotter->data->default_font_type = PL_F_HERSHEY;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->have_horizontal_justification = false;
   _plotter->data->have_vertical_justification = false;
@@ -133,10 +146,10 @@ _i_initialize (S___(_plotter))
   _plotter->i_transparent_index = 0; /* dummy */
   /* storage used by libxmi's reentrant miDrawArcs_r() function for
      cacheing rasterized ellipses */
-  _plotter->i_arc_cache_data = (voidptr_t)miNewEllipseCache ();
+  _plotter->i_arc_cache_data = (void *)miNewEllipseCache ();
   /* dynamic variables */
-  _plotter->i_painted_set = (voidptr_t)NULL;
-  _plotter->i_canvas = (voidptr_t)NULL;
+  _plotter->i_painted_set = (void *)NULL;
+  _plotter->i_canvas = (void *)NULL;
   /* N.B. _plotter->i_colormap is initialized in i_openpl.c */
   _plotter->i_num_color_indices = 0;
   _plotter->i_bit_depth = 0;
@@ -214,7 +227,7 @@ _i_initialize (S___(_plotter))
     int width = 1, height = 1;
 	
     bitmap_size_s = (const char *)_get_plot_param (_plotter->data, "BITMAPSIZE");
-    if (bitmap_size_s && _parse_bitmap_size (bitmap_size_s, &width, &height)
+    if (bitmap_size_s && parse_bitmap_size (bitmap_size_s, &width, &height)
 	/* insist on range of 1..65535 for GIF format */
 	&& width >= 1 && height >= 1
 	&& width <= 65535 && height <= 65535)
@@ -233,13 +246,7 @@ _i_initialize (S___(_plotter))
 }
 
 static bool 
-#ifdef _HAVE_PROTOS
-_parse_bitmap_size (const char *bitmap_size_s, int *width, int *height)
-#else
-_parse_bitmap_size (bitmap_size_s, width, height)
-  const char *bitmap_size_s;
-  int *width, *height;
-#endif
+parse_bitmap_size (const char *bitmap_size_s, int *width, int *height)
 {
   int local_width = 1, local_height = 1;
 
@@ -263,19 +270,14 @@ _parse_bitmap_size (bitmap_size_s, width, height)
    deleted. */
 
 void
-#ifdef _HAVE_PROTOS
-_i_terminate (S___(Plotter *_plotter))
-#else
-_i_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_i_terminate (S___(Plotter *_plotter))
 {
   /* free storage used by libxmi's reentrant miDrawArcs_r() function */
   miDeleteEllipseCache ((miEllipseCache *)_plotter->i_arc_cache_data);
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
@@ -283,60 +285,60 @@ _i_terminate (S___(_plotter))
 GIFPlotter::GIFPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:Plotter (infile, outfile, errfile)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter (FILE *outfile)
 	:Plotter (outfile)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter (ostream& out)
 	: Plotter (out)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter ()
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::GIFPlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _i_initialize ();
+  _pl_i_initialize ();
 }
 
 GIFPlotter::~GIFPlotter ()
@@ -345,6 +347,6 @@ GIFPlotter::~GIFPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _i_terminate ();
+  _pl_i_terminate ();
 }
 #endif

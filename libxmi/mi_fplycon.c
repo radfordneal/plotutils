@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -7,7 +30,7 @@
 #include "mi_fply.h"
 
 /* forward references */
-static int GetFPolyYBounds ____P((const SppPoint *pts, int n, double yFtrans, int *by, int *ty));
+static int GetFPolyYBounds (const SppPoint *pts, int n, double yFtrans, int *by, int *ty);
 
 /*
  * Written by Todd Newman; April 1987.
@@ -26,22 +49,13 @@ static int GetFPolyYBounds ____P((const SppPoint *pts, int n, double yFtrans, in
  * analyzer line algorithm, with y as the major axis. There's some funny
  * linear interpolation involved because of the subpixel postioning. */
 
+/* ARGS: count = # points, ptsIn = points, 
+   	 xTrans,yTrans = translation for each point, 
+	 xFtrans,yFtrans = translation before conversion, which provides a
+	 		   mechanism to match rounding errors with any
+			   shape that meets the polygon exactly. */
 void
-#ifdef _HAVE_PROTOS
 miFillSppPoly (miPaintedSet *paintedSet, miPixel pixel, int count, const SppPoint *ptsIn, int xTrans, int yTrans, double xFtrans, double yFtrans)
-#else
-miFillSppPoly (paintedSet, pixel, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     int count;
-     const SppPoint *ptsIn;
-     int xTrans, yTrans;
-     double xFtrans, yFtrans;
-#endif
-     /* count = # points, ptsIn = points, ?Trans = translation for
-	each point, ?Ftrans = translation before conversion.  This last 
-	provides a mechanism to match rounding errors with any shape that
-	meets the polygon exactly. */
 {
   double	xl = 0.0,	/* x vals of left and right edges */
   		xr = 0.0,
@@ -188,15 +202,7 @@ miFillSppPoly (paintedSet, pixel, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans
 /* Find the index of the point with the smallest y.  Also return the
    smallest and largest y. */
 static int
-#ifdef _HAVE_PROTOS
 GetFPolyYBounds (const SppPoint *pts, int n, double yFtrans, int *by, int *ty)
-#else
-GetFPolyYBounds (pts, n, yFtrans, by, ty)
-     const SppPoint *pts;
-     int n;
-     double yFtrans;
-     int *by, *ty;
-#endif
 {
   const SppPoint *ptsStart = pts;
   const SppPoint *ptMin;

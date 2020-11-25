@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains device-specific color computation routines.  These
    routines are called by various XDrawablePlotter (and XPlotter)
    methods. */
@@ -9,12 +27,7 @@
    drawing, only when needed (just before an object is written out) */
 
 void
-#ifdef _HAVE_PROTOS
-_x_set_pen_color(S___(Plotter *_plotter))
-#else
-_x_set_pen_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_set_pen_color(S___(Plotter *_plotter))
 {
   plColor old, new1;
   XColor rgb;
@@ -31,7 +44,7 @@ _x_set_pen_color(S___(_plotter))
   rgb.blue = new1.blue;
 
   /* retrieve matching color cell, if possible */
-  if (_x_retrieve_color (R___(_plotter) &rgb) == false)
+  if (_pl_x_retrieve_color (R___(_plotter) &rgb) == false)
     return;
 
   /* select pen color as foreground color in GC used for drawing */
@@ -51,12 +64,7 @@ _x_set_pen_color(S___(_plotter))
    filling, only when needed (just before an object is written out) */
 
 void
-#ifdef _HAVE_PROTOS
-_x_set_fill_color(S___(Plotter *_plotter))
-#else
-_x_set_fill_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_set_fill_color(S___(Plotter *_plotter))
 {
   plColor old, new1;
   XColor rgb;
@@ -77,7 +85,7 @@ _x_set_fill_color(S___(_plotter))
   rgb.blue = (short)_plotter->drawstate->fillcolor.blue;
 
   /* retrieve matching color cell, if possible */
-  if (_x_retrieve_color (R___(_plotter) &rgb) == false)
+  if (_pl_x_retrieve_color (R___(_plotter) &rgb) == false)
     return;
 
   /* select fill color as foreground color in GC used for filling */
@@ -97,12 +105,7 @@ _x_set_fill_color(S___(_plotter))
    erasing, only when needed (just before an erasure takes place) */
 
 void
-#ifdef _HAVE_PROTOS
-_x_set_bg_color(S___(Plotter *_plotter))
-#else
-_x_set_bg_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_set_bg_color(S___(Plotter *_plotter))
 {
   plColor old, new1;
   XColor rgb;
@@ -119,7 +122,7 @@ _x_set_bg_color(S___(_plotter))
   rgb.blue = new1.blue;
 
   /* retrieve matching color cell, if possible */
-  if (_x_retrieve_color (R___(_plotter) &rgb) == false)
+  if (_pl_x_retrieve_color (R___(_plotter) &rgb) == false)
     return;
 
   /* select background color as foreground color in GC used for erasing */
@@ -152,13 +155,7 @@ _x_set_bg_color(S___(_plotter))
    color cell management; see comment in x_erase.c). */
 
 bool 
-#ifdef _HAVE_PROTOS
-_x_retrieve_color (R___(Plotter *_plotter) XColor *rgb_ptr)
-#else
-_x_retrieve_color (R___(_plotter) rgb_ptr)
-     S___(Plotter *_plotter;)
-     XColor *rgb_ptr;
-#endif
+_pl_x_retrieve_color (R___(Plotter *_plotter) XColor *rgb_ptr)
 {
   plColorRecord *cptr;
   int rgb_red = rgb_ptr->red;
@@ -169,7 +166,11 @@ _x_retrieve_color (R___(_plotter) rgb_ptr)
 #ifdef LIBPLOTTER
   if (_plotter->x_visual && _plotter->x_visual->c_class == TrueColor)
 #else
+#ifdef __cplusplus
+  if (_plotter->x_visual && _plotter->x_visual->c_class == TrueColor)
+#else
   if (_plotter->x_visual && _plotter->x_visual->class == TrueColor)
+#endif
 #endif
     /* can compute pixel value from RGB without calling XAllocColor(), by
        bit-twiddling */
@@ -250,14 +251,14 @@ _x_retrieve_color (R___(_plotter) rgb_ptr)
 
   /* not in cache, so try to allocate a new color cell, if colormap hasn't
      been flagged as bad (i.e. full) */
-  if (_plotter->x_cmap_type != CMAP_BAD)
+  if (_plotter->x_cmap_type != X_CMAP_BAD)
     {
       xretval = XAllocColor (_plotter->x_dpy, _plotter->x_cmap, rgb_ptr);
 
       if (xretval == 0)
 	/* failure */
 	{
-	  if (_plotter->x_cmap_type == CMAP_ORIG)
+	  if (_plotter->x_cmap_type == X_CMAP_ORIG)
 	    /* colormap is the one we started with, so try switching and
 	       reallocating */
 	    {
@@ -268,10 +269,10 @@ _x_retrieve_color (R___(_plotter) rgb_ptr)
 		 XDrawable Plotter, this method doesn't do anything, so
 		 colormap just gets flagged as bad. */
 	      _maybe_get_new_colormap (S___(_plotter));
-	      if (_plotter->x_cmap_type != CMAP_NEW)
-		_plotter->x_cmap_type = CMAP_BAD;
+	      if (_plotter->x_cmap_type != X_CMAP_NEW)
+		_plotter->x_cmap_type = X_CMAP_BAD;
 	  
-	      if (_plotter->x_cmap_type != CMAP_BAD)
+	      if (_plotter->x_cmap_type != X_CMAP_BAD)
 		/* got a new colormap; try again to allocate color cell */
 		xretval = XAllocColor (_plotter->x_dpy, _plotter->x_cmap, rgb_ptr);
 	    }
@@ -292,7 +293,7 @@ _x_retrieve_color (R___(_plotter) rgb_ptr)
 
       /* flag colormap as bad, i.e. full; no further color cell allocations
          will be attempted */
-      _plotter->x_cmap_type = CMAP_BAD;
+      _plotter->x_cmap_type = X_CMAP_BAD;
 
       if (_plotter->x_colormap_warning_issued == false)
 	{
@@ -337,7 +338,7 @@ _x_retrieve_color (R___(_plotter) rgb_ptr)
   else
     /* allocation succeeded, add new color cell to head of cache list */
     {
-      cptr = (plColorRecord *)_plot_xmalloc (sizeof (plColorRecord));
+      cptr = (plColorRecord *)_pl_xmalloc (sizeof (plColorRecord));
       cptr->rgb = *rgb_ptr;
       /* include unquantized RGB values */
       cptr->rgb.red = rgb_red;

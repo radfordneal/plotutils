@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file is specific to libplot, rather than libplotter.  It defines
    the new (i.e., thread-safe) C API.  The new C API contains wrappers
    around the operations that may be applied to any Plotter object, plus
@@ -40,46 +58,39 @@ Plotter_data;
    corresponding ?_defplot.c file. */
 static const Plotter_data _plotter_data[] = 
 {
-  {"generic", &_g_default_plotter},
-  {"bitmap", &_b_default_plotter},
-  {"meta", &_m_default_plotter},
-  {"tek", &_t_default_plotter},
-  {"regis", &_r_default_plotter},
-  {"hpgl", &_h_default_plotter},
-  {"pcl", &_q_default_plotter},
-  {"fig", &_f_default_plotter},
-  {"cgm", &_c_default_plotter},
-  {"ps", &_p_default_plotter},
-  {"ai", &_a_default_plotter},
-  {"svg", &_s_default_plotter},
-  {"gif", &_i_default_plotter},
-  {"pnm", &_n_default_plotter},
+  {"generic", &_pl_g_default_plotter},
+  {"bitmap", &_pl_b_default_plotter},
+  {"meta", &_pl_m_default_plotter},
+  {"tek", &_pl_t_default_plotter},
+  {"regis", &_pl_r_default_plotter},
+  {"hpgl", &_pl_h_default_plotter},
+  {"pcl", &_pl_q_default_plotter},
+  {"fig", &_pl_f_default_plotter},
+  {"cgm", &_pl_c_default_plotter},
+  {"ps", &_pl_p_default_plotter},
+  {"ai", &_pl_a_default_plotter},
+  {"svg", &_pl_s_default_plotter},
+  {"gif", &_pl_i_default_plotter},
+  {"pnm", &_pl_n_default_plotter},
 #ifdef INCLUDE_PNG_SUPPORT
-  {"png", &_z_default_plotter},
+  {"png", &_pl_z_default_plotter},
 #endif
 #ifndef X_DISPLAY_MISSING
-  {"Xdrawable", &_x_default_plotter},
-  {"X", &_y_default_plotter},
+  {"Xdrawable", &_pl_x_default_plotter},
+  {"X", &_pl_y_default_plotter},
 #endif /* not X_DISPLAY_MISSING */
   {(const char *)NULL, (const Plotter *)NULL}
 };
 
 /* forward references */
-static bool _string_to_plotter_data ____P((const char *type, int *position));
-static void _api_warning ____P((const char *msg));
+static bool _string_to_plotter_data (const char *type, int *position);
+static void _api_warning (const char *msg);
 
 /* These are two user-callable functions that are specific to the new
    (i.e., thread-safe) C binding: pl_newpl_r, pl_deletepl_r. */
 
 Plotter *
-#ifdef _HAVE_PROTOS
 pl_newpl_r (const char *type, FILE *infile, FILE *outfile, FILE *errfile, const PlotterParams *plotter_params)
-#else
-pl_newpl_r (type, infile, outfile, errfile, plotter_params)
-     const char *type;
-     FILE *infile, *outfile, *errfile;
-     const PlotterParams *plotter_params;
-#endif
 {
   bool found;
   int position;
@@ -94,17 +105,17 @@ pl_newpl_r (type, infile, outfile, errfile, plotter_params)
     }
 
   /* create Plotter, copy function pointers to it */
-  _plotter = (Plotter *)_plot_xmalloc (sizeof(Plotter));
+  _plotter = (Plotter *)_pl_xmalloc (sizeof(Plotter));
   memcpy (_plotter, _plotter_data[position].default_init, sizeof(Plotter));
 
   /* create PlotterData structure, install it in Plotter */
-  _plotter->data = (plPlotterData *)_plot_xmalloc (sizeof(plPlotterData));
+  _plotter->data = (plPlotterData *)_pl_xmalloc (sizeof(plPlotterData));
 
   /* copy parameters to it */
   _plotter->data->infp = infile;  
   _plotter->data->outfp = outfile;
   _plotter->data->errfp = errfile;
-  _copy_params_to_plotter (_plotter, plotter_params);
+  _pl_g_copy_params_to_plotter (_plotter, plotter_params);
 
   /* do any additional needed initializiations of the Plotter (e.g.,
      initialize data members of the PlotterData structure in a
@@ -117,13 +128,7 @@ pl_newpl_r (type, infile, outfile, errfile, plotter_params)
 /* utility function, used above; keys into table of Plotter types by a
    short mnemonic string */
 static bool
-#ifdef _HAVE_PROTOS
 _string_to_plotter_data (const char *type, int *position)
-#else
-_string_to_plotter_data (type, position)
-     const char *type;
-     int *position;
-#endif
 {
   const Plotter_data *p = _plotter_data;
   bool found = false;
@@ -147,12 +152,7 @@ _string_to_plotter_data (type, position)
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_deletepl_r (Plotter *_plotter)
-#else
-pl_deletepl_r (_plotter)
-     Plotter *_plotter;
-#endif
 {
   if (_plotter == NULL)
     {
@@ -190,15 +190,10 @@ pl_deletepl_r (_plotter)
 
 /* function used in this file to print warning messages */
 static void
-#ifdef _HAVE_PROTOS
 _api_warning (const char *msg)
-#else
-_api_warning (msg)
-     const char *msg;
-#endif
 {
-  if (libplot_warning_handler != NULL)
-    (*libplot_warning_handler)(msg);
+  if (pl_libplot_warning_handler != NULL)
+    (*pl_libplot_warning_handler)(msg);
   else
     fprintf (stderr, "libplot: %s\n", msg);
 }
@@ -209,33 +204,24 @@ _api_warning (msg)
    pl_copyplparams. */
 
 PlotterParams *
-#ifdef _HAVE_PROTOS
 pl_newplparams (void)
-#else
-pl_newplparams ()
-#endif
 {
   int i;
   PlotterParams *_plotter_params_p;
   
   /* create PlotterParams, copy function pointers to it */
-  _plotter_params_p = (PlotterParams *)_plot_xmalloc (sizeof(PlotterParams));
+  _plotter_params_p = (PlotterParams *)_pl_xmalloc (sizeof(PlotterParams));
   memcpy (_plotter_params_p, &_default_plotter_params, sizeof(PlotterParams));
 
   /* null out all parameters */
   for (i = 0; i < NUM_PLOTTER_PARAMETERS; i++)
-    _plotter_params_p->plparams[i] = (voidptr_t)NULL;
+    _plotter_params_p->plparams[i] = (void *)NULL;
 
   return _plotter_params_p;
 }
 
 int
-#ifdef _HAVE_PROTOS
 pl_deleteplparams (PlotterParams *_plotter_params_p)
-#else
-pl_deleteplparams (_plotter_params_p)
-     PlotterParams *_plotter_params_p;
-#endif
 {
   int i;
   
@@ -249,18 +235,13 @@ pl_deleteplparams (_plotter_params_p)
 }
 
 PlotterParams *
-#ifdef _HAVE_PROTOS
 pl_copyplparams (const PlotterParams *_plotter_params_p)
-#else
-pl_copyplparams (_plotter_params_p)
-     const PlotterParams *_plotter_params_p;
-#endif
 {
   int i;
   PlotterParams *new_plotter_params_p;
   
   /* create PlotterParams, copy function pointers to it */
-  new_plotter_params_p = (PlotterParams *)_plot_xmalloc (sizeof(PlotterParams));
+  new_plotter_params_p = (PlotterParams *)_pl_xmalloc (sizeof(PlotterParams));
   memcpy (new_plotter_params_p, &_default_plotter_params, sizeof(PlotterParams));
 
   /* copy all parameters */
@@ -275,14 +256,7 @@ pl_copyplparams (_plotter_params_p)
    part of the new (i.e., thread-safe) C API. */
 
 int
-#ifdef _HAVE_PROTOS
-pl_setplparam (PlotterParams *plotter_params, const char *parameter, voidptr_t value)
-#else
-pl_setplparam (plotter_params, parameter, value)
-     PlotterParams *plotter_params;
-     const char *parameter;
-     voidptr_t value;
-#endif
+pl_setplparam (PlotterParams *plotter_params, const char *parameter, void * value)
 {
   return plotter_params->setplparam (plotter_params, parameter, value);
 }

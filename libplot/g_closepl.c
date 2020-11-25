@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the closepl method, which is a standard part of
    libplot.  It closes a Plotter object. */
 
@@ -8,12 +26,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 _API_closepl (S___(Plotter *_plotter))
-#else
-_API_closepl (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
 {
   bool emit_not_just_the_first_page = true;
   bool retval1;
@@ -42,7 +55,7 @@ _API_closepl (S___(_plotter))
   retval1 = _plotter->end_page (S___(_plotter));
 
   /* remove first drawing state too, so we can start afresh */
-  _delete_first_drawing_state (S___(_plotter));
+  _pl_g_delete_first_drawing_state (S___(_plotter));
 
   switch ((int)_plotter->data->output_model)
     {
@@ -139,23 +152,13 @@ _API_closepl (S___(_plotter))
    closepl() is invoked.  In a generic Plotter, this does nothing. */
 
 bool
-#ifdef _HAVE_PROTOS
-_g_end_page (S___(Plotter *_plotter))
-#else
-_g_end_page (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_end_page (S___(Plotter *_plotter))
 {
   return true;
 }
 
 void
-#ifdef _HAVE_PROTOS
-_delete_first_drawing_state (S___(Plotter *_plotter))
-#else
-_delete_first_drawing_state (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_delete_first_drawing_state (S___(Plotter *_plotter))
 {
   /* elements of state that are strings or arrays are freed separately */
   free ((char *)_plotter->drawstate->fill_rule);

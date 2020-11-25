@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -5,18 +23,13 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_m_paint_path (S___(Plotter *_plotter))
-#else
-_m_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_m_paint_path (S___(Plotter *_plotter))
 {
   const plPath *path;
   bool explicit_endpath, sync_miter_limit = false;
 
   /* sync basic path attributes */
-  _m_set_attributes (R___(_plotter) 
+  _pl_m_set_attributes (R___(_plotter) 
 		     PL_ATTR_TRANSFORMATION_MATRIX 
 		     | PL_ATTR_PEN_COLOR  | PL_ATTR_PEN_TYPE
 		     | PL_ATTR_LINE_STYLE | PL_ATTR_LINE_WIDTH
@@ -27,12 +40,12 @@ _m_paint_path (S___(_plotter))
   /* our one and only simple path to paint */
   path = _plotter->drawstate->path;
 
-  if (_plotter->drawstate->join_type == JOIN_MITER
+  if (_plotter->drawstate->join_type == PL_JOIN_MITER
       && (path->type == PATH_SEGMENT_LIST || path->type == PATH_BOX))
     /* path may have mitered juncture points */
     sync_miter_limit = true;
   if (sync_miter_limit)
-    _m_set_attributes (R___(_plotter) PL_ATTR_MITER_LIMIT);
+    _pl_m_set_attributes (R___(_plotter) PL_ATTR_MITER_LIMIT);
 
   if (path->type == PATH_SEGMENT_LIST)
     explicit_endpath = true;
@@ -41,22 +54,17 @@ _m_paint_path (S___(_plotter))
 
   /* emit metafile object-drawing instructions to draw the path; include a
      preliminary syncing of the `orientation' attribute if relevant */
-  _m_paint_path_internal (R___(_plotter) path);
+  _pl_m_paint_path_internal (R___(_plotter) path);
 
   if (explicit_endpath)
     {
-      _m_emit_op_code (R___(_plotter) O_ENDPATH);
-      _m_emit_terminator (S___(_plotter));
+      _pl_m_emit_op_code (R___(_plotter) O_ENDPATH);
+      _pl_m_emit_terminator (S___(_plotter));
     }
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_m_paint_paths (S___(Plotter *_plotter))
-#else
-_m_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_m_paint_paths (S___(Plotter *_plotter))
 {
   const plPath *path;
   bool sync_miter_limit = false;
@@ -67,7 +75,7 @@ _m_paint_paths (S___(_plotter))
     return true;
 
   /* sync basic path attributes */
-  _m_set_attributes (R___(_plotter) 
+  _pl_m_set_attributes (R___(_plotter) 
 		     PL_ATTR_TRANSFORMATION_MATRIX 
 		     | PL_ATTR_PEN_COLOR  | PL_ATTR_PEN_TYPE
 		     | PL_ATTR_LINE_STYLE | PL_ATTR_LINE_WIDTH
@@ -75,7 +83,7 @@ _m_paint_paths (S___(_plotter))
 		     | PL_ATTR_FILL_COLOR | PL_ATTR_FILL_TYPE
 		     | PL_ATTR_FILL_RULE);
 
-  if (_plotter->drawstate->join_type == JOIN_MITER)
+  if (_plotter->drawstate->join_type == PL_JOIN_MITER)
     {
       for (i = 0; i < _plotter->drawstate->num_paths; i++)
 	{
@@ -89,7 +97,7 @@ _m_paint_paths (S___(_plotter))
 	}
     }
   if (sync_miter_limit)
-    _m_set_attributes (R___(_plotter) PL_ATTR_MITER_LIMIT);
+    _pl_m_set_attributes (R___(_plotter) PL_ATTR_MITER_LIMIT);
   
   /* loop over simple paths in compound path */
   for (i = 0; i < _plotter->drawstate->num_paths; i++)
@@ -98,12 +106,12 @@ _m_paint_paths (S___(_plotter))
 
       /* emit metafile object-drawing instructions to draw the path; first
 	 sync `orientation' attribute, if relevant */
-      _m_paint_path_internal (R___(_plotter) path);
+      _pl_m_paint_path_internal (R___(_plotter) path);
 
       if (i < _plotter->drawstate->num_paths - 1)
 	{
-	  _m_emit_op_code (R___(_plotter) O_ENDSUBPATH);
-	  _m_emit_terminator (S___(_plotter));
+	  _pl_m_emit_op_code (R___(_plotter) O_ENDSUBPATH);
+	  _pl_m_emit_terminator (S___(_plotter));
 	}
     }
 
@@ -112,8 +120,8 @@ _m_paint_paths (S___(_plotter))
        to be clever, we'd append one even if the final simple path isn't a
        segment list */
     {
-      _m_emit_op_code (R___(_plotter) O_ENDPATH);
-      _m_emit_terminator (S___(_plotter));
+      _pl_m_emit_op_code (R___(_plotter) O_ENDPATH);
+      _pl_m_emit_terminator (S___(_plotter));
     }
 
   /* succesfully painted compound path */
@@ -126,13 +134,7 @@ _m_paint_paths (S___(_plotter))
    attribute, relevant to paths that are boxes/circles/ellipses. */
 
 void
-#ifdef _HAVE_PROTOS
-_m_paint_path_internal (R___(Plotter *_plotter) const plPath *path)
-#else
-_m_paint_path_internal (R___(_plotter) path)
-     S___(Plotter *_plotter;)
-     const plPath *path;
-#endif
+_pl_m_paint_path_internal (R___(Plotter *_plotter) const plPath *path)
 {
   if (path->type == PATH_BOX 
       || path->type == PATH_CIRCLE || path->type == PATH_ELLIPSE)
@@ -143,9 +145,9 @@ _m_paint_path_internal (R___(_plotter) path)
 
       if (_plotter->meta_orientation != orientation)
 	{
-	  _m_emit_op_code (R___(_plotter) O_ORIENTATION);
-	  _m_emit_integer (R___(_plotter) orientation);
-	  _m_emit_terminator (S___(_plotter));
+	  _pl_m_emit_op_code (R___(_plotter) O_ORIENTATION);
+	  _pl_m_emit_integer (R___(_plotter) orientation);
+	  _pl_m_emit_terminator (S___(_plotter));
 	  _plotter->meta_orientation = orientation;
 	}
     }
@@ -167,10 +169,10 @@ _m_paint_path_internal (R___(_plotter) path)
 	if (_plotter->meta_pos.x != segment.p.x
 	    || _plotter->meta_pos.y != segment.p.y)
 	  {
-	    _m_emit_op_code (R___(_plotter) O_FMOVE);
-	    _m_emit_float (R___(_plotter) segment.p.x);
-	    _m_emit_float (R___(_plotter) segment.p.y);
-	    _m_emit_terminator (S___(_plotter));
+	    _pl_m_emit_op_code (R___(_plotter) O_FMOVE);
+	    _pl_m_emit_float (R___(_plotter) segment.p.x);
+	    _pl_m_emit_float (R___(_plotter) segment.p.y);
+	    _pl_m_emit_terminator (S___(_plotter));
 	    _plotter->meta_pos = segment.p;
 	  }
 
@@ -183,60 +185,60 @@ _m_paint_path_internal (R___(_plotter) path)
 	    switch ((int)segment.type)
 	      {
 	      case (int)S_LINE:
-		_m_emit_op_code (R___(_plotter) O_FCONT);
-		_m_emit_float (R___(_plotter) segment.p.x);
-		_m_emit_float (R___(_plotter) segment.p.y);
-		_m_emit_terminator (S___(_plotter));
+		_pl_m_emit_op_code (R___(_plotter) O_FCONT);
+		_pl_m_emit_float (R___(_plotter) segment.p.x);
+		_pl_m_emit_float (R___(_plotter) segment.p.y);
+		_pl_m_emit_terminator (S___(_plotter));
 		_plotter->meta_pos = segment.p;
 		break;
 		
 	      case (int)S_ARC:
-		_m_emit_op_code (R___(_plotter) O_FARC);
-		_m_emit_float (R___(_plotter) segment.pc.x);
-		_m_emit_float (R___(_plotter) segment.pc.y);
-		_m_emit_float (R___(_plotter) prev_segment.p.x);
-		_m_emit_float (R___(_plotter) prev_segment.p.y);
-		_m_emit_float (R___(_plotter) segment.p.x);
-		_m_emit_float (R___(_plotter) segment.p.y);
-		_m_emit_terminator (S___(_plotter));
+		_pl_m_emit_op_code (R___(_plotter) O_FARC);
+		_pl_m_emit_float (R___(_plotter) segment.pc.x);
+		_pl_m_emit_float (R___(_plotter) segment.pc.y);
+		_pl_m_emit_float (R___(_plotter) prev_segment.p.x);
+		_pl_m_emit_float (R___(_plotter) prev_segment.p.y);
+		_pl_m_emit_float (R___(_plotter) segment.p.x);
+		_pl_m_emit_float (R___(_plotter) segment.p.y);
+		_pl_m_emit_terminator (S___(_plotter));
 		_plotter->meta_pos = segment.p;
 		break;
 		
 	      case (int)S_ELLARC:
-		_m_emit_op_code (R___(_plotter) O_FELLARC);
-		_m_emit_float (R___(_plotter) segment.pc.x);
-		_m_emit_float (R___(_plotter) segment.pc.y);
-		_m_emit_float (R___(_plotter) prev_segment.p.x);
-		_m_emit_float (R___(_plotter) prev_segment.p.y);
-		_m_emit_float (R___(_plotter) segment.p.x);
-		_m_emit_float (R___(_plotter) segment.p.y);
-		_m_emit_terminator (S___(_plotter));
+		_pl_m_emit_op_code (R___(_plotter) O_FELLARC);
+		_pl_m_emit_float (R___(_plotter) segment.pc.x);
+		_pl_m_emit_float (R___(_plotter) segment.pc.y);
+		_pl_m_emit_float (R___(_plotter) prev_segment.p.x);
+		_pl_m_emit_float (R___(_plotter) prev_segment.p.y);
+		_pl_m_emit_float (R___(_plotter) segment.p.x);
+		_pl_m_emit_float (R___(_plotter) segment.p.y);
+		_pl_m_emit_terminator (S___(_plotter));
 		_plotter->meta_pos = segment.p;
 		break;
 		
 	      case (int)S_QUAD:
-		_m_emit_op_code (R___(_plotter) O_FBEZIER2);
-		_m_emit_float (R___(_plotter) prev_segment.p.x);
-		_m_emit_float (R___(_plotter) prev_segment.p.y);
-		_m_emit_float (R___(_plotter) segment.pc.x);
-		_m_emit_float (R___(_plotter) segment.pc.y);
-		_m_emit_float (R___(_plotter) segment.p.x);
-		_m_emit_float (R___(_plotter) segment.p.y);
-		_m_emit_terminator (S___(_plotter));
+		_pl_m_emit_op_code (R___(_plotter) O_FBEZIER2);
+		_pl_m_emit_float (R___(_plotter) prev_segment.p.x);
+		_pl_m_emit_float (R___(_plotter) prev_segment.p.y);
+		_pl_m_emit_float (R___(_plotter) segment.pc.x);
+		_pl_m_emit_float (R___(_plotter) segment.pc.y);
+		_pl_m_emit_float (R___(_plotter) segment.p.x);
+		_pl_m_emit_float (R___(_plotter) segment.p.y);
+		_pl_m_emit_terminator (S___(_plotter));
 		_plotter->meta_pos = segment.p;
 		break;
 		
 	      case (int)S_CUBIC:
-		_m_emit_op_code (R___(_plotter) O_FBEZIER3);
-		_m_emit_float (R___(_plotter) prev_segment.p.x);
-		_m_emit_float (R___(_plotter) prev_segment.p.y);
-		_m_emit_float (R___(_plotter) segment.pc.x);
-		_m_emit_float (R___(_plotter) segment.pc.y);
-		_m_emit_float (R___(_plotter) segment.pd.x);
-		_m_emit_float (R___(_plotter) segment.pd.y);
-		_m_emit_float (R___(_plotter) segment.p.x);
-		_m_emit_float (R___(_plotter) segment.p.y);
-		_m_emit_terminator (S___(_plotter));
+		_pl_m_emit_op_code (R___(_plotter) O_FBEZIER3);
+		_pl_m_emit_float (R___(_plotter) prev_segment.p.x);
+		_pl_m_emit_float (R___(_plotter) prev_segment.p.y);
+		_pl_m_emit_float (R___(_plotter) segment.pc.x);
+		_pl_m_emit_float (R___(_plotter) segment.pc.y);
+		_pl_m_emit_float (R___(_plotter) segment.pd.x);
+		_pl_m_emit_float (R___(_plotter) segment.pd.y);
+		_pl_m_emit_float (R___(_plotter) segment.p.x);
+		_pl_m_emit_float (R___(_plotter) segment.p.y);
+		_pl_m_emit_terminator (S___(_plotter));
 		_plotter->meta_pos = segment.p;
 		break;
 		
@@ -249,12 +251,12 @@ _m_paint_path_internal (R___(_plotter) path)
       
     case (int)PATH_BOX:
       {
-	_m_emit_op_code (R___(_plotter) O_FBOX);
-	_m_emit_float (R___(_plotter) path->p0.x);
-	_m_emit_float (R___(_plotter) path->p0.y);
-	_m_emit_float (R___(_plotter) path->p1.x);
-	_m_emit_float (R___(_plotter) path->p1.y);
-	_m_emit_terminator (S___(_plotter));
+	_pl_m_emit_op_code (R___(_plotter) O_FBOX);
+	_pl_m_emit_float (R___(_plotter) path->p0.x);
+	_pl_m_emit_float (R___(_plotter) path->p0.y);
+	_pl_m_emit_float (R___(_plotter) path->p1.x);
+	_pl_m_emit_float (R___(_plotter) path->p1.y);
+	_pl_m_emit_terminator (S___(_plotter));
 	
 	_plotter->meta_pos.x = 0.5 * (path->p0.x + path->p1.x);
 	_plotter->meta_pos.y = 0.5 * (path->p0.y + path->p1.y);
@@ -263,11 +265,11 @@ _m_paint_path_internal (R___(_plotter) path)
       
     case (int)PATH_CIRCLE:
       {
-	_m_emit_op_code (R___(_plotter) O_FCIRCLE);
-	_m_emit_float (R___(_plotter) path->pc.x);
-	_m_emit_float (R___(_plotter) path->pc.y);
-	_m_emit_float (R___(_plotter) path->radius);
-	_m_emit_terminator (S___(_plotter));
+	_pl_m_emit_op_code (R___(_plotter) O_FCIRCLE);
+	_pl_m_emit_float (R___(_plotter) path->pc.x);
+	_pl_m_emit_float (R___(_plotter) path->pc.y);
+	_pl_m_emit_float (R___(_plotter) path->radius);
+	_pl_m_emit_terminator (S___(_plotter));
 	
 	_plotter->meta_pos = path->pc;
       }
@@ -275,13 +277,13 @@ _m_paint_path_internal (R___(_plotter) path)
       
     case (int)PATH_ELLIPSE:
       {
-	_m_emit_op_code (R___(_plotter) O_FELLIPSE);
-	_m_emit_float (R___(_plotter) path->pc.x);
-	_m_emit_float (R___(_plotter) path->pc.y);
-	_m_emit_float (R___(_plotter) path->rx);
-	_m_emit_float (R___(_plotter) path->ry);
-	_m_emit_float (R___(_plotter) path->angle);
-	_m_emit_terminator (S___(_plotter));
+	_pl_m_emit_op_code (R___(_plotter) O_FELLIPSE);
+	_pl_m_emit_float (R___(_plotter) path->pc.x);
+	_pl_m_emit_float (R___(_plotter) path->pc.y);
+	_pl_m_emit_float (R___(_plotter) path->rx);
+	_pl_m_emit_float (R___(_plotter) path->ry);
+	_pl_m_emit_float (R___(_plotter) path->angle);
+	_pl_m_emit_terminator (S___(_plotter));
 	
 	_plotter->meta_pos = path->pc;
       }
@@ -293,24 +295,13 @@ _m_paint_path_internal (R___(_plotter) path)
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_m_path_is_flushable (S___(Plotter *_plotter))
-#else
-_m_path_is_flushable (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_m_path_is_flushable (S___(Plotter *_plotter))
 {
   return true;
 }
 
 void
-#ifdef _HAVE_PROTOS
-_m_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
-#else
-_m_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
-     S___(Plotter *_plotter;)
-     int prev_num_segments;
-#endif
+_pl_m_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
 {
   return;
 }

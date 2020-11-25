@@ -2,7 +2,7 @@
 
 lib_LTLIBRARIES = libplotter.la
 
-libplotter_la_LDFLAGS = -version-info 4:0:2
+libplotter_la_LDFLAGS = -version-info 4:2:2
 
 INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT -DLIBPLOTTER
 
@@ -59,9 +59,9 @@ a_openpl.cc a_path.cc a_point.cc a_text.cc
 SSRC = s_closepl.cc s_color.cc s_defplot.cc s_erase.cc s_openpl.cc	\
 s_path.cc s_point.cc s_text.cc
 
-XSRC = x_attribs.cc x_closepl.cc x_color.cc x_defplot.cc x_erase.cc	   \
-x_flushpl.cc x_openpl.cc x_path.cc x_point.cc x_retrieve.cc x_savestate.cc \
-x_text.cc
+XSRC = x_afftext.cc x_attribs.cc x_closepl.cc x_color.cc x_defplot.cc   \
+x_erase.cc x_flushpl.cc x_openpl.cc x_path.cc x_point.cc x_retrieve.cc  \
+x_savestate.cc x_text.cc
 
 YSRC = y_closepl.cc y_defplot.cc y_erase.cc y_openpl.cc
 
@@ -89,7 +89,7 @@ mi_ply.h mi_scanfill.h mi_spans.h mi_widelin.h mi_zerarc.h
 
 ALLHEADERS = extern.h g_arc.h g_colorname.h g_control.h g_cntrlify.h \
 g_her_metr.h \
-g_jis.h g_pagetype.h h_roman8.h i_rle.h p_header.h
+g_jis.h g_pagetype.h h_roman8.h i_rle.h p_header.h x_afftext.h
 
 noinst_HEADERS = $(ALLHEADERS) $(MIHEADERS)
 
@@ -592,6 +592,9 @@ t_tek_mv.cc: $(top_srcdir)/libplot/t_tek_mv.c $(ALLHEADERS)
 t_tek_vec.cc: $(top_srcdir)/libplot/t_tek_vec.c $(ALLHEADERS)
 	@rm -f t_tek_vec.cc ; if $(LN_S) $(top_srcdir)/libplot/t_tek_vec.c t_tek_vec.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_tek_vec.c t_tek_vec.cc ; fi
 
+x_afftext.cc: $(top_srcdir)/libplot/x_afftext.c $(ALLHEADERS)
+	@rm -f x_afftext.cc ; if $(LN_S) $(top_srcdir)/libplot/x_afftext.c x_afftext.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_afftext.c x_afftext.cc ; fi
+
 x_attribs.cc: $(top_srcdir)/libplot/x_attribs.c $(ALLHEADERS)
 	@rm -f x_attribs.cc ; if $(LN_S) $(top_srcdir)/libplot/x_attribs.c x_attribs.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_attribs.c x_attribs.cc ; fi
 
@@ -677,6 +680,9 @@ i_rle.h: $(top_srcdir)/libplot/i_rle.h
 
 p_header.h: $(top_srcdir)/libplot/p_header.h
 	@rm -f p_header.h ; if $(LN_S) $(top_srcdir)/libplot/p_header.h p_header.h ; then true ; else cp -p $(top_srcdir)/libplot/p_header.h p_header.h ; fi
+
+x_afftext.h: $(top_srcdir)/libplot/x_afftext.h
+	@rm -f x_afftext.h ; if $(LN_S) $(top_srcdir)/libplot/x_afftext.h x_afftext.h ; then true ; else cp -p $(top_srcdir)/libplot/x_afftext.h x_afftext.h ; fi
 
 ## Similarly in ../libxmi, do
 ##(for i in mi_*.c; do echo "$i"c: "\$(top_srcdir)/libxmi/$i"; echo "	rm -f $i"c" ; if \$(LN_S) \$(top_srcdir)/libxmi/$i $i"c" ; then true ; else cp -p \$(top_srcdir)/libxmi/$i $i"c" ; fi"; echo; done)

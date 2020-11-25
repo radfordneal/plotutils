@@ -1,3 +1,22 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the point plotter half of GNU graph.  The point
    plotter could easily be linked with other software.  It translates a
    sequence of points, regarded as defining a polyline or a sequence of
@@ -92,6 +111,7 @@
    real-time display. */
 
 #include "sys-defines.h"
+#include "libcommon.h"
 #include "plot.h"
 #include "extern.h"
 
@@ -242,7 +262,7 @@ struct MultigrapherStruct
 {
   /* multigrapher parameters (not updated over a multigrapher's lifetime) */
   plPlotter *plotter;		/* GNU libplot Plotter handle */
-  const char *display_type;	/* type of libplot device driver [unused] */
+  const char *output_format;	/* type of libplot device driver [unused] */
   const char *bg_color;		/* color of background, if non-NULL */
   bool save_screen;		/* erase display when opening plotter? */
   /* graph parameters (constant over any single graph) */
@@ -269,17 +289,17 @@ struct MultigrapherStruct
 };
   
 /* forward references */
-static int clip_line ____P((Multigrapher *multigrapher, double *x0_p, double *y0_p, double *x1_p, double *y1_p));
-static int spacing_type ____P((double spacing));
-static outcode compute_outcode ____P((Multigrapher *multigrapher, double x, double y, bool tolerant));
-static void plot_abscissa_log_subsubtick ____P((Multigrapher *multigrapher, double xval));
-static void plot_errorbar ____P((Multigrapher *multigrapher, const Point *p));
-static void plot_ordinate_log_subsubtick ____P((Multigrapher *multigrapher, double xval));
-static void prepare_axis ____P((Axis *axisp, Transform *trans, double min, double max, double spacing, const char *font_name, double font_size, const char *label, double subsubtick_spacing, bool user_specified_subsubticks, bool round_to_next_tick, bool log_axis, bool reverse_axis, bool switch_axis_end,  bool omit_ticks));
-static void print_tick_label ____P((char *labelbuf, const Axis *axis, const Transform *transform, double val));
-static void scale1 ____P((double min, double max, double *tick_spacing, int *tick_spacing_type));
-static void set_line_style ____P((Multigrapher *multigrapher, int style, bool use_color));
-static void transpose_portmanteau ____P((int *val));
+static int clip_line (Multigrapher *multigrapher, double *x0_p, double *y0_p, double *x1_p, double *y1_p);
+static int spacing_type (double spacing);
+static outcode compute_outcode (Multigrapher *multigrapher, double x, double y, bool tolerant);
+static void plot_abscissa_log_subsubtick (Multigrapher *multigrapher, double xval);
+static void plot_errorbar (Multigrapher *multigrapher, const Point *p);
+static void plot_ordinate_log_subsubtick (Multigrapher *multigrapher, double xval);
+static void prepare_axis (Axis *axisp, Transform *trans, double min, double max, double spacing, const char *font_name, double font_size, const char *label, double subsubtick_spacing, bool user_specified_subsubticks, bool round_to_next_tick, bool log_axis, bool reverse_axis, bool switch_axis_end,  bool omit_ticks);
+static void print_tick_label (char *labelbuf, const Axis *axis, const Transform *transform, double val);
+static void scale1 (double min, double max, double *tick_spacing, int *tick_spacing_type);
+static void set_line_style (Multigrapher *multigrapher, int style, bool use_color);
+static void transpose_portmanteau (int *val);
 
 
 /* print_tick_label() prints a label on an axis tick.  The format depends
@@ -288,15 +308,7 @@ static void transpose_portmanteau ____P((int *val));
  */
 
 static void
-#ifdef _HAVE_PROTOS
 print_tick_label (char *labelbuf, const Axis *axis, const Transform *transform, double val)
-#else
-print_tick_label (labelbuf, axis, transform, val)
-     char *labelbuf;
-     const Axis *axis;
-     const Transform *transform;
-     double val;
-#endif
 {
   int prec;
   char *eloc, *ptr;
@@ -426,17 +438,11 @@ print_tick_label (labelbuf, axis, transform, val)
  * an optimal inter-tick spacing.
  */
 
+/* ARGS: min,max = data min, max
+   	 tick_spacing = inter-tick spacing
+	 tick_spacing_type = 0,1,2 i.e. S_ONE,S_TWO,S_FIVE */
 static void
-#ifdef _HAVE_PROTOS
 scale1 (double min, double max, double *tick_spacing, int *tick_spacing_type)
-#else
-scale1 (min, max, tick_spacing, tick_spacing_type)
-     double min;		/* Data min */
-     double max;		/* Data max */
-     double *tick_spacing;	/* Inter-tick spacing */
-     int *tick_spacing_type;	/* Inter-tick spacing type (0, 1, or 2,
-				   i.e. S_ONE, S_TWO, or S_FIVE) */
-#endif
 {
   int k;
   double nal;
@@ -491,12 +497,7 @@ scale1 (min, max, tick_spacing, tick_spacing_type)
 /* Determine whether an inter-tick spacing (in practice, one specified by
    the user) is 1.0, 2.0, or 5.0 times a power of 10. */
 static int 
-#ifdef _HAVE_PROTOS
 spacing_type (double incr)
-#else
-spacing_type (incr)
-     double incr;
-#endif
 {
   int i;
   int i_tenpower = (int)(floor(log10(incr)));
@@ -531,25 +532,14 @@ spacing_type (incr)
  * the linear transformation variables in the Transform structure also.
  */
 
+/* ARGS: user_specified_subticks = linear ticks on a log axis?
+   	 round_to_next_tick = round limits to next tick mark?
+	 log_axis = log axis?
+	 reverse_axis = reverse min, max?
+	 switch_axis_end = intersection w/ other axis in alt. pos.?
+	 omit_ticks = suppress all ticks and tick labels? */
 static void 
-#ifdef _HAVE_PROTOS
 prepare_axis (Axis *axisp, Transform *trans, double min, double max, double spacing, const char *font_name, double font_size, const char *label, double subsubtick_spacing, bool user_specified_subsubticks, bool round_to_next_tick, bool log_axis, bool reverse_axis, bool switch_axis_end, bool omit_ticks)
-#else
-prepare_axis (axisp, trans, min, max, spacing, font_name, font_size, label, subsubtick_spacing, user_specified_subsubticks, round_to_next_tick, log_axis, reverse_axis, switch_axis_end, omit_ticks)
-     Axis *axisp;
-     Transform *trans;
-     double min, max, spacing;
-     const char *font_name;
-     double font_size;
-     const char *label;
-     double subsubtick_spacing;
-     bool user_specified_subsubticks; /* i.e. linear ticks on a log axis */
-     bool round_to_next_tick; /* round limits to the next tick mark */
-     bool log_axis;	/* log axis */
-     bool reverse_axis;	/* will reverse min, max */
-     bool switch_axis_end;	/* intersection w/ other axis in alt. pos. */
-     bool omit_ticks;	/* suppress all ticks and tick labels */
-#endif
 {
   double range;
   int tick_spacing_type = 0;
@@ -732,13 +722,7 @@ prepare_axis (axisp, trans, min, max, spacing, font_name, font_size, label, subs
    line. */
 
 Multigrapher *
-#ifdef _HAVE_PROTOS
-new_multigrapher (const char *display_type, const char *bg_color, const char *bitmap_size, const char *emulate_color, const char *max_line_length, const char *meta_portable, const char *page_size, const char *rotation_angle, bool save_screen)
-#else
-new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)
-     const char *display_type, *bg_color, *bitmap_size, *emulate_color, *max_line_length, *meta_portable, *page_size, *rotation_angle;
-     bool save_screen;
-#endif
+new_multigrapher (const char *output_format, const char *bg_color, const char *bitmap_size, const char *emulate_color, const char *max_line_length, const char *meta_portable, const char *page_size, const char *rotation_angle, bool save_screen)
 {
   plPlotterParams *plotter_params;
   plPlotter *plotter;
@@ -748,16 +732,16 @@ new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_l
 
   /* set Plotter parameters */
   plotter_params = pl_newplparams ();
-  pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)bg_color);
-  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)bitmap_size);
-  pl_setplparam (plotter_params, "EMULATE_COLOR", (voidptr_t)emulate_color);
-  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (voidptr_t)max_line_length);
-  pl_setplparam (plotter_params, "META_PORTABLE", (voidptr_t)meta_portable);
-  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)page_size);
-  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)rotation_angle);
+  pl_setplparam (plotter_params, "BG_COLOR", (void *)bg_color);
+  pl_setplparam (plotter_params, "BITMAPSIZE", (void *)bitmap_size);
+  pl_setplparam (plotter_params, "EMULATE_COLOR", (void *)emulate_color);
+  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (void *)max_line_length);
+  pl_setplparam (plotter_params, "META_PORTABLE", (void *)meta_portable);
+  pl_setplparam (plotter_params, "PAGESIZE", (void *)page_size);
+  pl_setplparam (plotter_params, "ROTATION", (void *)rotation_angle);
 
   /* create Plotter and open it */
-  plotter = pl_newpl_r (display_type, NULL, stdout, stderr, plotter_params);
+  plotter = pl_newpl_r (output_format, NULL, stdout, stderr, plotter_params);
   if (plotter == (plPlotter *)NULL)
     return (Multigrapher *)NULL;
   pl_deleteplparams (plotter_params);
@@ -775,12 +759,7 @@ new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_l
 }
 
 int
-#ifdef _HAVE_PROTOS
 delete_multigrapher (Multigrapher *multigrapher)
-#else
-delete_multigrapher (multigrapher)
-     Multigrapher *multigrapher;
-#endif
 {
   int retval;
 
@@ -794,13 +773,7 @@ delete_multigrapher (multigrapher)
 
 
 void
-#ifdef _HAVE_PROTOS
 begin_graph (Multigrapher *multigrapher, double scale, double trans_x, double trans_y)
-#else
-begin_graph (multigrapher, scale, trans_x, trans_y)
-     Multigrapher *multigrapher;
-     double scale, trans_x, trans_y;
-#endif
 {
   pl_savestate_r (multigrapher->plotter);
   pl_fconcat_r (multigrapher->plotter,
@@ -809,52 +782,45 @@ begin_graph (multigrapher, scale, trans_x, trans_y)
 }
 
 void
-#ifdef _HAVE_PROTOS
 end_graph (Multigrapher *multigrapher)
-#else
-end_graph (multigrapher)
-     Multigrapher *multigrapher;
-#endif
 {
   pl_restorestate_r (multigrapher->plotter);
 }
 
 
+/* ARGS:
+     Multigrapher *multigrapher
+     double frame_line_width 	= fractional width of lines in the frame
+     const char *frame_color 	= color for frame (and plot if no -C option)
+     const char *title 		= graph title
+     const char *title_font_name = font for graph title (string)
+     double title_font_size 	= font size for graph title
+     double tick_size 		= fractional size of ticks
+     grid_type grid_spec 	= gridstyle (and tickstyle) spec
+     double x_min, x_max, x_spacing
+     double y_min, y_max, y_spacing
+     bool spec_x_spacing
+     bool spec_y_spacing
+     double width, height, up, right
+     const char *x_font_name
+     double x_font_size
+     const char *x_label
+     const char *y_font_name 
+     double y_font_size
+     const char *y_label
+     bool no_rotate_y_label
+
+     -- portmanteaux args --
+     int log_axis		= whether axes should be logarithmic
+     int round_to_next_tick	= round limits to the next tick mark
+     int switch_axis_end	= put axes at right/top, not left/bottom?
+     int omit_ticks		= omit all ticks, tick labels from an axis?
+     -- other args --
+     int clip_mode		= 0, 1, or 2
+     double blankout_fraction	= 1.0 means blank out whole box before plot
+     bool transpose_axes */
 void 
-#ifdef _HAVE_PROTOS
 set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const char *frame_color, const char *title, const char *title_font_name, double title_font_size, double tick_size, grid_type grid_spec, double x_min, double x_max, double x_spacing, double y_min, double y_max, double y_spacing, bool spec_x_spacing, bool spec_y_spacing, double width, double height, double up, double right, const char *x_font_name, double x_font_size, const char *x_label, const char *y_font_name, double y_font_size, const char *y_label, bool no_rotate_y_label, int log_axis, int round_to_next_tick, int switch_axis_end, int omit_ticks, int clip_mode, double blankout_fraction, bool transpose_axes)
-#else
-set_graph_parameters (multigrapher, frame_line_width, frame_color, title, title_font_name, title_font_size, tick_size, grid_spec, x_min, x_max, x_spacing, y_min, y_max, y_spacing, spec_x_spacing, spec_y_spacing, width, height, up, right, x_font_name, x_font_size, x_label, y_font_name, y_font_size, y_label, no_rotate_y_label, log_axis, round_to_next_tick, switch_axis_end, omit_ticks, clip_mode, blankout_fraction, transpose_axes)
-     Multigrapher *multigrapher;
-     double frame_line_width;	/* fractional width of lines in the frame */
-     const char *frame_color;	/* color for frame (and plot if no -C option)*/
-     const char *title;		/* graph title */
-     const char *title_font_name; /* font for graph title (string) */
-     double title_font_size;	/* font size for graph title  */
-     double tick_size;		/* fractional size of ticks */
-     grid_type grid_spec;	/* gridstyle (and tickstyle) spec */
-     double x_min, x_max, x_spacing;
-     double y_min, y_max, y_spacing;
-     bool spec_x_spacing;
-     bool spec_y_spacing;
-     double width, height, up, right;
-     const char *x_font_name;
-     double x_font_size;
-     const char *x_label;
-     const char *y_font_name; 
-     double y_font_size;
-     const char *y_label;
-     bool no_rotate_y_label;
-     /* portmanteaux */
-     int log_axis;		/* whether axes should be logarithmic */
-     int round_to_next_tick;	/* round limits to the next tick mark */
-     int switch_axis_end;	/* put axes at right/top, not left/bottom? */
-     int omit_ticks;		/* omit all ticks, tick labels from an axis? */
-     /* other args */
-     int clip_mode;		/* clip mode = 0, 1, or 2 */
-     double blankout_fraction;	/* 1.0 means blank out whole box before plot*/
-     bool transpose_axes;
-#endif
 {
   double x_subsubtick_spacing = 0.0, y_subsubtick_spacing = 0.0;
   /* local portmanteau variables */
@@ -1135,13 +1101,7 @@ set_graph_parameters (multigrapher, frame_line_width, frame_color, title, title_
    for the first time; see graph.c.  */
 
 void
-#ifdef _HAVE_PROTOS
 draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
-#else
-draw_frame_of_graph (multigrapher, draw_canvas)
-     Multigrapher *multigrapher;
-     bool draw_canvas;
-#endif
 {
   static bool tick_warning_printed = false; /* when too few labelled ticks */
 
@@ -2014,14 +1974,9 @@ draw_frame_of_graph (multigrapher, draw_canvas)
    called to plot both normal log subticks and special (user-requested)
    ones */
 
+/* ARGS: xval = log of location */
 static void
-#ifdef _HAVE_PROTOS
 plot_abscissa_log_subsubtick (Multigrapher *multigrapher, double xval)
-#else
-plot_abscissa_log_subsubtick (multigrapher, xval)
-     Multigrapher *multigrapher;
-     double xval;		/* log of location */
-#endif
 {
   double xrange = multigrapher->x_trans.input_max - multigrapher->x_trans.input_min;
   /* there is no way you could use longer labels on tick marks! */
@@ -2139,14 +2094,9 @@ plot_abscissa_log_subsubtick (multigrapher, xval)
     }
 }
 
+/* ARGS: yval = log of location */
 static void
-#ifdef _HAVE_PROTOS
 plot_ordinate_log_subsubtick (Multigrapher *multigrapher, double yval)
-#else
-plot_ordinate_log_subsubtick (multigrapher, yval)
-     Multigrapher *multigrapher;
-     double yval;		/* log of location */
-#endif
 {
   double yrange = multigrapher->y_trans.input_max - multigrapher->y_trans.input_min;
   /* there is no way you could use longer labels on tick marks! */
@@ -2275,14 +2225,7 @@ plot_ordinate_log_subsubtick (multigrapher, yval)
  * explanation at head of file. */
 
 static void
-#ifdef _HAVE_PROTOS
 set_line_style (Multigrapher *multigrapher, int style, bool use_color)
-#else
-set_line_style (multigrapher, style, use_color)
-     Multigrapher *multigrapher;
-     int style;
-     bool use_color;
-#endif
 {
   if (!use_color)		/* monochrome */
     {
@@ -2327,14 +2270,7 @@ set_line_style (multigrapher, style, use_color)
  */
 
 void
-#ifdef _HAVE_PROTOS
 plot_point_array (Multigrapher *multigrapher, const Point *p, int length)
-#else
-plot_point_array (multigrapher, p, length)
-     Multigrapher *multigrapher;
-     const Point *p;
-     int length;
-#endif
 {
   int index;
 
@@ -2353,13 +2289,7 @@ plot_point_array (multigrapher, p, length)
  * updates the multigrapher's internal state variables.  */
 
 void
-#ifdef _HAVE_PROTOS
 plot_point (Multigrapher *multigrapher, const Point *point)
-#else
-plot_point (multigrapher, point)
-     Multigrapher *multigrapher;
-     const Point *point;
-#endif
 {
   double local_x0, local_y0, local_x1, local_y1;
   int clipval;
@@ -2552,13 +2482,7 @@ plot_point (multigrapher, point)
  */
 
 static int
-#ifdef _HAVE_PROTOS
 clip_line (Multigrapher *multigrapher, double *x0_p, double *y0_p, double *x1_p, double *y1_p)
-#else
-clip_line (multigrapher, x0_p, y0_p, x1_p, y1_p)
-     Multigrapher *multigrapher;
-     double *x0_p, *y0_p, *x1_p, *y1_p;
-#endif
 {
   double x0 = *x0_p;
   double y0 = *y0_p;
@@ -2644,14 +2568,7 @@ clip_line (multigrapher, x0_p, y0_p, x1_p, y1_p)
    {LEFT, interior, RIGHT} x {BOTTOM, interior, TOP}.
    The `tolerant' flag specifies how we handle points on the boundary. */
 static outcode
-#ifdef _HAVE_PROTOS
 compute_outcode (Multigrapher *multigrapher, double x, double y, bool tolerant)
-#else
-compute_outcode (multigrapher, x, y, tolerant)
-     Multigrapher *multigrapher;
-     double x, y;
-     bool tolerant;
-#endif
 {
   outcode code = 0;
   double xfuzz = FUZZ * multigrapher->x_trans.input_range;
@@ -2671,12 +2588,7 @@ compute_outcode (multigrapher, x, y, tolerant)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 transpose_portmanteau (int *val)
-#else
-transpose_portmanteau (val)
-     int *val;
-#endif
 {
   bool xtrue, ytrue;
   int newval;
@@ -2689,13 +2601,7 @@ transpose_portmanteau (val)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 plot_errorbar (Multigrapher *multigrapher, const Point *p)
-#else
-plot_errorbar (multigrapher, p)
-     Multigrapher *multigrapher;
-     const Point *p;
-#endif
 {
   if (p->have_x_errorbar || p->have_y_errorbar)
     /* save & restore state, since we invoke pl_linemod_r() */
@@ -2737,12 +2643,7 @@ plot_errorbar (multigrapher, p)
    after all dataset(s) have been read from the file and plotted. */
 
 void
-#ifdef _HAVE_PROTOS
 end_polyline_and_flush (Multigrapher *multigrapher)
-#else
-end_polyline_and_flush (multigrapher)
-     Multigrapher *multigrapher;
-#endif
 {
   pl_endpath_r (multigrapher->plotter);
   pl_flushpl_r (multigrapher->plotter);

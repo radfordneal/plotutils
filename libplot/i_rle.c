@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file (i_rle.c) is a module that does run-length encoding on
    a sequence of integers ("pixel values"), and writes the resulting
    encoded sequence to an output stream.  The accompanying header file
@@ -59,26 +77,21 @@
 #include "i_rle.h"
 
 /* forward references */
-static void _block_out ____P((rle_out *rle, unsigned char c));
+static void _block_out (rle_out *rle, unsigned char c);
 
 static void 
-#ifdef _HAVE_PROTOS
 _write_block (rle_out *rle)
-#else
-_write_block (rle)
-     rle_out *rle;
-#endif
 {
   if (rle->ofile)
     {
       fputc (rle->oblen, rle->ofile);
-      fwrite ((voidptr_t) &(rle->oblock[0]), 1, rle->oblen, rle->ofile);
+      fwrite ((void *) &(rle->oblock[0]), 1, rle->oblen, rle->ofile);
     }
 #ifdef LIBPLOTTER
   else if (rle->outstream)
     {
       rle->outstream->put ((unsigned char)(rle->oblen));
-      rle->outstream->write (&(rle->oblock[0]), rle->oblen);
+      rle->outstream->write ((const char *)(&(rle->oblock[0])), rle->oblen);
     }
 #endif  
 
@@ -86,13 +99,7 @@ _write_block (rle)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _block_out (rle_out *rle, unsigned char c)
-#else
-_block_out (rle, c)
-     rle_out *rle;
-     unsigned char c;
-#endif
 {
   rle->oblock[(rle->oblen)++] = c;
   if (rle->oblen >= 255)
@@ -100,25 +107,14 @@ _block_out (rle, c)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _block_flush (rle_out *rle)
-#else
-_block_flush (rle)
-     rle_out *rle;
-#endif
 {
   if (rle->oblen > 0)
     _write_block (rle);
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _output (rle_out *rle, int val)
-#else
-_output (rle, val)
-     rle_out *rle;
-     int val;
-#endif
 {
   rle->obuf |= val << rle->obits;
   rle->obits += rle->out_bits;
@@ -131,12 +127,7 @@ _output (rle, val)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _output_flush (rle_out *rle)
-#else
-_output_flush (rle)
-     rle_out *rle;
-#endif
 {
   if (rle->obits > 0)
     _block_out (rle, (unsigned char)(rle->obuf));
@@ -144,12 +135,7 @@ _output_flush (rle)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _did_clear (rle_out *rle)
-#else
-_did_clear (rle)
-     rle_out *rle;
-#endif
 {
   rle->out_bits = rle->out_bits_init;
   rle->out_bump = rle->out_bump_init;
@@ -160,13 +146,7 @@ _did_clear (rle)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _output_plain (rle_out *rle, int c)
-#else
-_output_plain (rle, c)
-     rle_out *rle;
-     int c;
-#endif
 {
   rle->just_cleared = false;
   _output (rle, c);
@@ -184,12 +164,7 @@ _output_plain (rle, c)
 }
 
 static unsigned int 
-#ifdef _HAVE_PROTOS
 _isqrt (unsigned int x)
-#else
-_isqrt (x)
-     unsigned int x;
-#endif
 {
   unsigned int r;
   unsigned int v;
@@ -208,12 +183,7 @@ _isqrt (x)
 }
 
 static unsigned int 
-#ifdef _HAVE_PROTOS
 _compute_triangle_count (unsigned int count, unsigned int nrepcodes)
-#else
-_compute_triangle_count (count, nrepcodes)
-     unsigned int count, nrepcodes;
-#endif
 {
   unsigned int perrep, cost;
 
@@ -239,23 +209,13 @@ _compute_triangle_count (count, nrepcodes)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _max_out_clear (rle_out *rle)
-#else
-_max_out_clear (rle)
-     rle_out *rle;
-#endif
 {
   rle->out_clear = rle->max_ocodes;
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _reset_out_clear (rle_out *rle)
-#else
-_reset_out_clear (rle)
-     rle_out *rle;
-#endif
 {
   rle->out_clear = rle->out_clear_init;
   if (rle->out_count >= rle->out_clear)
@@ -266,13 +226,7 @@ _reset_out_clear (rle)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _rl_flush_fromclear (rle_out *rle, int count)
-#else
-     _rl_flush_fromclear (rle, count)
-     rle_out *rle;
-     int count;
-#endif
 {
   int n;
 
@@ -314,13 +268,7 @@ _rl_flush_fromclear (rle_out *rle, int count)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _rl_flush_clearorrep (rle_out *rle, int count)
-#else
-_rl_flush_clearorrep (rle, count)
-     rle_out *rle;
-     int count;
-#endif
 {
   int withclr;
 
@@ -338,13 +286,7 @@ _rl_flush_clearorrep (rle, count)
 }
 
 static void 
-#ifdef _HAVE_PROTOS
 _rl_flush_withtable (rle_out *rle, int count)
-#else
-_rl_flush_withtable (rle, count)
-     rle_out *rle;
-     int count;
-#endif
 {
   int repmax;
   int repleft;
@@ -386,12 +328,7 @@ _rl_flush_withtable (rle, count)
 
 /* end a run in progress */
 static void 
-#ifdef _HAVE_PROTOS
 _rl_flush (rle_out *rle)
-#else
-_rl_flush (rle)
-     rle_out *rle;
-#endif
 {
   if (rle->rl_count == 1)	/* not a real run, just output pixel */
     _output_plain (rle, rle->rl_pixel);
@@ -418,13 +355,7 @@ rle_out *
 #ifdef LIBPLOTTER
 _rle_init (FILE *fp, ostream *out, int bit_depth)
 #else
-#ifdef _HAVE_PROTOS
 _rle_init (FILE *fp, int bit_depth)
-#else
-_rle_init (fp, bit_depth)
-     FILE *fp;
-     int bit_depth;
-#endif
 #endif
 {
   int init_bits;
@@ -436,7 +367,7 @@ _rle_init (fp, bit_depth)
      constraints". */
   init_bits = IMAX(bit_depth, 2) + 1;
 
-  rle = (rle_out *)_plot_xmalloc(sizeof(rle_out));
+  rle = (rle_out *)_pl_xmalloc(sizeof(rle_out));
   rle->ofile = fp;
 #ifdef LIBPLOTTER
   rle->outstream = out;
@@ -464,13 +395,7 @@ _rle_init (fp, bit_depth)
 
 /* send one pixel to the RLE */
 void
-#ifdef _HAVE_PROTOS
 _rle_do_pixel (rle_out *rle, int c)
-#else
-_rle_do_pixel (rle, c)
-     rle_out *rle;
-     int c;
-#endif
 {
   /* if a run needs to be terminated by being written out, do so */
   if ((rle->rl_count > 0) && (c != rle->rl_pixel))
@@ -488,12 +413,7 @@ _rle_do_pixel (rle, c)
 
 /* flush out any data remaining in RLE; write EOF and deallocate RLE */
 void
-#ifdef _HAVE_PROTOS
 _rle_terminate (rle_out *rle)
-#else
-_rle_terminate (rle)
-     rle_out *rle;
-#endif
 {
   /* if a run in progress, end it */
   if (rle->rl_count > 0)

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -19,12 +37,7 @@
 /* In a generic Plotter, paint_path() does nothing. */
 
 void
-#ifdef _HAVE_PROTOS
-_g_paint_path (S___(Plotter *_plotter))
-#else
-_g_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_g_paint_path (S___(Plotter *_plotter))
 {
   return;
 }
@@ -32,12 +45,7 @@ _g_paint_path (S___(_plotter))
 /* In a generic Plotter, path_is_flushable() simply returns true. */
 
 bool
-#ifdef _HAVE_PROTOS
-_g_path_is_flushable (S___(Plotter *_plotter))
-#else
-_g_path_is_flushable (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_g_path_is_flushable (S___(Plotter *_plotter))
 {
   return true;
 }
@@ -45,13 +53,7 @@ _g_path_is_flushable (S___(_plotter))
 /* In a generic Plotter, maybe_prepaint_segments() does nothing. */
 
 void
-#ifdef _HAVE_PROTOS
-_g_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
-#else
-_g_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
-     S___(Plotter *_plotter;)
-     int prev_num_segments;
-#endif
+_pl_g_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
 {
   return;
 }
@@ -59,12 +61,7 @@ _g_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
 /* In a generic Plotter, paint_paths() does nothing but returns `true'. */
 
 bool
-#ifdef _HAVE_PROTOS
-_g_paint_paths (S___(Plotter *_plotter))
-#else
-_g_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_g_paint_paths (S___(Plotter *_plotter))
 {
   return true;
 }

@@ -1,7 +1,7 @@
 %!PS-Adobe-3.0 EPSF-3.0
-%%Creator: GNU libplot drawing library 4.1
+%%Creator: GNU libplot drawing library 4.2
 %%Title: PostScript plot
-%%CreationDate: Fri Jun 16 21:08:33 2000
+%%CreationDate: Fri Dec  9 13:09:44 2005
 %%DocumentData: Clean7Bit
 %%LanguageLevel: 1
 %%Pages: 1
@@ -9,7 +9,7 @@
 %%Orientation: Portrait
 %%BoundingBox: 85 203 455 591
 %%DocumentNeededResources: font Times-Roman
-%%DocumentSuppliedResources: procset GNU_libplot 1.0 0
+%%DocumentSuppliedResources: procset GNU_libplot 1.1 0
 %%EndComments
 
 %%BeginDefaults
@@ -61,7 +61,7 @@ dup dup findfont dup length dict begin
 currentdict end definefont
 } def
 /Times-Roman reencodeISO def
-%%BeginResource procset GNU_libplot 1.0 0
+%%BeginResource procset GNU_libplot 1.1 0
 /none null def
 /numGraphicParameters 17 def
 /stringLimit 65535 def
@@ -294,7 +294,7 @@ grestore
 gsave
 fgred fggreen fgblue setrgbcolor
 /fontDict printFont findfont printSize scalefont dup setfont def
-/descender fontDict begin 0 [FontBBox] 1 get FontMatrix end
+/descender fontDict begin 0 /FontBBox load 1 get FontMatrix end
 transform exch pop def
 /vertoffset 1 printSize sub descender sub def {
 0 vertoffset moveto show

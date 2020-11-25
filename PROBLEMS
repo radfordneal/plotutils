@@ -6,6 +6,9 @@ them as problems rather than bugs.
 Most of them are due to idiosyncrasies of (or bugs in) the display devices
 and application software that libplot must produce output for.
 
+See also the file ./COMPAT, for some changes in this release that are
+relevant to the below problems.
+
 ======================================================================
 
 The libplot SVG driver and `graph -T svg'
@@ -14,19 +17,13 @@ The libplot SVG driver and `graph -T svg'
 The SVG specification is to some extent a moving target; consult the W3
 Consortium's Web pages on SVG ( http://www.w3.org/Graphics/SVG ) for more
 information.  In this release, the SVG produced by libplot's SVG driver
-complies with the 3 March 2000 version of the SVG specification.
+complies with the SVG 1.1 specification.
 
 However, as of this writing, many SVG viewers fail to implement crucial
 parts of the specification (those dealing with text, in particular).  So
 the following sorts of problem may be encountered when viewing SVG output.
 
-1. Text strings, such as the graph labels in the output of `graph -T svg',
-may be incorrectly positioned in the horizontal and/or vertical directions.
-If this occurs, it is because your SVG viewer does not support the
-`text-anchor' and/or `baseline-identifier' SVG attributes, which determine
-horizontal and vertical positioning, respectively.
-
-2. The font used for a text string may not be the one you have selected.
+1. The font used for a text string may not be the one you have selected.
 libplot's SVG driver attempts to give the SVG viewer enough information to
 select an appropriate font.  For example, `graph -T svg' by default uses a
 Helvetica font.  Its SVG output contains the font specification
@@ -44,55 +41,41 @@ different, will be supplied in the SVG output.  In nearly all cases, a
 viewers have been observed to fail to retrieve a matching font, or any font
 at all (!), even when they are helped out in this way.
 
-3. If you switch fonts in the middle of a text string, the substrings may
+The fix is to use one of the builtin Hershey fonts, such as HersheySerif.
+For more information, see the file ./COMPAT.
+
+2. If you switch fonts in the middle of a text string, the substrings may
 not line up properly.  If this occurs, it is because your SVG viewer is
 using fonts whose metrics are different from what libplot's SVG driver
 expects.  SVG supports the creation of compound (multi-font) text strings,
 via <tspan>..</tspan> constructs.  However, libplot's SVG driver does not
-currently use these constructs.  Support for them will be added to later
+currently use these constructs.  Support for them may be added to later
 releases of the driver.
+
+Again, the fix is to use one of the builtin Hershey fonts, such as
+HersheySerif.
 
 ----------------------------------------------------------------------
 
 The libplot X driver and `graph -T X'
 -------------------------------------
 
-1. Old (pre-X11R6) X Window System servers do not support rotation,
-non-uniform scaling, or shearing of fonts.
+1. The Symbol and ZapfDingbats fonts distributed with some X Window System
+displays, such as recent releases of XFree86, are incorrectly encoded.  In
+consequence, text strings that contain Greek characters or mathematical
+symbols may not be displayed correctly.
 
-This problem is automatically worked around.  A default Hershey font
-(HersheySerif) will be automatically substituted for any unavailable X
-font.  So `graph -T X', and any other application that uses libplot's X
-driver, may be used to drive such an older X display.
+To check the encoding of the Symbol font, do both
 
-This problem may show up in `graph -T X' when you label a y-axis.  By
-default, the y-axis label on a plot produced by `graph -T X' is rotated
-ninety degrees.  You may turn this rotation off by using the
-`--toggle-rotate-y-label' option, preventing the font substitution if any.
+   plotfont -T X Symbol
+   plotfont -T ps Symbol | gv -
 
-2. Applications that use libplot's X driver, such as `graph -T X', when
-displaying output on Sun workstations running old versions of OpenWindows
-(Sun's version of the X Window System), may not draw square roots very well.
-
-For example, doing
-
-	echo 0 0 1 1 2 0 | graph -T X -L '\sr\mk2\rt\rn is irrational!'
-
-may produce a plot in which the square root in the title looks funny.  The
-horizontal overbar in the square root may be displaced downward slightly.
-
-This is not a bug in libplot; it is a bug in OpenWindows.  The OpenWindows
-Symbol font (supplied in Sun's proprietary Folio format, and opaque to
-investigation) contains two characters: a square root symbol, and a
-matching overbar.  At least in OpenWindows version 3, their heights above
-the baseline did not match as they should.
-
-Some versions of OpenWindows may include bitmapped versions of the Symbol
-font in which the horizontal overbar is displaced horizontally, as well as
-vertically.  This makes the problem even worse.
-
-The fix for the square root problem is to uninstall OpenWindows and replace
-it with industry-standard X11; in particular, X11R6.
+to display respectively the layout of the Symbol font in your X display,
+and the standard Postscript symbol font build into the `gv' application.
+(To see the latter, you could alternatively send the output of 
+`plotfont -T ps Symbol' to a Postscript printer.)  If the two character 
+tables look different, complain to the people who supplied your X Window
+System software.
 
 ----------------------------------------------------------------------
 
@@ -108,13 +91,9 @@ vendors don't agree with Adobe as to the width of the printable `8-bit'
 (non-ASCII) characters.  Sun SparcPrinters in particular have been observed
 to space such characters incorrectly.
 
-If you are using the freely distributable Ghostscript interpreter, it is
-recommended that you use a version at least as recent as release 4.xx.
-Earlier releases of Ghostscript are reported to have had similar problems.
-
-2. It has been reported that the freeware `bbfig' program, which is widely
-used for computing the bounding boxes of Postscript files, does not
-necessarily compute the correct bounding box when it is applied to the
+2. It has been reported that the freeware `bbfig' program, which is
+sometimes used for computing the bounding boxes of Postscript files, does
+not necessarily compute the correct bounding box when it is applied to the
 output of libplot's PS driver; for example, to a graph produced by 
 `graph -T ps'.
 
@@ -163,10 +142,10 @@ The libplot CGM driver and `graph -T cgm'
 ----------------------------------------
 
 1. There are many older CGM viewers and interpreters, such as the free but
-currently unsupported RALCGM and GPLOT viewers, and the CGM import filter
-used by Microsoft Office, that can only handle version 1 CGM files.  To
-produce output for such CGM viewers and interpreters, you should set the
-environment variable (i.e., libplot parameter) CGM_MAX_VERSION to "1".  
+unsupported(?) RALCGM and GPLOT viewers, and the CGM import filter used by
+Microsoft Office, that can only handle version 1 CGM files.  To produce
+output for such CGM viewers and interpreters, you should set the
+environment variable (i.e., libplot parameter) CGM_MAX_VERSION to "1".
 
 The default is to use version 3.  (Versions are more or less upward
 compatible, so any version-1 CGM file is effectively also a version-3 file,
@@ -248,9 +227,9 @@ number from 3 to 2, or to 1.
 The libplot xfig driver and `graph -T fig'
 ----------------------------------------
 
-1. At least as of xfig release 3.2, the `fig2dev' program that `xfig' uses
-to export figures in Postscript format has a bug.  It incorrectly
-transforms minus signs to hyphens, and hyphens to en-dashes.
+1. At least in some versions of xfig release 3.2, the `fig2dev' program
+that `xfig' uses to export figures in Postscript format has a bug.  It
+incorrectly transforms minus signs to hyphens, and hyphens to en-dashes.
 
 For example, if you do `plotfont -Tfig --box Helvetica' and 
 `plotfont -Tfig --box -2 Helvetica' to produce character maps of the two
@@ -263,7 +242,8 @@ respectively.
 This is a problem with `fig2dev', not libplot.  If you encounter this
 problem, a possible workaround is to change, with a text editor, the string
 "8#255 /endash" in the exported PS file to "8#255 /hyphen 8#055 /minus".
-The problem has been reported to the xfig maintainer.
+The problem has been reported to the xfig maintainer, and may now have been
+fixed.
 
 2. xfig supports rotation and uniform scaling of the 35 standard Postscript
 fonts, but not non-uniform scaling or shearing.  So libplot's xfig driver
@@ -280,18 +260,6 @@ square) viewport.  For example, if you do
 then in the .fig file which is written to standard output, the usual
 Helvetica font for graph labels will be replaced by HersheySerif.  You will
 get a warning message about that.
-
-3. At least as of release 3.2.2, xfig can't handle text strings that
-consist of a single space character, if they're rotated at a nonzero angle.
-In fact, xfig will crash if it sees such a string in a .fig file.  This
-problem is automatically worked around: when producing Fig output, libplot
-and the graphics utilities built on it never write such strings.  One
-example of this is `plotfont -T fig --rotation 180 Helvetica', which writes
-to standard output an upside-down character map of the Helvetica font, in
-Fig format.  If you examine the character map carefully with xfig and/or a
-text editor, you will notice that the space character is omitted from the
-character map.  That is not a major blemish, since if it were present it
-would be invisible.
 
 ----------------------------------------------------------------------
 
@@ -425,11 +393,11 @@ Problems with thick lines drawn with libplot
 --------------------------------------------
 
 A `line segment' is conceptually a rectangle (usually rather thin).  But if
-the affine map from user coordinates to device coordinates is not a uniform
-expansion or contraction, most such rectangles should ideally be sheared
-into parallelograms in the device frame.  However, most display devices
-cannot display sheared line segments: their `lines', no matter how thick,
-are always drawn as rectangles.
+the affine transformation from user coordinates to device coordinates is
+not a uniform expansion or contraction, most such rectangles should ideally
+be sheared into parallelograms in the device frame.  However, most display
+devices cannot display sheared line segments: their `lines', no matter how
+thick, are always drawn as rectangles.
 
 X Windows does not support sheared thick lines.  Nor do the xfig or idraw
 drawing editors, or the HP-GL and HP-GL/2 languages.  However, the

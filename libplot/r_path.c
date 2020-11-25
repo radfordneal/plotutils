@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -19,15 +37,10 @@
 enum { ACCEPTED = 0x1, CLIPPED_FIRST = 0x2, CLIPPED_SECOND = 0x4 };
 
 /* forward references */
-static void _emit_regis_vector ____P((plIntPoint istart, plIntPoint iend, bool skip_null, char *tmpbuf));
+static void _emit_regis_vector (plIntPoint istart, plIntPoint iend, bool skip_null, char *tmpbuf);
 
 void
-#ifdef _HAVE_PROTOS
-_r_paint_path (S___(Plotter *_plotter))
-#else
-_r_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_r_paint_path (S___(Plotter *_plotter))
 {
   char tmpbuf[32];
 
@@ -81,14 +94,14 @@ _r_paint_path (S___(_plotter))
 		double x, y;
 		plIntPoint first, oldpoint, newpoint;
 
-		_r_set_fill_color (S___(_plotter));
+		_pl_r_set_fill_color (S___(_plotter));
 		x = XD(_plotter->drawstate->path->segments[0].p.x,
 		       _plotter->drawstate->path->segments[0].p.y);
 		y = YD(_plotter->drawstate->path->segments[0].p.x,
 			     _plotter->drawstate->path->segments[0].p.y);
 		first.x = IROUND(x);
 		first.y = IROUND(y);
-		_regis_move (R___(_plotter) first.x, first.y); /* use P[..] */
+		_pl_r_regis_move (R___(_plotter) first.x, first.y); /* use P[..] */
 
 		_write_string (_plotter->data, "F(");
 		_write_string (_plotter->data, "V");
@@ -189,8 +202,8 @@ _r_paint_path (S___(_plotter))
 		     set the ReGIS foreground color to be our pen color;
 		     this code gets executed the first time we get here */
 		  {
-		    _r_set_attributes (S___(_plotter));
-		    _r_set_pen_color (S___(_plotter));
+		    _pl_r_set_attributes (S___(_plotter));
+		    _pl_r_set_pen_color (S___(_plotter));
 		    attributes_set = true;
 		  }
 
@@ -198,7 +211,7 @@ _r_paint_path (S___(_plotter))
 		  {
 		    /* if necessary, move graphics cursor to first point of
                        line segment, using P command */
-		    _regis_move (R___(_plotter) istart.x, istart.y);
+		    _pl_r_regis_move (R___(_plotter) istart.x, istart.y);
 		    
 		    /* emit op code for V command, to begin polyline */
 		    _write_string (_plotter->data, "V");
@@ -266,9 +279,9 @@ _r_paint_path (S___(_plotter))
 	    if (_plotter->drawstate->fill_type)
 	      /* fill the circle */
 	      {
-		_r_set_fill_color (S___(_plotter));
+		_pl_r_set_fill_color (S___(_plotter));
 
-		_regis_move (R___(_plotter) i_x, i_y); /* use P command */
+		_pl_r_regis_move (R___(_plotter) i_x, i_y); /* use P command */
 		if (i_radius > 0)
 		  {
 		    sprintf (tmpbuf, "F(C[+%d])\n", i_radius);
@@ -282,10 +295,10 @@ _r_paint_path (S___(_plotter))
 	    if (_plotter->drawstate->pen_type)
 	      /* edge the circle */
 	      {
-		_r_set_attributes (S___(_plotter));
-		_r_set_pen_color (S___(_plotter));
+		_pl_r_set_attributes (S___(_plotter));
+		_pl_r_set_pen_color (S___(_plotter));
 
-		_regis_move (R___(_plotter) i_x, i_y); /* use P command */
+		_pl_r_regis_move (R___(_plotter) i_x, i_y); /* use P command */
 		if (i_radius > 0)
 		  {
 		    sprintf (tmpbuf, "C[+%d]\n", i_radius);
@@ -308,13 +321,7 @@ _r_paint_path (S___(_plotter))
    agree with the Plotter's notion of what the graphics cursor should be.  */
 
 void
-#ifdef _HAVE_PROTOS
-_regis_move (R___(Plotter *_plotter) int xx, int yy)
-#else
-_regis_move (R___(_plotter) xx, yy)
-     S___(Plotter *_plotter;)
-     int xx, yy;
-#endif
+_pl_r_regis_move (R___(Plotter *_plotter) int xx, int yy)
 {
   char tmpbuf[32];
   plIntPoint newpoint;
@@ -346,14 +353,7 @@ _regis_move (R___(_plotter) xx, yy)
 }
 
 static void
-#ifdef _HAVE_PROTOS
 _emit_regis_vector (plIntPoint istart, plIntPoint iend, bool skip_null, char *tmpbuf)
-#else
-_emit_regis_vector (istart, iend, skip_null, tmpbuf)
-     plIntPoint istart, iend;
-     bool skip_null;
-     char *tmpbuf;
-#endif
 {
   plIntVector v;
   bool xneg = false, yneg = false;
@@ -412,34 +412,18 @@ _emit_regis_vector (istart, iend, skip_null, tmpbuf)
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_r_paint_paths (S___(Plotter *_plotter))
-#else
-_r_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_r_paint_paths (S___(Plotter *_plotter))
 {
   return false;
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_r_path_is_flushable (S___(Plotter *_plotter))
-#else
-_r_path_is_flushable (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_r_path_is_flushable (S___(Plotter *_plotter))
 {
   return true;
 }
 
 void
-#ifdef _HAVE_PROTOS
-_r_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
-#else
-_r_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
-     S___(Plotter *_plotter;)
-     int prev_num_segments;
-#endif
+_pl_r_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
 {
 }

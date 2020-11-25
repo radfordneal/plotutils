@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the PlotterParams class, which is a helper class.
    A PlotterParams object is used for specifying device driver parameters
    when a Plotter is instantiated.
@@ -29,7 +47,7 @@ PlotterParams::PlotterParams ()
   int i;
   
   for (i = 0; i < NUM_PLOTTER_PARAMETERS; i++)
-    plparams[i] = (voidptr_t)NULL;
+    plparams[i] = (void *)NULL;
 }
 
 PlotterParams::~PlotterParams ()
@@ -64,14 +82,7 @@ PlotterParams& PlotterParams::operator= (const PlotterParams& oldPlotterParams)
    libplot, a pointer to a PlotterParams struct must be passed to it as its
    first argument. */
 int
-#ifdef _HAVE_PROTOS
-_setplparam (R___(PlotterParams *_plotter_params) const char *parameter, voidptr_t value)
-#else
-_setplparam (R___(_plotter_params) parameter, value)
-     S___(PlotterParams *_plotter_params;)
-     const char *parameter;
-     voidptr_t value;
-#endif
+_setplparam (R___(PlotterParams *_plotter_params) const char *parameter, void * value)
 {
   int j;
 
@@ -88,7 +99,7 @@ _setplparam (R___(_plotter_params) parameter, value)
 	      if (value != NULL)
 		{
 		  _plotter_params->plparams[j] = 
-		    (char *)_plot_xmalloc (strlen ((char *)value) + 1);
+		    (char *)_pl_xmalloc (strlen ((char *)value) + 1);
 		  strcpy ((char *)_plotter_params->plparams[j], (char *)value);
 		}
 	      else
@@ -122,13 +133,7 @@ _setplparam (R___(_plotter_params) parameter, value)
    copied byte-by-byte) and those whose values are void pointers (which may
    simply be copied. */
 void 
-#ifdef _HAVE_PROTOS
-_copy_params_to_plotter (R___(Plotter *_plotter) const PlotterParams *plotter_params)
-#else
-_copy_params_to_plotter (R___(_plotter) plotter_params)
-     S___(Plotter *_plotter;) 
-     const PlotterParams *plotter_params;
-#endif
+_pl_g_copy_params_to_plotter (R___(Plotter *_plotter) const PlotterParams *plotter_params)
 {
   int j;
   char *envs;
@@ -146,7 +151,7 @@ _copy_params_to_plotter (R___(_plotter) plotter_params)
 	    /* have user-specified value */
 	    {
 	      _plotter->data->params[j] = 
-		(char *)_plot_xmalloc (strlen ((char *)plotter_params->plparams[j]) + 1);
+		(char *)_pl_xmalloc (strlen ((char *)plotter_params->plparams[j]) + 1);
 	      strcpy ((char *)_plotter->data->params[j], 
 		      (char *)plotter_params->plparams[j]);
 	    }
@@ -154,14 +159,14 @@ _copy_params_to_plotter (R___(_plotter) plotter_params)
 	    /* have value of environment variable */
 	    {
 	      _plotter->data->params[j] = 
-		(char *)_plot_xmalloc (strlen (envs) + 1);
+		(char *)_pl_xmalloc (strlen (envs) + 1);
 	      strcpy ((char *)_plotter->data->params[j], envs);
 	    }
 	  else if (_known_params[j].default_value)
 	    /* have default libplot value */
 	    {
 	      _plotter->data->params[j] = 
-		(char *)_plot_xmalloc (strlen ((char *)_known_params[j].default_value) + 1);
+		(char *)_pl_xmalloc (strlen ((char *)_known_params[j].default_value) + 1);
 	      strcpy ((char *)_plotter->data->params[j], 
 		      (char *)_known_params[j].default_value);
 	    }
@@ -173,14 +178,8 @@ _copy_params_to_plotter (R___(_plotter) plotter_params)
 
 /* This retrieves the value of any specified Plotter parameter,
    as stored in a Plotter instance. */
-voidptr_t
-#ifdef _HAVE_PROTOS
+void *
 _get_plot_param (const plPlotterData *data, const char *parameter_name)
-#else
-_get_plot_param (data, parameter_name)
-     const plPlotterData *data;
-     const char *parameter_name;
-#endif
 {
   int j;
 
@@ -188,18 +187,13 @@ _get_plot_param (data, parameter_name)
     if (strcmp (_known_params[j].parameter, parameter_name) == 0)
       return data->params[j];
 
-  return (voidptr_t)NULL;		/* name not matched */
+  return (void *)NULL;		/* name not matched */
 }
 
 /* This function is called when a Plotter is deleted, to delete the
    instance-specific copies of Plotter parameters.  */
 void 
-#ifdef _HAVE_PROTOS
-_free_params_in_plotter (S___(Plotter *_plotter))
-#else
-_free_params_in_plotter (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_free_params_in_plotter (S___(Plotter *_plotter))
 {
   int j;
 
@@ -215,13 +209,8 @@ _free_params_in_plotter (S___(_plotter))
    Default values for each parameter are stored in the _known_params[]
    array, which is read-only global data.  So unlike the preceding
    functions, this is not a Plotter method. */
-voidptr_t
-#ifdef _HAVE_PROTOS
+void *
 _get_default_plot_param (const char *parameter_name)
-#else
-_get_default_plot_param (parameter_name)
-     const char *parameter_name;
-#endif
 {
   int j;
 
@@ -229,5 +218,5 @@ _get_default_plot_param (parameter_name)
     if (strcmp (_known_params[j].parameter, parameter_name) == 0)
       return _known_params[j].default_value;
 
-  return (voidptr_t)NULL;		/* name not matched */
+  return (void *)NULL;		/* name not matched */
 }

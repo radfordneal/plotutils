@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* The internal point-drawing function, which point() is a wrapper around.
    It draws a point at the current location.  There is no standard
    definition of `point', so any Plotter is free to implement this as it
@@ -9,12 +27,7 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_t_paint_point (S___(Plotter *_plotter))
-#else
-_t_paint_point (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_t_paint_point (S___(Plotter *_plotter))
 {
   double xx, yy;
   int ixx, iyy;
@@ -38,18 +51,18 @@ _t_paint_point (S___(_plotter))
       iyy = IROUND(yy);
       
       /* emit an escape sequence if necessary, to switch to POINT mode */
-      _tek_mode (R___(_plotter) MODE_POINT);
+      _pl_t_tek_mode (R___(_plotter) TEK_MODE_POINT);
       
       /* sync Tek's color too (significant only for kermit Tek emulator) */
-      _t_set_pen_color (S___(_plotter));
+      _pl_t_set_pen_color (S___(_plotter));
 
       /* Output the point.  If in fact we were already in POINT mode, this
 	 is slightly suboptimal because we can't call
-	 _tek_vector_compressed() to save (potentially) a few bytes,
+	 _pl_t_tek_vector_compressed() to save (potentially) a few bytes,
 	 because we don't know what the last-plotted point was.  Unlike
 	 when incrementally drawing a polyline, when plotting points we
 	 don't keep track of "where we last were". */
-      _tek_vector (R___(_plotter) ixx, iyy);
+      _pl_t_tek_vector (R___(_plotter) ixx, iyy);
       
       /* update our notion of Tek's notion of position */
       _plotter->tek_pos.x = ixx;

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #ifdef HAVE_WAITPID
 #ifdef HAVE_SYS_WAIT_H
 #define _POSIX_SOURCE		/* for waitpid() */
@@ -25,15 +43,10 @@
 #endif /* HAVE_WAITPID */
 
 bool
-#ifdef _HAVE_PROTOS
-_y_end_page (S___(Plotter *_plotter))
-#else
-_y_end_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_y_end_page (S___(Plotter *_plotter))
 {
   plColorRecord *cptr;
-  plFontRecord *fptr;
+  plXFontRecord *fptr;
   Pixmap bg_pixmap = (Pixmap)0;
   int window_width, window_height;
   pid_t forkval;
@@ -44,8 +57,8 @@ _y_end_page (S___(_plotter))
 
   /* if either sort of server-supported double buffering is being used,
      create background pixmap for Label widget (it doesn't yet have one) */
-  if (_plotter->x_double_buffering == DBL_MBX
-      || _plotter->x_double_buffering == DBL_DBE)
+  if (_plotter->x_double_buffering == X_DBL_BUF_MBX
+      || _plotter->x_double_buffering == X_DBL_BUF_DBE)
     {
       int screen;		/* screen number */
       Screen *screen_struct;	/* screen structure */
@@ -75,7 +88,7 @@ _y_end_page (S___(_plotter))
 
 #ifdef HAVE_X11_EXTENSIONS_XDBE_H
 #ifdef HAVE_DBE_SUPPORT
-  if (_plotter->x_double_buffering == DBL_DBE)
+  if (_plotter->x_double_buffering == X_DBL_BUF_DBE)
     /* we're using the X double buffering extension; off-screen graphics
        buffer `x_drawable3' is a back buffer */
     {
@@ -95,7 +108,7 @@ _y_end_page (S___(_plotter))
 
 #ifdef HAVE_X11_EXTENSIONS_MULTIBUF_H
 #ifdef HAVE_MBX_SUPPORT
-  if (_plotter->x_double_buffering == DBL_MBX)
+  if (_plotter->x_double_buffering == X_DBL_BUF_MBX)
     /* we're using the X multibuffering extension; off-screen graphics
        buffer `x_drawable3' is a non-displayed multibuffer */
     {
@@ -109,8 +122,8 @@ _y_end_page (S___(_plotter))
   /* if either sort of server-supported double buffering is being used,
      install the above-created pixmap as background pixmap for the Label
      widget to use, once the window has been spun off */
-  if (_plotter->x_double_buffering == DBL_MBX
-      || _plotter->x_double_buffering == DBL_DBE)
+  if (_plotter->x_double_buffering == X_DBL_BUF_MBX
+      || _plotter->x_double_buffering == X_DBL_BUF_DBE)
     {
       Arg wargs[2];		/* werewolves */
 
@@ -125,7 +138,7 @@ _y_end_page (S___(_plotter))
 #endif
     }
   
-  if (_plotter->x_double_buffering == DBL_BY_HAND)
+  if (_plotter->x_double_buffering == X_DBL_BUF_BY_HAND)
     /* we're double buffering _manually_, rather than using either X11
        protocol extension, so our off-screen graphics buffer `x_drawable3' is
        an ordinary pixmap */
@@ -142,7 +155,7 @@ _y_end_page (S___(_plotter))
   /* Finally: if we're not double buffering at all, we copy our off-screen
      graphics buffer to the window.  The off-screen graphics buffer is just
      the Label widget's background pixmap, `x_drawable1'. */
-  if (_plotter->x_double_buffering == DBL_NONE)
+  if (_plotter->x_double_buffering == X_DBL_BUF_NONE)
     XCopyArea (_plotter->x_dpy, _plotter->x_drawable1, _plotter->x_drawable2,
 	       _plotter->drawstate->x_gc_bg,		   
 	       0, 0,
@@ -162,10 +175,10 @@ _y_end_page (S___(_plotter))
   _plotter->x_fontlist = NULL;
   while (fptr)
     {
-      plFontRecord *fptrnext;
+      plXFontRecord *fptrnext;
 
       fptrnext = fptr->next;
-      free (fptr->name);
+      free (fptr->x_font_name);
       if (fptr->x_font_struct)
 	XFreeFont (_plotter->x_dpy, fptr->x_font_struct);
       free (fptr); 
@@ -214,10 +227,10 @@ _y_end_page (S___(_plotter))
 
   /* flush out the X output buffer; wait till all requests have been
      received and processed by server (see x_flushpl.c) */
-  _x_flush_output (S___(_plotter));
+  _pl_x_flush_output (S___(_plotter));
 
   /* flush output streams for all Plotters before forking */
-  _flush_plotter_outstreams (S___(_plotter));
+  _pl_g_flush_plotter_outstreams (S___(_plotter));
   
   /* DO IT, MAN! */
   forkval = fork ();
@@ -244,10 +257,10 @@ _y_end_page (S___(_plotter))
 	/* there's a child process, so save its pid */
 	{
 	  if (_plotter->y_num_pids == 0)
-	    _plotter->y_pids = (pid_t *)_plot_xmalloc (sizeof (pid_t));
+	    _plotter->y_pids = (pid_t *)_pl_xmalloc (sizeof (pid_t));
 	  else
 	    _plotter->y_pids = 
-	      (pid_t *)_plot_xrealloc (_plotter->y_pids,
+	      (pid_t *)_pl_xrealloc (_plotter->y_pids,
 				       ((_plotter->y_num_pids + 1)
 					* sizeof (pid_t)));
 	  _plotter->y_pids[_plotter->y_num_pids] = forkval;
@@ -256,7 +269,7 @@ _y_end_page (S___(_plotter))
       
       /* do teardown of X-specific elements of the first drawing state on
 	 the drawing state stack */
-      _x_delete_gcs_from_first_drawing_state (S___(_plotter));
+      _pl_x_delete_gcs_from_first_drawing_state (S___(_plotter));
   
       return retval;
     }
@@ -268,7 +281,7 @@ _y_end_page (S___(_plotter))
 
       /* Alter canvas widget's translation table, so that exit will occur
 	 when `q' is typed (or mouse is clicked).  See y_openpl.c. */
-      _y_set_data_for_quitting (S___(_plotter));
+      _pl_y_set_data_for_quitting (S___(_plotter));
 
       /* Close all connections to X display other than our own, i.e., close
 	 all connections that other XPlotters may have been using.  No need
@@ -277,10 +290,10 @@ _y_end_page (S___(_plotter))
 	 left. :-)
 
 	 We'll never be accessing those variables again (the only way we
-	 could would be if we were to call _maybe_handle_x_events(), and we
-	 aren't going to do that).  So we don't need to worry that they may
-	 actually be locked.  I.e. there was no need for us to register a
-	 handler to unlock them immediately after forking, by invoking
+	 could would be if we were to call _maybe_handle_x_events(), and
+	 we aren't going to do that).  So we don't need to worry that they
+	 may actually be locked.  I.e. there was no need for us to register
+	 a handler to unlock them immediately after forking, by invoking
 	 pthread_atfork().  Which is why we didn't do that. */
 
       for (i = 0; i < _xplotters_len; i++)
@@ -301,7 +314,7 @@ _y_end_page (S___(_plotter))
 	 presumably animating), unless the window size has changed since
 	 openpl was invoked (repainting makes the window flash, possibly
 	 irritating users). */
-      if (_plotter->x_double_buffering != DBL_NONE)
+      if (_plotter->x_double_buffering != X_DBL_BUF_NONE)
 	need_redisplay = true;
       else
 	{

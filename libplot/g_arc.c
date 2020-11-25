@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the arc method, which is a standard part of libplot.
    It draws an object: a circular arc from x0,y0 to x1,y1, with center at
    xc,yc.  If xc,yc does not lie on the perpendicular bisector between the
@@ -31,13 +49,7 @@
 	  p0.y * p2.x + p1.x * p2.y - p1.y * p2.x) == 0.0)
 
 int
-#ifdef _HAVE_PROTOS
 _API_farc (R___(Plotter *_plotter) double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-_API_farc (R___(_plotter) xc, yc, x0, y0, x1, y1)
-     S___(Plotter *_plotter;)
-     double xc, yc, x0, y0, x1, y1;
-#endif
 {
   int prev_num_segments;
   plPoint p0, p1, pc; 
@@ -103,7 +115,7 @@ _API_farc (R___(_plotter) xc, yc, x0, y0, x1, y1)
       if (_plotter->data->have_mixed_paths == false
 	  && _plotter->drawstate->path->num_segments == 2)
 	{
-	  _maybe_replace_arc (S___(_plotter));
+	  _pl_g_maybe_replace_arc (S___(_plotter));
 	  if (_plotter->drawstate->path->num_segments > 2)
 	    prev_num_segments = 0;	
 	}
@@ -155,13 +167,7 @@ _API_farc (R___(_plotter) xc, yc, x0, y0, x1, y1)
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_fellarc (R___(Plotter *_plotter) double xc, double yc, double x0, double y0, double x1, double y1)
-#else
-_API_fellarc (R___(_plotter) xc, yc, x0, y0, x1, y1)
-     S___(Plotter *_plotter;)
-     double xc, yc, x0, y0, x1, y1;
-#endif
 {
   int prev_num_segments;
   plPoint pc, p0, p1;
@@ -232,7 +238,7 @@ _API_fellarc (R___(_plotter) xc, yc, x0, y0, x1, y1)
       if (_plotter->data->have_mixed_paths == false
 	  && _plotter->drawstate->path->num_segments == 2)
 	{
-	  _maybe_replace_arc (S___(_plotter));
+	  _pl_g_maybe_replace_arc (S___(_plotter));
 	  if (_plotter->drawstate->path->num_segments > 2)
 	    prev_num_segments = 0;	
 	}

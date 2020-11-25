@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This version is for CGM Plotters, which graphics only after all pages of
    graphics have been drawn, and the Plotter is deleted. */
 
@@ -5,22 +23,17 @@
 #include "extern.h"
 
 bool
-#ifdef _HAVE_PROTOS
-_c_begin_page (S___(Plotter *_plotter))
-#else
-_c_begin_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_c_begin_page (S___(Plotter *_plotter))
 {
   int i;
 
   /* CGM Plotters use the `extra' field of their single plOutbuf (a void
      pointer; it points to the head of a linked list of user-defined line
      types for the page) */
-  _plotter->data->page->extra = (voidptr_t)NULL;
+  _plotter->data->page->extra = (void *)NULL;
 
   /* initialize `font used' array(s) for this page */
-  for (i = 0; i < NUM_PS_FONTS; i++)
+  for (i = 0; i < PL_NUM_PS_FONTS; i++)
     _plotter->data->page->ps_font_used[i] = false;
 
   /* reset page-specific, i.e. picture-specific, dynamic variables */
@@ -82,7 +95,7 @@ _c_begin_page (S___(_plotter))
 
   /* copy background color to the CGM-specific part of the CGMPlotter;
      it'll be written to the output file at the head of the picture */
-  _c_set_bg_color (S___(_plotter));
+  _pl_c_set_bg_color (S___(_plotter));
 
   return true;
 }

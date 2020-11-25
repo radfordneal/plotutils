@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the space method, which is a standard part of
    libplot.  It sets the mapping from user coordinates to display
    coordinates.  On the display device, the drawing region is a fixed
@@ -50,9 +68,6 @@
 #include "sys-defines.h"
 #include "extern.h"
 
-/* possible rotation angles for viewport on output device */
-enum rotation_type { ROT_0, ROT_90, ROT_180, ROT_270 };
-
 /* potential roundoff error (absolute, for defining boundary of display) */
 #define ROUNDING_FUZZ 0.0000001
 
@@ -64,13 +79,7 @@ enum rotation_type { ROT_0, ROT_90, ROT_180, ROT_270 };
    (x2,y2). */
 
 int
-#ifdef _HAVE_PROTOS
 _API_fspace2 (R___(Plotter *_plotter) double x0, double y0, double x1, double y1, double x2, double y2)
-#else
-_API_fspace2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
-     S___(Plotter *_plotter;) 
-     double x0, y0, x1, y1, x2, y2;
-#endif
 {
   double s[6];
   double v0x, v0y, v1x, v1y, v2x, v2y;
@@ -117,25 +126,13 @@ _API_fspace2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_fspace (R___(Plotter *_plotter) double x0, double y0, double x1, double y1)
-#else
-_API_fspace (R___(_plotter) x0, y0, x1, y1)
-     S___(Plotter *_plotter;)
-     double x0, y0, x1, y1;
-#endif
 {
   return _API_fspace2 (R___(_plotter) x0, y0, x1, y0, x0, y1);
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_fsetmatrix (R___(Plotter *_plotter) double m0, double m1, double m2, double m3, double m4, double m5)
-#else
-_API_fsetmatrix (R___(_plotter) m0, m1, m2, m3, m4, m5)
-     S___(Plotter *_plotter;) 
-     double m0, m1, m2, m3, m4, m5;
-#endif
 {
   int i;
   double s[6], t[6];
@@ -171,9 +168,7 @@ _API_fsetmatrix (R___(_plotter) m0, m1, m2, m3, m4, m5)
   /* for convenience, precompute boolean properties of the
      user_frame->device_frame map: store in drawing state */
 
-  /* Does the user_frame->device_frame map preserve axis directions?
-     (Since our NDC_frame->device frame map always does, this is the same
-     as, does the user_frame->NDC_frame map preserve axis directions?) */
+  /* Does the user_frame->device_frame map preserve axis directions? */
   _plotter->drawstate->transform.axes_preserved = 
     (t[1] == 0.0 && t[2] == 0.0) ? true : false;
 
@@ -253,7 +248,7 @@ _API_fsetmatrix (R___(_plotter) m0, m1, m2, m3, m4, m5)
 	_plotter->drawstate->default_line_width = 0.0;
       else
 	_plotter->drawstate->default_line_width 
-	  = DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE / norm;
+	  = PL_DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE / norm;
     }
 
   if (_plotter->data->linewidth_invoked == false)
@@ -283,7 +278,7 @@ _API_fsetmatrix (R___(_plotter) m0, m1, m2, m3, m4, m5)
     _plotter->drawstate->default_font_size = 0.0;
   else
     _plotter->drawstate->default_font_size
-      = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE / norm;
+      = PL_DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE / norm;
 
   /* Help out users who rely on us to choose a reasonable font size, as if
      this were Unix plot(3) rather than GNU libplot.  We don't wish to
@@ -297,13 +292,7 @@ _API_fsetmatrix (R___(_plotter) m0, m1, m2, m3, m4, m5)
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_fconcat (R___(Plotter *_plotter) double m0, double m1, double m2, double m3, double m4, double m5)
-#else
-_API_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5)
-     S___(Plotter *_plotter;) 
-     double m0, m1, m2, m3, m4, m5;
-#endif
 {
   double m[6], s[6];
 
@@ -347,17 +336,14 @@ _API_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5)
    to the device frame. */
 
 bool
-#ifdef _HAVE_PROTOS
 _compute_ndc_to_device_map (plPlotterData *data)
-#else
-_compute_ndc_to_device_map (data)
-     plPlotterData *data;
-#endif
 {
   double t[6];
+  double map_1[6], map_2[6], map_1a[6], map_1b[6], map_1ab[6], map_1c[6];
   double device_x_left, device_x_right, device_y_bottom, device_y_top;
   const char *rotation_s;
-  int i, rotation_angle;
+  double rotation_angle;
+  int i;
 
   /* begin by computing device coordinate ranges */
   switch (data->display_model_type)
@@ -433,70 +419,68 @@ _compute_ndc_to_device_map (data)
       break;
     }
 
-  /* device coordinate ranges now known, so work out transformation from
-     NDC frame to device frame; take ROTATION parameter into account */
+  /* Device coordinate ranges now known, so work out transformation from
+     NDC frame to device frame; take ROTATION parameter into account.
+
+     The (NDC_frame)->(device_frame) map is the composition of two maps:
+
+     (1) a preliminary rotation about (0.5,0.5) in the NDC frame,
+     (2) the default (NDC_frame)->(device frame) map,
+
+     in that order.  And the first of these is the composition of three:
+
+     (1a) translate by -(0.5,0.5)
+     (1b) rotate by ROTATION degrees about (0,0)
+     (1c) translate by +(0.5,0.5).
+  */
+
+  /* compute map #1 as product of maps 1a, 1b, 1c */
 
   rotation_s = (const char *)_get_plot_param (data, "ROTATION");
   if (rotation_s == NULL)
     rotation_s = (const char *)_get_default_plot_param ("ROTATION");
-  if (strcmp (rotation_s, "90") == 0
-      || strcmp (rotation_s, "yes") == 0) /* "yes" means "90" */
-    rotation_angle = (int)ROT_90;
-  else if (strcmp (rotation_s, "180") == 0)
-    rotation_angle = (int)ROT_180;
-  else if (strcmp (rotation_s, "270") == 0)
-    rotation_angle = (int)ROT_270;
-  else rotation_angle = (int)ROT_0; /* default, includes "no" */
 
-  switch (rotation_angle)
-    {
-    case (int)ROT_0:
-    default:
-      /* NDC point (0,0) [lower left corner] gets mapped into this */
-      t[4] = device_x_left;
-      t[5] = device_y_bottom;
-      /* NDC vector (1,0) gets mapped into this */
-      t[0] = device_x_right - device_x_left;
-      t[1] = 0.0;
-      /* NDC vector (0,1) gets mapped into this */
-      t[2] = 0.0;
-      t[3] = device_y_top - device_y_bottom;
-      break;
-    case (int)ROT_90:
-      /* NDC point (0,0) [lower left corner] gets mapped into this */
-      t[4] = device_x_right;
-      t[5] = device_y_bottom;
-      /* NDC vector (1,0) gets mapped into this */
-      t[0] = 0.0;
-      t[1] = device_y_top - device_y_bottom;
-      /* NDC vector (0,1) gets mapped into this */
-      t[2] = device_x_left - device_x_right;
-      t[3] = 0.0;
-      break;
-    case (int)ROT_180:
-      /* NDC point (0,0) [lower left corner] gets mapped into this */
-      t[4] = device_x_right;
-      t[5] = device_y_top;
-      /* NDC vector (1,0) gets mapped into this */
-      t[0] = device_x_left - device_x_right;
-      t[1] = 0.0;
-      /* NDC vector (0,1) gets mapped into this */
-      t[2] = 0.0;
-      t[3] = device_y_bottom - device_y_top;
-      break;
-    case (int)ROT_270:
-      /* NDC point (0,0) [lower left corner] gets mapped into this */
-      t[4] = device_x_left;
-      t[5] = device_y_top;
-      /* NDC vector (1,0) gets mapped into this */
-      t[0] = 0.0;
-      t[1] = device_y_bottom - device_y_top;
-      /* NDC vector (0,1) gets mapped into this */
-      t[2] = device_x_right - device_x_left;
-      t[3] = 0.0;
-      break;
-    }
+  if (strcmp (rotation_s, "no") == 0)
+    rotation_angle = 0.0;	/* "no" means 0 degrees */
+  else if (strcmp (rotation_s, "yes") == 0)
+    rotation_angle = 90.0;	/* "yes" means 90 degrees */
+  else if (sscanf (rotation_s, "%lf", &rotation_angle) <= 0)
+    rotation_angle = 0.0;	/* default */
+
+  rotation_angle *= (M_PI / 180.0); /* convert to radians */
+
+  map_1a[0] = map_1a[3] = 1.0;
+  map_1a[1] = map_1a[2] = 0.0;
+  map_1a[4] = map_1a[5] = -0.5;
   
+  map_1b[0] = cos (rotation_angle);
+  map_1b[1] = sin (rotation_angle);
+  map_1b[2] = - sin (rotation_angle);
+  map_1b[3] = cos (rotation_angle);
+  map_1b[4] = map_1b[5] = 0.0;
+  
+  map_1c[0] = map_1c[3] = 1.0;
+  map_1c[1] = map_1c[2] = 0.0;
+  map_1c[4] = map_1c[5] = 0.5;
+  
+  _matrix_product (map_1a, map_1b, map_1ab);
+  _matrix_product (map_1ab, map_1c, map_1);
+  
+  /* compute map #2: the default (NDC frame)->(device frame) map */
+
+  /* NDC point (0,0) [lower left corner] gets mapped into this */
+  map_2[4] = device_x_left;
+  map_2[5] = device_y_bottom;
+  /* NDC vector (1,0) gets mapped into this */
+  map_2[0] = device_x_right - device_x_left;
+  map_2[1] = 0.0;
+  /* NDC vector (0,1) gets mapped into this */
+  map_2[2] = 0.0;
+  map_2[3] = device_y_top - device_y_bottom;
+  
+  /* compute (NDC_frame)->(device frame) map as a product of maps 1,2 */
+  _matrix_product (map_1, map_2, t);
+
   /* set affine transformation in Plotter */
   for (i = 0; i < 6; i++)
     data->m_ndc_to_device[i] = t[i];

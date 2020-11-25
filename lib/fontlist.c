@@ -1,17 +1,36 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the display_fonts and list_fonts routines, which are
-   used in user-level executables that are linked with libplot.  Their
-   output is device-specific.
+   used in user-level executables that are linked with libplot.  (Their
+   output is device-specific.)  These functions are declared in fontlist.h.
 
    Currently, they get information about font names by invoking
    undocumented members of the libplot API, which return pointers to
-   internal library data structures. */
+   internal library data structures.  These undocumented functions are
+   _pl_get_hershey_font_info, _pl_get_ps_font_info, _pl_get_pcl_font_info,
+   and _pl_get_stick_font_info. */
 
 #include "sys-defines.h"
+#include "libcommon.h"
 #include "plot.h"
 
-/* forward references */
-int display_fonts ____P((const char *display_type, const char *progname));
-int list_fonts ____P((const char *display_type, const char *progname));
+#include "fontlist.h"
 
 /* for use in printing font names in two columns; assumption is that all
    font name strings have lengths in range 0..MAX_FONTNAME_LEN inclusive
@@ -23,7 +42,7 @@ static char spaces[MAX_FONTNAME_LEN+1] = "                                   ";
    IF THOSE STRUCTURES CHANGE, THESE SHOULD TOO.
 
    Font information is stored in ../libplot/g_fontdb.c, and we'll retrieve
-   pointers to it. */
+   pointers to it by using the undocumented libplot functions. */
 
 struct plHersheyFontInfoStruct 
 {
@@ -35,7 +54,7 @@ struct plHersheyFontInfoStruct
   int font_index;		/* which font within typeface this is */
   bool obliquing;		/* whether to apply obliquing */
   bool iso8859_1;		/* whether font encoding is iso8859-1 */
-  bool visible;		/* whether font is visible, i.e. not internal */
+  bool visible;			/* whether font is visible, i.e. not internal */
 };
 
 struct plPSFontInfoStruct
@@ -45,6 +64,8 @@ struct plPSFontInfoStruct
   const char *ps_name_alt2;	/* 2nd alternative PS font name, if non-NULL */
   const char *x_name;		/* the X Windows font name */
   const char *x_name_alt;	/* alternative X Windows font name */
+  const char *x_name_alt2;	/* 2nd alternative X Windows font name */
+  const char *x_name_alt3;	/* 3rd alternative X Windows font name */
   const char *css_family;	/* CSS font family */
   const char *css_generic_family; /* CSS generic font family */
   const char *css_style;	/* CSS font style */
@@ -142,12 +163,7 @@ static const char *_known_devices[] =
 #endif /* not INCLUDE_PNG_SUPPORT */
 
 int
-#ifdef _HAVE_PROTOS
-display_fonts (const char *display_type, const char *progname)
-#else
-display_fonts (display_type, progname)
-     const char *display_type, *progname;
-#endif
+display_fonts (const char *output_format, const char *progname)
 {
   plPlotter *plotter;
   plPlotterParams *plotter_params;
@@ -156,13 +172,13 @@ display_fonts (display_type, progname)
   const char **device_ptr = _known_devices;
 
   while (*device_ptr)
-    if (strcmp (display_type, *device_ptr++) == 0)
+    if (strcmp (output_format, *device_ptr++) == 0)
       {
 	found = true;
 	break;
       }
 
-  if (found == false || strcmp (display_type, "meta") == 0)
+  if (found == false || strcmp (output_format, "meta") == 0)
     {
 #ifdef INCLUDE_PNG_SUPPORT
 #ifndef X_DISPLAY_MISSING
@@ -197,19 +213,19 @@ pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
     }
 
   plotter_params = pl_newplparams ();
-  if ((plotter = pl_newpl_r (display_type, NULL, stdout, stderr,
+  if ((plotter = pl_newpl_r (output_format, NULL, stdout, stderr,
 			     plotter_params)) == NULL)
     {
       fprintf (stderr, 
 	       "%s: no font information on display device \"%s\" is available\n",
-	       progname, display_type);
+	       progname, output_format);
       return 0;
     }
 
   if (pl_havecap_r (plotter, "HERSHEY_FONTS"))
     {
       const struct plHersheyFontInfoStruct *hershey_font_info = 
-	(const struct plHersheyFontInfoStruct *)pl_get_hershey_font_info (plotter);
+	(const struct plHersheyFontInfoStruct *)_pl_get_hershey_font_info (plotter);
       int visible_num;
 
       numfonts = 0;
@@ -264,7 +280,7 @@ pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
   if (pl_havecap_r (plotter, "STICK_FONTS"))
     {
       const struct plStickFontInfoStruct *stick_font_info = 
-	(const struct plStickFontInfoStruct *)pl_get_stick_font_info (plotter);
+	(const struct plStickFontInfoStruct *)_pl_get_stick_font_info (plotter);
       int extra_fonts, *goodfonts;
 
       numfonts = 0;
@@ -273,7 +289,7 @@ pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
 
       /* if this Plotter doesn't support extras, skip them */
       extra_fonts = pl_havecap_r (plotter, "EXTRA_STICK_FONTS");
-      goodfonts = (int *)malloc (numfonts * sizeof(int));
+      goodfonts = (int *)xmalloc (numfonts * sizeof(int));
       for (i=0, j=0; stick_font_info[i].ps_name; i++)
 	{
 	  if (!extra_fonts && stick_font_info[i].basic == false)
@@ -307,7 +323,7 @@ pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
   if (pl_havecap_r (plotter, "PCL_FONTS"))
     {
       const struct plPCLFontInfoStruct *pcl_font_info = 
-	(const struct plPCLFontInfoStruct *)pl_get_pcl_font_info (plotter);
+	(const struct plPCLFontInfoStruct *)_pl_get_pcl_font_info (plotter);
 
       numfonts = 0;
       for (i=0; pcl_font_info[i].ps_name; i++)
@@ -335,7 +351,7 @@ pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
   if (pl_havecap_r (plotter, "PS_FONTS"))
     {
       const struct plPSFontInfoStruct *ps_font_info = 
-	(const struct plPSFontInfoStruct *)pl_get_ps_font_info (plotter);
+	(const struct plPSFontInfoStruct *)_pl_get_ps_font_info (plotter);
       numfonts = 0;
       for (i=0; ps_font_info[i].ps_name; i++)
 	numfonts++;
@@ -359,10 +375,12 @@ pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
 	fprintf (stdout, "\t%s\n", ps_font_info[j].ps_name);
     }
 
-  if (strcmp (display_type, "X") == 0)
+  if (strcmp (output_format, "X") == 0)
     {
-      fprintf (stdout, "Scalable X Window System fonts, such as utopia-medium-r-normal and\n");
-      fprintf (stdout, "charter-medium-r-normal, may also be used.\n");
+      fprintf (stdout, 
+	       "Most core X Window System fonts, such as charter-medium-r-normal,\n");
+      fprintf (stdout,
+	       "can also be used.\n");
     }
 
   return 1;
@@ -372,12 +390,7 @@ pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
    tabular form. */
 
 int
-#ifdef _HAVE_PROTOS
-list_fonts (const char *display_type, const char *progname)
-#else
-list_fonts (display_type, progname)
-     const char *display_type, *progname;
-#endif
+list_fonts (const char *output_format, const char *progname)
 {
   plPlotter *plotter;
   plPlotterParams *plotter_params;
@@ -386,7 +399,7 @@ list_fonts (display_type, progname)
   const char **device_ptr = _known_devices;
 
   while (*device_ptr)
-    if (strcmp (display_type, *device_ptr++) == 0)
+    if (strcmp (output_format, *device_ptr++) == 0)
       {
 	found = true;
 	break;
@@ -396,24 +409,24 @@ list_fonts (display_type, progname)
     {
       fprintf (stderr, 
 	       "%s: no font information on display device \"%s\" is available\n",
-	       progname, display_type);
+	       progname, output_format);
       return 0;
     }
 
   plotter_params = pl_newplparams ();
-  if ((plotter = pl_newpl_r (display_type, NULL, stdout, stderr,
+  if ((plotter = pl_newpl_r (output_format, NULL, stdout, stderr,
 			     plotter_params)) == NULL)
     {
       fprintf (stderr, 
 	       "%s: no font information on display device \"%s\" is available\n",
-	       progname, display_type);
+	       progname, output_format);
       return 0;
     }
 
   if (pl_havecap_r (plotter, "HERSHEY_FONTS"))
     {
       const struct plHersheyFontInfoStruct *hershey_font_info = 
-	(const struct plHersheyFontInfoStruct *)pl_get_hershey_font_info (plotter);
+	(const struct plHersheyFontInfoStruct *)_pl_get_hershey_font_info (plotter);
       for (i=0; hershey_font_info[i].name; i++)
 	if (hershey_font_info[i].visible)
 	  fprintf (stdout, "%s\n", hershey_font_info[i].name);
@@ -422,7 +435,7 @@ list_fonts (display_type, progname)
   if (pl_havecap_r (plotter, "STICK_FONTS"))
     {
       const struct plStickFontInfoStruct *stick_font_info = 
-	(const struct plStickFontInfoStruct *)pl_get_stick_font_info (plotter);
+	(const struct plStickFontInfoStruct *)_pl_get_stick_font_info (plotter);
       int extra_fonts = pl_havecap_r (plotter, "EXTRA_STICK_FONTS");
 
       for (i=0; stick_font_info[i].ps_name; i++)
@@ -436,7 +449,7 @@ list_fonts (display_type, progname)
   if (pl_havecap_r (plotter, "PCL_FONTS"))
     {
       const struct plPCLFontInfoStruct *pcl_font_info = 
-	(const struct plPCLFontInfoStruct *)pl_get_pcl_font_info (plotter);
+	(const struct plPCLFontInfoStruct *)_pl_get_pcl_font_info (plotter);
 
       for (i=0; pcl_font_info[i].ps_name; i++)
 	fprintf (stdout, "%s\n", pcl_font_info[i].ps_name);
@@ -445,7 +458,7 @@ list_fonts (display_type, progname)
   if (pl_havecap_r (plotter, "PS_FONTS"))
     {
       const struct plPSFontInfoStruct *ps_font_info = 
-	(const struct plPSFontInfoStruct *)pl_get_ps_font_info (plotter);
+	(const struct plPSFontInfoStruct *)_pl_get_ps_font_info (plotter);
 
       for (i=0; ps_font_info[i].ps_name; i++)
 	fprintf (stdout, "%s\n", ps_font_info[i].ps_name);

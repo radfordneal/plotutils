@@ -1,22 +1,26 @@
-#include "sys-defines.h"
-#include "ode.h"
-#include "extern.h"
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999, 2005, Free
+ * Software Foundation, Inc.
+ */
 
 /*
  * find maximum errors
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
+ *
  */
+
+#include "sys-defines.h"
+#include "ode.h"
+#include "extern.h"
 
 static double   ssemax, abemax, acemax;
 static char     *ssenam, *abenam, *acenam;
 
 void
-#ifdef _HAVE_PROTOS
 maxerr (void)
-#else
-maxerr ()
-#endif
 {
   struct sym *sp, *dq;
   
@@ -43,11 +47,7 @@ maxerr ()
 }
 
 bool
-#ifdef _HAVE_PROTOS
 hierror (void) /* not enough accuracy */
-#else
-hierror () /* not enough accuracy */
-#endif
 {
   double t = symtab->sy_val[0];
 
@@ -81,11 +81,7 @@ hierror () /* not enough accuracy */
 }
 
 bool
-#ifdef _HAVE_PROTOS
 lowerror (void) /* more than enough accuracy */
-#else
-lowerror () /* more than enough accuracy */
-#endif
 {
   if (ssemax < ssmin || abemax < abmin)
     if (fabs(tstep) <= fabs(hmax))
@@ -102,12 +98,7 @@ lowerror () /* more than enough accuracy */
                                 t + 0.0625*stepvar > tstop)
 
 bool
-#ifdef _HAVE_PROTOS
 intpr (double t)
-#else
-intpr (t)
-     double t;
-#endif
 {
   if (tstep > 0)
     if (!PASTSTOP(tstep))

@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -59,19 +59,31 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
+AR = @AR@
 AS = @AS@
 CC = @CC@
 CXX = @CXX@
+CXXCPP = @CXXCPP@
 DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
+EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+F77 = @F77@
+GCJ = @GCJ@
+GCJFLAGS = @GCJFLAGS@
+HAVE_LIB = @HAVE_LIB@
 LEX = @LEX@
+LIB = @LIB@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
-LTALLOCA = @LTALLOCA@
+LTLIB = @LTLIB@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+RC = @RC@
+STRIP = @STRIP@
 VERSION = @VERSION@
 X_BASIC_LIBS = @X_BASIC_LIBS@
 X_CFLAGS = @X_CFLAGS@
@@ -109,8 +121,8 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-pic2plot_OBJECTS =  common.o lex.o main.o object.o plot.o gram.o \
-fontlist.o
+pic2plot_OBJECTS =  common.$(OBJEXT) lex.$(OBJEXT) main.$(OBJEXT) \
+object.$(OBJEXT) plot.$(OBJEXT) gram.$(OBJEXT) fontlist.$(OBJEXT)
 pic2plot_DEPENDENCIES =  ../lib/libcommon.a ./libgroff/libgroff.a \
 ../libplot/libplot.la
 pic2plot_LDFLAGS = 
@@ -131,15 +143,15 @@ DIST_COMMON =  README Makefile.am Makefile.in gram.cc
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(pic2plot_SOURCES)
 OBJECTS = $(pic2plot_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .cc .lo .o .s .yy
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+.SUFFIXES: .S .c .cc .lo .o .obj .s .yy
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps pic2plot/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
@@ -175,6 +187,11 @@ uninstall-binPROGRAMS:
 .c.o:
 	$(COMPILE) -c $<
 
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -183,6 +200,7 @@ uninstall-binPROGRAMS:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -215,6 +233,8 @@ pic2plot$(EXEEXT): $(pic2plot_OBJECTS) $(pic2plot_DEPENDENCIES)
 	$(CXXLINK) $(pic2plot_LDFLAGS) $(pic2plot_OBJECTS) $(pic2plot_LDADD) $(LIBS)
 .cc.o:
 	$(CXXCOMPILE) -c $<
+.cc.obj:
+	$(CXXCOMPILE) -c `cygpath -w $<`
 .cc.lo:
 	$(LTCXXCOMPILE) -c $<
 .yy.cc:
@@ -261,7 +281,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -303,7 +323,7 @@ TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
 
 mostlyclean-tags:
 
@@ -322,7 +342,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -339,32 +359,6 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
-common.o: common.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/errarg.h include/error.h include/lib.h \
-	include/position.h include/ptable.h include/stringclass.h \
-	include/text.h output.h common.h
-fontlist.o: fontlist.c ../include/sys-defines.h ../config.h \
-	../include/plot.h
-gram.o: gram.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/errarg.h include/error.h include/lib.h \
-	include/position.h include/ptable.h include/stringclass.h \
-	include/text.h object.h
-lex.o: lex.cc pic.h ../include/sys-defines.h ../config.h include/cset.h \
-	include/errarg.h include/error.h include/lib.h \
-	include/position.h include/ptable.h include/stringclass.h \
-	include/text.h object.h gram.h
-main.o: main.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/errarg.h include/error.h include/lib.h \
-	include/position.h include/ptable.h include/stringclass.h \
-	include/text.h output.h ../include/getopt.h ../include/plot.h
-object.o: object.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/errarg.h include/error.h include/lib.h \
-	include/position.h include/ptable.h include/stringclass.h \
-	include/text.h object.h output.h
-plot.o: plot.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/errarg.h include/error.h include/lib.h \
-	include/position.h include/ptable.h include/stringclass.h \
-	include/text.h output.h common.h ../include/plot.h
 
 info-am:
 info: info-recursive

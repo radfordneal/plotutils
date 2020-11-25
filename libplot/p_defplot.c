@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any PSPlotter object, including
    both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -38,28 +56,28 @@
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    a PSPlotter struct. */
-const Plotter _p_default_plotter = 
+const Plotter _pl_p_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _p_initialize, _p_terminate,
+  _pl_p_initialize, _pl_p_terminate,
   /* page manipulation */
-  _p_begin_page, _p_erase_page, _p_end_page,
+  _pl_p_begin_page, _pl_p_erase_page, _pl_p_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _p_paint_path, _p_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_p_paint_path, _pl_p_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _p_paint_point,
+  _pl_g_paint_marker, _pl_p_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _p_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_p_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -75,16 +93,11 @@ const Plotter _p_default_plotter =
    to device coordinates in space.c. */
 
 void
-#ifdef _HAVE_PROTOS
-_p_initialize (S___(Plotter *_plotter))
-#else
-_p_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_p_initialize (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override generic initializations (which are appropriate to the base
@@ -120,7 +133,7 @@ _p_initialize (S___(_plotter))
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->data->default_font_type = F_POSTSCRIPT;
+  _plotter->data->default_font_type = PL_F_POSTSCRIPT;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->have_horizontal_justification = false;
   _plotter->data->have_vertical_justification = false;
@@ -206,20 +219,15 @@ _p_initialize (S___(_plotter))
    the plOutbufs, one after another, to the output stream. */
 
 void
-#ifdef _HAVE_PROTOS
-_p_terminate (S___(Plotter *_plotter))
-#else
-_p_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_p_terminate (S___(Plotter *_plotter))
 {
   double x_min, x_max, y_min, y_max;
   int i, n;
   time_t clock;
   plOutbuf *doc_header, *doc_trailer, *current_page;
-  bool ps_font_used_in_doc[NUM_PS_FONTS];
+  bool ps_font_used_in_doc[PL_NUM_PS_FONTS];
 #ifdef USE_LJ_FONTS_IN_PS
-  bool pcl_font_used_in_doc[NUM_PCL_FONTS];	
+  bool pcl_font_used_in_doc[PL_NUM_PCL_FONTS];	
 #endif
   char *time_string, time_string_buffer[32];
 
@@ -294,19 +302,19 @@ _p_terminate (S___(_plotter))
       {
 	current_page = _plotter->data->first_page;
 	
-	for (i = 0; i < NUM_PS_FONTS; i++)
+	for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	  ps_font_used_in_doc[i] = false;
 #ifdef USE_LJ_FONTS_IN_PS	
-	for (i = 0; i < NUM_PCL_FONTS; i++)
+	for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 	  pcl_font_used_in_doc[i] = false;
 #endif
 	while (current_page)
 	  {
-	    for (i = 0; i < NUM_PS_FONTS; i++)
+	    for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	      if (current_page->ps_font_used[i])
 		ps_font_used_in_doc[i] = true;
 #ifdef USE_LJ_FONTS_IN_PS
-	    for (i = 0; i < NUM_PCL_FONTS; i++)
+	    for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 	      if (current_page->pcl_font_used[i])
 		pcl_font_used_in_doc[i] = true;
 #endif
@@ -322,7 +330,7 @@ _p_terminate (S___(_plotter))
 %%DocumentNeededResources: ");
 	_update_buffer (doc_header);
 
-	for (i = 0; i < NUM_PS_FONTS; i++)
+	for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	  {
 	    if (ps_font_used_in_doc[i])
 	      {
@@ -333,7 +341,7 @@ _p_terminate (S___(_plotter))
 		  }
 		strcpy (doc_header->point, "font ");
 		_update_buffer (doc_header);
-		strcpy (doc_header->point, _ps_font_info[i].ps_name);
+		strcpy (doc_header->point, _pl_g_ps_font_info[i].ps_name);
 		_update_buffer (doc_header);
 		strcpy (doc_header->point, "\n");
 		_update_buffer (doc_header);
@@ -341,7 +349,7 @@ _p_terminate (S___(_plotter))
 	      }
 	  }
 #ifdef USE_LJ_FONTS_IN_PS
-	for (i = 0; i < NUM_PCL_FONTS; i++)
+	for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 	  {
 	    if (pcl_font_used_in_doc[i])
 	      {
@@ -354,10 +362,10 @@ _p_terminate (S___(_plotter))
 		_update_buffer (doc_header);
 		/* use replacement font name if any (this is only to
                    support the Tidbits-is-Wingdings botch) */
-		if (_pcl_font_info[i].substitute_ps_name)
-		  strcpy (doc_header->point, _pcl_font_info[i].substitute_ps_name);
+		if (_pl_g_pcl_font_info[i].substitute_ps_name)
+		  strcpy (doc_header->point, _pl_g_pcl_font_info[i].substitute_ps_name);
 		else
-		  strcpy (doc_header->point, _pcl_font_info[i].ps_name);
+		  strcpy (doc_header->point, _pl_g_pcl_font_info[i].ps_name);
 		_update_buffer (doc_header);
 		strcpy (doc_header->point, "\n");
 		_update_buffer (doc_header);
@@ -395,7 +403,7 @@ _p_terminate (S___(_plotter))
 	strcpy (doc_header->point, "\
 %%PageResources: ");
 	_update_buffer (doc_header);
-	for (i = 0; i < NUM_PS_FONTS; i++)
+	for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	  {
 	    if (ps_font_used_in_doc[i])
 	      {
@@ -406,7 +414,7 @@ _p_terminate (S___(_plotter))
 		  }
 		strcpy (doc_header->point, "font ");
 		_update_buffer (doc_header);
-		strcpy (doc_header->point, _ps_font_info[i].ps_name);
+		strcpy (doc_header->point, _pl_g_ps_font_info[i].ps_name);
 		_update_buffer (doc_header);
 		strcpy (doc_header->point, "\n");
 		_update_buffer (doc_header);
@@ -414,7 +422,7 @@ _p_terminate (S___(_plotter))
 	      }
 	  }
 #ifdef USE_LJ_FONTS_IN_PS
-	for (i = 0; i < NUM_PCL_FONTS; i++)
+	for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 	  {
 	    if (pcl_font_used_in_doc[i])
 	      {
@@ -425,11 +433,11 @@ _p_terminate (S___(_plotter))
 		  }
 		strcpy (doc_header->point, "font ");
 		_update_buffer (doc_header);
-		if (_pcl_font_info[i].substitute_ps_name)
+		if (_pl_g_pcl_font_info[i].substitute_ps_name)
 		  /* this is to support the Tidbits-is-Wingdings botch */
-		  strcpy (doc_header->point, _pcl_font_info[i].substitute_ps_name);
+		  strcpy (doc_header->point, _pl_g_pcl_font_info[i].substitute_ps_name);
 		else
-		  strcpy (doc_header->point, _pcl_font_info[i].ps_name);
+		  strcpy (doc_header->point, _pl_g_pcl_font_info[i].ps_name);
 		_update_buffer (doc_header);
 		strcpy (doc_header->point, "\n");
 		_update_buffer (doc_header);
@@ -479,24 +487,24 @@ _p_terminate (S___(_plotter))
       _update_buffer (doc_header);
 
       /* tell driver to include any PS [or PCL] fonts that are needed */
-      for (i = 0; i < NUM_PS_FONTS; i++)
+      for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	  if (ps_font_used_in_doc[i])
 	    {
 	      sprintf (doc_header->point, "\
-%%%%IncludeResource: font %s\n", _ps_font_info[i].ps_name);
+%%%%IncludeResource: font %s\n", _pl_g_ps_font_info[i].ps_name);
 	      _update_buffer (doc_header);
 	    }
 #ifdef USE_LJ_FONTS_IN_PS
-      for (i = 0; i < NUM_PCL_FONTS; i++)
+      for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 	  if (pcl_font_used_in_doc[i])
 	    {
 	      /* this is to support the Tidbits-is-Wingdings botch */
-	      if (_pcl_font_info[i].substitute_ps_name)
+	      if (_pl_g_pcl_font_info[i].substitute_ps_name)
 		sprintf (doc_header->point, "\
-%%%%IncludeResource: font %s\n", _pcl_font_info[i].substitute_ps_name);
+%%%%IncludeResource: font %s\n", _pl_g_pcl_font_info[i].substitute_ps_name);
 	      else
 		sprintf (doc_header->point, "\
-%%%%IncludeResource: font %s\n", _pcl_font_info[i].ps_name);
+%%%%IncludeResource: font %s\n", _pl_g_pcl_font_info[i].ps_name);
 	      _update_buffer (doc_header);
 	    }
 #endif
@@ -511,15 +519,15 @@ DrawDict begin\n");
       {
 	bool need_to_reencode = false;
 
-	for (i = 0; i < NUM_PS_FONTS; i++)
-	  if (ps_font_used_in_doc[i] && _ps_font_info[i].iso8859_1)
+	for (i = 0; i < PL_NUM_PS_FONTS; i++)
+	  if (ps_font_used_in_doc[i] && _pl_g_ps_font_info[i].iso8859_1)
 	    {
 	      need_to_reencode = true;
 	      break;
 	    }
 #ifdef USE_LJ_FONTS_IN_PS
-	for (i = 0; i < NUM_PCL_FONTS; i++)
-	  if (pcl_font_used_in_doc[i] && _pcl_font_info[i].iso8859_1)
+	for (i = 0; i < PL_NUM_PCL_FONTS; i++)
+	  if (pcl_font_used_in_doc[i] && _pl_g_pcl_font_info[i].iso8859_1)
 	    {
 	      need_to_reencode = true;
 	      break;
@@ -530,24 +538,24 @@ DrawDict begin\n");
 	    strcpy (doc_header->point, _ps_fontproc);
 	    _update_buffer (doc_header);
 	    
-	    for (i = 0; i < NUM_PS_FONTS; i++)
+	    for (i = 0; i < PL_NUM_PS_FONTS; i++)
 	      {
-		if (ps_font_used_in_doc[i] && _ps_font_info[i].iso8859_1)
+		if (ps_font_used_in_doc[i] && _pl_g_ps_font_info[i].iso8859_1)
 		  {
 		    sprintf (doc_header->point, "\
 /%s reencodeISO def\n",
-			     _ps_font_info[i].ps_name);
+			     _pl_g_ps_font_info[i].ps_name);
 		    _update_buffer (doc_header);
 		  }
 	      }
 #ifdef USE_LJ_FONTS_IN_PS
-	    for (i = 0; i < NUM_PCL_FONTS; i++)
+	    for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 	      {
-		if (pcl_font_used_in_doc[i] && _pcl_font_info[i].iso8859_1)
+		if (pcl_font_used_in_doc[i] && _pl_g_pcl_font_info[i].iso8859_1)
 		  {
 		    sprintf (doc_header->point, "\
 /%s reencodeISO def\n",
-			     _pcl_font_info[i].ps_name);
+			     _pl_g_pcl_font_info[i].ps_name);
 		    _update_buffer (doc_header);
 		  }
 	      }
@@ -618,7 +626,7 @@ end\n\
 		strcpy (page_header->point, "\
 %%PageResources: ");
 		_update_buffer (page_header);
-		for (i = 0; i < NUM_PS_FONTS; i++)
+		for (i = 0; i < PL_NUM_PS_FONTS; i++)
 		  {
 		    if (current_page->ps_font_used[i])
 		      {
@@ -629,7 +637,7 @@ end\n\
 			  }
 			strcpy (page_header->point, "font ");
 			_update_buffer (page_header);
-			strcpy (page_header->point, _ps_font_info[i].ps_name);
+			strcpy (page_header->point, _pl_g_ps_font_info[i].ps_name);
 			_update_buffer (page_header);
 			strcpy (page_header->point, "\n");
 			_update_buffer (page_header);
@@ -637,7 +645,7 @@ end\n\
 		      }
 		  }
 #ifdef USE_LJ_FONTS_IN_PS
-		for (i = 0; i < NUM_PCL_FONTS; i++)
+		for (i = 0; i < PL_NUM_PCL_FONTS; i++)
 		  {
 		    if (current_page->pcl_font_used[i])
 		      {
@@ -648,11 +656,11 @@ end\n\
 			  }
 			strcpy (page_header->point, "font ");
 			_update_buffer (page_header);
-			if (_pcl_font_info[i].substitute_ps_name)
+			if (_pl_g_pcl_font_info[i].substitute_ps_name)
 			  /* this is to support the Tidbits-is-Wingdings botch */
-			  strcpy (page_header->point, _pcl_font_info[i].substitute_ps_name);
+			  strcpy (page_header->point, _pl_g_pcl_font_info[i].substitute_ps_name);
 			else
-			  strcpy (page_header->point, _pcl_font_info[i].ps_name);
+			  strcpy (page_header->point, _pl_g_pcl_font_info[i].ps_name);
 			_update_buffer (page_header);
 			strcpy (page_header->point, "\n");
 			_update_buffer (page_header);
@@ -765,7 +773,7 @@ showpage\n\n");
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
@@ -773,60 +781,60 @@ showpage\n\n");
 PSPlotter::PSPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:Plotter (infile, outfile, errfile)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter (FILE *outfile)
 	:Plotter (outfile)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter (ostream& out)
 	: Plotter (out)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter ()
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::PSPlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _p_initialize ();
+  _pl_p_initialize ();
 }
 
 PSPlotter::~PSPlotter ()
@@ -835,6 +843,6 @@ PSPlotter::~PSPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _p_terminate ();
+  _pl_p_terminate ();
 }
 #endif

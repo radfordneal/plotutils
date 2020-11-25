@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* The following Postscript procset defines a set of macros and constants
    that libplot uses when rendering graphics.  It is split into several
    shorter pieces, because some compilers have difficulty with strings that
@@ -7,10 +25,16 @@
    <interran@uluru.stanford.edu>, formerly of the InterViews team.  (Thanks
    to John for generously providing it, and for helpful comments.)
    For more information see the InterViews distribution at
-   ftp://interviews.stanford.edu. */
+   ftp://interviews.stanford.edu.
+
+   The present procset, version 1.1, includes a minor modification.
+   Originally, FontBBox was assumed always to be an executable array.  Many
+   fonts are designed this way, but it is not required.  The assumption
+   gave problems on some versions of ghostscript.  Thanks to Alex
+   Cherepanov for the bug fix.  */
 
 #define PS_PROCSET_NAME "GNU_libplot"
-#define PS_PROCSET_VERSION "1.0"
+#define PS_PROCSET_VERSION "1.1"
 
 static const char * const _ps_fontproc =
 "\
@@ -77,8 +101,8 @@ true /brushNone idef\n\
 0 ne /brushRightArrow idef\n\
 0 ne /brushLeftArrow idef\n\
 /brushWidth idef\n\
-false /brushNone idef\n\
-} ifelse\n\
+false /brushNone idef\n",
+"} ifelse\n\
 } def\n\
 \n\
 /SetCFg {\n\
@@ -126,8 +150,8 @@ n 3 sub dup n 2 sub dup n 1 sub dup 2 copy false subspline\n\
 } if\n\
 n 2 sub dup n 1 sub dup 2 copy 2 copy false subspline\n\
 patternNone not brushLeftArrow not brushRightArrow not and and { ifill } if\n\
-brushNone not { istroke } if\n\
-0 0 1 1 leftarrow\n\
+brushNone not { istroke } if\n",
+"0 0 1 1 leftarrow\n\
 n 2 sub dup 1 sub dup rightarrow\n\
 } if\n\
 end\n\
@@ -150,8 +174,8 @@ n 1 sub dup 0 0 1 1 2 2 true subspline\n\
 1 1 n 3 sub {\n\
 /i exch def\n\
 i 1 sub dup i dup i 1 add dup i 2 add dup false subspline\n\
-} for\n\
-n 3 sub dup n 2 sub dup n 1 sub dup 0 0 false subspline\n\
+} for\n",
+"n 3 sub dup n 2 sub dup n 1 sub dup 0 0 false subspline\n\
 n 2 sub dup n 1 sub dup 0 0 1 1 false subspline\n\
 patternNone not { ifill } if\n\
 brushNone not { istroke } if\n\
@@ -176,8 +200,8 @@ end\n\
 \n\
 /Line {\n\
 0 begin\n\
-2 storexyn\n\
-newpath\n\
+2 storexyn\n",
+"newpath\n\
 x 0 get y 0 get moveto\n\
 x 1 get y 1 get lineto\n\
 brushNone not { istroke } if\n\
@@ -197,8 +221,8 @@ x 0 get y 0 get moveto\n\
 x i get y i get lineto\n\
 } for\n\
 patternNone not brushLeftArrow not brushRightArrow not and and { ifill } if\n\
-brushNone not { istroke } if\n\
-0 0 1 1 leftarrow\n\
+brushNone not { istroke } if\n",
+"0 0 1 1 leftarrow\n\
 n 2 sub dup n 1 sub dup rightarrow\n\
 } if\n\
 end\n\
@@ -242,8 +266,8 @@ dup where { pop pop pop } { exch def } ifelse\n\
 \n\
 /ifill {\n\
 0 begin\n\
-gsave\n\
-patternGrayLevel -1 ne {\n\
+gsave\n",
+"patternGrayLevel -1 ne {\n\
 fgred bgred fgred sub patternGrayLevel mul add\n\
 fggreen bggreen fggreen sub patternGrayLevel mul add\n\
 fgblue bgblue fgblue sub patternGrayLevel mul add setrgbcolor\n\
@@ -255,8 +279,8 @@ pathbbox /t exch def /r exch def /b exch def /l exch def\n\
 /w r l sub ceiling cvi def\n\
 /h t b sub ceiling cvi def\n\
 /imageByteWidth w 8 div ceiling cvi def\n\
-/imageHeight h def\n\
-bgred bggreen bgblue setrgbcolor\n\
+/imageHeight h def\n",
+"bgred bggreen bgblue setrgbcolor\n\
 eoFillRule { eofill } { fill } ifelse\n\
 fgred fggreen fgblue setrgbcolor\n\
 w 0 gt h 0 gt and {\n\
@@ -276,8 +300,8 @@ brushDashOffset -1 eq {\n\
 } {\n\
 brushDashArray brushDashOffset setdash\n\
 fgred fggreen fgblue setrgbcolor\n\
-} ifelse\n\
-brushWidth setlinewidth\n\
+} ifelse\n",
+"brushWidth setlinewidth\n\
 originalCTM setmatrix\n\
 stroke\n\
 grestore\n\
@@ -288,7 +312,7 @@ grestore\n\
 gsave\n\
 fgred fggreen fgblue setrgbcolor\n\
 /fontDict printFont findfont printSize scalefont dup setfont def\n\
-/descender fontDict begin 0 [FontBBox] 1 get FontMatrix end\n\
+/descender fontDict begin 0 /FontBBox load 1 get FontMatrix end\n\
 transform exch pop def\n\
 /vertoffset 1 printSize sub descender sub def {\n\
 0 vertoffset moveto show\n\
@@ -307,8 +331,8 @@ end\n\
 /imageByteMaxLength imageByteWidth imageHeight mul\n\
 stringLimit patternByteWidth sub min def\n\
 /imageMaxHeight imageByteMaxLength imageByteWidth idiv patternHeight idiv\n\
-patternHeight mul patternHeight max def\n\
-/imageHeight imageHeight imageMaxHeight sub store\n\
+patternHeight mul patternHeight max def\n",
+"/imageHeight imageHeight imageMaxHeight sub store\n\
 /imageString imageByteWidth imageMaxHeight mul patternByteWidth add string def\n\
 0 1 imageMaxHeight 1 sub {\n\
 /y exch def\n\
@@ -319,8 +343,8 @@ patternHeight mul patternHeight max def\n\
 /x exch def\n\
 imageString imageRow x add patternRowString putinterval\n\
 } for\n\
-} for\n\
-imageString\n\
+} for\n",
+"imageString\n\
 end\n\
 } dup 0 12 dict put def\n\
 \n\
@@ -348,8 +372,8 @@ end\n\
 /y1 exch def\n\
 /x1 exch def\n\
 /y0 exch def\n\
-/x0 exch def\n\
-x0 2 mul x1 add 3 div\n\
+/x0 exch def\n",
+"x0 2 mul x1 add 3 div\n\
 y0 2 mul y1 add 3 div\n\
 end\n\
 } dup 0 4 dict put def\n\
@@ -370,8 +394,8 @@ x1 y1 x2 y2 thirdpoint\n\
 /p1x exch def\n\
 x2 y2 x1 y1 thirdpoint\n\
 /p2y exch def\n\
-/p2x exch def\n\
-x1 y1 x0 y0 thirdpoint\n\
+/p2x exch def\n",
+"x1 y1 x0 y0 thirdpoint\n\
 p1x p1y midpoint\n\
 /p0y exch def\n\
 /p0x exch def\n\
@@ -397,8 +421,8 @@ x i 3 2 roll put\n\
 \n",
 "/arrowhead {\n\
 0 begin\n\
-transform originalCTM itransform\n\
-/taily exch def\n\
+transform originalCTM itransform\n",
+"/taily exch def\n\
 /tailx exch def\n\
 transform originalCTM itransform\n\
 /tipy exch def\n\
@@ -415,8 +439,8 @@ arrowHeight neg arrowWidth 2 div moveto\n\
 0 0 lineto\n\
 arrowHeight neg arrowWidth 2 div neg lineto\n\
 patternNone not {\n\
-originalCTM setmatrix\n\
-/padtip arrowHeight 2 exp 0.25 arrowWidth 2 exp mul add sqrt brushWidth mul\n\
+originalCTM setmatrix\n",
+"/padtip arrowHeight 2 exp 0.25 arrowWidth 2 exp mul add sqrt brushWidth mul\n\
 arrowWidth div def\n\
 /padtail brushWidth 2 div def\n\
 tipx tipy translate\n\
@@ -453,8 +477,8 @@ x exch get /tipx exch def\n\
 brushLeftArrow { tipx tipy tailx taily arrowhead } if\n\
 end\n\
 } dup 0 4 dict put def\n\
-\n\
-/rightarrow {\n\
+\n",
+"/rightarrow {\n\
 0 begin\n\
 y exch get /tipy exch def\n\
 x exch get /tipx exch def\n\

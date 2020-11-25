@@ -1,3 +1,21 @@
+/* This file is part of the GNU libxmi package.  Copyright (C) 1998, 1999,
+   2000, 2005, Free Software Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the core libxmi API, consisting of:
 
    1. miDrawPoints, miDrawLines, miFillPolygon.
@@ -26,52 +44,27 @@ used by Joel McCormack's span-merging module to implement the
   miUniquifyPaintedSet (paintedSet); \
 }
 
+/* ARGS: mode = Origin or Previous */
 void
-#ifdef _HAVE_PROTOS
 miDrawPoints (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npt, const miPoint *pPts)
-#else
-miDrawPoints (paintedSet, pGC, mode, npt, pPts)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;		/* unused */
-     miCoordMode mode;		/* mode = Origin or Previous */
-     int npt;
-     const miPoint *pPts;
-#endif
 {
   MI_SETUP_PAINTED_SET(paintedSet, pGC)
   miDrawPoints_internal (paintedSet, pGC, mode, npt, pPts);
   MI_TEAR_DOWN_PAINTED_SET(paintedSet)
 }
 
+/* ARGS: mode = Origin or Previous */
 void
-#ifdef _HAVE_PROTOS
 miDrawLines (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npt, const miPoint *pPts)
-#else
-miDrawLines (paintedSet, pGC, mode, npt, pPts)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     miCoordMode mode;
-     int npt;
-     const miPoint *pPts;
-#endif
 {
   MI_SETUP_PAINTED_SET(paintedSet, pGC)
   miDrawLines_internal (paintedSet, pGC, mode, npt, pPts);
   MI_TEAR_DOWN_PAINTED_SET(paintedSet)
 }
 
+/* ARGS: mode = Origin or Previous */
 void
-#ifdef _HAVE_PROTOS
 miFillPolygon (miPaintedSet *paintedSet, const miGC *pGC, miPolygonShape shape, miCoordMode mode, int count, const miPoint *pPts)
-#else
-miFillPolygon (paintedSet, pGC, shape, mode, count, pPts)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     miPolygonShape shape;
-     miCoordMode mode;
-     int count;
-     const miPoint *pPts;
-#endif
 {
   MI_SETUP_PAINTED_SET(paintedSet, pGC)
   miFillPolygon_internal (paintedSet, pGC, shape, mode, count, pPts);
@@ -79,15 +72,7 @@ miFillPolygon (paintedSet, pGC, shape, mode, count, pPts)
 }
 
 void
-#ifdef _HAVE_PROTOS
 miDrawRectangles (miPaintedSet *paintedSet, const miGC *pGC, int nrects, const miRectangle *prectInit)
-#else
-miDrawRectangles (paintedSet, pGC, nrects, prectInit)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int nrects; 
-     const miRectangle *prectInit;
-#endif
 {
   MI_SETUP_PAINTED_SET(paintedSet, pGC);
   miDrawRectangles_internal (paintedSet, pGC, nrects, prectInit);
@@ -95,16 +80,10 @@ miDrawRectangles (paintedSet, pGC, nrects, prectInit)
 }
 
 void
-#ifdef _HAVE_PROTOS
 miFillRectangles (miPaintedSet *paintedSet, const miGC *pGC, int nrectFill, const miRectangle *prectInit)
-#else
-miFillRectangles (paintedSet, pGC, nrectFill, prectInit)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;		/* unused */
-     int nrectFill; 
-     const miRectangle *prectInit;
-#endif
 {
+  fprintf (stderr, "miFillRectangles()\n");
+
   MI_SETUP_PAINTED_SET(paintedSet, pGC);
   miFillRectangles_internal (paintedSet, pGC, nrectFill, prectInit);
   MI_TEAR_DOWN_PAINTED_SET(paintedSet)
@@ -112,15 +91,7 @@ miFillRectangles (paintedSet, pGC, nrectFill, prectInit)
 
 #ifndef NO_NONREENTRANT_POLYARC_SUPPORT
 void
-#ifdef _HAVE_PROTOS
 miDrawArcs (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs)
-#else
-miDrawArcs (paintedSet, pGC, narcs, parcs)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-#endif
 {
   MI_SETUP_PAINTED_SET(paintedSet, pGC)
   miDrawArcs_internal (paintedSet, pGC, narcs, parcs);
@@ -129,32 +100,16 @@ miDrawArcs (paintedSet, pGC, narcs, parcs)
 #endif /* not NO_NONREENTRANT_POLYARC_SUPPORT */
 
 void
-#ifdef _HAVE_PROTOS
 miFillArcs (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs)
-#else
-miFillArcs (paintedSet, pGC, narcs, parcs)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-#endif
 {
   MI_SETUP_PAINTED_SET(paintedSet, pGC)
   miFillArcs_internal (paintedSet, pGC, narcs, parcs);
   MI_TEAR_DOWN_PAINTED_SET(paintedSet)
 }
 
+/* ARGS: ellipseCache = pointer to ellipse data cache */
 void
-#ifdef _HAVE_PROTOS
 miDrawArcs_r (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs, miEllipseCache *ellipseCache)
-#else
-miDrawArcs_r (paintedSet, pGC, narcs, parcs, ellipseCache)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-     miEllipseCache *ellipseCache; /* pointer to ellipse data cache */
-#endif
 {
   MI_SETUP_PAINTED_SET(paintedSet, pGC)
   miDrawArcs_r_internal (paintedSet, pGC, narcs, parcs, ellipseCache);
@@ -165,17 +120,9 @@ miDrawArcs_r (paintedSet, pGC, narcs, parcs, ellipseCache)
 /* Further wrappers that should really be moved to other file(s). */
 /**********************************************************************/
 
+/* ARGS: ellipseCache = pointer to ellipse data cache */
 void
-#ifdef _HAVE_PROTOS
 miDrawArcs_r_internal (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs, miEllipseCache *ellipseCache)
-#else
-miDrawArcs_r_internal (paintedSet, pGC, narcs, parcs, ellipseCache)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-     miEllipseCache *ellipseCache; /* pointer to ellipse data cache */
-#endif
 {
   if (pGC->lineWidth == 0)
     /* use Bresenham algorithm */
@@ -186,15 +133,7 @@ miDrawArcs_r_internal (paintedSet, pGC, narcs, parcs, ellipseCache)
 
 #ifndef NO_NONREENTRANT_POLYARC_SUPPORT
 void
-#ifdef _HAVE_PROTOS
 miDrawArcs_internal (miPaintedSet *paintedSet, const miGC *pGC, int narcs, const miArc *parcs)
-#else
-miDrawArcs_internal (paintedSet, pGC, narcs, parcs)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int narcs;
-     const miArc *parcs;
-#endif
 {
   if (pGC->lineWidth == 0)
     /* use Bresenham algorithm */
@@ -204,17 +143,9 @@ miDrawArcs_internal (paintedSet, pGC, narcs, parcs)
 }
 #endif /* not NO_NONREENTRANT_POLYARC_SUPPORT */
 
+/* ARGS: mode = Origin or Previous */
 void
-#ifdef _HAVE_PROTOS
 miDrawLines_internal (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npt, const miPoint *pPts)
-#else
-miDrawLines_internal (paintedSet, pGC, mode, npt, pPts)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     miCoordMode mode;
-     int npt;
-     const miPoint *pPts;
-#endif
 {
   if (pGC->lineWidth == 0)
     {
@@ -234,19 +165,13 @@ miDrawLines_internal (paintedSet, pGC, mode, npt, pPts)
 }
 
 void
-#ifdef _HAVE_PROTOS
 miDrawRectangles_internal (miPaintedSet *paintedSet, const miGC *pGC, int nrects, const miRectangle *prectInit)
-#else
-miDrawRectangles_internal (paintedSet, pGC, nrects, prectInit)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int nrects; 
-     const miRectangle *prectInit;
-#endif
 {
   const miRectangle *pR = prectInit;
   miPoint rect[5];
   int i;
+
+  fprintf (stderr, "miDrawRectangles_internal()\n");
 
   for (i = 0; i < nrects; i++)
     {

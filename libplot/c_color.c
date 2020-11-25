@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains device-specific color database access routines.
    These routines are called by various CGMPlotter methods, before drawing
    objects.
@@ -15,13 +33,7 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_c_set_pen_color(R___(Plotter *_plotter) int cgm_object_type)
-#else
-_c_set_pen_color(R___(_plotter) cgm_object_type)
-     S___(Plotter *_plotter;) 
-     int cgm_object_type;
-#endif
+_pl_c_set_pen_color(R___(Plotter *_plotter) int cgm_object_type)
 {
   int red_long, green_long, blue_long;
   int red, green, blue;
@@ -185,13 +197,7 @@ _c_set_pen_color(R___(_plotter) cgm_object_type)
 }
 
 void
-#ifdef _HAVE_PROTOS
-_c_set_fill_color(R___(Plotter *_plotter) int cgm_object_type)
-#else
-_c_set_fill_color(R___(_plotter) cgm_object_type)
-     S___(Plotter *_plotter;)
-     int cgm_object_type;
-#endif
+_pl_c_set_fill_color(R___(Plotter *_plotter) int cgm_object_type)
 {
   int red_long, green_long, blue_long;
   int red, green, blue;
@@ -265,12 +271,7 @@ _c_set_fill_color(R___(_plotter) cgm_object_type)
 }
 
 void
-#ifdef _HAVE_PROTOS
-_c_set_bg_color(S___(Plotter *_plotter))
-#else
-_c_set_bg_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_c_set_bg_color(S___(Plotter *_plotter))
 {
   int red_long, green_long, blue_long;
   int red, green, blue;

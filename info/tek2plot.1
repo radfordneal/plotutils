@@ -17,9 +17,9 @@ tek2plot \- translate Tektronix files to other graphics formats
 .B tek2plot 
 translates Tektronix graphics files to other formats, or displays
 them on an X Window System display.
-The output format or display type is specified with the 
+The output format is specified with the 
 .BR \-T " option."
-The possible output formats and display types are the same as those 
+The possible output formats are the same as those 
 supported by
 .BR graph (1),
 .BR plot (1),
@@ -43,10 +43,10 @@ is encountered, the standard input is read.
 .br
 .ns
 .TP
-.BI \-\-display\-type " type"
+.BI \-\-output\-format " type"
 Select 
 .I type
-as the output format or display type.
+as the output format.
 It may be "X", "png", "pnm", "gif", "svg", "ai", "ps", "cgm", "fig",
 "pcl", "hpgl", "regis", "tek", or "meta" (the default).
 These refer respectively
@@ -380,7 +380,7 @@ Print a list of command-line options, and exit.
 .TP
 .B \-\-help\-fonts
 Print a table of available fonts, and exit.
-The table will depend on which output format or display type
+The table will depend on which output format
 is specified with
 the 
 .B \-T 

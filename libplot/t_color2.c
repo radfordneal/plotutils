@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* The 16 standard colors (ANSI, ISO 6429) supported by the Tektronix mode
    of MS-DOS Kermit.  (Reportedly `color xterm' supports them too, but
    maybe not in Tektronix emulation mode?)
@@ -11,7 +29,7 @@
 #include "sys-defines.h"
 #include "extern.h"
 
-const plColor _kermit_stdcolors[KERMIT_NUM_STD_COLORS] = 
+const plColor _pl_t_kermit_stdcolors[TEK_NUM_ANSI_SYS_COLORS] = 
 {
   {0x00, 0x00, 0x00},		/* black */
   {0x8b, 0x00, 0x00},		/* red4 */
@@ -34,7 +52,7 @@ const plColor _kermit_stdcolors[KERMIT_NUM_STD_COLORS] =
 /* Ordering of these two lists of ANSI escape sequences must match the
    above. */
 
-const char * const _kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS] = 
+const char * const _pl_t_kermit_fgcolor_escapes[TEK_NUM_ANSI_SYS_COLORS] = 
 {
   "\033[0;30m",		/* black */
   "\033[0;31m",		/* red4 */
@@ -54,7 +72,7 @@ const char * const _kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS] =
   "\033[1;37m"		/* white */
 };
 
-const char * const _kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS] = 
+const char * const _pl_t_kermit_bgcolor_escapes[TEK_NUM_ANSI_SYS_COLORS] = 
 {
   "\033[0;40m",		/* black */
   "\033[0;41m",		/* red4 */

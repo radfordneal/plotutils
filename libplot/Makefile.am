@@ -4,7 +4,7 @@ lib_LTLIBRARIES = libplot.la
 
 EXTRA_DIST = DEDICATION HUMOR README-cgm README-gif README-hpgl README-tek VERSION
 
-libplot_la_LDFLAGS = -version-info 4:1:2
+libplot_la_LDFLAGS = -version-info 4:2:2
 
 INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT
 
@@ -58,7 +58,7 @@ NSRC = n_defplot.c n_write.c
 
 ZSRC = z_defplot.c z_write.c
 
-XSRC = x_attribs.c x_closepl.c x_color.c x_defplot.c x_erase.c x_flushpl.c \
+XSRC = x_afftext.c x_attribs.c x_closepl.c x_color.c x_defplot.c x_erase.c x_flushpl.c \
 x_openpl.c x_path.c x_point.c x_retrieve.c x_savestate.c x_text.c
 
 YSRC = y_closepl.c y_defplot.c y_erase.c y_openpl.c
@@ -81,7 +81,7 @@ $(ASRC) $(SSRC) $(ISRC) $(NSRC) $(ZSRC) $(XSRC) $(YSRC)
 endif
 endif
 
-EXTRA_libplot_la_SOURCES = x_attribs.c x_closepl.c x_color.c x_defplot.c \
+EXTRA_libplot_la_SOURCES = x_afftext.c x_attribs.c x_closepl.c x_color.c x_defplot.c \
 x_erase.c x_flushpl.c x_openpl.c x_path.c x_point.c x_retrieve.c	 \
 x_savestate.c x_text.c y_closepl.c y_defplot.c y_erase.c y_openpl.c
 
@@ -91,7 +91,7 @@ MIHEADERS = xmi.h mi_api.h mi_arc.h mi_fllarc.h mi_fply.h mi_gc.h mi_line.h \
 mi_ply.h mi_scanfill.h mi_spans.h mi_widelin.h mi_zerarc.h
 
 noinst_HEADERS = extern.h g_arc.h g_colorname.h g_control.h g_cntrlify.h \
-g_her_metr.h g_jis.h g_pagetype.h h_roman8.h i_rle.h p_header.h		 \
+g_her_metr.h g_jis.h g_pagetype.h h_roman8.h i_rle.h p_header.h x_afftext.h \
 $(MIHEADERS)
 
 CLEANFILES = $(MISRC) $(MIHEADERS)

@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal path_is_flushable() method, which is
    invoked after any path segment is added to the segment list, provided
    (0) the segment list has become greater than or equal to the
@@ -21,12 +39,7 @@
 #include "extern.h"
 
 bool
-#ifdef _HAVE_PROTOS
-_t_path_is_flushable (S___(Plotter *_plotter))
-#else
-_t_path_is_flushable (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_t_path_is_flushable (S___(Plotter *_plotter))
 {
   return false;
 }
@@ -43,13 +56,7 @@ _t_path_is_flushable (S___(_plotter))
 enum { ACCEPTED = 0x1, CLIPPED_FIRST = 0x2, CLIPPED_SECOND = 0x4 };
 
 void
-#ifdef _HAVE_PROTOS
-_t_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
-#else
-_t_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
-     S___(Plotter *_plotter;)
-     int prev_num_segments;
-#endif
+_pl_t_maybe_prepaint_segments (R___(Plotter *_plotter) int prev_num_segments)
 {
   int i;
 
@@ -68,7 +75,7 @@ _t_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
   /* Skip drawing if the pen color is white.  Since our TekPlotter class
      doesn't support filling, this is ok to do if the Tektronix isn't a
      kermit emulator (the kermit emulator supports color). */
-  if (_plotter->tek_display_type != D_KERMIT 
+  if (_plotter->tek_display_type != TEK_DPY_KERMIT 
       && _plotter->drawstate->fgcolor.red == 0xffff
       && _plotter->drawstate->fgcolor.green == 0xffff
       && _plotter->drawstate->fgcolor.blue == 0xffff)
@@ -113,13 +120,13 @@ _t_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
       if (i == 1)
 	/* New polyline is beginning, so start to draw it on the display:
 	   move to starting point of the first line segment, in Tek space.
-	   As a side-effect, the escape sequence emitted by _tek_move()
+	   As a side-effect, the escape sequence emitted by _pl_t_tek_move()
 	   will shift the Tektronix to the desired mode, either PLOT or
 	   POINT.  Note that if we are already in the desired mode,
 	   emitting the escape sequence will prevent a line being drawn at
 	   the time of the move (the "dark vector" concept).  That is of
 	   course what we want. */
-	_tek_move (R___(_plotter) istart.x, istart.y);
+	_pl_t_tek_move (R___(_plotter) istart.x, istart.y);
       else
 	/* A polyline is underway, >=1 line segments already.  So check
 	   whether the position on the Tektronix is the same as the
@@ -130,7 +137,7 @@ _t_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
 	   cont(). */
 	{
 	  int correct_tek_mode = 
-	    _plotter->drawstate->points_are_connected ? MODE_PLOT : MODE_POINT;
+	    _plotter->drawstate->points_are_connected ? TEK_MODE_PLOT : TEK_MODE_POINT;
 
 	  if (_plotter->tek_position_is_unknown
 	      || _plotter->tek_pos.x != istart.x
@@ -140,7 +147,7 @@ _t_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
 	    /* Move to desired position.  This automatically shifts the
 	       Tektronix to correct mode, PLOT or POINT; see comment
 	       above. */
-	    _tek_move (R___(_plotter) istart.x, istart.y);
+	    _pl_t_tek_move (R___(_plotter) istart.x, istart.y);
 	}
   
       /* Sync Tek's linestyle with ours; an escape sequence is emitted only
@@ -148,9 +155,9 @@ _t_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
 	 savestate()...restorestate() occurred since the last call to
 	 cont().  Sync Tek's color and background color too (significant
 	 only for kermit Tek emulator). */
-      _t_set_attributes (S___(_plotter));  
-      _t_set_pen_color (S___(_plotter));
-      _t_set_bg_color (S___(_plotter));
+      _pl_t_set_attributes (S___(_plotter));  
+      _pl_t_set_pen_color (S___(_plotter));
+      _pl_t_set_bg_color (S___(_plotter));
 
       /* If this is initial line segment of a polyline, force output of a
 	 vector even if line segment has zero length, so that something
@@ -163,14 +170,14 @@ _t_maybe_prepaint_segments (R___(_plotter) prev_num_segments)
       if (i == 1
 	  && (same_point == false 
 	      || (same_point == true 
-		  && _plotter->drawstate->cap_type == CAP_ROUND)))
+		  && _plotter->drawstate->cap_type == PL_CAP_ROUND)))
 	force = true;
       else 
 	force = false;
 
       /* continue polyline by drawing vector on Tek display */
-      _tek_vector_compressed (R___(_plotter) 
-			      iend.x, iend.y, istart.x, istart.y, force);
+      _pl_t_tek_vector_compressed (R___(_plotter) 
+				   iend.x, iend.y, istart.x, istart.y, force);
       
       /* update our notion of Tek's notion of position */
       _plotter->tek_pos.x = iend.x;

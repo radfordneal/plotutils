@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This module provides several public functions: miNewPaintedSet(),
    miAddSpansToPaintedSet(), miUniquifyPaintedSet(), miClearPaintedSet(),
    miDeletePaintedSet().  They maintain a structure called a miPaintedSet,
@@ -43,24 +66,20 @@
 #define YMAX(spans) (spans->points[spans->count-1].y)
 
 /* internal functions */
-static SpanGroup * miNewSpanGroup ____P((miPixel pixel));
-static int miUniquifySpansX ____P((const Spans *spans, miPoint *newPoints, unsigned int *newWidths));
-static void miAddSpansToSpanGroup ____P((const Spans *spans, SpanGroup *spanGroup));
-static void miDeleteSpanGroup ____P((SpanGroup *spanGroup));
-static void miQuickSortSpansX ____P((miPoint *points, unsigned int *widths, int numSpans));
-static void miSubtractSpans ____P((SpanGroup *spanGroup, const Spans *sub));
-static void miUniquifySpanGroup ____P((SpanGroup *spanGroup));
+static SpanGroup * miNewSpanGroup (miPixel pixel);
+static int miUniquifySpansX (const Spans *spans, miPoint *newPoints, unsigned int *newWidths);
+static void miAddSpansToSpanGroup (const Spans *spans, SpanGroup *spanGroup);
+static void miDeleteSpanGroup (SpanGroup *spanGroup);
+static void miQuickSortSpansX (miPoint *points, unsigned int *widths, int numSpans);
+static void miSubtractSpans (SpanGroup *spanGroup, const Spans *sub);
+static void miUniquifySpanGroup (SpanGroup *spanGroup);
 
 
 
 /* The following functions are the public functions of this module. */
 
 miPaintedSet *
-#ifdef _HAVE_PROTOS
 miNewPaintedSet (void)
-#else
-miNewPaintedSet ()
-#endif
 {
   miPaintedSet *paintedSet;
 
@@ -75,14 +94,7 @@ miNewPaintedSet ()
 /* Add a Spans to a miPaintedSet's SpanGroup for a specified pixel values,
    and also subtract it from the SpanGroups for all other pixel values. */
 void
-#ifdef _HAVE_PROTOS
 miAddSpansToPaintedSet (const Spans *spans, miPaintedSet *paintedSet, miPixel pixel)
-#else
-miAddSpansToPaintedSet (spans, paintedSet, pixel)
-     const Spans *spans;
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-#endif
 {
   bool found = false;
   int i;
@@ -144,12 +156,7 @@ miAddSpansToPaintedSet (spans, paintedSet, pixel)
    width arrays that are part of its component Spans's.  So it will
    effectively become the empty set, as if it had been newly created. */
 void
-#ifdef _HAVE_PROTOS
 miClearPaintedSet (miPaintedSet *paintedSet)
-#else
-miClearPaintedSet (paintedSet)
-     miPaintedSet *paintedSet;
-#endif
 {
   int i;
 
@@ -167,12 +174,7 @@ miClearPaintedSet (paintedSet)
 /* Deallocate a miPaintedSet, including the points and width arrays that
    are part of its component Spans's. */
 void
-#ifdef _HAVE_PROTOS
 miDeletePaintedSet (miPaintedSet *paintedSet)
-#else
-miDeletePaintedSet (paintedSet)
-     miPaintedSet *paintedSet;
-#endif
 {
   int i;
 
@@ -190,12 +192,7 @@ miDeletePaintedSet (paintedSet)
 /* `Uniquify' a miPaintedSet, i.e. uniquify each of its SpanGroups (see
    below). */
 void
-#ifdef _HAVE_PROTOS
 miUniquifyPaintedSet (miPaintedSet *paintedSet)
-#else
-miUniquifyPaintedSet (paintedSet)
-     miPaintedSet *paintedSet;
-#endif
 {
   int i;
 
@@ -214,12 +211,7 @@ miUniquifyPaintedSet (paintedSet)
 
 /* Create and initialize a SpanGroup, i.e. an unsorted list of Spans's. */
 static SpanGroup *
-#ifdef _HAVE_PROTOS
 miNewSpanGroup (miPixel pixel)
-#else
-miNewSpanGroup (pixel)
-     miPixel pixel;
-#endif
 {
   SpanGroup *spanGroup;
 
@@ -237,13 +229,7 @@ miNewSpanGroup (pixel)
 /* Add a Spans to a SpanGroup, by tacking it on the end; update SpanGroup's
    ymin, ymax. */
 static void
-#ifdef _HAVE_PROTOS
 miAddSpansToSpanGroup (const Spans *spans, SpanGroup *spanGroup)
-#else
-miAddSpansToSpanGroup (spans, spanGroup)
-     const Spans *spans;
-     SpanGroup *spanGroup;
-#endif
 {
   int ymin, ymax;
 
@@ -271,12 +257,7 @@ miAddSpansToSpanGroup (spans, spanGroup)
 /* Delete a SpanGroup, including the point and width arrays that are part
    of each Spans. */
 static void
-#ifdef _HAVE_PROTOS
 miDeleteSpanGroup (SpanGroup *spanGroup)
-#else
-miDeleteSpanGroup (spanGroup)
-     SpanGroup *spanGroup;
-#endif
 {
   int i;
 
@@ -297,13 +278,7 @@ miDeleteSpanGroup (spanGroup)
 /* Subtract a Spans from a SpanGroup, i.e. from each of its Spans's; update
    SpanGroup's ymin, ymax. */
 static void 
-#ifdef _HAVE_PROTOS
 miSubtractSpans (SpanGroup *spanGroup, const Spans *sub)
-#else
-miSubtractSpans (spanGroup, sub)
-     SpanGroup *spanGroup;
-     const Spans *sub;
-#endif
 {
   int		i, subCount, spansCount;
   int		ymin, ymax, xmin, xmax;
@@ -486,12 +461,7 @@ miSubtractSpans (spanGroup, sub)
 /* `Uniquify' a SpanGroup: merge all its Spans's into a single Spans, which
    will be sorted on x as well as on y. */
 static void
-#ifdef _HAVE_PROTOS
 miUniquifySpanGroup (SpanGroup *spanGroup)
-#else
-miUniquifySpanGroup (spanGroup)
-     SpanGroup *spanGroup;
-#endif
 {
   int    i;
   Spans  *spans;
@@ -618,14 +588,7 @@ miUniquifySpanGroup (spanGroup)
 
 /* Sort each span in a Spans by x.  Called only if numSpans > 1. */
 static void 
-#ifdef _HAVE_PROTOS
 miQuickSortSpansX (miPoint *points, unsigned int *widths, int numSpans)
-#else
-miQuickSortSpansX (points, widths, numSpans)
-     miPoint *points;
-     unsigned int *widths;
-     int numSpans;
-#endif
 {
   int	 x;
   int	 i, j, m;
@@ -727,14 +690,7 @@ miQuickSortSpansX (points, widths, numSpans)
 
 /* Sort an unordered list of spans by y, so that it becomes a Spans. */
 void 
-#ifdef _HAVE_PROTOS
 miQuickSortSpansY (miPoint *points, unsigned int *widths, int numSpans)
-#else
-miQuickSortSpansY (points, widths, numSpans)
-     miPoint *points;
-     unsigned int *widths;
-     int numSpans;
-#endif
 {
   int	 y;
   int	 i, j, m;
@@ -843,14 +799,7 @@ miQuickSortSpansY (points, widths, numSpans)
    allocated arrays newPoints and newWidths.  Returns the number of unique
    spans.  Called only if numSpans > 1. */
 static int 
-#ifdef _HAVE_PROTOS
 miUniquifySpansX (const Spans *spans, miPoint *newPoints, unsigned int *newWidths)
-#else
-miUniquifySpansX (spans, newPoints, newWidths)
-     const Spans *spans;
-     miPoint *newPoints;
-     unsigned int *newWidths;
-#endif
 {
   int		newx1, newx2, oldpt, i, y;
   miPoint	*oldPoints;

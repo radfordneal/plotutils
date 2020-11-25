@@ -1,8 +1,8 @@
-This is release 2.4.1 of the GNU plotutils (plotting utilities) package,
-including release 4.1 of GNU libplot: a thread-safe function library for
+This is release 2.5 of the GNU plotutils (plotting utilities) package,
+including release 4.2 of GNU libplot: a thread-safe function library for
 exporting two-dimensional vector graphics files, and for displaying
 animated vector graphics under the X Window System.  The Web page for the
-package is: http://www.gnu.org/software/plotutils/plotutils.html .
+package is http://www.gnu.org/software/plotutils/plotutils.html .
 
 In the top-level source directory, the file INSTALL contains generic
 instructions for installing a GNU package, and the file INSTALL.pkg
@@ -13,15 +13,15 @@ Also in the top-level source directory, the file COMPAT contains release
 notes, and comments on compatibility with previous versions.  The file
 PROBLEMS is worth looking at too.
 
-Please send bug reports to <bug-gnu-utils@gnu.org>, and suggestions for
-longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
+Please send bug reports to <bug-plotutils@gnu.org>, and suggestions for
+longer-range improvements to both <bug-plotutils@gnu.org> and the principal
 author and current maintainer, Robert Maier <rsm@math.arizona.edu>.
 
 NOTE: Neither the `pic2plot' program nor the `libplotter' C++ class library
-is built by default, since they require a working C++ compiler.  For
-details, see INSTALL.pkg.  Also, a standalone version of the `libxmi'
-scan-conversion library isn't built by default, since `libxmi' is
-distributed as a separate package; see comments below.
+is built by default, since they require a working C++ compiler.  But it is
+easy to request that they be built.  For details, see INSTALL.pkg.  Also, a
+standalone version of the `libxmi' scan-conversion library isn't built by
+default, since `libxmi' is distributed as a separate package.
 
 ----------------------------------------------------------------------
 
@@ -89,12 +89,13 @@ The contents of the plotutils package are:
 		complete).
 		
 		(Clones of the 35 standard Postscript fonts, in Type 1
-		format, have been contributed by URW GmbH and are
-		distributed under the GNU General Public License as part of
-		this package.  Installation instructions are in the file
-		./INSTALL.fonts.  Instructions for obtaining and installing
-		Type 1 versions of the 45 standard LaserJet fonts, as well,
-		are included.)
+		format, have been contributed by URW GmbH for distribution
+		under the GNU General Public License.  They may well be
+		available on your system, already.  If not, you may use the
+		versions distributed with this package.  Installation
+		instructions are in the file ./INSTALL.fonts.  Instructions
+		for obtaining and installing Type 1 versions of the 45
+		standard LaserJet fonts are included as well.)
 
 		Similarly to Postscript, libplot has the nice feature that
 		user coordinates (in terms of which you express the
@@ -172,9 +173,10 @@ The contents of the plotutils package are:
 
 		graph -T svg    A variant that produces output in SVG
 		                (scalable vector graphics) format.  SVG is
-		                a new XML-based graphics format that
+		                the XML-based graphics format that
                                 has been endorsed by the W3 Consortium
-				for Web use.  See http://www.w3.org .
+				for Web use.  See 
+				http://www.w3.org/Graphics .
 
 		graph -T ai	A variant that produces output in a
 				format that can be viewed or edited

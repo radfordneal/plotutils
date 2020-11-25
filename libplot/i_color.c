@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains device-specific color database access routines.
    These routines are called by various GIFPlotter methods, before drawing
    objects.  They set the appropriate GIFPlotter-specific fields in the
@@ -7,17 +25,12 @@
 #include "extern.h"
 
 /* forward references */
-static int _bit_depth ____P((int colors));
+static int bit_depth (int colors);
 
 /* we call this routine to evaluate _plotter->drawstate->i_pen_color_index
    lazily, i.e. only when needed (just before a drawing operation) */
 void
-#ifdef _HAVE_PROTOS
-_i_set_pen_color(S___(Plotter *_plotter))
-#else
-_i_set_pen_color(S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_i_set_pen_color(S___(Plotter *_plotter))
 {
   int red_long, green_long, blue_long;
   int red, green, blue;
@@ -40,7 +53,7 @@ _i_set_pen_color(S___(_plotter))
     {
       unsigned char index;
       
-      index = _i_new_color_index (R___(_plotter) red, green, blue);
+      index = _pl_i_new_color_index (R___(_plotter) red, green, blue);
 
       /* set new 24-bit RGB and color index in the drawing state */
       _plotter->drawstate->i_pen_color.red = red;
@@ -56,12 +69,7 @@ _i_set_pen_color(S___(_plotter))
 /* we call this routine to evaluate _plotter->drawstate->i_fill_color_index
    lazily, i.e. only when needed (just before a filling operation) */
 void
-#ifdef _HAVE_PROTOS
-_i_set_fill_color(S___(Plotter *_plotter))
-#else
-_i_set_fill_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_i_set_fill_color(S___(Plotter *_plotter))
 {
   int red_long, green_long, blue_long;
   int red, green, blue;
@@ -88,7 +96,7 @@ _i_set_fill_color(S___(_plotter))
     {
       unsigned char index;
       
-      index = _i_new_color_index (R___(_plotter) red, green, blue);
+      index = _pl_i_new_color_index (R___(_plotter) red, green, blue);
 
       /* set new 24-bit RGB and color index in the drawing state */
       _plotter->drawstate->i_fill_color.red = red;
@@ -99,14 +107,9 @@ _i_set_fill_color(S___(_plotter))
 }
 
 /* we call this routine to compute and set
-   _plotter->drawstate->i_bg_color_index, e.g. in _i_new_image */
+   _plotter->drawstate->i_bg_color_index, e.g. in _pl_i_new_image */
 void
-#ifdef _HAVE_PROTOS
-_i_set_bg_color(S___(Plotter *_plotter))
-#else
-_i_set_bg_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_i_set_bg_color(S___(Plotter *_plotter))
 {
   int red_long, green_long, blue_long;
   int red, green, blue;
@@ -129,7 +132,7 @@ _i_set_bg_color(S___(_plotter))
     {
       unsigned char index;
       
-      index = _i_new_color_index (R___(_plotter) red, green, blue);
+      index = _pl_i_new_color_index (R___(_plotter) red, green, blue);
 
       /* set new 24-bit RGB and color index in the drawing state */
       _plotter->drawstate->i_bg_color.red = red;
@@ -148,13 +151,7 @@ _i_set_bg_color(S___(_plotter))
    returned. */
 
 unsigned char 
-#ifdef _HAVE_PROTOS
-_i_new_color_index (R___(Plotter *_plotter) int red, int green, int blue)
-#else
-_i_new_color_index (R___(_plotter) red, green, blue)
-     S___(Plotter *_plotter;)
-     int red, green, blue;
-#endif
+_pl_i_new_color_index (R___(Plotter *_plotter) int red, int green, int blue)
 {
   int i, j;
   int sqdist;
@@ -182,7 +179,7 @@ _i_new_color_index (R___(_plotter) red, green, blue)
 
       /* New bit depth of colormap, e.g. sizes 129..256 get mapped to 8.
 	 In effect the colormap for any of these sizes will be of size 256. */
-      _plotter->i_bit_depth = _bit_depth (i + 1);
+      _plotter->i_bit_depth = bit_depth (i + 1);
 
       return (unsigned char)i;
     }
@@ -213,12 +210,7 @@ _i_new_color_index (R___(_plotter) red, green, blue)
 /* compute number of bits needed to represent all color indices
    (when this is called, colors >= 1) */
 static int
-#ifdef _HAVE_PROTOS
-_bit_depth (int colors)
-#else
-_bit_depth (colors)
-     int colors;
-#endif
+bit_depth (int colors)
 {
   int size;
   unsigned int ucolors;

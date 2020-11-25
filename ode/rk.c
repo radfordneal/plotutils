@@ -1,19 +1,23 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 2005, Free Software
+ * Foundation, Inc.
+ */
+
+/*
+ * Fourth-Order Runge-Kutta
+ *
+ */
+
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
 
-/*
- * Fourth-Order Runge-Kutta
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
- */
-
 void
-#ifdef _HAVE_PROTOS
 rk (void)
-#else
-rk ()
-#endif
 {
   double t;
   double halfstep = HALF * tstep;

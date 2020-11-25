@@ -1,5 +1,17 @@
-Top priority
-------------
+Greater priority
+----------------
+
+libplot: decide whether to provide a workaround for a font problem in
+recent releases of XFree86: the Type 1 versions of the Symbol and
+ZapfDingbats font use an erroneous coding scheme (character codes are
+offset by 0x20 = 32).
+
+libplot: enhance the SVG driver to keep track of whether the output is
+consistent with the `Full' or `Tiny' SVG profile.  The only relevant
+differences appear to be that in SVGT, "all numbers must be limited in
+range between -32,767.9999 to +32,767.9999 or the scientific notation
+equivalent", and that when drawing paths, the elliptical arc commands 
+A (absolute ell. arc) and a (relative ell. arc) are not available.
 
 libplot: enhance the SVG driver to use SVG's <tspan>..</tspan> construct
 for styling and positioning substrings.  Our present scheme for changing
@@ -7,7 +19,11 @@ fonts, adding subscripts, etc., in the middle of a label, works fine if the
 font(s) are available on the SVG viewer and have the metrics we believe
 they do.  But either of those two assumptions may fail.  So the
 <tspan>..</tspan> construct should always be used.  Nested tspans will be
-needed.
+needed.  Note: SVGT does not support tspans.
+
+libplot: enhance the SVG driver to adjust the width of text strings to be
+what it should be, according to our internal font database.  This is
+important if a requested font is unavailable.
 
 libplot: improve the handling of compound paths to support non-nested
 subpaths, i.e. multiple simple paths that may intersect each other, as well
@@ -39,7 +55,7 @@ libplot: add support for gradient fill.  Which output formats provide
 native support for it?  WebCGM, SVG and Illustrator certainly do.
 
 graph: continue librarifying the plotting routines, and incorporate them in
-libsciplot.  Maybe a GUILE interface?
+libsciplot?  Maybe a GUILE interface?
 
 graph: need better clipping for filled regions (present gnuplot-style
 clipping scheme is right for unfilled regions but wrong for filled ones)

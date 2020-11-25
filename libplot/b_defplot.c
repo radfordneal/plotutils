@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any Bitmap Plotter object,
    including both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -8,33 +26,33 @@
 #include "xmi.h"		/* use libxmi scan conversion module */
 
 /* forward references */
-static bool _parse_bitmap_size ____P((const char *bitmap_size_s, int *width, int *height));
+static bool parse_bitmap_size (const char *bitmap_size_s, int *width, int *height);
 
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    a BitmapPlotter struct. */
-const Plotter _b_default_plotter = 
+const Plotter _pl_b_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _b_initialize, _b_terminate,
+  _pl_b_initialize, _pl_b_terminate,
   /* page manipulation */
-  _b_begin_page, _b_erase_page, _b_end_page,
+  _pl_b_begin_page, _pl_b_erase_page, _pl_b_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _b_paint_path, _b_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_b_paint_path, _pl_b_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _b_paint_point,
+  _pl_g_paint_marker, _pl_b_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _g_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_g_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -45,16 +63,11 @@ const Plotter _b_default_plotter =
    created. */
 
 void
-#ifdef _HAVE_PROTOS
-_b_initialize (S___(Plotter *_plotter))
-#else
-_b_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_b_initialize (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override superclass initializations, as necessary */
@@ -85,7 +98,7 @@ _b_initialize (S___(_plotter))
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->data->default_font_type = F_HERSHEY;
+  _plotter->data->default_font_type = PL_F_HERSHEY;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->have_horizontal_justification = false;
   _plotter->data->have_vertical_justification = false;
@@ -120,12 +133,12 @@ _b_initialize (S___(_plotter))
   /* initialize data members specific to this derived class */
   _plotter->b_xn = _plotter->data->imax + 1;
   _plotter->b_yn = _plotter->data->jmin + 1;
-  _plotter->b_painted_set = (voidptr_t)NULL;
-  _plotter->b_canvas = (voidptr_t)NULL;
+  _plotter->b_painted_set = (void *)NULL;
+  _plotter->b_canvas = (void *)NULL;
 
   /* initialize storage used by libxmi's reentrant miDrawArcs_r() function
      for cacheing rasterized ellipses */
-  _plotter->b_arc_cache_data = (voidptr_t)miNewEllipseCache ();
+  _plotter->b_arc_cache_data = (void *)miNewEllipseCache ();
 
   /* determine the range of device coordinates over which the graphics
      display will extend (and hence the transformation from user to device
@@ -135,7 +148,7 @@ _b_initialize (S___(_plotter))
     int width = 1, height = 1;
 	
     bitmap_size_s = (const char *)_get_plot_param (_plotter->data, "BITMAPSIZE");
-    if (bitmap_size_s && _parse_bitmap_size (bitmap_size_s, &width, &height)
+    if (bitmap_size_s && parse_bitmap_size (bitmap_size_s, &width, &height)
 	/* insist on >=1 */
 	&& width >= 1 && height >= 1)
       /* override defaults above */
@@ -156,13 +169,7 @@ _b_initialize (S___(_plotter))
 }
 
 static bool 
-#ifdef _HAVE_PROTOS
-_parse_bitmap_size (const char *bitmap_size_s, int *width, int *height)
-#else
-_parse_bitmap_size (bitmap_size_s, width, height)
-  const char *bitmap_size_s;
-  int *width, *height;
-#endif
+parse_bitmap_size (const char *bitmap_size_s, int *width, int *height)
 {
   int local_width = 1, local_height = 1;
 
@@ -186,19 +193,14 @@ _parse_bitmap_size (bitmap_size_s, width, height)
    deleted. */
 
 void
-#ifdef _HAVE_PROTOS
-_b_terminate (S___(Plotter *_plotter))
-#else
-_b_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_b_terminate (S___(Plotter *_plotter))
 {
   /* free storage used by libxmi's reentrant miDrawArcs_r() function */
   miDeleteEllipseCache ((miEllipseCache *)_plotter->b_arc_cache_data);
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
@@ -206,60 +208,60 @@ _b_terminate (S___(_plotter))
 BitmapPlotter::BitmapPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:Plotter (infile, outfile, errfile)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter (FILE *outfile)
 	:Plotter (outfile)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter (ostream& out)
 	: Plotter (out)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter ()
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::BitmapPlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _b_initialize ();
+  _pl_b_initialize ();
 }
 
 BitmapPlotter::~BitmapPlotter ()
@@ -268,7 +270,7 @@ BitmapPlotter::~BitmapPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _b_terminate ();
+  _pl_b_terminate ();
 }
 #endif
 
@@ -282,12 +284,7 @@ BitmapPlotter::~BitmapPlotter ()
    b_closepl.c, n_write.c, z_write.c for the forwarded-to functions.  The
    first is currently a no-op. */
 int
-#ifdef _HAVE_PROTOS
 _maybe_output_image (Plotter *_plotter)
-#else
-_maybe_output_image (_plotter)
-     Plotter *_plotter;
-#endif
 {
   int retval;
 
@@ -295,14 +292,14 @@ _maybe_output_image (_plotter)
     {
     case (int)PL_BITMAP:
     default:
-      retval = _b_maybe_output_image (_plotter);
+      retval = _pl_b_maybe_output_image (_plotter);
       break;
     case (int)PL_PNM:
-      retval = _n_maybe_output_image (_plotter);
+      retval = _pl_n_maybe_output_image (_plotter);
       break;
 #ifdef INCLUDE_PNG_SUPPORT
     case (int)PL_PNG:
-      retval = _z_maybe_output_image (_plotter);
+      retval = _pl_z_maybe_output_image (_plotter);
       break;
 #endif
     }

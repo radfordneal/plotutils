@@ -7,7 +7,7 @@
 
 	    if (!c == EOF || !csdigit(c)) break;
 
-   What does !c mean? */
+*/
 
 #include "pic.h"
 #include "object.h"

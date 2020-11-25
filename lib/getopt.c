@@ -119,12 +119,7 @@ static int last_nonopt;
    the new indices of the non-options in ARGV after they are moved.  */
 
 static void
-#ifdef _HAVE_PROTOS
 exchange (char **argv)
-#else
-exchange (argv)
-     char **argv;
-#endif
 {
   int bottom = first_nonopt;
   int middle = last_nonopt;
@@ -181,12 +176,7 @@ exchange (argv)
 /* Initialize the internal data when the first call is made.  */
 
 static const char *
-#ifdef _HAVE_PROTOS
 _getopt_initialize (const char *optstring)
-#else
-_getopt_initialize (optstring)
-     const char *optstring;
-#endif
 {
   /* Start processing options with ARGV-element 1 (since ARGV-element 0
      is the program name); the sequence of previously skipped
@@ -273,18 +263,8 @@ _getopt_initialize (optstring)
    long-named options.  */
 
 int
-#ifdef _HAVE_PROTOS
 _getopt_internal (int argc, char *const *argv, const char *optstring, 
 		  const struct option *longopts, int *longind, int long_only)
-#else
-_getopt_internal (argc, argv, optstring, longopts, longind, long_only)
-     int argc;
-     char *const *argv;
-     const char *optstring;
-     const struct option *longopts;
-     int *longind;
-     int long_only;
-#endif
 {
   optarg = NULL;
 
@@ -573,14 +553,7 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 }
 
 int
-#ifdef _HAVE_PROTOS
 gnu_getopt (int argc, char *const *argv, const char *optstring)
-#else
-gnu_getopt (argc, argv, optstring)
-     int argc;
-     char *const *argv;
-     const char *optstring;
-#endif
 {
   return _getopt_internal (argc, argv, optstring,
 			   (const struct option *) 0,

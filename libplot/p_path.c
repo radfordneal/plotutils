@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -12,26 +30,21 @@
 #include "extern.h"
 
 /* 16-bit brush patterns for idraw (1 = on, 0 = off), indexed by our
-   internal numbering of line styles, i.e. by L_{SOLID,DOTTED,DOTDASHED,
+   internal numbering of line types, i.e. by L_{SOLID,DOTTED,DOTDASHED,
    SHORTDASHED,LONGDASHED,DOTDOTDASHED,DOTDOTDOTDASHED} */ 
-const long _idraw_brush_pattern[NUM_LINE_STYLES] = 
+static const long idraw_brush_pattern[PL_NUM_LINE_TYPES] = 
 { 0xffff, 0x8888, 0xfc30, 0xf0f0, 0xffc0, 0xfccc, 0xfdb6 };
 
 /* PS join styles, indexed by internal number (miter/rd./bevel/triangular) */
-const int _ps_join_style[] =
+static const int ps_join_style[PL_NUM_JOIN_TYPES] =
 { PS_LINE_JOIN_MITER, PS_LINE_JOIN_ROUND, PS_LINE_JOIN_BEVEL, PS_LINE_JOIN_ROUND };
 
 /* PS cap styles, indexed by internal number (butt/rd./project/triangular) */
-const int _ps_cap_style[] =
+static const int ps_cap_style[PL_NUM_CAP_TYPES] =
 { PS_LINE_CAP_BUTT, PS_LINE_CAP_ROUND, PS_LINE_CAP_PROJECT, PS_LINE_CAP_ROUND };
 
 void
-#ifdef _HAVE_PROTOS
-_p_paint_path (S___(Plotter *_plotter))
-#else
-_p_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_p_paint_path (S___(Plotter *_plotter))
 {
   double granularity;
 
@@ -87,7 +100,7 @@ _p_paint_path (S___(_plotter))
 	/* scale up each point coordinate by granularity factor and round
 	   it to closest integer, removing runs of points with the same
 	   scaled integer coordinates */
-	xarray = (plIntPoint *)_plot_xmalloc (_plotter->drawstate->path->num_segments * sizeof(plIntPoint));
+	xarray = (plIntPoint *)_pl_xmalloc (_plotter->drawstate->path->num_segments * sizeof(plIntPoint));
 	polyline_len = 0;
 	for (i = 0; i < _plotter->drawstate->path->num_segments; i++)
 	  {
@@ -136,7 +149,7 @@ _p_paint_path (S___(_plotter))
 	/* emit common attributes: CTM, fill rule, cap and join styles and
 	   miter limit, dash array, foreground and background colors, and
 	   idraw brush. */
-	_p_emit_common_attributes (S___(_plotter));
+	_pl_p_emit_common_attributes (S___(_plotter));
 	
 	/* emit transformation matrix (all 6 elements) */
 	strcpy (_plotter->data->page->point, "%I t\n["); 
@@ -278,7 +291,7 @@ End\n\n", numpoints);
 	/* emit common attributes: CTM, fill rule, cap and join styles and
 	   miter limit, dash array, foreground and background colors, and
 	   idraw brush. */
-	_p_emit_common_attributes (S___(_plotter));
+	_pl_p_emit_common_attributes (S___(_plotter));
 	
 	/* emit transformation matrix (all 6 elements) */
 	strcpy (_plotter->data->page->point, "%I t\n["); 
@@ -364,7 +377,7 @@ End\n\n",
 	radius = _plotter->drawstate->path->radius;
 	
 	/* final arg flags this for idraw as a circle, not an ellipse */
-	_p_fellipse_internal (R___(_plotter) pc.x, pc.y, radius, radius,
+	_pl_p_fellipse_internal (R___(_plotter) pc.x, pc.y, radius, radius,
 			      0.0, true);
       }
       break;
@@ -378,7 +391,7 @@ End\n\n",
 	double angle = _plotter->drawstate->path->angle;	
 
 	/* final arg flags this for idraw as an ellipse, not a circle */
-	_p_fellipse_internal (R___(_plotter) x, y, rx, ry, angle, false);
+	_pl_p_fellipse_internal (R___(_plotter) x, y, rx, ry, angle, false);
       }
       break;
 
@@ -387,15 +400,9 @@ End\n\n",
     }
 }
       
+/* ARGS: circlep = drawn as a circle in user frame? */
 void
-#ifdef _HAVE_PROTOS
-_p_fellipse_internal (R___(Plotter *_plotter) double x, double y, double rx, double ry, double angle, bool circlep)
-#else
-_p_fellipse_internal (R___(_plotter) x, y, rx, ry, angle, circlep)
-     S___(Plotter *_plotter;)
-     double x, y, rx, ry, angle;
-     bool circlep;		/* drawn as a circle in user frame? */
-#endif
+_pl_p_fellipse_internal (R___(Plotter *_plotter) double x, double y, double rx, double ry, double angle, bool circlep)
 {  
   if (_plotter->drawstate->pen_type || _plotter->drawstate->fill_type)
     /* have something to draw */
@@ -416,7 +423,7 @@ _p_fellipse_internal (R___(_plotter) x, y, rx, ry, angle, circlep)
       /* emit common attributes: CTM, fill rule, cap and join styles and
 	 miter limit, dash array, foreground and background colors, and
 	 idraw brush. */
-      granularity = _p_emit_common_attributes (S___(_plotter));
+      granularity = _pl_p_emit_common_attributes (S___(_plotter));
 
       /* An affine tranformation must be applied to the ellipse produced by
 	 the Elli routine in the idraw prologue, to turn it into the
@@ -502,17 +509,12 @@ _p_fellipse_internal (R___(_plotter) x, y, rx, ry, angle, circlep)
    coordinates.  The CTM emitted here will automatically compensate for the
    granularity factor.
 
-   Note: some of the functions that call this one (see _p_paint_path()
+   Note: some of the functions that call this one (see _pl_p_paint_path()
    above) need to compute the granularity themselves, since they can't need
    to quit if the granularity is zero, without calling this function . */
 
 double
-#ifdef _HAVE_PROTOS
-_p_emit_common_attributes (S___(Plotter *_plotter))
-#else
-_p_emit_common_attributes (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_p_emit_common_attributes (S___(Plotter *_plotter))
 {
   bool singular_map;
   int i;
@@ -574,21 +576,21 @@ concatmatrix pop\n");
     }
   
   /* specify cap style and join style, and miter limit if mitering */
-  if (_plotter->drawstate->join_type == JOIN_MITER)
+  if (_plotter->drawstate->join_type == PL_JOIN_MITER)
     sprintf (_plotter->data->page->point, "\
 %d setlinecap %d setlinejoin %.4g setmiterlimit\n",
-	     _ps_cap_style[_plotter->drawstate->cap_type], 
-	     _ps_join_style[_plotter->drawstate->join_type],
+	     ps_cap_style[_plotter->drawstate->cap_type], 
+	     ps_join_style[_plotter->drawstate->join_type],
 	     _plotter->drawstate->miter_limit);
   else
     sprintf (_plotter->data->page->point, "\
 %d setlinecap %d setlinejoin\n",
-	     _ps_cap_style[_plotter->drawstate->cap_type], 
-	     _ps_join_style[_plotter->drawstate->join_type]);
+	     ps_cap_style[_plotter->drawstate->cap_type], 
+	     ps_join_style[_plotter->drawstate->join_type]);
   _update_buffer (_plotter->data->page);
   
   /* specify fill rule (i.e. whether to use even-odd filling) */
-  if (_plotter->drawstate->fill_rule_type == FILL_NONZERO_WINDING)
+  if (_plotter->drawstate->fill_rule_type == PL_FILL_NONZERO_WINDING)
     sprintf (_plotter->data->page->point, "\
 /eoFillRule false def\n");
   else
@@ -615,7 +617,7 @@ concatmatrix pop\n");
 	  
 	  num_dashes = _plotter->drawstate->dash_array_len;
 	  if (num_dashes > 0)
-	    dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+	    dashbuf = (double *)_pl_xmalloc (num_dashes * sizeof(double));
 	  else
 	    dashbuf = NULL;	/* solid line */
 	  /* take the adjustment to the CTM into account */
@@ -653,10 +655,10 @@ concatmatrix pop\n");
 	  /* idraw brush type (spec'd as bit vector) */
 	  sprintf (_plotter->data->page->point, "\
 %%I b %ld\n", 
-		   _idraw_brush_pattern[_plotter->drawstate->line_type]);
+		   idraw_brush_pattern[_plotter->drawstate->line_type]);
 	  _update_buffer (_plotter->data->page);
 	  
-	  if (_plotter->drawstate->line_type == L_SOLID)
+	  if (_plotter->drawstate->line_type == PL_L_SOLID)
 	    {
 	      num_dashes = 0;
 	      dashbuf = NULL;
@@ -669,17 +671,17 @@ concatmatrix pop\n");
 	      
 	      /* compute PS dash array for this line type */
 	      dash_array = 
-		_line_styles[_plotter->drawstate->line_type].dash_array;
+		_pl_g_line_styles[_plotter->drawstate->line_type].dash_array;
 	      num_dashes =
-		_line_styles[_plotter->drawstate->line_type].dash_array_len;
-	      dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+		_pl_g_line_styles[_plotter->drawstate->line_type].dash_array_len;
+	      dashbuf = (double *)_pl_xmalloc (num_dashes * sizeof(double));
 	      
 	      /* scale the array of integers by line width (actually by
 		 floored line width) */
 	      display_size_in_points = 
 		DMIN(_plotter->data->xmax - _plotter->data->xmin,
 		     _plotter->data->ymax - _plotter->data->ymin);
-	      min_dash_unit = (MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
+	      min_dash_unit = (PL_MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
 			       * display_size_in_points);
 	      scale = DMAX(min_dash_unit,
 			   _plotter->drawstate->device_line_width);
@@ -719,22 +721,22 @@ none SetB\n");
     }
   
   /* idraw instruction: set foreground color */
-  _p_set_pen_color (S___(_plotter)); /* invoked lazily, when needed */
+  _pl_p_set_pen_color (S___(_plotter)); /* invoked lazily, when needed */
   sprintf (_plotter->data->page->point, "\
 %%I cfg %s\n\
 %g %g %g SetCFg\n",
-	   _idraw_stdcolornames[_plotter->drawstate->ps_idraw_fgcolor],
+	   _pl_p_idraw_stdcolornames[_plotter->drawstate->ps_idraw_fgcolor],
 	   _plotter->drawstate->ps_fgcolor_red, 
 	   _plotter->drawstate->ps_fgcolor_green, 
 	   _plotter->drawstate->ps_fgcolor_blue);
   _update_buffer (_plotter->data->page);
   
   /* idraw instruction: set background color */
-  _p_set_fill_color (S___(_plotter)); /* invoked lazily, when needed */
+  _pl_p_set_fill_color (S___(_plotter)); /* invoked lazily, when needed */
   sprintf (_plotter->data->page->point, "\
 %%I cbg %s\n\
 %g %g %g SetCBg\n",
-	   _idraw_stdcolornames[_plotter->drawstate->ps_idraw_bgcolor],
+	   _pl_p_idraw_stdcolornames[_plotter->drawstate->ps_idraw_bgcolor],
 	   _plotter->drawstate->ps_fillcolor_red, 
 	   _plotter->drawstate->ps_fillcolor_green, 
 	   _plotter->drawstate->ps_fillcolor_blue);
@@ -749,7 +751,7 @@ none SetP\n");
     sprintf (_plotter->data->page->point, "\
 %%I p\n\
 %f SetP\n", 
-	     _idraw_stdshadings[_plotter->drawstate->ps_idraw_shading]);
+	     _pl_p_idraw_stdshadings[_plotter->drawstate->ps_idraw_shading]);
   _update_buffer (_plotter->data->page);
   
   /* return factor we'll later use to scale up user-frame coordinates */
@@ -757,12 +759,7 @@ none SetP\n");
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_p_paint_paths (S___(Plotter *_plotter))
-#else
-_p_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_p_paint_paths (S___(Plotter *_plotter))
 {
   return false;
 }

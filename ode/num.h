@@ -1,8 +1,12 @@
+/* This file is part of the GNU plotutils package. */
+
+/* Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+ */
+
 /*
- * Constants used in adaptive-step-size numerical
- * routines.
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
+ * Constants used in adaptive-step-size numerical routines.
  */
 
 #define ECONST  .07037037037037037037   /* 19/270       */

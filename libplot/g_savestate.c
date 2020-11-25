@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the savestate method, which is a GNU extension to
    libplot.  It creates a new drawing state and pushes it onto the stack of
    drawing states.  By definition, a `drawing state' comprises the set of
@@ -36,12 +54,7 @@
 #include "extern.h"
 
 int
-#ifdef _HAVE_PROTOS
 _API_savestate(S___(Plotter *_plotter))
-#else
-_API_savestate(S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
 {
   plDrawState *oldstate = _plotter->drawstate; /* non-NULL */
   plDrawState *drawstate;
@@ -56,16 +69,16 @@ _API_savestate(S___(_plotter))
     }
 
   /* create a new state */
-  drawstate = (plDrawState *)_plot_xmalloc (sizeof(plDrawState));
+  drawstate = (plDrawState *)_pl_xmalloc (sizeof(plDrawState));
   
   /* copy from old state */
   memcpy (drawstate, oldstate, sizeof(plDrawState));
 
   /* elements of state that are strings are treated specially */
-  fill_rule = (char *)_plot_xmalloc (strlen (oldstate->fill_rule) + 1);
-  line_mode = (char *)_plot_xmalloc (strlen (oldstate->line_mode) + 1);
-  join_mode = (char *)_plot_xmalloc (strlen (oldstate->join_mode) + 1);
-  cap_mode = (char *)_plot_xmalloc (strlen (oldstate->cap_mode) + 1);
+  fill_rule = (char *)_pl_xmalloc (strlen (oldstate->fill_rule) + 1);
+  line_mode = (char *)_pl_xmalloc (strlen (oldstate->line_mode) + 1);
+  join_mode = (char *)_pl_xmalloc (strlen (oldstate->join_mode) + 1);
+  cap_mode = (char *)_pl_xmalloc (strlen (oldstate->cap_mode) + 1);
   strcpy (fill_rule, oldstate->fill_rule);
   strcpy (line_mode, oldstate->line_mode);
   strcpy (join_mode, oldstate->join_mode);
@@ -81,7 +94,7 @@ _API_savestate(S___(_plotter))
       int i;
       double *dash_array;
 
-      dash_array = (double *)_plot_xmalloc (oldstate->dash_array_len * sizeof(double));
+      dash_array = (double *)_pl_xmalloc (oldstate->dash_array_len * sizeof(double));
       for (i = 0; i < oldstate->dash_array_len; i++)
 	dash_array[i] = oldstate->dash_array[i];
       drawstate->dash_array = dash_array;
@@ -100,11 +113,11 @@ _API_savestate(S___(_plotter))
      drawing state, because not all Plotters support both types of filling
      (odd vs. nonzero winding number). */
 
-  font_name = (char *)_plot_xmalloc (strlen (oldstate->font_name) + 1);  
+  font_name = (char *)_pl_xmalloc (strlen (oldstate->font_name) + 1);  
   strcpy (font_name, oldstate->font_name);  
   drawstate->font_name = font_name;
 
-  true_font_name = (char *)_plot_xmalloc (strlen (oldstate->true_font_name) + 1);  
+  true_font_name = (char *)_pl_xmalloc (strlen (oldstate->true_font_name) + 1);  
   strcpy (true_font_name, oldstate->true_font_name);  
   drawstate->true_font_name = true_font_name;
 
@@ -125,12 +138,7 @@ _API_savestate(S___(_plotter))
 }
 
 int
-#ifdef _HAVE_PROTOS
 _API_restorestate(S___(Plotter *_plotter))
-#else
-_API_restorestate(S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
 {
   plDrawState *oldstate = _plotter->drawstate->previous;
 
@@ -174,23 +182,13 @@ _API_restorestate(S___(_plotter))
 }
 
 void
-#ifdef _HAVE_PROTOS
-_g_push_state (S___(Plotter *_plotter))
-#else
-_g_push_state (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_g_push_state (S___(Plotter *_plotter))
 {
   return;
 }
 
 void
-#ifdef _HAVE_PROTOS
-_g_pop_state (S___(Plotter *_plotter))
-#else
-_g_pop_state (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_g_pop_state (S___(Plotter *_plotter))
 {
   return;
 }

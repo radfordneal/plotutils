@@ -1,21 +1,24 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 2005, Free Software
+ * Foundation, Inc.
+ */
+
+/*
+ * Adams-Moulton with constant step size
+ */
+
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
 
 #define PASTVAL        (3)	/* previous values, val[0] is current value */
 
-/*
- * Adams-Moulton with constant step size
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
- */
-
 void
-#ifdef _HAVE_PROTOS
 am (void)
-#else
-am ()
-#endif
 {
   double t;
   double halfstep = HALF * tstep;

@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This module contains the miZeroLine() and miZeroDash() functions.  They
    a rasterize single-pixel (i.e., `zero-width') Bresenham polyline, either
    solid or dashed.
@@ -36,10 +59,10 @@
    y-coordinate of each endpoint after swapping. */
 
 /* forward references */
-static void cfbBresD ____P((miPaintedSet *paintedSet, const miGC *pGC, int *pdashNum, int *pdashIndex, const unsigned int *pDash, int numInDashList, int *pdashOffset, bool isDoubleDash, int signdx, int signdy, int axis, int x1, int y1, int e, int e1, int e2, int len));
-static void cfbBresS ____P((miPaintedSet *paintedSet, const miGC *pGC, int signdx, int signdy, int axis, int x1, int y1, int e, int e1, int e2, int len));
-static void cfbHorzS ____P((miPaintedSet *paintedSet, const miGC *pGC, int x1, int y1, int len));
-static void cfbVertS ____P((miPaintedSet *paintedSet, const miGC *pGC, int x1, int y1, int len));
+static void cfbBresD (miPaintedSet *paintedSet, const miGC *pGC, int *pdashNum, int *pdashIndex, const unsigned int *pDash, int numInDashList, int *pdashOffset, bool isDoubleDash, int signdx, int signdy, int axis, int x1, int y1, int e, int e1, int e2, int len);
+static void cfbBresS (miPaintedSet *paintedSet, const miGC *pGC, int signdx, int signdy, int axis, int x1, int y1, int e, int e1, int e2, int len);
+static void cfbHorzS (miPaintedSet *paintedSet, const miGC *pGC, int x1, int y1, int len);
+static void cfbVertS (miPaintedSet *paintedSet, const miGC *pGC, int x1, int y1, int len);
 
 
 /* Macro for painting a single point.  Used for ending line segments. */
@@ -100,17 +123,12 @@ static void cfbVertS ____P((miPaintedSet *paintedSet, const miGC *pGC, int x1, i
  * Draw a solid Bresenham polyline, i.e. a `zero-width' solid polyline,
  * in paint type #1.
  */
+
+/* ARGS: mode = Origin or Previous
+   	 npt = number of points
+	 pPts = point array */
 void
-#ifdef _HAVE_PROTOS
 miZeroLine (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npt, const miPoint *pPts)
-#else
-miZeroLine (paintedSet, pGC, mode, npt, pPts)
-     miPaintedSet *paintedSet;
-     const miGC	*pGC;
-     miCoordMode mode;		/* Origin or Previous */
-     int npt;			/* number of points */
-     const miPoint *pPts;	/* point array */
-#endif
 {
   const miPoint *ppt;	/* pointer to point within array */
   /* temporaries */
@@ -237,17 +255,12 @@ miZeroLine (paintedSet, pGC, mode, npt, pPts)
 /*
  * Draw a dashed Bresenham polyline, i.e. a `zero-width' dashed polyline.
  */
+
+/* ARGS: mode = Origin or Previous
+   	 npt = number of points
+	 pPts = point array */
 void
-#ifdef _HAVE_PROTOS
 miZeroDash (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npt, const miPoint *pPts)
-#else
-miZeroDash (paintedSet, pGC, mode, npt, pPts)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     miCoordMode mode;		/* Origin or Previous */
-     int npt;			/* number of points */
-     const miPoint *pPts;	/* point array */
-#endif
 {
   const miPoint *ppt;	/* pointer to current point */
   /* temporaries */
@@ -368,22 +381,15 @@ miZeroDash (paintedSet, pGC, mode, npt, pPts)
 /* Internal: draw solid Bresenham line segment, in paint type #1.  Called
    by miZeroLine().  Endpoint semantics are used, i.e. we paint only len
    pixels (i.e. |dx| or |dy| pixels), not including the endpoint. */
+
+/* ARGS: signdx,signdy = signs of directions
+   	 axis = major axis (Y_AXIS or X_AXIS)
+	 x1,y1 = initial point
+	 e = error accumulator
+	 e1,e2 = Bresenham increments
+	 len = length of line in pixels */
 static void
-#ifdef _HAVE_PROTOS
 cfbBresS (miPaintedSet *paintedSet, const miGC *pGC, int signdx, int signdy, int axis, int x1, int y1, int e, int e1, int e2, int len)
-#else
-cfbBresS (paintedSet, pGC, signdx, signdy, axis, x1, y1, e, e1, e2, len)
-     miPaintedSet   *paintedSet;
-     const miGC	    *pGC;
-     int    	    signdx;
-     int	    signdy;		/* signs of directions */
-     int	    axis;		/* major axis (Y_AXIS or X_AXIS) */
-     int	    x1, y1;		/* initial point */
-     int    	    e;			/* error accumulator */
-     int    	    e1;			/* Bresenham increments */
-     int	    e2;
-     int	    len;		/* length of line in pixels */
-#endif
 {
   miPoint *pptInit, *pptLast;
   unsigned int *pwidthInit, *pwidthLast;
@@ -471,27 +477,20 @@ cfbBresS (paintedSet, pGC, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 
 /* Internal: draw dashed Bresenham line segment. Called by miZeroDash().
    Endpoint semantics are used. */
+
+/* ARGS: pdashNum = absolute dash number
+   	 pdashIndx = index into dash array
+	 pDash = dash array
+	 numInDashList = length of dash array
+	 pdashOffset = offset into current dash
+	 signdx,signdy = signs of directions
+   	 axis = major axis (Y_AXIS or X_AXIS)
+	 x1,y1 = initial point
+	 e = error accumulator
+	 e1,e2 = Bresenham increments
+	 len = length of line in pixels */
 static void
-#ifdef _HAVE_PROTOS
 cfbBresD (miPaintedSet *paintedSet, const miGC *pGC, int *pdashNum, int *pdashIndex, const unsigned int *pDash, int numInDashList, int *pdashOffset, bool isDoubleDash, int signdx, int signdy, int axis, int x1, int y1, int e, int e1, int e2, int len)
-#else
-cfbBresD (paintedSet, pGC, pdashNum, pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash, signdx, signdy, axis, x1, y1, e, e1, e2, len)
-     miPaintedSet   *paintedSet;
-     const miGC	    *pGC;
-     int	    *pdashNum;		/* absolute dash number */
-     int	    *pdashIndex;	/* index into dash array */
-     const unsigned int   *pDash;	/* dash array */
-     int	    numInDashList;	/* length of dash array */
-     int	    *pdashOffset;	/* offset into current dash */
-     bool	    isDoubleDash;
-     int            signdx, signdy;	/* signs of directions */
-     int	    axis;		/* major axis (Y_AXIS or X_AXIS) */
-     int	    x1, y1;		/* initial point */
-     int	    e;			/* error accumulator */
-     int    	    e1;			/* Bresenham increments */
-     int	    e2;
-     int	    len;		/* length of line in pixels */
-#endif
 {
   miPoint *pptInit_fg, *pptInit_bg = (miPoint *)NULL;
   miPoint *pptLast_fg, *pptLast_bg = (miPoint *)NULL;
@@ -701,16 +700,10 @@ cfbBresD (paintedSet, pGC, pdashNum, pdashIndex, pDash, numInDashList, pdashOffs
    Called by miZeroLine().
    Called with len >= 1, and len=x2-x1.  Endpoint semantics
    are used, so we paint only len pixels, i.e. x1..x2-1. */
+
+/* ARGS: x1,y1 = initial point, len = length of line */
 static void
-#ifdef _HAVE_PROTOS
 cfbHorzS (miPaintedSet *paintedSet, const miGC *pGC, int x1, int y1, int len)
-#else
-cfbHorzS (paintedSet, pGC, x1, y1, len)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int	x1, y1;		/* initial point */ 
-     int	len;		/* length of line */
-#endif
 {
   miPoint *ppt;
   unsigned int *pwidth;
@@ -729,16 +722,10 @@ cfbHorzS (paintedSet, pGC, x1, y1, len)
    Called by miZeroLine().
    Called with len >= 1, and len=y2-y1.  Endpoint semantics
    are used, so we paint only len pixels, i.e. y1..y2-1. */
+
+/* ARGS: x1,y1 = initial point, len = length of line */
 static void
-#ifdef _HAVE_PROTOS
 cfbVertS (miPaintedSet *paintedSet, const miGC *pGC, int x1, int y1, int len)
-#else
-cfbVertS (paintedSet, pGC, x1, y1, len)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int	x1, y1;		/* initial point */
-     int	len;		/* length of line */
-#endif
 {
   miPoint *ppt, *pptInit;
   unsigned int *pwidth, *pwidthInit;

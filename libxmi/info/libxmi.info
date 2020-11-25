@@ -1,15 +1,14 @@
-This is Info file libxmi.info, produced by Makeinfo version 1.68 from
-the input file libxmi.texi.
+This is libxmi.info, produced by makeinfo version 4.7 from libxmi.texi.
 
 INFO-DIR-SECTION Libraries
 START-INFO-DIR-ENTRY
 * Libxmi: (libxmi).           The GNU libxmi 2-D rasterization library.
 END-INFO-DIR-ENTRY
 
-   This file documents version 2.0 of the GNU libxmi 2-D rasterization
+   This file documents version 1.3 of the GNU libxmi 2-D rasterization
 library.
 
-   Copyright (C) 1998-1999 Free Software Foundation, Inc.
+   Copyright (C) 1998-2005 Free Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -28,10 +27,10 @@ translation approved by the Foundation.
 
 File: libxmi.info,  Node: Top,  Next: libxmi Overview,  Prev: (dir),  Up: (dir)
 
-The `libxmi' 2-D Rasterization Library
-**************************************
+1 The `libxmi' 2-D Rasterization Library
+****************************************
 
-   This is the documentation for version 2.0 of the GNU `libxmi' 2-D
+This is the documentation for version 1.3 of the GNU `libxmi' 2-D
 rasterization library, which is used by C and C++ programmers.
 It converts 2-D geometrical objects, such as polylines, polygons, and
 arcs, to raster patterns.  There is support for setting drawing
@@ -51,10 +50,10 @@ separately drawn objects.
 
 File: libxmi.info,  Node: libxmi Overview,  Next: libxmi Example,  Prev: Top,  Up: Top
 
-An overview of `libxmi'
-=======================
+1.1 An overview of `libxmi'
+===========================
 
-   With the aid of the GNU `libxmi' library, a C or C++ programmer may
+With the aid of the GNU `libxmi' library, a C or C++ programmer may
 rasterize two-dimensional geometric objects; that is, draw them on a
 two-dimensional array of pixels.  The supported objects are points,
 polylines, filled polylines (i.e., polygons), rectangles, filled
@@ -99,7 +98,7 @@ in the `miCanvas'.  But the merging process may be controlled in much
 finer detail.  A stipple bitmap and a texture pixmap, and binary and
 ternary pixel-merging functions, may be specified.
 
-   The *interpretation* of pixel values is left up to the user.
+   The _interpretation_ of pixel values is left up to the user.
 A `miPixel' could be an index into a color table.  It could also be an
 encoding of a color according to the RGB scheme, the RGBA scheme, or
 some other scheme.  Even though a `miPixel' is normally an `unsigned
@@ -120,19 +119,18 @@ on customization, see the comments in the `libxmi' header file `xmi.h'.
 
 File: libxmi.info,  Node: libxmi Example,  Next: libxmi API,  Prev: libxmi Overview,  Up: Top
 
-A sample `libxmi' program
-=========================
+1.2 A sample `libxmi' program
+=============================
 
-   The following C program uses `libxmi' to create a `miPaintedSet',
-draws a dashed polyline and a dashed elliptic arc on the
-`miPaintedSet', and transfers the painted pixels to a `miCanvas' that
-includes a pixmap of specified size.  Finally, it writes the pixmap to
-standard output.
+The following C program uses `libxmi' to create a `miPaintedSet', draws
+a dashed polyline and a dashed elliptic arc on the `miPaintedSet', and
+transfers the painted pixels to a `miCanvas' that includes a pixmap of
+specified size.  Finally, it writes the pixmap to standard output.
 
      #include <stdio.h>
      #include <stdlib.h>
      #include <xmi.h>            /* public libxmi header file */
-     
+
      int main ()
      {
        miPoint points[4];        /* 3 line segments in the polyline */
@@ -144,20 +142,20 @@ standard output.
        miCanvas *canvas;         /* drawing canvas (including pixmap) */
        miPoint offset;           /* for miPaintedSet -> miCanvas transfer */
        int i, j;
-     
+
        /* define polyline: vertices are (25,5) (5,5), (5,25), (35,22) */
        points[0].x = 25;  points[0].y = 5;
        points[1].x = 5;   points[1].y = 5;
        points[2].x = 5;   points[2].y = 25;
        points[3].x = 35;  points[3].y = 22;
-     
+
        /* define elliptic arc */
        arc.x = 20; arc.y = 15;   /* upper left corner of bounding box */
        arc.width = 30;           /* x range of box: 20..50 */
        arc.height = 16;          /* y range of box: 15..31 */
        arc.angle1 = 0 * 64;      /* starting angle (1/64'ths of a degree) */
        arc.angle2 = 270 * 64;    /* angle range (1/64'ths of a degree) */
-     
+
        /* create and modify graphics context */
        pixels[0] = 1;            /* pixel value for `off' dashes, if drawn */
        pixels[1] = 2;            /* default pixel for drawing */
@@ -169,19 +167,19 @@ standard output.
        miSetGCAttrib (pGC, MI_GC_LINE_STYLE, MI_LINE_ON_OFF_DASH);
        miSetGCDashes (pGC, 2, dashes, 0);
        miSetGCAttrib (pGC, MI_GC_LINE_WIDTH, 0); /* Bresenham algorithm */
-     
+
        /* create empty painted set */
        paintedSet = miNewPaintedSet ();
-     
+
        /* paint dashed polyline and dashed arc onto painted set */
        miDrawLines (paintedSet, pGC, MI_COORD_MODE_ORIGIN, 4, points);
        miDrawArcs (paintedSet, pGC, 1, &arc);
-     
+
        /* create 60x35 canvas (initPixel=0); merge painted set onto it */
        canvas = miNewCanvas (60, 35, 0);
        offset.x = 0; offset.y = 0;
        miCopyPaintedSetToCanvas (paintedSet, canvas, offset);
-     
+
        /* write canvas's pixmap (a 60x35 array of miPixels) to stdout */
        for (j = 0; j < canvas->drawable->height; j++)
          {
@@ -190,13 +188,13 @@ standard output.
              printf ("%d", canvas->drawable->pixmap[j][i]);
            printf ("\n");
          }
-     
+
        /* clean up */
        miDeleteCanvas (canvas);
        miDeleteGC (pGC);
        miClearPaintedSet (paintedSet); /* not necessary */
        miDeletePaintedSet (paintedSet);
-     
+
        return 0;
      }
 
@@ -270,8 +268,8 @@ colors, on a background of zeroes.
 
 File: libxmi.info,  Node: libxmi API,  Next: Acknowledgements,  Prev: libxmi Example,  Up: Top
 
-The `libxmi' API
-================
+1.3 The `libxmi' API
+====================
 
 * Menu:
 
@@ -282,15 +280,14 @@ The `libxmi' API
 
 File: libxmi.info,  Node: Opaque Data Structures,  Next: First Stage,  Prev: libxmi API,  Up: libxmi API
 
-Opaque data structures
-----------------------
+1.3.1 Opaque data structures
+----------------------------
 
-   The drawing functions used in the first stage of the `libxmi'
-graphics pipeline paint pixels on a `miPaintedSet'.  A `miPaintedSet'
-should be thought of as an unordered set of points with integer
-coordinates, partitioned according to pixel value.  Any pixel value is
-a `miPixel', which in most `libxmi' installations is typedef'd as an
-`unsigned int'.
+The drawing functions used in the first stage of the `libxmi' graphics
+pipeline paint pixels on a `miPaintedSet'.  A `miPaintedSet' should be
+thought of as an unordered set of points with integer coordinates,
+partitioned according to pixel value.  Any pixel value is a `miPixel',
+which in most `libxmi' installations is typedef'd as an `unsigned int'.
 
    A `miPaintedSet' is an opaque object that must be accessed through a
 pointer.  The functions
@@ -424,10 +421,10 @@ less than 11 degrees.
 
 File: libxmi.info,  Node: First Stage,  Next: Second Stage,  Prev: Opaque Data Structures,  Up: libxmi API
 
-The first stage of the graphics pipeline
-----------------------------------------
+1.3.2 The first stage of the graphics pipeline
+----------------------------------------------
 
-   In the first stage of the `libxmi' graphics pipeline, one or more of
+In the first stage of the `libxmi' graphics pipeline, one or more of
 the core drawing functions is invoked.  Each drawing function takes
 pointers to a `miPaintedSet' and a `miGC' (a graphics context) as its
 first and second arguments.  It will paint pixels in the
@@ -552,10 +549,10 @@ are supplied in the header file `xmi.h'.
 
 File: libxmi.info,  Node: Second Stage,  Prev: First Stage,  Up: libxmi API
 
-The second stage of the graphics pipeline
------------------------------------------
+1.3.3 The second stage of the graphics pipeline
+-----------------------------------------------
 
-   In the second state of the graphics pipeline, the pixels in a
+In the second state of the graphics pipeline, the pixels in a
 `miPaintedSet' are transferred (`merged') to a `miCanvas', by invoking
 `miCopyPaintedSetToCanvas'.  It is only when the painted pixels are
 transferred to a `miCanvas' that clipping to a pixmap takes place.
@@ -568,13 +565,13 @@ it may be constructed and modified by hand, if necessary.  The
      typedef struct
      {
        miCanvasPixmap *drawable;   /* the pixmap */
-     
+
        miBitmap *stipple;          /* a mask, if non-NULL */
        miPoint stippleOrigin;      /* placement of upper left corner */
-     
+
        miPixmap *texture;          /* a texture, if non-NULL */
        miPoint textureOrigin;      /* placement of upper left corner */
-     
+
        miPixelMerge2 pixelMerge2;  /* binary merging function, if non-NULL */
        miPixelMerge3 pixelMerge3;  /* ternary counterpart, if non-NULL */
      } miCanvas;
@@ -682,12 +679,12 @@ File: libxmi.info,  Node: Acknowledgements,  Prev: libxmi API,  Up: Top
 Acknowledgements
 ****************
 
-   `libxmi' is based on the machine-independent 2-D graphics routines
-in the X11 sample server code.  Those routines fill polygons and draw
-wide polygonal lines and arcs.  They were written by Brian Kelleher,
-Joel McCormack, Todd Newman, Keith Packard, Robert Scheifler and Ken
-Whaley, who worked for Digital Equipment Corp., MIT, and/or the
-X Consortium, and are copyright (C) 1985-89 by the X Consortium.
+`libxmi' is based on the machine-independent 2-D graphics routines in
+the X11 sample server code.  Those routines fill polygons and draw wide
+polygonal lines and arcs.  They were written by Brian Kelleher, Joel
+McCormack, Todd Newman, Keith Packard, Robert Scheifler and Ken Whaley,
+who worked for Digital Equipment Corp., MIT, and/or the X Consortium,
+and are copyright (C) 1985-89 by the X Consortium.
 
    In 1998-99, Robert Maier <rsm@math.arizona.edu> extracted the
 graphics routines from the sample server code in the X11R6 distribution,
@@ -698,20 +695,20 @@ some new rendering features, such as support for multicolored dashing.
 
    The modified code was first released by being incorporated in version
 2.2 of the GNU `plotutils' package, as a rendering module for export of
-PNM and pseudo-GIF files.  See the
-`plotutils' home page (http://www.gnu.org/software/plotutils/plotutils.html).  After further modifications, the code was released as the
-standalone `libxmi' library.
+PNM and pseudo-GIF files.  See the `plotutils' home page
+(http://www.gnu.org/software/plotutils/plotutils.html).  After further
+modifications, the code was released as the standalone `libxmi' library.
 
 
 
 Tag Table:
-Node: Top1039
-Node: libxmi Overview1978
-Node: libxmi Example5843
-Node: libxmi API13176
-Node: Opaque Data Structures13519
-Node: First Stage19757
-Node: Second Stage25352
-Node: Acknowledgements30892
+Node: Top1013
+Node: libxmi Overview1953
+Node: libxmi Example5823
+Node: libxmi API13111
+Node: Opaque Data Structures13462
+Node: First Stage19709
+Node: Second Stage25313
+Node: Acknowledgements30847
 
 End Tag Table

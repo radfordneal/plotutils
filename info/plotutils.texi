@@ -25,56 +25,44 @@
 @end iftex
 
 @ifinfo
-This file documents version 2.4.1 of the GNU plotting
-utilities package, including GNU libplot 4.1
+This file documents version 2.5 of the GNU plotting utilities package,
+including GNU libplot 4.2.
 
-Copyright @copyright{} 1989--2000 Free Software Foundation, Inc.
+Copyright @copyright{} 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999,
+2000, 2005 Free Software Foundation, Inc.
 
-Permission is granted to make and distribute verbatim copies of
-this manual provided the copyright notice and this permission notice
-are preserved on all copies.
-
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided that the entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
-
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions,
-except that this permission notice may be stated in a translation approved
-by the Foundation.
+Permission is granted to copy, distribute and/or modify this manual
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts and no Back-Cover Texts.  A
+copy of the license is included in the appendix entitled ``The GNU Free
+Documentation License''.
 @end ifinfo
 
 @titlepage
 @title The GNU Plotting Utilities
 @subtitle Programs and functions for vector graphics and data plotting
-@subtitle Version 2.4.1
-@author Robert S. Maier and Nicholas B. Tufillaro
+@subtitle Version 2.5
+@author Robert S. Maier
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1989--2000 Free Software Foundation, Inc.
+Copyright @copyright{} 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999,
+2000, 2005 Free Software Foundation, Inc.
 
-Permission is granted to make and distribute verbatim copies of
-this manual provided the copyright notice and this permission notice
-are preserved on all copies.
-
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided that the entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
-
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions,
-except that this permission notice may be stated in a translation approved
-by the Foundation.
+Permission is granted to copy, distribute and/or modify this manual
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts and no Back-Cover Texts.  A
+copy of the license is included in the appendix entitled ``The GNU
+Free Documentation License''.
 @end titlepage
 @page
 
 @node Top, Plotutils Intro, (dir), (dir)
 @ifnottex
-This is the documentation for version 2.4.1 of the GNU plotting
-utilities package, including GNU libplot 4.1.  The package consists of
-programs and functions for data plotting and vector graphics.
+This is the documentation for version 2.5 of the GNU plotting
+utilities package, including GNU libplot 4.2.  The package consists of
+programs and functions for vector graphics and data plotting.
 @end ifnottex
 
 @menu
@@ -113,23 +101,24 @@ directed to a popped-up window on an @w{X Window} System display.
 @item PNG
 This is ``portable network graphics'' format, which is increasingly
 popular on the Web.  Unlike GIF format, it is unencumbered by patents.
-Files in PNG format may be viewed or edited with many applications, such
-as the free image display @w{application @code{xv}} and the free
-@code{ImageMagick} package.
+Files in PNG format may be viewed or edited with many applications,
+such as @code{display}, which is part of the free @code{ImageMagick}
+package.
 @item PNM
 This is ``portable anymap'' format.  There are three types of portable
 anymap: PBM (portable bitmap, for monochrome images), PGM (portable
 graymap), and PPM (portable pixmap, for colored images).  The output
 file will use whichever is most appropriate.  Portable anymaps may be
-translated to other formats with the @code{netpbm} package.
+translated to other formats with the @code{netpbm} package, or viewed
+with @code{display}.
 @item GIF
 This is pseudo-GIF format rather than true GIF format.  Unlike GIF
 format it does not use LZW compression, so it does not transgress the
-Unisys LZW patent.  However, files in pseudo-GIF format may be viewed or
-edited with any application that accepts GIF format, @w{such as}
-@code{xv} and the @code{ImageMagick} package.
+Unisys LZW patent.  However, files in pseudo-GIF format may be viewed
+or edited with any application that accepts GIF format, @w{such as}
+@code{display}.
 @item SVG
-This is Scalable Vector Graphics format.  SVG is a new, XML-based format
+This is Scalable Vector Graphics format.  SVG is an XML-based format
 for vector graphics on the Web.  The @uref{http://www.w3.org, @w{W3
 Consortium}} has more information on SVG, which is being developed by
 its @uref{http://www.w3.org/Graphics, Graphics Activity}.
@@ -357,13 +346,14 @@ graph -T ps < datafile > plot.ps
 
 @noindent
 Either of these would produce an encapsulated Postscript file
-@file{plot.ps}, which could be included in another document, displayed
-on a screen, sent to a printer, or edited with the free @code{idraw}
-drawing editor.  The @samp{--page-size} option, or equivalently the
-@code{PAGESIZE} environment variable, specifies the size of the page on
-which the plot will be positioned.  The default is "letter", i.e.,
-8.5@dmn{in} by 11@dmn{in}, but "a4" or other ISO or ANSI page sizes
-could equally well be specified.  See @ref{Page and Viewport Sizes}.
+@file{plot.ps}, which could be sent to a printer, displayed on a
+screen by the Postscript viewer @code{gv}, or edited with the free
+drawing editor @code{idraw}.  The @samp{--page-size} option, or
+equivalently the @code{PAGESIZE} environment variable, specifies the
+size of the page on which the plot will be positioned.  The default is
+"letter", i.e., 8.5@dmn{in} by 11@dmn{in}, but "a4" or other ISO or
+ANSI page sizes could equally well be specified.  See @ref{Page and
+Viewport Sizes}.
 
 Similarly, you would do
 
@@ -418,13 +408,13 @@ mouse @w{in it}.
 You may also use @code{graph -T png} to produce a PNG file, @code{graph
 -T pnm} to produce a PNM file (a ``portable anymap''), and @code{graph
 -T gif} to produce a pseudo-GIF file.  If the free image display
-application @code{xv} is available on your system, you could use any
+application @code{display} is available on your system, you could use any
 of the three commands
 
 @example
-graph -T png < datafile | xv -
-graph -T pnm < datafile | xv -
-graph -T gif < datafile | xv -
+graph -T png < datafile | display
+graph -T pnm < datafile | display
+graph -T gif < datafile | display
 @end example
 
 @noindent
@@ -635,11 +625,13 @@ echo 1 1 2 3 3 1 | graph -T ps -l x -X "A Logarithmic Axis" > plot.ps
 @end example
 
 @noindent
-will label the log axis in the preceding example.  By default, the label
-for the @math{y} axis (@w{if any}) will be rotated 90 degrees, unless
-you use the @samp{--toggle-rotate-y-label} option.  You may specify a
-`top label', or title for the plot, by using the @samp{-L} option.
-Doing, @w{for example},
+will label the log axis in the preceding example.  By default, the
+label for the @math{y} axis (@w{if any}) will be rotated 90 degrees,
+unless you use the @samp{-Q} option.  (Some @w{X Window} System
+displays, both old and new, do not properly support rotated labels,
+and require the @samp{-Q} option.)  You may specify a `top label', or
+title for the plot, by using the @samp{-L} option.  Doing, @w{for
+example},
 
 @example
 echo 1 1 2 3 3 1 | graph -T ps -l x -L "A Simple Example" > plot.ps
@@ -732,14 +724,16 @@ plot, such sizes or dimensions will scale in tandem.  That is presumably
 the right thing @w{to do}.
 
 To rotate your plot by 90 degrees counterclockwise, you would add
-@samp{--rotation 90} to the @code{graph} command line.  You may also
-specify @samp{--rotation 180}, to produce an upside-down plot, or
-@samp{--rotation 270}.  The @samp{--rotation} option may be combined
-with the @samp{-h}, @samp{-w}, @samp{-r}, and @samp{-u} options.  If
-they appear together, the @samp{--rotation} option takes effect first.
-That is because @samp{--rotation} specifies the rotation angle of the
-graphics display, while the other options specify how the plotting box
-should be positioned within the graphics display.  The two sorts of
+@samp{--rotation 90} to the @code{graph} command line.  You would
+specify @samp{--rotation 180} to produce an upside-down plot.  Any
+other angle may be specified, but angles other than 0, 90, 180, and
+270 degrees are of interest primarily to postmodernists.  The
+@samp{--rotation} option may be combined with the @samp{-h},
+@samp{-w}, @samp{-r}, and @samp{-u} options.  If they appear together,
+the @samp{--rotation} option takes effect first.  That is because
+@samp{--rotation} specifies the rotation angle of the graphics
+display, while the other options specify how the plotting box should
+be positioned within the graphics display.  The two sorts of
 positioning are logically distinct.
 
 The graphics display (sometimes called the `viewport') is an
@@ -1090,9 +1084,9 @@ Input files may be in any of these six formats.
 @node graph Invocation, , Data Formats, graph
 @section @code{graph} command-line options
 
-The @code{graph} program reads one or more datasets from files named on
-the command line or from standard input, and prepares a plot.  The
-output format or display type is specified with the @samp{-T} option.
+The @code{graph} program reads one or more datasets from files named
+on the command line or from standard input, and prepares a plot.  The
+output format is specified with the @samp{-T} option.
 
 By default, @code{graph} reads ASCII data from the files specified on
 the command line.  The data are pairs of numbers, interpreted as the
@@ -1127,8 +1121,8 @@ Options for multiplotting (drawing several plots at once).
 
 @item
 Options relevant only to raw @code{graph}, i.e., relevant only if no
-display type or output format is specified with the @samp{-T} option.
-(@xref{Raw graph Options}.)
+output format is specified with the @samp{-T} option.  (@xref{Raw
+graph Options}.)
 
 @item
 Options requesting information (e.g., @samp{--help}).
@@ -1163,19 +1157,21 @@ separates the plots in a multiplot.
 
 @table @samp
 @item -T @var{type}
-@itemx --display-type @var{type}
-(String, default "meta".)  Select a display type or output format of
-type @var{type}, which may be one of the strings "X", "png", "pnm",
-"gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek",
-and "meta".  These refer respectively to the @w{X Window System}, PNG
-format, portable anymap (PBM/PGM/PPM) format, pseudo-GIF format, the new
-XML-based Scalable Vector Graphics format, the format used by Adobe
-Illustrator, @code{idraw}-editable Postscript, the WebCGM format for
-Web-based vector graphics, the format used by the @code{xfig} drawing
-editor, the Hewlett--Packard @w{PCL 5} printer language, the
-Hewlett--Packard Graphics Language (@w{by default}, HP-GL/2), the ReGIS
-(remote graphics instruction set) format developed @w{by DEC}, Tektronix
-format, and device-independent GNU graphics metafile format.
+@itemx --output-format @var{type}
+(String, default "meta".)  Select an output format of type @var{type},
+which may be one of the strings "X", "png", "pnm", "gif", "svg", "ai",
+"ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and "meta".  These
+refer respectively to the @w{X Window System}, PNG format, portable
+anymap (PBM/PGM/PPM) format, pseudo-GIF format, the XML-based Scalable
+Vector Graphics format, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the WebCGM format for Web-based
+vector graphics, the format used by the @code{xfig} drawing editor,
+the Hewlett--Packard @w{PCL 5} printer language, the Hewlett--Packard
+Graphics Language (@w{by default}, HP-GL/2), the ReGIS (remote
+graphics instruction set) format developed @w{by DEC}, Tektronix
+format, and device-independent GNU graphics metafile format.  The
+option @samp{--display-type} is an obsolete alternative to
+@samp{--output-format}.
 
 @item -E @var{x|y}
 @itemx --toggle-axis-end @var{x|y}
@@ -1284,6 +1280,15 @@ Toggle the presence of ticks and tick labels on the specified axis.
 This applies to the grid styles that normally include ticks and tick
 labels, i.e., grid styles 1, 2, 3, @w{and 4}.
 
+@item -Q
+@itemx --toggle-rotate-y-label
+Position the label on the @math{y} axis (which is set with the
+@samp{-Y} option) horizontally instead of vertically, or vice versa.
+By default, the label is rotated, so that it is parallel to the
+@w{@math{y} axis}.  But some output devices (e.g., old @w{X Window}
+System displays, and buggy new ones) cannot handle rotated fonts.  So
+if you specify @samp{-T X}, you may also @w{need @samp{-Q}}.
+
 @item -r @var{right}
 @itemx --right-shift @var{right}
 (Float, default 0.2.)  Move the plot to the right by a fractional amount
@@ -1379,15 +1384,15 @@ downward, and the upper limit upward.
 
 @item -Y @var{y_label}
 @itemx --y-label @var{y_label}
-(String, default empty.)  Set the label for the @math{y} axis to be the
-text string @var{y_label}.  The string may include escape sequences
-(@pxref{Text String Format}).  The label will be rotated by 90 degrees
-so that it is parallel to the axis, unless the
-@samp{--toggle-rotate-y-label} option is used.  Some old @w{X Window}
-System displays do not support rotated labels, and require the
-@samp{--toggle-rotate-y-label} option.  The @samp{-F} and @samp{-f}
-options can be used to specify the name of the font and the size of the
-font.
+(String, default empty.)  Set the label for the @math{y} axis to be
+the text string @var{y_label}.  The string may include escape
+sequences (@pxref{Text String Format}).  The label will be rotated by
+90 degrees so that it is parallel to the axis, unless the @samp{-Q}
+option is used.  (Some @w{X Window} System displays, both old and new,
+do not properly support rotated labels, so that if you specify
+@samp{-T X}, you may also need @samp{-Q}.)  The @samp{-F} and
+@samp{-f} options can be used to specify the name of the font and the
+size of the font.
 
 @item --bg-color @var{name}
 (String, default "white".)  Set the color used for the plot background
@@ -1423,10 +1428,9 @@ corner.
 
 If you choose a rectangular (non-square) window size, the fonts in the
 plot will be scaled anisotropically, i.e., by different factors in the
-horizontal and vertical direction.  For this, @code{graph @w{-T X}}
-requires an X11R6 display.  Any font that cannot be anisotropically
-scaled will be replaced by a default scalable font, such as the Hershey
-vector font "HersheySerif".
+horizontal and vertical direction.  Any font that cannot easily be
+anisotropically scaled will be replaced by a default scalable font,
+such as the Hershey vector font "HersheySerif".
 
 For backward compatibility, @code{graph -T X} allows the user to set the
 window size and position by setting the @w{X resource}
@@ -1505,19 +1509,23 @@ example, @var{pagesize} could be specified as "letter,xsize=4in", or
 "a4,xsize=10cm,ysize=15cm".  The dimensions are allowed to be negative
 (@w{a negative} dimension results in a reflection).
 
-The position of the graphics display, relative to its default position,
-may optionally be adjusted by specifying an offset vector.  For example,
-@var{pagesize} could be specified as "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
-position the graphics display precisely, by specifying the location of
-its lower left corner relative to the lower left corner of the page.
+The position of the graphics display, relative to its default
+position, may optionally be adjusted by specifying an offset vector.
 For example, @var{pagesize} could be specified as
-"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
-The preceding options may be intermingled.  @code{graph -T svg} and
-@code{graph -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
-"yorigin" options, since SVG format and WebCGM format have no notion of
-the Web page on which the graphics display will ultimately be
-positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
+"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".
+@w{It is} also possible to position the graphics display precisely, by
+specifying the location of its lower left corner relative to the lower
+left corner of the page.  For example, @var{pagesize} could be
+specified as "letter,xorigin=2in,yorigin=3in", or
+"a4,xorigin=0.5cm,yorigin=0.5cm".  The preceding options may be
+intermingled.  
+
+@code{graph -T svg} and @code{graph -T cgm} ignore the "xoffset",
+"yoffset", "xorigin", and "yorigin" options, since SVG format and
+WebCGM format have no notion of the Web page on which the graphics
+display will ultimately be positioned.  However, they do respect the
+"xsize" and "ysize" options.  For more on page sizes, see @ref{Page
+and Viewport Sizes}.
 
 @item --pen-colors @var{colors}
 (String, default "1=red:2=green:3=blue:4=magenta:5=cyan".)  Set the
@@ -1527,13 +1535,14 @@ unrecognized} name sets the corresponding color to the default.  For
 information on what names are recognized, see @ref{Color Names}.
 
 @item --rotation @var{angle}
-(Integer, default 0.)  Set the rotation angle of the graphics display to
-be @var{angle} degrees.  Recognized values are @w{0, 90}, 180, @w{and
-270}.  The rotation is counterclockwise.  The environment variable
-@code{ROTATION} can equally well be used to specify the rotation angle.
+(Integer, default 0.)  Set the rotation angle of the graphics display
+to be @var{angle} degrees.  The rotation is counterclockwise.  The
+environment variable @code{ROTATION} can equally well be used to
+specify the rotation angle.
 
 This option is used for switching between portrait and landscape
-orientations.  Postmodernists may also find it useful.
+orientations, which have rotation angles @w{0 and} 90 degrees
+respectively.  Postmodernists may also find it useful.
 
 @item --title-font-name @var{font_name}
 (String, default "Helvetica" except for @code{graph -T pcl}, for which
@@ -1555,13 +1564,6 @@ map of any available font.  @xref{plotfont}.
 (`title'), as specified by the @samp{-L} option, to be @var{size}.  The
 size is specified as a fraction of the minimum dimension (width or
 height) of the plotting box.
-
-@item --toggle-rotate-y-label
-Position the label on the @math{y} axis (which is set with the @samp{-Y}
-option) horizontally instead of vertically, or vice versa.  By default,
-the label is rotated, so that it is parallel to the @w{@math{y} axis}.
-But some output devices (e.g., old @w{X Window} System displays) cannot
-handle rotated fonts.
 @end table
 
 @node Dataset Options, Multiplot Options, Plot Options, graph Invocation
@@ -1859,12 +1861,11 @@ other than @w{"2" and "yes"}, respectively).
 @subsection Raw @code{graph} options
 
 The following option is relevant only to raw @code{graph}, i.e., is
-relevant only if no display type or output format is specified with the
-@samp{-T} option.  In this case @code{graph} outputs a graphics
-metafile, which may be translated to other formats by invoking
-@code{plot}.  This option should appear on the command line before any
-file names, since it affects the output of the plot (or multiplot) as a
-whole.
+relevant only if no output format is specified with the @samp{-T}
+option.  In this case @code{graph} outputs a graphics metafile, which
+may be translated to other formats by invoking @code{plot}.  This
+option should appear on the command line before any file names, since
+it affects the output of the plot (or multiplot) as a whole.
 
 @table @samp
 @item -O
@@ -1884,27 +1885,27 @@ The following options request information.
 Print a list of command-line options, and then exit.
 
 @item --help-fonts
-Print a table of available fonts, and then exit.  The table will depend
-on which display type or output format is specified with the @samp{-T}
-option.  @code{graph @w{-T X}}, @code{graph -T svg}, @code{graph -T ai},
+Print a table of available fonts, and then exit.  The table will
+depend on which output format is specified with the @samp{-T} option.
+@code{graph @w{-T X}}, @code{graph -T svg}, @code{graph -T ai},
 @code{graph -T ps}, @code{graph -T cgm}, and @code{graph -T fig} each
 support the 35 standard Postscript fonts.  @code{graph -T svg},
 @code{graph -T ai}, @code{graph -T pcl}, and @code{graph -T hpgl}
 support the 45 standard @w{PCL 5} fonts, and @code{graph -T pcl} and
-@code{graph -T hpgl} support a number of Hewlett--Packard vector fonts.
-All of the preceding, together with @code{graph -T png}, @code{graph -T
-pnm}, @code{graph -T gif}, @code{graph -T regis}, and @code{graph -T
-tek}, support a set of 22 Hershey vector fonts.  Raw @code{graph} @w{in
-principle} supports any of these fonts, since its output must be
-translated to other formats with @code{plot}.  The @code{plotfont}
-utility will produce a character map of any available font.
-@xref{plotfont}.
+@code{graph -T hpgl} support a number of Hewlett--Packard vector
+fonts.  All of the preceding, together with @code{graph -T png},
+@code{graph -T pnm}, @code{graph -T gif}, @code{graph -T regis}, and
+@code{graph -T tek}, support a set of 22 Hershey vector fonts.  Raw
+@code{graph} @w{in principle} supports any of these fonts, since its
+output must be translated to other formats with @code{plot}.  The
+@code{plotfont} utility will produce a character map of any available
+font.  @xref{plotfont}.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
-facilitate piping to other programs.  @w{If no} display type or output
-format is specified with the @samp{-T} option, the full set of supported
-fonts is listed.
+facilitate piping to other programs.  @w{If no} output format is
+specified with the @samp{-T} option, the full set of supported fonts
+is listed.
 
 @item --version
 Print the version number of @code{graph} and the plotting utilities
@@ -2201,11 +2202,11 @@ of the environment on @code{plot}, see @ref{plot Environment}.
 @section @code{plot} command-line options
 
 The plot filter @code{plot} translates GNU graphics metafiles to other
-formats.  The @samp{-T} option is used to specify the output format or
-display type.  Files in metafile format are produced by GNU
-@code{graph}, @code{pic2plot}, @code{tek2plot}, @code{plotfont}, and
-other applications that use the GNU @code{libplot} graphics library.
-For technical details on the metafile format, see @ref{Metafiles}.
+formats.  The @samp{-T} option is used to specify the output format.
+Files in metafile format are produced by GNU @code{graph},
+@code{pic2plot}, @code{tek2plot}, @code{plotfont}, and other
+applications that use the GNU @code{libplot} graphics library.  For
+technical details on the metafile format, see @ref{Metafiles}.
 
 Input file names may be specified anywhere on the command line.  That
 is, the relative order of file names and command-line options does not
@@ -2223,7 +2224,7 @@ sorts of option:
 Options setting the values of drawing parameters.
 @item
 Options relevant only to raw @code{plot}, i.e., relevant only if no
-display type or output format is specified with the @samp{-T} option.
+output format is specified with the @samp{-T} option.
 @item
 Options specifying the type of metafile format the input is in (for
 backward compatibility only).
@@ -2239,19 +2240,21 @@ The following options set the values of drawing parameters.
 
 @table @samp
 @item -T @var{type}
-@itemx --display-type @var{type}
-(String, default "meta".)  Select a display type or output format of
-type @var{type}, which may be one of the strings "X", "png", "pnm",
-"gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek",
-and "meta".  These refer respectively to the @w{X Window System}, PNG
-format, portable anymap (PBM/PGM/PPM) format, pseudo-GIF format, the new
-XML-based Scalable Vector Graphics format, the format used by Adobe
-Illustrator, @code{idraw}-editable Postscript, the WebCGM format for
-Web-based vector graphics, the format used by the @code{xfig} drawing
-editor, the Hewlett--Packard @w{PCL 5} printer language, the
-Hewlett--Packard Graphics Language (@w{by default}, HP-GL/2), the ReGIS
-(remote graphics instruction set) format developed @w{by DEC}, Tektronix
-format, and device-independent GNU graphics metafile format.
+@itemx --output-format @var{type}
+(String, default "meta".)  Select an output format of type @var{type},
+which may be one of the strings "X", "png", "pnm", "gif", "svg", "ai",
+"ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and "meta".  These
+refer respectively to the @w{X Window System}, PNG format, portable
+anymap (PBM/PGM/PPM) format, pseudo-GIF format, the XML-based Scalable
+Vector Graphics format, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the WebCGM format for Web-based
+vector graphics, the format used by the @code{xfig} drawing editor,
+the Hewlett--Packard @w{PCL 5} printer language, the Hewlett--Packard
+Graphics Language (@w{by default}, HP-GL/2), the ReGIS (remote
+graphics instruction set) format developed @w{by DEC}, Tektronix
+format, and device-independent GNU graphics metafile format.  The
+option @samp{--display-type} is an obsolete alternative to
+@samp{--output-format}.
 
 @item -p @var{n}
 @itemx --page-number @var{n}
@@ -2305,10 +2308,9 @@ corner.
 
 If you choose a rectangular (non-square) window size, the fonts in the
 plot will be scaled anisotropically, i.e., by different factors in the
-horizontal and vertical direction.  For this, @code{plot @w{-T X}}
-requires an X11R6 display.  Any font that cannot be anisotropically
-scaled will be replaced by a default scalable font, such as the Hershey
-vector font "HersheySerif".
+horizontal and vertical direction.  Any font that cannot be
+anisotropically scaled will be replaced by a default scalable font,
+such as the Hershey vector font "HersheySerif".
 
 For backward compatibility, @code{plot -T X} allows the user to set the
 window size and position by setting the @w{X resource}
@@ -2362,19 +2364,23 @@ example, @var{pagesize} could be specified as "letter,xsize=4in", or
 "a4,xsize=10cm,ysize=15cm".  The dimensions are allowed to be negative
 (@w{a negative} dimension results in a reflection).
 
-The position of the graphics display, relative to its default position,
-may optionally be adjusted by specifying an offset vector.  For example,
-@var{pagesize} could be specified as "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
-position the graphics display precisely, by specifying the location of
-its lower left corner relative to the lower left corner of the page.
+The position of the graphics display, relative to its default
+position, may optionally be adjusted by specifying an offset vector.
 For example, @var{pagesize} could be specified as
-"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
-The preceding options may be intermingled.  @code{plot -T svg} and
-@code{plot -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
-"yorigin" options, since SVG format and WebCGM format have no notion of
-the Web page on which the graphics display will ultimately be
-positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
+"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".
+@w{It is} also possible to position the graphics display precisely, by
+specifying the location of its lower left corner relative to the lower
+left corner of the page.  For example, @var{pagesize} could be
+specified as "letter,xorigin=2in,yorigin=3in", or
+"a4,xorigin=0.5cm,yorigin=0.5cm".  The preceding options may be
+intermingled.  
+
+@code{plot -T svg} and @code{plot -T cgm} ignore the "xoffset",
+"yoffset", "xorigin", and "yorigin" options, since SVG format and
+WebCGM format have no notion of the Web page on which the graphics
+display will ultimately be positioned.  However, they do respect the
+"xsize" and "ysize" options.  For more on page sizes, see @ref{Page
+and Viewport Sizes}.
 @end table
 
 The following options set the initial values of additional drawing
@@ -2504,7 +2510,7 @@ Print a list of command-line options, and then exit.
 
 @item --help-fonts
 Print a table of available fonts, and then exit.  The table will depend
-on which display type or output format is specified with the @samp{-T}
+on which output format is specified with the @samp{-T}
 option.  @code{plot @w{-T X}}, @code{plot -T svg}, @code{plot -T ai},
 @code{plot -T ps}, @code{plot -T cgm}, and @code{plot -T fig} each
 support the 35 standard Postscript fonts.  @code{plot -T svg},
@@ -2521,9 +2527,9 @@ utility will produce a character map of any available font.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
-facilitate piping to other programs.  @w{If no} display type or output
-format is specified with the @samp{-T} option, the full set of supported
-fonts is listed.
+facilitate piping to other programs.  @w{If no} output format is
+specified with the @samp{-T} option, the full set of supported fonts
+is listed.
 
 @item --version
 Print the version number of @code{plot} and the plotting utilities
@@ -2794,10 +2800,10 @@ drawing of large, repetitive diagrams quite easy.
 @node pic2plot Invocation, pic2plot Environment, pic2plot Introduction, pic2plot
 @section @code{pic2plot} command-line options
 
-The @code{pic2plot} program translates files in the pic language, which
-is used for creating box-and-arrow diagrams of the kind frequently found
-in technical papers and textbooks, to other graphics formats.  The
-output format or display type is specified with the @samp{-T} option.
+The @code{pic2plot} program translates files in the pic language,
+which is used for creating box-and-arrow diagrams of the kind
+frequently found in technical papers and textbooks, to other graphics
+formats.  The output format is specified with the @samp{-T} option.
 The possible output formats are the same formats that are supported by
 the GNU @code{graph} and @code{plot} programs.
 
@@ -2817,7 +2823,7 @@ sorts of option:
 General options.
 @item
 Options relevant only to raw @code{pic2plot}, i.e., relevant only if no
-display type or output format is specified with the @samp{-T} option.
+output format is specified with the @samp{-T} option.
 @item
 Options requesting information (e.g., @samp{--help}).
 @end enumerate
@@ -2830,19 +2836,21 @@ The following are general options.
 
 @table @samp
 @item -T @var{type}
-@itemx --display-type @var{type}
-(String, default "meta".)  Select a display type or output format of
-type @var{type}, which may be one of the strings "X", "png", "pnm",
-"gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek",
-and "meta".  These refer respectively to the @w{X Window System}, PNG
-format, portable anymap (PBM/PGM/PPM) format, pseudo-GIF format, the new
-XML-based Scalable Vector Graphics format, the format used by Adobe
-Illustrator, @code{idraw}-editable Postscript, the WebCGM format for
-Web-based vector graphics, the format used by the @code{xfig} drawing
-editor, the Hewlett--Packard @w{PCL 5} printer language, the
-Hewlett--Packard Graphics Language (@w{by default}, HP-GL/2), the ReGIS
-(remote graphics instruction set) format developed @w{by DEC}, Tektronix
-format, and device-independent GNU graphics metafile format.
+@itemx --output-format @var{type}
+(String, default "meta".)  Select an output format of type @var{type},
+which may be one of the strings "X", "png", "pnm", "gif", "svg", "ai",
+"ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and "meta".  These
+refer respectively to the @w{X Window System}, PNG format, portable
+anymap (PBM/PGM/PPM) format, pseudo-GIF format, the XML-based Scalable
+Vector Graphics format, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the WebCGM format for Web-based
+vector graphics, the format used by the @code{xfig} drawing editor,
+the Hewlett--Packard @w{PCL 5} printer language, the Hewlett--Packard
+Graphics Language (@w{by default}, HP-GL/2), the ReGIS (remote
+graphics instruction set) format developed @w{by DEC}, Tektronix
+format, and device-independent GNU graphics metafile format.  The
+option @samp{--display-type} is an obsolete alternative to
+@samp{--output-format}.
 
 @item -d
 @itemx --precision-dashing
@@ -2937,10 +2945,9 @@ corner.
 
 If you choose a rectangular (non-square) window size, the fonts in the
 plot will be scaled anisotropically, i.e., by different factors in the
-horizontal and vertical direction.  For this, @code{pic2plot @w{-T X}}
-requires an X11R6 display.  Any font that cannot be anisotropically
-scaled will be replaced by a default scalable font, such as the Hershey
-vector font "HersheySerif".
+horizontal and vertical direction.  Any font that cannot be
+anisotropically scaled will be replaced by a default scalable font,
+such as the Hershey vector font "HersheySerif".
 
 For backward compatibility, @code{pic2plot -T X} allows the user to set
 the window size and position by setting the @w{X resource}
@@ -2994,19 +3001,23 @@ specified explicitly.  For example, @var{pagesize} could be specified as
 allowed to be negative (@w{a negative} dimension results in a
 reflection).
 
-The position of the graphics display, relative to its default position,
-may optionally be adjusted by specifying an offset vector.  For example,
-@var{pagesize} could be specified as "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
-position the graphics display precisely, by specifying the location of
-its lower left corner relative to the lower left corner of the page.
+The position of the graphics display, relative to its default
+position, may optionally be adjusted by specifying an offset vector.
 For example, @var{pagesize} could be specified as
-"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
-The preceding options may be intermingled.  @code{pic2plot -T svg} and
-@code{pic2plot -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
-"yorigin" options, since SVG format and WebCGM format have no notion of
-the Web page on which the graphics display will ultimately be
-positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
+"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".
+@w{It is} also possible to position the graphics display precisely, by
+specifying the location of its lower left corner relative to the lower
+left corner of the page.  For example, @var{pagesize} could be
+specified as "letter,xorigin=2in,yorigin=3in", or
+"a4,xorigin=0.5cm,yorigin=0.5cm".  The preceding options may be
+intermingled.  
+
+@code{pic2plot -T svg} and @code{pic2plot -T cgm} ignore the
+"xoffset", "yoffset", "xorigin", and "yorigin" options, since SVG
+format and WebCGM format have no notion of the Web page on which the
+graphics display will ultimately be positioned.  However, they do
+respect the "xsize" and "ysize" options.  For more on page sizes, see
+@ref{Page and Viewport Sizes}.
 
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
@@ -3014,17 +3025,18 @@ unrecognized name sets the pen color to the default.  For information on
 what color names are recognized, see @ref{Color Names}.
 
 @item --rotation @var{angle}
-(Integer, default 0.)  Set the rotation angle of the graphics display to
-be @var{angle} degrees.  Recognized values are @w{0, 90}, 180, @w{and
-270}.  The rotation is counterclockwise.  The environment variable
-@code{ROTATION} can equally well be used to specify the rotation angle.
+(Float, default 0.0.)  Set the rotation angle of the graphics display
+to be @var{angle} degrees.  The rotation is counterclockwise.  The
+environment variable @code{ROTATION} can equally well be used to
+specify the rotation angle.
 
 This option is used for switching between portrait and landscape
-orientations.  Postmodernists may also find it useful.
+orientations, which have rotation angles @w{0 and} 90 degrees
+respectively.  Postmodernists may also find it useful.
 @end table
 
 The following option is relevant only to raw @code{pic2plot}, i.e.,
-relevant only if no display type or output format is specified with the
+relevant only if no output format is specified with the
 @samp{-T} option.  In this case @code{pic2plot} outputs a graphics
 metafile, which may be translated to other formats by invoking
 @code{plot}.
@@ -3045,7 +3057,7 @@ Print a list of command-line options, and then exit.
 
 @item --help-fonts
 Print a table of available fonts, and then exit.  The table will depend
-on which display type or output format is specified with the @samp{-T}
+on which output format is specified with the @samp{-T}
 option.  @code{pic2plot @w{-T X}}, @code{pic2plot -T svg},
 @code{pic2plot -T ai}, @code{pic2plot -T ps}, @code{pic2plot -T cgm},
 and @code{pic2plot -T fig} each support the 35 standard Postscript
@@ -3062,7 +3074,7 @@ produce a character map of any available font.  @xref{plotfont}.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
-facilitate piping to other programs.  @w{If no} display type or output
+facilitate piping to other programs.  @w{If no} output
 format is specified with the @samp{-T} option, the full set of supported
 fonts is listed.
 
@@ -3224,22 +3236,22 @@ key sequence `@w{ALT minus}' can be employed manually within
 @node tek2plot Introduction, tek2plot Invocation, tek2plot, tek2plot
 @section What @code{tek2plot} is used for
 
-GNU @code{tek2plot} is a command-line Tektronix translator.  It displays
-Tektronix graphics files, or translates them to other formats.  The
-@samp{-T} option is used to specify the output format or display type.
-Supported output formats include "X", "png", "pnm", "gif", "svg", "ai",
-"ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and "meta" (the
-default).  These are the same formats that are supported by the GNU
-@code{graph}, @code{plot}, and @code{pic2plot} programs.
+GNU @code{tek2plot} is a command-line Tektronix translator.  It
+displays Tektronix graphics files, or translates them to other
+formats.  The @samp{-T} option is used to specify the output format.
+Supported output formats include "X", "png", "pnm", "gif", "svg",
+"ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and "meta"
+(the default).  These are the same formats that are supported by the
+GNU @code{graph}, @code{plot}, and @code{pic2plot} programs.
 @code{tek2plot} will take input from a file specified on the command
 line or from standard input, just as the plot filter @code{plot} does.
 
 Tektronix graphics files are produced by many older applications, such
-as @uref{http://tdc-www.harvard.edu/software/skymap, SKYMAP}, a powerful
-astronomical display program.  @w{A directory} containing sample
-Tektronix graphics files, which you may experiment with, is distributed
-along with the GNU plotting utilities.  @w{On most} systems it is
-installed as @file{/usr/share/tek2plot} or
+as @uref{http://tdc-www.cfa.harvard.edu/software/skymap, SKYMAP}, a
+powerful astronomical display program.  @w{A directory} containing
+sample Tektronix graphics files, which you may experiment with, is
+distributed along with the GNU plotting utilities.  @w{On most}
+systems it is installed as @file{/usr/share/tek2plot} or
 @file{/usr/local/share/tek2plot}.
 
 Tektronix graphics format is defined as a noninteractive version of the
@@ -3256,9 +3268,9 @@ supported by the Tektronix emulator contained in the MS-DOS version of
 @section @code{tek2plot} command-line options
 
 The @code{tek2plot} program translates the Tektronix graphics files
-produced by many older applications to other formats.  The output format
-or display type is specified with the @samp{-T} option.  The possible
-output formats are the same formats that are supported by the GNU
+produced by many older applications to other formats.  The output
+format is specified with the @samp{-T} option.  The possible output
+formats are the same formats that are supported by the GNU
 @code{graph}, @code{plot}, and @code{pic2plot} programs.
 
 Input file names may be specified anywhere on the command line.  That
@@ -3277,7 +3289,7 @@ sorts of option:
 General options.
 @item
 Options relevant only to raw @code{tek2plot}, i.e., relevant only if no
-display type or output format is specified with the @samp{-T} option.
+output format is specified with the @samp{-T} option.
 @item
 Options requesting information (e.g., @samp{--help}).
 @end enumerate
@@ -3290,18 +3302,18 @@ The following are general options.
 
 @table @samp
 @item -T @var{type}
-@itemx --display-type @var{type}
-(String, default "meta".)  Select a display type or output format of
-type @var{type}, which may be one of the strings "X", "png", "pnm",
-"gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek",
-and "meta".  These refer respectively to the @w{X Window System}, PNG
-format, portable anymap (PBM/PGM/PPM) format, pseudo-GIF format, the new
-XML-based Scalable Vector Graphics format, the format used by Adobe
-Illustrator, @code{idraw}-editable Postscript, the WebCGM format for
-Web-based vector graphics, the format used by the @code{xfig} drawing
-editor, the Hewlett--Packard @w{PCL 5} printer language, the
-Hewlett--Packard Graphics Language (@w{by default}, HP-GL/2), the ReGIS
-(remote graphics instruction set) format developed @w{by DEC}, Tektronix
+@itemx --output-format @var{type}
+(String, default "meta".)  Select an output format of type @var{type},
+which may be one of the strings "X", "png", "pnm", "gif", "svg", "ai",
+"ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and "meta".  These
+refer respectively to the @w{X Window System}, PNG format, portable
+anymap (PBM/PGM/PPM) format, pseudo-GIF format, the XML-based Scalable
+Vector Graphics format, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the WebCGM format for Web-based
+vector graphics, the format used by the @code{xfig} drawing editor,
+the Hewlett--Packard @w{PCL 5} printer language, the Hewlett--Packard
+Graphics Language (@w{by default}, HP-GL/2), the ReGIS (remote
+graphics instruction set) format developed @w{by DEC}, Tektronix
 format, and device-independent GNU graphics metafile format.
 
 @item -p @var{n}
@@ -3396,10 +3408,9 @@ corner.
 
 If you choose a rectangular (non-square) window size, the fonts in the
 plot will be scaled anisotropically, i.e., by different factors in the
-horizontal and vertical direction.  For this, @code{tek2plot @w{-T X}}
-requires an X11R6 display.  Any font that cannot be anisotropically
-scaled will be replaced by a default scalable font, such as the Hershey
-vector font "HersheySerif".
+horizontal and vertical direction.  Any font that cannot be
+anisotropically scaled will be replaced by a default scalable font,
+such as the Hershey vector font "HersheySerif".
 
 For backward compatibility, @code{tek2plot -T X} allows the user to set
 the window size and position by setting the @w{X resource}
@@ -3453,19 +3464,23 @@ specified explicitly.  For example, @var{pagesize} could be specified as
 allowed to be negative (@w{a negative} dimension results in a
 reflection).
 
-The position of the graphics display, relative to its default position,
-may optionally be adjusted by specifying an offset vector.  For example,
-@var{pagesize} could be specified as "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
-position the graphics display precisely, by specifying the location of
-its lower left corner relative to the lower left corner of the page.
+The position of the graphics display, relative to its default
+position, may optionally be adjusted by specifying an offset vector.
 For example, @var{pagesize} could be specified as
-"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
-The preceding options may be intermingled.  @code{tek2plot -T svg} and
-@code{tek2plot -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
-"yorigin" options, since SVG format and WebCGM format have no notion of
-the Web page on which the graphics display will ultimately be
-positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
+"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".
+@w{It is} also possible to position the graphics display precisely, by
+specifying the location of its lower left corner relative to the lower
+left corner of the page.  For example, @var{pagesize} could be
+specified as "letter,xorigin=2in,yorigin=3in", or
+"a4,xorigin=0.5cm,yorigin=0.5cm".  The preceding options may be
+intermingled.  
+
+@code{tek2plot -T svg} and @code{tek2plot -T cgm} ignore the
+"xoffset", "yoffset", "xorigin", and "yorigin" options, since SVG
+format and WebCGM format have no notion of the Web page on which the
+graphics display will ultimately be positioned.  However, they do
+respect the "xsize" and "ysize" options.  For more on page sizes, see
+@ref{Page and Viewport Sizes}.
 
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
@@ -3481,26 +3496,27 @@ making it difficult to edit the output file with @code{xfig} or
 @code{idraw}.
 
 @item --rotation @var{angle}
-(Integer, default 0.)  Set the rotation angle of the graphics display to
-be @var{angle} degrees.  Recognized values are @w{0, 90}, 180, @w{and
-270}.  The rotation is counterclockwise.  The environment variable
-@code{ROTATION} can equally well be used to specify the rotation angle.
+(Float, default 0.0.)  Set the rotation angle of the graphics display
+to be @var{angle} degrees.  The rotation is counterclockwise.  The
+environment variable @code{ROTATION} can equally well be used to
+specify the rotation angle.
 
 This option is used for switching between portrait and landscape
-orientations.  Postmodernists may also find it useful.
+orientations, which have rotation angles @w{0 and} 90 degrees
+respectively.  Postmodernists may also find it useful.
 
 @item --use-tek-fonts
-Use the bitmap fonts that were used on the original Tektronix 4010/4014
-terminal.  This option is relevant only to @code{tek2plot @w{-T X}}.
-The four relevant bitmap fonts are distributed with most versions of the
+Use the fonts that were used on the original Tektronix 4010/4014
+terminal, to produce the most faithful rendition possible.  This
+option is relevant only to @code{tek2plot @w{-T X}}.  Bitmap versions
+of the the four original Tektronix fonts are distributed with the
 plotting utilities package, under the names
-@code{tekfont0}@dots{}@code{tekfont3}.  They may easily be installed on
-any modern @w{X Window} System display.  For this option to work
-properly, you must also select a window size of 1024x1024 pixels, either
-by using the @samp{--bitmap-size 1024x1024} option or by setting the
-value of the @code{Xplot.geometry} resource.  The reason for this
-restriction is that bitmap fonts, unlike the scalable fonts that the
-plotting utilities normally use, cannot be rescaled.
+@code{tekfont0}@dots{}@code{tekfont3}.  They may easily be installed
+on any modern @w{X Window} System display.  For this option to work
+properly, you must also select a window size of 1024x1024 pixels,
+either by using the @samp{--bitmap-size 1024x1024} option or by
+setting the value of the @code{Xplot.geometry} resource.  The reason
+for this restriction is to prevent rescaling of the bitmap fonts.
 
 This option is useful only if you have a file in Tektronix format that
 draws text using native Tektronix fonts.  Tektronix files produced by
@@ -3509,7 +3525,7 @@ native Tektronix fonts to draw text.
 @end table
 
 The following option is relevant only to raw @code{tek2plot}, i.e.,
-relevant only if no display type or output format is specified with the
+relevant only if no output format is specified with the
 @samp{-T} option.  In this case @code{tek2plot} outputs a graphics
 metafile, which may be translated to other formats by invoking
 @code{plot}.
@@ -3530,7 +3546,7 @@ Print a list of command-line options, and then exit.
 
 @item --help-fonts
 Print a table of available fonts, and then exit.  The table will depend
-on which display type or output format is specified with the @samp{-T}
+on which output format is specified with the @samp{-T}
 option.  @code{tek2plot @w{-T X}}, @code{tek2plot -T svg},
 @code{tek2plot -T ai}, @code{tek2plot -T ps}, @code{tek2plot -T cgm},
 and @code{tek2plot -T fig} each support the 35 standard Postscript
@@ -3547,7 +3563,7 @@ produce a character map of any available font.  @xref{plotfont}.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
-facilitate piping to other programs.  @w{If no} display type or output
+facilitate piping to other programs.  @w{If no} output
 format is specified with the @samp{-T} option, the full set of supported
 fonts is listed.
 
@@ -3753,18 +3769,19 @@ plotfont -T X --help-fonts
 @end example
 
 @noindent
-produces a list of the built-in fonts that are available, including both
-Hershey and Postscript fonts.  But fonts available on your @w{X display}
-may also be used.  The @code{xlsfonts} command will list the fonts
-available on your @w{X display}, most font names being given in what is
-called XLFD format.  The plotting utilities refer to @w{X fonts} by
-shortened versions of their XLFD names.  For example, the font
-"Utopia-Regular" is available on many @w{X displays}.  Its XLFD name is
-"-adobe-utopia-medium-r-normal--0-0-0-0-p-0-iso8859-1", and its
-shortened XLFD name is "utopia-medium-r-normal".  If you do
+produces a list of the built-in fonts that are available, including
+both Hershey and Postscript fonts.  But fonts available on your @w{X
+display} may also be used.  The @code{xlsfonts} command will list the
+core @w{X fonts} available on your @w{X display}, most font names
+being given in what is called XLFD format.  The plotting utilities
+refer to core @w{X fonts} by shortened versions of their XLFD names.
+For example, the font "CharterBT-Roman" is available on many @w{X
+displays}.  Its XLFD name is
+"-bitstream-charter-medium-r-normal--0-0-0-0-p-0-iso8859-1", and its
+shortened XLFD name is "charter-medium-r-normal".  If you do
 
 @example
-plotfont -T X utopia-medium-r-normal
+plotfont -T X charter-medium-r-normal
 @end example
 
 @noindent
@@ -3772,13 +3789,12 @@ then a character map for this font will be displayed in a popped-up
 @w{X window}.
 
 When using the @samp{-T X} option, you may also use the
-@samp{--bitmap-size} option to choose the size of the popped-up window.
-Modern @w{X displays} can scale fonts by different amounts in the
-horizontal and vertical directions.  If, for example, you add
+@samp{--bitmap-size} option to choose the size of the popped-up
+window.  Modern @w{X displays} can scale fonts by different amounts in
+the horizontal and vertical directions.  If, for example, you add
 @samp{--bitmap-size 600x300} to the above command line, both the
-character map and the Utopia-Regular font @w{within it} will be scaled
-in this way.  @w{If your} @w{X display} does not support font scaling,
-@w{a scalable} font will be substituted.
+character map and the CharterBT-Roman font @w{within it} will be
+scaled in this way.
 
 @node plotfont Invocation, plotfont Environment, plotfont Examples, plotfont
 @section @code{plotfont} command-line options
@@ -3788,7 +3804,7 @@ for any of the fonts available to the GNU plotting utilities
 @code{graph}, @code{plot}, @code{pic2plot}, and @code{tek2plot}, and the
 GNU @code{libplot} graphics library on which they are based.  The map
 may be produced in any supported output format, or displayed on an @w{X
-Window} System display.  The output format or display type is specified
+Window} System display.  The output format is specified
 with the @samp{-T} option.
 
 The names of the fonts for which a character map will be produced may
@@ -3805,7 +3821,7 @@ The possible options are listed below.  There are three sorts of option:
 General options.
 @item
 Options relevant only to raw @code{plotfont}, i.e., relevant only if no
-display type or output format is specified with the @samp{-T} option.
+output format is specified with the @samp{-T} option.
 @item
 Options requesting information (e.g., @samp{--help}).
 @end enumerate
@@ -3865,19 +3881,21 @@ each with the high bit set.  The first byte contains the row number
 @w{(plus 32)}, and the second byte contains the character number.
 
 @item -T @var{type}
-@itemx --display-type @var{type}
-(String, default "meta".)  Select a display type or output format of
-type @var{type}, which may be one of the strings "X", "png", "pnm",
-"gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek",
-and "meta".  These refer respectively to the @w{X Window System}, PNG
-format, portable anymap (PBM/PGM/PPM) format, pseudo-GIF format, the new
-XML-based Scalable Vector Graphics format, the format used by Adobe
-Illustrator, @code{idraw}-editable Postscript, the WebCGM format for
-Web-based vector graphics, the format used by the @code{xfig} drawing
-editor, the Hewlett--Packard @w{PCL 5} printer language, the
-Hewlett--Packard Graphics Language (@w{by default}, HP-GL/2), the ReGIS
-(remote graphics instruction set) format developed @w{by DEC}, Tektronix
-format, and device-independent GNU graphics metafile format.
+@itemx --output-format @var{type}
+(String, default "meta".)  Select an output format of type @var{type},
+which may be one of the strings "X", "png", "pnm", "gif", "svg", "ai",
+"ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and "meta".  These
+refer respectively to the @w{X Window System}, PNG format, portable
+anymap (PBM/PGM/PPM) format, pseudo-GIF format, the XML-based Scalable
+Vector Graphics format, the format used by Adobe Illustrator,
+@code{idraw}-editable Postscript, the WebCGM format for Web-based
+vector graphics, the format used by the @code{xfig} drawing editor,
+the Hewlett--Packard @w{PCL 5} printer language, the Hewlett--Packard
+Graphics Language (@w{by default}, HP-GL/2), the ReGIS (remote
+graphics instruction set) format developed @w{by DEC}, Tektronix
+format, and device-independent GNU graphics metafile format.  The
+option @samp{--display-type} is an obsolete alternative to
+@samp{--output-format}.
 
 Files in PNG, PNM, pseudo-GIF, SVG, AI, or Fig format may contain only a
 single page of graphics.  So if the @samp{-T png} option, the @samp{-T
@@ -3919,10 +3937,7 @@ corner.
 
 If you choose a rectangular (non-square) window size, the fonts in the
 plot will be scaled anisotropically, i.e., by different factors in the
-horizontal and vertical direction.  For this, @code{plotfont @w{-T X}}
-requires an X11R6 display.  Any font that cannot be anisotropically
-scaled will be replaced by a default scalable font, such as the Hershey
-vector font "HersheySerif".
+horizontal and vertical direction.
 
 For backward compatibility, @code{plotfont -T X} allows the user to set
 the window size and position by setting the @w{X resource}
@@ -3970,19 +3985,23 @@ specified as "letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The
 dimensions are allowed to be negative (@w{a negative} dimension results
 in a reflection).
 
-The position of the graphics display, relative to its default position,
-may optionally be adjusted by specifying an offset vector.  For example,
-@var{pagesize} could be specified as "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
-position the graphics display precisely, by specifying the location of
-its lower left corner relative to the lower left corner of the page.
+The position of the graphics display, relative to its default
+position, may optionally be adjusted by specifying an offset vector.
 For example, @var{pagesize} could be specified as
-"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
-The preceding options may be intermingled.  @code{plotfont -T svg} and
-@code{plotfont -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
-"yorigin" options, since SVG format and WebCGM format have no notion of
-the Web page on which the graphics display will ultimately be
-positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
+"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".
+@w{It is} also possible to position the graphics display precisely, by
+specifying the location of its lower left corner relative to the lower
+left corner of the page.  For example, @var{pagesize} could be
+specified as "letter,xorigin=2in,yorigin=3in", or
+"a4,xorigin=0.5cm,yorigin=0.5cm".  The preceding options may be
+intermingled.  
+
+@code{plotfont -T svg} and @code{plotfont -T cgm} ignore the
+"xoffset", "yoffset", "xorigin", and "yorigin" options, since SVG
+format and WebCGM format have no notion of the Web page on which the
+graphics display will ultimately be positioned.  However, they do
+respect the "xsize" and "ysize" options.  For more on page sizes, see
+@ref{Page and Viewport Sizes}.
 
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
@@ -3990,13 +4009,14 @@ unrecognized name sets the pen color to the default.  For information on
 what color names are recognized, see @ref{Color Names}.
 
 @item --rotation @var{angle}
-(Integer, default 0.)  Set the rotation angle of the graphics display to
-be @var{angle} degrees.  Recognized values are @w{0, 90}, 180, @w{and
-270}.  The rotation is counterclockwise.  The environment variable
-@code{ROTATION} can equally well be used to specify the rotation angle.
+(Float, default 0.0.)  Set the rotation angle of the graphics display
+to be @var{angle} degrees.  The rotation is counterclockwise.  The
+environment variable @code{ROTATION} can equally well be used to
+specify the rotation angle.
 
 This option is used for switching between portrait and landscape
-orientations.  Postmodernists may also find it useful.
+orientations, which have rotation angles @w{0 and} 90 degrees
+respectively.  Postmodernists may also find it useful.
 
 @item --title-font-name @var{font_name}
 (String) Set the font used for the title of each character map to be
@@ -4007,7 +4027,7 @@ and "Wingdings".
 @end table
 
 The following option is relevant only to raw @code{plotfont}, i.e.,
-relevant only if no display type or output format is specified with the
+relevant only if no output format is specified with the
 @samp{-T} option.  In this case @code{plotfont} outputs a graphics
 metafile, which may be translated to other formats by invoking
 @code{plot}.
@@ -4028,7 +4048,7 @@ Print a list of command-line options, and then exit.
 
 @item --help-fonts
 Print a table of available fonts, and then exit.  The table will depend
-on which display type or output format is specified with the @samp{-T}
+on which output format is specified with the @samp{-T}
 option.  @code{plotfont @w{-T X}}, @code{plotfont -T svg},
 @code{plotfont -T ai}, @code{plotfont -T ps}, @code{plotfont -T cgm},
 and @code{plotfont -T fig} each support the 35 standard Postscript
@@ -4044,7 +4064,7 @@ other formats with @code{plot}.
 
 @item --list-fonts
 Like @samp{--help-fonts}, but lists the fonts in a single column to
-facilitate piping to other programs.  @w{If no} display type or output
+facilitate piping to other programs.  @w{If no} output
 format is specified with the @samp{-T} option, the full set of supported
 fonts is listed.
 
@@ -6381,7 +6401,7 @@ Physics Instruction}, Addison--Wesley, 1990.
 @chapter @code{libplot}, a 2-D Vector Graphics Library
 
 @ifnottex
-This is the documentation for version 4.1 of GNU libplot, which is
+This is the documentation for version 4.2 of GNU libplot, which is
 a free function library for drawing two-dimensional vector graphics.
 @end ifnottex
 
@@ -6396,13 +6416,13 @@ a free function library for drawing two-dimensional vector graphics.
 @node libplot Overview, C Programming, libplot, libplot
 @section Programming with @code{libplot}: An overview
 
-GNU @code{libplot} 4.1 is a free function library for drawing
-two-dimensional vector graphics.  It can produce smooth, double-buffered
-animations for the @w{X Window} System, and can export graphics files in
-many file formats.  @w{It is} `device-independent' in the sense that its
-API (application programming interface) is to a large extent independent
-of the display type or output file format.  The API is thread-safe, so
-it may be used in multithreaded programs.
+GNU @code{libplot} 4.2 is a free function library for drawing
+two-dimensional vector graphics.  It can produce smooth,
+double-buffered animations for the @w{X Window} System, and can export
+graphics files in many file formats.  @w{It is} `device-independent'
+in the sense that its API (application programming interface) is to a
+large extent independent of the output format.  The API is
+thread-safe, so it may be used in multithreaded programs.
 
 There are bindings for C, C++, and other languages.  The @w{C binding},
 which is the most frequently used, is also called @code{libplot}, and
@@ -6462,8 +6482,8 @@ passed to the Plotter as parameters.  (@xref{Plotter Parameters}.)
 PNG Plotters.  A PNG Plotter produces a single page of output in PNG
 (Portable Network Graphics) format, and directs it to a file or other
 specified output stream.  The file may be viewed or edited with many
-applications, such as the free image display application @code{xv} and
-the free @code{ImageMagick} package.
+applications, such as @code{display}, which is part of the free
+@code{ImageMagick} package.
 
 @item
 PNM Plotters.  A PNM Plotter produces a single page of output in
@@ -6472,27 +6492,25 @@ output stream.  There are three types of portable anymap: PBM (portable
 bitmap, for monochrome graphics), PGM (portable graymap), and PPM
 (portable pixmap, for colored graphics).  The output file will be in
 whichever of these three formats is most appropriate.  The file may be
-viewed or edited with many applications, such as @code{xv} and the
-@code{ImageMagick} package.
+viewed or edited with many applications, such as @code{display}.
 
 @item
 GIF Plotters.  A GIF Plotter produces a single page of output in a
 pseudo-GIF format.  Unlike true GIF format, the pseudo-GIF format does
-not use LZW compression: @w{it uses} run-length encoding instead.  @w{So
-it} does not transgress the Unisys patent that restricts the use of LZW
-compression.  However, the output file may be viewed or edited with any
-application that understands GIF format, such as @code{xv} and the
-@code{ImageMagick} package.  The creation of animated pseudo-GIFs is
-supported.
+not use LZW compression: @w{it uses} run-length encoding instead.
+@w{So it} does not transgress the Unisys patent that restricts the use
+of LZW compression.  However, the output file may be viewed or edited
+with any application that understands GIF format, such as
+@code{display}.  The creation of animated pseudo-GIFs is supported.
 
 @item
 SVG Plotters.  An SVG Plotter produces a single page of output in
 Scalable Vector Graphics format and directs it to a file or other
-specified output stream.  SVG is a new XML-based format for vector
+specified output stream.  SVG is an XML-based format for vector
 graphics on the Web, which is being developed by the
 @uref{http://www.w3.org/Graphics, Graphics Activity} of the
-@uref{http://www.w3.org, @w{W3 Consortium}}.  The output conforms to the
-@w{3 March} 2000 version of the SVG specification.
+@uref{http://www.w3.org, @w{W3 Consortium}}.  The output conforms to
+the @w{3 March} 2000 version of the SVG specification.
 
 @item
 Illustrator Plotters.  An Illustrator Plotter produces a single page of
@@ -7202,23 +7220,25 @@ If you replace "ps" by "X" in the call to @code{pl_newpl_r}, an @w{X
 Plotter} rather than a Postscript Plotter will be used, and the spiral
 will be drawn in a popped-up @w{X window}.  If your @w{X display} does
 not support the "NewCenturySchlbk-Roman" font, you may substitute any
-other scalable font, such as the widely available
-"utopia-medium-r-normal".  For the format of font names, see @ref{Text
-Fonts in X}@.  @w{If the} @w{X Plotter} is unable to retrieve the font
-you specify, it will first attempt to use a default scalable font
-("Helvetica"), and if that fails, use a default Hershey vector font
-("HersheySerif") instead.  Hershey fonts are constructed from line
-segments, so each built-in Hershey font is available on all types of
-Plotter.
+core @w{X font}, such as the widely available scalable font
+"charter-medium-r-normal", or the traditional screen font "fixed".
+For the format of font names, see @ref{Text Fonts in X}@.  @w{If the}
+@w{X Plotter} is unable to retrieve the font you specify, it will
+first attempt to use a default scalable font ("Helvetica", interpreted
+in the context of the @w{X Window} System as
+"helvetica-medium-r-normal"), and if that fails, use a default Hershey
+vector font ("HersheySerif") instead.  Hershey fonts are constructed
+from line segments, so each built-in Hershey font is available on all
+types of Plotter.
 
-If you are using an older (pre-X11R6) @w{X Window} System display, you
-will find that retrieving a scalable font is a time-consuming operation.
-The above example may run slowly on some older @w{X displays}, since a
-new font must be retrieved before each text string is drawn.  That is
-because each text string has a different angle of inclination.  @w{It
-is} possible to retrieve individual characters from an X11R6 display,
-rather than retrieving an entire rasterized font.  @w{If this} feature
-is available, the @w{X Plotter} will automatically take advantage @w{of
+If you are using an ancient (pre-X11R6) @w{X Window} System display,
+you will find that retrieving a font is a time-consuming operation.
+The above example may run slowly on such displays, since a new font
+must be retrieved before each text string is drawn.  That is because
+each text string has a different angle of inclination.  @w{It is}
+possible to retrieve individual characters from an X11R6 display,
+rather than retrieving an entire font.  @w{If this} feature is
+available, the @w{X Plotter} will automatically take advantage @w{of
 it} to save time.
 
 @node Paths and Subpaths, Drawing on a Page, Sample C Drawings, C Programming
@@ -7484,14 +7504,14 @@ positioned at the current vertical position.
 
 The preceding discussion and sample program dealt with the portrait
 orientation of the printed page, which is the default.  Drawing in
-landscape orientation is only slightly more complicated.  For this, the
-viewport would be rotated on the page by setting the Plotter parameter
-@code{ROTATION}@.  Its default value @w{is "0"} (@w{or "no"}), and other
-allowed values are "90" (@w{or "yes"}), "180", and "270".  @w{On a}
-letter-sized page in landscape orientation, a rotated viewport has lower
-left corner (0.0,0.0) and upper right corner (11.0,8.5), provided that
-inches are used.  The following program is a modified version of the
-preceding, showing how a landscape orientation would be produced.
+landscape orientation is only slightly more complicated.  For this,
+the viewport would be rotated on the page by setting the Plotter
+parameter @code{ROTATION}@.  Its default value @w{is "0"} (@w{or
+"no"}), but any other rotation angle may be specified.  To obtain
+landscape orientation, one would specify "90" (for historical reasons,
+"yes" is equivalent @w{to "90"}).  The following program is a modified
+version of the preceding, showing how a landscape orientation would be
+produced.
 
 @example
 @group
@@ -7550,11 +7570,14 @@ int main()
 @end group
 @end example
 
-It is worth nothing that rotating a viewport, by specifying a nonzero
-value for @code{ROTATION}, does not change the position of its four
-corners.  Rather, any graphics that are drawn are rotated @w{within it}.
-@w{If the} viewport is rectangular rather than square, this `rotation'
-necessarily includes a rescaling.
+In this example the viewport is the same centered 8@dmn{}in by
+8@dmn{}in square, but it is rotated by 90 degrees counterclockwise; or
+equivalently, the graphics within it are rotated.  As in the preceding
+example, the call to @code{pl_fspace_r} @w{sets up} the user
+coordinate system so that the units are physical inches.  The origin
+of coordinates is now the lower right corner of the page.  The
+@math{x} @w{and @math{y}} coordinates increase upward and to the left,
+respectively.
 
 @node Animated GIFs, X Animations, Drawing on a Page, C Programming
 @subsection Animated GIFs in C
@@ -7767,15 +7790,15 @@ is deleted.  @w{If the} @code{VANISH_ON_DELETE} parameter were not set
 to "yes", the window would remain on the screen until removed by the
 user (@w{by typing} @samp{q} @w{in it}, or by clicking with a mouse).
 
-Setting the parameter @code{USE_DOUBLE_BUFFERING} to "yes" requests that
-double buffering be used.  This is very important if you wish to produce
-a smooth animation, with no jerkiness.  Normally, an @w{X Plotter} draws
-graphics into a window in real time, and erases the window when
-@code{pl_erase_r} is called.  But if double buffering is used, each
-frame of graphics is written into an off-screen buffer, and is copied
-into the window, pixel by pixel, when @code{pl_erase_r} is called or the
-Plotter is closed.  This is a bit counterintuitive, but is exactly what
-is needed for smooth animation.
+Setting the parameter @code{USE_DOUBLE_BUFFERING} to "yes" requests
+that double buffering be used.  This is very important if you wish to
+produce a smooth animation, with no jerkiness.  Normally, an @w{X
+Plotter} draws graphics into a window in real time, and erases the
+window when @code{pl_erase_r} is called.  But if double buffering is
+used, each frame of graphics is written into an off-screen buffer, and
+is copied into the window, pixel by pixel, when @code{pl_erase_r} is
+called or the Plotter is closed.  This is exactly what is needed for
+smooth animation.
 
 After the Plotter is created, it is selected for use and opened.  When
 @code{pl_openpl_r} is called, the window @w{pops up}, and the animation
@@ -7851,33 +7874,32 @@ int main()
 
 This animation serves as a good test of the capabilities of an @w{X
 Window} System display.  @w{On a} modern X11R6 display, animation will
-be smooth and fast.  That is because X11R6 displays can rasterize
-individual characters from a font without rasterizing the entire font.
-@w{If your} @w{X display} does not support the "NewCenturySchlbk-Roman"
-font, you may substitute any other scalable font, such as the widely
-available "utopia-medium-r-normal".  For the format of font names, see
-@ref{Text Fonts in X}@.  @w{If the} @w{X Plotter} is unable to retrieve
-the font you specify, it will first attempt to use a default scalable
-font ("Helvetica").  @w{If that} too fails, it will use a default
-Hershey vector font ("HersheySerif") instead.
+be smooth and fast.  That is because X11R6 displays can retrieve
+individual characters from a font without retrieving the entire font.
+@w{If your} @w{X display} does not support the
+"NewCenturySchlbk-Roman" font, you may substitute most core @w{X
+fonts}, such as the widely available scalable font
+"charter-medium-r-normal", or the traditional screen font "fixed".
+For the format of font names, see @ref{Text Fonts in X}@.  @w{If the}
+@w{X Plotter} is unable to retrieve the font you specify, it will
+first attempt to use a default scalable font ("Helvetica", interpreted
+in the context of the @w{X Window} System as
+"helvetica-medium-r-normal").  @w{If that} too fails, it will use a
+default Hershey vector font ("HersheySerif") instead.
 
-Animations that use Hershey fonts are normally faster than ones that use
-Postscript fonts or other @w{X Window} System fonts, since the Hershey
-fonts are constructed from line segments.  Rasterizing line segments can
-be done rapidly.  But if you use a scalable font such as
-"NewCenturySchlbk-Roman" or "utopia-medium-r-normal", you will notice
-that the rotation @w{speeds up} after the letter `A' has rotated through
-360 degrees.  That is because the `A' at angles past 360 degrees has
-already been rasterized.
+Animations that use Hershey fonts are normally faster than ones that
+use Postscript fonts or other @w{X Window} System fonts, since the
+Hershey fonts are constructed from line segments.  Rasterizing line
+segments can be done rapidly.
 
 If you are writing an application that performs a lengthy sequence of
 drawing operations on an @w{X Plotter}, you may find it useful to set
-the Plotter parameter @code{X_AUTO_FLUSH} to "no".  By default, an @w{X
-Plotter} flushes all graphics to its @w{X Window} System display after
-each drawing operation.  This flushing ensures that graphics are visible
-to the user immediately after they are drawn.  However, it sometimes
-considerably slows down the rendering process.  For additional details
-on Plotter parameters, see @ref{Plotter Parameters}.
+the Plotter parameter @code{X_AUTO_FLUSH} to "no".  By default, an
+@w{X Plotter} flushes all graphics to its @w{X Window} System display
+after each drawing operation.  This flushing ensures that graphics are
+visible to the user immediately after they are drawn.  However, it
+sometimes slows down the rendering process.  For additional details on
+Plotter parameters, see @ref{Plotter Parameters}.
 
 @node X Programming, , X Animations, C Programming
 @subsection Advanced X Window System programming
@@ -7908,6 +7930,7 @@ redraw it in green.  @w{A second} mouse click will redraw it in red, and
 @example
 @group
 #include <stdio.h>
+#include <stdlib.h>
 #include <plot.h>
 @end group
 @group
@@ -8354,7 +8377,7 @@ binding, the 97 functions are implemented as public members of the
 @w{A language} binding may also include functions for creating,
 selecting, and deleting Plotters.  For example, the @w{C binding}
 includes the additional functions @code{pl_newpl_r} and
-@code{pl_deletepl_r}.  @xref{The C API}@.
+@code{pl_deletepl_r}.  @xref{The C API}.
 
 The 97 functions that operate on a specified Plotter are divided into
 the four sets tabulated below.
@@ -9332,6 +9355,10 @@ graphics display.  The default angle is zero.  (The font for plotting
 strings is fully specified by calling @t{fontname}, @t{fontsize}, and
 @t{textangle}.)  The size of the font for plotting strings, in user
 coordinates, is returned.
+
+@strong{Warning:} Some X Window System displays do not generate or
+display rotated fonts correctly.  In effect, they only support a zero
+rotation angle.
 @end table
 
 @node Mapping Functions, , Attribute Functions, Functions
@@ -9491,21 +9518,21 @@ page size in the range "a0"@dots{}"a4" or ANSI page size in the range
 "tabloid" is an alias @w{for "b"}).  "legal", "ledger", @w{and "b5"} are
 recognized page sizes also.
 
-For Illustrator, Postscript, PCL and Fig Plotters, the graphics display
-will be, by default, a square region centered on the specified page.
-(For example, it will be a centered 8@dmn{in} square if @code{PAGESIZE}
-is "letter".)  For HP-GL Plotters, it will be a square region of the
-same size, but will not @w{by default} be centered.  SVG format and
-WebCGM format have no notion of the Web page on which the graphics
-display will ultimately be positioned.  They do have a notion of default
-display size, though this will normally be overridden when the SVG or
-WebCGM file is placed on a Web page.  For the default display size, SVG
-and CGM Plotters will use the graphics display size that is used by
-other Plotters.  
+For Illustrator, Postscript, PCL and Fig Plotters, the graphics
+display will be, by default, a square region centered on the specified
+page.  (For example, it will be a centered 8@dmn{in} square if
+@code{PAGESIZE} is "letter".)  For HP-GL Plotters, it will be a square
+region of the same size, but will not @w{by default} be centered.  SVG
+format and WebCGM format have no notion of the Web page on which the
+graphics display will ultimately be positioned.  They do have a notion
+of default display size, though this will normally be overridden when
+the SVG or WebCGM file is placed on a Web page.  For this default
+display size, SVG and CGM Plotters will use the same graphics display
+size that is used by other Plotters.
 
-For the default size and location of the graphics display for each page
-type, see @ref{Page and Viewport Sizes}.  You do not need to use the
-default graphics display, since either or both of its dimensions can be
+For the default size (and location) of the graphics display for each
+page type, see @ref{Page and Viewport Sizes}.  You do not need to use
+the default size, since either or both of its dimensions can be
 specified explicitly.  For example, @code{PAGESIZE} could be specified
 as "letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The dimensions
 are allowed to be negative (@w{a negative} dimension results in a
@@ -9516,25 +9543,25 @@ graphics display on the page, relative to its default position, can be
 adjusted by specifying an offset vector.  For example, @code{PAGESIZE}
 could be specified as "letter,yoffset=1.2in", or
 "a4,xoffset=@minus{}5mm,yoffset=2.0cm".  Inches, centimeters, and
-millimeters are the supported units.  
+millimeters are the supported units.  The "xoffset" and "yoffset"
+options may be used in conjunction with "xsize" and "ysize".
 
 @w{It is} also possible to position the graphics display precisely, by
 specifying the location of its lower left corner relative to the lower
 left corner of the page.  For example, @code{PAGESIZE} could be
 specified as "letter,xorigin=2in,yorigin=3in", or
-"a4,xorigin=0.5cm,yorigin=0.5cm".  The preceding options may be
-intermingled.  SVG and WebCGM Plotters ignore the "xoffset", "yoffset",
-"xorigin", and "yorigin" options, since SVG format and WebCGM format
-have no notion of the Web page on which the graphics display will
-ultimately be positioned.
+"a4,xorigin=0.5cm,yorigin=0.5cm".  The "xorigin" and "yorigin" options
+may be used in conjunction with "xsize" and "ysize".  SVG and WebCGM
+Plotters ignore the "xoffset", "yoffset", "xorigin", and "yorigin"
+options, since SVG format and WebCGM format have no notion of the Web
+page on which the graphics display will ultimately be positioned.
 
 @item ROTATION
-(Default "0".)  Relevant to all Plotters other than Metafile Plotters,
-which have no output device.  The angle, in degrees, by which the
-graphics display (i.e., the viewport) should be rotated, relative to its
-default orientation.  Recognized values are "0", "90", "180", and "270";
-@w{"no" and} "yes" are equivalent to @w{"0" and "90"} respectively.  The
-rotation is counterclockwise.  
+(Default "0.0".)  Relevant to all Plotters other than Metafile
+Plotters, which have no output device.  The angle, in degrees, by
+which the graphics display (i.e., the viewport) should be rotated,
+relative to its default orientation.  The rotation is
+counterclockwise.
 
 A rotated viewport does not change the position of its four corners.
 Rather, the graphics are rotated @w{within it}.  @w{If the} viewport is
@@ -9839,16 +9866,17 @@ plotting utilities and the GNU @code{libplot} library.
 @end ifnottex
 
 @menu
-* Text and Markers::         Text fonts, text strings, and marker symbols
+* Fonts and Markers::        Text fonts, text strings, and marker symbols
 * Color Names::              Specifying colors by name
 * Page and Viewport Sizes::  Specifying the size of an output page 
 * Metafiles::                The device-independent GNU metafile format
 * Auxiliary Software::       How to obtain auxiliary software
 * History and Acknowledgements::    The contributors
 * Reporting Bugs::           How to report bugs
+* GNU Free Documentation License::  How this manual may be distributed
 @end menu
 
-@node Text and Markers, Color Names, Appendices, Appendices
+@node Fonts and Markers, Color Names, Appendices, Appendices
 @appendix Fonts, Strings, and Symbols 
 
 The GNU @code{libplot} graphics library and applications built @w{on
@@ -9867,7 +9895,7 @@ The following sections explain how to use these features.
 * Marker Symbols::      Available marker symbols
 @end menu
 
-@node Text Fonts, Cyrillic and Japanese, Text and Markers, Text and Markers
+@node Text Fonts, Cyrillic and Japanese, Fonts and Markers, Fonts and Markers
 @appendixsection Available text fonts
 
 The GNU @code{libplot} library and applications built @w{on it}, such as
@@ -10263,7 +10291,7 @@ must either request one with the escape @w{sequence "\ss"} (@pxref{Text
 String Format}), or, if you have an 8-bit keyboard, type an eszet
 explicitly.
 
-@node Cyrillic and Japanese, Text Fonts in X, Text Fonts, Text and Markers
+@node Cyrillic and Japanese, Text Fonts in X, Text Fonts, Fonts and Markers
 @appendixsection Cyrillic and Japanese fonts
 
 The built-in fonts discussed in the previous section include Cyrillic
@@ -10273,16 +10301,16 @@ the @code{plotfont} utility to display the character map for any font,
 including the Cyrillic and Japanese vector fonts.  @xref{plotfont}.
 
 The HersheyCyrillic and HersheyCyrillic-Oblique fonts use an encoding
-called @w{KOI8-R}, a superset of ASCII that has become the @w{de facto}
-standard for Unix and networking applications in the former Soviet
-Union.  Insofar as printable ASCII characters go, they resemble the
-HersheySerif vector font.  But their upper halves are different.  The
-byte range @t{0xc0}@dots{}@t{0xdf} contains lower-case Cyrillic
+called @w{KOI8-R}, a superset of ASCII that has become the @w{de
+facto} standard for Unix and networking applications in the former
+Soviet Union.  Insofar as printable ASCII characters go, they resemble
+the HersheySerif vector font.  But their upper halves are different.
+The byte range @t{0xc0}@dots{}@t{0xdf} contains lower-case Cyrillic
 characters and the byte range @t{0xe0}@dots{}@t{0xff} contains upper
-case Cyrillic characters.  Additional Cyrillic characters are located at
-@t{0xa3} @w{and @t{0xb3}}.  For more on the encoding scheme, see
-@uref{http://www.nagual.pp.ru/~ache/koi8.html, the official KOI8-R Web
-page} and Internet RFC 1489, which is available from the
+case Cyrillic characters.  Additional Cyrillic characters are located
+at @t{0xa3} @w{and @t{0xb3}}.  For more on the encoding scheme, see
+@uref{http://koi8.pp.ru/main.html, the official KOI8-R Web page} and
+Internet RFC 1489, which is available in many places, including
 @uref{http://www.isi.edu, Information Sciences Institute}.
 
 The HersheyEUC font is a vector font that is used for displaying
@@ -10292,7 +10320,7 @@ other character sets (e.g., Greek and Cyrillic) as multibyte character
 strings.  The format of EUC strings is explained in Ken Lunde's
 @cite{Understanding Japanese Information Processing} (O'Reilly, 1993),
 which contains much additional information on Japanese text processing.
-See also @uref{http://www.ora.com/people/authors/lunde/cjk_inf.html, his
+See also @uref{http://www.praxagora.com/lunde/cjk_inf.html, his
 on-line supplement}, and his more recent book @cite{CJKV Information
 Processing} (O'Reilly, 1999).
 
@@ -10337,7 +10365,7 @@ Katakana are simplified Katakana that may need to be equipped with
 diacritical marks.  The diacritical marks are included in the encoding
 as separate characters.
 
-@node Text Fonts in X, Text String Format, Cyrillic and Japanese, Text and Markers
+@node Text Fonts in X, Text String Format, Cyrillic and Japanese, Fonts and Markers
 @appendixsection Available text fonts for the X Window System
 
 The command-line graphics programs @code{graph @w{-T X}}, @code{plot
@@ -10350,32 +10378,53 @@ available on the @w{X display}.  Most releases of the plotting utilities
 include freely distributable versions of the 35 Postscript fonts, in
 @w{Type 1} format, that are easily installed on any @w{X display}.
 
-In fact, the plotting utilities can use most fonts that are available on
-the current @w{X display}.  This includes all scalable fonts that have a
-so-called XLFD (@w{X Logical} Font Description) name.  For example, the
-"CharterBT-Roman" font is available on many @w{X displays}.  It has a
-formal XLFD name, namely
+The plotting utilities can in fact use most of the `core' fonts that
+are available on the @w{X display}.  This includes scalable fonts that
+have so-called XLFD (@w{X Logical} Font Description) names.  You may
+determine which such fonts are available by using the low-level
+@code{xlsfonts} command.  Fonts whose names end in
+"-0-0-0-0-p-0-iso8859-1" or "-0-0-0-0-m-0-iso8859-1" are scalable
+ISO-Latin-1 fonts that can be used by @code{libplot} and the plotting
+utilities.  For example, the "CharterBT-Roman" font is available on
+many @w{X displays}.  Its full XLFD name is
 "-bitstream-charter-medium-r-normal--0-0-0-0-p-0-iso8859-1".  The
-plotting utilities would refer to it as "charter-medium-r-normal".  The
-command
+plotting utilities would refer to it by its base XLFD name, which has
+only three hyphens; namely, "charter-medium-r-normal".  The command
 
 @example
 echo 0 0 1 1 2 0 | graph -T X -F charter-medium-r-normal
 @end example
 
 @noindent
-would draw a plot in a popped-up @w{X window}, in which all axis ticks
+will draw a plot in a popped-up @w{X window}, in which the axis ticks
 are labeled in this font.
 
-You may determine which fonts are available on an @w{X display} by using
-the @code{xlsfonts} command.  Fonts whose names end in
-"-0-0-0-0-p-0-iso8859-1" or "-0-0-0-0-m-0-iso8859-1" are scalable
-ISO-Latin-1 fonts that can be used by @code{libplot}'s @w{X Plotters}
-and by the plotting utilities that are built on @code{libplot}.  The two
-sorts of font are variable-width and fixed-width fonts, respectively.
 Fonts whose names end in "iso8859-2", etc., and "adobe-fontspecific",
-may also be used, even though they do not employ the standard
-ISO-Latin-1 encoding.
+may also be used, though they do not employ the standard ISO-Latin-1
+encoding.  By default @code{libplot} will try to retrieve an
+"iso8859-1", i.e., ISO-Latin-1 version of the font, if one is
+available.  But you can work around this by giving the full name of
+the font, if you wish.  Supplying the full name of an @w{X font} is
+also useful if you wish to employ a screen font (i.e., bitmap font),
+such as the traditional fonts "fixed" and "9x15".  If you supply the
+full name of an @w{X font}, rather than a base XLFD name, each
+character glyph, once it is obtained from the @w{X display} as a
+pattern of pixels, will be scaled by @code{libplot} to the appropriate
+size.
+
+The plotting utilities, including @code{graph}, support a
+@samp{--bitmap-size} option.  @w{If the} @samp{@w{-T X}} option is
+used, @w{it sets} the size of the popped-up @w{X Window}.  You may use
+it to obtain some interesting visual effects.  Each of the plotting
+utilities assumes that it is drawing in a square region, so if you use
+the @samp{--bitmap-size 800x400} option, your plot will be scaled
+anisotropically, by a larger factor in the horizontal direction than
+in the vertical direction.  The @w{X fonts} in the plot will be scaled
+accordingly.  In the same spirit, the @samp{--rotation} option will
+rotate the plot, causing all text strings to be rotated too.  For
+example, @samp{--rotation 45} will induce a 45-degree counterclockwise
+rotation.  The options @samp{--bitmap-size} and @samp{--rotation} may
+be applied together.
 
 The escape sequences that provide access to the non-ASCII `8-bit'
 characters in the built-in ISO-Latin-1 fonts may be employed when using
@@ -10384,28 +10433,18 @@ see @ref{Text String Format}.  As an example, "\Po" will yield the
 British pounds sterling @w{symbol `@pounds{}'}.  The command
 
 @example
-echo 0 0 1 1 | graph -T X -F charter-medium-r-normal -L "A \Po1 Plot"
+echo 0 0 1 1 | graph -T X -F times-medium-r-normal -L "A \Po1 Plot"
 @end example
 
 @noindent
-shows how this symbol could be used in a graph label.  In the same way,
-the escape sequences that provide access to mathematical symbols and
-Greek characters may be employed when using any @w{X Window} System
-font, whether or not it is an ISO-Latin-1 font.
+shows how this symbol could be used in a graph label.  In the same
+way, the escape sequences that provide access to mathematical symbols
+and Greek characters may be employed when using any @w{X Window}
+System font, whether or not it is an ISO-Latin-1 font.  These symbols
+and characters are taken from the Symbol font, which is available on
+nearly all @w{X displays}.
 
-The plotting utilities, including @code{graph}, support a
-@samp{--bitmap-size} option.  @w{If the} @samp{@w{-T X}} option is used,
-@w{it sets} the size of the popped-up @w{X Window}.  You may use it to
-obtain some interesting visual effects.  Each of the plotting utilities
-assumes that it is drawing in a square region, so if you use the
-@samp{--bitmap-size 800x400} option, your plot will be scaled
-anisotropically, by a larger factor in the horizontal direction than in
-the vertical direction.  The fonts in the plot will be scaled in the
-same way.  Actually, this requires a modern (X11R6) display.  @w{If
-your} @w{X display} cannot scale a font, @w{a default} scalable font
-(@w{such as} "HersheySerif") will be substituted.
-
-@node Text String Format, Marker Symbols, Text Fonts in X, Text and Markers
+@node Text String Format, Marker Symbols, Text Fonts in X, Fonts and Markers
 @appendixsection Text string format and escape sequences
 
 Text strings that are drawn by the GNU @code{libplot} library and by
@@ -11179,19 +11218,20 @@ utilities, lists the available Kanji.  @w{On most} systems it is
 installed in @file{/usr/share/libplot} or
 @file{/usr/local/share/libplot}.
 
-Each JIS X0208 character would be specified by an escape sequence which
-expresses this two-byte sequence as four hexadecimal digits, such as
-"\#J357e".  Both bytes must be in the @code{0x21}@dots{}@code{0x7e}
-range in order to define a JIS X0208 character.  Kanji are located at
-"\#J3021" and above.  Characters appearing elsewhere in the JIS X0208
-encoding may be accessed similarly.  For example, Hiragana and Katakana
-are located in the "\#J2421"@dots{}"\#J257e" range, and Roman characters
-in the "\#J2321"@dots{}"\#J237e" range.  The file @file{kana.doc}, which
-is installed in the same directory as @file{kanji.doc}, lists the
+Each JIS X0208 character would be specified by an escape sequence
+which expresses this two-byte sequence as four hexadecimal digits,
+such as "\#J357e".  Both bytes must be in the
+@code{0x21}@dots{}@code{0x7e} range in order to define a JIS X0208
+character.  Kanji are located at "\#J3021" and above.  Characters
+appearing elsewhere in the JIS X0208 encoding may be accessed
+similarly.  For example, Hiragana and Katakana are located in the
+"\#J2421"@dots{}"\#J257e" range, and Roman characters in the
+"\#J2321"@dots{}"\#J237e" range.  The file @file{kana.doc}, which is
+installed in the same directory as @file{kanji.doc}, lists the
 encodings of the Hiragana and Katakana.  For more on the JIS X0208
 standard, see Ken Lunde's @cite{Understanding Japanese Information
 Processing} (O'Reilly, 1993), and
-@uref{http://www.ora.com/people/authors/lunde/cjk_inf.html, his on-line
+@uref{http://www.praxagora.com/lunde/cjk_inf.html, his on-line
 supplement}.
 
 The Kanji numbering used in @w{A. N.} Nelson's @cite{Modern Reader's
@@ -11212,7 +11252,7 @@ that is not available will print as an `undefined character' glyph (@w{a
 bundle} of horizontal lines).  The same is true for non-Kanji JIS X0208
 characters that are not available.
 
-@node Marker Symbols, , Text String Format, Text and Markers
+@node Marker Symbols, , Text String Format, Fonts and Markers
 @appendixsection Available marker symbols
 
 The GNU @code{libplot} library supports a standard set of marker
@@ -11312,7 +11352,7 @@ will produce a @w{PCL 5} plot that is similar to the preceding
 Postscript plot.  The Wingdings font has the Texas star in location
 #181.
 
-@node Color Names, Page and Viewport Sizes, Text and Markers, Appendices
+@node Color Names, Page and Viewport Sizes, Fonts and Markers, Appendices
 @appendix Specifying Colors by Name
 
 The GNU @code{libplot} library allows colors to be specified by the
@@ -11351,45 +11391,56 @@ gray 4" and "dark slate grey 4" are recognized color names.
 @node Page and Viewport Sizes, Metafiles, Color Names, Appendices
 @appendix Page Sizes and Viewport Sizes
 
-When producing output in such formats as Illustrator, Postscript, @w{PCL
-5}, HP-GL, and Fig, it is important to specify the size of the page on
-which the output will be printed.  The GNU @code{libplot} library allows
-the user to specify a @code{PAGESIZE} parameter, which can be used for
-this.  The command-line graphics programs @code{graph}, @code{plot},
-@code{pic2plot}, @code{tek2plot}, and @code{plotfont}, which are
-@w{built on} @code{libplot}, support a @code{PAGESIZE} environment
-variable and a @samp{--page-size} option.
+When producing output in such vector formats as Illustrator,
+Postscript, @w{PCL 5}, HP-GL, and Fig, it is important to specify the
+size of the page on which the output will appear.  Supported page
+sizes are "letter", "a4", etc.; a full list appears below.  The page
+size is passed to the the GNU @code{libplot} library via the
+@code{PAGESIZE} parameter.  The command-line graphics programs
+@code{graph}, @code{plot}, @code{pic2plot}, @code{tek2plot}, and
+@code{plotfont}, which are @w{built on} @code{libplot}, similarly
+support a @code{PAGESIZE} environment variable and a
+@samp{--page-size} option.
 
 Graphics drawn by @code{libplot} are nominally drawn within a graphics
-display, or `viewport'.  When producing such raster formats as PNG, PNM,
-and pseudo-GIF, @w{it will} use a square or rectangular bitmap as its
-viewport.  But when producing Illustrator, Postscript, @w{PCL 5}, HP-GL,
-and Fig format, it will use a square or rectangular region on the page
-as its viewport.  Except in the HP-GL case, the viewport will @w{by
-default} be centered on the page.  Graphics will not be clipped to the
-viewport, so the entire page will @w{in principle} be imageable.
+display, or `viewport'.  When producing raster formats such as PNG,
+PNM, and pseudo-GIF, the viewport is simply a square or rectangular
+bitmap.  But when producing vector formats such as Illustrator,
+Postscript, @w{PCL 5}, HP-GL, and Fig format, the viewport is a square
+or rectangular region on the output page.  (For the meaning of the
+viewport when the output format is SVG or WebCGM, see below.)  Except
+in the HP-GL case, the viewport will @w{by default} be centered on the
+page.  For example, if the page size is "letter", the viewport will be
+a square 8@dmn{in} by 8@dmn{in} region, centered on a 8.5@dmn{in} by
+11.0@dmn{in} page.  Graphics will not be clipped to the viewport, so
+the entire page will @w{in principle} be imageable.
 
-Either or both of the dimensions of the graphics display can be
-specified explicitly.  For example, the page size could be specified as
-"letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The dimensions of
-the graphics display are allowed to be negative (@w{a negative}
+Either or both of the dimensions of the viewport can be changed by the
+user.  For example, the page size could be specified as
+"letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm", where the specified
+sizes will override the default dimensions of the viewport.  The
+dimensions of the viewport are allowed to be negative (@w{a negative}
 dimension results in a reflection).  Inches, centimeters, and
 millimeters are the supported units.
 
-@w{It is} also possible to position the graphics display precisely, by
-specifying the location of its lower left corner relative to the lower
-left corner of the page.  For example, the page size could be specified
-not merely as "letter" @w{or "a4"}, but as
-"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
-In all cases, the viewport position may be adjusted by specifying an
-offset vector.  For example, the page size could be specified as
-"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".  The
-viewport may also be rotated, by setting the @code{ROTATION} parameter
-or environment variable, or (@w{in the} case of the graphics programs)
-by using the @samp{--rotation} option.  A rotated viewport does not
-change the position of its four corners.  Rather, the graphics are
-rotated @w{within it}.  @w{If the} viewport is rectangular rather than
-square, this `rotation' necessarily includes a rescaling.
+For most vector output formats, it is possible to position the
+viewport quite precisely, by specifying the location of its lower left
+corner relative to the lower left corner of the page.  For example,
+the page size could be specified not merely as "letter" @w{or "a4"},
+but as "letter,xorigin=2in,yorigin=3in", or
+"a4,xorigin=0.5cm,yorigin=0.5cm".  (The `xorigin' and `yorigin'
+specifiers may be used in conjunction with `xsize' and `ysize'.)  As
+an alternative to `xorigin' and `yorigin', the viewport position could
+be adjusted by supplying an offset vector, the offset being
+interpreted as a shift away from the default position.  For example,
+the page size could be specified as "letter,yoffset=1.2in", or
+"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  The viewport may also be
+rotated, by setting the @code{ROTATION} parameter or environment
+variable, or (@w{in the} case of the graphics programs) by using the
+@samp{--rotation} option.  A rotated viewport does not change the
+position of its four corners.  Rather, the graphics are rotated
+@w{within it}.  @w{If the} viewport is rectangular rather than square,
+this `rotation' will necessarily include a rescaling.
 
 Any ISO page size in the range "a0"@dots{}"a4" or ANSI page size in the
 range "a"@dots{}"e" may be specified.  ("letter" is an alias @w{for
@@ -11439,20 +11490,28 @@ default square viewport size that corresponds to each.
 16.94@dmn{cm}
 @end table
 
-SVG format and WebCGM format have no notion of the Web page on which the
-viewport will ultimately be positioned.  They do have a notion of
-default viewport size, though this will normally be overridden when the
-output file is placed on a Web page.  When producing SVG or WebCGM
-output, this default viewport size is set by @code{PAGESIZE}, or (@w{in
-the} case of the graphics programs) the @samp{--page-size} option.  The
-"xorigin", "yorigin", "xoffset", and "yoffset" specifiers, if included,
-are ignored.
+As noted, SVG and WebCGM format are special.  They have no notion of
+the size of the Web page on which the viewport will ultimately be
+positioned.  They do have a notion of viewport size, though this will
+typically be overridden when the output file is placed on a page by a
+Web page designer.  When producing SVG or WebCGM output, the viewport
+size is set in the usual way: by @code{PAGESIZE}, or (@w{in the} case
+of the graphics programs) the @samp{--page-size} option.  For example,
+if the specified page size is "letter", the viewport within which SVG
+or WebCGM graphics are drawn will be an 8@dmn{in} by 8@dmn{in} square.
+If it is "letter,xsize=6in,ysize=7in", then the viewport will be a
+6@dmn{in} by 7@dmn{in} rectangle, and so forth.  The "xorigin",
+"yorigin", "xoffset", and "yoffset" specifiers, if included, are
+necessarily ignored.
 
-For a similar reason, the "xorigin" and "yorigin" specifiers are ignored
-when producing HP-GL or HP-GL/2 output.  The lower left corner of the
-viewport is positioned at the HP-GL `scaling @w{point' P1}, whose
-location is device-dependent.  The "xoffset" and "yoffset" specifiers
-are respected, however, and may be used to reposition the viewport.
+For a similar reason, the "xorigin" and "yorigin" specifiers are
+ignored when producing HP-GL or HP-GL/2 output.  @w{By default}, the
+lower left corner of the viewport is positioned at the HP-GL `scaling
+@w{point' P1}, whose location is device-dependent and will not
+normally coincide with the lower left corner of the physical page,
+though it may be close to it.  The "xoffset" and "yoffset" specifiers
+are respected, however, and may be used to shift the viewport away
+from its default position.
 
 @node Metafiles, Auxiliary Software, Page and Viewport Sizes, Appendices
 @appendix The Graphics Metafile Format
@@ -11582,8 +11641,8 @@ Silicon Graphics.  The @code{InterViews} package is available at
 @w{no longer} supported.  Retrieving the @code{ivtools} package instead
 is recommended.
 
-Also available at @uref{http://www.vectaport.com, Vectaport's Web site}
-is an enhanced version of @code{idraw} called @code{drawtool}.
+Also available at @uref{http://www.vectaport.com, Vectaport's Web
+site} is an enhanced version of @code{idraw} called @code{drawtool}.
 @code{drawtool} can import additional graphics in TIFF and PBM/PGM/PPM
 formats, besides the X11 bitmaps that @code{idraw} can import.
 
@@ -11609,7 +11668,7 @@ format}, which discusses application software that can interoperate with
 @code{xfig}.
 
 @node History and Acknowledgements, Reporting Bugs, Auxiliary Software, Appendices
-@unnumbered History and Acknowledgements
+@appendix History and Acknowledgements
 
 Several of the GNU plotting utilities were inspired by Unix plotting
 utilities.  A @code{graph} utility and various plot filters were present
@@ -11645,21 +11704,24 @@ filter that would use the new library.  He fleshed out @code{spline}
 too, by adding support for splines in tension, periodicity, and cubic
 Bessel interpolation.
 
-@code{libplot} now incorporates the @w{X Window} System code for filling
-polygons and drawing wide polygonal lines and arcs.  The code is used
-when producing output in bitmap formats (e.g., PNG, PNM, and
+@code{libplot} now incorporates the @w{X Window} System code for
+filling polygons and drawing wide polygonal lines and arcs.  The code
+is used when producing output in bitmap formats (e.g., PNG, PNM, and
 pseudo-GIF)@.  @w{It was} written by Brian Kelleher, Joel McCormack,
-Todd Newman, Keith Packard, Robert Scheifler and Ken Whaley, who worked
-for Digital Equipment Corp., MIT, and/or the @w{X Consortium}, and is
-copyright @copyright{} 1985--89 by the @w{X Consortium}.
+Todd Newman, Keith Packard, Robert Scheifler and Ken Whaley, who
+worked for Digital Equipment Corp., MIT, and/or the @w{X Consortium},
+and is copyright @copyright{} 1985--89 by the @w{X Consortium}.
+Affinely transformed text strings are now generated and displayed by a
+technique similar to that used by Alan Richardson in his
+@code{xvertext} package, for displaying rotated strings.
 
-The pseudo-GIF support now in @code{libplot} uses the `miGIF' run-length
-encoding routines developed by 
-@email{mouse@@rodents.montreal.qc.ca, der Maus} and 
-@email{ivo@@hasc.com, ivo}, which are copyright @copyright{} 1998 
-by @uref{http://www.hasc.com, Hutchison Avenue Software Corporation}.
-The copyright notice and permission notice for the miGIF routines 
-are distributed with the source code distribution of the plotting utilities.
+The pseudo-GIF support now in @code{libplot} uses the `miGIF'
+run-length encoding routines developed by
+@email{mouse@@rodents.montreal.qc.ca, der Maus} and ivo which are
+copyright @copyright{} 1998 by Hutchison Avenue Software Corporation.
+The copyright notice and permission notice for the miGIF routines are
+distributed with the source code distribution of the plotting
+utilities.
 
 Most development work on @code{ode} was performed by
 @email{nbt@@reed.edu, Nick Tufillaro} in 1978--1994, on a sequence of
@@ -11679,35 +11741,482 @@ mid-1970's, and from the fonts designed by
 @email{wolff@@inf.fu-berlin.de, Thomas Wolff} for Ghostscript.  The
 interpolation algorithms used in @code{spline} are based on the
 algorithms of @email{cline@@cs.utexas.edu, @w{Alan K.} Cline}, as
-described in his papers in the Apr.@: 1974 issue of @cite{Communications
-of the ACM}@.  The table-driven parser used in @code{tek2plot} was
-written at Berkeley in the mid-1980's by @email{moy@@parc.xerox.com,
-Edward Moy}.  The `sagitta' algorithm used in an extended form in
-@code{libplot} for drawing circular and elliptic arcs was developed by
-Peter Karow of URW and @email{turk@@apple.com, Ken Turkowski} of Apple.
-@email{toy@@rtp.ericsson.se, Raymond Toy}
-helped with the tick mark
+described in his papers in the Apr.@: 1974 issue of
+@cite{Communications of the ACM}@.  The table-driven parser used in
+@code{tek2plot} was written at Berkeley in the mid-1980's by
+@email{moy@@parc.xerox.com, Edward Moy}.  The `sagitta' algorithm used
+in an extended form in @code{libplot} for drawing circular and
+elliptic arcs was developed by Peter Karow of URW and
+@email{turk@@computer.org, Ken Turkowski} of Apple.
+@email{raymond.toy@@ericsson.com, Raymond Toy} helped with the tick mark
 spacing code in @code{graph} and was the first to incorporate GNU
 @code{getopt}.  Arthur Smith, formerly of LASSP at Cornell, provided
-code for his @code{xplot} utility.  
-@email{beebe@@math.utah.edu, Nelson Beebe}
-exhaustively tested the package installation process.
+code for his @code{xplot} utility.  @email{beebe@@math.utah.edu,
+Nelson Beebe} exhaustively tested the package installation process.
 
 Robert Maier wrote the documentation, which now incorporates Nick
 Tufillaro's @code{ode} manual.  Julie Sussmann checked over the
 documentation for style and clarity.
 
-@node Reporting Bugs, , History and Acknowledgements, Appendices
-@unnumbered Reporting Bugs
+@node Reporting Bugs, GNU Free Documentation License, History and Acknowledgements, Appendices
+@appendix Reporting Bugs
 
-Please report all bugs in the GNU plotting utilities to
-@email{bug-gnu-utils@@gnu.org}.  @w{Be sure} to say which version of the
-plotting utilities package you have.  Each command-line program
-announces the package version if you use the @samp{--version} argument.
+Please report all bugs in the GNU plotting utilities, including the
+@code{libplot} library, to @email{bug-plotutils@@gnu.org}.  @w{Be sure} to
+say which version of the plotting utilities package you have.  Each
+command-line program announces the package version if you use the
+@samp{--version} argument.
 
-If you installed the plotting utilities from scratch, be sure to say
-what compiler (and compiler version) you used.  @w{If your} problems
-are installation-related, be sure to give all relevant information.
+If you installed the package from scratch, be sure to say what
+compiler (and compiler version) you used.  @w{If your} problems are
+installation-related, be sure to give all relevant information.
+
+@node GNU Free Documentation License, , Reporting Bugs, Appendices
+@appendix GNU Free Documentation License
+
+@cindex FDL, GNU Free Documentation License
+@center Version 1.2, November 2002
+
+@display
+Copyright @copyright{} 2000, 2001, 2002 Free Software Foundation, Inc.
+59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+@end display
+
+@enumerate 0
+@item
+PREAMBLE
+
+The purpose of this License is to make a manual, textbook, or other
+functional and useful document @dfn{free} in the sense of freedom: to
+assure everyone the effective freedom to copy and redistribute it,
+with or without modifying it, either commercially or noncommercially.
+Secondarily, this License preserves for the author and publisher a way
+to get credit for their work, while not being considered responsible
+for modifications made by others.
+
+This License is a kind of ``copyleft'', which means that derivative
+works of the document must themselves be free in the same sense.  It
+complements the GNU General Public License, which is a copyleft
+license designed for free software.
+
+We have designed this License in order to use it for manuals for free
+software, because free software needs free documentation: a free
+program should come with manuals providing the same freedoms that the
+software does.  But this License is not limited to software manuals;
+it can be used for any textual work, regardless of subject matter or
+whether it is published as a printed book.  We recommend this License
+principally for works whose purpose is instruction or reference.
+
+@item
+APPLICABILITY AND DEFINITIONS
+
+This License applies to any manual or other work, in any medium, that
+contains a notice placed by the copyright holder saying it can be
+distributed under the terms of this License.  Such a notice grants a
+world-wide, royalty-free license, unlimited in duration, to use that
+work under the conditions stated herein.  The ``Document'', below,
+refers to any such manual or work.  Any member of the public is a
+licensee, and is addressed as ``you''.  You accept the license if you
+copy, modify or distribute the work in a way requiring permission
+under copyright law.
+
+A ``Modified Version'' of the Document means any work containing the
+Document or a portion of it, either copied verbatim, or with
+modifications and/or translated into another language.
+
+A ``Secondary Section'' is a named appendix or a front-matter section
+of the Document that deals exclusively with the relationship of the
+publishers or authors of the Document to the Document's overall
+subject (or to related matters) and contains nothing that could fall
+directly within that overall subject.  (Thus, if the Document is in
+part a textbook of mathematics, a Secondary Section may not explain
+any mathematics.)  The relationship could be a matter of historical
+connection with the subject or with related matters, or of legal,
+commercial, philosophical, ethical or political position regarding
+them.
+
+The ``Invariant Sections'' are certain Secondary Sections whose titles
+are designated, as being those of Invariant Sections, in the notice
+that says that the Document is released under this License.  If a
+section does not fit the above definition of Secondary then it is not
+allowed to be designated as Invariant.  The Document may contain zero
+Invariant Sections.  If the Document does not identify any Invariant
+Sections then there are none.
+
+The ``Cover Texts'' are certain short passages of text that are listed,
+as Front-Cover Texts or Back-Cover Texts, in the notice that says that
+the Document is released under this License.  A Front-Cover Text may
+be at most 5 words, and a Back-Cover Text may be at most 25 words.
+
+A ``Transparent'' copy of the Document means a machine-readable copy,
+represented in a format whose specification is available to the
+general public, that is suitable for revising the document
+straightforwardly with generic text editors or (for images composed of
+pixels) generic paint programs or (for drawings) some widely available
+drawing editor, and that is suitable for input to text formatters or
+for automatic translation to a variety of formats suitable for input
+to text formatters.  A copy made in an otherwise Transparent file
+format whose markup, or absence of markup, has been arranged to thwart
+or discourage subsequent modification by readers is not Transparent.
+An image format is not Transparent if used for any substantial amount
+of text.  A copy that is not ``Transparent'' is called ``Opaque''.
+
+Examples of suitable formats for Transparent copies include plain
+@sc{ascii} without markup, Texinfo input format, La@TeX{} input
+format, @acronym{SGML} or @acronym{XML} using a publicly available
+@acronym{DTD}, and standard-conforming simple @acronym{HTML},
+PostScript or @acronym{PDF} designed for human modification.  Examples
+of transparent image formats include @acronym{PNG}, @acronym{XCF} and
+@acronym{JPG}.  Opaque formats include proprietary formats that can be
+read and edited only by proprietary word processors, @acronym{SGML} or
+@acronym{XML} for which the @acronym{DTD} and/or processing tools are
+not generally available, and the machine-generated @acronym{HTML},
+PostScript or @acronym{PDF} produced by some word processors for
+output purposes only.
+
+The ``Title Page'' means, for a printed book, the title page itself,
+plus such following pages as are needed to hold, legibly, the material
+this License requires to appear in the title page.  For works in
+formats which do not have any title page as such, ``Title Page'' means
+the text near the most prominent appearance of the work's title,
+preceding the beginning of the body of the text.
+
+A section ``Entitled XYZ'' means a named subunit of the Document whose
+title either is precisely XYZ or contains XYZ in parentheses following
+text that translates XYZ in another language.  (Here XYZ stands for a
+specific section name mentioned below, such as ``Acknowledgements'',
+``Dedications'', ``Endorsements'', or ``History''.)  To ``Preserve the Title''
+of such a section when you modify the Document means that it remains a
+section ``Entitled XYZ'' according to this definition.
+
+The Document may include Warranty Disclaimers next to the notice which
+states that this License applies to the Document.  These Warranty
+Disclaimers are considered to be included by reference in this
+License, but only as regards disclaiming warranties: any other
+implication that these Warranty Disclaimers may have is void and has
+no effect on the meaning of this License.
+
+@item
+VERBATIM COPYING
+
+You may copy and distribute the Document in any medium, either
+commercially or noncommercially, provided that this License, the
+copyright notices, and the license notice saying this License applies
+to the Document are reproduced in all copies, and that you add no other
+conditions whatsoever to those of this License.  You may not use
+technical measures to obstruct or control the reading or further
+copying of the copies you make or distribute.  However, you may accept
+compensation in exchange for copies.  If you distribute a large enough
+number of copies you must also follow the conditions in section 3.
+
+You may also lend copies, under the same conditions stated above, and
+you may publicly display copies.
+
+@item
+COPYING IN QUANTITY
+
+If you publish printed copies (or copies in media that commonly have
+printed covers) of the Document, numbering more than 100, and the
+Document's license notice requires Cover Texts, you must enclose the
+copies in covers that carry, clearly and legibly, all these Cover
+Texts: Front-Cover Texts on the front cover, and Back-Cover Texts on
+the back cover.  Both covers must also clearly and legibly identify
+you as the publisher of these copies.  The front cover must present
+the full title with all words of the title equally prominent and
+visible.  You may add other material on the covers in addition.
+Copying with changes limited to the covers, as long as they preserve
+the title of the Document and satisfy these conditions, can be treated
+as verbatim copying in other respects.
+
+If the required texts for either cover are too voluminous to fit
+legibly, you should put the first ones listed (as many as fit
+reasonably) on the actual cover, and continue the rest onto adjacent
+pages.
+
+If you publish or distribute Opaque copies of the Document numbering
+more than 100, you must either include a machine-readable Transparent
+copy along with each Opaque copy, or state in or with each Opaque copy
+a computer-network location from which the general network-using
+public has access to download using public-standard network protocols
+a complete Transparent copy of the Document, free of added material.
+If you use the latter option, you must take reasonably prudent steps,
+when you begin distribution of Opaque copies in quantity, to ensure
+that this Transparent copy will remain thus accessible at the stated
+location until at least one year after the last time you distribute an
+Opaque copy (directly or through your agents or retailers) of that
+edition to the public.
+
+It is requested, but not required, that you contact the authors of the
+Document well before redistributing any large number of copies, to give
+them a chance to provide you with an updated version of the Document.
+
+@item
+MODIFICATIONS
+
+You may copy and distribute a Modified Version of the Document under
+the conditions of sections 2 and 3 above, provided that you release
+the Modified Version under precisely this License, with the Modified
+Version filling the role of the Document, thus licensing distribution
+and modification of the Modified Version to whoever possesses a copy
+of it.  In addition, you must do these things in the Modified Version:
+
+@enumerate A
+@item
+Use in the Title Page (and on the covers, if any) a title distinct
+from that of the Document, and from those of previous versions
+(which should, if there were any, be listed in the History section
+of the Document).  You may use the same title as a previous version
+if the original publisher of that version gives permission.
+
+@item
+List on the Title Page, as authors, one or more persons or entities
+responsible for authorship of the modifications in the Modified
+Version, together with at least five of the principal authors of the
+Document (all of its principal authors, if it has fewer than five),
+unless they release you from this requirement.
+
+@item
+State on the Title page the name of the publisher of the
+Modified Version, as the publisher.
+
+@item
+Preserve all the copyright notices of the Document.
+
+@item
+Add an appropriate copyright notice for your modifications
+adjacent to the other copyright notices.
+
+@item
+Include, immediately after the copyright notices, a license notice
+giving the public permission to use the Modified Version under the
+terms of this License, in the form shown in the Addendum below.
+
+@item
+Preserve in that license notice the full lists of Invariant Sections
+and required Cover Texts given in the Document's license notice.
+
+@item
+Include an unaltered copy of this License.
+
+@item
+Preserve the section Entitled ``History'', Preserve its Title, and add
+to it an item stating at least the title, year, new authors, and
+publisher of the Modified Version as given on the Title Page.  If
+there is no section Entitled ``History'' in the Document, create one
+stating the title, year, authors, and publisher of the Document as
+given on its Title Page, then add an item describing the Modified
+Version as stated in the previous sentence.
+
+@item
+Preserve the network location, if any, given in the Document for
+public access to a Transparent copy of the Document, and likewise
+the network locations given in the Document for previous versions
+it was based on.  These may be placed in the ``History'' section.
+You may omit a network location for a work that was published at
+least four years before the Document itself, or if the original
+publisher of the version it refers to gives permission.
+
+@item
+For any section Entitled ``Acknowledgements'' or ``Dedications'', Preserve
+the Title of the section, and preserve in the section all the
+substance and tone of each of the contributor acknowledgements and/or
+dedications given therein.
+
+@item
+Preserve all the Invariant Sections of the Document,
+unaltered in their text and in their titles.  Section numbers
+or the equivalent are not considered part of the section titles.
+
+@item
+Delete any section Entitled ``Endorsements''.  Such a section
+may not be included in the Modified Version.
+
+@item
+Do not retitle any existing section to be Entitled ``Endorsements'' or
+to conflict in title with any Invariant Section.
+
+@item
+Preserve any Warranty Disclaimers.
+@end enumerate
+
+If the Modified Version includes new front-matter sections or
+appendices that qualify as Secondary Sections and contain no material
+copied from the Document, you may at your option designate some or all
+of these sections as invariant.  To do this, add their titles to the
+list of Invariant Sections in the Modified Version's license notice.
+These titles must be distinct from any other section titles.
+
+You may add a section Entitled ``Endorsements'', provided it contains
+nothing but endorsements of your Modified Version by various
+parties---for example, statements of peer review or that the text has
+been approved by an organization as the authoritative definition of a
+standard.
+
+You may add a passage of up to five words as a Front-Cover Text, and a
+passage of up to 25 words as a Back-Cover Text, to the end of the list
+of Cover Texts in the Modified Version.  Only one passage of
+Front-Cover Text and one of Back-Cover Text may be added by (or
+through arrangements made by) any one entity.  If the Document already
+includes a cover text for the same cover, previously added by you or
+by arrangement made by the same entity you are acting on behalf of,
+you may not add another; but you may replace the old one, on explicit
+permission from the previous publisher that added the old one.
+
+The author(s) and publisher(s) of the Document do not by this License
+give permission to use their names for publicity for or to assert or
+imply endorsement of any Modified Version.
+
+@item
+COMBINING DOCUMENTS
+
+You may combine the Document with other documents released under this
+License, under the terms defined in section 4 above for modified
+versions, provided that you include in the combination all of the
+Invariant Sections of all of the original documents, unmodified, and
+list them all as Invariant Sections of your combined work in its
+license notice, and that you preserve all their Warranty Disclaimers.
+
+The combined work need only contain one copy of this License, and
+multiple identical Invariant Sections may be replaced with a single
+copy.  If there are multiple Invariant Sections with the same name but
+different contents, make the title of each such section unique by
+adding at the end of it, in parentheses, the name of the original
+author or publisher of that section if known, or else a unique number.
+Make the same adjustment to the section titles in the list of
+Invariant Sections in the license notice of the combined work.
+
+In the combination, you must combine any sections Entitled ``History''
+in the various original documents, forming one section Entitled
+``History''; likewise combine any sections Entitled ``Acknowledgements'',
+and any sections Entitled ``Dedications''.  You must delete all
+sections Entitled ``Endorsements.''
+
+@item
+COLLECTIONS OF DOCUMENTS
+
+You may make a collection consisting of the Document and other documents
+released under this License, and replace the individual copies of this
+License in the various documents with a single copy that is included in
+the collection, provided that you follow the rules of this License for
+verbatim copying of each of the documents in all other respects.
+
+You may extract a single document from such a collection, and distribute
+it individually under this License, provided you insert a copy of this
+License into the extracted document, and follow this License in all
+other respects regarding verbatim copying of that document.
+
+@item
+AGGREGATION WITH INDEPENDENT WORKS
+
+A compilation of the Document or its derivatives with other separate
+and independent documents or works, in or on a volume of a storage or
+distribution medium, is called an ``aggregate'' if the copyright
+resulting from the compilation is not used to limit the legal rights
+of the compilation's users beyond what the individual works permit.
+When the Document is included in an aggregate, this License does not
+apply to the other works in the aggregate which are not themselves
+derivative works of the Document.
+
+If the Cover Text requirement of section 3 is applicable to these
+copies of the Document, then if the Document is less than one half of
+the entire aggregate, the Document's Cover Texts may be placed on
+covers that bracket the Document within the aggregate, or the
+electronic equivalent of covers if the Document is in electronic form.
+Otherwise they must appear on printed covers that bracket the whole
+aggregate.
+
+@item
+TRANSLATION
+
+Translation is considered a kind of modification, so you may
+distribute translations of the Document under the terms of section 4.
+Replacing Invariant Sections with translations requires special
+permission from their copyright holders, but you may include
+translations of some or all Invariant Sections in addition to the
+original versions of these Invariant Sections.  You may include a
+translation of this License, and all the license notices in the
+Document, and any Warranty Disclaimers, provided that you also include
+the original English version of this License and the original versions
+of those notices and disclaimers.  In case of a disagreement between
+the translation and the original version of this License or a notice
+or disclaimer, the original version will prevail.
+
+If a section in the Document is Entitled ``Acknowledgements'',
+``Dedications'', or ``History'', the requirement (section 4) to Preserve
+its Title (section 1) will typically require changing the actual
+title.
+
+@item
+TERMINATION
+
+You may not copy, modify, sublicense, or distribute the Document except
+as expressly provided for under this License.  Any other attempt to
+copy, modify, sublicense or distribute the Document is void, and will
+automatically terminate your rights under this License.  However,
+parties who have received copies, or rights, from you under this
+License will not have their licenses terminated so long as such
+parties remain in full compliance.
+
+@item
+FUTURE REVISIONS OF THIS LICENSE
+
+The Free Software Foundation may publish new, revised versions
+of the GNU Free Documentation License from time to time.  Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.  See
+@uref{http://www.gnu.org/copyleft/}.
+
+Each version of the License is given a distinguishing version number.
+If the Document specifies that a particular numbered version of this
+License ``or any later version'' applies to it, you have the option of
+following the terms and conditions either of that specified version or
+of any later version that has been published (not as a draft) by the
+Free Software Foundation.  If the Document does not specify a version
+number of this License, you may choose any version ever published (not
+as a draft) by the Free Software Foundation.
+@end enumerate
+
+@page
+@appendixsec ADDENDUM: How to use this License for your documents
+
+To use this License in a document you have written, include a copy of
+the License in the document and put the following copyright and
+license notices just after the title page:
+
+@smallexample
+@group
+  Copyright (C)  @var{year}  @var{your name}.
+  Permission is granted to copy, distribute and/or modify this document
+  under the terms of the GNU Free Documentation License, Version 1.2
+  or any later version published by the Free Software Foundation;
+  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+  Texts.  A copy of the license is included in the section entitled ``GNU
+  Free Documentation License''.
+@end group
+@end smallexample
+
+If you have Invariant Sections, Front-Cover Texts and Back-Cover Texts,
+replace the ``with...Texts.'' line with this:
+
+@smallexample
+@group
+    with the Invariant Sections being @var{list their titles}, with
+    the Front-Cover Texts being @var{list}, and with the Back-Cover Texts
+    being @var{list}.
+@end group
+@end smallexample
+
+If you have Invariant Sections without Cover Texts, or some other
+combination of the three, merge those two alternatives to suit the
+situation.
+
+If your document contains nontrivial examples of program code, we
+recommend releasing these examples in parallel under your choice of
+free software license, such as the GNU General Public License,
+to permit their use in free software.
 
 @contents
 @bye

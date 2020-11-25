@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* THIS FILE IS NOW SPLIT INTO TWO PIECES: g_fontdb.c and g_fontd2.c, TO
    FACILITATE COMPILING.  This is the first half, containing PS fonts and
    Hershey vector fonts. */
@@ -17,12 +35,14 @@
 
 
 /* The 35 standard PS fonts, with ISO8859-1 (ISO-Latin-1) encoding where
-   that is appropriate.  (Note that NUM_PS_FONTS is defined to equal 35 in
+   that is appropriate.  (Note that PL_NUM_PS_FONTS is defined to equal 35 in
    extern.h.)  Each plPSFontInfoStruct includes these elements:
 
    (1) PS name, (1a) alternative PS name if any (may be NULL), 
    	(1c) 2nd alternative PS name if any (may be NULL),
    (2a) X name, (2b) alternative X name if any (may be NULL)
+   	(2c) 2nd alternative X name if any (may be NULL)
+   	(2d) 3rd alternative X name if any (may be NULL)
    (2.5abcde) CSS font properties.
    (3) PCL typeface number.
    (4) PCL info: fixedwidth(0) / proportional(1).
@@ -39,7 +59,7 @@
    (10ab) the font cap height and x height (latter not yet implemented)
    (11a) the font width information (an array, size 256),   
    (11b) the `left edge of glyph' information (an array, size 256),   
-   (12) a typeface id (an index into the _ps_typeface_info[] array below)
+   (12) a typeface id (an index into the _pl_g_ps_typeface_info[] array below)
    (13) a font index (which font within the typeface this is)
    (14) a Fig font id, for use by FigPlotter methods
    (15) an `iso8859-1' flag, for the PS driver, which must re-encode
@@ -48,16 +68,18 @@
 /* IMPORTANT: The fonts in this array may be referred to elsewhere in the
    libplot code by number.  If you change the internal numbering of
    Postscript fonts, i.e., the order in which they appear in this array, be
-   sure to update the definitions DEFAULT_POSTSCRIPT_FONT_INDEX, etc. in
-   extern.h.  Also update the arrays _ps_font_to_cgm_font_id[] and
-   _cgm_font_id_to_ps_font[], below. */
+   sure to update the definitions PL_DEFAULT_POSTSCRIPT_FONT_INDEX, etc. in
+   extern.h.  Also update the arrays _pl_g_ps_font_to_cgm_font_id[] and
+   _pl_g_cgm_font_id_to_ps_font[], below. */
 
-const struct plPSFontInfoStruct _ps_font_info[] = {
+const struct plPSFontInfoStruct _pl_g_ps_font_info[] = {
 {
   "Helvetica",			/* #0 */
   NULL,
   NULL,
-  "helvetica-medium-r-normal",
+  "helvetica-medium-r-normal",	/* Adobe */
+  "nimbus sans l-medium-r-normal", /* URW, for SuSE */
+  "nimbus sans l-regular-r-normal", /* URW, for Debian */
   NULL,
   "Helvetica", "sans-serif", "normal", "normal", "normal",
   24580, 1, 0, 0, 14,
@@ -133,6 +155,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "helvetica-medium-o-normal",
+  "nimbus sans l-medium-o-normal",
+  "nimbus sans l-regular-i-normal",
   NULL,
   "Helvetica", "sans-serif", "oblique", "normal", "normal",
   24580, 1, 1, 0, 14,
@@ -208,6 +232,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "helvetica-bold-r-normal",
+  "nimbus sans l-bold-r-normal",
+  "nimbus sans l-bold-r-normal",
   NULL,
   "Helvetica", "sans-serif", "normal", "bold", "normal",
   24580, 1, 0, 3, 14,
@@ -283,6 +309,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "helvetica-bold-o-normal",
+  "nimbus sans l-bold-o-normal",
+  "nimbus sans l-bold-i-normal",
   NULL,
   "Helvetica", "sans-serif", "oblique", "bold", "normal",
   24580, 1, 1, 3, 14,
@@ -358,6 +386,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "helvetica-medium-r-narrow",
+  "nimbus sans l-medium-r-condensed",
+  "nimbus sans l-regular-r-condensed",
   NULL,
   "Helvetica", "sans-serif", "normal", "normal", "condensed",
   24580, 1, 4, 0, 14,
@@ -433,6 +463,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "helvetica-medium-o-narrow",
+  "nimbus sans l-medium-o-condensed",
+  "nimbus sans l-regular-i-condensed",
   NULL,
   "Helvetica", "sans-serif", "oblique", "normal", "condensed",
   24580, 1, 5, 0, 14,
@@ -508,6 +540,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "helvetica-bold-r-narrow",
+  "nimbus sans l-bold-r-condensed",
+  "nimbus sans l-bold-r-condensed",
   NULL,
   "Helvetica", "sans-serif", "normal", "bold", "condensed",
   24580, 1, 4, 3, 14,
@@ -583,6 +617,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "helvetica-bold-o-narrow",
+  "nimbus sans l-bold-o-condensed",
+  "nimbus sans l-bold-i-condensed",
   NULL,
   "Helvetica", "sans-serif", "oblique", "bold", "condensed",
   24580, 1, 5, 3, 14,
@@ -657,9 +693,11 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "Times-Roman",		/* #8 */
   NULL,
   NULL,
-  "times-medium-r-normal",
+  "times-medium-r-normal",	/* Adobe */
+  "nimbus roman no9 l-regular-r-normal", /* URW, for Debian */
+  "nimbus roman no9 l-medium-r-normal",	/* URW, for SuSE */
   NULL,
-  "Times Roman", "serif", "normal", "normal", "normal",
+  "Times", "serif", "normal", "normal", "normal",
   25093, 1, 0, 0, 14,
   898, 218,
   662, 0,
@@ -733,8 +771,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "times-medium-i-normal",
+  "nimbus roman no9 l-regular-i-normal",
+  "nimbus roman no9 l-medium-i-normal",
   NULL,
-  "Times Roman", "serif", "italic", "normal", "normal",
+  "Times", "serif", "italic", "normal", "normal",
   25093, 1, 1, 0, 14,
   883, 217,
   653, 0,
@@ -808,8 +848,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "times-bold-r-normal",
+  "nimbus roman no9 l-bold-r-normal",
+  "nimbus roman no9 l-bold-r-normal",
   NULL,
-  "Times Roman", "serif", "normal", "bold", "normal",
+  "Times", "serif", "normal", "bold", "normal",
   25093, 1, 0, 3, 14,
   935, 218,
   676, 0,
@@ -883,8 +925,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "times-bold-i-normal",
+  "nimbus roman no9 l-bold-i-normal",
+  "nimbus roman no9 l-bold-i-normal",
   NULL,
-  "Times Roman", "serif", "italic", "bold", "normal",
+  "Times", "serif", "italic", "bold", "normal",
   25093, 1, 1, 3, 14,
   921, 218,
   669, 0,
@@ -957,8 +1001,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "AvantGarde-Book",		/* #12 */
   NULL,
   NULL,
-  "itc avant garde gothic-book-r-normal", /* as used e.g. by SGI */
-  "avantgarde-book-r-normal",	/* as used e.g. by SunOS */
+  "itc avant garde gothic-book-r-normal", /* Adobe, for SGI etc. */
+  "avantgarde-book-r-normal",	/* Adobe, for SunOS etc. */
+  "urw gothic l-medium-r-normal", /* URW, for SuSE */
+  NULL,
   "Avant Garde", "sans-serif", "normal", "normal", "normal",
   24607, 1, 0, 0, 14,
   955, 222,
@@ -1034,6 +1080,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc avant garde gothic-book-o-normal",
   "avantgarde-book-o-normal",
+  "urw gothic l-medium-o-normal",
+  NULL,
   "Avant Garde", "sans-serif", "oblique", "normal", "normal",
   24607, 1, 1, 0, 14,
   955, 222,
@@ -1109,6 +1157,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc avant garde gothic-demi-r-normal",
   "avantgarde-demi-r-normal",
+  "urw gothic l-semibold-r-normal",
+  NULL,
   "Avant Garde", "sans-serif", "normal", "bold", "normal",
   24607, 1, 0, 2, 14,
   1021, 251,
@@ -1184,6 +1234,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc avant garde gothic-demi-o-normal",
   "avantgarde-demi-o-normal",
+  "urw gothic l-semibold-o-normal",
+  NULL,
   "Avant Garde", "sans-serif", "oblique", "bold", "normal",
   24607, 1, 1, 2, 14,
   1021, 251,
@@ -1257,8 +1309,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "Bookman-Light",		/* #16 */
   NULL,
   NULL,
-  "itc bookman-light-r-normal",	/* as used e.g. by SGI */
-  "bookman-light-r-normal",	/* our former convention, from SunOS */
+  "itc bookman-light-r-normal",	/* Adobe, for SGI etc. */
+  "bookman-light-r-normal",	/* Adobe, for SunOS etc. */
+  "urw bookman l-medium-r-normal", /* URW, for SuSE */
+  NULL,
   "Bookman", "serif", "normal", "300", "normal",
   24623, 1, 0, -3, 14,
   908, 251,
@@ -1334,6 +1388,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc bookman-light-i-normal",
   "bookman-light-i-normal",
+  "urw bookman l-medium-i-normal",
+  NULL,
   "Bookman", "serif", "italic", "300", "normal",
   24623, 1, 1, -3, 14,
   883, 250,
@@ -1409,6 +1465,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc bookman-demi-r-normal",
   "bookman-demi-r-normal",
+  "urw bookman l-bold-r-normal",
+  NULL,
   "Bookman", "serif", "normal", "bold", "normal",
   24623, 1, 0, 2, 14,
   934, 250,
@@ -1484,6 +1542,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc bookman-demi-i-normal",
   "bookman-demi-i-normal",
+  "urw bookman l-bold-i-normal",
+  NULL,
   "Bookman", "serif", "italic", "bold", "normal",
   24623, 1, 1, 2, 14,
   941, 250,
@@ -1557,7 +1617,9 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "Courier",			/* #20 */
   "CourierPS",
   NULL,
-  "courier-medium-r-normal",
+  "courier-medium-r-normal",	/* Adobe */
+  "nimbus mono l-medium-r-normal", /* URW, for SuSE */
+  "nimbus mono l-regular-r-normal", /* URW, for Debian */
   NULL,
   "Courier", "monospace", "normal", "normal", "normal",
   24579, 0, 0, 0, 14,
@@ -1637,6 +1699,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
 #endif
   "courier-medium-o-normal",
+  "nimbus mono l-medium-o-normal",
+  "nimbus mono l-regular-o-normal",
   NULL,
   "Courier", "monospace", "oblique", "normal", "normal",
   24579, 0, 1, 0, 14,
@@ -1712,6 +1776,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "CourierPS-Bold",
   NULL,
   "courier-bold-r-normal",
+  "nimbus mono l-bold-r-normal",
+  "nimbus mono l-bold-r-normal",
   NULL,
   "Courier", "monospace", "normal", "bold", "normal",
   24579, 0, 0, 3, 14,
@@ -1791,6 +1857,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
 #endif
   "courier-bold-o-normal",
+  "nimbus mono l-bold-o-normal",
+  "nimbus mono l-bold-o-normal",
   NULL,
   "Courier", "monospace", "oblique", "bold", "normal",
   24579, 0, 1, 3, 14,
@@ -1865,8 +1933,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "NewCenturySchlbk-Roman",	/* #24 */
   NULL,
   NULL,
-  "new century schoolbook-medium-r-normal",
-  "newcenturyschlbk-medium-r-normal", /* name formerly used by DEC */
+  "new century schoolbook-medium-r-normal", /* Adobe */
+  "newcenturyschlbk-medium-r-normal", /* Adobe, for DEC etc. */
+  "century schoolbook l-medium-r-normal", /* URW, for SuSE and Debian */
+  NULL,
   "New Century Schoolbook", "serif", "normal", "normal", "normal",
   24703, 1, 0, 0, 14,
   965, 250,
@@ -1942,6 +2012,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "new century schoolbook-medium-i-normal",
   "newcenturyschlbk-medium-i-normal",
+  "century schoolbook l-medium-i-normal",
+  NULL,
   "New Century Schoolbook", "serif", "italic", "normal", "normal",
   24703, 1, 1, 0, 14,
   958, 250,
@@ -2017,6 +2089,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "new century schoolbook-bold-r-normal",
   "newcenturyschlbk-bold-r-normal",
+  "century schoolbook l-bold-r-normal",
+  NULL,
   "New Century Schoolbook", "serif", "normal", "bold", "normal",
   24703, 1, 0, 3, 14,
   988, 250,
@@ -2092,6 +2166,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "new century schoolbook-bold-i-normal",
   "newcenturyschlbk-bold-i-normal",
+  "century schoolbook l-bold-i-normal",
+  NULL,
   "New Century Schoolbook", "serif", "italic", "bold", "normal",
   24703, 1, 1, 3, 14,
   991, 250,
@@ -2165,7 +2241,9 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "Palatino-Roman",		/* #28 */
   NULL,
   NULL,
-  "palatino-medium-r-normal",
+  "palatino-medium-r-normal",	/* Adobe */
+  "urw palladio l-medium-r-normal", /* URW, for SuSE */
+  "urw palladio l-regular-r-normal", /* URW, for Debian */
   NULL,
   "Palatino", "serif", "normal", "normal", "normal",
   24591, 1, 0, 0, 14,
@@ -2241,6 +2319,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "palatino-medium-i-normal",
+  "urw palladio l-medium-i-normal",
+  "urw palladio l-regular-i-normal",
   NULL,
   "Palatino", "serif", "italic", "normal", "normal",
   24591, 1, 1, 0, 14,
@@ -2316,6 +2396,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "palatino-bold-r-normal",
+  "urw palladio l-bold-r-normal",
+  "urw palladio l-bold-r-normal",
   NULL,
   "Palatino", "serif", "normal", "bold", "normal",
   24591, 1, 0, 3, 14,
@@ -2391,6 +2473,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   "palatino-bold-i-normal",
+  "urw palladio l-bold-i-normal",
+  "urw palladio l-bold-i-normal",
   NULL,
   "Palatino", "serif", "italic", "bold", "normal",
   24591, 1, 1, 3, 14,
@@ -2465,8 +2549,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "ZapfChancery-MediumItalic",	/* #32 */
   NULL,
   NULL,
-  "itc zapf chancery-medium-i-normal", /* as used e.g. by SGI */
-  "zapfchancery-medium-i-normal", /* our former convention, from SunOS */
+  "itc zapf chancery-medium-i-normal", /* Adobe, for SGI etc. */
+  "zapf chancery-medium-i-normal", /* Adobe, for Open Group etc. */
+  "zapfchancery-medium-i-normal", /* Adobe, for SunOS etc.*/
+  "urw chancery l-medium-i-normal", /* URW, for SuSE */
   "Zapf Chancery", "cursive", "italic", "normal", "normal",
   45099, 1, 1, 0, 14,
   831, 314,
@@ -2540,8 +2626,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "ZapfDingbats",		/* #33 */
   NULL,
   NULL,
-  "itc zapf dingbats-medium-r-normal",
-  "zapfdingbats-medium-r-normal", /* our former convention, from SunOS etc. */
+  "itc zapf dingbats-medium-r-normal", /* Adobe */
+  "zapf dingbats-medium-r-normal", /* Adobe, for Open Group etc. */
+  "zapfdingbats-medium-r-normal", /* Adobe, for SunOS etc. */
+  "dingbats-medium-r-normal",	/* URW, for SuSE */
   "Zapf Dingbats", NULL, "normal", "normal", "normal",
   45101, 1, 0, 0, 460,
   820, 143,
@@ -2615,7 +2703,9 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   "Symbol",			/* #34 */
   "SymbolPS",
   NULL,
-  "symbol-medium-r-normal",
+  "symbol-medium-r-normal",	/* Adobe */
+  "standard symbols l-medium-r-normal",	/* URW, for SuSE */
+  "standard symbols l-regular-r-normal", /* URW, for Debian */
   NULL,
   "Symbol", NULL, "normal", "normal", "normal",
   45358, 1, 0, 0, 621,
@@ -2692,6 +2782,8 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   NULL,
+  NULL,
+  NULL,
   NULL, NULL, NULL, NULL, NULL,
   0, 0, 0, 0, 0,
   0, 0,
@@ -2760,10 +2852,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   false}
 };
 
-/* The array _ps_font_to_cgm_font_id[] performs a map from internal PS font
-   number, i.e. location in the preceding list of 35 fonts, to CGM font id,
-   as used by CGM Plotters in WebCGM output.  _cgm_font_id_to_ps_font[]
-   performs the inverse map.  
+/* The array _pl_g_ps_font_to_cgm_font_id[] performs a map from internal PS
+   font number, i.e. location in the preceding list of 35 fonts, to CGM
+   font id, as used by CGM Plotters in WebCGM output.
+   _pl_g_cgm_font_id_to_ps_font[] performs the inverse map.
 
    These maps are permutations of the interval 0..34, and are restricted
    only by the requirement that the original `Adobe 13' (the PS fonts built
@@ -2772,10 +2864,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
    they are assumed always to be available.  If any of the other 23 is
    included, a `FONT PROPERTIES' command needs to be emitted for it. */
    
-const int _ps_font_to_cgm_font_id[] = 
+const int _pl_g_ps_font_to_cgm_font_id[PL_NUM_PS_FONTS] = 
 { 0, 1, 2, 3, 13, 14, 15, 16, 4, 5, 6, 7, 17, 18, 19, 20, 21, 22, 23, 24, 8, 9, 10, 11, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 12 };
 
-const int _cgm_font_id_to_ps_font[] = 
+const int _pl_g_cgm_font_id_to_ps_font[PL_NUM_PS_FONTS] = 
 { 0, 1, 2, 3, 8, 9, 10, 11, 20, 21, 22, 23, 34, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
 
 /* The following array contains the most important CGM properties of the 35
@@ -3084,7 +3176,7 @@ const int _cgm_font_id_to_ps_font[] =
    13        Reserved
    14 Reserved */
 
-const plCGMFontProperties _cgm_font_properties[] = {
+const plCGMFontProperties _pl_g_cgm_font_properties[PL_NUM_PS_FONTS] = {
   /* family, extrastyle, style, posture, weight, width, design_group, struct */
   { "Helvetica", "", "", 			1, 5, 5, { 5, 1, 2 }, 1 },
   { "Helvetica", "", "Oblique",			2, 5, 5, { 5, 1, 2 }, 1 },
@@ -3129,13 +3221,13 @@ const plCGMFontProperties _cgm_font_properties[] = {
    (1) number of valid fonts [should be >= 2, since every typeface
        should include a symbol font (the zeroth font, the 1st listed)]
    (2) a list of fonts (each number is an index into
-       the _ps_font_info[] array above).
+       the _pl_g_ps_font_info[] array above).
 
-   The number of valid fonts should be <= FONTS_PER_TYPEFACE; the
+   The number of valid fonts should be <= PL_MAX_FONTS_PER_TYPEFACE; the
    initializers are filled out with dummy fonts to get arrays of length
-   FONTS_PER_TYPEFACE. */
+   PL_MAX_FONTS_PER_TYPEFACE. */
 
-const struct plTypefaceInfoStruct _ps_typeface_info[] = 
+const struct plTypefaceInfoStruct _pl_g_ps_typeface_info[] = 
 {
   /* Helvetica, #0 */
   { 5, { 34, 0, 1, 2, 3, 999, 999, 999, 999, 999 } },
@@ -3168,7 +3260,7 @@ const struct plTypefaceInfoStruct _ps_typeface_info[] =
    (2) an alias for the font (for backward compatibility)
    (3) Allen Hershey's original name for the font
    (4) the characters in the font (an array of glyph indices, size 256)
-   (5) a typeface id (an index into the _ps_typeface_info[] array below)
+   (5) a typeface id (an index into the _pl_g_ps_typeface_info[] array below)
    (6) a font index (which font within the typeface this is)
    (7) an `obliquing requested' flag (set if glyphs should be sheared)
    (8) an `iso8859-1' flag
@@ -3249,10 +3341,10 @@ const struct plTypefaceInfoStruct _ps_typeface_info[] =
 /* IMPORTANT: The fonts in this array may be referred to elsewhere in the
    code by number.  If you change the numbering of Hershey fonts, i.e., the
    order in which they appear in this array, be sure to update, e.g., the
-   definitions DEFAULT_HERSHEY_FONT_INDEX, HERSHEY_SERIF, HERSHEY_EUC
+   definitions PL_DEFAULT_HERSHEY_FONT_INDEX, PL_HERSHEY_SERIF, PL_HERSHEY_EUC
    etc. in extern.h. */
 
-const struct plHersheyFontInfoStruct _hershey_font_info[] = 
+const struct plHersheyFontInfoStruct _pl_g_hershey_font_info[] = 
 {
   {
     "HersheySerif",		/* #0 */
@@ -4359,7 +4451,7 @@ const struct plHersheyFontInfoStruct _hershey_font_info[] =
    are stored in the inaccessible 0x80--0x9f region (i.e., \0200--\0237
    region) of each font. */
 
-const struct plHersheyAccentedCharInfoStruct _hershey_accented_char_info[] = 
+const struct plHersheyAccentedCharInfoStruct _pl_g_hershey_accented_char_info[] = 
 {
   /* for HersheyCyrillic[-Oblique] (KOI8-R encoding) accented characters */
   {0243, 0305, 0212},		/* edieresis */
@@ -4427,13 +4519,13 @@ const struct plHersheyAccentedCharInfoStruct _hershey_accented_char_info[] =
    (1) number of valid fonts [should be >= 2, since every typeface
        should include a symbol font (the zeroth font, the 1st listed)]
    (2) a list of fonts (each number is an index into
-       the _hershey_font_info[] array above).
+       the _pl_g_hershey_font_info[] array above).
 
-   The number of valid fonts should be <= FONTS_PER_TYPEFACE; the
+   The number of valid fonts should be <= PL_MAX_FONTS_PER_TYPEFACE; the
    initializers are filled out with dummy fonts to get arrays of length
-   FONTS_PER_TYPEFACE. */
+   PL_MAX_FONTS_PER_TYPEFACE. */
 
-const struct plTypefaceInfoStruct _hershey_typeface_info[] = 
+const struct plTypefaceInfoStruct _pl_g_hershey_typeface_info[] = 
 {
   /* Hershey Serif [including Cyrillic, Cyrillic-Obl., and EUC], typeface #0 */
   { 8, { 18, 0, 1, 2, 3, 4, 5, 8, 999, 999 } },

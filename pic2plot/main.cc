@@ -1,9 +1,33 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "pic.h"
 #include "output.h"
+#include "common.h"
+
+#include "libcommon.h"
 #include "getopt.h"
+#include "fontlist.h"
 #include "plot.h"		// libplot header file
 
 const char *progname = "pic2plot"; // name of this program
+const char *written = "Written by Robert S. Maier.";
+const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " FILE...\n";
 
@@ -16,7 +40,7 @@ output *out;			// declared in output.h
 // is derived from the output class.  Any instance of the plot_output
 // class looks at the following global variables, which the user
 // can set on the command line.
-char *display_type = (char *)"meta"; // libplot output format
+char *output_format = (char *)"meta"; // libplot output format
 char *font_name = NULL;	// initial font name (if set)
 char *pen_color_name = NULL; // initial pen color (if set)
 double font_size = 10.0/(8.0*72.); // font size as width of graphics display
@@ -43,16 +67,19 @@ int precision_dashing = 0;	// position dashes/dots individually?
 static int had_parse_error = 0;	// parse error?
 static int lf_flag = 1;		// non-zero -> try to parse `.lf' lines
 
-/* Long options we recognize */
+// options
 
 #define	ARG_NONE	0
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
+const char *optstring = "T:OndF:f:W:";
+
 struct option long_options[] = 
 {
-  /* The most important option */
-  { "display-type",	ARG_REQUIRED,	NULL, 'T'},
+  /* The most important option ("--display-type" is an obsolete variant) */
+  { "output-format",	ARG_REQUIRED,	NULL, 'T'},
+  { "display-type",	ARG_REQUIRED,	NULL, 'T' << 8 }, /* hidden */
   /* Long options, most with no equivalent short option alias */
   { "bg-color",		ARG_REQUIRED,	NULL, 'q' << 8 },
   { "bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8 },
@@ -76,22 +103,13 @@ struct option long_options[] =
   { NULL,		0,		NULL,  0}
 };
     
-/* null-terminated list of options that we don't show to the user */
-int hidden_options[] = { 0 };
+/* null-terminated list of options, such as obsolete-but-still-maintained
+   options or undocumented options, which we don't show to the user */
+const int hidden_options[] = { (int)('T' << 8), 0 };
 
 // forward references
 void do_file (const char *filename);
 void do_picture (FILE *fp);
-
-/* from libcommon */
-extern "C" int display_fonts (const char *display_type, const char *progname);
-extern "C" int list_fonts (const char *display_type, const char *progname);
-extern "C" void display_usage (const char *progname, const int *omit_vals, const char *appendage, bool fonts);
-extern "C" void display_version (const char *progname); 
-extern "C" voidptr_t xcalloc (size_t nmemb, size_t size);
-extern "C" voidptr_t xmalloc (size_t size);
-extern "C" voidptr_t xrealloc (voidptr_t p, size_t length);
-extern "C" char *xstrdup (const char *s);
 
 //////////////////////////////////////////////////////////////////////
 // TOP_INPUT class.
@@ -328,19 +346,20 @@ main (int argc, char **argv)
 #endif
 
   plotter_params = pl_newplparams ();
-  while ((option = getopt_long (argc, argv, "T:OndF:f:W:", long_options, &opt_index)) != EOF)
+  while ((option = getopt_long (argc, argv, optstring, long_options, &opt_index)) != EOF)
     {
       if (option == 0)
 	option = long_options[opt_index].val;
       
       switch (option) 
 	{
-	case 'T':		/* Display type, ARG REQUIRED      */
-	  display_type = (char *)xmalloc (strlen (optarg) + 1);
-	  strcpy (display_type, optarg);
+	case 'T':		/* Output format, ARG REQUIRED      */
+	case 'T' << 8:
+	  output_format = (char *)xmalloc (strlen (optarg) + 1);
+	  strcpy (output_format, optarg);
 	  break;
 	case 'O':		/* Ascii output */
-	  pl_setplparam (plotter_params, "META_PORTABLE", (voidptr_t)"yes");
+	  pl_setplparam (plotter_params, "META_PORTABLE", (void *)"yes");
 	  break;
 	case 'n':		/* No centering */
 	  no_centering_flag = 1;
@@ -409,26 +428,26 @@ main (int argc, char **argv)
 	    break;
 	  }
 	case 'e' << 8:		/* Emulate color via grayscale */
-	  pl_setplparam (plotter_params, "EMULATE_COLOR", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "EMULATE_COLOR", (void *)optarg);
 	  break;
 	case 'C' << 8:		/* set the initial pen color */
 	  pen_color_name = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (pen_color_name, optarg);
 	  break;
 	case 'q' << 8:		/* set the initial background color */
-	  pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "BG_COLOR", (void *)optarg);
 	  break;
 	case 'B' << 8:		/* Bitmap size */
-	  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "BITMAPSIZE", (void *)optarg);
 	  break;
 	case 'M' << 8:		/* Max line length */
-	  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (void *)optarg);
 	  break;
 	case 'P' << 8:		/* Page size */
-	  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "PAGESIZE", (void *)optarg);
 	  break;
 	case 'r' << 8:		/* Rotation angle */
-	  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "ROTATION", (void *)optarg);
 	  break;
 	case 'V' << 8:		/* Version */
 	  show_version = true;
@@ -456,14 +475,14 @@ main (int argc, char **argv)
     }
   if (show_version)
     {
-      display_version (progname);
+      display_version (progname, written, copyright);
       return EXIT_SUCCESS;
     }
   if (do_list_fonts)
     {
       int success = true;
 
-      success = list_fonts (display_type, progname);
+      success = list_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -473,7 +492,7 @@ main (int argc, char **argv)
     {
       int success = true;
 
-      success = display_fonts (display_type, progname);
+      success = display_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else

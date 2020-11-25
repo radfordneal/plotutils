@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This internal method is invoked by a CGMPlotter before drawing any path.
    It sets the relevant CGM attributes (line type, cap type, join type,
    line width) to what they should be. */
@@ -6,24 +24,19 @@
 #include "extern.h"
 
 /* CGM join styles, indexed by internal number (miter/rd./bevel/triangular) */
-const int _cgm_join_style[] =
+static const int _cgm_join_style[PL_NUM_JOIN_TYPES] =
 { CGM_JOIN_MITER, CGM_JOIN_ROUND, CGM_JOIN_BEVEL, CGM_JOIN_ROUND };
 
 /* CGM cap styles, indexed by internal number (butt/rd./project/triangular) */
 /* Note: we map libplot's triangular cap style to CGM's round cap style,
    not CGM's triangular cap style, since the latter plots an equilateral
    triangle, which is not libplot's convention. */
-const int _cgm_cap_style[] =
+static const int _cgm_cap_style[PL_NUM_CAP_TYPES] =
 { CGM_CAP_BUTT, CGM_CAP_ROUND, CGM_CAP_PROJECTING, CGM_CAP_ROUND };
 
+/* ARGS: object type = close path / open path / marker etc. */
 void
-#ifdef _HAVE_PROTOS
-_c_set_attributes (R___(Plotter *_plotter) int object_type)
-#else
-_c_set_attributes (R___(_plotter) object_type)
-     S___(Plotter *_plotter;)
-     int object_type;		/* closed path? open path? marker? etc.*/
-#endif
+_pl_c_set_attributes (R___(Plotter *_plotter) int object_type)
 {
   int desired_width = _plotter->drawstate->quantized_device_line_width;
   int desired_line_type = CGM_L_SOLID; /* keep compiler happy */
@@ -115,7 +128,7 @@ _c_set_attributes (R___(_plotter) object_type)
 	  if (odd_length)
 	    our_num_dashes *= 2;
 
-	  dashbuf = (int *)_plot_xmalloc (our_num_dashes * sizeof(int));
+	  dashbuf = (int *)_pl_xmalloc (our_num_dashes * sizeof(int));
 	  for (i = 0; i < num_dashes; i++)
 	    {
 	      double dashlen;
@@ -197,7 +210,7 @@ _c_set_attributes (R___(_plotter) object_type)
 		 written out */
 	      plCGMCustomLineType *newguy;
 
-	      newguy = (plCGMCustomLineType *)_plot_xmalloc (sizeof(plCGMCustomLineType));
+	      newguy = (plCGMCustomLineType *)_pl_xmalloc (sizeof(plCGMCustomLineType));
 	      newguy->dashes = dashbuf;
 	      newguy->dash_array_len = our_num_dashes;
 	      newguy->next = (plCGMCustomLineType *)NULL;
@@ -224,27 +237,27 @@ _c_set_attributes (R___(_plotter) object_type)
     {
       switch (_plotter->drawstate->line_type)
 	{
-	case L_SOLID:
+	case PL_L_SOLID:
 	default:
 	  desired_line_type = CGM_L_SOLID;
 	  break;
-	case L_DOTTED:
+	case PL_L_DOTTED:
 	  desired_line_type = CGM_L_DOTTED;
 	  break;
-	case L_DOTDASHED:
+	case PL_L_DOTDASHED:
 	  desired_line_type = CGM_L_DOTDASHED;
 	  break;
-	case L_SHORTDASHED:
+	case PL_L_SHORTDASHED:
 	  desired_line_type = CGM_L_DASHED;
 	  break;
-	case L_LONGDASHED:
+	case PL_L_LONGDASHED:
 	  /* can't distinguish from shortdashed */
 	  desired_line_type = CGM_L_DASHED;
 	  break;
-	case L_DOTDOTDASHED:
+	case PL_L_DOTDOTDASHED:
 	  desired_line_type = CGM_L_DOTDOTDASHED;
 	  break;
-	case L_DOTDOTDOTDASHED:
+	case PL_L_DOTDOTDOTDASHED:
 	  /* map to "dotdotdashed" */
 	  desired_line_type = CGM_L_DOTDOTDASHED;
 	  break;

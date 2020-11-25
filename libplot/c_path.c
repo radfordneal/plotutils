@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -30,12 +48,7 @@
 #include "extern.h"
 
 void
-#ifdef _HAVE_PROTOS
-_c_paint_path (S___(Plotter *_plotter))
-#else
-_c_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_c_paint_path (S___(Plotter *_plotter))
 {
   if (_plotter->drawstate->pen_type == 0
       && _plotter->drawstate->fill_type == 0)
@@ -76,16 +89,16 @@ _c_paint_path (S___(_plotter))
 	/* N.B. pen color and line attributes don't need to be set if
 	   pen_type is zero, signifying an edgeless (presumably filled)
 	   path */
-	_c_set_pen_color (R___(_plotter)
+	_pl_c_set_pen_color (R___(_plotter)
 			  closed ? CGM_OBJECT_CLOSED : CGM_OBJECT_OPEN);
-	_c_set_fill_color (R___(_plotter)
+	_pl_c_set_fill_color (R___(_plotter)
 			   closed ? CGM_OBJECT_CLOSED : CGM_OBJECT_OPEN);
-	_c_set_attributes (R___(_plotter) 
+	_pl_c_set_attributes (R___(_plotter) 
 			   closed ? CGM_OBJECT_CLOSED : CGM_OBJECT_OPEN);
       
 	/* array for points, with positions expressed in integer device
            coors */
-	xarray = (plIntPathSegment *)_plot_xmalloc (_plotter->drawstate->path->num_segments * sizeof(plIntPathSegment));
+	xarray = (plIntPathSegment *)_pl_xmalloc (_plotter->drawstate->path->num_segments * sizeof(plIntPathSegment));
       
 	/* add first point of path to xarray[] (a moveto, presumably) */
 	xarray[0].p.x = IROUND(XD(_plotter->drawstate->path->segments[0].p.x, 
@@ -745,9 +758,9 @@ _c_paint_path (S___(_plotter))
 	
 	/* set CGM edge color and attributes, by emitting appropriate
            commands */
-	_c_set_pen_color (R___(_plotter) CGM_OBJECT_CLOSED);
-	_c_set_fill_color (R___(_plotter) CGM_OBJECT_CLOSED);
-	_c_set_attributes (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_pen_color (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_fill_color (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_attributes (R___(_plotter) CGM_OBJECT_CLOSED);
 	
 	if (_plotter->drawstate->fill_type == 0)
 	  /* won't do filling */
@@ -871,9 +884,9 @@ _c_paint_path (S___(_plotter))
 	
 	/* set CGM edge color and attributes, by emitting appropriate
            commands */
-	_c_set_pen_color (R___(_plotter) CGM_OBJECT_CLOSED);
-	_c_set_fill_color (R___(_plotter) CGM_OBJECT_CLOSED);
-	_c_set_attributes (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_pen_color (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_fill_color (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_attributes (R___(_plotter) CGM_OBJECT_CLOSED);
 	
 	if (_plotter->drawstate->fill_type == 0)
 	  /* won't do filling */
@@ -1018,9 +1031,9 @@ _c_paint_path (S___(_plotter))
 	
 	/* set CGM edge color and attributes, by emitting appropriate
            commands */
-	_c_set_pen_color (R___(_plotter) CGM_OBJECT_CLOSED);
-	_c_set_fill_color (R___(_plotter) CGM_OBJECT_CLOSED);
-	_c_set_attributes (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_pen_color (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_fill_color (R___(_plotter) CGM_OBJECT_CLOSED);
+	_pl_c_set_attributes (R___(_plotter) CGM_OBJECT_CLOSED);
 	
 	if (_plotter->drawstate->fill_type == 0)
 	  /* won't do filling */
@@ -1131,12 +1144,7 @@ _c_paint_path (S___(_plotter))
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_c_paint_paths (S___(Plotter *_plotter))
-#else
-_c_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_c_paint_paths (S___(Plotter *_plotter))
 {
   return false;
 }

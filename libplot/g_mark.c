@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the marker method, which is a GNU extension to
    libplot.  It plots an object: a marker, of specified size, at a
    specified location.  This marker may be one of a list of standard
@@ -40,15 +58,7 @@
 #define NOMINAL_HALF 0xa000
 
 int
-#ifdef _HAVE_PROTOS
 _API_fmarker (R___(Plotter *_plotter) double x, double y, int type, double size)
-#else
-_API_fmarker (R___(_plotter) x, y, type, size)
-     S___(Plotter *_plotter;)
-     double x, y;
-     int type;
-     double size;
-#endif
 {
   bool drawn;
   char label_buf[2];
@@ -520,14 +530,7 @@ _API_fmarker (R___(_plotter) x, y, type, size)
    `false'. */
 
 bool
-#ifdef _HAVE_PROTOS
-_g_paint_marker (R___(Plotter *_plotter) int type, double size)
-#else
-_g_paint_marker (R___(_plotter) type, size)
-     S___(Plotter *_plotter;)
-     int type;
-     double size;
-#endif
+_pl_g_paint_marker (R___(Plotter *_plotter) int type, double size)
 {
   return false;
 }

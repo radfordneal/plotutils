@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -59,19 +59,31 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
+AR = @AR@
 AS = @AS@
 CC = @CC@
 CXX = @CXX@
+CXXCPP = @CXXCPP@
 DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
+EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+F77 = @F77@
+GCJ = @GCJ@
+GCJFLAGS = @GCJFLAGS@
+HAVE_LIB = @HAVE_LIB@
 LEX = @LEX@
+LIB = @LIB@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
-LTALLOCA = @LTALLOCA@
+LTLIB = @LTLIB@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+RC = @RC@
+STRIP = @STRIP@
 VERSION = @VERSION@
 X_BASIC_LIBS = @X_BASIC_LIBS@
 X_CFLAGS = @X_CFLAGS@
@@ -104,8 +116,11 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-ode_OBJECTS =  am.o ama.o bessel.o eu.o expr.o float.o global.o main.o \
-misc.o prt.o rk.o rka.o specfun.o stperr.o sym.o yywrap.o gram.o lex.o
+ode_OBJECTS =  am.$(OBJEXT) ama.$(OBJEXT) bessel.$(OBJEXT) eu.$(OBJEXT) \
+expr.$(OBJEXT) float.$(OBJEXT) global.$(OBJEXT) main.$(OBJEXT) \
+misc.$(OBJEXT) prt.$(OBJEXT) rk.$(OBJEXT) rka.$(OBJEXT) \
+specfun.$(OBJEXT) stperr.$(OBJEXT) sym.$(OBJEXT) yywrap.$(OBJEXT) \
+gram.$(OBJEXT) lex.$(OBJEXT)
 ode_DEPENDENCIES =  ../lib/libcommon.a
 ode_LDFLAGS = 
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
@@ -122,15 +137,15 @@ DIST_COMMON =  README Makefile.am Makefile.in gram.c lex.c
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(ode_SOURCES)
 OBJECTS = $(ode_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .l .lo .o .s .y
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+.SUFFIXES: .S .c .l .lo .o .obj .s .y
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps ode/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
@@ -166,6 +181,11 @@ uninstall-binPROGRAMS:
 .c.o:
 	$(COMPILE) -c $<
 
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -174,6 +194,7 @@ uninstall-binPROGRAMS:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -232,7 +253,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
 
 mostlyclean-tags:
 
@@ -251,32 +272,13 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-am.o: am.c ../include/sys-defines.h ../config.h ode.h extern.h
-ama.o: ama.c ../include/sys-defines.h ../config.h ode.h extern.h num.h
-bessel.o: bessel.c ../include/sys-defines.h ../config.h ode.h extern.h
-eu.o: eu.c ../include/sys-defines.h ../config.h ode.h extern.h
-expr.o: expr.c ../include/sys-defines.h ../config.h ode.h extern.h
-float.o: float.c ../include/sys-defines.h ../config.h ode.h extern.h
-global.o: global.c ../include/sys-defines.h ../config.h ode.h extern.h
-gram.o: gram.c ../include/sys-defines.h ../config.h ode.h extern.h
-lex.o: lex.c ../include/sys-defines.h ../config.h ode.h extern.h gram.h
-main.o: main.c ../include/sys-defines.h ../config.h ode.h extern.h \
-	../include/getopt.h
-misc.o: misc.c ../include/sys-defines.h ../config.h ode.h extern.h
-prt.o: prt.c ../include/sys-defines.h ../config.h ode.h extern.h
-rk.o: rk.c ../include/sys-defines.h ../config.h ode.h extern.h
-rka.o: rka.c ../include/sys-defines.h ../config.h ode.h extern.h num.h
-specfun.o: specfun.c ../include/sys-defines.h ../config.h ode.h extern.h
-stperr.o: stperr.c ../include/sys-defines.h ../config.h ode.h extern.h
-sym.o: sym.c ../include/sys-defines.h ../config.h ode.h extern.h
-yywrap.o: yywrap.c ../include/sys-defines.h ../config.h ode.h extern.h
 
 info-am:
 info: info-am
@@ -314,7 +316,7 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-	-test -z "lexlgramhgramc" || rm -f lexl gramh gramc
+	-test -z "lexcgramhgramc" || rm -f lexc gramh gramc
 mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-compile \
 		mostlyclean-libtool mostlyclean-tags \
 		mostlyclean-generic

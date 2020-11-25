@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* Initialization for the first drawing state on the stack of drawing
    states maintained by any Plotter.  Its components include drawing
    attributes, and the state of any uncompleted path object.  (At
@@ -7,22 +25,22 @@
    four fields, `font_name', `font_type', `typeface_index', and
    `font_index' are special: they are filled in at that time, since they
    are Plotter-dependent.  So the values for them below (respectively
-   "HersheySerif", F_HERSHEY, 0, and 1) are really dummies. */
+   "HersheySerif", PL_F_HERSHEY, 0, and 1) are really dummies. */
 
 /* Two other fields (font size and line width in user coordinates) play an
    important role at later times, e.g. a bad font size resets the font size
    to the default.  For that reason, those variables are filled in when
    space() or fsetmatrix() is called (see g_concat.c).  They are computed
-   using the two quantities DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE
-   and DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (defined in
+   using the two quantities PL_DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE
+   and PL_DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (defined in
    extern.h). */
 
 #include "sys-defines.h"
 #include "extern.h"
 
 /* save keystrokes */
-#define DFSAFODS DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE
-#define DLWAFODS DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE
+#define DFSAFODS PL_DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE
+#define DLWAFODS PL_DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE
 
 const plDrawState _default_drawstate = {
 
@@ -51,15 +69,15 @@ const plDrawState _default_drawstate = {
 /* modal drawing attributes */
   /* 1. path-related attributes */
   "even-odd",			/* fill mode ["even-odd" / "nonzero-winding"]*/
-  FILL_ODD_WINDING,		/* fill type, one of FILL_*, det'd by mode */
+  PL_FILL_ODD_WINDING,		/* fill type, one of PL_FILL_*, det'd by mode */
   "solid",			/* line mode [must be valid] */
-  L_SOLID,			/* line type, one of L_*, det'd by line mode */
+  PL_L_SOLID,			/* line type, one of L_*, det'd by line mode */
   true,				/* if not set, paths are "disconnected" */
   "butt",			/* cap mode [must be valid] */
-  CAP_BUTT,			/* cap type, one of CAP_*, det'd by cap mode */
+  PL_CAP_BUTT,			/* cap type, one of PL_CAP_*, det'd by cap mode */
   "miter",			/* join mode [must be valid] */
-  JOIN_MITER,			/* join type, one of JOIN_*, det'd by mode */
-  DEFAULT_MITER_LIMIT,		/* miter limit for line joins */
+  PL_JOIN_MITER,	        /* join type, one of PL_JOIN_*, det'd by mode */
+  PL_DEFAULT_MITER_LIMIT,		/* miter limit for line joins */
   DLWAFODS,			/* line width in user coors [set by space()] */
   true,				/* line width is (Plotter-specific) default? */
   1.0,				/* line width in device coordinates ["] */
@@ -81,7 +99,7 @@ const plDrawState _default_drawstate = {
   0.0,				/* font ascent in user coordinates (") */
   0.0,				/* font descent in user coordinates (") */
   0.0,				/* font capital height in user coors (") */
-  F_HERSHEY,			/* font type [dummy] */
+  PL_F_HERSHEY,			/* font type [dummy] */
   0,				/* typeface index (in fontdb.h typeface table; this is Hershey Serif typeface) [dummy] */
   1,				/* font index (within typeface; this is Roman variant of Hershey Serif typeface) [dummy] */
   true,				/* true means an ISO-Latin-1 font ["] */
@@ -108,8 +126,8 @@ const plDrawState _default_drawstate = {
 /* elements specific to the Fig drawing state [DUMMIES] */
   16,				/* font size in fig's idea of points */
   -1,				/* fig's fill level (-1 = transparent) */
-  C_BLACK,			/* fig's fg color (0=black, see colordb2.c) */
-  C_BLACK,			/* fig's fill color (see list in colordb2.c) */
+  FIG_C_BLACK,			/* fig's fg color (0=black) */
+  FIG_C_BLACK,			/* fig's fill color */
 /* elements specific to the PS drawing state [DUMMIES] */
   0.0,				/* RGB for PS fg color (floats) */
   0.0,
@@ -132,8 +150,7 @@ const plDrawState _default_drawstate = {
   false,			/* erasing color index is genuine? */
 #ifndef X_DISPLAY_MISSING
 /* elements spec. to X11, X11 Drawable drawingstates [nearly all: DUMMY] */
-  {14.0, 0.0, 0.0, 14.0},	/* pixel matrix, parsed from font name */
-  true,				/* if set, can use XDrawString() etc. */
+  14,				/* font pixel size */
   (XFontStruct *)NULL,		/* font structure (used in x_alab_X.c) */
   (const unsigned char *)NULL,	/* label (hint to font retrieval routine) */
   (GC)NULL,			/* graphics context, for drawing */

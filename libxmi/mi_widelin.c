@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -26,22 +49,22 @@
 #define hypot(x, y) sqrt((x)*(x) + (y)*(y))
 
 /* internal functions that do painting of pixels */
-static void miFillPolyHelper ____P((miPaintedSet *paintedSet, miPixel pixel, int y, unsigned int overall_height, PolyEdge *left, PolyEdge *right, int left_count, int right_count));
-static void miFillRectPolyHelper ____P((miPaintedSet *paintedSet, miPixel pixel, int x, int y, unsigned int w, unsigned int h));
-static void miLineArc ____P((miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, LineFace *leftFace, LineFace *rightFace, double xorg, double yorg, bool isInt));
-static void miLineJoin ____P((miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, LineFace *pLeft, LineFace *pRight));
-static void miLineProjectingCap ____P((miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const LineFace *face, bool isLeft, bool isInt));
-static void miWideDashSegment ____P((miPaintedSet *paintedSet, const miGC *pGC, int *pDashNum, int *pDashIndex, int *pDashOffset, int x1, int y1, int x2, int y2, bool projectLeft, bool projectRight, LineFace *leftFace, LineFace *rightFace));
-static void miWideSegment ____P((miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, int x1, int y1, int x2, int y2, bool projectLeft, bool projectRight, LineFace *leftFace, LineFace *rightFace));
+static void miFillPolyHelper (miPaintedSet *paintedSet, miPixel pixel, int y, unsigned int overall_height, PolyEdge *left, PolyEdge *right, int left_count, int right_count);
+static void miFillRectPolyHelper (miPaintedSet *paintedSet, miPixel pixel, int x, int y, unsigned int w, unsigned int h);
+static void miLineArc (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, LineFace *leftFace, LineFace *rightFace, double xorg, double yorg, bool isInt);
+static void miLineJoin (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, LineFace *pLeft, LineFace *pRight);
+static void miLineProjectingCap (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const LineFace *face, bool isLeft, bool isInt);
+static void miWideDashSegment (miPaintedSet *paintedSet, const miGC *pGC, int *pDashNum, int *pDashIndex, int *pDashOffset, int x1, int y1, int x2, int y2, bool projectLeft, bool projectRight, LineFace *leftFace, LineFace *rightFace);
+static void miWideSegment (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, int x1, int y1, int x2, int y2, bool projectLeft, bool projectRight, LineFace *leftFace, LineFace *rightFace);
 
 /* internal functions that don't do painting of pixels */
-static int miLineArcD ____P((const miGC *pGC, double xorg, double yorg, miPoint *points, unsigned int *widths, PolyEdge *edge1, int edgey1, bool edgeleft1, PolyEdge *edge2, int edgey2, bool edgeleft2));
-static int miLineArcI ____P((const miGC *pGC, int xorg, int yorg, miPoint *points, unsigned int *widths));
-static int miPolyBuildEdge ____P((double x0, double y0, double k, int dx, int dy, int xi, int yi, bool left, PolyEdge *edge));
-static int miPolyBuildPoly ____P((const PolyVertex *vertices, const PolySlope *slopes, int count, int xi, int yi, PolyEdge *left, PolyEdge *right, int *pnleft, int *pnright, unsigned int *h));
-static int miRoundCapClip ____P((const LineFace *face, bool isInt, PolyEdge *edge, bool *leftEdge));
-static int miRoundJoinFace ____P((const LineFace *face, PolyEdge *edge, bool *leftEdge));
-static void miRoundJoinClip ____P((LineFace *pLeft, LineFace *pRight, PolyEdge *edge1, PolyEdge *edge2, int *y1, int *y2, bool *left1, bool *left2));
+static int miLineArcD (const miGC *pGC, double xorg, double yorg, miPoint *points, unsigned int *widths, PolyEdge *edge1, int edgey1, bool edgeleft1, PolyEdge *edge2, int edgey2, bool edgeleft2);
+static int miLineArcI (const miGC *pGC, int xorg, int yorg, miPoint *points, unsigned int *widths);
+static int miPolyBuildEdge (double x0, double y0, double k, int dx, int dy, int xi, int yi, bool left, PolyEdge *edge);
+static int miPolyBuildPoly (const PolyVertex *vertices, const PolySlope *slopes, int count, int xi, int yi, PolyEdge *left, PolyEdge *right, int *pnleft, int *pnright, unsigned int *h);
+static int miRoundCapClip (const LineFace *face, bool isInt, PolyEdge *edge, bool *leftEdge);
+static int miRoundJoinFace (const LineFace *face, PolyEdge *edge, bool *leftEdge);
+static void miRoundJoinClip (LineFace *pLeft, LineFace *pRight, PolyEdge *edge1, PolyEdge *edge2, int *y1, int *y2, bool *left1, bool *left2);
 
 /* Spans-based convex polygon filler.  Paints a convex polygon, supplied as
    lists of `left' and `right' edges.  Used for painting polygonal line
@@ -51,18 +74,9 @@ static void miRoundJoinClip ____P((LineFace *pLeft, LineFace *pRight, PolyEdge *
    that lie exactly on the boundary of a polygon.  A pixel is not painted
    if it lies on a `right' or `bottom' edge of the polygon. */
 
+/* ARGS: y = starting y coor, overall_height = height of entire segment */
 static void
-#ifdef _HAVE_PROTOS
 miFillPolyHelper (miPaintedSet *paintedSet, miPixel pixel, int y, unsigned int overall_height, PolyEdge *left, PolyEdge *right, int left_count, int right_count)
-#else
-miFillPolyHelper (paintedSet, pixel, y, overall_height, left, right, left_count, right_count)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     int y;			/* starting y coordinate */
-     unsigned int overall_height; /* height of entire segment */
-     PolyEdge *left, *right;
-     int left_count, right_count;
-#endif
 {
   int 	left_x = 0, left_e = 0;
   int	left_stepx = 0;
@@ -124,15 +138,7 @@ miFillPolyHelper (paintedSet, pixel, y, overall_height, left, right, left_count,
    bottom edges) is followed. */
 
 static void
-#ifdef _HAVE_PROTOS
 miFillRectPolyHelper (miPaintedSet *paintedSet, miPixel pixel, int x, int y, unsigned int w, unsigned int h)
-#else
-miFillRectPolyHelper (paintedSet, pixel, x, y, w, h)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     int x, y;
-     unsigned int w, h;
-#endif
 {
   miPoint *ppt, *pptInit;
   unsigned int *pwidth, *pwidthInit;
@@ -168,18 +174,15 @@ miFillRectPolyHelper (paintedSet, pixel, x, y, w, h)
 /* The integer edge data that are computed do not include the `height'
    field, i.e. the number of scanlines to process. */
 
+/* ARGS: x0,y0 = starting point of edge (rel. to x1,y1)
+   	 k = x0 * dy - y0 * dx
+	 dx,dy specify rational slope dy/dx
+	 xi,yi = integer offsets for coor system
+	 left = left edge, not right edge?
+	 edge = integer edge data, to be filled in */
+/*ARGSUSED*/
 static int
-#ifdef _HAVE_PROTOS
 miPolyBuildEdge (double x0, double y0, double k, int dx, int dy, int xi, int yi, bool left, PolyEdge *edge)
-#else
-miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
-     double x0, y0;		/* starting point of edge (rel. to (xi,yi)) */
-     double k;			/* x0 * dy - y0 * dx */
-     int dx, dy;		/* edge has rational slope dy/dx */
-     int xi, yi;		/* integer offset for coordinate system */
-     bool left;			/* left edge, not right edge? */
-     PolyEdge *edge;		/* integer edge data, to be filled in */
-#endif
 {
   int x, y, e;
   int xady;
@@ -246,19 +249,9 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
    (including a `k' value for each edge), and an integer offset vector.
    Also return overall vertical range and top (starting) y value. */
 
+/* ARGS: xi,yi = integer offset for polygon */
 static int
-#ifdef _HAVE_PROTOS
 miPolyBuildPoly (const PolyVertex *vertices, const PolySlope *slopes, int count, int xi, int yi, PolyEdge *left, PolyEdge *right, int *pnleft, int *pnright, unsigned int *h)
-#else
-miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, h)
-     const PolyVertex *vertices;
-     const PolySlope *slopes;
-     int count;
-     int xi, yi;		/* (xi,yi) = integer offset for polygon */
-     PolyEdge *left, *right;
-     int *pnleft, *pnright;
-     unsigned int *h;
-#endif
 {
   int	    top, bottom;
   double    miny, maxy;
@@ -374,15 +367,7 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
    both miWideLine() and miWideDash().  Left and right line faces are
    supplied, each with its own value of k.  They may be modified. */
 static void
-#ifdef _HAVE_PROTOS
 miLineJoin (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, LineFace *pLeft, LineFace *pRight)
-#else
-miLineJoin (paintedSet, pixel, pGC, pLeft, pRight)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     const miGC *pGC;
-     LineFace *pLeft, *pRight;
-#endif
 {
   double	    mx = 0.0, my = 0.0;
   int		    denom = 0;	/* avoid compiler warnings */
@@ -599,17 +584,7 @@ miLineJoin (paintedSet, pixel, pGC, pLeft, pRight)
    two line faces.  Used for round capping and round joining respectively.
    One or two line faces are supplied.  They may be modified. */
 static void
-#ifdef _HAVE_PROTOS
 miLineArc (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, LineFace *leftFace, LineFace *rightFace, double xorg, double yorg, bool isInt)
-#else
-miLineArc (paintedSet, pixel, pGC, leftFace, rightFace, xorg, yorg, isInt)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     const miGC *pGC;
-     LineFace *leftFace, *rightFace;
-     double xorg, yorg;
-     bool isInt;
-#endif
 {
   miPoint    *points;
   unsigned int  *widths;
@@ -685,15 +660,7 @@ miLineArc (paintedSet, pixel, pGC, leftFace, rightFace, xorg, yorg, isInt)
    two edges can be ignored.  Integer coordinates only are used.  Returns
    number of spans in the Spans. */
 static int
-#ifdef _HAVE_PROTOS
 miLineArcI (const miGC *pGC, int xorg, int yorg, miPoint *points, unsigned int *widths)
-#else
-miLineArcI (pGC, xorg, yorg, points, widths)
-     const miGC *pGC;
-     int xorg, yorg;
-     miPoint *points;
-     unsigned int *widths;
-#endif
 {
   miPoint *tpts, *bpts;
   unsigned int *twids, *bwids;
@@ -780,21 +747,7 @@ if (ybase == edgey) \
    wedge).  Floating point coordinates are used.  Returns number of spans
    in the Spans.  The clipping edges may be modified. */
 static int
-#ifdef _HAVE_PROTOS
 miLineArcD (const miGC *pGC, double xorg, double yorg, miPoint *points, unsigned int *widths, PolyEdge *edge1, int edgey1, bool edgeleft1, PolyEdge *edge2, int edgey2, bool edgeleft2)
-#else
-miLineArcD (pGC, xorg, yorg, points, widths, edge1, edgey1, edgeleft1, edge2, edgey2, edgeleft2)
-     const miGC *pGC;
-     double xorg, yorg;
-     miPoint *points;
-     unsigned int *widths;
-     PolyEdge *edge1;
-     int edgey1;
-     bool edgeleft1;
-     PolyEdge *edge2;
-     int edgey2;
-     bool edgeleft2;
-#endif
 {
   miPoint *pts;
   unsigned int *wids;
@@ -949,15 +902,7 @@ miLineArcD (pGC, xorg, yorg, points, widths, edge1, edgey1, edgeleft1, edge2, ed
 /* From two line faces, construct clipping edges that will be used by
    miLineArcD when drawing a pie wedge.  The line faces may be modified. */
 static void
-#ifdef _HAVE_PROTOS
 miRoundJoinClip (LineFace *pLeft, LineFace *pRight, PolyEdge *edge1, PolyEdge *edge2, int *y1, int *y2, bool *left1, bool *left2)
-#else
-miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
-     LineFace *pLeft, *pRight;
-     PolyEdge *edge1, *edge2;
-     int *y1, *y2;
-     bool *left1, *left2;
-#endif
 {
   int	denom;
 
@@ -978,14 +923,7 @@ miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
 
 /* helper function called by the preceding */
 static int
-#ifdef _HAVE_PROTOS
 miRoundJoinFace (const LineFace *face, PolyEdge *edge, bool *leftEdge)
-#else
-miRoundJoinFace (face, edge, leftEdge)
-     const LineFace *face;
-     PolyEdge *edge;
-     bool *leftEdge;
-#endif
 {
   int	    y;
   int	    dx, dy;
@@ -1036,15 +974,7 @@ miRoundJoinFace (face, edge, leftEdge)
 /* From a line face, construct a clipping edge that will be used by
    miLineArcD when drawing a half-disk.  */
 static int
-#ifdef _HAVE_PROTOS
 miRoundCapClip (const LineFace *face, bool isInt, PolyEdge *edge, bool *leftEdge)
-#else
-miRoundCapClip (face, isInt, edge, leftEdge)
-     const LineFace *face;
-     bool isInt;
-     PolyEdge *edge;
-     bool *leftEdge;
-#endif
 {
   int	    y;
   int 	    dx, dy;
@@ -1095,31 +1025,13 @@ miRoundCapClip (face, isInt, edge, leftEdge)
 /* Paint a projecting rectangular cap on a line face.  Called only by
    miWideDash (with isInt = true); not by miWideLine. */
 static void
-#ifdef _HAVE_PROTOS
 miLineProjectingCap (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, const LineFace *face, bool isLeft, bool isInt)
-#else
-miLineProjectingCap (paintedSet, pixel, pGC, face, isLeft, isInt)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     const miGC *pGC;
-     const LineFace *face;
-     bool isLeft;
-     bool isInt;
-#endif
 {
-  int		xorgi = 0, yorgi = 0;
-  int	       	lw;
-  PolyEdge	lefts[2], rights[2];
-  int		lefty, righty, topy, bottomy;
-  PolyEdge      *left, *right;
-  PolyEdge      *top, *bottom;
-  double	xa,ya;
-  double	k;
-  double	xap, yap;
   int		dx, dy;
-  double	projectXoff, projectYoff;
-  double	maxy;
-  int		finaly;
+  int		topy, bottomy;
+  int		xorgi = 0, yorgi = 0;
+  int	       	lw = (int)(pGC->lineWidth);
+  PolyEdge	lefts[2], rights[2];
     
   if (isInt)
     /* in integer case, take (xorgi,yorgi) from face; otherwise (0,0) */
@@ -1127,10 +1039,9 @@ miLineProjectingCap (paintedSet, pixel, pGC, face, isLeft, isInt)
       xorgi = face->x;
       yorgi = face->y;
     }
-  lw = (int)(pGC->lineWidth);
   dx = face->dx;
   dy = face->dy;
-  k = face->k;
+
   if (dy == 0)
     /* special case: line face is horizontal */
     {
@@ -1191,10 +1102,22 @@ miLineProjectingCap (paintedSet, pixel, pGC, face, isLeft, isInt)
   else
     /* general case: line face is neither horizontal nor vertical */
     {
+      int	lefty, righty;
+      int	finaly;
+      double	xa,ya;
+      double	xap, yap;
+      double	maxy;
+      double	projectXoff, projectYoff;
+      double	k;
+      PolyEdge  *left, *right;
+      PolyEdge  *top, *bottom;
+
+      k = face->k;
       xa = face->xa;
       ya = face->ya;
       projectXoff = -ya;
       projectYoff = xa;
+
       if (dx < 0)
 	{
 	  right = &rights[1];
@@ -1209,6 +1132,7 @@ miLineProjectingCap (paintedSet, pixel, pGC, face, isLeft, isInt)
 	  top = &lefts[0];
 	  bottom = &rights[1];
 	}
+
       if (isLeft)
 	/* cap goes left; build four edges */
 	{
@@ -1293,16 +1217,7 @@ miLineProjectingCap (paintedSet, pixel, pGC, face, isLeft, isInt)
    appropriately.  miWideDashSegment() is called to dash each line
    segment. */
 void
-#ifdef _HAVE_PROTOS
 miWideDash (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npt, const miPoint *pPts)
-#else
-miWideDash (paintedSet, pGC, mode, npt, pPts)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     miCoordMode mode;
-     int npt;
-     const miPoint *pPts;
-#endif
 {
   int	    x1, y1, x2, y2;
   int	    dashNum;		/* absolute number of dash, starts with 0 */
@@ -1541,20 +1456,12 @@ miWideDash (paintedSet, pGC, mode, npt, pPts)
    dash will be given a round cap if lines are drawn in the rounded cap
    style, and a projecting cap if lines are drawn in the projecting cap
    style. */
+
+/* ARGS: pDashNum = absolute number of dash
+   	 pDashIndex = index into array (i.e. dashNum % length)
+	 pDashOffset = offset into selected dash */
 static void
-#ifdef _HAVE_PROTOS
 miWideDashSegment (miPaintedSet *paintedSet, const miGC *pGC, int *pDashNum, int *pDashIndex, int *pDashOffset, int x1, int y1, int x2, int y2, bool projectLeft, bool projectRight, LineFace *leftFace, LineFace *rightFace)
-#else
-miWideDashSegment (paintedSet, pGC, pDashNum, pDashIndex, pDashOffset, x1, y1, x2, y2, projectLeft, projectRight, leftFace, rightFace)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     int *pDashNum;		/* absolute number of dash */
-     int *pDashIndex;		/* index into array (i.e. dashNum % length) */
-     int *pDashOffset;		/* offset into selected dash */
-     int x1, y1, x2, y2;
-     bool projectLeft, projectRight;
-     LineFace *leftFace, *rightFace;
-#endif
 {
   int		    dashNum, dashIndex, dashRemain;
   unsigned int      *pDash;
@@ -1960,18 +1867,15 @@ miWideDashSegment (paintedSet, pGC, pDashNum, pDashIndex, pDashOffset, x1, y1, x
 /* FIXME: a negative offset is not supported, and if it is, then some
    places elsewhere in the code, which assume dashNum>=0, may need to be
    fixed too. */
+
+/* ARGS: dist = add'l offset (assumed >= 0)
+   	 pDashNum = dash number
+	 pDashIndex = current dash
+	 pDash = dash list
+	 numInDashList = dashlist length
+	 pDashOffset = offset into current dash */
 void
-#ifdef _HAVE_PROTOS
 miStepDash (int dist, int *pDashNum, int *pDashIndex, const unsigned int *pDash, int numInDashList, int *pDashOffset)
-#else
-miStepDash (dist, pDashNum, pDashIndex, pDash, numInDashList, pDashOffset)
-     int dist;			/* additional offset (assumed >= 0) */
-     int *pDashNum;		/* dash number */
-     int *pDashIndex;		/* current dash */
-     const unsigned int *pDash;	/* dash list */
-     int numInDashList;		/* dashlist length */
-     int *pDashOffset;		/* offset into current dash */
-#endif
 {
   int	dashNum, dashIndex, dashOffset;
   int   totallen;
@@ -2020,16 +1924,7 @@ miStepDash (dist, pDashNum, pDashIndex, pDash, numInDashList, pDashOffset)
 /* Draw a wide polyline, undashed (if width=0, this simply calls
    miZeroLine) */
 void
-#ifdef _HAVE_PROTOS
 miWideLine (miPaintedSet *paintedSet, const miGC *pGC, miCoordMode mode, int npt, const miPoint *pPts)
-#else
-miWideLine (paintedSet, pGC, mode, npt, pPts)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;
-     miCoordMode mode;
-     int npt;
-     const miPoint *pPts;
-#endif
 {
   int		    x1, y1, x2, y2;
   bool	            projectLeft, projectRight;
@@ -2183,31 +2078,11 @@ miWideLine (paintedSet, pGC, mode, npt, pPts)
    round caps.  Also pass back left and right faces for the line segment,
    for possible use in adding caps or joins. */
 static void
-#ifdef _HAVE_PROTOS
 miWideSegment (miPaintedSet *paintedSet, miPixel pixel, const miGC *pGC, int x1, int y1, int x2, int y2, bool projectLeft, bool projectRight, LineFace *leftFace, LineFace *rightFace)
-#else
-miWideSegment (paintedSet, pixel, pGC, x1, y1, x2, y2, projectLeft, projectRight, leftFace, rightFace)
-     miPaintedSet *paintedSet;
-     miPixel pixel;
-     const miGC *pGC;
-     int x1, y1, x2, y2;
-     bool projectLeft, projectRight;
-     LineFace *leftFace, *rightFace;
-#endif
 {
-  double	l, L, r;
-  double	xa, ya;
-  double	projectXoff = 0.0, projectYoff = 0.0;
-  double	k;
-  double	maxy;
   int		dx, dy;
   int		x, y;
-  int		finaly;
-  PolyEdge      *left, *right;
-  PolyEdge      *top, *bottom;
-  int		lefty, righty, topy, bottomy;
   int		signdx;
-  PolyEdge	lefts[2], rights[2];
   int		lw = (int)(pGC->lineWidth);
 
   if (y2 < y1 || (y2 == y1 && x2 < x1))
@@ -2294,6 +2169,17 @@ miWideSegment (paintedSet, pixel, pGC, x1, y1, x2, y2, projectLeft, projectRight
   else
     /* general case: segment is neither horizontal nor vertical */
     {
+      double	l, L, r;
+      double	xa, ya;
+      double	projectXoff = 0.0, projectYoff = 0.0;
+      double	k;
+      double	maxy;
+      int	finaly;
+      int	lefty, righty, topy, bottomy;
+      PolyEdge	lefts[2], rights[2];
+      PolyEdge  *left, *right;
+      PolyEdge  *top, *bottom;
+
       l = 0.5 * ((double) lw);
       L = hypot ((double) dx, (double) dy);
 

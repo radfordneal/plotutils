@@ -19,7 +19,7 @@ The names of the source files include as prefix a letter indicating which
 driver they include code for.  For example, the file h_openpl.c is part of
 the HP-GL/2 driver, and contains low-level code which is called when the
 API function pl_openpl_r() is invoked on an HP-GL/2 or PCL 5 Plotter.
-Namely, it contains the low-level _h_begin_page() function.  As prefixes,
+Namely, it contains the _pl_h_begin_page() function.  As prefixes,
 m=Metafile, t=Tektronix, r=ReGIS, h=HP-GL[/2] and PCL 5, f=Fig, c=CGM,
 p=Postscript, a=Adobe Illustrator, s=SVG, i=GIF, n=PNM, z=PNG, x=XDrawable,
 and y=X.  (Actually, XPlotters use mostly XDrawablePlotter methods.)  The
@@ -80,7 +80,7 @@ libplot code you may see a function invocation like
 `_plotter->begin_page(...)'.  This will (1) dereference the `_plotter'
 pointer to get a Plotter, and (2) dereference the function pointer in the
 Plotter to find the Plotter-specific implementation of the low-level
-operation `begin_page()'.  This would be _h_begin_page() if `_plotter'
+operation `begin_page()'.  This would be _pl_h_begin_page() if `_plotter'
 points to an HP-GL/2 or PCL Plotter, for example.
 
 The two special files apinewc.c and apioldc.c, which alone among the source
@@ -146,11 +146,12 @@ Besides low-level initialize() and terminate() routines for the new Plotter
 type, it would include, for the benefit of libplot, an initialization
 routine for the part of the Plotter struct that contains low-level
 device-specific functions.  (See, for example, the initializing structure
-_h_default_plotter in the file h_defplot.c, as well as the routines
-_h_initialize and _h_terminate.)  The new Plotter initialization would need
-to be added to the _plotter_data[] table in apinewc.c, which is specific to
-libplot.  No such initialization is required for libplotter, since the C++
-compiler itself initializes any instance of a derived Plotter class.
+_pl_h_default_plotter in the file h_defplot.c, as well as the routines
+_pl_h_initialize and _pl_h_terminate.)  The new Plotter initialization
+would need to be added to the _plotter_data[] table in apinewc.c, which is
+specific to libplot.  No such initialization is required for libplotter,
+since the C++ compiler itself initializes any instance of a derived Plotter
+class.
 
 To see how easy it is to add or remove support for a Plotter type, search
 for the symbol X_DISPLAY_MISSING.  If this is defined, support for X

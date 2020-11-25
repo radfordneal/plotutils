@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains device-specific color database access routines.  They
    are called by various FigPlotter methods, before drawing objects.  They
    set the appropriate FigPlotter-specific fields in the drawing state. */
@@ -36,16 +54,10 @@ int _libplotfig_use_pseudocolor = 0;
    [rather strange] partition of the color cube; see f_color2.c.) */
 
 /* forward references */
-static int _fig_pseudocolor ____P((int red, int green, int blue, const long int *fig_usercolors, int fig_num_usercolors));
+static int _fig_pseudocolor (int red, int green, int blue, const long int *fig_usercolors, int fig_num_usercolors);
 
 int
-#ifdef _HAVE_PROTOS
-_fig_color(R___(Plotter *_plotter) int red, int green, int blue)
-#else
-_fig_color(R___(_plotter) red, green, blue)
-     S___(Plotter *_plotter;)
-     int red, green, blue;
-#endif
+_pl_f_fig_color(R___(Plotter *_plotter) int red, int green, int blue)
 {
   int fig_fgcolor_red, fig_fgcolor_green, fig_fgcolor_blue;
   long int fig_fgcolor_rgb;
@@ -68,9 +80,9 @@ _fig_color(R___(_plotter) red, green, blue)
   /* search list of standard colors */
   for (i = 0; i < FIG_NUM_STD_COLORS; i++)
     {
-      if ((_fig_stdcolors[i].red == fig_fgcolor_red)
-	  && (_fig_stdcolors[i].green == fig_fgcolor_green)
-	  && (_fig_stdcolors[i].blue == fig_fgcolor_blue))
+      if ((_pl_f_fig_stdcolors[i].red == fig_fgcolor_red)
+	  && (_pl_f_fig_stdcolors[i].green == fig_fgcolor_green)
+	  && (_pl_f_fig_stdcolors[i].blue == fig_fgcolor_blue))
 	/* perfect match, return it */
 	return i;
     }
@@ -123,14 +135,7 @@ _fig_color(R___(_plotter) red, green, blue)
    FIG_USER_COLOR_MIN, which is equal to FIG_NUM_STD_COLORS. */
 
 static int
-#ifdef _HAVE_PROTOS
 _fig_pseudocolor (int red, int green, int blue, const long int *fig_usercolors, int fig_num_usercolors)
-#else
-_fig_pseudocolor (red, green, blue, fig_usercolors, fig_num_usercolors)
-     int red, green, blue;
-     const long int *fig_usercolors;
-     int fig_num_usercolors;
-#endif
 {
   unsigned long int difference = INT_MAX;
   int i;
@@ -140,9 +145,9 @@ _fig_pseudocolor (red, green, blue, fig_usercolors, fig_num_usercolors)
     {
       unsigned long int newdifference;
       
-      if (_fig_stdcolors[i].red == 0xff
-	  && _fig_stdcolors[i].green == 0xff
-	  && _fig_stdcolors[i].blue == 0xff)
+      if (_pl_f_fig_stdcolors[i].red == 0xff
+	  && _pl_f_fig_stdcolors[i].green == 0xff
+	  && _pl_f_fig_stdcolors[i].blue == 0xff)
 	/* white is a possible quantization only for white itself (our
            convention) */
 	{
@@ -154,12 +159,12 @@ _fig_pseudocolor (red, green, blue, fig_usercolors, fig_num_usercolors)
 	  continue;
 	}
 
-      newdifference = (((_fig_stdcolors[i].red - red) 
-			* (_fig_stdcolors[i].red - red))
-		       + ((_fig_stdcolors[i].green - green) 
-			  * (_fig_stdcolors[i].green - green))
-		       + ((_fig_stdcolors[i].blue - blue) 
-			  * (_fig_stdcolors[i].blue - blue)));
+      newdifference = (((_pl_f_fig_stdcolors[i].red - red) 
+			* (_pl_f_fig_stdcolors[i].red - red))
+		       + ((_pl_f_fig_stdcolors[i].green - green) 
+			  * (_pl_f_fig_stdcolors[i].green - green))
+		       + ((_pl_f_fig_stdcolors[i].blue - blue) 
+			  * (_pl_f_fig_stdcolors[i].blue - blue)));
       if (newdifference < difference)
 	{
 	  difference = newdifference;
@@ -195,12 +200,7 @@ _fig_pseudocolor (red, green, blue, fig_usercolors, fig_num_usercolors)
    lazily, i.e. only when needed (just before an object is written to the
    output buffer) */
 void
-#ifdef _HAVE_PROTOS
-_f_set_pen_color(S___(Plotter *_plotter))
-#else
-_f_set_pen_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_f_set_pen_color(S___(Plotter *_plotter))
 {
   /* OOB switches to default color */
   if (((_plotter->drawstate->fgcolor).red > 0xffff) 
@@ -209,10 +209,10 @@ _f_set_pen_color(S___(_plotter))
     _plotter->drawstate->fig_fgcolor = _default_drawstate.fig_fgcolor;
   else
     _plotter->drawstate->fig_fgcolor = 
-      _fig_color (R___(_plotter) 
-		  (_plotter->drawstate->fgcolor).red,
-		  (_plotter->drawstate->fgcolor).green, 
-		  (_plotter->drawstate->fgcolor).blue);
+      _pl_f_fig_color (R___(_plotter) 
+		       (_plotter->drawstate->fgcolor).red,
+		       (_plotter->drawstate->fgcolor).green, 
+		       (_plotter->drawstate->fgcolor).blue);
   return;
 }
 
@@ -221,12 +221,7 @@ _f_set_pen_color(S___(_plotter))
    before an object is written to the output buffer) */
 
 void
-#ifdef _HAVE_PROTOS
-_f_set_fill_color(S___(Plotter *_plotter))
-#else
-_f_set_fill_color(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_f_set_fill_color(S___(Plotter *_plotter))
 {
   double fill_level;
 
@@ -238,10 +233,10 @@ _f_set_fill_color(S___(_plotter))
 
   else
     _plotter->drawstate->fig_fillcolor = 
-      _fig_color (R___(_plotter)
-		  _plotter->drawstate->fillcolor_base.red,
-		  _plotter->drawstate->fillcolor_base.green, 
-		  _plotter->drawstate->fillcolor_base.blue);
+      _pl_f_fig_color (R___(_plotter)
+		       _plotter->drawstate->fillcolor_base.red,
+		       _plotter->drawstate->fillcolor_base.green, 
+		       _plotter->drawstate->fillcolor_base.blue);
   
   /* Now that we know drawstate->fig_fillcolor, we can compute the fig fill
      level that will match the user's requested fill level.  Fig fill level
@@ -288,10 +283,10 @@ _f_set_fill_color(S___(_plotter))
     {
       switch (_plotter->drawstate->fig_fillcolor)
 	{
-	case C_WHITE:		/* can't desaturate white */
+	case FIG_C_WHITE:	/* can't desaturate white */
 	  _plotter->drawstate->fig_fill_level = 20;
 	  break;
-	case C_BLACK:
+	case FIG_C_BLACK:
 	  _plotter->drawstate->fig_fill_level = IROUND(20.0 - 20.0 * fill_level);
 	  break;
 	default:		/* interpret fill level as a saturation */

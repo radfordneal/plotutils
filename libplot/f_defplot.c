@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initialization for any FigPlotter object,
    including both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
@@ -9,28 +27,28 @@
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    a FigPlotter struct. */
-const Plotter _f_default_plotter = 
+const Plotter _pl_f_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _f_initialize, _f_terminate,
+  _pl_f_initialize, _pl_f_terminate,
   /* page manipulation */
-  _f_begin_page, _f_erase_page, _f_end_page,
+  _pl_f_begin_page, _pl_f_erase_page, _pl_f_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _f_paint_path, _f_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_f_paint_path, _pl_f_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _f_paint_point,
+  _pl_g_paint_marker, _pl_f_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _f_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_f_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _f_retrieve_font,
+  _pl_f_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -45,16 +63,11 @@ const Plotter _f_default_plotter =
    user coordinates to device coordinates in space.c. */
 
 void
-#ifdef _HAVE_PROTOS
-_f_initialize (S___(Plotter *_plotter))
-#else
-_f_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_f_initialize (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override superclass initializations, as necessary */
@@ -85,7 +98,7 @@ _f_initialize (S___(_plotter))
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->data->default_font_type = F_POSTSCRIPT;
+  _plotter->data->default_font_type = PL_F_POSTSCRIPT;
   _plotter->data->pcl_before_ps = false;
   _plotter->data->have_horizontal_justification = true;
   _plotter->data->have_vertical_justification = false;
@@ -165,16 +178,11 @@ _f_initialize (S___(_plotter))
    _plotter points to the Plotter that is about to be deleted. */
 
 void
-#ifdef _HAVE_PROTOS
-_f_terminate (S___(Plotter *_plotter))
-#else
-_f_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_f_terminate (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
@@ -182,64 +190,64 @@ _f_terminate (S___(_plotter))
 FigPlotter::FigPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:Plotter (infile, outfile, errfile)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter (FILE *outfile)
 	:Plotter (outfile)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter (ostream& out)
 	: Plotter (out)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter ()
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::FigPlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _f_initialize ();
+  _pl_f_initialize ();
 }
 
 FigPlotter::~FigPlotter ()
 {
-  _f_terminate ();
+  _pl_f_terminate ();
 }
 #endif

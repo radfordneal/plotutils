@@ -1,6 +1,24 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the color names recognized by libplot, and their
    24-bit interpretation (internally, we extend to 48 bits by doubling each
-   byte).  It is #included by g_colorname.c.
+   byte).  It is #included by g_colors.c.
 
    The table below is taken largely from the `rgb.txt' file distributed
    with X11R6 (version 10.41, dated 20 Feb 94).  However, it was discovered
@@ -10,9 +28,9 @@
 
 #define NUM_COLORNAMES 665
 
-/* can declare this array `extern', so that applications linked with
+/* could declare this array `extern', so that applications linked with
    libplot/libplotter can secretly access it, if they want to :-) */
-const plColorNameInfo _colornames[NUM_COLORNAMES + 1] =
+static const plColorNameInfo _pl_g_colornames[NUM_COLORNAMES + 1] =
 {
   {"aliceblue",		0xf0, 0xf8, 0xff},
   {"antiquewhite",	0xfa, 0xeb, 0xd7},

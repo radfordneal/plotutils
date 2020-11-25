@@ -1,28 +1,51 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file is the driving routine for the GNU `plotfont' program.  It
    includes code to plot all characters in a specified font. */
 
-/* Copyright (C) 1998 Free Software Foundation, Inc. */
-
 #include "sys-defines.h"
-#include "plot.h"
+#include "libcommon.h"
 #include "getopt.h"
+#include "fontlist.h"
+#include "plot.h"
 
 const char *progname = "plotfont"; /* name of this program */
+const char *written = "Written by Robert S. Maier.";
+const char *copyright = "Copyright (C) 2005 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " FONT...\n";
 
 enum radix { DECIMAL, OCTAL, HEXADECIMAL };
 
-/* Long options we recognize */
+/* options */
 
 #define	ARG_NONE	0
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
+const char *optstring = "12oxOj:J:F:T:";
+
 struct option long_options[] = 
 {
-  /* The most important option */
-  { "display-type",	ARG_REQUIRED,	NULL, 'T'},
+  /* The most important option ("--display-type" is an obsolete variant) */
+  { "output-format",	ARG_REQUIRED,	NULL, 'T'},
+  { "display-type",	ARG_REQUIRED,	NULL, 'T' << 8 }, /* hidden */
   /* Other frequently used options */
   { "box",		ARG_NONE,	NULL, 'b' << 8 },
   { "octal",		ARG_NONE,	NULL, 'o'},
@@ -38,9 +61,9 @@ struct option long_options[] =
   { "pen-color",	ARG_REQUIRED,	NULL, 'C' << 8 },
   { "bg-color",		ARG_REQUIRED,	NULL, 'q' << 8 },
   { "bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8 },
-  { "emulate-color",	ARG_REQUIRED,	NULL, 'e' << 8},  
+  { "emulate-color",	ARG_REQUIRED,	NULL, 'e' << 8 },  
   { "page-size",	ARG_REQUIRED,	NULL, 'P' << 8 },
-  { "rotation",		ARG_REQUIRED,	NULL, 'r' << 8},
+  { "rotation",		ARG_REQUIRED,	NULL, 'r' << 8 },
   /* Options relevant only to raw plotfont (refers to metafile output) */
   { "portable-output",	ARG_NONE,	NULL, 'O' },
   /* Documentation options */
@@ -51,33 +74,18 @@ struct option long_options[] =
   { NULL,		0,		NULL,  0}
 };
     
-/* null-terminated list of options that we don't show to the user */
-int hidden_options[] = { (int)'J', (int)'F', 0 };
+/* null-terminated list of options, such as obsolete-but-still-maintained
+   options or undocumented options, which we don't show to the user */
+const int hidden_options[] = { (int)'J', (int)'F', (int)('T' << 8), 0 };
 
 /* forward references */
-bool do_font ____P((plPlotter *plotter, const char *name, bool upper_half, char *pen_color_name, char *numbering_font_name, char *title_font_name, bool bearings, enum radix base, int jis_page, bool do_jis_page));
-void write_three_bytes ____P((int charnum, char *numbuf, int radix));
-void write_two_bytes ____P((int charnum, char *numbuf, int radix));
-
-/* from libcommon */
-extern int display_fonts ____P((const char *display_type, const char *progname));
-extern int list_fonts ____P((const char *display_type, const char *progname));
-extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version ____P((const char *progname)); 
-extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
-extern voidptr_t xmalloc ____P ((size_t size));
-extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
-extern char *xstrdup ____P ((const char *s));
+bool do_font (plPlotter *plotter, const char *name, bool upper_half, char *pen_color_name, char *numbering_font_name, char *title_font_name, bool bearings, enum radix base, int jis_page, bool do_jis_page);
+void write_three_bytes (int charnum, char *numbuf, int radix);
+void write_two_bytes (int charnum, char *numbuf, int radix);
 
 
 int
-#ifdef _HAVE_PROTOS
 main (int argc, char *argv[])
-#else
-main (argc, argv)
-     int argc;
-     char *argv[];
-#endif
 {
   plPlotter *plotter;
   plPlotterParams *plotter_params;
@@ -88,7 +96,7 @@ main (argc, argv)
   bool show_usage = false;	/* show usage message? */
   bool show_version = false;	/* show version message? */
   bool upper_half = false;	/* upper half of font, not lower? */
-  char *display_type = (char *)"meta"; /* default libplot output format */
+  char *output_format = (char *)"meta"; /* default libplot output format */
   char *numbering_font_name = NULL; /* numbering font name, NULL -> default */
   char *option_font_name = NULL; /* allows user to use -F */
   char *pen_color = NULL;	/* initial pen color, can be spec'd by user */
@@ -101,16 +109,17 @@ main (argc, argv)
   int retval;			/* return value */
 
   plotter_params = pl_newplparams ();
-  while ((option = getopt_long (argc, argv, "12oxOj:J:F:T:", long_options, &opt_index)) != EOF)
+  while ((option = getopt_long (argc, argv, optstring, long_options, &opt_index)) != EOF)
     {
       if (option == 0)
 	option = long_options[opt_index].val;
       
       switch (option) 
 	{
-	case 'T':		/* Display type, ARG REQUIRED      */
-	  display_type = (char *)xmalloc (strlen (optarg) + 1);
-	  strcpy (display_type, optarg);
+	case 'T':		/* Output format, ARG REQUIRED      */
+	case 'T' << 8:
+	  output_format = (char *)xmalloc (strlen (optarg) + 1);
+	  strcpy (output_format, optarg);
 	  break;
 	case 'O':		/* Ascii output */
 	  pl_setplparam (plotter_params, "META_PORTABLE", (char *)"yes");
@@ -145,16 +154,16 @@ main (argc, argv)
 	  strcpy (pen_color, optarg);
 	  break;
 	case 'q' << 8:		/* set the initial background color */
-	  pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "BG_COLOR", (void *)optarg);
 	  break;
 	case 'B' << 8:		/* Bitmap size */
-	  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "BITMAPSIZE", (void *)optarg);
 	  break;
 	case 'P' << 8:		/* Page size */
-	  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "PAGESIZE", (void *)optarg);
 	  break;
 	case 'r' << 8:		/* Rotation angle */
-	  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)optarg);
+	  pl_setplparam (plotter_params, "ROTATION", (void *)optarg);
 	  break;
 	case 'b' << 8:		/* Bearings requested */
 	  bearings = true;
@@ -212,14 +221,14 @@ main (argc, argv)
     }
   if (show_version)
     {
-      display_version (progname);
+      display_version (progname, written, copyright);
       return EXIT_SUCCESS;
     }
   if (do_list_fonts)
     {
       int success;
 
-      success = list_fonts (display_type, progname);
+      success = list_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -229,7 +238,7 @@ main (argc, argv)
     {
       int success;
 
-      success = display_fonts (display_type, progname);
+      success = display_fonts (output_format, progname);
       if (success)
 	return EXIT_SUCCESS;
       else
@@ -259,7 +268,7 @@ main (argc, argv)
 	}	  
     }
 
-  if ((plotter = pl_newpl_r (display_type, NULL, stdout, stderr, 
+  if ((plotter = pl_newpl_r (output_format, NULL, stdout, stderr, 
 			     plotter_params)) == NULL)
     {
       fprintf (stderr, "%s: error: could not create plot device\n", progname);
@@ -325,21 +334,7 @@ main (argc, argv)
 #define N_Y_SHIFT 0.05
 
 bool
-#ifdef _HAVE_PROTOS
 do_font (plPlotter *plotter, const char *name, bool upper_half, char *pen_color_name, char *numbering_font_name, char *title_font_name, bool bearings, enum radix base, int jis_page, bool do_jis_page)
-#else
-do_font (plotter, name, upper_half, pen_color_name, numbering_font_name, title_font_name, bearings, base, jis_page, do_jis_page)
-     plPlotter *plotter;
-     const unsigned char *name;
-     bool upper_half;
-     char *pen_color_name;
-     char *numbering_font_name;
-     char *title_font_name;
-     bool bearings;
-     enum radix base;
-     int jis_page;
-     bool do_jis_page;
-#endif
 {
   char buf[16];
   char numbuf[16];
@@ -559,14 +554,7 @@ do_font (plotter, name, upper_half, pen_color_name, numbering_font_name, title_f
 /* Write an integer that is < (radix)**4 as three ascii bytes with respect
    to the specified radix.  Initial zeroes are converted to spaces. */
 void 
-#ifdef _HAVE_PROTOS
 write_three_bytes (int charnum, char *numbuf, int radix)
-#else
-write_three_bytes (charnum, numbuf, radix)
-     int charnum;
-     char *numbuf;
-     int radix;
-#endif
 {
   int i;
 
@@ -593,14 +581,7 @@ write_three_bytes (charnum, numbuf, radix)
 /* Write an integer that is < (radix)**3 as two ascii bytes with respect to
    the specified radix.  Initial zeroes are converted are not changed. */
 void 
-#ifdef _HAVE_PROTOS
 write_two_bytes (int charnum, char *numbuf, int radix)
-#else
-write_two_bytes (charnum, numbuf, radix)
-     int charnum;
-     char *numbuf;
-     int radix;
-#endif
 {
   int i;
 

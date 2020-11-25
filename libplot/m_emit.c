@@ -1,5 +1,23 @@
-/* This file contains the internal _m_emit_integer, _m_emit_float,
-   _m_emit_op_code, and _m_emit_string routines, which are used by
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
+/* This file contains the internal _pl_m_emit_integer, _pl_m_emit_float,
+   _pl_m_emit_op_code, and _pl_m_emit_string routines, which are used by
    MetaPlotters.  They take into account the desired format (binary
    metafile format or ascii [human-readable] metafile format.
 
@@ -28,13 +46,7 @@
 
 /* emit one unsigned character, passed as an int */
 void
-#ifdef _HAVE_PROTOS
-_m_emit_op_code (R___(Plotter *_plotter) int c)
-#else
-_m_emit_op_code (R___(_plotter) c)
-     S___(Plotter *_plotter;) 
-     int c;
-#endif
+_pl_m_emit_op_code (R___(Plotter *_plotter) int c)
 {
   if (_plotter->data->outfp)
     putc (c, _plotter->data->outfp);
@@ -45,20 +57,14 @@ _m_emit_op_code (R___(_plotter) c)
 }
 
 void
-#ifdef _HAVE_PROTOS
-_m_emit_integer (R___(Plotter *_plotter) int x)
-#else
-_m_emit_integer (R___(_plotter) x)
-     S___(Plotter *_plotter;) 
-     int x;
-#endif
+_pl_m_emit_integer (R___(Plotter *_plotter) int x)
 {
   if (_plotter->data->outfp)
     {
       if (_plotter->meta_portable_output)
 	fprintf (_plotter->data->outfp, " %d", x);
       else
-	fwrite ((voidptr_t) &x, sizeof(int), 1, _plotter->data->outfp);
+	fwrite ((void *) &x, sizeof(int), 1, _plotter->data->outfp);
     }
 #ifdef LIBPLOTTER
   else if (_plotter->data->outstream)
@@ -72,13 +78,7 @@ _m_emit_integer (R___(_plotter) x)
 }
 
 void
-#ifdef _HAVE_PROTOS
-_m_emit_float (R___(Plotter *_plotter) double x)
-#else
-_m_emit_float (R___(_plotter) x)
-     S___(Plotter *_plotter;) 
-     double x;
-#endif
+_pl_m_emit_float (R___(Plotter *_plotter) double x)
 {
   if (_plotter->data->outfp)
     {
@@ -94,7 +94,7 @@ _m_emit_float (R___(_plotter) x)
 	  float f;
 	  
 	  f = FROUND(x);
-	  fwrite ((voidptr_t) &f, sizeof(float), 1, _plotter->data->outfp);
+	  fwrite ((void *) &f, sizeof(float), 1, _plotter->data->outfp);
 	}
     }
 #ifdef LIBPLOTTER
@@ -114,13 +114,7 @@ _m_emit_float (R___(_plotter) x)
 }
 
 void
-#ifdef _HAVE_PROTOS
-_m_emit_string (R___(Plotter *_plotter) const char *s)
-#else
-_m_emit_string (R___(_plotter) s)
-     S___(Plotter *_plotter;) 
-     const char *s;
-#endif
+_pl_m_emit_string (R___(Plotter *_plotter) const char *s)
 {
   bool has_newline;
   char *t = NULL;		/* keep compiler happy */
@@ -136,7 +130,7 @@ _m_emit_string (R___(_plotter) s)
        newline if any */
     {
       has_newline = true;
-      t = (char *)_plot_xmalloc (strlen (s) + 1);      
+      t = (char *)_pl_xmalloc (strlen (s) + 1);      
       strcpy (t, s);
       nl = strchr (t, '\n');
       *nl = '\0';
@@ -170,16 +164,11 @@ _m_emit_string (R___(_plotter) s)
     free (t);
 }
 
-/* End a directive that was begun by invoking _m_emit_op_code() (q.v.).  In
+/* End a directive that was begun by invoking _pl_m_emit_op_code() (q.v.).  In
    portable format, the terminator is a newline; in binary format, there is
    no terminator. */
 void
-#ifdef _HAVE_PROTOS
-_m_emit_terminator (S___(Plotter *_plotter))
-#else
-_m_emit_terminator (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_m_emit_terminator (S___(Plotter *_plotter))
 {
   if (_plotter->meta_portable_output)
     {

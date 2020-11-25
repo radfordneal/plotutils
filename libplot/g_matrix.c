@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -5,13 +23,7 @@
    (i.e. matrix representations of affine transformations). */
 
 void
-#ifdef _HAVE_PROTOS
 _matrix_product (const double m[6], const double n[6], double product[6])
-#else
-_matrix_product (m, n, product)
-     const double m[6], n[6];
-     double product[6];
-#endif
 {
   double local_product[6];
 
@@ -33,13 +45,7 @@ _matrix_product (m, n, product)
    be nonsingular for correct results. */
 
 void
-#ifdef _HAVE_PROTOS
 _matrix_inverse (const double m[6], double inverse[6])
-#else
-_matrix_inverse (m, inverse)
-     const double m[6];
-     double inverse[6];
-#endif
 {
   double det = m[0] * m[3] - m[1] * m[2];
 
@@ -71,12 +77,7 @@ _matrix_inverse (m, inverse)
    should suffice. */
 
 double 
-#ifdef _HAVE_PROTOS
 _matrix_norm (const double m[6])
-#else
-_matrix_norm (m)
-     const double m[6];
-#endif
 {
   double mt[4], pm[4];
   double norm1, norm2;
@@ -109,13 +110,7 @@ _matrix_norm (m)
    its transpose. */
 
 void
-#ifdef _HAVE_PROTOS
 _matrix_sing_vals (const double m[6], double *min_sing_val, double *max_sing_val)
-#else
-_matrix_sing_vals (m, min_sing_val, max_sing_val)
-     const double m[6];
-     double *min_sing_val, *max_sing_val;
-#endif
 {
   double mt[4], pm[4];
   double trace, det, disc, sqrtdisc;

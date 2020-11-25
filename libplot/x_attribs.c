@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This internal method is invoked by an XDrawablePlotter (or XPlotter)
    before drawing any polyline.  It sets the relevant attributes in our X11
    graphics contexts (the one used for drawing, and the one used for
@@ -20,14 +38,9 @@
 /* The length of each dash must fit in an unsigned char (X11 convention) */
 #define MAX_DASH_LENGTH 255
 
+/* ARGS: x_gc_type specifies which of our X GC's to modify */
 void
-#ifdef _HAVE_PROTOS
-_x_set_attributes (R___(Plotter *_plotter) int x_gc_type)
-#else
-_x_set_attributes (R___(_plotter) x_gc_type)
-     S___(Plotter *_plotter;)
-     int x_gc_type;		/* which of our X GC's to modify */
-#endif
+_pl_x_set_attributes (R___(Plotter *_plotter) int x_gc_type)
 {
   int i;
 
@@ -62,7 +75,7 @@ _x_set_attributes (R___(_plotter) x_gc_type)
 				 &min_sing_val, &max_sing_val);
 	    
 	      odd_length = (dash_list_len & 1 ? true : false);
-	      dash_list = (unsigned char *)_plot_xmalloc ((odd_length ? 2 : 1) * dash_list_len * sizeof(unsigned char));
+	      dash_list = (unsigned char *)_pl_xmalloc ((odd_length ? 2 : 1) * dash_list_len * sizeof(unsigned char));
 	      have_dash_list = true; /* will free.. */
 	      dash_cycle_length = 0;
 	      for (i = 0; i < dash_list_len; i++)
@@ -107,19 +120,19 @@ _x_set_attributes (R___(_plotter) x_gc_type)
       else
 	/* have one of the canonical line types */
 	{
-	  if (_plotter->drawstate->line_type != L_SOLID)
+	  if (_plotter->drawstate->line_type != PL_L_SOLID)
 	    {
 	      const int *dash_array;
 	      int i, scale;
 	    
-	      dash_list_len = _line_styles[_plotter->drawstate->line_type].dash_array_len;	  
-	      dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	      dash_list_len = _pl_g_line_styles[_plotter->drawstate->line_type].dash_array_len;	  
+	      dash_array = _pl_g_line_styles[_plotter->drawstate->line_type].dash_array;
 	      /* scale by line width in terms of pixels, if nonzero */
 	      scale = _plotter->drawstate->quantized_device_line_width;
 	      if (scale <= 0)
 		scale = 1;
 
-	      dash_list = (unsigned char *)_plot_xmalloc (MAX_DASH_ARRAY_LEN * sizeof(unsigned char));
+	      dash_list = (unsigned char *)_pl_xmalloc (PL_MAX_DASH_ARRAY_LEN * sizeof(unsigned char));
 	      have_dash_list = true; /* will free.. */
 	      for (i = 0; i < dash_list_len; i++)
 		{
@@ -199,17 +212,17 @@ _x_set_attributes (R___(_plotter) x_gc_type)
 
       switch (_plotter->drawstate->cap_type)
 	{
-	case CAP_BUTT:
+	case PL_CAP_BUTT:
 	default:
 	  gcv.cap_style = CapButt;
 	  break;
-	case CAP_ROUND:
+	case PL_CAP_ROUND:
 	  gcv.cap_style = CapRound;
 	  break;
-	case CAP_PROJECT:
+	case PL_CAP_PROJECT:
 	  gcv.cap_style = CapProjecting;
 	  break;
-	case CAP_TRIANGULAR:	/* not supported by X11 */
+	case PL_CAP_TRIANGULAR:	/* not supported by X11 */
 	  gcv.cap_style = CapRound;
 	  break;
 	}
@@ -226,17 +239,17 @@ _x_set_attributes (R___(_plotter) x_gc_type)
 
       switch (_plotter->drawstate->join_type)
 	{
-	case JOIN_MITER:
+	case PL_JOIN_MITER:
 	default:
 	  gcv.join_style = JoinMiter;
 	  break;
-	case JOIN_ROUND:
+	case PL_JOIN_ROUND:
 	  gcv.join_style = JoinRound;
 	  break;
-	case JOIN_BEVEL:
+	case PL_JOIN_BEVEL:
 	  gcv.join_style = JoinBevel;
 	  break;
-	case JOIN_TRIANGULAR:	/* not supported by X11 */
+	case PL_JOIN_TRIANGULAR:	/* not supported by X11 */
 	  gcv.join_style = JoinRound;
 	  break;
 	}
@@ -271,11 +284,11 @@ _x_set_attributes (R___(_plotter) x_gc_type)
 
       switch (_plotter->drawstate->fill_rule_type)
 	{
-	case FILL_ODD_WINDING:
+	case PL_FILL_ODD_WINDING:
 	default:
 	  gcv.fill_rule = EvenOddRule;
 	  break;
-	case FILL_NONZERO_WINDING:
+	case PL_FILL_NONZERO_WINDING:
 	  gcv.fill_rule = WindingRule;
 	  break;
 	}

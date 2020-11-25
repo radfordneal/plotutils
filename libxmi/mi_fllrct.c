@@ -1,3 +1,26 @@
+/* This file is part of the GNU libxmi package.  
+
+   Copyright (C) 1985, 1986, 1987, 1988, 1989, X Consortium.  For an
+   associated permission notice, see the accompanying file README-X.
+   
+   GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
+   Foundation, Inc.
+
+   The GNU libxmi package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU libxmi package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -11,29 +34,15 @@
    */
 
 /* Very straightforward.  We let the low-level paint function invoked by
- * MI_PAINT_SPANS() worry about clipping to the destination.  The miGC
- * struct is unused.
+ * MI_PAINT_SPANS() worry about clipping to the destination.
  *
  * Note libxmi's convention: right edges and bottom edges of filled
  * polygons (including rectangles) are unpainted, so that adjacent polygons
  * will abut with no overlaps or gaps. */
 
 void
-#ifdef _HAVE_PROTOS
 miFillRectangles_internal (miPaintedSet *paintedSet, const miGC *pGC, int nrects, const miRectangle *prectInit)
-#else
-miFillRectangles_internal (paintedSet, pGC, nrects, prectInit)
-     miPaintedSet *paintedSet;
-     const miGC *pGC;		/* unused */
-     int nrects; 
-     const miRectangle *prectInit;
-#endif
 {
-  miPoint *ppt;
-  miPoint *pptFirst;
-  int xorg, yorg;
-  unsigned int *pw, *pwFirst;
-  unsigned int height, width;
   const miRectangle *prect; 
 
   /* ensure we have >=1 rects to fill */
@@ -43,6 +52,12 @@ miFillRectangles_internal (paintedSet, pGC, nrects, prectInit)
   prect = prectInit;
   while (nrects--)
     {
+      miPoint *ppt;
+      miPoint *pptFirst;
+      int xorg, yorg;
+      unsigned int *pw, *pwFirst;
+      unsigned int height, width, countdown;
+
       height = prect->height;
       width = prect->width;
       pptFirst = (miPoint *)mi_xmalloc (height * sizeof(miPoint));
@@ -52,7 +67,8 @@ miFillRectangles_internal (paintedSet, pGC, nrects, prectInit)
 
       xorg = prect->x;
       yorg = prect->y;
-      while (height--)
+      countdown = height;
+      while (countdown--)
 	{
 	  *pw++ = width;
 	  ppt->x = xorg;

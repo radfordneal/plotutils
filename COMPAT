@@ -1,6 +1,69 @@
 These are some release notes that deal with new features and backward
-compatibility of the plotutils package, on both the user and programmer
-levels.
+compatibility of the plotutils package, on both user and programmer levels.
+
+Release 2.5, dated 12/2005
+--------------------------
+
+This is primarily a bug fix release, but the number of bug fixes is large.
+The biggest change is to the X11 driver.
+
+The font support in X11 (the X Window System) is in a state of overturn,
+and previous releases of the plotutils package do not produce good-looking
+output (of rotated text strings, especially) on many current X11 displays.
+This is for the following reason.  The traditional `core' X fonts stored on
+any X11 display, each of which has a long name (a so-called XLFD name), are
+going away.  The new model is for fonts to be stored on the client side,
+and to be rasterized by the FreeType rasterizer via the Xft library.  Even
+in advance of this change, X servers such as XFree86 are starting to drop
+support for the more sophisticated features of the core X font subsystem,
+such as its ability to supply rotated or sheared glyphs.
+
+So the libplot library now produces its own rotated and sheared glyphs.  It
+still uses the core X fonts, but it no longer requests rotation or shearing
+when retrieving rasterized characters (glyphs) from those fonts.  Instead,
+it rotates or shears them itself.  The result looks fairly good.  For
+example, the output from the `rotating A' sample program in the plotutils
+manual looks as good as it always did, and takes no longer to generate.
+
+The command-line graphics utilities (e.g., `graph') support a `--rotation'
+option, to rotate graphics within their `viewport' or `plotting box'.  (For
+X11 output, requested by `-T X', this viewport is simply the popped-up X
+window.)  The argument of this option can now be an arbitrary number,
+interpreted as a counterclockwise rotation in degrees.  (It used to be
+required to be 0,90,180, or 270.)  You can now do this sort of thing:
+
+echo 0 0 1 1 2 0 | graph -T X -C -L 'A Postmodern Plot' -W 0.01 --rotation 45
+
+The same thing can be done in any other output format (e.g., as requested
+by `-T ps' or `-T svg'.)  This enhancement is independent of the rewriting
+of the X11 driver, but was suggested by it.
+
+A bad bug in the output of the PS driver, which prevented its being
+displayed by some versions of ghostscript/ghostview/gv, has been fixed.
+
+The output of the SVG driver has been improved, to be more compatible with
+the SVG parsers in Firefox and the ImageMagick package.  Unfortunately,
+font handling in both of them is somewhat broken.  If you have trouble
+using the standard builtin `Postscript' fonts (meaning, Adobe's standard
+set of 35 fonts such as Helvetica, Times-Roman, Courier, etc.), you should
+use the builtin Hershey fonts instead.  Each character in any Hershey font
+is `stroked': it is made up of line segments.  The Hershey fonts look quite
+good in Firefox, for example, due to its anti-aliasing.
+
+To check the drawing of SVG text strings, first do
+
+echo 0 0 1 1 2 0 | graph -T svg -C -L 'A Postmodern Plot' -W 0.01 --rotation 45 > plot.svg
+
+to obtain an SVG plot.  To display it using Firefox and the ImageMagick
+package respectively, do
+
+firefox file:${PWD}/plot.svg
+display plot.svg
+
+If there are problems with your copy of Firefox or the `display'
+application, some of the axis labels may be missing or displaced.  If so,
+add the option `-F HersheySerif' to the `graph' command, to request the
+HersheySerif font rather than the default font (Helvetica).
 
 Release 2.4.1, dated 7/2000
 ---------------------------

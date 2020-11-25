@@ -1,10 +1,28 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the display_usage routine, which is used in
    user-level programs in the plotutils package.  It prints program options
    and long options in a reasonably nice format.
    
    This file also contains the display_version routine. */
 
-#include "sys-defines.h"
+#include "libcommon.h"
 #include "getopt.h"
 
 /* global array of long options, in program we're to be linked with */
@@ -15,18 +33,13 @@ extern struct option long_options[];
 #define	ARG_OPTIONAL	2
 
 /* forward references */
-bool elementp ____P((int item, const int *list));
-void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-void display_version ____P((const char *progname));
+bool elementp (int item, const int *list);
+void display_usage (const char *progname, const int *omit_vals, const char *appendage, bool fonts);
+void display_version (const char *progname, const char *written, const char *copyright);
 
+/* ARGS: list = null-terminated list of integers */
 bool
-#ifdef _HAVE_PROTOS
 elementp (int item, const int *list)
-#else
-elementp (item, list)
-     int item;
-     const int *list;		/* null-terminated list of integers */
-#endif
 {
   int list_item;
 
@@ -39,15 +52,7 @@ elementp (item, list)
 }
 
 void
-#ifdef _HAVE_PROTOS
 display_usage (const char *progname, const int *omit_vals, const char *appendage, bool fonts)
-#else
-display_usage (progname, omit_vals, appendage, fonts)
-     const char *progname;
-     const int *omit_vals;
-     const char *appendage;
-     bool fonts;
-#endif
 {
   int i;
   int col = 0;
@@ -101,54 +106,51 @@ display_usage (progname, omit_vals, appendage, fonts)
 #ifndef X_DISPLAY_MISSING
     fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format:\n\
-X, png, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+where \"format\" is the intended output format:\n\
+X, png, pnm, or gif (bitmap formats), or\n\
+svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n",
 	     progname);
 #else  /* X_DISPLAY_MISSING */
     fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format:\n\
-png, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+where \"format\" is the intended output format:\n\
+png, pnm, or gif (bitmap formats), or\n\
+svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n",
 	     progname);
 #endif /* X_DISPLAY_MISSING */
 #else  /* not INCLUDE_PNG_SUPPORT */
 #ifndef X_DISPLAY_MISSING
     fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format:\n\
-X, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+where \"format\" is the intended output format:\n\
+X, pnm, or gif (bitmap formats), or\n\
+svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n",
 	     progname);
 #else  /* X_DISPLAY_MISSING */
     fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format:\n\
-pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+where \"format\" is the intended output format:\n\
+pnm or gif (bitmap formats), or\n\
+svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek (vector formats).\n",
 	     progname);
 #endif /* X_DISPLAY_MISSING */
 #endif
 
   if ((appendage != NULL) || fonts)
     fputs ("\n", stdout);
-  fputs ("\
-Report bugs to bug-gnu-utils@gnu.org.\n", stdout);
+  fprintf (stdout, "\
+Report bugs to %s.\n", PACKAGE_BUGREPORT);
 }
 
 void
-#ifdef _HAVE_PROTOS
-display_version (const char *progname)
-#else
-display_version (progname)
-     const char *progname;
-#endif
+display_version (const char *progname, const char *written, const char *copyright)
 {
-  fprintf (stdout, 
-	   "%s (GNU %s) %s\n", progname, PACKAGE, VERSION);
-  fprintf (stdout, 
-	   "Copyright (C) 1989-2000 Free Software Foundation, Inc.\n");
-  fprintf (stdout, 
-	   "The GNU %s package comes with NO WARRANTY, to the extent permitted\n", PACKAGE);
-  fprintf (stdout, 
-	   "by law. You may redistribute copies of the GNU %s package\n", PACKAGE);
-  fprintf (stdout, 
-	   "under the terms of the GNU General Public License.\n");
+  fprintf (stdout, "%s (%s) %s\n", 
+	   progname, PACKAGE_NAME, PACKAGE_VERSION);
+  fprintf (stdout, "%s\n",
+	   copyright);
+  fprintf (stdout, "%s",
+	   "This is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+  fprintf (stdout, "%s\n",
+	   written);
 }

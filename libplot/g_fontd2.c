@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* THIS FILE IS NOW SPLIT INTO TWO PIECES: g_fontdb.c and g_fontd2.c, 
    TO FACILITATE COMPILING.  This is the second half, containing PCL fonts 
    and Stick fonts (i.e., device-resident HP vector fonts). */
@@ -7,7 +25,7 @@
 
 
 /* The 45 standard HP LaserJet fonts, with ISO8859-1 (ISO-Latin-1) encoding
-   where that is appropriate.  (Note that NUM_PCL_FONTS is defined to equal
+   where that is appropriate.  (Note that PL_NUM_PCL_FONTS is defined to equal
    45 in extern.h.)
 
    The tables of widths and `left edge' offsets are taken from the 
@@ -50,7 +68,7 @@
         [Our HP/GL-2, i.e. PCL 5 driver needs this, since HP-GL/2 and PCL 5 
 	rendering begin at the left edge of the bounding box, unlike 
 	PS rendering.  We shift	rightward to compensate.  See h_text.c.]
-   (12) a typeface id (an index into the _ps_typeface_info[] array below).
+   (12) a typeface id (an index into the _pl_g_ps_typeface_info[] array below).
    (13) a font index (which font within the typeface this is).
    (14) an `iso8859-1' flag (refers to character set after re-encoding if any;
         true for all but Wingdings and Symbol).
@@ -59,9 +77,9 @@
 /* IMPORTANT: The fonts in this array may be referred to elsewhere in the
    code by number.  If you change the numbering of PCL fonts, i.e., the
    order in which they appear in this array, be sure to update, e.g., the
-   definitions DEFAULT_PCL_FONT_INDEX, etc. in extern.h. */
+   definitions PL_DEFAULT_PCL_FONT_INDEX, etc. in extern.h. */
 
-const struct plPCLFontInfoStruct _pcl_font_info[] = {
+const struct plPCLFontInfoStruct _pl_g_pcl_font_info[] = {
 {
   "Univers",			/* #0 */
   NULL,
@@ -3445,13 +3463,13 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
    (1) number of valid fonts [should be >= 2, since every typeface
        should include a symbol font (the zeroth font, the 1st listed)]
    (2) a list of fonts (each number is an index into
-       the _pcl_font_info[] array above).
+       the _pl_g_pcl_font_info[] array above).
 
-   The number of valid fonts should be <= FONTS_PER_TYPEFACE; the
+   The number of valid fonts should be <= PL_MAX_FONTS_PER_TYPEFACE; the
    initializers are filled out with dummy fonts to get arrays of length
-   FONTS_PER_TYPEFACE. */
+   PL_MAX_FONTS_PER_TYPEFACE. */
 
-const struct plTypefaceInfoStruct _pcl_typeface_info[] = 
+const struct plTypefaceInfoStruct _pl_g_pcl_typeface_info[] = 
 {
   /* Univers, #0 */
   { 5, { 44, 0, 1, 2, 3, 999, 999, 999, 999, 999 } },
@@ -3592,9 +3610,9 @@ const struct plTypefaceInfoStruct _pcl_typeface_info[] =
 /* IMPORTANT: The fonts in this array may be referred to elsewhere in the
    code by number.  If you change the numbering of Stick fonts, i.e., the
    order in which they appear in this array, be sure to update, e.g., the
-   definitions DEFAULT_STICK_FONT_INDEX, etc. in extern.h. */
+   definitions PL_DEFAULT_STICK_FONT_INDEX, etc. in extern.h. */
 
-const struct plStickFontInfoStruct _stick_font_info[] = {
+const struct plStickFontInfoStruct _pl_g_stick_font_info[] = {
 {
   "Arc",			/* #0 (our numbering) */
   true,				/* basic font */
@@ -4505,13 +4523,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
    (1) number of valid fonts [should be >= 2, since every typeface
        should include a symbol font (the zeroth font, the 1st listed)]
    (2) a list of fonts (each number is an index into
-       the _pcl_font_info[] array above).
+       the _pl_g_pcl_font_info[] array above).
 
-   The number of valid fonts should be <= FONTS_PER_TYPEFACE; the
+   The number of valid fonts should be <= PL_MAX_FONTS_PER_TYPEFACE; the
    initializers are filled out with dummy fonts to get arrays of length
-   FONTS_PER_TYPEFACE. */
+   PL_MAX_FONTS_PER_TYPEFACE. */
 
-const struct plTypefaceInfoStruct _stick_typeface_info[] = 
+const struct plTypefaceInfoStruct _pl_g_stick_typeface_info[] = 
 {
   /* Arc, #0 */
   { 5, { 0, 0, 1, 2, 3, 999, 999, 999, 999, 999 } },
@@ -4553,7 +4571,7 @@ const struct plTypefaceInfoStruct _stick_typeface_info[] =
 #define SPACING_VARIABLE_WIDTH_KATAKANA 2
 
 /* kerning tables for 128-character font halves */
-const struct plStickFontSpacingTableStruct _stick_kerning_tables[] =
+const struct plStickFontSpacingTableStruct _pl_g_stick_kerning_tables[] =
 {
   /* kerning table #0, used for lower half of our 4 basic Stick fonts
      (ASCII encoding) */
@@ -5073,7 +5091,7 @@ const struct plStickFontSpacingTableStruct _stick_kerning_tables[] =
    have width 32).  So this spacing table is employed to fix things up:
    e.g., the spacing between any two non-space characters is made equal to
    16 units. */
-const short _fixed_width_spacings[] =
+const short _pl_g_fixed_width_spacings[] =
 {
     0,  8,
     8, 16
@@ -5083,7 +5101,7 @@ const short _fixed_width_spacings[] =
    variable-width Katakana), which we use in our Arc, ArcSymbol, etc.,
    fonts.  In these units, nominal character cell width (see above) equals
    42, and font size (measured horizontally) equals 56. */
-const short _variable_width_spacings[] =
+const short _pl_g_variable_width_spacings[] =
 {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0,14,13,13,10,11,13,11,12,13,12,13,17,11,14,12,13,11,10,11,11,
@@ -5115,7 +5133,7 @@ const short _variable_width_spacings[] =
    we use as the upper half of our ArcANK font.  In these units, nominal
    character cell width (see above) equals 45, and font size (measured
    horizontally) equals 60. */
-const short _variable_width_katakana_spacings[] =
+const short _pl_g_variable_width_katakana_spacings[] =
 {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 10,14,10,10,10,10,10,10,10,10,10,
@@ -5131,21 +5149,21 @@ const short _variable_width_katakana_spacings[] =
 };
 
 /* array we use to access spacing tables by number */
-const struct plStickCharSpacingTableStruct _stick_spacing_tables[] =
+const struct plStickCharSpacingTableStruct _pl_g_stick_spacing_tables[] =
 {
   /* spacing table #0, SPACING_FIXED */
   {
     2, 2,			/* number of rows, cols */
-    _fixed_width_spacings
+    _pl_g_fixed_width_spacings
   },
   /* spacing table #1, SPACING_VARIABLE_WIDTH */
   {
     24, 21,			/* number of rows, cols */
-    _variable_width_spacings
+    _pl_g_variable_width_spacings
   },
   /* spacing table #2, SPACING_VARIABLE_WIDTH_KATAKANA */
   {
     11, 12,			/* number of rows, cols */
-    _variable_width_katakana_spacings
+    _pl_g_variable_width_katakana_spacings
   }
 };

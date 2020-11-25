@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This internal method is invoked before drawing any path.  It sets the
    relevant attributes of an HP-GL or HP-GL/2 plotter (fill rule, line
    type, cap type, join type, line width) to what they should be. */
@@ -10,14 +28,14 @@
    the line width.  (For the integers, see g_dash2.c).  Actually, when
    performing this computation we impose a floor on the line width
    (measured in the device frame, in scaled HP-GL coordinates. */
-#define MIN_DASH_UNIT (MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE * (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT))
+#define MIN_DASH_UNIT (PL_MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE * (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT))
 
 /* HP-GL's native line types, indexed into by our internal line style
-   number (L_SOLID/L_DOTTED/
-   L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED/L_DOTDOTDASHED/L_DOTDOTDOTDASHED).
+   number (PL_L_SOLID/PL_L_DOTTED/
+   PL_L_DOTDASHED/PL_L_SHORTDASHED/PL_L_LONGDASHED/PL_L_DOTDOTDASHED/PL_L_DOTDOTDOTDASHED).
    We use HP-GL's native line types only if we aren't emitting HP-GL/2,
    since HP-GL/2 supports programmatic definition of line styles. */
-static const int _hpgl_line_type[] =
+static const int _hpgl_line_type[PL_NUM_LINE_TYPES] =
 { HPGL_L_SOLID, HPGL_L_DOTTED, HPGL_L_DOTDASHED,
     HPGL_L_SHORTDASHED, HPGL_L_LONGDASHED, HPGL_L_DOTDOTDASHED,
     HPGL_L_DOTDOTDOTDASHED };
@@ -38,12 +56,7 @@ static const int _hpgl_cap_style[] =
 #define FUZZ 0.0000001
 
 void
-#ifdef _HAVE_PROTOS
-_h_set_attributes (S___(Plotter *_plotter))
-#else
-_h_set_attributes (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_set_attributes (S___(Plotter *_plotter))
 {
   double desired_hpgl_pen_width;
   double width, height, diagonal_p1_p2_distance;
@@ -88,7 +101,7 @@ _h_set_attributes (S___(_plotter))
 	{
 	  num_dashes = _plotter->drawstate->dash_array_len;
 	  if (num_dashes > 0)
-	    dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+	    dashbuf = (double *)_pl_xmalloc (num_dashes * sizeof(double));
 	  else
 	    dashbuf = NULL;	/* solid line */
 	  
@@ -105,7 +118,7 @@ _h_set_attributes (S___(_plotter))
 	   than pre-HP-GL/2 or generic HP-GL, we'll implement it as a
 	   user-defined line type for accuracy */
 	{
-	  if (_plotter->drawstate->line_type == L_SOLID)
+	  if (_plotter->drawstate->line_type == PL_L_SOLID)
 	    {
 	      num_dashes = 0;
 	      dash_cycle_length = 0.0;
@@ -117,12 +130,12 @@ _h_set_attributes (S___(_plotter))
 	      double scale;
 	      
 	      num_dashes =
-		_line_styles[_plotter->drawstate->line_type].dash_array_len;
-	      dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+		_pl_g_line_styles[_plotter->drawstate->line_type].dash_array_len;
+	      dashbuf = (double *)_pl_xmalloc (num_dashes * sizeof(double));
 
 	      /* scale the array of integers by line width (actually by
 		 floored line width; see comments at head of file) */
-	      dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	      dash_array = _pl_g_line_styles[_plotter->drawstate->line_type].dash_array;
 	      scale = DMAX(MIN_DASH_UNIT,_plotter->drawstate->device_line_width);
 
 	      dash_cycle_length = 0.0;
@@ -240,7 +253,7 @@ _h_set_attributes (S___(_plotter))
 			     &min_sing_val, &max_sing_val);
 	  dash_cycle_length = 
 	    min_sing_val * 2.0 * _plotter->drawstate->dash_array[0];
-	  line_type = L_SHORTDASHED;
+	  line_type = PL_L_SHORTDASHED;
 	}
       else if (_plotter->drawstate->dash_array_in_effect
 	       && _plotter->drawstate->dash_array_len == 2
@@ -259,7 +272,7 @@ _h_set_attributes (S___(_plotter))
 			     &min_sing_val, &max_sing_val);
 	  dash_cycle_length = 
 	    min_sing_val * 2.0 * 4.0 * _plotter->drawstate->dash_array[0];
-	  line_type = L_DOTTED;
+	  line_type = PL_L_DOTTED;
 	}
       else
 	/* general case: user must have changed canonical line types by
@@ -270,9 +283,9 @@ _h_set_attributes (S___(_plotter))
 	  int i, num_dashes; 
 	  double scale;
       
-	  dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	  dash_array = _pl_g_line_styles[_plotter->drawstate->line_type].dash_array;
 	  num_dashes =
-	    _line_styles[_plotter->drawstate->line_type].dash_array_len;
+	    _pl_g_line_styles[_plotter->drawstate->line_type].dash_array_len;
       
 	  /* compute iter interval in device coors, scaling by floored line
              width (see comments at head of file) */
@@ -298,11 +311,11 @@ _h_set_attributes (S___(_plotter))
       
       switch (line_type)
 	{
-	case L_SOLID:
+	case PL_L_SOLID:
 	  /* "solid" */
 	  strcpy (_plotter->data->page->point, "LT;");
 	  break;
-	case L_DOTTED:
+	case PL_L_DOTTED:
 	  /* "dotted": emulate dots by selecting shortdashed pattern with a
 	     short iteration interval */
 	  sprintf (_plotter->data->page->point, 
@@ -310,7 +323,7 @@ _h_set_attributes (S___(_plotter))
 		   HPGL_L_SHORTDASHED,
 		   0.5 * iter_interval);
 	  break;
-	case L_DOTDOTDOTDASHED:
+	case PL_L_DOTDOTDOTDASHED:
 	  /* not a native line type before HP-GL/2; use "dotdotdashed" */
 	  sprintf (_plotter->data->page->point, 
 		   "LT%d,%.4f;", 

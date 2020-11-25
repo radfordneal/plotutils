@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file defines the initializations for HPGLPlotter and PCLPlotter
    objects including both private data and public methods.  There is a
    one-to-one correspondence between public methods and user-callable
@@ -34,28 +52,28 @@
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
    a HPGLPlotter struct. */
-const Plotter _h_default_plotter = 
+const Plotter _pl_h_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _h_initialize, _h_terminate,
+  _pl_h_initialize, _pl_h_terminate,
   /* page manipulation */
-  _h_begin_page, _h_erase_page, _h_end_page,
+  _pl_h_begin_page, _pl_h_erase_page, _pl_h_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _h_paint_path, _h_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_h_paint_path, _pl_h_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _h_paint_point,
+  _pl_g_paint_marker, _pl_h_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _h_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_h_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -63,28 +81,28 @@ const Plotter _h_default_plotter =
 /* In libplot, this is the initialization for the function-pointer part of
    a PCLPlotter struct.  It is the same as the above except for the
    different initialization and termination routines. */
-const Plotter _q_default_plotter = 
+const Plotter _pl_q_default_plotter = 
 {
   /* initialization (after creation) and termination (before deletion) */
-  _q_initialize, _q_terminate,
+  _pl_q_initialize, _pl_q_terminate,
   /* page manipulation */
-  _h_begin_page, _h_erase_page, _h_end_page,
+  _pl_h_begin_page, _pl_h_erase_page, _pl_h_end_page,
   /* drawing state manipulation */
-  _g_push_state, _g_pop_state,
+  _pl_g_push_state, _pl_g_pop_state,
   /* internal path-painting methods (endpath() is a wrapper for the first) */
-  _h_paint_path, _h_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  _pl_h_paint_path, _pl_h_paint_paths, _pl_g_path_is_flushable, _pl_g_maybe_prepaint_segments,
   /* internal methods for drawing of markers and points */
-  _g_paint_marker, _h_paint_point,
+  _pl_g_paint_marker, _pl_h_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_paint_text_string_with_escapes, _h_paint_text_string,
-  _g_get_text_width,
+  _pl_g_paint_text_string_with_escapes, _pl_h_paint_text_string,
+  _pl_g_get_text_width,
   /* private low-level `retrieve font' method */
-  _g_retrieve_font,
+  _pl_g_retrieve_font,
   /* `flush output' method, called only if Plotter handles its own output */
-  _g_flush_output,
+  _pl_g_flush_output,
   /* error handlers */
-  _g_warning,
-  _g_error,
+  _pl_g_warning,
+  _pl_g_error,
 };
 #endif /* not LIBPLOTTER */
 
@@ -118,17 +136,12 @@ const Plotter _q_default_plotter =
    up to 31 pens, #1 through #31, via HPGL_PENS. */
 
 void
-#ifdef _HAVE_PROTOS
-_h_initialize (S___(Plotter *_plotter))
-#else
-_h_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_initialize (S___(Plotter *_plotter))
 {
   int i;
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize (S___(_plotter));
+  _pl_g_initialize (S___(_plotter));
 #endif
 
   /* override generic initializations (which are appropriate to the base
@@ -161,7 +174,7 @@ _h_initialize (S___(_plotter))
   _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user) */
-  _plotter->data->default_font_type = F_HERSHEY;
+  _plotter->data->default_font_type = PL_F_HERSHEY;
   _plotter->data->pcl_before_ps = true;
   _plotter->data->have_horizontal_justification = false;
   _plotter->data->have_vertical_justification = false;
@@ -232,9 +245,9 @@ _h_initialize (S___(_plotter))
   _plotter->hpgl_spacing = 0;  
   _plotter->hpgl_posture = 0;  
   _plotter->hpgl_stroke_weight = 0;  
-  _plotter->hpgl_pcl_typeface = STICK_TYPEFACE;  
-  _plotter->hpgl_charset_lower = HP_ASCII;
-  _plotter->hpgl_charset_upper = HP_ASCII;
+  _plotter->hpgl_pcl_typeface = PCL_STICK_TYPEFACE;  
+  _plotter->hpgl_charset_lower = HPGL_CHARSET_ASCII;
+  _plotter->hpgl_charset_upper = HPGL_CHARSET_ASCII;
   _plotter->hpgl_rel_char_height = 0.0;
   _plotter->hpgl_rel_char_width = 0.0;  
   _plotter->hpgl_rel_label_rise = 0.0;    
@@ -393,7 +406,7 @@ _h_initialize (S___(_plotter))
     pen_s = (const char *)_get_plot_param (_plotter->data, "HPGL_PENS");
     
     if (pen_s == NULL 
-	|| _parse_pen_string (R___(_plotter) pen_s) == false
+	|| _pl_h_parse_pen_string (R___(_plotter) pen_s) == false
 	|| (_plotter->hpgl_can_assign_colors == false 
 	    && _plotter->hpgl_pen_defined[1] == 0))
       /* Either user didn't assign a value, or it was bad; use default.
@@ -401,10 +414,10 @@ _h_initialize (S___(_plotter))
          (for backward compatibility?). */
       {
 	if (_plotter->hpgl_version == 0) /* i.e. generic HP-GL */
-	  pen_s = DEFAULT_HPGL_PEN_STRING;
+	  pen_s = HPGL_DEFAULT_PEN_STRING;
 	else
-	  pen_s = DEFAULT_HPGL2_PEN_STRING;
-	_parse_pen_string (R___(_plotter) pen_s); /* default is guaranteed to parse */
+	  pen_s = HPGL2_DEFAULT_PEN_STRING;
+	_pl_h_parse_pen_string (R___(_plotter) pen_s); /* default is guaranteed to parse */
       }
   }
   
@@ -434,18 +447,13 @@ _h_initialize (S___(_plotter))
    HPGLPlotter class. */
 
 void
-#ifdef _HAVE_PROTOS
-_q_initialize (S___(Plotter *_plotter))
-#else
-_q_initialize (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_q_initialize (S___(Plotter *_plotter))
 {
   int i;
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _h_initialize (S___(_plotter));
+  _pl_h_initialize (S___(_plotter));
 #endif
 
   /* Superclass initialization (i.e., of an HPGLPlotter) may well have
@@ -481,7 +489,7 @@ _q_initialize (S___(_plotter))
   _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user) */
-  _plotter->data->default_font_type = F_PCL;
+  _plotter->data->default_font_type = PL_F_PCL;
   _plotter->data->pcl_before_ps = true;
   _plotter->data->have_horizontal_justification = false;
   _plotter->data->have_vertical_justification = false;
@@ -555,9 +563,9 @@ _q_initialize (S___(_plotter))
   _plotter->hpgl_spacing = 0;  
   _plotter->hpgl_posture = 0;  
   _plotter->hpgl_stroke_weight = 0;  
-  _plotter->hpgl_pcl_typeface = STICK_TYPEFACE;  
-  _plotter->hpgl_charset_lower = HP_ASCII;
-  _plotter->hpgl_charset_upper = HP_ASCII;
+  _plotter->hpgl_pcl_typeface = PCL_STICK_TYPEFACE;  
+  _plotter->hpgl_charset_lower = HPGL_CHARSET_ASCII;
+  _plotter->hpgl_charset_upper = HPGL_CHARSET_ASCII;
   _plotter->hpgl_rel_char_height = 0.0;
   _plotter->hpgl_rel_char_width = 0.0;  
   _plotter->hpgl_rel_label_rise = 0.0;    
@@ -657,8 +665,8 @@ _q_initialize (S___(_plotter))
   {
     const char *pen_s;
 
-    pen_s = DEFAULT_HPGL2_PEN_STRING;
-    _parse_pen_string (R___(_plotter) pen_s); /* default is guaranteed to parse */
+    pen_s = HPGL2_DEFAULT_PEN_STRING;
+    _pl_h_parse_pen_string (R___(_plotter) pen_s); /* default is guaranteed to parse */
   }
   
   /* Examine presence or absence of hard-defined pens in 2..31 range.
@@ -690,13 +698,7 @@ _q_initialize (S___(_plotter))
    palette extension.  User specifies this by setting the
    HPGL_ASSIGN_COLORS environment variable to "yes"; see above. */
 bool
-#ifdef _HAVE_PROTOS
-_parse_pen_string (R___(Plotter *_plotter) const char *pen_s)
-#else
-_parse_pen_string (R___(_plotter) pen_s)
-     S___(Plotter *_plotter;)
-     const char *pen_s;
-#endif
+_pl_h_parse_pen_string (R___(Plotter *_plotter) const char *pen_s)
 {
   const char *charp;
   char name[MAX_COLOR_NAME_LEN];
@@ -765,30 +767,20 @@ _parse_pen_string (R___(_plotter) pen_s)
    _plotter points to the Plotter that is about to be deleted. */
 
 void
-#ifdef _HAVE_PROTOS
-_h_terminate (S___(Plotter *_plotter))
-#else
-_h_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_terminate (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate (S___(_plotter));
+  _pl_g_terminate (S___(_plotter));
 #endif
 }
 
 void
-#ifdef _HAVE_PROTOS
-_q_terminate (S___(Plotter *_plotter))
-#else
-_q_terminate (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_q_terminate (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _h_terminate (S___(_plotter));
+  _pl_h_terminate (S___(_plotter));
 #endif
 }
 
@@ -796,60 +788,60 @@ _q_terminate (S___(_plotter))
 HPGLPlotter::HPGLPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:Plotter (infile, outfile, errfile)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter (FILE *outfile)
 	:Plotter (outfile)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter (istream& in, ostream& out, ostream& err)
 	: Plotter (in, out, err)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter (ostream& out)
 	: Plotter (out)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter ()
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:Plotter (infile, outfile, errfile, parameters)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter (FILE *outfile, PlotterParams &parameters)
 	:Plotter (outfile, parameters)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: Plotter (in, out, err, parameters)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter (ostream& out, PlotterParams &parameters)
 	: Plotter (out, parameters)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::HPGLPlotter (PlotterParams &parameters)
 	: Plotter (parameters)
 {
-  _h_initialize ();
+  _pl_h_initialize ();
 }
 
 HPGLPlotter::~HPGLPlotter ()
@@ -858,7 +850,7 @@ HPGLPlotter::~HPGLPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _h_terminate ();
+  _pl_h_terminate ();
 }
 #endif
 
@@ -866,60 +858,60 @@ HPGLPlotter::~HPGLPlotter ()
 PCLPlotter::PCLPlotter (FILE *infile, FILE *outfile, FILE *errfile)
 	:HPGLPlotter (infile, outfile, errfile)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter (FILE *outfile)
 	:HPGLPlotter (outfile)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter (istream& in, ostream& out, ostream& err)
 	: HPGLPlotter (in, out, err)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter (ostream& out)
 	: HPGLPlotter (out)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter ()
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
 	:HPGLPlotter (infile, outfile, errfile, parameters)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter (FILE *outfile, PlotterParams &parameters)
 	:HPGLPlotter (outfile, parameters)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
 	: HPGLPlotter (in, out, err, parameters)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter (ostream& out, PlotterParams &parameters)
 	: HPGLPlotter (out, parameters)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::PCLPlotter (PlotterParams &parameters)
 	: HPGLPlotter (parameters)
 {
-  _q_initialize ();
+  _pl_q_initialize ();
 }
 
 PCLPlotter::~PCLPlotter ()
@@ -928,7 +920,7 @@ PCLPlotter::~PCLPlotter ()
   if (_plotter->data->open)
     _API_closepl ();
 
-  _q_terminate ();
+  _pl_q_terminate ();
 }
 #endif
 
@@ -940,9 +932,9 @@ PCLPlotter::~PCLPlotter ()
 
 /* Two forwarding functions called by any HPGLPlotter/PCLPlotter in
    begin_page() and end_page(), respectively.  See h_openpl.c and
-   h_closepl.c for the forwarded-to functions _h_maybe_switch_to_hpgl(),
-   _q_maybe_switch_to_hpgl(), _h_maybe_switch_from_hpgl(),
-   _q_maybe_switch_from_hpgl().  The HPGLPlotter versions are no-ops, but
+   h_closepl.c for the forwarded-to functions _pl_h_maybe_switch_to_hpgl(),
+   _pl_q_maybe_switch_to_hpgl(), _pl_h_maybe_switch_from_hpgl(),
+   _pl_q_maybe_switch_from_hpgl().  The HPGLPlotter versions are no-ops, but
    the PCLPlotter versions switch the printer to HP-GL/2 mode from PCL 5
    mode, and back to PCL 5 mode from HP-GL/2 mode. */
    
@@ -950,21 +942,16 @@ PCLPlotter::~PCLPlotter ()
    mode, if a PCL 5 printer (otherwise it's a no-op).  Invoked by
    begin_page(). */
 void
-#ifdef _HAVE_PROTOS
 _maybe_switch_to_hpgl (Plotter *_plotter)
-#else
-_maybe_switch_to_hpgl (_plotter)
-     Plotter *_plotter;
-#endif
 {
   switch ((int)(_plotter->data->type))
     {
     case (int)PL_HPGL:
     default:
-      _h_maybe_switch_to_hpgl (_plotter); /* no-op */
+      _pl_h_maybe_switch_to_hpgl (_plotter); /* no-op */
       break;
     case (int)PL_PCL:
-      _q_maybe_switch_to_hpgl (_plotter);
+      _pl_q_maybe_switch_to_hpgl (_plotter);
       break;
     }
 }
@@ -972,21 +959,16 @@ _maybe_switch_to_hpgl (_plotter)
 /* Switch back to PCL 5 mode from HP-GL/2 mode, if a PCL 5 printer
    (otherwise it's a no-op).  Invoked by end_page(). */
 void
-#ifdef _HAVE_PROTOS
 _maybe_switch_from_hpgl (Plotter *_plotter)
-#else
-_maybe_switch_from_hpgl (_plotter)
-     Plotter *_plotter;
-#endif
 {
   switch ((int)(_plotter->data->type))
     {
     case (int)PL_HPGL:
     default:
-      _h_maybe_switch_from_hpgl (_plotter); /* no-op */
+      _pl_h_maybe_switch_from_hpgl (_plotter); /* no-op */
       break;
     case (int)PL_PCL:
-      _q_maybe_switch_from_hpgl (_plotter);
+      _pl_q_maybe_switch_from_hpgl (_plotter);
       break;
     }
 }

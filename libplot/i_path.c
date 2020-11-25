@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -17,12 +35,7 @@
 			  + ((p1).y - (p2).y) * ((p1).y - (p2).y))
 
 void
-#ifdef _HAVE_PROTOS
-_i_paint_path (S___(Plotter *_plotter))
-#else
-_i_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_i_paint_path (S___(Plotter *_plotter))
 {
   if (_plotter->drawstate->pen_type == 0
       && _plotter->drawstate->fill_type == 0)
@@ -57,7 +70,7 @@ _i_paint_path (S___(_plotter))
 	    pc = _plotter->drawstate->path->segments[1].pc;
 	    
 	    /* use libxmi rendering */
-	    _i_draw_elliptic_arc (R___(_plotter) p0, p1, pc);
+	    _pl_i_draw_elliptic_arc (R___(_plotter) p0, p1, pc);
 
 	    break;
 	  }
@@ -71,7 +84,7 @@ _i_paint_path (S___(_plotter))
 	    pc = _plotter->drawstate->path->segments[1].pc;
 	    
 	    /* use libxmi rendering */
-	    _i_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc);
+	    _pl_i_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc);
 	    
 	    break;
 	  }
@@ -81,7 +94,7 @@ _i_paint_path (S___(_plotter))
 
 	/* construct point array for libxmi module; convert vertices to
 	   device coordinates, removing runs */
-	miPoints = (miPoint *)_plot_xmalloc (_plotter->drawstate->path->num_segments * sizeof(miPoint));
+	miPoints = (miPoint *)_pl_xmalloc (_plotter->drawstate->path->num_segments * sizeof(miPoint));
 
 	polyline_len = 0;
 	xu_last = 0.0;
@@ -121,7 +134,7 @@ _i_paint_path (S___(_plotter))
 	/* construct an miGC (graphics context for the libxmi module); copy
 	   attributes from the Plotter's GC to it */
 	pGC = miNewGC (2, pixels);
-	_set_common_mi_attributes (_plotter->drawstate, (voidptr_t)pGC);
+	_set_common_mi_attributes (_plotter->drawstate, (void *)pGC);
 	
 	if (_plotter->drawstate->fill_type)
 	  /* not transparent, will fill */
@@ -132,7 +145,7 @@ _i_paint_path (S___(_plotter))
 	      = (_plotter->drawstate->path->primitive ? MI_SHAPE_CONVEX : MI_SHAPE_GENERAL);
 	    
 	    /* set fg color in GC (and bg color too) */
-	    _i_set_fill_color (S___(_plotter));
+	    _pl_i_set_fill_color (S___(_plotter));
 	    fgPixel.type = MI_PIXEL_INDEX_TYPE;
 	    fgPixel.u.index = _plotter->drawstate->i_fill_color_index;
 	    pixels[0] = bgPixel;
@@ -158,7 +171,7 @@ _i_paint_path (S___(_plotter))
 	  /* pen is present, so edge the polyline */
 	  {
 	    /* set fg color in GC (and bg color too) */
-	    _i_set_pen_color (S___(_plotter));
+	    _pl_i_set_pen_color (S___(_plotter));
 	    fgPixel.type = MI_PIXEL_INDEX_TYPE;
 	    fgPixel.u.index = _plotter->drawstate->i_pen_color_index;
 	    pixels[0] = bgPixel;
@@ -174,7 +187,7 @@ _i_paint_path (S___(_plotter))
 		 nothing. */
 	      {
 		if (identical_user_coordinates == false
-		    || _plotter->drawstate->cap_type == CAP_ROUND)
+		    || _plotter->drawstate->cap_type == PL_CAP_ROUND)
 		  {
 		    unsigned int sp_size 
 		      = (unsigned int)_plotter->drawstate->quantized_device_line_width; 
@@ -283,7 +296,7 @@ _i_paint_path (S___(_plotter))
 
 	/* draw ellipse (elliptic arc aligned with the coordinate axes, arc
 	   range = 64*360 64'ths of a degree) */
-	_i_draw_elliptic_arc_internal (R___(_plotter) 
+	_pl_i_draw_elliptic_arc_internal (R___(_plotter) 
 					  xorigin, yorigin, 
 					  squaresize_x, squaresize_y, 
 					  0, 64 * 360);
@@ -303,13 +316,7 @@ _i_paint_path (S___(_plotter))
    device frame, of the sort that libxmi supports. */
 
 void
-#ifdef _HAVE_PROTOS
-_i_draw_elliptic_arc (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
-#else
-_i_draw_elliptic_arc (R___(_plotter) p0, p1, pc)
-     S___(Plotter *_plotter;)
-     plPoint p0, p1, pc;
-#endif
+_pl_i_draw_elliptic_arc (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
 {
   double radius;
   double theta0, theta1;
@@ -367,7 +374,7 @@ _i_draw_elliptic_arc (R___(_plotter) p0, p1, pc)
   startangle = IROUND(64 * theta0 * 180.0); /* in 64'ths of a degree */
   anglerange = IROUND(64 * (theta1 - theta0) * 180.0); /* likewise */
 
-  _i_draw_elliptic_arc_internal (R___(_plotter)
+  _pl_i_draw_elliptic_arc_internal (R___(_plotter)
 				 xorigin, yorigin, 
 				 squaresize_x, squaresize_y, 
 				 startangle, anglerange);
@@ -380,13 +387,7 @@ _i_draw_elliptic_arc (R___(_plotter) p0, p1, pc)
    either or both axes).  So it will be a quarter-ellipse in the device
    frame, of the sort that libxmi supports. */
 void
-#ifdef _HAVE_PROTOS
-_i_draw_elliptic_arc_2 (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
-#else
-_i_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc)
-     S___(Plotter *_plotter;)
-     plPoint p0, p1, pc;
-#endif
+_pl_i_draw_elliptic_arc_2 (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
 {
   double rx, ry;
   double x0, y0, x1, y1, xc, yc;
@@ -457,7 +458,7 @@ _i_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc)
   startangle *= 64;
   anglerange *= 64;
 
-  _i_draw_elliptic_arc_internal (R___(_plotter)
+  _pl_i_draw_elliptic_arc_internal (R___(_plotter)
 				 xorigin, yorigin, 
 				 squaresize_x, squaresize_y, 
 				 startangle, anglerange);
@@ -471,15 +472,7 @@ _i_draw_elliptic_arc_2 (R___(_plotter) p0, p1, pc)
    since miFillArcs() and miDrawArcs() do not support them. */
 
 void
-#ifdef _HAVE_PROTOS
-_i_draw_elliptic_arc_internal (R___(Plotter *_plotter) int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange)
-#else
-_i_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, squaresize_y, startangle, anglerange)
-     S___(Plotter *_plotter;)
-     int xorigin, yorigin; 
-     unsigned int squaresize_x, squaresize_y; 
-     int startangle, anglerange;
-#endif
+_pl_i_draw_elliptic_arc_internal (R___(Plotter *_plotter) int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange)
 {
   miGC *pGC;
   miArc arc;
@@ -510,7 +503,7 @@ _i_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
     /* not transparent, so fill the arc */
     {
       /* set fg color in GC (and bg color too) */
-      _i_set_fill_color (S___(_plotter));
+      _pl_i_set_fill_color (S___(_plotter));
       fgPixel.type = MI_PIXEL_INDEX_TYPE;
       fgPixel.u.index = _plotter->drawstate->i_fill_color_index;
       pixels[0] = bgPixel;
@@ -540,7 +533,7 @@ _i_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
       unsigned int sp_size = 0;	/* keep compiler happy */
 
       /* set fg color in GC (and bg color too) */ 
-      _i_set_pen_color (S___(_plotter));
+      _pl_i_set_pen_color (S___(_plotter));
       fgPixel.type = MI_PIXEL_INDEX_TYPE;
       fgPixel.u.index = _plotter->drawstate->i_pen_color_index;  
       pixels[0] = bgPixel;
@@ -612,12 +605,7 @@ _i_draw_elliptic_arc_internal (R___(_plotter) xorigin, yorigin, squaresize_x, sq
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_i_paint_paths (S___(Plotter *_plotter))
-#else
-_i_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_i_paint_paths (S___(Plotter *_plotter))
 {
   return false;
 }

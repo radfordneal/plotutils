@@ -1,6 +1,25 @@
+/* This file is part of the GNU plotutils package. */
+
+/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+   1996, 1997, 1998, 1999, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /*
  * main() routine for ode, including command-line parser.
- * Copyright (C) 1996-1997 Free Software Foundation, Inc.
  */
 
 #include "sys-defines.h"
@@ -36,49 +55,20 @@ struct option long_options[] =
 int hidden_options[] = { 0 };
 
 /* forward references */
-static void display_version ____P((const char *progname));
-static void fatal ____P((const char *s));
-
-static void
-#ifdef _HAVE_PROTOS
-display_version (const char *progname)
-#else
-display_version (progname)
-     const char *progname;
-#endif
-{
-  fprintf (stderr, "%s (GNU plotutils) %s\n", progname, VERSION);
-  fprintf (stderr, 
-	   "Copyright (C) 1982-99 Free Software Foundation, Inc.,\nand Nicholas B. Tufillaro.\n");
-  fprintf (stderr, 
-	   "The GNU plotutils come with NO WARRANTY, to the extent permitted by law.\n");
-  fprintf (stderr, "You may redistribute copies of the GNU plotutils\n");
-  fprintf (stderr, "under the terms of the GNU General Public License.\n");
-}
+static void fatal (const char *s);
 
 /*
  * fatal error message
  */
 static void
-#ifdef _HAVE_PROTOS
 fatal (const char *s)
-#else
-fatal (s)
-     const char *s;
-#endif
 {
   fprintf (stderr, "%s: %s\n", progname, s);
   exit (EXIT_FAILURE);
 }
 
 int
-#ifdef _HAVE_PROTOS
 main (int argc, char *argv[])
-#else
-main (argc, argv)
-     int argc;
-     char *argv[];
-#endif
 {
   int option;
   int opt_index;
@@ -248,7 +238,7 @@ main (argc, argv)
     }
   if (show_version)
     {
-      display_version (progname);
+      display_version (progname, written, copyright);
       return EXIT_SUCCESS;
     }
   if (show_usage)

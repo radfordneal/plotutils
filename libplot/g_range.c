@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains functions that update the bounding box information
    for a page whenever a new object (ellipse, line segment, or Bezier
    segment) is plotted.  Updating takes the line width into account, more
@@ -20,17 +38,7 @@
    by one-half of the line width.  This approximation is good unless the
    line width is large. */
 void
-#ifdef _HAVE_PROTOS
 _set_ellipse_bbox (plOutbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth, double m[6])
-#else
-_set_ellipse_bbox (bufp, x, y, rx, ry, costheta, sintheta, linewidth, m)
-     plOutbuf *bufp;
-     double x, y;
-     double rx, ry;
-     double costheta, sintheta;
-     double linewidth;
-     double m[6];
-#endif
 {
   double ux, uy, vx, vy;
   double mixing_angle;
@@ -101,15 +109,7 @@ _set_ellipse_bbox (bufp, x, y, rx, ry, costheta, sintheta, linewidth, m)
 
 /* update bounding box due to drawing of a line end (args are in user coors) */
 void
-#ifdef _HAVE_PROTOS
 _set_line_end_bbox (plOutbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle, double m[6])
-#else
-_set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle, m)
-     plOutbuf *bufp;
-     double x, y, xother, yother, linewidth;
-     int capstyle;
-     double m[6];
-#endif
 {
   plVector v, vrot;
   double xs, ys;
@@ -117,7 +117,7 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle, m)
 
   switch (capstyle)
     {
-    case CAP_BUTT:
+    case PL_CAP_BUTT:
     default:
       vrot.x = yother - y;
       vrot.y = x - xother;
@@ -129,7 +129,7 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle, m)
       ys = y - vrot.y;
       _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       break;
-    case CAP_PROJECT:
+    case PL_CAP_PROJECT:
       v.x = xother - x;
       v.y = yother - y;
       _vscale (&v, halfwidth);
@@ -143,10 +143,10 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle, m)
       ys = y - v.y - vrot.y;
       _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       break;
-    case CAP_ROUND:
+    case PL_CAP_ROUND:
       _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0, m);
       break;
-    case CAP_TRIANGULAR:
+    case PL_CAP_TRIANGULAR:
       /* add projecting vertex */
       v.x = xother - x;
       v.y = yother - y;
@@ -170,16 +170,7 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle, m)
 
 /* update bounding box due to drawing of a line join (args are in user coors)*/
 void
-#ifdef _HAVE_PROTOS
 _set_line_join_bbox (plOutbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit, double m[6])
-#else
-_set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinstyle, miterlimit, m)
-     plOutbuf *bufp;
-     double xleft, yleft, x, y, xright, yright, linewidth;
-     int joinstyle;
-     double miterlimit;
-     double m[6];
-#endif
 {
   plVector v1, v2, vsum;
   double v1len, v2len;
@@ -188,7 +179,7 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 
   switch (joinstyle)
     {
-    case JOIN_MITER:
+    case PL_JOIN_MITER:
     default:
       v1.x = xleft - x;
       v1.y = yleft - y;
@@ -211,8 +202,8 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 	      || (cosphi > (1.0 - 2.0 / (miterlimit * miterlimit))))
 	    /* bevel rather than miter */
 	    {
-	      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, CAP_BUTT, m);
-	      _set_line_end_bbox (bufp,x, y, xright, yright, linewidth, CAP_BUTT, m);
+	      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, PL_CAP_BUTT, m);
+	      _set_line_end_bbox (bufp,x, y, xright, yright, linewidth, PL_CAP_BUTT, m);
 	    }
 	  else
 	    {
@@ -226,7 +217,7 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 	    }
 	}
       break;
-    case JOIN_TRIANGULAR:
+    case PL_JOIN_TRIANGULAR:
       /* add a miter vertex, and same vertices as when bevelling */
       vsum.x = v1.x + v2.x;
       vsum.y = v1.y + v2.y;
@@ -235,11 +226,11 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
       y -= vsum.y;
       _update_bbox (bufp, XD_INTERNAL(x,y,m), YD_INTERNAL(x,y,m));
       /* fall through */
-    case JOIN_BEVEL:
-      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, CAP_BUTT, m);
-      _set_line_end_bbox (bufp, x, y, xright, yright, linewidth, CAP_BUTT, m);
+    case PL_JOIN_BEVEL:
+      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, PL_CAP_BUTT, m);
+      _set_line_end_bbox (bufp, x, y, xright, yright, linewidth, PL_CAP_BUTT, m);
       break;
-    case JOIN_ROUND:
+    case PL_JOIN_ROUND:
       halfwidth = 0.5 * linewidth;
       _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0, m);
       break;
@@ -257,15 +248,7 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 #define QUAD_COOR(t,x0,x1,x2) (((x0)-2*(x1)+(x2))*t*t + 2*((x1)-(x2))*t + (x2))
 
 void
-#ifdef _HAVE_PROTOS
 _set_bezier2_bbox (plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double device_line_width, double m[6])
-#else
-_set_bezier2_bbox (bufp, x0, y0, x1, y1, x2, y2, device_line_width, m)
-     plOutbuf *bufp;
-     double x0, y0, x1, y1, x2, y2;
-     double device_line_width;
-     double m[6];
-#endif
 {
   double a_x, b_x, t_x;
   double a_y, b_y, t_y;  
@@ -316,15 +299,7 @@ _set_bezier2_bbox (bufp, x0, y0, x1, y1, x2, y2, device_line_width, m)
 #define CUBIC_COOR(t,x0,x1,x2,x3) (((x0)-3*(x1)+3*(x2)-(x3))*t*t*t + 3*((x1)-2*(x2)+(x3))*t*t + 3*((x2)-(x3))*t + (x3))
 
 void
-#ifdef _HAVE_PROTOS
 _set_bezier3_bbox (plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3, double device_line_width, double m[6])
-#else
-_set_bezier3_bbox (bufp, x0, y0, x1, y1, x2, y2, x3, y3, device_line_width, m)
-     plOutbuf *bufp;
-     double x0, y0, x1, y1, x2, y2, x3, y3;
-     double device_line_width;
-     double m[6];
-#endif
 {
   double a_x, b_x, c_x, s_x, t_x;
   double a_y, b_y, c_y, s_y, t_y;  

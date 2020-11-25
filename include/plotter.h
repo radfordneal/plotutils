@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This is "plotter.h", the public header file for the C++ Plotter class
    provided by GNU libplotter, a shared class library for 2-dimensional
    vector graphics.  
@@ -36,17 +54,12 @@
    `pl_libplot_ver'.  The PL_LIBPLOT_VER macro is not compiled into it.
    Both are available to applications that include this header file. */
 
-#define PL_LIBPLOT_VER_STRING "4.1"
-#define PL_LIBPLOT_VER         401
+#define PL_LIBPLOT_VER_STRING "4.2"
+#define PL_LIBPLOT_VER         402
 
 extern const char pl_libplot_ver[8];   /* need room for 99.99aa */
 
 /***********************************************************************/
-
-/* Support ancient C compilers, best not explained further. */
-#ifndef void
-#define voidptr_t void *
-#endif
 
 /* If we're supporting X, include X-related header files needed by the
    class definition. */
@@ -55,18 +68,19 @@ extern const char pl_libplot_ver[8];   /* need room for 99.99aa */
 #include <X11/Intrinsic.h>
 #endif /* not X_DISPLAY_MISSING */
 
-/* Include iostream, stdio support if this is libplotter rather than
+/* Include stdio and iostream support if this is libplotter rather than
    libplot. */
 #ifndef NOT_LIBPLOTTER
-#include <iostream.h>
-#include <stdio.h>
+#include <cstdio>
+#include <iostream>
+using namespace std;
 #endif
 
 /* THE GLOBAL VARIABLES IN GNU LIBPLOTTER */
 /* There are two; both are user-settable error handlers. */
 #ifndef NOT_LIBPLOTTER
-extern int (*libplotter_warning_handler) (const char *msg);
-extern int (*libplotter_error_handler) (const char *msg);
+extern int (*pl_libplotter_warning_handler) (const char *msg);
+extern int (*pl_libplotter_error_handler) (const char *msg);
 #endif
 
 
@@ -328,14 +342,14 @@ typedef struct plDrawStateStruct
 /* modal drawing attributes */
   /* 1. path-related attributes */
   const char *fill_rule;	/* fill rule */
-  int fill_rule_type;		/* one of FILL_*, determined by fill rule */
+  int fill_rule_type;		/* one of PL_FILL_*, determined by fill rule */
   const char *line_mode;	/* line mode */
-  int line_type;		/* one of L_*, determined by line mode */
+  int line_type;		/* one of PL_L_*, determined by line mode */
   bool points_are_connected;	/* if not set, path displayed as points */
   const char *cap_mode;		/* cap mode */
-  int cap_type;			/* one of CAP_*, determined by cap mode */
+  int cap_type;			/* one of PL_CAP_*, determined by cap mode */
   const char *join_mode;	/* join mode */
-  int join_type;		/* one of JOIN_*, determined by join mode */
+  int join_type;		/* one of PL_JOIN_*, determined by join mode */
   double miter_limit;		/* miter limit for line joins */
   double line_width;		/* width of lines in user coordinates */
   bool line_width_is_default;	/* line width is (Plotter-specific) default? */
@@ -358,7 +372,7 @@ typedef struct plDrawStateStruct
   double font_ascent;		/* font ascent (as retrieved) */
   double font_descent;		/* font descent (as retrieved) */
   double font_cap_height;	/* font capital height (as received) */
-  int font_type;		/* F_{HERSHEY|POSTSCRIPT|PCL|STICK|OTHER} */
+  int font_type;		/* PL_F_{HERSHEY|POSTSCRIPT|PCL|STICK|OTHER} */
   int typeface_index;		/* typeface index (in g_fontdb.h table) */
   int font_index;		/* font index, within typeface */
   bool font_is_iso8859_1;	/* whether font uses iso8859_1 encoding */
@@ -410,8 +424,7 @@ typedef struct plDrawStateStruct
 
 #ifndef X_DISPLAY_MISSING
 /* elements specific to the X Drawable Plotter drawing state */
-  double x_font_pixmatrix[4];	/* pixel matrix, parsed from font name */
-  bool x_native_positioning;	/* if set, can use XDrawString() etc. */
+  unsigned int x_font_pixel_size; /* pixel size according to server */
   XFontStruct *x_font_struct;	/* font structure (used in x_text.c) */
   const unsigned char *x_label;	/* label (hint to _x_retrieve_font()) */
   GC x_gc_fg;			/* graphics context, for drawing */
@@ -485,7 +498,7 @@ typedef struct plOutbufStruct
   bool bg_color_suppressed;	/* background color is "none"? */
 
   /* a hook for Plotters to hang other page-specific data */
-  voidptr_t extra;
+  void * extra;
 
   /* pointer to previous Outbuf in page list if any */
   struct plOutbufStruct *next;
@@ -519,21 +532,17 @@ typedef struct
    been request from an X server, in any connection, by constructing a
    linked list of these records.  A linked list is good enough if we don't
    have huge numbers of font changes. */
-typedef struct plFontRecordStruct
+typedef struct plXFontRecordStruct
 {
-  char *name;			/* font name, preferably an XLFD name */
+  char *x_font_name;		/* font name, preferably an XLFD name */
   XFontStruct *x_font_struct;	/* font structure */
-  double true_font_size;
-  double font_pixmatrix[4];
-  double font_ascent;
-  double font_descent;
-  double font_cap_height;
-  bool native_positioning;
-  bool font_is_iso8859_1;
+  unsigned int x_font_pixel_size;
+  unsigned int x_font_cap_height;
+  bool x_font_is_iso8859_1;
   bool subset;			/* did we retrieve a subset of the font? */
   unsigned char subset_vector[32]; /* 256-bit vector, 1 bit per font char */
-  struct plFontRecordStruct *next; /* most recently retrieved font */
-} plFontRecord;
+  struct plXFontRecordStruct *next; /* most recently retrieved font */
+} plXFontRecord;
 
 /* Allocated color cells are kept track of similarly */
 typedef struct plColorRecordStruct
@@ -686,7 +695,7 @@ typedef struct
 #endif /* not NOT_LIBPLOTTER */
 
   /* device driver parameters (i.e., instance copies of class variables) */
-  voidptr_t params[NUM_PLOTTER_PARAMETERS];
+  void * params[NUM_PLOTTER_PARAMETERS];
 
   /* (mostly) user-queryable capabilities: 0/1/2 = no/yes/maybe */
   int have_wide_lines;	
@@ -703,7 +712,7 @@ typedef struct
   int have_other_fonts;
 
   /* text and font-related parameters (internal, not queryable by user) */
-  int default_font_type;	/* F_{HERSHEY|POSTSCRIPT|PCL|STICK} */
+  int default_font_type;	/* PL_F_{HERSHEY|POSTSCRIPT|PCL|STICK} */
   bool pcl_before_ps;		/* PCL fonts searched first? (if applicable) */
   bool have_horizontal_justification; /*device can justify text horizontally?*/
   bool have_vertical_justification; /* device can justify text vertically? */
@@ -770,24 +779,11 @@ typedef struct
 
 } plPlotterData;
 
-/* The macro P___ elides argument prototypes if the compiler is a pre-ANSI
-   C compiler that does not support them. */
-#ifdef P___
-#undef P___
-#endif
-#if defined (__STDC__) || defined (_AIX) \
-	|| (defined (__mips) && defined (_SYSTYPE_SVR4)) \
-	|| defined(WIN32) || defined(__cplusplus)
-#define P___(protos) protos
-#else
-#define P___(protos) ()
-#endif
-
 /* The macro Q___ is used for declaring Plotter methods (as function
-   pointers for libplot, and as function members of the Plotter
-   class, for libplotter).  QQ___ is also used for declaring PlotterParams
-   methods.  It is the same as Q___, but does not declare the function
-   members as virtual (the PlotterParams class is not derived from). */
+   pointers for libplot, and as function members of the Plotter class, for
+   libplotter).  QQ___ is used for declaring PlotterParams methods.  It is
+   the same as Q___, but does not declare the function members as virtual
+   (the PlotterParams class is not derived from). */
 #ifdef Q___
 #undef Q___
 #endif
@@ -847,10 +843,10 @@ typedef struct plPlotterParamsStruct /* this tag is used only by libplot */
 #endif
 
   /* PLOTTERPARAMS PUBLIC METHODS */
-  QQ___(int,setplparam) P___((R___(struct plPlotterParamsStruct *_plotter_params) const char *parameter, voidptr_t value));
+  QQ___(int,setplparam) (R___(struct plPlotterParamsStruct *_plotter_params) const char *parameter, void * value);
 
   /* PUBLIC DATA: user-specified (recognized) Plotter parameters */
-  voidptr_t plparams[NUM_PLOTTER_PARAMETERS];
+  void * plparams[NUM_PLOTTER_PARAMETERS];
 }
 #ifdef NOT_LIBPLOTTER
 PlotterParams;
@@ -875,24 +871,24 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
   /* Private functions related to the drawing of text strings in Hershey
      fonts (all defined in g_alab_her.c).  In libplot they're declared in
      libplot/extern.h.  */
-  double _alabel_hershey (const unsigned char *s, int x_justify, int y_justify);
-  double _flabelwidth_hershey (const unsigned char *s);
-  void _draw_hershey_glyph (int num, double charsize, int type, bool oblique);
-  void _draw_hershey_penup_stroke (double dx, double dy, double charsize, bool oblique);
-  void _draw_hershey_string (const unsigned short *string);
-  void _draw_hershey_stroke (bool pendown, double deltax, double deltay);
+  double _g_alabel_hershey (const unsigned char *s, int x_justify, int y_justify);
+  double _g_flabelwidth_hershey (const unsigned char *s);
+  void _g_draw_hershey_glyph (int num, double charsize, int type, bool oblique);
+  void _g_draw_hershey_penup_stroke (double dx, double dy, double charsize, bool oblique);
+  void _g_draw_hershey_string (const unsigned short *string);
+  void _g_draw_hershey_stroke (bool pendown, double deltax, double deltay);
 
   /* Other private functions (a mixed bag).  In libplot they're declared
      in libplot/extern.h. */
-  double _render_non_hershey_string (const char *s, bool do_render, int x_justify, int y_justify);
-  double _render_simple_string (const unsigned char *s, bool do_render, int h_just, int v_just);
-  unsigned short * _controlify (const unsigned char *);
-  void _copy_params_to_plotter (const PlotterParams *params);
-  void _create_first_drawing_state (void);
-  void _delete_first_drawing_state (void);
-  void _free_params_in_plotter (void);
-  void _maybe_replace_arc (void);
-  void _set_font (void);
+  double _g_render_non_hershey_string (const char *s, bool do_render, int x_justify, int y_justify);
+  double _g_render_simple_string (const unsigned char *s, bool do_render, int h_just, int v_just);
+  unsigned short * _g_controlify (const unsigned char *);
+  void _g_copy_params_to_plotter (const PlotterParams *params);
+  void _g_create_first_drawing_state (void);
+  void _g_delete_first_drawing_state (void);
+  void _g_free_params_in_plotter (void);
+  void _g_maybe_replace_arc (void);
+  void _g_set_font (void);
 
  public:
   /* PLOTTER CTORS (old-style, not thread-safe) */
@@ -911,128 +907,125 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
   virtual ~Plotter ();
 
   /* PLOTTER PUBLIC METHOD (static, used by old [non-thread-safe] bindings) */
-  static int parampl (const char *parameter, voidptr_t value);
+  static int parampl (const char *parameter, void * value);
 
   /* PLOTTER PUBLIC METHODS.
 
-     The methods in the libplot/libplotter API.  The QQ___() and other
-     macros fix things so that in libplotter, these are declared as
-     non-virtual Plotter class methods.  The macros are now unnecessary,
-     because in libplot, the methods are declared not here, but in
-     extern.h.
+     The methods in the libplotter API.  (In libplot, these methods are
+     declared not here, but in extern.h.)
 
-     Note that in the code, these Plotter methods appear under the names
-     _API_alabel() etc.  Via #define's in extern.h, they're renamed as
-     _pl_alable_r() etc. in libplot, and as Plotter::alabel etc. in
-     libplotter. */
+     Note that in the body of the code, these Plotter methods appear under
+     the names _API_alabel() etc.  Via #define's in extern.h, they're
+     renamed as _pl_alable_r() etc. in libplot, and as Plotter::alabel
+     etc. in libplotter. */
 
-  QQ___(int,alabel) P___((R___(struct plPlotterStruct *_plotter) int x_justify, int y_justify, const char *s));
-  QQ___(int,arc) P___((R___(struct plPlotterStruct *_plotter) int xc, int yc, int x0, int y0, int x1, int y1));
-  QQ___(int,arcrel) P___((R___(struct plPlotterStruct *_plotter) int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-  QQ___(int,bezier2) P___((R___(struct plPlotterStruct *_plotter) int x0, int y0, int x1, int y1, int x2, int y2));
-  QQ___(int,bezier2rel) P___((R___(struct plPlotterStruct *_plotter) int dx0, int dy0, int dx1, int dy1, int dx2, int dy2));
-  QQ___(int,bezier3) P___((R___(struct plPlotterStruct *_plotter) int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3));
-  QQ___(int,bezier3rel) P___((R___(struct plPlotterStruct *_plotter) int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3));
-  QQ___(int,bgcolor) P___((R___(struct plPlotterStruct *_plotter) int red, int green, int blue));
-  QQ___(int,bgcolorname) P___((R___(struct plPlotterStruct *_plotter) const char *name));
-  QQ___(int,box) P___((R___(struct plPlotterStruct *_plotter) int x0, int y0, int x1, int y1));
-  QQ___(int,boxrel) P___((R___(struct plPlotterStruct *_plotter) int dx0, int dy0, int dx1, int dy1));
-  QQ___(int,capmod) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,circle) P___((R___(struct plPlotterStruct *_plotter) int x, int y, int r));
-  QQ___(int,circlerel) P___((R___(struct plPlotterStruct *_plotter) int dx, int dy, int r));
-  QQ___(int,closepath) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,closepl) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,color) P___((R___(struct plPlotterStruct *_plotter) int red, int green, int blue));
-  QQ___(int,colorname) P___((R___(struct plPlotterStruct *_plotter) const char *name));
-  QQ___(int,cont) P___((R___(struct plPlotterStruct *_plotter) int x, int y));
-  QQ___(int,contrel) P___((R___(struct plPlotterStruct *_plotter) int dx, int dy));
-  QQ___(int,ellarc) P___((R___(struct plPlotterStruct *_plotter) int xc, int yc, int x0, int y0, int x1, int y1));
-  QQ___(int,ellarcrel) P___((R___(struct plPlotterStruct *_plotter) int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-  QQ___(int,ellipse) P___((R___(struct plPlotterStruct *_plotter) int x, int y, int rx, int ry, int angle));
-  QQ___(int,ellipserel) P___((R___(struct plPlotterStruct *_plotter) int dx, int dy, int rx, int ry, int angle));
-  QQ___(int,endpath) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,endsubpath) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,erase) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,farc) P___((R___(struct plPlotterStruct *_plotter) double xc, double yc, double x0, double y0, double x1, double y1));
-  QQ___(int,farcrel) P___((R___(struct plPlotterStruct *_plotter) double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-  QQ___(int,fbezier2) P___((R___(struct plPlotterStruct *_plotter) double x0, double y0, double x1, double y1, double x2, double y2));
-  QQ___(int,fbezier2rel) P___((R___(struct plPlotterStruct *_plotter) double dx0, double dy0, double dx1, double dy1, double dx2, double dy2));
-  QQ___(int,fbezier3) P___((R___(struct plPlotterStruct *_plotter) double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
-  QQ___(int,fbezier3rel) P___((R___(struct plPlotterStruct *_plotter) double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3));
-  QQ___(int,fbox) P___((R___(struct plPlotterStruct *_plotter) double x0, double y0, double x1, double y1));
-  QQ___(int,fboxrel) P___((R___(struct plPlotterStruct *_plotter) double dx0, double dy0, double dx1, double dy1));
-  QQ___(int,fcircle) P___((R___(struct plPlotterStruct *_plotter) double x, double y, double r));
-  QQ___(int,fcirclerel) P___((R___(struct plPlotterStruct *_plotter) double dx, double dy, double r));
-  QQ___(int,fconcat) P___((R___(struct plPlotterStruct *_plotter) double m0, double m1, double m2, double m3, double m4, double m5));
-  QQ___(int,fcont) P___((R___(struct plPlotterStruct *_plotter) double x, double y));
-  QQ___(int,fcontrel) P___((R___(struct plPlotterStruct *_plotter) double dx, double dy));
-  QQ___(int,fellarc) P___((R___(struct plPlotterStruct *_plotter) double xc, double yc, double x0, double y0, double x1, double y1));
-  QQ___(int,fellarcrel) P___((R___(struct plPlotterStruct *_plotter) double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-  QQ___(int,fellipse) P___((R___(struct plPlotterStruct *_plotter) double x, double y, double rx, double ry, double angle));
-  QQ___(int,fellipserel) P___((R___(struct plPlotterStruct *_plotter) double dx, double dy, double rx, double ry, double angle));
-  QQ___(double,ffontname) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(double,ffontsize) P___((R___(struct plPlotterStruct *_plotter) double size));
-  QQ___(int,fillcolor) P___((R___(struct plPlotterStruct *_plotter) int red, int green, int blue));
-  QQ___(int,fillcolorname) P___((R___(struct plPlotterStruct *_plotter) const char *name));
-  QQ___(int,fillmod) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,filltype) P___((R___(struct plPlotterStruct *_plotter) int level));
-  QQ___(double,flabelwidth) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,fline) P___((R___(struct plPlotterStruct *_plotter) double x0, double y0, double x1, double y1));
-  QQ___(int,flinedash) P___((R___(struct plPlotterStruct *_plotter) int n, const double *dashes, double offset));
-  QQ___(int,flinerel) P___((R___(struct plPlotterStruct *_plotter) double dx0, double dy0, double dx1, double dy1));
-  QQ___(int,flinewidth) P___((R___(struct plPlotterStruct *_plotter) double size));
-  QQ___(int,flushpl) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,fmarker) P___((R___(struct plPlotterStruct *_plotter) double x, double y, int type, double size));
-  QQ___(int,fmarkerrel) P___((R___(struct plPlotterStruct *_plotter) double dx, double dy, int type, double size));
-  QQ___(int,fmiterlimit) P___((R___(struct plPlotterStruct *_plotter) double limit));
-  QQ___(int,fmove) P___((R___(struct plPlotterStruct *_plotter) double x, double y));
-  QQ___(int,fmoverel) P___((R___(struct plPlotterStruct *_plotter) double dx, double dy));
-  QQ___(int,fontname) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,fontsize) P___((R___(struct plPlotterStruct *_plotter) int size));
-  QQ___(int,fpoint) P___((R___(struct plPlotterStruct *_plotter) double x, double y));
-  QQ___(int,fpointrel) P___((R___(struct plPlotterStruct *_plotter) double dx, double dy));
-  QQ___(int,frotate) P___((R___(struct plPlotterStruct *_plotter) double theta));
-  QQ___(int,fscale) P___((R___(struct plPlotterStruct *_plotter) double x, double y));
-  QQ___(int,fsetmatrix) P___((R___(struct plPlotterStruct *_plotter) double m0, double m1, double m2, double m3, double m4, double m5));
-  QQ___(int,fspace) P___((R___(struct plPlotterStruct *_plotter) double x0, double y0, double x1, double y1));
-  QQ___(int,fspace2) P___((R___(struct plPlotterStruct *_plotter) double x0, double y0, double x1, double y1, double x2, double y2));
-  QQ___(double,ftextangle) P___((R___(struct plPlotterStruct *_plotter) double angle));
-  QQ___(int,ftranslate) P___((R___(struct plPlotterStruct *_plotter) double x, double y));
-  QQ___(int,havecap) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,joinmod) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,label) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,labelwidth) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,line) P___((R___(struct plPlotterStruct *_plotter) int x0, int y0, int x1, int y1));
-  QQ___(int,linedash) P___((R___(struct plPlotterStruct *_plotter) int n, const int *dashes, int offset));
-  QQ___(int,linemod) P___((R___(struct plPlotterStruct *_plotter) const char *s));
-  QQ___(int,linerel) P___((R___(struct plPlotterStruct *_plotter) int dx0, int dy0, int dx1, int dy1));
-  QQ___(int,linewidth) P___((R___(struct plPlotterStruct *_plotter) int size));
-  QQ___(int,marker) P___((R___(struct plPlotterStruct *_plotter) int x, int y, int type, int size));
-  QQ___(int,markerrel) P___((R___(struct plPlotterStruct *_plotter) int dx, int dy, int type, int size));
-  QQ___(int,move) P___((R___(struct plPlotterStruct *_plotter) int x, int y));
-  QQ___(int,moverel) P___((R___(struct plPlotterStruct *_plotter) int dx, int dy));
-  QQ___(int,openpl) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,orientation) P___((R___(struct plPlotterStruct *_plotter) int direction));
-  QQ___(FILE*,outfile) P___((R___(struct plPlotterStruct *_plotter) FILE* newstream)); /* OBSOLESCENT */
-  QQ___(int,pencolor) P___((R___(struct plPlotterStruct *_plotter) int red, int green, int blue));
-  QQ___(int,pencolorname) P___((R___(struct plPlotterStruct *_plotter) const char *name));
-  QQ___(int,pentype) P___((R___(struct plPlotterStruct *_plotter) int level));
-  QQ___(int,point) P___((R___(struct plPlotterStruct *_plotter) int x, int y));
-  QQ___(int,pointrel) P___((R___(struct plPlotterStruct *_plotter) int dx, int dy));
-  QQ___(int,restorestate) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,savestate) P___((S___(struct plPlotterStruct *_plotter)));
-  QQ___(int,space) P___((R___(struct plPlotterStruct *_plotter) int x0, int y0, int x1, int y1));
-  QQ___(int,space2) P___((R___(struct plPlotterStruct *_plotter) int x0, int y0, int x1, int y1, int x2, int y2));
-  QQ___(int,textangle) P___((R___(struct plPlotterStruct *_plotter) int angle));
+  int alabel (int x_justify, int y_justify, const char *s);
+  int arc (int xc, int yc, int x0, int y0, int x1, int y1);
+  int arcrel (int dxc, int dyc, int dx0, int dy0, int dx1, int dy1);
+  int bezier2 (int x0, int y0, int x1, int y1, int x2, int y2);
+  int bezier2rel (int dx0, int dy0, int dx1, int dy1, int dx2, int dy2);
+  int bezier3 (int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3);
+  int bezier3rel (int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3);
+  int bgcolor (int red, int green, int blue);
+  int bgcolorname (const char *name);
+  int box (int x0, int y0, int x1, int y1);
+  int boxrel (int dx0, int dy0, int dx1, int dy1);
+  int capmod (const char *s);
+  int circle (int x, int y, int r);
+  int circlerel (int dx, int dy, int r);
+  int closepath (void);
+  int closepl (void);
+  int color (int red, int green, int blue);
+  int colorname (const char *name);
+  int cont (int x, int y);
+  int contrel (int dx, int dy);
+  int ellarc (int xc, int yc, int x0, int y0, int x1, int y1);
+  int ellarcrel (int dxc, int dyc, int dx0, int dy0, int dx1, int dy1);
+  int ellipse (int x, int y, int rx, int ry, int angle);
+  int ellipserel (int dx, int dy, int rx, int ry, int angle);
+  int endpath (void);
+  int endsubpath (void);
+  int erase (void);
+  int farc (double xc, double yc, double x0, double y0, double x1, double y1);
+  int farcrel (double dxc, double dyc, double dx0, double dy0, double dx1, double dy1);
+  int fbezier2 (double x0, double y0, double x1, double y1, double x2, double y2);
+  int fbezier2rel (double dx0, double dy0, double dx1, double dy1, double dx2, double dy2);
+  int fbezier3 (double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3);
+  int fbezier3rel (double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3);
+  int fbox (double x0, double y0, double x1, double y1);
+  int fboxrel (double dx0, double dy0, double dx1, double dy1);
+  int fcircle (double x, double y, double r);
+  int fcirclerel (double dx, double dy, double r);
+  int fconcat (double m0, double m1, double m2, double m3, double m4, double m5);
+  int fcont (double x, double y);
+  int fcontrel (double dx, double dy);
+  int fellarc (double xc, double yc, double x0, double y0, double x1, double y1);
+  int fellarcrel (double dxc, double dyc, double dx0, double dy0, double dx1, double dy1);
+  int fellipse (double x, double y, double rx, double ry, double angle);
+  int fellipserel (double dx, double dy, double rx, double ry, double angle);
+  double ffontname (const char *s);
+  double ffontsize (double size);
+  int fillcolor (int red, int green, int blue);
+  int fillcolorname (const char *name);
+  int fillmod (const char *s);
+  int filltype (int level);
+  double flabelwidth (const char *s);
+  int fline (double x0, double y0, double x1, double y1);
+  int flinedash (int n, const double *dashes, double offset);
+  int flinerel (double dx0, double dy0, double dx1, double dy1);
+  int flinewidth (double size);
+  int flushpl (void);
+  int fmarker (double x, double y, int type, double size);
+  int fmarkerrel (double dx, double dy, int type, double size);
+  int fmiterlimit (double limit);
+  int fmove (double x, double y);
+  int fmoverel (double dx, double dy);
+  int fontname (const char *s);
+  int fontsize (int size);
+  int fpoint (double x, double y);
+  int fpointrel (double dx, double dy);
+  int frotate (double theta);
+  int fscale (double x, double y);
+  int fsetmatrix (double m0, double m1, double m2, double m3, double m4, double m5);
+  int fspace (double x0, double y0, double x1, double y1);
+  int fspace2 (double x0, double y0, double x1, double y1, double x2, double y2);
+  double ftextangle (double angle);
+  int ftranslate (double x, double y);
+  int havecap (const char *s);
+  int joinmod (const char *s);
+  int label (const char *s);
+  int labelwidth (const char *s);
+  int line (int x0, int y0, int x1, int y1);
+  int linedash (int n, const int *dashes, int offset);
+  int linemod (const char *s);
+  int linerel (int dx0, int dy0, int dx1, int dy1);
+  int linewidth (int size);
+  int marker (int x, int y, int type, int size);
+  int markerrel (int dx, int dy, int type, int size);
+  int move (int x, int y);
+  int moverel (int dx, int dy);
+  int openpl (void);
+  int orientation (int direction);
+  FILE* outfile (FILE* newstream); /* OBSOLESCENT */
+  int pencolor (int red, int green, int blue);
+  int pencolorname (const char *name);
+  int pentype (int level);
+  int point (int x, int y);
+  int pointrel (int dx, int dy);
+  int restorestate (void);
+  int savestate (void);
+  int space (int x0, int y0, int x1, int y1);
+  int space2 (int x0, int y0, int x1, int y1, int x2, int y2);
+  int textangle (int angle);
 
   /* Undocumented public methods that provide access to the font tables
      within libplot/libplotter.  They're used by the graphics programs in
      the plotutils package, to display lists of font names.  In libplot
      they're declared in libplot/extern.h, rather than here. */
-  voidptr_t get_hershey_font_info P___((S___(struct plPlotterStruct *_plotter)));
-  voidptr_t get_ps_font_info P___((S___(struct plPlotterStruct *_plotter)));
-  voidptr_t get_pcl_font_info P___((S___(struct plPlotterStruct *_plotter)));
-  voidptr_t get_stick_font_info P___((S___(struct plPlotterStruct *_plotter)));
+  void *_get_hershey_font_info (void);
+  void *_get_ps_font_info (void);
+  void *_get_pcl_font_info (void);
+  void *_get_stick_font_info (void);
 
  protected:
 #endif /* not NOT_LIBPLOTTER */
@@ -1046,42 +1039,42 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
      constructors and destructors, so even in the generic Plotter class,
      they do useful work.  In derived classes they should always invoke
      their base counterparts. */
-  Q___(void,initialize) P___((S___(struct plPlotterStruct *_plotter)));
-  Q___(void,terminate) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(void,initialize) (S___(struct plPlotterStruct *_plotter));
+  Q___(void,terminate) (S___(struct plPlotterStruct *_plotter));
 
   /* Internal page-related methods, called by the API methods openpl(),
      erase() and closepl().  `true' return value indicates operation
      performed successfully. */
-  Q___(bool,begin_page) P___((S___(struct plPlotterStruct *_plotter)));
-  Q___(bool,erase_page) P___((S___(struct plPlotterStruct *_plotter)));
-  Q___(bool,end_page) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(bool,begin_page) (S___(struct plPlotterStruct *_plotter));
+  Q___(bool,erase_page) (S___(struct plPlotterStruct *_plotter));
+  Q___(bool,end_page) (S___(struct plPlotterStruct *_plotter));
 
   /* Internal `push state' method, called by the API method savestate().
      This is used by a very few types of Plotter to create or initialize
      Plotter-specific fields in a newly created drawing state.  Most
      Plotters don't override the generic version, which simply copies such
      Plotter-specific fields. */
-  Q___(void,push_state) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(void,push_state) (S___(struct plPlotterStruct *_plotter));
 
   /* Internal `pop state' method, called by the API method restorestate().
      This is used by a very few types of Plotter to delete or tear down
      Plotter-specific fields in a drawing state about to be destroyed.
      Most Plotters don't override the generic version, which does nothing
      to such fields. */
-  Q___(void,pop_state) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(void,pop_state) (S___(struct plPlotterStruct *_plotter));
 
   /* Internal `paint path' method, called when the API method endpath() is
      invoked, to draw any path that has been built up in a Plotter's
      drawing state.  It should paint a single simple path.  The generic
      version of course does nothing. */
-  Q___(void,paint_path) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(void,paint_path) (S___(struct plPlotterStruct *_plotter));
 
   /* Another internal method, called by endpath() first, if the path to
      paint is compound rather than simple.  If the Plotter can paint the
      compound path, this should return `true'; if `false' is returned,
      endpath() will paint using compound path emulation instead.  The
      generic version does nothing, but returns `true'. */
-  Q___(bool,paint_paths) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(bool,paint_paths) (S___(struct plPlotterStruct *_plotter));
 
   /* Support for flushing out the path buffer when it gets too long.  In
      any Plotter, this predicate is evaluated after any path element is
@@ -1092,7 +1085,7 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
      that the path should be flushed out by invoking endpath().  But in
      Plotters that plot in real time under some circumstances (see below),
      this normally returns `false' under those circumstances. */
-  Q___(bool,path_is_flushable) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(bool,path_is_flushable) (S___(struct plPlotterStruct *_plotter));
 
   /* Support for real-time plotting, if desired.  An internal `prepaint
      segments' method, called not when a path is finished by endpath()
@@ -1100,7 +1093,7 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
      when several segments, obtained by polygonalizing a higher-level
      primitive, are added to it.)  Only in Plotters that plot in real time
      (by definition!) is this not a no-op. */
-  Q___(void,maybe_prepaint_segments) P___((R___(struct plPlotterStruct *_plotter) int prev_num_segments));
+  Q___(void,maybe_prepaint_segments) (R___(struct plPlotterStruct *_plotter) int prev_num_segments);
 
   /* Internal `draw marker' method, called when the API method marker() is
      invoked.  Only a very few types of Plotter use this.  Return value
@@ -1109,12 +1102,12 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
      primitives, should be used.  (Yes, some Plotter output formats support
      some types of marker but not others!).  The generic version does nothing,
      but returns `false'. */
-  Q___(bool,paint_marker) P___((R___(struct plPlotterStruct *_plotter) int type, double size));
+  Q___(bool,paint_marker) (R___(struct plPlotterStruct *_plotter) int type, double size);
 
   /* Internal `draw point' method, called when the API method point() is
      invoked.  There's no standard definition of a `point', so Plotters are
      free to implement this as they see fit. */
-  Q___(void,paint_point) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(void,paint_point) (S___(struct plPlotterStruct *_plotter));
 
   /* Internal, Plotter-specific versions of the `alabel' and `flabelwidth'
      methods, which are applied to single-line text strings in a single
@@ -1122,11 +1115,12 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
      flabelwidth are wrappers around these.
 
      The argument h_just specifies the justification to be used when
-     rendering (JUST_LEFT, JUST_RIGHT, or JUST_CENTER).  If a display
-     device provides low-level support for non-default (i.e. non-left)
-     justification, the Plotter's have_horizontal_justification flag (see
-     below) should be set.  Similarly, v_just specifies vertical
-     justification (JUST_TOP, JUST_HALF, JUST_BASE, or JUST_BOTTOM). */
+     rendering (PL_JUST_LEFT, PL_JUST_RIGHT, or PL_JUST_CENTER).  If a
+     display device provides low-level support for non-default
+     (i.e. non-left) justification, the Plotter's
+     have_horizontal_justification flag (see below) should be set.
+     Similarly, v_just specifies vertical justification (PL_JUST_TOP,
+     PL_JUST_HALF, PL_JUST_BASE, PL_JUST_BOTTOM, or PL_JUST_CAP). */
 
   /* The first of these is special, for use by Metafile Plotters only.  Any
      Metafile Plotter has low-level support for drawing labels that include
@@ -1140,10 +1134,10 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
      `have_escaped_string_support' capability, which is `1' for a Metafile
      Plotter and `0' for all others. */
 
-  Q___(void,paint_text_string_with_escapes) P___((R___(struct plPlotterStruct *_plotter) const unsigned char *s, int x_justify, int y_justify));
+  Q___(void,paint_text_string_with_escapes) (R___(struct plPlotterStruct *_plotter) const unsigned char *s, int x_justify, int y_justify);
 
-  Q___(double,paint_text_string) P___((R___(struct plPlotterStruct *_plotter) const unsigned char *s, int h_just, int v_just));
-  Q___(double,get_text_width) P___((R___(struct plPlotterStruct *_plotter) const unsigned char *s));
+  Q___(double,paint_text_string) (R___(struct plPlotterStruct *_plotter) const unsigned char *s, int h_just, int v_just);
+  Q___(double,get_text_width) (R___(struct plPlotterStruct *_plotter) const unsigned char *s);
 
   /* Low-level, Plotter-specific `retrieve font' function; called by the
      internal _set_font() function, which in turn is called by the API
@@ -1152,18 +1146,18 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
      return a font size.  retrieve_font() is called only if the
      user-specified font is a non-Hershey font.  If it returns false, a
      default font, e.g., a Hershey font, will be substituted. */
-  Q___(bool,retrieve_font) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(bool,retrieve_font) (S___(struct plPlotterStruct *_plotter));
 
   /* Internal `flush output' method, called by the API method flushpl().
      This is called only if the Plotter does its own output, i.e., does not
      write to an output stream.  I.e., only if the Plotter's `output_model'
      data element is PL_OUTPUT_VIA_CUSTOM_ROUTINES_TO_NON_STREAM.  Return
      value indicates whether flushing worked. */
-  Q___(bool,flush_output) P___((S___(struct plPlotterStruct *_plotter)));
+  Q___(bool,flush_output) (S___(struct plPlotterStruct *_plotter));
 
   /* error handlers */
-  Q___(void,warning) P___((R___(struct plPlotterStruct *_plotter) const char *msg));
-  Q___(void,error) P___((R___(struct plPlotterStruct *_plotter) const char *msg));
+  Q___(void,warning) (R___(struct plPlotterStruct *_plotter) const char *msg);
+  Q___(void,error) (R___(struct plPlotterStruct *_plotter) const char *msg);
 
   /* PLOTTER DATA MEMBERS (not specific to any one device driver).  These
      are protected rather than private, so they can be accessed by derived
@@ -1193,10 +1187,10 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
      latter is flagged by "D:" (i.e. "dynamic") in its comment line. */
 
   /* data members specific to Bitmap Plotters */
-  voidptr_t b_arc_cache_data;	/* pointer to cache (used by miPolyArc_r) */
+  void * b_arc_cache_data;	/* pointer to cache (used by miPolyArc_r) */
   int b_xn, b_yn;		/* bitmap dimensions */
-  voidptr_t b_painted_set;	/* D: libxmi's canvas (a (miPaintedSet *)) */
-  voidptr_t b_canvas;		/* D: libxmi's canvas (a (miCanvas *)) */
+  void * b_painted_set;	/* D: libxmi's canvas (a (miPaintedSet *)) */
+  void * b_canvas;		/* D: libxmi's canvas (a (miCanvas *)) */
   /* data members specific to Metafile Plotters */
   /* 0. parameters */
   bool meta_portable_output;	/* portable, not binary output format? */
@@ -1205,11 +1199,11 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
   bool meta_position_is_unknown; /* position is unknown? */
   double meta_m_user_to_ndc[6];	/* user->NDC transformation matrix */
   /* 2. dynamic attributes, path-related */
-  int meta_fill_rule_type;	/* one of FILL_*, determined by fill rule */
-  int meta_line_type;		/* one of L_*, determined by line mode */
+  int meta_fill_rule_type;	/* one of PL_FILL_*, determined by fill rule */
+  int meta_line_type;		/* one of PL_L_*, determined by line mode */
   bool meta_points_are_connected; /* if not set, path displayed as points */
-  int meta_cap_type;		/* one of CAP_*, determined by cap mode */
-  int meta_join_type;		/* one of JOIN_*, determined by join mode */
+  int meta_cap_type;		/* one of PL_CAP_*, determined by cap mode */
+  int meta_join_type;		/* one of PL_JOIN_*, determined by join mode */
   double meta_miter_limit;	/* miter limit for line joins */
   double meta_line_width;	/* width of lines in user coordinates */
   bool meta_line_width_is_default; /* line width is default value? */
@@ -1231,9 +1225,9 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
   plColor meta_fillcolor_base;	/* fill color */
   plColor meta_bgcolor;		/* background color for graphics display */
   /* data members specific to Tektronix Plotters */
-  int tek_display_type;		/* which sort of Tektronix? (one of D_*) */
-  int tek_mode;			/* D: one of MODE_* */
-  int tek_line_type;		/* D: one of L_* */
+  int tek_display_type;		/* which sort of Tektronix? (one of TEK_DPY_*) */
+  int tek_mode;			/* D: one of TEK_MODE_* */
+  int tek_line_type;		/* D: one of PL_L_* */
   bool tek_mode_is_unknown;	/* D: tek mode unknown? */
   bool tek_line_type_is_unknown; /* D: tek line type unknown? */
   int tek_kermit_fgcolor;	/* D: kermit's foreground color */
@@ -1357,9 +1351,9 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
   int ai_cap_style;		/* D: cap style for lines (PS numbering) */
   int ai_join_style;		/* D: join style for lines (PS numbering) */
   double ai_miter_limit;	/* D: miterlimit for line joins */
-  int ai_line_type;		/* D: one of L_* */
+  int ai_line_type;		/* D: one of PL_L_* */
   double ai_line_width;		/* D: line width in printer's points */
-  int ai_fill_rule_type;	/* D: fill rule (FILL_{ODD|NONZERO}_WINDING) */
+  int ai_fill_rule_type;	/* D: fill rule (AI_FILL_{ODD|NONZERO}_WINDING) */
 /* data members specific to SVG Plotters */
   double s_matrix[6];		/* D: default transformation matrix for page */
   bool s_matrix_is_unknown;	/* D: matrix has not yet been set? */
@@ -1383,10 +1377,10 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
   bool i_interlace;		/* interlaced GIF? */
   bool i_transparent;		/* transparent GIF? */
   plColor i_transparent_color;	/* if so, transparent color (24-bit RGB) */
-  voidptr_t i_arc_cache_data;	/* pointer to cache (used by miPolyArc_r) */
+  void * i_arc_cache_data;	/* pointer to cache (used by miPolyArc_r) */
   int i_transparent_index;	/* D: transparent color index (if any) */
-  voidptr_t i_painted_set;	/* D: libxmi's canvas (a (miPaintedSet *)) */
-  voidptr_t i_canvas;		/* D: libxmi's canvas (a (miCanvas *)) */
+  void * i_painted_set;	/* D: libxmi's canvas (a (miPaintedSet *)) */
+  void * i_canvas;		/* D: libxmi's canvas (a (miCanvas *)) */
   plColor i_colormap[256];	/* D: frame colormap (containing 24-bit RGBs)*/
   int i_num_color_indices;	/* D: number of color indices allocated */
   bool i_frame_nonempty;	/* D: something drawn in current frame? */
@@ -1406,7 +1400,7 @@ typedef struct plPlotterStruct	/* this tag is used only by libplot */
   Drawable x_drawable3;		/* graphics buffer, if double buffering */
   int x_double_buffering;	/* double buffering type (if any) */
   long int x_max_polyline_len;	/* limit on polyline len (X display-specific)*/
-  plFontRecord *x_fontlist;	/* D: head of list of retrieved X fonts */
+  plXFontRecord *x_fontlist;	/* D: head of list of retrieved X fonts */
   plColorRecord *x_colorlist;	/* D: head of list of retrieved X color cells*/
   Colormap x_cmap;		/* D: colormap */
   int x_cmap_type;		/* D: colormap type (orig./copied/bad) */
@@ -1457,7 +1451,6 @@ Plotter;
 ;
 #endif /* not NOT_LIBPLOTTER */
 
-#undef P___
 #undef Q___
 
 
@@ -1528,11 +1521,11 @@ class MetaPlotter : public Plotter
   bool meta_position_is_unknown; /* position is unknown? */
   double meta_m_user_to_ndc[6];	/* user->NDC transformation matrix */
   /* 2. dynamic attributes, path-related */
-  int meta_fill_rule_type;	/* one of FILL_*, determined by fill rule */
+  int meta_fill_rule_type;	/* one of PL_FILL_*, determined by fill rule */
   int meta_line_type;		/* one of L_*, determined by line mode */
   bool meta_points_are_connected; /* if not set, path displayed as points */
-  int meta_cap_type;		/* one of CAP_*, determined by cap mode */
-  int meta_join_type;		/* one of JOIN_*, determined by join mode */
+  int meta_cap_type;		/* one of PL_CAP_*, determined by cap mode */
+  int meta_join_type;		/* one of PL_JOIN_*, determined by join mode */
   double meta_miter_limit;	/* miter limit for line joins */
   double meta_line_width;	/* width of lines in user coordinates */
   bool meta_line_width_is_default; /* line width is default value? */
@@ -1596,10 +1589,10 @@ class BitmapPlotter : public Plotter
   void _b_draw_elliptic_arc_internal (int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange);
   void _b_new_image (void);
   /* BitmapPlotter-specific data members */
-  voidptr_t b_arc_cache_data;	/* pointer to cache (used by miPolyArc_r) */
+  void * b_arc_cache_data;	/* pointer to cache (used by miPolyArc_r) */
   int b_xn, b_yn;		/* bitmap dimensions */
-  voidptr_t b_painted_set;	/* D: libxmi's canvas (a (miPaintedSet *)) */
-  voidptr_t b_canvas;		/* D: libxmi's canvas (a (miCanvas *)) */
+  void * b_painted_set;	/* D: libxmi's canvas (a (miPaintedSet *)) */
+  void * b_canvas;		/* D: libxmi's canvas (a (miCanvas *)) */
 };
 
 /* The TekPlotter class, which produces Tektronix output */
@@ -1638,14 +1631,14 @@ class TekPlotter : public Plotter
   void _t_set_attributes (void);
   void _t_set_bg_color (void);
   void _t_set_pen_color (void);
-  void _tek_mode (int newmode);
-  void _tek_move (int xx, int yy);
-  void _tek_vector (int xx, int yy);
-  void _tek_vector_compressed (int xx, int yy, int oldxx, int oldyy, bool force);
+  void _t_tek_mode (int newmode);
+  void _t_tek_move (int xx, int yy);
+  void _t_tek_vector (int xx, int yy);
+  void _t_tek_vector_compressed (int xx, int yy, int oldxx, int oldyy, bool force);
   /* TekPlotter-specific data members */
-  int tek_display_type;		/* which sort of Tektronix? */
-  int tek_mode;			/* D: one of MODE_* */
-  int tek_line_type;		/* D: one of L_* */
+  int tek_display_type;		/* which sort of Tektronix? (one of TEK_DPY_*) */
+  int tek_mode;			/* D: one of TEK_MODE_* */
+  int tek_line_type;		/* D: one of PL_L_* */
   bool tek_mode_is_unknown;	/* D: tek mode unknown? */
   bool tek_line_type_is_unknown; /* D: tek line type unknown? */
   int tek_kermit_fgcolor;	/* D: kermit's foreground color */
@@ -1693,7 +1686,7 @@ class ReGISPlotter : public Plotter
   void _r_set_bg_color (void);
   void _r_set_fill_color (void);
   void _r_set_pen_color (void);
-  void _regis_move (int xx, int yy);
+  void _r_regis_move (int xx, int yy);
   /* ReGISPlotter-specific data members */
   plIntPoint regis_pos;		/* D: ReGIS graphics cursor position */
   bool regis_position_is_unknown; /* D: graphics cursor position is unknown? */
@@ -1744,19 +1737,19 @@ class HPGLPlotter : public Plotter
   virtual void _maybe_switch_to_hpgl (void);
   virtual void _maybe_switch_from_hpgl (void);
   /* other HPGLPlotter-specific internal functions */
-  bool _hpgl2_maybe_update_font (void);
-  bool _hpgl_maybe_update_font (void);
-  bool _parse_pen_string (const char *pen_s);
-  int _hpgl_pseudocolor (int red, int green, int blue, bool restrict_white);
+  bool _h_hpgl2_maybe_update_font (void);
+  bool _h_hpgl_maybe_update_font (void);
+  bool _h_parse_pen_string (const char *pen_s);
+  int _h_hpgl_pseudocolor (int red, int green, int blue, bool restrict_white);
   void _h_set_attributes (void);
   void _h_set_fill_color (bool force_pen_color);
   void _h_set_font (void);
   void _h_set_pen_color (int hpgl_object_type);
   void _h_set_position (void);
-  void _hpgl_shaded_pseudocolor (int red, int green, int blue, int *pen, double *shading);
-  void _set_hpgl_fill_type (int fill_type, double option1, double option2);
-  void _set_hpgl_pen_type (int pen_type, double option1, double option2);
-  void _set_hpgl_pen (int pen);
+  void _h_hpgl_shaded_pseudocolor (int red, int green, int blue, int *pen, double *shading);
+  void _h_set_hpgl_fill_type (int fill_type, double option1, double option2);
+  void _h_set_hpgl_pen_type (int pen_type, double option1, double option2);
+  void _h_set_hpgl_pen (int pen);
   /* HPGLPlotter-specific data members */
   int hpgl_version;		/* version: 0=HP-GL, 1=HP7550A, 2=HP-GL/2 */
   int hpgl_rotation;		/* rotation angle (0, 90, 180, or 270) */
@@ -1867,7 +1860,7 @@ class FigPlotter : public Plotter
   double paint_text_string (const unsigned char *s, int h_just, int v_just);
   bool retrieve_font (void);
   /* FigPlotter-specific internal functions */
-  int _fig_color (int red, int green, int blue);
+  int _f_fig_color (int red, int green, int blue);
   void _f_compute_line_style (int *style, double *spacing);
   void _f_draw_arc_internal (double xc, double yc, double x0, double y0, double x1, double y1);
   void _f_draw_box_internal (plPoint p0, plPoint p1);
@@ -2062,9 +2055,9 @@ class AIPlotter : public Plotter
   int ai_cap_style;		/* D: cap style for lines (PS numbering)*/
   int ai_join_style;		/* D: join style for lines(PS numbering)*/
   double ai_miter_limit;	/* D: miterlimit for line joins */
-  int ai_line_type;		/* D: one of L_* */
+  int ai_line_type;		/* D: one of PL_L_* */
   double ai_line_width;		/* D: line width in printer's points */
-  int ai_fill_rule_type;	/* D: fill rule (FILL_{ODD|NONZERO}_WINDING) */
+  int ai_fill_rule_type;	/* D: fill rule (AI_FILL_{ODD|NONZERO}_WINDING) */
 };
 
 /* The SVGPlotter class, which produces SVG output for the Web */
@@ -2101,7 +2094,7 @@ class SVGPlotter : public Plotter
   bool paint_paths (void);
   double paint_text_string (const unsigned char *s, int h_just, int v_just);
   /* SVGPlotter-specific internal functions */
-  void _s_set_matrix (const double m_base[6], const double m_local[6]);
+  void _s_set_matrix (const double m_local[6]);
   /* SVGPlotter-specific data members */
   double s_matrix[6];		/* D: default transformation matrix for page */
   bool s_matrix_is_unknown;	/* D: matrix has not yet been set? */
@@ -2242,10 +2235,10 @@ class GIFPlotter : public Plotter
   bool i_interlace;		/* interlaced GIF? */
   bool i_transparent;		/* transparent GIF? */
   plColor i_transparent_color;	/* if so, transparent color (24-bit RGB) */
-  voidptr_t i_arc_cache_data;	/* pointer to cache (used by miPolyArc_r) */
+  void * i_arc_cache_data;	/* pointer to cache (used by miPolyArc_r) */
   int i_transparent_index;	/* D: transparent color index (if any) */
-  voidptr_t i_painted_set;	/* D: libxmi's canvas (a (miPaintedSet *)) */
-  voidptr_t i_canvas;		/* D: libxmi's canvas (a (miCanvas *)) */
+  void * i_painted_set;	        /* D: libxmi's canvas (a (miPaintedSet *)) */
+  void * i_canvas;		/* D: libxmi's canvas (a (miCanvas *)) */
   plColor i_colormap[256];	/* D: frame colormap (containing 24-bit RGBs)*/
   int i_num_color_indices;	/* D: number of color indices allocated */
   bool i_frame_nonempty;	/* D: something drawn in current frame? */
@@ -2304,9 +2297,8 @@ class XDrawablePlotter : public Plotter
   virtual void _maybe_handle_x_events (void);
   /* other XDrawablePlotter-specific internal functions */
   bool _x_retrieve_color (XColor *rgb_ptr);
-  bool _x_select_font (const char *name, bool is_zero[4], const unsigned char *s);
-  bool _x_select_font_carefully (const char *name, bool is_zero[4], const unsigned char *s);
-  bool _x_select_xlfd_font_carefully (const char *x_name, const char *x_name_alt, double user_size, double rotation);
+  bool _x_select_font_carefully (const char *name, const unsigned char *s, bool subsetting);
+  bool _x_select_xlfd_font_carefully (const char *x_name, const char *x_name_alt, const char *x_name_alt2, const char *x_name_alt3);
   void _x_add_gcs_to_first_drawing_state (void);
   void _x_delete_gcs_from_first_drawing_state (void);
   void _x_draw_elliptic_arc (plPoint p0, plPoint p1, plPoint pc);
@@ -2315,7 +2307,6 @@ class XDrawablePlotter : public Plotter
   void _x_set_attributes (int x_gc_type);
   void _x_set_bg_color (void);
   void _x_set_fill_color (void);
-  void _x_set_font_dimensions (bool is_zero[4]);
   void _x_set_pen_color (void);
   /* XDrawablePlotter-specific data members */
   Display *x_dpy;		/* X display */
@@ -2325,7 +2316,7 @@ class XDrawablePlotter : public Plotter
   Drawable x_drawable3;		/* graphics buffer, if double buffering */
   int x_double_buffering;	/* double buffering type (if any) */
   long int x_max_polyline_len;	/* limit on polyline len (X display-specific)*/
-  plFontRecord *x_fontlist;	/* D: head of list of retrieved X fonts */
+  plXFontRecord *x_fontlist;	/* D: head of list of retrieved X fonts */
   plColorRecord *x_colorlist;	/* D: head of list of retrieved X color cells*/
   Colormap x_cmap;		/* D: colormap (dynamic only for XPlotters) */
   int x_cmap_type;		/* D: colormap type (orig./copied/bad) */

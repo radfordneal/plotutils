@@ -1,11 +1,29 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the flushpl method, which is a GNU extension to
    libplot.  It flushes (i.e. pushes onward) all plot commands sent to the
    graphics device. */
 
-/* This file also contains the internal _flush_plotter_outstreams() method,
-   which should be invoked by any Plotter that forks an auxiliary process.
-   (E.g., an XPlotter forks off an auxiliary process when closepl() is
-   invoked, to manage its `spun-off' window.) */
+/* This file also contains the internal _pl_g_flush_plotter_outstreams()
+   method, which should be invoked by any Plotter that forks an auxiliary
+   process.  (E.g., an XPlotter forks off an auxiliary process when
+   closepl() is invoked, to manage its `spun-off' window.) */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -23,12 +41,7 @@ extern pthread_mutex_t _plotters_mutex;
 #endif
 
 int
-#ifdef _HAVE_PROTOS
 _API_flushpl (S___(Plotter *_plotter))
-#else
-_API_flushpl (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
 {
   int retval = 0;
 
@@ -97,12 +110,7 @@ _API_flushpl (S___(_plotter))
    nothing; it'll need to be overridden by any Plotter that wishes to make
    use of this feature.  Return value indicates success. */
 bool
-#ifdef _HAVE_PROTOS
-_g_flush_output (S___(Plotter *_plotter))
-#else
-_g_flush_output (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_flush_output (S___(Plotter *_plotter))
 {
   return true;
 }
@@ -114,12 +122,7 @@ _g_flush_output (S___(_plotter))
    final three, the global variables _plotters[] and _plotters_len need to
    be locked and unlocked. */
 void
-#ifdef _HAVE_PROTOS
-_flush_plotter_outstreams (S___(Plotter *_plotter))
-#else
-_flush_plotter_outstreams (S___(_plotter))
-     S___(Plotter *_plotter;) 
-#endif
+_pl_g_flush_plotter_outstreams (S___(Plotter *_plotter))
 {
 #ifndef LIBPLOTTER 
 

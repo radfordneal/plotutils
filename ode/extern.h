@@ -1,7 +1,14 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999, 2005 Free 
+ * Software Foundation, Inc.
+ */
+
 /*
  * declarations of external variables and functions for ode
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
  */
 
 /*
@@ -9,7 +16,7 @@
  */
 
 /* variables defined and initted in global.c */
-extern const char     *progname;
+extern const char     *progname, *written, *copyright;
 extern int            prec;
 extern long           it;
 extern double         hmin, hmax, ssmin, ssmax, abmin, abmax, acmax;
@@ -38,90 +45,91 @@ extern int     curline;
 /*
  * external function declarations
  */
-bool check ____P((void));
-bool hierror ____P((void));
-bool intpr ____P((double t));
-bool lowerror ____P((void));
-double eval ____P((const struct expr *ep));
-void am ____P((void));
-void ama ____P((void));
-void args ____P((int ac, char **av));
-void defalt ____P((void));
-void eu ____P((void));
-void efree ____P((struct expr *ep));
-void field ____P((void));
-void maxerr ____P((void));
-void panic ____P((const char *s));
-void panicn ____P((const char *fmt, int n));
-void pfree ____P((struct prt *pp));
-void printq ____P((void));
-void prval ____P((double x));
-void maxerror ____P((void));
-void resetflt ____P((void));
-void rk ____P((void));
-void rka ____P((void));
-void rterror ____P((const char *s));
-void rterrors ____P((const char *fmt, const char *s));
-void rtsquawks ____P((const char *fmt, const char *s));
-void setflt ____P((void));
-void sfree ____P((struct sym *sp));
-void solve ____P((void));
-void startstep ____P((void));
-void title ____P((void));
-void trivial ____P((void));
-struct expr * ealloc ____P((void));
-struct prt * palloc ____P((void));
-struct sym * lookup ____P((const char *nam));
-struct sym * salloc ____P((void));
-RETSIGTYPE fptrap ____P((int sig));
+bool check (void);
+bool hierror (void);
+bool intpr (double t);
+bool lowerror (void);
+double eval (const struct expr *ep);
+void am (void);
+void ama (void);
+void args (int ac, char **av);
+void defalt (void);
+void eu (void);
+void efree (struct expr *ep);
+void field (void);
+void maxerr (void);
+void panic (const char *s);
+void panicn (const char *fmt, int n);
+void pfree (struct prt *pp);
+void printq (void);
+void prval (double x);
+void maxerror (void);
+void resetflt (void);
+void rk (void);
+void rka (void);
+void rterror (const char *s);
+void rterrors (const char *fmt, const char *s);
+void rtsquawks (const char *fmt, const char *s);
+void setflt (void);
+void sfree (struct sym *sp);
+void solve (void);
+void startstep (void);
+void title (void);
+void trivial (void);
+struct expr * ealloc (void);
+struct prt * palloc (void);
+struct sym * lookup (const char *nam);
+struct sym * salloc (void);
+RETSIGTYPE fptrap (int sig);
 
 /* in scanner or parser */
-int yyerror ____P((const char *msg));
-int yylex ____P((void));
-int yyparse ____P((void));
-struct lex * lalloc ____P((void));
-void concat ____P((struct expr *e0, struct expr *e1));
-void lfree ____P((struct lex *lp));
-void prexq ____P((const struct expr *ep));
+int yyerror (const char *msg);
+int yylex (void);
+int yyparse (void);
+struct lex * lalloc (void);
+void concat (struct expr *e0, struct expr *e1);
+void lfree (struct lex *lp);
+void prexq (const struct expr *ep);
 
 /* math library exception handling */
 #ifdef HAVE_MATHERR
-int matherr ____P((struct exception *x));
+# ifdef __cplusplus
+int matherr (struct __exception *x);
+#else
+int matherr (struct exception *x);
+#endif
 #endif
 
 /* math functions in bessel.c and specfun.c */
 #ifndef HAVE_J0
-double j0 ____P((double x));
-double j1 ____P((double x));
-double y0 ____P((double x));
-double y1 ____P((double x));
+double j0 (double x);
+double j1 (double x);
+double y0 (double x);
+double y1 (double x);
 #endif
 #ifdef NO_SYSTEM_GAMMA
-double f_lgamma ____P((double x));
+double f_lgamma (double x);
 #else  /* not NO_SYSTEM_GAMMA, we link in vendor code */
 #ifdef HAVE_LGAMMA
-extern double lgamma ____P((double x)); /* declaration may be gratuitous */
+extern double lgamma (double x); /* declaration may be gratuitous */
 #endif
 #ifdef HAVE_GAMMA
-extern double gamma ____P((double x)); /* declaration may be gratuitous */
+extern double gamma (double x); /* declaration may be gratuitous */
 #endif
 #endif
-double f_gamma ____P((double x));
+double f_gamma (double x);
 #ifndef HAVE_ERF
-double erf ____P((double x));
-double erfc ____P((double x));
+double erf (double x);
+double erfc (double x);
 #endif
-double ibeta ____P((double a, double b, double x));
-double igamma ____P((double a, double x));
-double inverf ____P((double p));
-double invnorm ____P((double p));
-double norm ____P((double x));
+double ibeta (double a, double b, double x);
+double igamma (double a, double x);
+double inverf (double p);
+double invnorm (double p);
+double norm (double x);
 
-/* in libcommon */
-void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
-voidptr_t xmalloc ____P ((size_t size));
-char *xstrdup ____P ((const char *s));
+/* declare functions in libcommon */
+#include "libcommon.h"
 
 /* support C++ */
 #ifdef __BEGIN_DECLS
@@ -139,5 +147,5 @@ char *xstrdup ____P ((const char *s));
 #endif
 
 __BEGIN_DECLS
-int yywrap ____P((void));
+int yywrap (void);
 __END_DECLS     

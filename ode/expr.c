@@ -1,3 +1,17 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ *
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999, 2005, Free 
+ * Software Foundation, Inc.
+ */
+
+/*
+ * expression tree evaluator and expression space management routines
+ */
+
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
@@ -5,21 +19,8 @@
 #define NSTACK 30
 double stack[NSTACK];
 
-/*
- * expression tree evaluator
- * and expression space
- * management routines
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
- */
-
 double
-#ifdef _HAVE_PROTOS
 eval (const struct expr *ep)
-#else
-eval (ep)
-     const struct expr *ep;
-#endif
 {
   double *sp;
   double tmp, tmp2;
@@ -186,11 +187,7 @@ eval (ep)
 }
 
 struct expr *
-#ifdef _HAVE_PROTOS
 ealloc (void)
-#else
-ealloc ()
-#endif
 {
   struct expr *ep;
   
@@ -202,15 +199,10 @@ ealloc ()
 }
 
 void
-#ifdef _HAVE_PROTOS
 efree (struct expr *ep)
-#else
-efree (ep)
-     struct expr *ep;
-#endif
 {
   if (ep == NULL || ep == &exprzero || ep == &exprone)
     return;
   efree (ep->ex_next);
-  free ((voidptr_t)ep);
+  free ((void *)ep);
 }

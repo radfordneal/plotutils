@@ -1,19 +1,23 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999 Free Software 
+ * Foundation, Inc.
+ */
+
+/*
+ * print queue memory management
+ *
+ */
+
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
 
-/*
- * print queue memory management
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
- */
-
 struct prt *
-#ifdef _HAVE_PROTOS
 palloc (void)
-#else
-palloc ()
-#endif
 {
   struct prt *pp;
   
@@ -25,16 +29,11 @@ palloc ()
 }
 
 void
-#ifdef _HAVE_PROTOS
 pfree (struct prt *pp)
-#else
-pfree (pp)
-     struct prt *pp;
-#endif
 {
   if (pp != NULL) 
     {
       pfree (pp->pr_link);
-      free ((voidptr_t)pp);
+      free ((void *)pp);
     }
 }

@@ -2,7 +2,9 @@
 %{
 /*
  * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 1998, 1999, 2005, Free 
+ * Software Foundation, Inc.
  */
 #include "sys-defines.h"
 #include "ode.h"
@@ -117,11 +119,7 @@ igamma		{ return IGAMMA; }
  * space management for the lexer
  */
 struct lex *
-#ifdef _HAVE_PROTOS
 lalloc (void)
-#else
-lalloc ()
-#endif
 {
   struct lex *lp;
   
@@ -132,13 +130,8 @@ lalloc ()
 }
 
 void
-#ifdef _HAVE_PROTOS
 lfree (struct lex *lp)
-#else
-lfree (lp)
-     struct lex *lp;
-#endif
 {
   if (lp != NULL)
-    free ((voidptr_t)lp);
+    free ((void *)lp);
 }

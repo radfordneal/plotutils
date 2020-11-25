@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the internal paint_path() and paint_paths() methods,
    which the public method endpath() is a wrapper around. */
 
@@ -16,12 +34,7 @@
 			  + ((p0).y - (p1).y)*((p0).y - (p1).y)))
 
 void
-#ifdef _HAVE_PROTOS
-_h_paint_path (S___(Plotter *_plotter))
-#else
-_h_paint_path (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_paint_path (S___(Plotter *_plotter))
 {
   if (_plotter->drawstate->pen_type == 0
       && _plotter->drawstate->fill_type == 0)
@@ -55,7 +68,7 @@ _h_paint_path (S___(_plotter))
         /* convert vertices to integer device coordinates, removing runs */
       
 	/* array for points, with positions expressed in integer device coors*/
-	xarray = (plIntPathSegment *)_plot_xmalloc (_plotter->drawstate->path->num_segments * sizeof(plIntPathSegment));
+	xarray = (plIntPathSegment *)_pl_xmalloc (_plotter->drawstate->path->num_segments * sizeof(plIntPathSegment));
 	
 	/* add first point of path to xarray[] (type field is a moveto) */
 	xarray[0].p.x = IROUND(XD(_plotter->drawstate->path->segments[0].p.x, 
@@ -150,7 +163,7 @@ _h_paint_path (S___(_plotter))
 	  /* all points mapped to a single integer pseudo-pixel */
 	  {
 	    if (identical_user_coordinates == false
-		|| _plotter->drawstate->cap_type == CAP_ROUND)
+		|| _plotter->drawstate->cap_type == PL_CAP_ROUND)
 	      {
 		double r = 0.5 * _plotter->drawstate->line_width;
 		double device_frame_radius;
@@ -162,7 +175,7 @@ _h_paint_path (S___(_plotter))
 		savedpoint = _plotter->drawstate->pos;
 		_plotter->drawstate->pos = 
 		  _plotter->drawstate->path->segments[0].p;
-		_h_set_position (S___(_plotter));
+		_pl_h_set_position (S___(_plotter));
 		_plotter->drawstate->pos = savedpoint;
 		
 		/* set fill color to pen color, arrange to do filling; sync
@@ -170,8 +183,8 @@ _h_paint_path (S___(_plotter))
 		{
 		  /* emit HP-GL directives; select a fill color that's
 		     actually the pen color */
-		  _h_set_fill_color (R___(_plotter) true);
-		  _h_set_attributes (S___(_plotter));
+		  _pl_h_set_fill_color (R___(_plotter) true);
+		  _pl_h_set_attributes (S___(_plotter));
 		}
 
 		/* compute radius in device frame */
@@ -194,7 +207,7 @@ _h_paint_path (S___(_plotter))
 		   may alter the line type, since it may request *solid*
 		   crosshatching; so reset the line type */
 		if (_plotter->hpgl_version < 2)
-		  _h_set_attributes (S___(_plotter));
+		  _pl_h_set_attributes (S___(_plotter));
 	      }
 	  
 	    /* free our temporary array and depart */
@@ -216,7 +229,7 @@ _h_paint_path (S___(_plotter))
 	   polyline, if sent erroneously to a generic HP-GL device, will
 	   yield a polyline in the correct color, so long as the color
 	   isn't white. */
-	_h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
+	_pl_h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
 	
 	/* set_pen_color() sets the advisory bad_pen flag if white pen (pen
 	   #0) would have been selected, and we can't use pen #0 to draw
@@ -233,11 +246,11 @@ _h_paint_path (S___(_plotter))
 	  }
 	
 	/* sync attributes, incl. pen width if possible; move pen to p0 */
-	_h_set_attributes (S___(_plotter));
+	_pl_h_set_attributes (S___(_plotter));
 	
 	savedpoint = _plotter->drawstate->pos;
 	_plotter->drawstate->pos = _plotter->drawstate->path->segments[0].p;
-	_h_set_position (S___(_plotter));
+	_pl_h_set_position (S___(_plotter));
 	_plotter->drawstate->pos = savedpoint;
 	
 	if (use_polygon_buffer)
@@ -382,18 +395,18 @@ _h_paint_path (S___(_plotter))
 		   [white] and we're not allowed to use pen #0 to draw
 		   with).  So we test _plotter->hpgl_bad_pen before using
 		   the pen to fill with. */
-		_h_set_fill_color (R___(_plotter) false);
+		_pl_h_set_fill_color (R___(_plotter) false);
 		if (_plotter->hpgl_bad_pen == false)
 		  /* fill polyline, specifying nonzero winding rule if
 		     necessary */
 		  {
 		    switch (_plotter->drawstate->fill_rule_type)
 		      {
-		      case FILL_ODD_WINDING:
+		      case PL_FILL_ODD_WINDING:
 		      default:
 			strcpy (_plotter->data->page->point, "FP;");
 			break;
-		      case FILL_NONZERO_WINDING:		  
+		      case PL_FILL_NONZERO_WINDING:		  
 			if (_plotter->hpgl_version == 2)
 			  strcpy (_plotter->data->page->point, "FP1;");
 			else	/* pre-HP-GL/2 doesn't support nonzero rule */
@@ -406,7 +419,7 @@ _h_paint_path (S___(_plotter))
 	       alter the line type, since it may request *solid*
 	       crosshatching; so reset the line type */
 		if (_plotter->hpgl_version < 2)
-		  _h_set_attributes (S___(_plotter));
+		  _pl_h_set_attributes (S___(_plotter));
 	      }
 	    
 	    if (_plotter->drawstate->pen_type)
@@ -416,12 +429,12 @@ _h_paint_path (S___(_plotter))
 		   flag (if optimal pen is #0 and we're not allowed to use
 		   pen #0 to draw with).  So we test _plotter->hpgl_bad_pen
 		   before using the pen. */
-		_h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
+		_pl_h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
 		if (_plotter->hpgl_bad_pen == false)
 		  /* select appropriate pen for edging, and edge the
                      polyline */
 		  {
-		    _h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
+		    _pl_h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
 		    strcpy (_plotter->data->page->point, "EP;");
 		    _update_buffer (_plotter->data->page);
 		  }
@@ -450,12 +463,12 @@ _h_paint_path (S___(_plotter))
 	p1 = _plotter->drawstate->path->p1;
 
 	/* sync line attributes, incl. pen width */
-	_h_set_attributes (S___(_plotter));
+	_pl_h_set_attributes (S___(_plotter));
 
 	/* move HP-GL pen to first vertex */
 	savedpoint = _plotter->drawstate->pos;
 	_plotter->drawstate->pos = p0;
-	_h_set_position (S___(_plotter));
+	_pl_h_set_position (S___(_plotter));
 	_plotter->drawstate->pos = savedpoint;
 	
 	if (_plotter->drawstate->fill_type)
@@ -465,7 +478,7 @@ _h_paint_path (S___(_plotter))
 	       flag (e.g. if optimal pen is #0 [white] and we're not
 	       allowed to use pen #0 to draw with).  So we test
 	       _plotter->hpgl_bad_pen before using the pen. */
-	    _h_set_fill_color (R___(_plotter) false);
+	    _pl_h_set_fill_color (R___(_plotter) false);
 	    if (_plotter->hpgl_bad_pen == false)
 	      /* fill the rectangle */
 	      {
@@ -477,7 +490,7 @@ _h_paint_path (S___(_plotter))
 	       alter the line type, since it may request *solid*
 	       crosshatching; so reset it */
 	    if (_plotter->hpgl_version < 2)
-	      _h_set_attributes (S___(_plotter));
+	      _pl_h_set_attributes (S___(_plotter));
 	  }	  
 	
 	if (_plotter->drawstate->pen_type)
@@ -487,7 +500,7 @@ _h_paint_path (S___(_plotter))
 	       flag (e.g. if optimal pen is #0 [white] and we're not
 	       allowed to use pen #0 to draw with).  So we test
 	       _plotter->hpgl_bad_pen before using the pen. */
-	    _h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
+	    _pl_h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
 	    if (_plotter->hpgl_bad_pen == false)
 	      /* edge the rectangle */
 	      {
@@ -508,11 +521,11 @@ _h_paint_path (S___(_plotter))
 	pc = _plotter->drawstate->path->pc;
 	
 	/* sync attributes, incl. pen width; move to center of circle */
-	_h_set_attributes (S___(_plotter));
+	_pl_h_set_attributes (S___(_plotter));
 
 	savedpoint = _plotter->drawstate->pos;
 	_plotter->drawstate->pos = pc;
-	_h_set_position (S___(_plotter));
+	_pl_h_set_position (S___(_plotter));
 	_plotter->drawstate->pos = savedpoint;
 	
 	if (_plotter->drawstate->fill_type)
@@ -522,7 +535,7 @@ _h_paint_path (S___(_plotter))
 	       flag (e.g. if optimal pen is #0 [white] and we're not
 	       allowed to use pen #0 to draw with).  So we test
 	       _plotter->hpgl_bad_pen before using the pen. */
-	    _h_set_fill_color (R___(_plotter) false);
+	    _pl_h_set_fill_color (R___(_plotter) false);
 	    if (_plotter->hpgl_bad_pen == false)
 	      /* fill the circle (360 degree wedge) */
 	      {
@@ -534,7 +547,7 @@ _h_paint_path (S___(_plotter))
 	       alter the line type, since it may request *solid*
 	       crosshatching; so reset it */
 	    if (_plotter->hpgl_version < 2)
-	      _h_set_attributes (S___(_plotter));
+	      _pl_h_set_attributes (S___(_plotter));
 	  }
 	
 	if (_plotter->drawstate->pen_type)
@@ -544,7 +557,7 @@ _h_paint_path (S___(_plotter))
 	       flag (e.g. if optimal pen is #0 [white] and we're not
 	       allowed to use pen #0 to draw with).  So we test
 	       _plotter->hpgl_bad_pen before using the pen. */
-	    _h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
+	    _pl_h_set_pen_color (R___(_plotter) HPGL_OBJECT_PATH);
 	    if (_plotter->hpgl_bad_pen == false)
 	      /* do the edging */
 	      {
@@ -566,12 +579,7 @@ _h_paint_path (S___(_plotter))
    function is not uniquely determined.  */
 
 void
-#ifdef _HAVE_PROTOS
-_h_set_position (S___(Plotter *_plotter))
-#else
-_h_set_position (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_set_position (S___(Plotter *_plotter))
 {
   int xnew, ynew;
   
@@ -601,12 +609,7 @@ _h_set_position (S___(_plotter))
 }
 
 bool
-#ifdef _HAVE_PROTOS
-_h_paint_paths (S___(Plotter *_plotter))
-#else
-_h_paint_paths (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_h_paint_paths (S___(Plotter *_plotter))
 {
   return false;
 }

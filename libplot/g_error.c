@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This file contains the generic warning and error methods.  They simply
    write the specified message to the plotter error stream, if it has one.
    There is provision for user-specifiable warning/error message handlers
@@ -19,17 +37,11 @@ pthread_mutex_t _message_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
 /* user-settable handlers, defined in g_defplot.c to be NULL */
-extern int (*libplot_warning_handler) ____P((const char *msg));
-extern int (*libplot_error_handler) ____P((const char *msg));
+extern int (*pl_libplot_warning_handler) (const char *msg);
+extern int (*pl_libplot_error_handler) (const char *msg);
 
 void
-#ifdef _HAVE_PROTOS
-_g_warning (R___(Plotter *_plotter) const char *msg)
-#else
-_g_warning (R___(_plotter) msg)
-     S___(Plotter *_plotter;) 
-     const char *msg;
-#endif
+_pl_g_warning (R___(Plotter *_plotter) const char *msg)
 {
 #ifdef PTHREAD_SUPPORT
 #ifdef HAVE_PTHREAD_H
@@ -38,8 +50,8 @@ _g_warning (R___(_plotter) msg)
 #endif
 #endif
 
-  if (libplot_warning_handler != NULL)
-    (*libplot_warning_handler)(msg);
+  if (pl_libplot_warning_handler != NULL)
+    (*pl_libplot_warning_handler)(msg);
   else if (_plotter->data->errfp)
     fprintf (_plotter->data->errfp, "libplot: %s\n", msg);
 #ifdef LIBPLOTTER
@@ -56,13 +68,7 @@ _g_warning (R___(_plotter) msg)
 }
 
 void
-#ifdef _HAVE_PROTOS
-_g_error (R___(Plotter *_plotter) const char *msg)
-#else
-_g_error (R___(_plotter) msg)
-     S___(Plotter *_plotter;) 
-     const char *msg;
-#endif
+_pl_g_error (R___(Plotter *_plotter) const char *msg)
 {
 #ifdef PTHREAD_SUPPORT
 #ifdef HAVE_PTHREAD_H
@@ -71,8 +77,8 @@ _g_error (R___(_plotter) msg)
 #endif
 #endif
 
-  if (libplot_error_handler != NULL)
-    (*libplot_error_handler)(msg);
+  if (pl_libplot_error_handler != NULL)
+    (*pl_libplot_error_handler)(msg);
   else if (_plotter->data->errfp)
     fprintf (_plotter->data->errfp, "libplot error: %s\n", msg);
 #ifdef LIBPLOTTER

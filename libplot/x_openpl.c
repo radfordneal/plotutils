@@ -1,10 +1,28 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This implementation is for XDrawablePlotters.  It supports one or two
    drawables, which must be associated with the same display and have the
    same dimensions (width, height, depth).  A `drawable' is either a window
    or a pixmap. */
 
-/* This file also contains the internal functions _x_maybe_get_new_colormap
-   and _x_maybe_handle_x_events, which are no-ops.  However, they are
+/* This file also contains the internal functions _pl_x_maybe_get_new_colormap
+   and _pl_x_maybe_handle_x_events, which are no-ops.  However, they are
    virtual and are overridden in the derived XPlotter class, which both
    attempts to switch to a private colormap when color cells run out, and
    processes its own X events. */
@@ -13,12 +31,7 @@
 #include "extern.h"
 
 bool
-#ifdef _HAVE_PROTOS
-_x_begin_page (S___(Plotter *_plotter))
-#else
-_x_begin_page (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_begin_page (S___(Plotter *_plotter))
 {
   Window root1, root2;
   int x, y;
@@ -87,7 +100,7 @@ _x_begin_page (S___(_plotter))
 
   /* add X GC's to drawing state (which was constructed by openpl() before
      begin_page() was called), so we can at least fill with solid color */
-  _x_add_gcs_to_first_drawing_state (S___(_plotter));
+  _pl_x_add_gcs_to_first_drawing_state (S___(_plotter));
 
   /* At this point, we don't clear the drawable(s) by filling them with the
      background color, which is what we would do here for an X Plotter (see
@@ -105,7 +118,7 @@ _x_begin_page (S___(_plotter))
 	/* user requested double buffering, so do so `by hand': allocate
 	   additional pixmap to serve as off-screen graphics buffer */
 	{
-	  _plotter->x_double_buffering = DBL_BY_HAND;
+	  _plotter->x_double_buffering = X_DBL_BUF_BY_HAND;
 	  _plotter->x_drawable3
 	    = XCreatePixmap(_plotter->x_dpy, 
 			    /* this 2nd arg merely determines the screen*/
@@ -144,12 +157,7 @@ _x_begin_page (S___(_plotter))
    server and placing it in the drawing state. */
 
 void
-#ifdef _HAVE_PROTOS
-_x_add_gcs_to_first_drawing_state (S___(Plotter *_plotter))
-#else
-_x_add_gcs_to_first_drawing_state (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_add_gcs_to_first_drawing_state (S___(Plotter *_plotter))
 {
   Drawable drawable;
   
@@ -169,7 +177,7 @@ _x_add_gcs_to_first_drawing_state (S___(_plotter))
       gcmask_fg = 
 	/* constant attributes (never altered) */
 	GCPlaneMask | GCFunction
-	/* drawing attributes set by _x_set_attributes() */
+	/* drawing attributes set by _pl_x_set_attributes() */
 	/* NOTE: we also use GCDashOffset and GCDashList, but Xlib does not
 	   support retrieving the dash list from a GC, so we'll copy the
 	   dashing style in another (painful) way */
@@ -180,7 +188,7 @@ _x_add_gcs_to_first_drawing_state (S___(_plotter))
       gcmask_fill = 
 	/* constant attributes (never altered) */
 	GCPlaneMask | GCFunction | GCArcMode 
-	/* filling attributes set by _x_set_attributes() */
+	/* filling attributes set by _pl_x_set_attributes() */
 	| GCFillRule
 	/* other GC elements set by the X Drawable driver */
 	| GCForeground;
@@ -241,9 +249,9 @@ _x_add_gcs_to_first_drawing_state (S___(_plotter))
 	
 	/* do the separate initialization of color (i.e. GCForeground
 	   element) in each GC */
-	_x_set_pen_color (S___(_plotter));
-	_x_set_fill_color (S___(_plotter));
-	_x_set_bg_color (S___(_plotter));
+	_pl_x_set_pen_color (S___(_plotter));
+	_pl_x_set_fill_color (S___(_plotter));
+	_pl_x_set_bg_color (S___(_plotter));
 	
 	/* At this point, all 3 GC's are functional, except the GC used
 	   for drawing lacks a GCFont element.
@@ -269,27 +277,17 @@ _x_add_gcs_to_first_drawing_state (S___(_plotter))
    original colormap fills up.  It's a no-op; in XPlotters, it's overridden
    by a version that actually does something. */
 void
-#ifdef _HAVE_PROTOS
-_x_maybe_get_new_colormap (S___(Plotter *_plotter))
-#else
-_x_maybe_get_new_colormap (S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_maybe_get_new_colormap (S___(Plotter *_plotter))
 {
   return;
 }  
 
 /* This is the XDrawablePlotter-specific version of the
    _maybe_handle_x_events() method, which is invoked after most drawing
-   operations.  It's a no-ope; in XPlotters, it's overridden by a version
+   operations.  It's a no-op; in XPlotters, it's overridden by a version
    that actually does something. */
 void
-#ifdef _HAVE_PROTOS
-_x_maybe_handle_x_events(S___(Plotter *_plotter))
-#else
-_x_maybe_handle_x_events(S___(_plotter))
-     S___(Plotter *_plotter;)
-#endif
+_pl_x_maybe_handle_x_events(S___(Plotter *_plotter))
 {
   return;
 }

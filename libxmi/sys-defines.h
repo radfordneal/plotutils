@@ -5,45 +5,7 @@
 #endif
 
 /**********************************************************************/
-/* SUPPORT ANCIENT C/C++ COMPILERS.                                   */
-/**********************************************************************/
-
-#ifdef HAVE_VOID		/* defined in config.h  */
-#define voidptr_t void *
-#else
-#define NO_VOID_SUPPORT
-#define voidptr_t char *
-#define void int
-#endif /* not HAVE_VOID */
-
-#ifdef const			/* may be defined to empty in config.h */
-#define NO_CONST_SUPPORT
-#endif
-
-/* ____P() is a macro used in our source code to wrap function prototypes,
-   so that compilers that don't understand ANSI C prototypes still work,
-   and ANSI C compilers can issue warnings about type mismatches. */
-#ifdef ____P
-#undef ____P
-#endif
-#ifdef _HAVE_PROTOS
-#undef _HAVE_PROTOS
-#endif
-#if defined (__STDC__) || defined (_AIX) \
-	|| (defined (__mips) && defined (_SYSTYPE_SVR4)) \
-	|| defined(WIN32) || defined(__cplusplus)
-#ifdef _SUPPRESS_PROTOS
-#define ____P(protos) ()
-#else  /* not _SUPPRESS_PROTOS */
-#define ____P(protos) protos
-#define _HAVE_PROTOS 1
-#endif /* not _SUPPRESS_PROTOS */
-#else
-#define ____P(protos) ()
-#endif
-
-/**********************************************************************/
-/* SUPPORT C++.                                                       */
+/* SUPPORT COMPILATION WITH A C++ COMPILER (IF DESIRED)               */
 /**********************************************************************/
 
 /* Support declarations of C linkage in C++, for functions not declared in
@@ -54,15 +16,6 @@
 # define __C_LINKAGE		/* empty */
 #endif
 
-/* config.h, built by `configure', includes a definition of RETSIGTYPE, the
-   return value for signal().  But `configure' may get it wrong in C++. */
-#ifdef __cplusplus
-#ifdef RETSIGTYPE
-#undef RETSIGTYPE
-#endif
-#define RETSIGTYPE void
-#endif
-
 /**********************************************************************/
 /* Include all the C headers we'll need.  Because many platforms lack one
    or more standard headers or function declarations, there are numerous
@@ -70,10 +23,10 @@
 /**********************************************************************/
 
 /**********************************************************************/
-/* If libxmi is being compiling as part of the libplot/libplotter
-   distribution, add support for multithreading, provided that libc
-   includes pthread functions and pthread.h is present.  (This comes first,
-   because defining _REENTRANT may alter system header files.) */
+/* If libxmi is being compiling as part of the libplot/libplotter package,
+   add support for multithreading, provided that libc includes pthread
+   functions and pthread.h is present.  (This comes first, because defining
+   _REENTRANT may alter system header files.) */
 /**********************************************************************/
 
 #ifdef LIBPLOT
@@ -91,14 +44,10 @@
 
 #include <stdio.h>
 #include <ctype.h>		/* why is this needed? */
-
 #include <errno.h>
-#ifndef HAVE_STRERROR
-extern __C_LINKAGE char *strerror ____P((int errnum));
-#endif
 
 /***************************************************************************/
-/* INCLUDE math.h, float.h, limits.h.  (SUBSTITUTE AS NECESSARY.)          */
+/* INCLUDE math.h, limits.h.  (SUBSTITUTE AS NECESSARY.)                   */
 /***************************************************************************/
 
 #ifdef __DJGPP__
@@ -111,14 +60,11 @@ extern __C_LINKAGE char *strerror ____P((int errnum));
 
 #include <math.h> 
 
-#ifdef HAVE_FLOAT_H
-#include <float.h>		/* for DBL_MAX, FLT_MAX */
-#endif
 #ifdef HAVE_LIMITS_H
 #include <limits.h>		/* for INT_MAX */
 #endif
 #ifdef HAVE_VALUES_H
-#include <values.h>		/* for MAXDOUBLE, MAXFLOAT, MAXINT (backups) */
+#include <values.h>		/* for MAXINT (backup) */
 #endif
 
 /* Bounds on integer datatypes (should be in limits.h, but may not be). */
@@ -148,26 +94,6 @@ extern __C_LINKAGE char *strerror ____P((int errnum));
 #endif
 #endif
 
-/* Bounds on floating point datatypes (should be in float.h, but may not be).*/
-
-#ifndef DBL_MAX
-#ifdef MAXDOUBLE
-#define DBL_MAX MAXDOUBLE
-#else
-/* make a very conservative (Vax-like) assumption */
-#define DBL_MAX (1.701411834604692293e+38) 
-#endif
-#endif /* not DBL_MAX */
-
-#ifndef FLT_MAX
-#ifdef MAXFLOAT
-#define FLT_MAX MAXFLOAT
-#else
-/* make a very conservative (Vax-like) assumption */
-#define FLT_MAX (1.7014117331926443e+38)
-#endif
-#endif /* not FLT_MAX */
-
 /**********************************************************************/
 /* INCLUDE stdlib.h, string.h.  (SUBSTITUTE AS NECESSARY; if STDC_HEADERS
    is defined then they're both present, and stdarg.h and float.h too.) */
@@ -184,9 +110,9 @@ extern __C_LINKAGE char *strerror ____P((int errnum));
 #endif
 
 /* supply declarations for functions declared in stdlib.h */
-extern __C_LINKAGE char *getenv ____P((const char *name));
-extern __C_LINKAGE int atoi ____P((const char *nptr));
-extern __C_LINKAGE double atof ____P((const char *nptr));
+extern __C_LINKAGE char *getenv (const char *name);
+extern __C_LINKAGE int atoi (const char *nptr);
+extern __C_LINKAGE double atof (const char *nptr);
 
 /* supply definitions in stdlib.h */
 #define	EXIT_FAILURE	1	/* Failing exit status.  */
@@ -221,33 +147,27 @@ extern __C_LINKAGE double atof ____P((const char *nptr));
 #endif /* not HAVE_MEMMOVE */
 
 #ifndef HAVE_STRCASECMP		/* will use local version */
-extern __C_LINKAGE int strcasecmp ____P((const char *s1, const char *s2));
+extern __C_LINKAGE int strcasecmp (const char *s1, const char *s2);
 #endif /* not HAVE_STRCASECMP */
 
 /* supply declarations for more functions declared in stdlib.h */
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #else
-extern __C_LINKAGE voidptr_t malloc ____P((size_t size));
-extern __C_LINKAGE voidptr_t realloc ____P((voidptr_t ptr, size_t size));
-extern __C_LINKAGE voidptr_t calloc ____P((size_t nmemb, size_t size));
-extern __C_LINKAGE void free ____P((voidptr_t ptr));
+extern __C_LINKAGE void * malloc (size_t size);
+extern __C_LINKAGE void * realloc (void * ptr, size_t size);
+extern __C_LINKAGE void * calloc (size_t nmemb, size_t size);
+extern __C_LINKAGE void free (void * ptr);
 #endif /* not HAVE_MALLOC_H */
 
 #endif /* not STDC_HEADERS */
 
 /**************************************************************************/
-/* In both C and C++, support the `bool' datatype.                        */
-/* This assumes that if a C++ compiler is being used, HAVE_BOOL is        */
-/* defined if the compiler is a modern one.                               */
+/* Support the `bool' datatype, which our code uses extensively.          */
 /**************************************************************************/
 
-/* we are logical */
-#ifdef __cplusplus
-#ifndef HAVE_BOOL		/* old C++ compiler, must declare bool */
-typedef enum { false = 0, true = 1 } bool;
-#endif
-#else  /* not __cplusplus */
+#ifndef __cplusplus
+#ifndef HAVE_BOOL_IN_CC
 #ifdef __STDC__
 typedef enum { false = 0, true = 1 } bool;
 #else  /* not __STDC__, do things the old-fashioned way */
@@ -255,6 +175,7 @@ typedef int bool;
 #define false 0
 #define true 1
 #endif
+#endif /* not HAVE_BOOL_IN_CC */
 #endif /* not __cplusplus */
   
 /**************************************************************************/
@@ -273,37 +194,6 @@ typedef int bool;
 #ifndef M_SQRT3
 #define M_SQRT3	    1.73205080756887719
 #endif
-
-/**************************************************************************/
-/* Work around a longstanding botch (the gamma function supplied in some  */
-/* versions of the math library).                                         */
-/**************************************************************************/
-
-/* gamma() and lgamma() both compute the log of the gamma function.  There
-   are some ancient systems out there which do not have lgamma (the name
-   was introduced after BSD 4.2), but which do have gamma.  Also, systems
-   that are merely very old (e.g. Apollos), and some modern systems, have
-   lgamma but not gamma.  Some systems, old and new (e.g. cygwin32) have
-   neither.  Also at least one vendor's gamma()/lgamma() is buggy, so we
-   allow the installer to do -DNO_SYSTEM_GAMMA to prevent the use of vendor
-   code.  What a mess! */
-#ifdef _AIX
-#define NO_SYSTEM_GAMMA		/* AIX gamma support in libm.a is buggy */
-#endif
-#ifdef NO_SYSTEM_GAMMA
-#define F_LGAMMA f_lgamma	/* our own version, see ode/specfun.c */
-#else  /* not NO_SYSTEM_GAMMA */
-#ifdef HAVE_LGAMMA
-#define F_LGAMMA lgamma
-#else
-#ifdef HAVE_GAMMA
-#define F_LGAMMA gamma
-#else
-#define F_LGAMMA f_lgamma
-#define NO_SYSTEM_GAMMA
-#endif
-#endif
-#endif /* not NO_SYSTEM_GAMMA */
 
 /**************************************************************************/
 /* Define misc. math macros (in GCC, can be evaluated more rapidly).      */

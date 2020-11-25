@@ -1,3 +1,21 @@
+/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+   1996, 1997, 1998, 1999, 2000, 2005, Free Software Foundation, Inc.
+
+   The GNU plotutils package is free software.  You may redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software foundation; either version 2, or (at your
+   option) any later version.
+
+   The GNU plotutils package is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with the GNU plotutils package; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 51 Franklin St., Fifth Floor,
+   Boston, MA 02110-1301, USA. */
+
 /* This header file is #include'd by g_cntrlify.c.  It is a database rather
    than a true header file: it includes arrays of escape sequences,
    ligatures, etc., which govern the interpretation of a user-specified
@@ -450,7 +468,7 @@ static const Deligature _deligature_char_tbl[NUM_DELIGATURED_CHARS] =
 {
   {198, "AE", 999},
   {230, "ae", 999},
-  {223, "ss", HERSHEY_GOTHIC_GERMAN},  /* no deligature of #223 in G.-German */
+  {223, "ss", PL_HERSHEY_GOTHIC_GERMAN},  /* no deligature of #223 in G.-German */
 };
 
 /* Same as preceding, for escape sequences rather than for 8-bit
@@ -469,7 +487,7 @@ static const Deligature_escape _deligature_escape_tbl[NUM_DELIGATURED_ESCAPES] =
 {
   {"AE", "AE", 999},
   {"ae", "ae", 999},
-  {"ss", "ss", HERSHEY_GOTHIC_GERMAN},   /* no deligature of \ss in Gothic-G.*/
+  {"ss", "ss", PL_HERSHEY_GOTHIC_GERMAN},   /* no deligature of \ss in Gothic-G.*/
 };
 
 /* A table of the ligatures present in the Hershey fonts.  Ligaturization
@@ -493,26 +511,26 @@ typedef struct
 
 static const Ligature _ligature_tbl[NUM_LIGATURES] = 
 {
-  {HERSHEY_SERIF, "ffi", 0203},
-  {HERSHEY_SERIF, "ffl", 0204},
-  {HERSHEY_SERIF, "ff", 0200},
-  {HERSHEY_SERIF, "fi", 0201},
-  {HERSHEY_SERIF, "fl", 0202},
-  {HERSHEY_SERIF_ITALIC, "ffi", 0203},	
-  {HERSHEY_SERIF_ITALIC, "ffl", 0204},
-  {HERSHEY_SERIF_ITALIC, "ff", 0200},
-  {HERSHEY_SERIF_ITALIC, "fi", 0201},
-  {HERSHEY_SERIF_ITALIC, "fl", 0202},
-  {HERSHEY_GOTHIC_GERMAN, "ch", 0206},	
-  {HERSHEY_GOTHIC_GERMAN, "tz", 0207},
-  {HERSHEY_CYRILLIC, "ffi", 0203},
-  {HERSHEY_CYRILLIC, "ffl", 0204},
-  {HERSHEY_CYRILLIC, "ff", 0200},
-  {HERSHEY_CYRILLIC, "fi", 0201},
-  {HERSHEY_CYRILLIC, "fl", 0202},
-  {HERSHEY_EUC, "ffi", 0203},		
-  {HERSHEY_EUC, "ffl", 0204},
-  {HERSHEY_EUC, "ff", 0200},
-  {HERSHEY_EUC, "fi", 0201},
-  {HERSHEY_EUC, "fl", 0202},
+  {PL_HERSHEY_SERIF, "ffi", 0203},
+  {PL_HERSHEY_SERIF, "ffl", 0204},
+  {PL_HERSHEY_SERIF, "ff", 0200},
+  {PL_HERSHEY_SERIF, "fi", 0201},
+  {PL_HERSHEY_SERIF, "fl", 0202},
+  {PL_HERSHEY_SERIF_ITALIC, "ffi", 0203},	
+  {PL_HERSHEY_SERIF_ITALIC, "ffl", 0204},
+  {PL_HERSHEY_SERIF_ITALIC, "ff", 0200},
+  {PL_HERSHEY_SERIF_ITALIC, "fi", 0201},
+  {PL_HERSHEY_SERIF_ITALIC, "fl", 0202},
+  {PL_HERSHEY_GOTHIC_GERMAN, "ch", 0206},	
+  {PL_HERSHEY_GOTHIC_GERMAN, "tz", 0207},
+  {PL_HERSHEY_CYRILLIC, "ffi", 0203},
+  {PL_HERSHEY_CYRILLIC, "ffl", 0204},
+  {PL_HERSHEY_CYRILLIC, "ff", 0200},
+  {PL_HERSHEY_CYRILLIC, "fi", 0201},
+  {PL_HERSHEY_CYRILLIC, "fl", 0202},
+  {PL_HERSHEY_EUC, "ffi", 0203},		
+  {PL_HERSHEY_EUC, "ffl", 0204},
+  {PL_HERSHEY_EUC, "ff", 0200},
+  {PL_HERSHEY_EUC, "fi", 0201},
+  {PL_HERSHEY_EUC, "fl", 0202},
 };

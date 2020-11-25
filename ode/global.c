@@ -1,7 +1,14 @@
+/* This file is part of the GNU plotutils package. */
+
+/*
+ * Copyright (C) 1982-1994, Nicholas B. Tufillaro.  All rights reserved.
+ *
+ * GNU enhancements Copyright (C) 1996, 1997, 2005, Free Software
+ * Foundation, Inc.
+ */
+
 /*
  * definitions of global variables for ode.
- * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
  */
 
 #include "sys-defines.h"
@@ -11,6 +18,8 @@
 /* defined and initialized */
 
 const char    *progname	= "ode"; /* name of this program */
+const char    *written =  "Written by Nicholas B. Tufillaro and Robert S. Maier.";
+const char    *copyright = "Copyright (C) 1994 Nicholas B. Tufillaro,\nCopyright (C) 2005 Free Software Foundation, Inc.";
 
 int	prec	= -1;
 long	it	= 0;
