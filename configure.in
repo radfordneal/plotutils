@@ -1,0 +1,69 @@
+dnl Configure template for the GNU plotutils package.
+dnl Copyright (C) 1989-97 Free Software Foundation, Inc.
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(graph/graph.c)
+AC_CONFIG_HEADER(config.h)
+
+dnl Version information.
+VERSION=1.3
+AC_SUBST(VERSION)
+
+dnl Programs.
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_LEX
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+AC_PROG_YACC
+
+dnl Header files.
+AC_CHECK_HEADERS(malloc.h string.h strings.h sys/time.h unistd.h values.h)
+AC_HEADER_STDC
+
+dnl X-specific headers and libraries.
+AC_PATH_XTRA
+AC_SUBST(no_x)
+AC_SUBST(X_CFLAGS)
+AC_SUBST(X_LIBS)
+AC_SUBST(X_PRE_LIBS)
+AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], XLIBS="-lXm -lXt -lXext -lX11"; USE_MOTIF=1, XLIBS="-lXaw -lXmu -lXt -lXext -lX11"; USE_MOTIF=0)
+AC_SUBST(XLIBS)
+AC_SUBST(X_EXTRA_LIBS)
+AC_SUBST(USE_MOTIF)
+
+dnl Typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_HEADER_TIME
+AC_TYPE_SIGNAL
+
+dnl Override default "-g -O2", for libplot especially.
+CFLAGS="-O"
+
+dnl Library functions and auxiliary libraries.
+AC_DECL_YYTEXT
+dnl 
+dnl SGI's have matherr in libmx.a, not libm.a
+AC_CHECK_LIB(mx, matherr, LIBS="$LIBS -lmx", LIBS="$LIBS -lm")
+AC_CHECK_FUNCS(gethostname memcpy strchr strcasecmp matherr j0 erf)
+dnl
+dnl lgamma() and gamma() both compute the log of the gamma function.  There
+dnl are old systems out there which do not have lgamma (the name was
+dnl introduced after BSD 4.2), but which do have gamma.  Also some systems,
+dnl new and old, have lgamma but not gamma.
+AC_CHECK_FUNCS(lgamma gamma)
+dnl Motif on Sys-V derived systems requires -lPW.  Harmless to include it
+dnl (but we only need it if --with-motif is specified).  Precede it
+dnl by -lc because some of its definitions may conflict with the standard
+dnl library.  Similarly check for -lgen, which Motif on Solaris needs.
+AC_CHECK_LIB(gen, regex, LIBS="$LIBS -lc -lgen", LIBS="$LIBS")
+AC_CHECK_LIB(PW, regex, LIBS="$LIBS -lc -lPW", LIBS="$LIBS")
+
+dnl HP/UX needs a cpp definition for math.h to define matherr-related things
+AC_EGREP_HEADER(_HPUX_SOURCE, math.h, AC_EGREP_HEADER(matherr, math.h, AC_DEFINE(_HPUX_SOURCE)))
+
+dnl Sui generis.
+AC_FUNC_ALLOCA
+
+AC_OUTPUT(Makefile double/Makefile getopt/Makefile graph/Makefile include/Makefile info/Makefile libs/Makefile libs/libplot/Makefile libs/libplottek/Makefile libs/libplotfig/Makefile libs/libplotps/Makefile libs/libplotX/Makefile plot2dev/Makefile tek2plot/Makefile test/Makefile spline/Makefile ode/Makefile)

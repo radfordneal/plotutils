@@ -1,0 +1,159 @@
+This is a list of minor problems with the `graph' utility, and the versions
+of libplot which it is built on.  They are best described not as bugs, but
+as idiosyncrasies of (or bugs in) the display devices that libplot must
+produce output for.
+
+======================================================================
+
+graph-X and libplotX
+--------------------
+
+1. Applications based on libplotX, such as graph-X, when displaying output on
+Sun workstations running old versions of OpenWindows (Sun's version of X
+Windows), may not draw square roots very well.
+
+For example, doing
+
+	echo 0 0 1 1 2 0 | graph-X -L '\sr\mk2\rt\rn is irrational!'
+
+may produce a plot in which the square root in the title looks funny.  The
+horizontal overbar in the square root may be displaced downward slightly.
+
+This is not a bug in libplotX; it is a bug in OpenWindows.  The OpenWindows
+Symbol font (supplied in Sun's proprietary Folio format, and opaque to
+investigation) contains two characters: a square root symbol, and a
+matching overbar.  At least in OpenWindows version 3, their heights above
+the baseline did not match as they should.
+
+Some versions of OpenWindows may also include bitmapped versions of the
+Symbol font in which the horizontal overbar is displaced horizontally, as
+well as vertically.  This makes the problem even worse.
+
+The fix for the square root problem is to uninstall OpenWindows and replace
+it with industry-standard X11; in particular, X11R6.
+
+2. A `line segment' is conceptually a rectangle (usually rather thin).  But
+if the affine map from user coordinates to device coordinates involves a
+shear, each such rectangle would ideally be sheared into a parallelogram in
+the device frame.  X Windows does not support this, since its `lines', no
+matter how thick, are always drawn as rectangles.  The problem is evident
+only for unusually thick lines.  graph-X does not ask libplotX to perform
+shearing transformations, so the problem is visible only by calling
+libplotX directly.
+
+----------------------------------------------------------------------
+
+graph-ps and libplotps
+----------------------
+
+1. There are some quantizations associated with graph-ps (and with libplotps,
+which it is based on) which one would not expect.  Line widths and colors
+are quantized, in particular.  By experimenting with the --line-width or
+--frame-line-width option of graph-ps, you can verify that there is a
+minimum nonzero linewidth which it is not possible to reduce. 
+
+The reason for these quantizations is the intent to maintain backwards
+compatibility with the idraw drawing editor.  The output of graph-ps can
+both be displayed on a Postscript device and edited with idraw.  idraw
+insists that the parameters of objects (such as lines) be expressed in
+terms of integers, rather than floating-point numbers.
+
+If you wish to draw a truly thin line for display on a Postscript device,
+you should set its width to zero.  (The option `-W 0' to graph-ps will do
+the job.)  Note that as far as idraw knows, zero width means that the line
+is invisible, so you should not do this if you want to edit your drawing
+with idraw.
+
+2. libplotps does not support the setting of the `cap mode' and `join mode'
+for polylines.  That is because idraw does not support these variables,
+even though Postscript does.
+
+3. There are a lot of buggy Postscript interpreters out there.  If you
+switch fonts in the middle of drawing a label with graph-ps or libplotps,
+and the two sub-labels don't match up properly when you view the result, it
+may well be the fault of your interpreter.  Even for the 35 standard
+Postscript fonts, some vendors don't agree with Adobe as to the width of
+the printable `8-bit' (non-ASCII) characters.  Sun SparcPrinters in
+particular have been observed to space such characters incorrectly.  If you
+are using the freely distributable Ghostscript interpreter, it is
+recommended that you use a version at least as recent as release 4.xx.
+Earlier releases of Ghostscript are reported to have had similar problems.
+
+----------------------------------------------------------------------
+
+graph-fig and libplotfig
+------------------------
+
+1. The xfig graphics editor supports rotation and uniform scaling of fonts,
+but not non-uniform scaling or shearing.  So libplotfig does not support
+them.
+
+This does not affect graph-fig, since it never produces such fonts (it sets
+up an affine map from the user frame, in which it internally draws
+graphics, to the device frame, which involves uniform rather than
+non-uniform scaling).
+
+However, if an application linked with libplotfig calls the setup function
+space() or space2() so as to define a drawing window in the user frame
+which is not square, the affine map from the user frame to the device frame
+will involve a non-uniform scaling, and possibly even a shearing.  And
+fonts will not be scaled or sheared properly (we do our best).
+
+2. There is a related problem.  A `line segment' is conceptually a
+rectangle (usually rather thin).  But if the affine map from user
+coordinates to device coordinates involves a shear, each such rectangle
+would ideally be sheared into a parallelogram in the device frame.  xfig
+does not support this, since its `line' primitive must always be drawn as a
+rectangle.  This problem is evident only for unusually thick lines.
+graph-fig does not ask libplotfig to perform shearing transformations, so
+the problem is visible only by calling libplotfig directly.
+
+3. Another problem with libplotfig and graph-fig worth mentioning is that
+"dotdashed" lines (obtained e.g. with the "-m 3" option to `graph') are
+supported in a painful way.  xfig supports dotted lines (with
+user-specifiable inter-dot gap) and dashed lines (with user-specifiable
+length for the on and off segments).  So we can fully support the
+traditional libplot line modes "solid", "dotted", "shortdashed", and
+"longdashed".  But xfig doesn't support anything so exotic as "dotdashed"
+lines.  So we map them into dotted lines with a large inter-dot gap, to
+distinguish them for conventional dotted lines.
+
+----------------------------------------------------------------------
+
+graph-tek and libplottek
+------------------------
+
+graph-tek (along with libplottek) does not support the filling of regions,
+so the -q option does not work; also, multiplotting, which normally `blanks
+out' regions by filling them with white, may result in messy-looking plots.
+graph-tek also does not support the 35 standard Postscript fonts; the
+Hershey fonts must be used instead.  (The default font is HersheySerif
+rather than Helvetica.)  The fact that the ZapfDingbats font is not
+supported means that graph-tek does not support marker symbols greater than
+or equal to 32, or more accurately it does not select them from the font
+(ZapfDingbats) that one would expect.
+
+Filling of regions is not supported because Tektronix storage tubes did not
+support filling, for obvious reasons.  The kermit Tektronix emulator
+apparently supports a restricted sort of region filling, but there are
+currently no plans to extend libplottek to use it.
+
+The 35 Postscript fonts could in principle be supported by libplottek, if
+Type 1 rasterizer code were added to libplot.  There are plans for this,
+since at present there is no general `libplotbitmap'.  There probably will
+be.  But most people are interested in using it to produce bitmaps for the
+Web, not in using it to draw Type 1 fonts on Tek displays.  (The phrase
+"bolting a V-8 onto a Model T" comes to mind.)
+
+In graph-tek, the --line-width and --frame-line-width options do not work,
+since libplottek does not support lines with other than a default width (it
+also does not support the setting of `cap mode' and `join mode' for
+polylines).
+
+The xterm Tektronix emulator has a curious feature (bug?), which no one
+seems to have commented on.  When any line of type other than "solid"
+(i.e. "dotted", "dotdashed", "shortdashed", "longdashed") is drawn, the
+pattern of illuminated and non-illuminated pixels along the line is the
+opposite of what one would expect.  So "dotted" lines (obtained with the
+"-m 2" option to graph) look more like dashed lines.  This bug, if that's
+what it is, is easily fixed by changing the xterm source code.

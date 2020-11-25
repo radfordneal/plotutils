@@ -1,0 +1,104 @@
+Major improvements to process of configuration and building (thanks
+	to Nelson Beebe <beebe@math.utah.edu>, many new configs now work).
+Validation test of plot2fig no longer fails on some systems due to
+	innocuous causes (sign differences).  This does not include NeXT's,
+	which format floating point numbers in a genuinely nonstandard way.
+Output of libplotfig and graph-fig now indicates (via comment lines)
+	which ellipse objects are circles.
+Bugs in support for MS-DOS kermit's Tektronix emulation fixed: initial drawing
+	color now is white, background black.  TERM="kermit", "kterm"
+	now recognized.  Linemodes 3, 4 no longer incorrectly swapped.
+Library linking (if Athena widgets used) is now -lXmu -lXt, not the reverse.
+ode: improvements to arithemetic exception handling (error or warning message
+	now always printed).
+ode/specfun.c: `signgam' variable declared and used properly.
+Problems with pointers to signed vs. unsigned chars, which gave problems
+	on overly strict ANSI or pseudo-ANSI compilers, fixed.
+
+Version 1.2 released, 9/97
+
+Problems with 8-bit characters (`8-bit uncleanliness') fixed in libplot.
+	In `graph', they affected the drawing of axis labels containing 8-bit
+	characters.
+graph: buggy --reposition option fixed.
+--with-motif configuration option added, for systems (e.g. HP/UX) with
+	Motif widgets but not Athena widgets.
+libplotps (and e.g. graph-ps) output is now conformant EPS, version 3.0.
+	No more spare dictionary left on the PS stack, which interfered
+	with inclusion as an EPS file and importing into xfig.
+Escape sequences which allow access to Greek characters and mathematical
+	symbols (e.g. "\*a", which means `alpha') now work in graph-X
+	and in general in libplotX even if the current font is a non-builtin
+	(user-specified) X font.
+libplotX: switching among builtin PS fonts in a single label 
+	was causing slightly incorrect estimates for the label width, 
+	with not-so-good horizontal justification as a result (visible 
+	e.g. in graph-X labels).  Fixed.
+raw libplot: functions that take a string argument no longer try to
+	write into the string.
+graph: when labelling ticks along an axis with large or small numbers (printed 
+	in exponent form, i.e. FOOx10^BAR), zero is now printed just
+	as `0', not as 0.0x10^0.
+graph: FOOx10^BAR form for tick labels now works even when current font
+	is a symbol font.
+graph: identical upper and lower limits on an axis no longer cause an
+	error message and an abort. Instead each limit is displaced
+	by 1 unit, with a warning message.
+graph: -s option (--save-screen) now works.  (Meaningful only for
+	graph-tek and raw graph.)
+libplotfig: later-drawn objects, of whatever kind, now appear in front
+	of (rather than behind) earlier-drawn objects.  This has
+	implications for graph-fig (it fixes a bug previously mentioned in the
+	PROBLEMS file).
+graph: new --frame-color option (sets name of color of frame, and plotted
+	curves too if -C option is not used)
+New libplot functions: pencolorname(), fillcolorname(), colorname(),
+	which search a database of color names (orig. from X11R6 rgb.txt).
+New libplot function: pencolor().  color() now just calls it and fillcolor().
+plot filters: bug in parsing of fmarkerrel() op code fixed.
+plot filters (plot2X etc.) now abort instead of just printing a warning,
+	if an unrecognized directive is seen in the input stream.
+	This is to avoid confusing ascii-format input streams with
+	binary-format input streams (which can cause X servers to crash).
+Regression tests in ./test reworked; different options now used
+	on `graph', in the tests.  Output is more visually pleasing.
+ode-examples directory reworked; examples are documented and some
+	are renamed.
+ode arithmetic exception handling improved.
+Separate ascii-format doc on ode (originally nroff) merged into texinfo
+	doc, heavily edited.
+In ./ode, gram.c, gram.tab.h and lex.c are no longer removed during
+	a `make distclean'.  This is for the benefit
+	of people who may not have bison or yacc.  If you want to
+	re-make them, you should do a `make realclean'.  The
+	info/plotutils.info documentation file and test/*.xout
+	are similarly not removed except in a `make realclean'.
+No more annoying flicker in graph-X after plot is drawn (libplotX
+	no longer clears window before redrawing, when closepl() is called).
+alloca.c now supplied in ./ode directory for machines that don't have alloca.
+Repeated calls to openpl..closepl in libplotps were producing
+	incorrect %%DocumentFonts lines in the PS output; now fixed.
+Closed polylines (final vertex = initial vertex) drawn with libplotps 
+	now close correctly, as seen by a PS interpreter.
+Widths of lines drawn with libplotps, as displayed by idraw, now agree with 
+	the widths seen by a PS interpreter such as Ghostscript.  If lines
+	now look too thick, use the zero-linewidth (`-W 0') option.
+Octagonal markers added (markers #30 and #31).
+Bug in special function code (used by ode), for machines that don't have
+	them, now fixed (compilation of ode/specfun.c no longer bombs).
+Hershey fonts now include Russian HersheyCyrillic, and HersheyEUC (for Japanese
+	support; Hiragana, Katakana, and 603 Kanji are supported).
+HersheyScript is now located in its own typeface; HersheySans-Oblique
+	and HersheySans-BoldOblique created.
+Ligature support added to certain Hershey fonts.
+ISO-Latin-1 characters in Hershey fonts now include most accented
+	characters.
+Characters missing from Hershey fonts now print as an
+	`undefined character' symbol (seven horizontal strokes).
+Hershey astronomical and misc. symbols added.
+Many miscellaneous cleanups to Hershey fonts 
+	(inverted questionmark and exclamation point now supported, 
+	for example; `asteriskmath' vertical height fixed, etc.).
+plot.h now works with C++ as well as C
+
+Version 1.1 released, 7/97

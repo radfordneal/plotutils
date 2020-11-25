@@ -1,0 +1,88 @@
+# This is the Makefile for the GNU plot(3) libraries.
+
+VERSION = @VERSION@
+
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH  = @srcdir@
+
+SHELL = /bin/sh
+@SET_MAKE@
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+X_CFLAGS = @X_CFLAGS@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+LDFLAGS = @LDFLAGS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+XLIBS = @XLIBS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+LIBS = @LIBS@
+RANLIB = @RANLIB@
+NO_X = @no_x@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+includedir = @includedir@
+oldincludedir = @oldincludedir@
+
+MDEFINES = CC='$(CC)' CFLAGS='$(CFLAGS)' X_CFLAGS='$(X_CFLAGS)' \
+LDFLAGS='$(LDFLAGS)' X_LIBS="$(X_LIBS)" X_PRE_LIBS="$(X_PRE_LIBS)" \
+XLIBS="$(XLIBS)" X_EXTRA_LIBS="$(X_EXTRA_LIBS)" \
+LIBS='$(LIBS)' prefix='$(prefix)' exec_prefix='$(exec_prefix)' \
+bindir='$(bindir)' infodir='$(infodir)' libdir='$(libdir)' \
+includedir='$(includedir)' oldincludedir='$(oldincludedir)' \
+NO_X="$(NO_X)"
+
+######################################################################
+
+SUBDIRS = libplot libplottek libplotfig libplotps
+XSUBDIRS = libplotX
+
+default: all
+
+.PHONY: all install uninstall clean realclean distclean TAGS
+
+all install uninstall clean TAGS:
+	for subdir in $(SUBDIRS); do \
+	  echo making $@ in $$subdir; \
+	  (cd $$subdir && $(MAKE) $(MDEFINES) $@) || exit 1; \
+	done; \
+	if test "$(NO_X)" != "yes"; then \
+		for subdir in $(XSUBDIRS); do \
+		  echo making $@ in $$subdir; \
+		  (cd $$subdir && $(MAKE) $(MDEFINES) $@) || exit 1; \
+		done; \
+	fi; 
+
+distclean:
+	for subdir in $(SUBDIRS); do \
+	  echo making $@ in $$subdir; \
+	  (cd $$subdir && $(MAKE) $(MDEFINES) $@) || exit 1; \
+	done; \
+	if test "$(NO_X)" != "yes"; then \
+		for subdir in $(XSUBDIRS); do \
+		  echo making $@ in $$subdir; \
+		  (cd $$subdir && $(MAKE) $(MDEFINES) $@) || exit 1; \
+		done; \
+	fi
+	-rm -f *~ \#* Makefile
+
+realclean:
+	for subdir in $(SUBDIRS); do \
+	  echo making $@ in $$subdir; \
+	  (cd $$subdir && $(MAKE) $(MDEFINES) $@) || exit 1; \
+	done; \
+	if test "$(NO_X)" != "yes"; then \
+		for subdir in $(XSUBDIRS); do \
+		  echo making $@ in $$subdir; \
+		  (cd $$subdir && $(MAKE) $(MDEFINES) $@) || exit 1; \
+		done; \
+	fi
+	-rm -f *~ \#* Makefile

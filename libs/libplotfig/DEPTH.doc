@@ -1,0 +1,35 @@
+You might think that the order in which objects appear in an xfig-format
+output file would determine the order in which they are drawn on an xfig
+display.  This is not the case.  The list of objects in the file is not a
+`display list' in the conventional sense.
+
+This is because xfig format, at least as of xfig version 3.1, supports a
+`depth' attribute for each object.  (Depth lies in the 0..999 range.)
+Objects are drawn on the display as follows: first those with depth 999,
+then depth 998,..., depth 0. [Depth >999 may be supported, but >999 is
+apparently merged into 999; I haven't checked this.]  The objects at any
+specified depth are drawn in the following order:
+
+	arcs
+	compounds
+	ellipses
+	lines
+	splines
+	texts
+
+(The depth of a compound object is defined to be the maximum of the depths
+of the objects it contains.)  At any specified depth, the objects of any
+specified type are drawn in the order they appear in the file.  So to that
+limited extent, the xfig file is a conventional display list.
+
+This scheme poses some problems for libplotfig.  What we do is start with
+depth 989 (the first object we draw will have that depth).  If the next
+object drawn would be of a type that would not come before the first object
+in the above order, we'll give it depth 989 also; otherwise we'll give it
+depth 988 to ensure it will indeed be drawn afterwards.  And so forth.
+When we get to depth 0, we throw up our hands (depths <0 aren't supported
+by xfig, so we give all further objects depth 0).
+
+The reason libplotfig starts drawing with depth 989 instead of 999 is that
+we want to give the user a chance to slip some object(s) underneath the
+objects we'll be plotting, by editing with xfig.

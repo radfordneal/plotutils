@@ -1,0 +1,168 @@
+# This is the make file for the validation tests.  As distributed, the
+# package should include a set of previously prepared xout files.  `xout'
+# means `expected output'.  You shouldn't need to type `make xout' to
+# prepare them yourself.
+ 
+# To run the tests, just do `make test' (plus `make test-tek2plot' if you
+# want to run a validation test on the `tek2plot' program).  You can also
+# do `make look' to do a visual comparison, in two different X windows, of
+# the output of the `plot2X' program compared to what it should be.
+
+VERSION = @VERSION@
+
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH  = @srcdir@
+
+SHELL = /bin/sh
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+
+GRAPH_OPTIONS = -a 10 100 -g 2 -I a -C -m -1 -S 23 .02 -T -.015 \
+	-f .06 --title-font-size 0.09 \
+	-F "Times-Roman" --title-font-name "HersheyCyrillic" \
+	-L "A Sample Plot" \
+	-X "abscissa (x\sb1\eb) variable" -Y "x\sb2\eb variable" \
+	-u .25 -r .25 -w .5 -h .5 -x 100 1100 -y 0 1 
+
+default: test
+
+.PHONY: test test-tek2plot xout look clean realclean distclean
+
+test: graph.test plot2plot.test plot2tek.test plot2fig.test plot2ps.test \
+xout-basic
+
+test-tek2plot: tek2plot.test xout-extra
+
+xout: xout-basic xout-extra
+
+xout-basic: spline.plt graph.xout plot2plot.xout plot2tek.xout \
+plot2fig.xout plot2ps.xout spline.tek
+
+xout-extra: tek2plot.xout
+
+#----------------------------------------------------------------------
+
+# We use `graph' to create the files spline.plt and spline.tek.  We filter
+# them in various ways and compare the output with what we expect.
+
+spline.plt: ../graph/graph
+	-@../graph/graph $(GRAPH_OPTIONS) < $(srcdir)/spline.y.dat > spline.plt
+
+spline.tek: ../plot2dev/plot2tek
+# The Tek file produced by plot2tek (actually by libplottek) will contain
+# xterm-specific directives if TERM is set to `xterm'.
+	-@TERM=xterm ../plot2dev/plot2tek < spline.plt > spline.tek 2>/dev/null
+
+#----------------------------------------------------------------
+
+graph.test: spline.plt graph.xout ../plot2dev/plot2plot
+	-@../plot2dev/plot2plot -O < spline.plt > graph.test
+	@echo The validation test for graph ""
+	-@cmp -s graph.xout graph.test && echo PASSED. \
+	    || echo FAILED.
+	@echo
+
+graph.xout:
+	-../graph/graph $(GRAPH_OPTIONS) < $(srcdir)/spline.y.dat \
+            | ../plot2dev/plot2plot -O > graph.xout
+
+#----------------------------------------------------------------
+
+plot2plot.test: ../plot2dev/plot2plot plot2plot.xout spline.plt
+	-@../plot2dev/plot2plot -O < spline.plt > plot2plot.test
+	@echo The validation test for plot2plot ""
+	-@cmp -s plot2plot.xout plot2plot.test && echo PASSED. \
+	    || echo FAILED.
+	@echo
+
+plot2plot.xout:
+	-../plot2dev/plot2plot -O < spline.plt > plot2plot.xout
+
+#----------------------------------------------------------------
+
+plot2tek.test: ../plot2dev/plot2tek plot2tek.xout spline.plt
+# The Tek file produced by plot2tek (actually by libplottek) will contain
+# xterm-specific directives if TERM is set to `xterm'.
+	-@TERM=xterm ../plot2dev/plot2tek < spline.plt > plot2tek.test 2>/dev/null
+	@echo The validation test for plot2tek ""
+	-@cmp -s plot2tek.xout plot2tek.test && echo PASSED. \
+	    || echo FAILED.
+	@echo
+
+plot2tek.xout:
+# The Tek file produced by plot2tek (actually by libplottek) will contain
+# xterm-specific directives if TERM is set to `xterm'.
+	-TERM=xterm ../plot2dev/plot2tek < spline.plt > plot2tek.xout 2>/dev/null
+
+#----------------------------------------------------------------
+
+plot2fig.test: ../plot2dev/plot2fig plot2fig.xout spline.plt
+	-@../plot2dev/plot2fig < spline.plt > plot2fig.test
+	@echo The validation test for plot2fig ""
+	-@cmp -s plot2fig.xout plot2fig.test && echo PASSED. \
+	    || echo FAILED.
+	@echo
+
+plot2fig.xout:
+	-../plot2dev/plot2fig < spline.plt > plot2fig.xout
+
+#----------------------------------------------------------------
+
+plot2ps.test: ../plot2dev/plot2ps plot2ps.xout spline.plt
+	-@../plot2dev/plot2ps <spline.plt >plot2ps.test
+# The PS output file produced by plot2ps (actually by libplotps)
+# includes a couple of lines that vary from instance to instance.
+	-@egrep -v 'CreationDate|Creator' plot2ps.xout > tmp0.ps
+	-@egrep -v 'CreationDate|Creator' plot2ps.test > tmp1.ps
+	@echo The validation test for plot2ps ""
+	-@cmp -s tmp0.ps tmp1.ps && echo PASSED. \
+	    || echo FAILED.
+	-@rm -f tmp0.ps tmp1.ps
+	@echo
+
+plot2ps.xout:
+	-../plot2dev/plot2ps < spline.plt > plot2ps.xout
+
+#----------------------------------------------------------------
+
+tek2plot.test: ../tek2plot/tek2plot spline.tek
+	-@if test ! -f tek2plot.xout; then make tek2plot.xout; fi
+	-@../tek2plot/tek2plot -O < spline.tek > tek2plot.test
+	@echo The validation test for tek2plot ""
+	-@cmp -s tek2plot.xout tek2plot.test && echo PASSED. \
+	    || echo FAILED.
+	@echo
+
+tek2plot.xout:
+	-../tek2plot/tek2plot -O < spline.tek > tek2plot.xout
+
+#----------------------------------------------------------------
+
+../graph/graph:
+	cd ../graph; $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" all
+
+../plot2dev/plot2plot ../plot2dev/plot2tek ../plot2dev/plot2fig \
+../plot2dev/plot2ps ../plot2dev/plot2X:
+	cd ../plot2dev; $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" all
+
+../tek2plot/tek2plot:
+	cd ../tek2plot; $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" all
+
+#----------------------------------------------------------------
+
+look: graph.test ../plot2dev/plot2plot ../plot2dev/plot2X
+	-../plot2dev/plot2X -I < graph.xout
+	-../plot2dev/plot2plot -I < graph.test | ../plot2dev/plot2X
+
+#----------------------------------------------------------------
+
+clean:
+	-rm -f *.test spline.plt spline.tek
+
+distclean: clean
+	-rm -f Makefile *~ \#*
+
+realclean: distclean
+	-rm -f *.xout

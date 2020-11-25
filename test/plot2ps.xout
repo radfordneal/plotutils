@@ -1,0 +1,4365 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%Creator: root@darkstar (root)
+%%Title: PostScript plot file
+%%CreationDate: Wed Sep 24 18:40:29 1997
+%%Pages: 1
+%%PageOrder: Ascend
+%%BoundingBox: 48 188 464 596
+%%DocumentFonts: Times-Roman 
+%%EndComments
+
+%%BeginProcSet: plotps.pro
+/DrawDict 50 dict def
+DrawDict begin
+
+/reencodeISO {
+dup dup findfont dup length dict begin
+{ 1 index /FID ne { def }{ pop pop } ifelse } forall
+/Encoding ISOLatin1Encoding def
+currentdict end definefont
+} def
+
+/ISOLatin1Encoding [
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/space/exclam/quotedbl/numbersign/dollar/percent/ampersand/quoteright
+/parenleft/parenright/asterisk/plus/comma/minus/period/slash
+/zero/one/two/three/four/five/six/seven/eight/nine/colon/semicolon
+/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N
+/O/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright
+/asciicircum/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m
+/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/braceright/asciitilde
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/dotlessi/grave/acute/circumflex/tilde/macron/breve
+/dotaccent/dieresis/.notdef/ring/cedilla/.notdef/hungarumlaut
+/ogonek/caron/space/exclamdown/cent/sterling/currency/yen/brokenbar
+/section/dieresis/copyright/ordfeminine/guillemotleft/logicalnot
+/hyphen/registered/macron/degree/plusminus/twosuperior/threesuperior
+/acute/mu/paragraph/periodcentered/cedilla/onesuperior/ordmasculine
+/guillemotright/onequarter/onehalf/threequarters/questiondown
+/Agrave/Aacute/Acircumflex/Atilde/Adieresis/Aring/AE/Ccedilla
+/Egrave/Eacute/Ecircumflex/Edieresis/Igrave/Iacute/Icircumflex
+/Idieresis/Eth/Ntilde/Ograve/Oacute/Ocircumflex/Otilde/Odieresis
+/multiply/Oslash/Ugrave/Uacute/Ucircumflex/Udieresis/Yacute
+/Thorn/germandbls/agrave/aacute/acircumflex/atilde/adieresis
+/aring/ae/ccedilla/egrave/eacute/ecircumflex/edieresis/igrave
+/iacute/icircumflex/idieresis/eth/ntilde/ograve/oacute/ocircumflex
+/otilde/odieresis/divide/oslash/ugrave/uacute/ucircumflex/udieresis
+/yacute/thorn/ydieresis
+] def
+
+/none null def
+/numGraphicParameters 17 def
+/stringLimit 65535 def
+/arrowHeight 8 def
+/arrowWidth 4 def
+
+/Begin { save numGraphicParameters dict begin } def
+/End { end restore } def
+
+/SetB {
+dup type /nulltype eq {
+pop
+false /brushRightArrow idef
+false /brushLeftArrow idef
+true /brushNone idef
+} {
+/brushDashOffset idef
+/brushDashArray idef
+0 ne /brushRightArrow idef
+0 ne /brushLeftArrow idef
+/brushWidth idef
+false /brushNone idef
+} ifelse
+} def
+
+/SetCFg {
+/fgblue idef /fggreen idef /fgred idef
+} def
+
+/SetCBg {
+/bgblue idef /bggreen idef /bgred idef
+} def
+
+/SetF {
+/printSize idef
+/printFont idef
+} def
+
+/SetP {
+dup type /nulltype eq {
+pop true /patternNone idef
+} {
+/patternGrayLevel idef
+patternGrayLevel -1 eq {
+/patternString idef
+} if
+false /patternNone idef }
+ifelse
+} def
+
+/BSpl {
+0 begin
+storexyn
+newpath
+n 1 gt {
+0 0 0 0 0 0 1 1 true subspline
+n 2 gt {
+0 0 0 0 1 1 2 2 false subspline
+1 1 n 3 sub {
+/i exch def
+i 1 sub dup i dup i 1 add dup i 2 add dup false subspline
+} for
+n 3 sub dup n 2 sub dup n 1 sub dup 2 copy false subspline
+} if
+n 2 sub dup n 1 sub dup 2 copy 2 copy false subspline
+patternNone not brushLeftArrow not brushRightArrow not and and { ifill } if
+brushNone not { istroke } if
+0 0 1 1 leftarrow
+n 2 sub dup 1 sub dup rightarrow
+} if
+end
+} dup 0 4 dict put def
+
+/Circ {newpath
+0 360 arc
+patternNone not { ifill } if
+brushNone not { istroke } if
+} def
+
+/CBSpl {
+0 begin
+dup 2 gt {
+storexyn
+newpath
+n 1 sub dup 0 0 1 1 2 2 true subspline
+1 1 n 3 sub {
+/i exch def
+i 1 sub dup i dup i 1 add dup i 2 add dup false subspline
+} for
+n 3 sub dup n 2 sub dup n 1 sub dup 0 0 false subspline
+n 2 sub dup n 1 sub dup 0 0 1 1 false subspline
+patternNone not { ifill } if
+brushNone not { istroke } if
+} {
+Poly
+} ifelse
+end
+} dup 0 4 dict put def
+
+/Elli {
+0 begin
+newpath
+4 2 roll
+translate
+scale
+0 0 1 0 360 arc
+patternNone not { ifill } if
+brushNone not { istroke } if
+end
+} dup 0 1 dict put def
+
+/Line {
+0 begin
+2 storexyn
+newpath
+x 0 get y 0 get moveto
+x 1 get y 1 get lineto
+brushNone not { istroke } if
+0 0 1 1 leftarrow
+0 0 1 1 rightarrow
+end
+} dup 0 4 dict put def
+
+/MLine {
+0 begin
+storexyn
+newpath
+n 1 gt {
+x 0 get y 0 get moveto
+1 1 n 1 sub {
+/i exch def
+x i get y i get lineto
+} for
+patternNone not brushLeftArrow not brushRightArrow not and and { ifill } if
+brushNone not { istroke } if
+0 0 1 1 leftarrow
+n 2 sub dup n 1 sub dup rightarrow
+} if
+end
+} dup 0 4 dict put def
+
+/Poly {
+3 1 roll
+newpath
+moveto
+-1 add
+{ lineto } repeat
+closepath
+patternNone not { ifill } if
+brushNone not { istroke } if
+} def
+
+/Rect {
+0 begin
+/t exch def
+/r exch def
+/b exch def
+/l exch def
+newpath
+l b moveto
+l t lineto
+r t lineto
+r b lineto
+closepath
+patternNone not { ifill } if
+brushNone not { istroke } if
+end
+} dup 0 4 dict put def
+
+/Text {
+ishow
+} def
+
+/idef {
+dup where { pop pop pop } {exch def } ifelse
+} def
+
+/ifill {
+0 begin
+gsave
+patternGrayLevel -1 ne {
+fgred bgred fgred sub patternGrayLevel mul add
+fggreen bggreen fggreen sub patternGrayLevel mul add
+fgblue bgblue fgblue sub patternGrayLevel mul add setrgbcolor
+eofill
+} {
+eoclip
+originalCTM setmatrix
+pathbbox /t exch def /r exch def /b exch def /l exch def
+/w r l sub ceiling cvi def
+/h t b sub ceiling cvi def
+/imageByteWidth w 8 div ceiling cvi def
+/imageHeight h def
+bgred bggreen bgblue setrgbcolor
+eofill
+fgred fggreen fgblue setrgbcolor
+w 0 gt h 0 gt and {
+l b translate w h scale
+w h true[w 0 0 h neg 0 h] { patternproc } imagemask
+} if
+} ifelse
+grestore
+end
+} dup 0 8 dict put def
+
+/istroke {
+gsave
+brushDashOffset -1 eq {
+[] 0 setdash
+1 setgray
+} {
+brushDashArray brushDashOffset setdash
+fgred fggreen fgblue setrgbcolor
+} ifelse
+brushWidth setlinewidth
+originalCTM setmatrix
+stroke
+grestore
+} def
+
+/ishow {
+0 begin
+gsave
+fgred fggreen fgblue setrgbcolor
+/fontDict printFont findfont printSize scalefont dup setfont def
+/descender fontDict begin 0 [FontBBox] 1 get FontMatrix end
+transform exch pop def
+/vertoffset 0 descender sub printSize sub
+printFont /Courier ne printFont /Courier-Bold ne and { 1 add } if def {
+0 vertoffset moveto show
+/vertoffset vertoffset printSize sub def
+} forall
+grestore
+end
+} dup 0 3 dict put def
+
+/patternproc {
+0 begin
+/patternByteLength patternString length def
+/patternHeight patternByteLength 8 mul sqrt cvi def
+/patternWidth patternHeight def
+/patternByteWidth patternWidth 8 idiv def
+/imageByteMaxLength imageByteWidth imageHeight mul
+stringLimit patternByteWidth sub min def
+/imageMaxHeight imageByteMaxLength imageByteWidth idiv patternHeight idiv
+patternHeight mul patternHeight max def
+/imageHeight imageHeight imageMaxHeight sub store
+/imageString imageByteWidth imageMaxHeight mul patternByteWidth add string def
+0 1 imageMaxHeight 1 sub{
+/y exch def
+/patternRow y patternByteWidth mul patternByteLength mod def
+/patternRowString patternString patternRow patternByteWidth getinterval def
+/imageRow y imageByteWidth mul def
+0 patternByteWidth imageByteWidth 1 sub {
+/x exch def
+imageString imageRow x add patternRowString putinterval
+} for
+} for
+imageString
+end
+} dup 0 12 dict put def
+
+/min {
+dup 3 2 roll dup 4 3 roll lt { exch } if pop
+} def
+
+/max {
+dup 3 2 roll dup 4 3 roll gt { exch } if pop
+} def
+
+/midpoint {
+0 begin
+/y1 exch def
+/x1 exch def
+/y0 exch def
+/x0 exch def
+x0 x1 add 2 div
+y0 y1 add 2 div
+end
+} dup 0 4 dict put def
+
+/thirdpoint {
+0 begin
+/y1 exch def
+/x1 exch def
+/y0 exch def
+/x0 exch def
+x0 2 mul x1 add 3 div
+y0 2 mul y1 add 3 div
+end
+} dup 0 4 dict put def
+
+/subspline {
+0 begin
+/movetoNeeded exch def
+y exch get /y3 exch def
+x exch get /x3 exch def
+y exch get /y2 exch def
+x exch get /x2 exch def
+y exch get /y1 exch def
+x exch get /x1 exch def
+y exch get /y0 exch def
+x exch get /x0 exch def
+x1 y1 x2 y2 thirdpoint
+/p1y exch def
+/p1x exch def
+x2 y2 x1 y1 thirdpoint
+/p2y exch def
+/p2x exch def
+x1 y1 x0 y0 thirdpoint
+p1x p1y midpoint
+/p0y exch def
+/p0x exch def
+x2 y2 x3 y3 thirdpoint
+p2x p2y midpoint
+/p3y exch def
+/p3x exch def
+movetoNeeded { p0x p0y moveto } if
+p1x p1y p2x p2y p3x p3y curveto
+end
+} dup 0 17 dict put def
+
+/storexyn {
+/n exch def
+/y n array def
+/x n array def
+n 1 sub -1 0 {
+/i exch def
+y i 3 2 roll put
+x i 3 2 roll put
+} for
+} def
+
+/arrowhead {
+0 begin
+transform originalCTM itransform
+/taily exch def
+/tailx exch def
+transform originalCTM itransform
+/tipy exch def
+/tipx exch def
+/dy tipy taily sub def
+/dx tipx tailx sub def
+/angle dx 0 ne dy 0 ne or { dy dx atan } { 90 } ifelse def
+gsave
+originalCTM setmatrix
+tipx tipy translate
+angle rotate
+newpath
+arrowHeight neg arrowWidth 2 div moveto
+0 0 lineto
+arrowHeight neg arrowWidth 2 div neg lineto
+patternNone not {
+originalCTM setmatrix
+/padtip arrowHeight 2 exp 0.25 arrowWidth 2 exp mul add sqrt brushWidth mul
+arrowWidth div def
+/padtail brushWidth 2 div def
+tipx tipy translate
+angle rotate
+padtip 0 translate
+arrowHeight padtip add padtail add arrowHeight div dup scale
+arrowheadpath
+ifill
+} if
+brushNone not {
+originalCTM setmatrix
+tipx tipy translate
+angle rotate
+arrowheadpath
+istroke
+} if
+grestore
+end
+} dup 0 9 dict put def
+
+/arrowheadpath {
+newpath
+arrowHeight neg arrowWidth 2 div moveto
+0 0 lineto
+arrowHeight neg arrowWidth 2 div neg lineto
+} def
+
+/leftarrow {
+0 begin
+y exch get /taily exch def
+x exch get /tailx exch def
+y exch get /tipy exch def
+x exch get /tipx exch def
+brushLeftArrow { tipx tipy tailx taily arrowhead } if
+end
+} dup 0 4 dict put def
+
+/rightarrow {
+0 begin
+y exch get /tipy exch def
+x exch get /tipx exch def
+y exch get /taily exch def
+x exch get /tailx exch def
+brushRightArrow { tipx tipy tailx taily arrowhead } if
+end
+} dup 0 4 dict put def
+%%EndProcSet
+%%EndProlog
+
+%%BeginSetup
+/Times-Roman reencodeISO def
+%%EndSetup
+
+%%Page: 1 1
+
+%I Idraw 8
+
+Begin
+%I b u
+%I cfg u
+%I cbg u
+%I f u
+%I p u
+%I t
+[ 1.000000 0 0 1.000000 0 0 ] concat
+/originalCTM matrix currentmatrix def
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+142243 338171
+138333 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+142243 338171
+146153 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+142243 336496
+145594 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+139450 329793
+144477 329793
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+137216 326442
+140567 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+143919 326442
+147270 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 16
+165702 336496
+166260 338171
+166260 334820
+165702 336496
+164585 337613
+162909 338171
+161233 338171
+159558 337613
+158441 336496
+158441 335379
+158999 334262
+159558 333703
+160675 333144
+164026 332027
+165143 331469
+166260 330352
+16 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 16
+158441 335379
+159558 334262
+160675 333703
+164026 332586
+165143 332027
+165702 331469
+166260 330352
+166260 328118
+165143 327000
+163468 326442
+161792 326442
+160116 327000
+158999 328118
+158441 329793
+158441 326442
+158999 328118
+16 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 13
+170729 333144
+170729 332586
+170170 332586
+170170 333144
+170729 333703
+171846 334262
+174080 334262
+175197 333703
+175756 333144
+176314 332027
+176314 328118
+176873 327000
+177431 326442
+13 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 5
+175756 333144
+175756 328118
+176314 327000
+177431 326442
+177990 326442
+5 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 11
+175756 332027
+175197 331469
+171846 330910
+170170 330352
+169612 329235
+169612 328118
+170170 327000
+171846 326442
+173521 326442
+174639 327000
+175756 328118
+11 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 6
+171846 330910
+170729 330352
+170170 329235
+170170 328118
+170729 327000
+171846 326442
+6 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+181900 334262
+181900 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+182458 334262
+182458 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 7
+182458 332586
+183575 333703
+185251 334262
+186368 334262
+188044 333703
+188602 332586
+188602 326442
+7 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 4
+186368 334262
+187485 333703
+188044 332586
+188044 326442
+4 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 7
+188602 332586
+189719 333703
+191395 334262
+192512 334262
+194188 333703
+194746 332586
+194746 326442
+7 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 4
+192512 334262
+193629 333703
+194188 332586
+194188 326442
+4 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+180224 334262
+182458 334262
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+180224 326442
+184134 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+186368 326442
+190278 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+192512 326442
+196422 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+200332 334262
+200332 322532
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+200890 334262
+200890 322532
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 14
+200890 332586
+202007 333703
+203124 334262
+204241 334262
+205917 333703
+207034 332586
+207593 330910
+207593 329793
+207034 328118
+205917 327000
+204241 326442
+203124 326442
+202007 327000
+200890 328118
+14 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 8
+204241 334262
+205359 333703
+206476 332586
+207034 330910
+207034 329793
+206476 328118
+205359 327000
+204241 326442
+8 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+198656 334262
+200890 334262
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+198656 322532
+202566 322532
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+212061 338171
+212061 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+212620 338171
+212620 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+210385 338171
+212620 338171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+210385 326442
+214295 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 17
+217647 330910
+224349 330910
+224349 332027
+223791 333144
+223232 333703
+222115 334262
+220439 334262
+218764 333703
+217647 332586
+217088 330910
+217088 329793
+217647 328118
+218764 327000
+220439 326442
+221556 326442
+223232 327000
+224349 328118
+17 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 3
+223791 330910
+223791 332586
+223232 333703
+3 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 8
+220439 334262
+219322 333703
+218205 332586
+217647 330910
+217647 329793
+218205 328118
+219322 327000
+220439 326442
+8 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+237754 338171
+237754 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+238313 338171
+238313 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 10
+236079 338171
+242781 338171
+244457 337613
+245015 337054
+245574 335937
+245574 334262
+245015 333144
+244457 332586
+242781 332027
+238313 332027
+10 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 8
+242781 338171
+243898 337613
+244457 337054
+245015 335937
+245015 334262
+244457 333144
+243898 332586
+242781 332027
+8 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+236079 326442
+239988 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+250042 338171
+250042 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+250601 338171
+250601 326442
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+248367 338171
+250601 338171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+248367 326442
+252276 326442
+2 MLine
+End
+
+Begin %I Poly
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 16
+258420 334262
+256745 333703
+255628 332586
+255069 330910
+255069 329793
+255628 328118
+256745 327000
+258420 326442
+259537 326442
+261213 327000
+262330 328118
+262889 329793
+262889 330910
+262330 332586
+261213 333703
+259537 334262
+16 Poly
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 8
+258420 334262
+257303 333703
+256186 332586
+255628 330910
+255628 329793
+256186 328118
+257303 327000
+258420 326442
+8 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 8
+259537 326442
+260655 327000
+261772 328118
+262330 329793
+262330 330910
+261772 332586
+260655 333703
+259537 334262
+8 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 7
+267357 338171
+267357 328676
+267916 327000
+269033 326442
+270150 326442
+271267 327000
+271825 328118
+7 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 4
+267916 338171
+267916 328676
+268474 327000
+269033 326442
+4 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+265681 334262
+270150 334262
+2 MLine
+End
+
+Begin %I Poly
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 4
+102400 102400
+102400 307200
+307200 307200
+307200 102400
+4 Poly
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 169.830008 231.837739  ] concat
+%I
+[
+(200)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+122880 307200
+122880 310272
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+122880 102400
+122880 99328
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 231.030004 231.837739  ] concat
+%I
+[
+(400)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+163840 307200
+163840 310272
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+163840 102400
+163840 99328
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 292.230000 231.837739  ] concat
+%I
+[
+(600)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+204800 307200
+204800 310272
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+204800 102400
+204800 99328
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 353.430015 231.837739  ] concat
+%I
+[
+(800)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+245760 307200
+245760 310272
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+245760 102400
+245760 99328
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 410.039993 231.837739  ] concat
+%I
+[
+(1000)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+286720 307200
+286720 310272
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+286720 102400
+286720 99328
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 307200
+102400 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 102400
+102400 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+122880 307200
+122880 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+122880 102400
+122880 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+143360 307200
+143360 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+143360 102400
+143360 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+163840 307200
+163840 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+163840 102400
+163840 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+184320 307200
+184320 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+184320 102400
+184320 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+204800 307200
+204800 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+204800 102400
+204800 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+225280 307200
+225280 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+225280 102400
+225280 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+245760 307200
+245760 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+245760 102400
+245760 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+266240 307200
+266240 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+266240 102400
+266240 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+286720 307200
+286720 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+286720 102400
+286720 101171
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 307200
+307200 308429
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 102400
+307200 101171
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 122.017499 250.115120  ] concat
+%I
+[
+(0.0)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 102400
+310272 102400
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 102400
+99328 102400
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 122.017499 311.315116  ] concat
+%I
+[
+(0.2)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 143360
+310272 143360
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 143360
+99328 143360
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 122.017499 372.515113  ] concat
+%I
+[
+(0.4)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 184320
+310272 184320
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 184320
+99328 184320
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 122.017499 433.715127  ] concat
+%I
+[
+(0.6)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 225280
+310272 225280
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 225280
+99328 225280
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 122.017499 494.915105  ] concat
+%I
+[
+(0.8)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 266240
+310272 266240
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 266240
+99328 266240
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 122.017499 556.115120  ] concat
+%I
+[
+(1.0)
+] Text
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 307200
+310272 307200
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 307200
+99328 307200
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 102400
+308429 102400
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 102400
+101171 102400
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 122880
+308429 122880
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 122880
+101171 122880
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 143360
+308429 143360
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 143360
+101171 143360
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 163840
+308429 163840
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 163840
+101171 163840
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 184320
+308429 184320
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 184320
+101171 184320
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 204800
+308429 204800
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 204800
+101171 204800
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 225280
+308429 225280
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 225280
+101171 225280
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 245760
+308429 245760
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 245760
+101171 245760
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 266240
+308429 266240
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 266240
+101171 266240
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 286720
+308429 286720
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 286720
+101171 286720
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+307200 307200
+308429 307200
+2 MLine
+End
+
+Begin %I MLine
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 1.000000 1.000000 SetCBg
+%I p
+none SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I 2
+102400 307200
+101171 307200
+2 MLine
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 228.300482 208.084487  ] concat
+%I
+[
+(abscissa \(x)
+] Text
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-11-*-*-*-*-*-*-*
+/Times-Roman 11.016000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 308.350080 198.669479  ] concat
+%I
+[
+(1)
+] Text
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 313.858080 208.084487  ] concat
+%I
+[
+(\) variable)
+] Text
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 48.191940 403.115120  ] concat
+%I
+[
+(x)
+] Text
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-11-*-*-*-*-*-*-*
+/Times-Roman 11.016000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 57.371939 393.700112  ] concat
+%I
+[
+(2)
+] Text
+End
+
+Begin %I Text
+%I cfg Black
+0.000000 0.000000 0.000000 SetCFg
+%I f -*-times-medium-r-normal-*-18-*-*-*-*-*-*-*
+/Times-Roman 18.360000 SetF
+%I t
+[ 1.000000 0.000000 0.000000 1.000000 62.879939 403.115120  ] concat
+%I
+[
+( variable)
+] Text
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+102400 102605 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+104448 108543 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+106496 114681 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+108544 120810 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+110592 126924 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+112640 133018 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+114688 139087 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+116736 145127 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+118784 151133 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+120832 157099 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+122880 163021 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+124928 168894 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+126976 174712 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+129024 180472 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+131072 186168 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+133120 191795 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+135168 197349 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+137216 202823 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+139264 208214 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+141312 213517 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+143360 218726 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+145408 223837 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+147456 228845 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+149504 233745 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+151552 238531 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+153600 243200 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+155648 247746 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+157696 252164 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+159744 256449 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+161792 260597 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+163840 264602 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+165888 268459 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+167936 272164 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+169984 275712 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+172032 279098 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+174080 282317 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+176128 285363 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+178176 288233 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+180224 290921 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+182272 293422 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+184320 295731 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+186368 297844 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+188416 299755 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+190464 301460 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+192512 302953 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+194560 304230 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+196608 305286 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+198656 306116 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+200704 306715 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+202752 307078 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+204800 307200 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+206848 307078 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+208896 306715 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+210944 306116 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+212992 305286 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+215040 304230 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+217088 302953 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+219136 301460 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+221184 299755 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+223232 297844 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+225280 295731 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+227328 293422 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+229376 290921 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+231424 288233 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+233472 285363 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+235520 282317 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+237568 279098 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+239616 275712 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+241664 272164 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+243712 268459 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+245760 264602 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+247808 260597 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+249856 256449 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+251904 252164 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+253952 247746 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+256000 243200 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+258048 238531 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+260096 233745 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+262144 228845 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+264192 223837 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+266240 218726 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+268288 213517 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+270336 208214 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+272384 202823 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+274432 197349 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+276480 191795 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+278528 186168 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+280576 180472 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+282624 174712 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+284672 168894 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+286720 163021 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+288768 157099 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+290816 151133 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+292864 145127 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+294912 139087 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+296960 133018 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+299008 126924 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+301056 120810 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+303104 114681 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+305152 108543 1280 1280 Elli
+End
+
+Begin %I Elli
+%I b 65535
+1 0 0 [  ] 0 SetB
+%I cfg Red
+1.000000 0.000000 0.000000 SetCFg
+%I cbg White
+1.000000 0.625004 0.625004 SetCBg
+%I p
+0.750000 SetP
+%I t
+[0.001494 0.000000 0.000000 0.001494 0.000000 90.000000 ] concat
+%I
+307200 102605 1280 1280 Elli
+End
+
+End %I eop
+
+%%Trailer
+
+end
+showpage
+%%EOF

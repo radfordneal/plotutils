@@ -1,0 +1,127 @@
+# This is the top level make file for the GNU plot utilities.
+
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+
+VERSION = @VERSION@
+
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH  = @srcdir@
+
+SHELL = /bin/sh
+@SET_MAKE@
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+X_CFLAGS = @X_CFLAGS@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+LDFLAGS = @LDFLAGS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+XLIBS = @XLIBS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+LIBS = @LIBS@
+RANLIB = @RANLIB@
+NO_X = @no_x@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+includedir = @includedir@
+oldincludedir = @oldincludedir@
+
+MDEFINES = CC='$(CC)' CFLAGS='$(CFLAGS)' X_CFLAGS='$(X_CFLAGS)' \
+LDFLAGS='$(LDFLAGS)' X_LIBS="$(X_LIBS)" X_PRE_LIBS="$(X_PRE_LIBS)" \
+XLIBS="$(XLIBS)" X_EXTRA_LIBS="$(X_EXTRA_LIBS)" \
+LIBS='$(LIBS)' prefix='$(prefix)' exec_prefix='$(exec_prefix)' \
+bindir='$(bindir)' infodir='$(infodir)' libdir='$(libdir)' \
+includedir='$(includedir)' oldincludedir='$(oldincludedir)' \
+NO_X="$(NO_X)"
+
+standarddirs = libs getopt graph plot2dev double spline ode info include
+otherdirs =  tek2plot test
+
+default: all
+
+.PHONY: all install installdirs uninstall clean mostlyclean realclean distclean maintainer-clean TAGS check info dvi dist configure
+
+all uninstall:
+	for subdir in $(standarddirs);				\
+	do							\
+	  echo Making $@ in $${subdir} ;			\
+	  (cd $${subdir}; $(MAKE) $(MDEFINES) $@) || exit 1;	\
+	done
+
+install: installdirs
+	for subdir in $(standarddirs);				\
+	do							\
+	  echo Making $@ in $${subdir} ;			\
+	  (cd $${subdir}; $(MAKE) $(MDEFINES) $@) || exit 1;	\
+	done
+
+installdirs:
+	$(SHELL) $(srcdir)/mkdirs.sh $(bindir) $(infodir) $(libdir) \
+$(includedir)
+
+clean:
+	for subdir in $(standarddirs) $(otherdirs);		\
+	do							\
+	  echo Making $@ in $${subdir} ;			\
+	  (cd $${subdir}; $(MAKE) $(MDEFINES) $@) || exit 1;	\
+	done
+
+mostlyclean: clean
+
+distclean:
+	-rm -f *~ \#* config.cache config.cache config.h	\
+	config.log config.status
+	for subdir in $(standarddirs) $(otherdirs);		\
+	do							\
+	  echo Making $@ in $${subdir} ;			\
+	  (cd $${subdir}; $(MAKE) $(MDEFINES) $@) || exit 1;	\
+	done						
+	-rm -f Makefile 
+
+realclean:
+	-rm -f *~ \#* config.cache config.cache config.h	\
+	config.log config.status
+	for subdir in $(standarddirs) $(otherdirs);		\
+	do							\
+	  echo Making $@ in $${subdir} ;			\
+	  (cd $${subdir}; $(MAKE) $(MDEFINES) $@) || exit 1;	\
+	done						
+	-rm -f Makefile 
+
+maintainer-clean: realclean
+
+check: all
+	cd test; $(MAKE) test
+
+info:
+	cd $@; $(MAKE) $(MDEFINES)
+
+dvi:
+	cd info; $(MAKE) $(MDEFINES) dvi
+
+TAGS:
+	for dir in $(standarddirs);			\
+	do						\
+	  echo Making $@ in $${dir} ;			\
+	  (cd $${dir}; $(MAKE) $(MDEFINES) $@);		\
+	done
+
+dist: distclean
+#	cd ..; tar -czf plotutils-$(VERSION).tar.gz plotutils-$(VERSION)
+	cd ..; tar -czf plotutils-$(VERSION).tar.gz plotutils
+	mv ../plotutils-$(VERSION).tar.gz /usr/ftp/pub/
+	cd /usr/ftp/pub 
+	-rm -f plotutils.tar.gz
+	ln -s plotutils-$(VERSION).tar.gz plotutils.tar.gz
+
+configure: configure.in
+	cd $(srcdir) && autoconf

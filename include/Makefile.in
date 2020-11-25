@@ -1,0 +1,53 @@
+VERSION = @VERSION@
+
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH  = @srcdir@
+
+SHELL = /bin/sh
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+LDFLAGS = @LDFLAGS@
+RANLIB = @RANLIB@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+includedir = @includedir@
+oldincludedir = @oldincludedir@
+
+#----------------------------------------------------------------
+
+HEADER = plot.h
+
+all: $(HEADER)
+
+.PHONY: all install uninstall clean realclean distclean
+
+install:
+	$(INSTALL_DATA) $(srcdir)/$(HEADER) $(includedir)/$(HEADER)
+	$(top_srcdir)/mkdirs.sh $(includedir)
+	-if test "$(oldincludedir)" != ""; then \
+		$(INSTALL_DATA) $(srcdir)/$(HEADER) $(oldincludedir)/$(HEADER) ; \
+	fi
+
+uninstall:
+	-rm -f $(includedir)/$(HEADER)
+	-if test "$(oldincludedir)" != ""; then \
+		rm -f $(oldincludedir)/$(HEADER) ; \
+	fi
+
+clean:
+
+distclean: clean
+	-rm -f \#* *~ Makefile
+
+realclean: distclean
+
+TAGS: 

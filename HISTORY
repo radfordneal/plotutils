@@ -1,0 +1,54 @@
+Here is a summary of the early history of the GNU plotting utilities.
+
+Versions of `graph' and the plot filters existed in many early releases of
+Unix, going at least as far back as the Version 7 distribution from Bell
+Labs.  Supported devices in those days (c. 1980) included Versatec and
+Varian 200dpi electrostatic printer/plotters, Tektronix storage scopes, and
+early graphics terminals.
+
+Rich Murphey <rich@lamprey.utmb.edu> wrote the first GNU versions of graph,
+the plot and tek2plot filters, double and spline, and the documentation.
+Richard Stallman <rms@gnu.ai.mit.edu> further directed development of the
+programs and provided editorial support for the documentation.  John
+Interrante <interran@uluru.stanford.edu> generously provided the Postscript
+prologue now included in libplotps, and helpful comments.  The
+distribution, as it stood in 1991, was distributed under the name `GNU
+graphics'.
+
+In 1995 Robert Maier <rsm@math.arizona.edu> took over development of the
+package, and wrote the current, maximally device-independent, standalone
+versions of libplot.  He also rewrote `graph' from scratch, turning it into
+a real-time filter that would use the new libraries.  The idea of including
+scalable font support in libplot came from `axis', a much-hacked version of
+the Unix `graph' program which is popular in the physics community.  `axis'
+uses the character set of the Unified Graphics System [UGS], a system that
+was developed at the SLAC Computation Research Group by Robert C. Beach.
+The UGS character set includes many scalable Hershey glyphs and marker
+symbols (see ftp://ftp.slac.stanford.edu/software/ugs77/ ), so Robert Maier
+added the UGS marker symbols to `libplot', and then the entire library of
+Hershey glyphs.
+
+The Hershey glyphs (designed c. 1967 by Allen Hershey, who deserves a vote
+of thanks!) were assembled mostly from Pete Holzmann's distribution to
+Usenet (in vol. 4 of mod.sources).  Additional `extended Hershey' vector
+glyphs were taken from the freeware distribution of Thomas Wolff
+<wolff@inf.fu-berlin.de>, which is incorporated in Ghostscript, and a set
+of 13 Hershey fonts was constructed.  After the Hershey fonts were added,
+support for the 35 standard Postscript fonts was added as well, to
+libplotfig, libplotps, and libplotX.  Work on this had begun with Rich
+Murphey's work on `libps' (the ancestor of libplotps).  At that point, the
+support for drawing text strings became completely device-independent.
+
+Robert also rewrote `spline', adding support for periodicity and tension,
+and added support for being a real-time filter (using cubic Bessel
+interpolation).
+
+ode was originally developed by Nick Tufillaro <nbt@reed.edu> on a sequence
+of platforms that extended back to a PDP-11 running Version 4 Unix.  In
+1997 Robert modified Nick's 1994 version to agree with GNU conventions on
+coding and command-line parsing, and extended it to support the full set of
+special functions supported by gnuplot.  Nick kindly agreed to the
+inclusion of the modified version in the package.
+
+After all the above work, version 1.1 of the plotutils was released in 7/97.
+For later changes to the package, see the file NEWS.

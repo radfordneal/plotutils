@@ -1,0 +1,3 @@
+This directory holds generic routines that are part of more than one
+version of GNU libplot.  At build time, links to each of these files from
+at least two of the ../libplot* directories are created.

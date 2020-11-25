@@ -1,0 +1,137 @@
+The following table displays the encodings for the Japanese Kana, or
+syllabic characters (Hiragana and Katakana), which are built into GNU
+libplot.  They were digitized by Dr. Allen V. Hershey of the U.S. Naval
+Surface Weapons Center (Dahlgren, VA) in the mid-1960s.  For details, see
+his technical report "Calligraphy for Computers".  (Available from the
+U.S. National Technical Information Service at +1 703 487 4650; ask for
+item number AD662398.)
+
+These Kana are part of the HersheyEUC font, which is employed for drawing
+multibyte Japanese text strings.  But you may also use these Kana while
+drawing text strings in any other Hershey font, by inserting the
+appropriate escape sequences.
+
+There are 83 Hiragana (cursive characters) and 86 Katakana (block
+characters).  The Hiragana and Katakana are indexed in the table below as
+the bytes 0x21..0x73 and 0x21..0x76, respectively.  A transliteration of
+each Kana is included in the table.
+
+The indexing of the Kana is specified in the JIS X0208 standard.  Actually,
+in that standard the Hiragana appear as 0x2421..0x2473 and the Katakana
+appear as 0x2521..0x2576.  For full information on the JIS standard, see
+"Understanding Japanese Information Processing", by Ken Lunde (O'Reilly,
+1993).
+
+To draw Hiragana `a', indexed as 0x22 below, you would use the escape
+sequence "\#J2422".  To draw Katakana `a', you would use the escape
+sequence "\#J2522".  These escape sequences would be valid whenever the
+current font is a non-Japanese Hershey font.  By using the table below, you
+should find it easy to draw a phonetic representation of most Japanese
+words, syllable by syllable.
+
+You should be aware that in Japanese, many words are normally written with
+ideographic characters (Kanji) rather than Kana.  However, any Japanese
+word may be rendered (possibly inelegantly) in terms of Kana.  For example,
+"Mitsubishi" would be mi-tsu-bi-shi, i.e., "\#J245f\#J2444\#J2453\#J2437"
+in terms of Hiragana.
+
+You are cautioned that there are some special rules for combinations of
+sounds, e.g. consonant + diphthong.  The `small' Kana are used for such
+combinations.  Also, the `small tsu' Kana before a Kana beginning with the
+consonant k, s, t, or p is interpreted not as a syllable, but as a sign
+that that consonant should be doubled.
+
+
+Pos.  ASCII	Kana transliteration
+----  -----	--------------------
+
+0x21	!	a [small]
+0x22	"	a
+0x23	#	i [small]
+0x24	$	i
+0x25	%	u [small]
+0x26	&	u
+0x27	'	e [small]
+0x28	(	e
+0x29	)	o [small]
+0x2a	*	o
+0x2b	+	ka
+0x2c	,	ga
+0x2d	-	ki
+0x2e	.	gi
+0x2f	/	ku
+0x30	0	gu
+0x31	1	ke
+0x32	2	ge
+0x33	3	ko
+0x34	4	go
+0x35	5	sa
+0x36	6	za
+0x37	7	shi
+0x38	8	ji
+0x39	9	su
+0x3a	:	zu
+0x3b	;	se
+0x3c	<	ze
+0x3d	=	so
+0x3e	>	zo
+0x3f	?	ta
+0x40	@	da
+0x41	A	chi
+0x42	B	dji
+0x43	C	tsu [small]
+0x44	D	tsu
+0x45	E	dzu
+0x46	F	te
+0x47	G	de
+0x48	H	to
+0x49	I	do
+0x4a	J	na
+0x4b	K	ni
+0x4c	L	nu
+0x4d	M	ne
+0x4e	N	no
+0x4f	O	ha
+0x50	P	ba
+0x51	Q	pa
+0x52	R	hi
+0x53	S	bi
+0x54	T	pi
+0x55	U	fu
+0x56	V	bu
+0x57	W	pu
+0x58	X	he
+0x59	Y	be
+0x5a	Z	pe
+0x5b	[	ho
+0x5c	\	bo
+0x5d	]	po
+0x5e	^	ma
+0x5f	_	mi
+0x60	`	mu
+0x61	a	me
+0x62	b	mo
+0x63	c	ya [small]
+0x64	d	ya
+0x65	e	yu [small]
+0x66	f	yu
+0x67	g	yo [small]
+0x68	h	yo
+0x69	i	ra
+0x6a	j	ri
+0x6b	k	ru
+0x6c	l	re
+0x6d	m	ro
+0x6e	n	wa [small]
+0x6f	o	wa
+0x70	p	wi
+0x71	q	we
+0x72	r	wo
+0x73	s	n
+
+KATAKANA only:
+
+0x74	t	vu
+0x75	u	ka [small]
+0x76	v	ke [small]
+

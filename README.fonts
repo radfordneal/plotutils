@@ -1,0 +1,61 @@
+You will get the greatest value out of the plotutils package, when running
+under X Windows, if versions of the 35 standard Postscript fonts are
+available on your X server.  It is also best to have an X11R6 ("release 6") 
+X server, since X11R6 servers support arbitrary rotation and scaling of fonts.
+
+Actually, the X component of the plotutils package (e.g., `graph-X') is
+perfectly usable even with very old X servers.  For example, it runs under
+OpenWindows version 3 (the version of OpenWindows supplied with SunOS
+4.1.3), which does not support rotated fonts.  If your server does not, be
+sure to use the `--toggle-rotate-y-label' option if you are using `graph-X'
+to prepare a graph that has an ordinate label.  That will rotate the
+ordinate label back to the old-fashioned (horizontal) orientation.
+
+Many X servers (for example, many releases of XFree86 for Linux) do not
+support the 35 standard Postscript fonts, or support only a proper subset.
+However, many X servers support Type 1 fonts, and if so, there is nothing
+to stop you from buying Type 1 versions of the 35 standard Postscript fonts
+from Adobe, and installing them.  There is an even easier option: you may
+install the cloned versions in the subdirectory ./fonts/pfb, which were
+designed by URW GmBH of Germany and contributed for distribution under the
+GNU License.  To do this, you must have an X server that supports Type 1
+fonts (XFree86 for Linux is one of them; the abovementioned ancient
+OpenWindows server is not, but it already supports the 35 standard
+Postscript fonts).
+
+To install the 35 Postscript fonts on a system whose X server supports 
+Type 1 fonts, first locate the directory on your system in which Type 1 fonts
+are stored (it will probably be /usr/lib/X11/fonts/Type1).  Copy the 35
+font files in ./fonts/pfb to that directory.  There should be a file named
+`fonts.scale' in that directory, which lists the fonts the X server can
+use.  To let the server know about the new font files, copy the lines in
+the file ./fonts/fonts.append to the end of the fonts.scale file, and
+correct the first line of the fonts.scale file (a count of the number of
+fonts) by adding 35 to it.  Then, while in that directory, run the
+`mkfontdir' program.  The `mkfontdir' program creates a file called
+fonts.dir, which is what the X server will read.  If the X server is
+currently running, you should also do `xset fp rehash' to make the server
+re-scan the directory.  That's all there is to it; for more advice, consult
+your local X Windows guru.
+
+Once you have installed the 35 Postscript fonts, if you have a copy of the
+`xfig' drawing editor and are using it, you should recompile it to take
+advantage of the entire suite of fonts.  As distributed, recently releases
+of xfig (up to version 3.2, at least) substitute Times for Bookman,
+Helvetica for Helvetica Narrow, Lucida Bright for Palatino, and Schumacher
+Clean for Avant Garde.  Removing these substitutions can be accomplished by
+recompiling, if you replace the file u_fonts.c in the xfig distribution by
+the modified version ./fonts/u_fonts.c.  The recompiled version of xfig
+will take advantage of the new fonts.  The modified version of u_fonts.c
+which we supply should work with xfig versions 3.1 and 3.2, at least.
+
+If you plan to use the tek2plot filters (an optional part of the plotutils
+package, not made or installed unless requested), you may also wish to
+install the X Windows bitmap fonts in ./fonts/pcf.  The four font files
+`tekfont0.pcf' through `tekfont3.pcf' are bitmap fonts that are believed to
+be those used on the original Tektronix 4010/4014.  The tek2X program will
+use them if you specify the `--use-tek-fonts' options.  For this to work
+properly, you must also select a canvas size of 1024x1024 pixels, by
+specifying the Xplot.geometry resource in your .Xdefaults file.  The reason
+is that bitmapped fonts, unlike Type 1 and Hershey fonts, may not be
+rescaled.

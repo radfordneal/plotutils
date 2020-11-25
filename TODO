@@ -1,0 +1,113 @@
+For Version 1.x
+-----------------------
+
+graph parsing: allow all command-line options in data files; why are two
+^d's currently needed to terminate datapoint input from commandline?
+
+libplotX needs interactivity (e.g. getloc()), during openpl()...closepl().
+
+--color1 etc. options for graph.
+
+Hershey fonts:
+1. add cedilla; also embolden `times', > , < , etc.
+2. Add support for Hershey indexical positioning on baseline?
+3. line segments in Hershey glyphs should be brushed (with a brush of
+	positive radius) rather than stroked (with a brush of positive
+	width but zero length)
+4. Invert `glaze' glyph for EUC, also `therefore'
+
+documentation: add demos illustrating use of libplot (Hershey display; also
+recursive drawing)
+
+add copyright notices (and authorship) to each file
+
+graph: fix positioning of (top) labels, especially at large sizes
+
+graph: need better clipping for filled regions (present gnuplot-style
+clipping scheme is right for unfilled regions but wrong for filled ones)
+
+spline, double: should ignore comment lines in ascii input (cf. graph)
+
+For tek2plot, incorporate Tek state machine 
+
+Add THANKS file: Thanks to all the people who have fixed or reported bugs
+	in the plotutils package:
+Name	what
+
+======================================================================
+
+For Versions 2.x
+----------------------------
+
+libplot: need `libplotall' merged library, supporting multiple handles
+i.e. multiple open devices (`workstations')
+
+graph: Write alternative parser for interactive version (gnuplot replacement).
+
+libplot: add the display list concept (would facilitate addition of
+compound objects), redo devices as structures (cf. xgraph)
+Once display list is there, support zooming in libplotX [PS output
+via buttons?].  Add a `close window' button instead of closing by
+a single mouse click.
+
+Internationalization
+
+spline: need to be able to compute n-D splines, w/ each component a spline
+under tension as function of polygonal arc length parameter (Cline
+approach).  Must support closed curves.  Too hard to use a sophisticated
+`nonlinear spline' approach (see 1997 CAGD paper).
+
+Break out spline() as subroutine(s), cf. fitpack?  Similarly with plot
+frame / axis drawing.  For this, check into NCAR Graphics package,
+`autograph' routines; need contouring routines or app also
+
+\mk..\rt etc. should be stack machine; include overline, underline, radical
+etc.
+
+graph: should support 3 kinds of curve (open or closed): polyline,
+poly-parabola, i.e. quadratic spline, poly-quarter-ellipse.  Requires
+new `spline objects'.
+
+spline the Hershey fonts (also distinguish closed polygonal lines to
+a greater extent than at present)
+
+libplot: better clipping (user sets viewport in NCD space?)
+
+merge in hp2xx
+
+libplot: write a version producing a bitmap format (e.g. PBM); use new
+freeware rasterizer for type 1 fonts
+
+Adobe Illustrator format (libplotai), libplothpgl, libplotpbm; also
+libplotall.
+
+Rationalize metafile format choice (single external variable)
+
+libplot: add support for raster objects; also compound objects
+
+ode: extend parser to plot functions as well as solve differential equations
+
+graph: add environment variables GRAPHCOLOR0 etc. for selecting 5-color
+palette (and monochrome color)
+
+ode: need popen() for output; cf. gnuplot
+
+graph: add `boxes', `steps', `impulses', `bars' plot types (as in gnuplot).
+Boxes, bars should properly support --fill-fraction option.
+
+graph: add gnuplot-style `key', maybe arbitrarily positioned arrows, text
+strings also
+
+Write a sort of pic2plot.c, which could be linked with libplot to yield
+pic2fig, pic2ps, pic2X, etc.
+
+graph: add support for polar/spherical plots, 3-D (surface) plotting
+
+spline: add support for smoothing splines as well as interpolatory splines?
+
+Other needed math software:
+
+	fitting capability
+	contour plotting via level curves; also compute enclosed area
+	surface plotting	(cf. IDL for plotting and contouring)
+

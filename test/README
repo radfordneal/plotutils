@@ -1,0 +1,10 @@
+This directory contains the files needed for validation tests of several of
+the plot utilities.  The tests are run by doing `make check' in the
+top-level directory, or by doing `make test' in this directory.
+
+There are a couple of additional tests you can run; see the instructions at
+the head of the Makefile.
+
+Validation tests on NeXT machines have been known to fail for innocuous
+reasons (incorrect formatting of floating-point numbers).  If any of the
+tests should fail on any other system, please report it.

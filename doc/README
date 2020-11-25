@@ -1,0 +1,29 @@
+This directory contains supplementary documentation on the plotting
+utilities, in ASCII format.  (The main documentation is supplied in texinfo
+format, in the directory ../info.)  
+
+
+	./colors.txt: A listing of the color names recognized by libplot,
+		and hence by the plotting utilities.  An RGB representation
+		for each color is given.
+
+    The following files deal with the Hershey glyphs built into libplot.
+
+	./hershey-numbering: A discussion of the indexing schemes used in
+		the various public distributions of the Hershey glyphs.
+	
+	./hershey.bib: A bibliography, in BibTeX format, of publications
+		dealing with the Hershey glyphs and with Allen Hershey's
+		system for scientific typography, which was designed to work
+		with them.  Most cited items are technical reports that
+		are available from the U.S. National Technical Information
+		Service (+1 703 487 4650); stock numbers are given.
+	
+	./hershey.doc: A breakdown of the `occidental' Hershey glyphs, 
+		by number.
+	
+	./kana.doc: The encodings used for the Hershey Hiragana and Katakana
+		(syllabic Japanese characters).
+	
+	./kanji.doc: The encoding of the 603 available Japanese Kanji
+		(ideographic characters), and their meaning.

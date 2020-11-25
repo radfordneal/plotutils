@@ -1,0 +1,81 @@
+This is release 1.3 of the GNU plotutils (plotting utilities) package,
+including GNU libplot: a function library for 2-D device-independent vector
+graphics.  The file CONTENTS lists the contents of the package.  Please
+send bug reports and feedback on the package (suggestions for improvements,
+etc.) to the principal author and current maintainer, Robert Maier
+<rsm@math.arizona.edu>.
+
+For information on installing this software on your system, first glance
+through the generic installation instructions in the file INSTALL.  On most
+systems, the installation process is simple.  You build the package by
+typing `./configure' and then `make'.  To install the package, you then
+type `make install'.  A documentation file, in `info' format, is produced
+and installed as part of this process.  You may also produce a copy of the
+documentation for the package, in dvi format, by typing `make dvi'.  This
+assumes that you have the TeX document formatter installed.
+
+By default, the installation process installs the file `plot.h' in
+/usr/include, a system directory that some people do not like to install
+files in.  To avoid this, you may wish to begin by doing 
+`./configure --oldincludedir=""' instead of `./configure'.
+
+On Silicon Graphics systems running Irix 6.x, when you build the package
+you may possibly get messages about `GP overflow'.  If so, you should do
+`make CFLAGS="-O -multigot"' instead of just `make'.
+
+One common problem related to the X Window System should be mentioned.
+Some machines have the X Window System, but provide Motif widgets instead
+of Athena widgets.  On such machines (e.g. Hewlett-Packard workstations
+running HP/UX, and some IBM workstations) you should do 
+`./configure --with-motif' instead of just `./configure' to ensure that 
+the software is configured correctly.
+
+Note that many systems with Motif also have Athena widgets, but have them
+in nonstandard places.  On such systems, `./configure --with-motif' may be
+the best thing to do.
+
+Older Hewlett-Packard workstations, running HP/UX 9.xx or earlier, require
+special treatment.  They have Motif widgets, but the location of the Motif
+files must be specified explicitly.  On such machines you should do
+
+	make CFLAGS="-O -I/usr/include/Motif1.2 -L/usr/lib/Motif1.2"
+
+rather than just `make'.
+
+Some older Sun workstations [running SunOS 4.1.3, with OpenWindows and cc
+rather than gcc] have a different X-related problem.  On such machines, you
+may need to do
+
+	make XLIBS="-lXaw -Bstatic -lXmu -Bdynamic -lXt -lXext -lX11"
+
+rather than just `make', to work around a problem with undefined symbols in
+the X Window System libraries.  This assumes that your `make' program
+allows the values of variables to be specified on the command line.
+
+If you simply can't successfully build the programs that use the X Window
+System, you should do `./configure --without-x' instead of `./configure'.
+
+To make maximum use of the X Window System support in this package, you
+will need to have the 35 standard Postscript fonts installed on your X
+server.  For instructions on installing Type 1 versions of these fonts,
+clones of which are included in the package, see the file ./README.fonts.
+
+Also, to make maximum use of the support for the `xfig' drawing editor, you
+need to make a small change to the source for `xfig', and recompile it.
+(The change makes it use the full set of standard Postscript fonts.)  For
+this too, see the file ./README.fonts.
+
+By default, this package includes support for drawing Japanese Kanji
+(ideographic characters).  A library of 603 Kanji is available; for
+details, see the file ./doc/kanji.doc.  Including this library will add
+approximately 100 kilobytes to the length of each relevant binary.  If you
+wish to omit Kanji support, you should compile the package by doing 
+`make CFLAGS="-O -DNO_KANJI"' instead of just `make'.  If this is done, 
+you will still be able to use Japanese Hiragana and Katakana 
+(syllabic characters).  See the file ./doc/kana.doc.
+
+The INSTALL file recommends that you do `make check' to run validation
+tests on the plotting utilities.  Validation tests on NeXT machines have
+been known to fail for more or less innocuous reasons (incorrect formatting
+of floating-point numbers).  If any of the validation tests should fail on
+any other system, please report it.

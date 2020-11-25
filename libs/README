@@ -1,0 +1,7 @@
+The subdirectories of this directory contain the source for the several
+version of GNU libplot: libplotX, libplotps, libplotfig, libplottek, and
+raw libplot.
+
+Each file in the subdirectory `common' is part of more than one library.
+Links are made to the files in `common' at compile time, and they are
+removed when you do a `make clean'.
