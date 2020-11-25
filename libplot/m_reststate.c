@@ -5,7 +5,6 @@
    stack by invoking the savestate routine. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,14 +20,8 @@ _m_restorestate()
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c\n", 
-		 (int)O_RESTORESTATE);
-      else
-	putc ((int)O_RESTORESTATE, _plotter->outstream);
-    }
+  _meta_emit_byte ((int)O_RESTORESTATE);
+  _meta_emit_terminator ();
 
   /* invoke generic method */
   return _g_restorestate ();

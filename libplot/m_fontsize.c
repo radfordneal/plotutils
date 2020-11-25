@@ -17,7 +17,6 @@
    space() routine.  */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -36,17 +35,9 @@ _m_fontsize (size)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d\n", 
-		 (int)O_FONTSIZE, size);
-      else
-	{
-	  putc ((int)O_FONTSIZE, _plotter->outstream);
-	  _emit_integer (size);
-	}
-    }
+  _meta_emit_byte ((int)O_FONTSIZE);
+  _meta_emit_integer (size);
+  _meta_emit_terminator ();
   
   /* invoke generic method to retrieve font, set font size in drawing state
      so that labelwidth() computations will work */
@@ -69,17 +60,9 @@ _m_ffontsize (size)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g\n", 
-		 (int)O_FONTSIZE, size);
-      else
-	{
-	  putc ((int)O_FFONTSIZE, _plotter->outstream);
-	  _emit_float (size);
-	}
-    }
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_FONTSIZE : (int)O_FFONTSIZE);
+  _meta_emit_float (size);
+  _meta_emit_terminator ();
   
   /* invoke generic method to retrieve font, set font size in drawing state
      so that labelwidth() computations will work */

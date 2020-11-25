@@ -1,5 +1,4 @@
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* bit fields for return value from Cohen-Sutherland clipper */
@@ -9,7 +8,7 @@ enum { ACCEPTED = 0x1, CLIPPED_FIRST = 0x2, CLIPPED_SECOND = 0x4 };
 enum { TOP = 0x1, BOTTOM = 0x2, RIGHT = 0x4, LEFT = 0x8 };
 
 /* forward references */
-static int _compute_outcode __P ((double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip));
+static int _compute_outcode ____P ((double x, double y, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip));
 
 /* _clip_line() takes two points, the endpoints of a line segment in the
  * device frame (expressed in terms of floating-point device coordinates),
@@ -39,7 +38,7 @@ _clip_line (x0_p, y0_p, x1_p, y1_p, x_min_clip, x_max_clip, y_min_clip, y_max_cl
   outcode0 = _compute_outcode (x0, y0, x_min_clip, x_max_clip, y_min_clip, y_max_clip);
   outcode1 = _compute_outcode (x1, y1, x_min_clip, x_max_clip, y_min_clip, y_max_clip);  
 
-  do
+  for ( ; ; )
     {
       if (!(outcode0 | outcode1)) /* accept */
 	{
@@ -92,7 +91,6 @@ _clip_line (x0_p, y0_p, x1_p, y1_p, x_min_clip, x_max_clip, y_min_clip, y_max_cl
 	    }
 	}
     }
-  while (true);
 
   if (accepted)
     {

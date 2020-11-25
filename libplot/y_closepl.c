@@ -1,11 +1,14 @@
-/* This file contains the openpl method, which is a standard part of
-   libplot.  It opens a Plotter object. 
+/* This file contains the closepl method, which is a standard part of
+   libplot.  It closes a Plotter object. */
 
-   This implementation is for XDrawablePlotters. */
+/* This version is for XPlotters. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>		/* for fork() */
+#endif
 
 int
 #ifdef _HAVE_PROTOS
@@ -14,6 +17,12 @@ _y_closepl (void)
 _y_closepl ()
 #endif
 {
+  Colorrecord *cptr;
+  Fontrecord *fptr;
+  Pixmap bg_pixmap = (Pixmap)0;
+  int window_width, window_height;
+  pid_t forkval;
+
   if (!_plotter->open)
     {
       _plotter->error ("closepl: invalid operation");
@@ -22,33 +31,116 @@ _y_closepl ()
 
   _plotter->endpath (); /* flush polyline if any */
 
-  /* Xdrawable Plotters support double buffering `by hand', so check for it */
+  /* compute rectangle size; note flipped-y convention */
+  window_width = (_plotter->imax - _plotter->imin) + 1;
+  window_height = (_plotter->jmin - _plotter->jmax) + 1;
 
-  if (_plotter->double_buffering == DBL_BY_HAND)
-    /* copy final frame of buffered graphics from pixmap serving as
-       graphics buffer, to window */
+  /* if either sort of server-supported double buffering is being used,
+     create background pixmap for Label widget (it doesn't yet have one) */
+  if (_plotter->x_double_buffering == DBL_MBX
+      || _plotter->x_double_buffering == DBL_DBE)
     {
-      /* compute rectangle size; note flipped-y convention */
-      int window_width = (_plotter->imax - _plotter->imin) + 1;
-      int window_height = (_plotter->jmin - _plotter->jmax) + 1;
-      
-      if (_plotter->drawable1)
-	XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable1,
-		   _plotter->drawstate->gc_bg,		   
-		   0, 0,
-		   (unsigned int)window_width, (unsigned int)window_height,
-		   0, 0);
-      if (_plotter->drawable2)
-	XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable2,
-		   _plotter->drawstate->gc_bg,		   
-		   0, 0,
-		   (unsigned int)window_width, (unsigned int)window_height,
-		   0, 0);
-      
-      /* no more need for pixmap, so free it (if there is one) */
-      if (_plotter->drawable1 || _plotter->drawable2)
-	XFreePixmap (_plotter->dpy, _plotter->drawable3);
+      int screen;		/* screen number */
+      Screen *screen_struct;	/* screen structure */
+
+      screen = DefaultScreen (_plotter->x_dpy);
+      screen_struct = ScreenOfDisplay (_plotter->x_dpy, screen);
+      bg_pixmap = XCreatePixmap(_plotter->x_dpy, 
+				_plotter->x_drawable2,
+				(unsigned int)window_width, 
+				(unsigned int)window_height, 
+				(unsigned int)PlanesOfScreen(screen_struct));
+
+      /* copy from off-screen graphics buffer to pixmap */
+      XCopyArea (_plotter->x_dpy, _plotter->x_drawable3, bg_pixmap,
+		 _plotter->drawstate->x_gc_bg,		   
+		 0, 0,
+		 (unsigned int)window_width, (unsigned int)window_height,
+		 0, 0);
+
+      /* pixmap is installed below as background pixmap for Label widget */
     }
+  
+  /* If double buffering, must make final frame of graphics visible, by
+     copying it from our off-screen graphics buffer `x_drawable3' to window.
+     There are several types of double buffering: the two server-supported
+     types, and the `by hand' type. */
+
+#ifdef HAVE_X11_EXTENSIONS_XDBE_H
+#ifdef HAVE_DBE_SUPPORT
+  if (_plotter->x_double_buffering == DBL_DBE)
+    /* we're using the X double buffering extension; off-screen graphics
+       buffer `x_drawable3' is a back buffer */
+    {
+      XdbeSwapInfo info;
+      
+      /* make final frame of graphics visible by interchanging front and
+         back buffers one last time */
+      info.swap_window = _plotter->x_drawable2;
+      info.swap_action = XdbeUndefined;
+      XdbeSwapBuffers (_plotter->x_dpy, &info, 1);
+
+      /* free the back buffer */
+      XdbeDeallocateBackBufferName (_plotter->x_dpy, _plotter->x_drawable3);
+    }
+#endif /* HAVE_DBE_SUPPORT */
+#endif /* HAVE_X11_EXTENSIONS_XDBE_H */
+
+#ifdef HAVE_X11_EXTENSIONS_MULTIBUF_H
+#ifdef HAVE_MBX_SUPPORT
+  if (_plotter->x_double_buffering == DBL_MBX)
+    /* we're using the X multibuffering extension; off-screen graphics
+       buffer `x_drawable3' is a non-displayed multibuffer */
+    {
+      /* make final frame of graphics visible by making the multibuffer
+	 into which we're currently drawing the on-screen multibuffer */
+      XmbufDisplayBuffers (_plotter->x_dpy, 1, &(_plotter->x_drawable3), 0, 0);
+    }
+#endif /* HAVE_MBX_SUPPORT */
+#endif /* HAVE_X11_EXTENSIONS_MULTIBUF_H */
+
+  /* if either sort of server-supported double buffering is being used,
+     install the above-created pixmap as background pixmap for the Label
+     widget to use, once the window has been spun off */
+  if (_plotter->x_double_buffering == DBL_MBX
+      || _plotter->x_double_buffering == DBL_DBE)
+    {
+      Arg wargs[10];		/* werewolves */
+
+      /* install pixmap as Label widget's background pixmap */
+#ifdef USE_MOTIF
+      XtSetArg (wargs[0], XmNlabelPixmap, (Pixmap)bg_pixmap);
+      XtSetArg (wargs[1], XmNlabelType, XmPIXMAP);
+      XtSetValues (_plotter->y_canvas, wargs, (Cardinal)2);
+#else
+      XtSetArg (wargs[0], XtNbitmap, (Pixmap)bg_pixmap);
+      XtSetValues (_plotter->y_canvas, wargs, (Cardinal)1);
+#endif
+    }
+  
+  if (_plotter->x_double_buffering == DBL_BY_HAND)
+    /* we're double buffering _manually_, rather than using either X11
+       protocol extension, so our off-screen graphics buffer `x_drawable3' is
+       an ordinary pixmap */
+	{
+	  /* make final frame of graphics visible by copying from pixmap to
+             window */
+	  XCopyArea (_plotter->x_dpy, _plotter->x_drawable3, _plotter->x_drawable2,
+		     _plotter->drawstate->x_gc_bg,		   
+		     0, 0,
+		     (unsigned int)window_width, (unsigned int)window_height,
+		     0, 0);
+	}
+
+  /* Finally: if we're not double buffering at all, we copy our off-screen
+     graphics buffer to the window.  The off-screen graphics buffer is just
+     the Label widget's background pixmap, `x_drawable1'. */
+  if (_plotter->x_double_buffering == DBL_NONE)
+    XCopyArea (_plotter->x_dpy, _plotter->x_drawable1, _plotter->x_drawable2,
+	       _plotter->drawstate->x_gc_bg,		   
+	       0, 0,
+	       (unsigned int)window_width, (unsigned int)window_height,
+	       0, 0);
 
   /* pop drawing states in progress, if any, off the stack */
   if (_plotter->drawstate->previous != NULL)
@@ -57,26 +149,192 @@ _y_closepl ()
 	_plotter->restorestate();
     }
   
-  /* remove zeroth drawing state too, so we can start afresh */
-  
-  /* elements of state that are strings etc. are freed separately */
-  free (_plotter->drawstate->line_mode);
-  free (_plotter->drawstate->join_mode);
-  free (_plotter->drawstate->cap_mode);
-  free (_plotter->drawstate->font_name);
-  /* free graphics contexts, if we have them -- and to have them, must have
-     at least one drawable (see x_savestate.c) */
-  if (_plotter->drawable1 || _plotter->drawable2)
+  /* following two deallocations (of font records and color cell records)
+     arrange things so that when drawing the next page of graphics, which
+     will require another connection to the X server, the Plotter will
+     start with a clean slate */
+
+  /* Free font records from Plotter's cache list.  This involves
+     deallocating the font name and also the XFontStruct contained in each
+     record, if non-NULL.  (NULL indicates that the font could not be
+     retrieved.)  */
+  fptr = _plotter->x_fontlist;
+  _plotter->x_fontlist = NULL;
+  while (fptr)
     {
-      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fg);
-      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fill);
-      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_bg);
+      Fontrecord *fptrnext;
+
+      fptrnext = fptr->next;
+      free (fptr->name);
+      if (fptr->x_font_struct)
+	XFreeFont (_plotter->x_dpy, fptr->x_font_struct);
+      free (fptr); 
+      fptr = fptrnext;
     }
+
+  /* Free cached color cells from Plotter's cache list.  Do _not_ ask the
+     server to deallocate the cells themselves; just free local storage. */
+  cptr = _plotter->x_colorlist;
+  _plotter->x_colorlist = NULL;
+  while (cptr)
+    {
+      Colorrecord *cptrnext;
+
+      cptrnext = cptr->next;
+      free (cptr); 
+      cptr = cptrnext;
+    }
+
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
+
+  /* flush out the X output buffer; wait till all requests have been
+     received and processed by server */
+  _plotter->flushpl ();
+
+  /* flush output streams for all Plotters before forking */
+  _flush_plotter_outstreams();
   
-  free (_plotter->drawstate);
-  _plotter->drawstate = (State *)NULL;
-  
-  _plotter->open = false;	/* flag Plotter as closed */
-  
-  return 0;
+  /* DO IT */
+  forkval = fork ();
+  if ((int)forkval > 0		/* fork succeeded, and we're the parent */
+      || (int)forkval < 0)	/* fork failed */
+    {
+      int retval = 0;
+
+      if ((int)forkval < 0)
+	_plotter->error ("couldn't fork process");	
+
+      /* Close connection to X display associated with window that the
+	 child process should manage, i.e. with the last openpl() invoked
+	 on this Plotter. */
+      if (close (ConnectionNumber (_plotter->x_dpy)) < 0
+	  && errno != EINTR)
+	/* emphatically shouldn't happen */
+	{
+	  _plotter->error ("couldn't close connection to X display");
+	  retval = -1;
+	}
+
+      if ((int)forkval > 0)
+	/* there's a child process, so save its pid */
+	{
+	  if (_plotter->y_num_pids == 0)
+	    _plotter->y_pids = (pid_t *)_plot_xmalloc (sizeof (pid_t));
+	  else
+	    _plotter->y_pids = 
+	      (pid_t *)_plot_xrealloc (_plotter->y_pids,
+				       (unsigned int)((_plotter->y_num_pids +1)
+						      * sizeof (pid_t)));
+	  _plotter->y_pids[_plotter->y_num_pids] = forkval;
+	  _plotter->y_num_pids++;
+	}
+      
+      /* remove zeroth drawing state too, so we can start afresh */
+      
+      /* elements of state that are strings etc. are freed separately */
+      free (_plotter->drawstate->line_mode);
+      free (_plotter->drawstate->join_mode);
+      free (_plotter->drawstate->cap_mode);
+      free (_plotter->drawstate->font_name);
+
+      /* free graphics contexts, if we have them -- and to have them, must
+	 have at least one drawable (see x_savestate.c) */
+      if (_plotter->x_drawable1 || _plotter->x_drawable2)
+	{
+	  XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fg);
+	  XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fill);
+	  XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_bg);
+	}
+
+      free (_plotter->drawstate);
+      _plotter->drawstate = (pl_DrawState *)NULL;
+      
+      _plotter->open = false;	/* flag Plotter as closed */
+
+      return retval;
+    }
+
+  else		/* forkval = 0; fork succeeded, and we're the child */
+    {
+      bool need_redisplay = false;
+      int i;
+
+      /* set the data in y_openpl.c (with file scope) that will be used for
+	 quitting, when `q' is typed (or mouse is clicked) */
+      _y_set_data_for_quitting ();
+
+      /* Close all connections to X display other than our own, i.e., close
+	 all connections that other XPlotters may have been using. */
+      for (i = 0; i < _xplotters_len; i++)
+	if (_xplotters[i] != NULL
+	    && _xplotters[i] != _plotter
+	    && _xplotters[i]->opened
+	    && _xplotters[i]->open
+	    && close (ConnectionNumber (_xplotters[i]->x_dpy)) < 0
+	    && errno != EINTR)
+	  /* shouldn't happen */
+	  _plotter->error ("couldn't close connection to X display");
+
+      /* Repaint by sending an expose event to ourselves, copying the Label
+	 widget's background pixmap into its window.  This is a good idea
+	 because the window could have been resized during the
+	 openpl..closepl.  We don't do this if not double buffering (and
+	 presumably animating), unless the window size has changed since
+	 openpl was invoked (repainting makes the window flash, possibly
+	 irritating users). */
+      if (_plotter->x_double_buffering != DBL_NONE)
+	need_redisplay = true;
+      else
+	{
+	  Arg wargs[2];		/* werewolves */
+	  Dimension window_height, window_width;
+
+#ifdef USE_MOTIF
+	  XtSetArg (wargs[0], XmNwidth, &window_width);
+	  XtSetArg (wargs[1], XmNheight, &window_height);
+#else
+	  XtSetArg (wargs[0], XtNwidth, &window_width);
+	  XtSetArg (wargs[1], XtNheight, &window_height);
+#endif
+	  XtGetValues (_plotter->y_canvas, wargs, (Cardinal)2);
+	  if ((_plotter->imax + 1 != (int)window_width)
+	      || (_plotter->jmin + 1 != (int)window_height))
+	    /* window changed size */
+	    need_redisplay = true;
+	}
+
+      /* turn off backing store (if used); when we send the expose event to
+	 ourselves we want to repaint from the background pixmap, NOT from
+	 the server's backing store */
+      {
+	XSetWindowAttributes attributes;
+	unsigned long value_mask;
+	
+	attributes.backing_store = NotUseful;
+	value_mask = CWBackingStore;
+	XChangeWindowAttributes (_plotter->x_dpy, (Window)_plotter->x_drawable2, 
+				 value_mask, &attributes);
+      }
+
+      if (need_redisplay)
+	/* send expose event to ourselves */
+	XClearArea (_plotter->x_dpy, 
+		    (Window)_plotter->x_drawable2, 
+		    0, 0, 
+		    (unsigned int)0, (unsigned int)0, 
+		    True);
+      
+      _plotter->open = false;	/* flag Plotter as closed */
+      
+      /* Manage the window.  We won't get any events associated with other
+	 windows i.e. with previous invocations of openpl..closepl on this
+	 Plotter, or with other Plotters, since we have our own application
+	 context. */
+      XtAppMainLoop (_plotter->y_app_con); /* shouldn't return */
+
+      /* NOTREACHED */
+      exit (EXIT_FAILURE);
+    }
 }

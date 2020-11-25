@@ -1,28 +1,29 @@
 /* This file contains the space method, which is a standard part of
    libplot.  It sets the mapping from user coordinates to display
    coordinates.  On the display device, the drawing region is a fixed
-   square.  The arguments to the space method are the lower left and upper
-   right vertices of a `window' (a drawing rectangle), in user coordinates.
-   This window, whose axes are aligned with the coordinate axes, will be
-   mapped affinely onto the square on the display device.
+   rectangle (usually a square).  The arguments to the space method are the
+   lower left and upper right vertices of a `window' (a drawing rectangle),
+   in user coordinates.  This window, whose axes are aligned with the
+   coordinate axes, will be mapped affinely onto the drawing region on the
+   display device.
 
    This file also contains the space2 method, which is a GNU extension to
    libplot.  The arguments to the space2 method are the vertices of an
    `affine window' (a drawing parallelogram), in user coordinates.  (The
    specified vertices are the lower left, the lower right, and the upper
-   left.)  This window will be mapped affinely onto the square on the
-   display device.
+   left.)  This window will be mapped affinely onto the drawing region on
+   the display device.
 
    Invoking space (or space2, etc.) causes the default line width and
    default font size, as expressed in user units, to be recomputed.  That
    is because those two quantities are specified as a fraction of the size
    of the physical display: in device terms, rather than in terms of user
    units.  The idea is that no matter what the arguments of space (etc.)
-   were, switching to the default line width or default font size should
-   yield something reasonable. */
+   were, switching to the default line width or default font size, by
+   e.g. passing an out-of-bounds argument to linewidth() or fontsize(),
+   should yield something reasonable. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* potential roundoff error (absolute, for defining boundary of display) */
@@ -45,7 +46,7 @@ _g_fspace2 (x0, y0, x1, y1, x2, y2)
   double s[6], t[6];
   double v0x, v0y, v1x, v1y, v2x, v2y;
   double cross;
-  double norm;
+  double norm, min_sing_val, max_sing_val;
   double device_x_left, device_x_right, device_y_bottom, device_y_top;
 
   if (!_plotter->open)
@@ -86,7 +87,8 @@ _g_fspace2 (x0, y0, x1, y1, x2, y2)
      device frame (the square [0,1]x[0,1] in the NCD frame is mapped to the
      ``graphics display'' [a specified square region in device space]). */
 
-  if (_plotter->bitmap_device)
+  if (_plotter->integer_device_coors)
+    /* a bitmap device */
     {
       /* test whether flipped-y convention is used */
       double sign = (_plotter->jmin < _plotter->jmax ? 1.0 : -1.0);
@@ -157,23 +159,32 @@ _g_fspace2 (x0, y0, x1, y1, x2, y2)
   
   /* Compute matrix norm of linear transformation appearing in the affine
      map from the user frame to the NCD frame. */
-  norm = _matrix_norm (s);
+
+  /* This minimum singular value isn't really the norm.  But it's the
+     nominal device-frame line width divided by the actual user-frame
+     line-width (see g_linewidth.c), and that's what we need. */
+  _matrix_sing_vals (s, &min_sing_val, &max_sing_val);
+  norm = min_sing_val;
 
   /* First, compute default line width and font size.  The default values
      will later be switched to if the user calls linewidth() or fontsize()
      with out-of-bound arguments. */
 
-  _plotter->drawstate->default_line_width 
-    = DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_WIDTH / norm;
+  if (_plotter->display_type == DISP_INTEGER)
+    /* use `zero width' (Bresenham) lines */
+    _plotter->drawstate->default_line_width = 0.0;
+  else
+    _plotter->drawstate->default_line_width 
+      = DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE / norm;
+
   _plotter->drawstate->default_font_size
-    = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_WIDTH / norm;
+    = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE / norm;
 
   /* We want to maintain backwards compatibility with traditional libplot,
      where the user is not required to make initial calls to linewidth()
      and fontsize(), but is required to make a single initial call to
-     space().  So when the user first calls space() [or space2() or
-     fspace() or fspace2()], we set the line width and font size to the
-     default values.
+     space().  So when this function is called for the first time, we set
+     the line width and font size to the just-computed default values.
 
      On later invocations, we update the device-frame line width, but we
      don't invoke the retrieve_font operation to update the device-frame

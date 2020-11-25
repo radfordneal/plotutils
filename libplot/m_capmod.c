@@ -3,7 +3,6 @@
    subsequent lines and polylines. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -14,26 +13,14 @@ _m_capmod (s)
      const char *s;
 #endif
 {
-  char *nl;
-
   if (!_plotter->open)
     {
       _plotter->error ("capmod: invalid operation");
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      /* null pointer handled specially */
-      if (s == NULL)
-	s = "(null)";
-      
-      if ((nl = strchr (s, '\n')))
-	*nl = '\0';		/* don't grok multiline arg strings */
-      
-      fprintf (_plotter->outstream, "%c%s\n", 
-	       (int)O_CAPMOD, s);
-    }
+  _meta_emit_byte ((int)O_CAPMOD);
+  _meta_emit_string (s);
   
   /* invoke generic method */
   return _g_capmod (s);

@@ -10,6 +10,8 @@
 
 #define NUM_COLORNAMES 665
 
+/* can declare this array `extern', so that applications linked with
+   libplot/libplotter can secretly access it, if they want to :-) */
 const Colornameinfo _colornames[NUM_COLORNAMES + 1] =
 {
   {"aliceblue",		0xf0, 0xf8, 0xff},

@@ -3,8 +3,9 @@
    The outfile method may only be invoked outside an openpl()...closepl()
    pair. */
 
+/* THIS METHOD IS NOW DEPRECATED.  IT WILL SOON GO AWAY. */
+
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* outfile takes a single argument, a stream that has been opened for
@@ -14,13 +15,13 @@
 
 FILE *
 #ifdef _HAVE_PROTOS
-_g_outfile(FILE *newstream)
+_g_outfile(FILE *outfile)
 #else
-_g_outfile(newstream)
-     FILE *newstream;
+_g_outfile(outfile)
+     FILE *outfile;
 #endif
 {
-  FILE *oldstream;
+  FILE *oldoutfile;
   
   if (_plotter->open)
     {
@@ -28,9 +29,13 @@ _g_outfile(newstream)
       return (FILE *)NULL;
     }
 
-  oldstream = _plotter->outstream;
-  _plotter->outstream = newstream;
+  oldoutfile = _plotter->outfp;
+  _plotter->outfp = outfile;
+#ifdef LIBPLOTTER
+  _plotter->outstream = NULL;
+#endif
+
   _plotter->page_number = 0;	/* reset */
 
-  return oldstream;
+  return oldoutfile;
 }

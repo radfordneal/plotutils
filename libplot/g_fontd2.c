@@ -3,7 +3,6 @@
    and Stick fonts (i.e., device-resident HP vector fonts). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 
@@ -54,6 +53,11 @@
    (14) an `iso8859-1' flag (refers to character set after re-encoding if any;
         true for all but Wingdings and Symbol).
 */
+
+/* IMPORTANT: The fonts in this array may be referred to elsewhere in the
+   code by number.  If you change the numbering of PCL fonts, i.e., the
+   order in which they appear in this array, be sure to update, e.g., the
+   definitions DEFAULT_PCL_FONT_INDEX, etc. in extern.h. */
 
 const struct pcl_font_info_struct _pcl_font_info[] = {
 {
@@ -3421,9 +3425,11 @@ const struct typeface_info_struct _pcl_typeface_info[] =
    row class and column class.  So when computing the spacing between two
    successive characters in a label, double indirection must be used. */
 
+/* IMPORTANT: The fonts in this array may be referred to elsewhere in the
+   code by number.  If you change the numbering of Stick fonts, i.e., the
+   order in which they appear in this array, be sure to update, e.g., the
+   definitions DEFAULT_STICK_FONT_INDEX, etc. in extern.h. */
 
-/* NOTE: do NOT change the ordering of the fonts in this table.
-   Fonts may be referred to elsewhere by our internal numbering. */
 const struct stick_font_info_struct _stick_font_info[] = {
 {
   "Arc",			/* #0 (our numbering) */

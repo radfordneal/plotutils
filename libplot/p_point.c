@@ -5,7 +5,6 @@
    circle (a marker symbol). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -24,7 +23,8 @@ _p_fpoint (x, y)
       return -1;
     }
 
-  _plotter->endpath(); /* flush polyline if any */
+  if (_plotter->drawstate->points_in_path > 0)
+    _plotter->endpath(); /* flush polyline if any */
 
   /* compute size of a `point' in user coordinates */
   norm = _matrix_norm (_plotter->drawstate->transform.m);

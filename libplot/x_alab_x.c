@@ -1,7 +1,7 @@
-/* This file contains the X11-driver-specific version of the low-level
-   falabel_other() method, which is called to plot a label in the current
-   font, at the current fontsize and textangle.  The label is just a
-   string: no control codes (font switching or sub/superscripts).
+/* This file contains the XDrawablePlotter (and XPlotter) version of the
+   low-level falabel_other() method, which is called to plot a label in the
+   current font, at the current fontsize and textangle.  The label is just
+   a string: no control codes (font switching or sub/superscripts).
 
    As the name suggests, falabel_other was written for `other' X fonts
    (user-specified ones not listed in our font database in g_fontdb.h).
@@ -15,12 +15,11 @@
    justification; only the default left-justification.  That is all
    right, since justification is handled at a higher level. */
 
-/* This file also contains the X11-driver-specific version of the
-   flabelwidth_other() method, which is called to compute the width, in
+/* This file also contains the XDrawablePlotter (and XPlotter) version of
+   the flabelwidth_other() method, which is called to compute the width, in
    user coordinates, of a label. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 static bool _suppress_retrieve = false;	/* avoids unnecessary font retrieval */
@@ -60,16 +59,16 @@ _x_falabel_other (s, h_just)
   /* Retrieve the font -- all of it that we'll need.  We may have
      previously retrieved only an empty subset of it.  See x_retrieve.c for
      information on character subsetting. */
-  _plotter->x_label = s;	/* pass hint */
+  _plotter->drawstate->x_label = s;	/* pass hint */
   _plotter->retrieve_font ();
-  _plotter->x_label = NULL;
+  _plotter->drawstate->x_label = NULL; /* restore to default value */
 
   /* Set font in GC used for drawing (the other GC, used for filling, is
      left alone).  _x_retrieve_font() does not do this. */
-  XSetFont (_plotter->dpy, _plotter->drawstate->gc_fg,
+  XSetFont (_plotter->x_dpy, _plotter->drawstate->x_gc_fg,
 	    _plotter->drawstate->x_font_struct->fid);
 
-  if (_plotter->drawstate->native_positioning)
+  if (_plotter->drawstate->x_native_positioning)
     {
       /* a special case: the font name did not include a pixel matrix, or
          it did but the text rotation angle is zero; so move the easy way,
@@ -82,19 +81,21 @@ _x_falabel_other (s, h_just)
       if (XOOB_INT(ix) || XOOB_INT(iy))
 	return 0.0;
 
-      if (_plotter->double_buffering != DBL_NONE)
-	XDrawString (_plotter->dpy, _plotter->drawable3, 
-		     _plotter->drawstate->gc_fg, 
+      if (_plotter->x_double_buffering != DBL_NONE)
+	/* double buffering, have a `x_drawable3' to draw into */
+	XDrawString (_plotter->x_dpy, _plotter->x_drawable3, 
+		     _plotter->drawstate->x_gc_fg, 
 		     ix, iy, (char *)s, label_len);
       else
 	{
-	  if (_plotter->drawable1)
-	    XDrawString (_plotter->dpy, _plotter->drawable1, 
-			 _plotter->drawstate->gc_fg, 
+	  /* not double buffering, have no `x_drawable3' */
+	  if (_plotter->x_drawable1)
+	    XDrawString (_plotter->x_dpy, _plotter->x_drawable1, 
+			 _plotter->drawstate->x_gc_fg, 
 			 ix, iy, (char *)s, label_len);
-	  if (_plotter->drawable2)
-	    XDrawString (_plotter->dpy, _plotter->drawable2, 
-			 _plotter->drawstate->gc_fg, 
+	  if (_plotter->x_drawable2)
+	    XDrawString (_plotter->x_dpy, _plotter->x_drawable2, 
+			 _plotter->drawstate->x_gc_fg, 
 			 ix, iy, (char *)s, label_len);
 	}
     }  
@@ -116,27 +117,29 @@ _x_falabel_other (s, h_just)
 	  int ix, iy;
 	  
 	  ix = IROUND(x + 
-		      offset * _plotter->drawstate->font_pixmatrix[0]/1000.0);
+		      offset * _plotter->drawstate->x_font_pixmatrix[0]/1000.0);
 	  iy = IROUND(y 
-		      -offset * _plotter->drawstate->font_pixmatrix[1]/1000.0);
+		      -offset * _plotter->drawstate->x_font_pixmatrix[1]/1000.0);
 
 	  /* X11 protocol OOB check */
 	  if (XOOB_INT(ix) || XOOB_INT(iy))
 	    return 0.0;
 
-	  if (_plotter->double_buffering != DBL_NONE)
-	    XDrawString (_plotter->dpy, _plotter->drawable3,
-			 _plotter->drawstate->gc_fg, 
+	  if (_plotter->x_double_buffering != DBL_NONE)
+	    /* double buffering, have a `x_drawable3' to draw into */
+	    XDrawString (_plotter->x_dpy, _plotter->x_drawable3,
+			 _plotter->drawstate->x_gc_fg, 
 			 ix, iy, (char *)stringptr, 1);
 	  else
+	    /* not double buffering, have no `x_drawable3' */
 	    {
-	      if (_plotter->drawable1)
-		XDrawString (_plotter->dpy, _plotter->drawable1,
-			     _plotter->drawstate->gc_fg, 
+	      if (_plotter->x_drawable1)
+		XDrawString (_plotter->x_dpy, _plotter->x_drawable1,
+			     _plotter->drawstate->x_gc_fg, 
 			     ix, iy, (char *)stringptr, 1);
-	      if (_plotter->drawable2)
-		XDrawString (_plotter->dpy, _plotter->drawable2,
-			     _plotter->drawstate->gc_fg, 
+	      if (_plotter->x_drawable2)
+		XDrawString (_plotter->x_dpy, _plotter->x_drawable2,
+			     _plotter->drawstate->x_gc_fg, 
 			     ix, iy, (char *)stringptr, 1);
 	    }
 	  
@@ -161,9 +164,38 @@ _x_falabel_other (s, h_just)
   _plotter->drawstate->pos.x += costheta * width;
   _plotter->drawstate->pos.y += sintheta * width;
 
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
 
   return width;
+}
+
+/* Counterparts of the preceding, for PS and PCL fonts.  If used by
+   an X [Drawable] Plotter, they simply invoke the preceding. */
+
+double
+#ifdef _HAVE_PROTOS
+_x_falabel_ps (const unsigned char *s, int h_just)
+#else
+_x_falabel_ps (s, h_just)
+     const unsigned char *s;
+     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+#endif
+{
+  return _x_falabel_other (s, h_just);
+}
+
+double
+#ifdef _HAVE_PROTOS
+_x_falabel_pcl (const unsigned char *s, int h_just)
+#else
+_x_falabel_pcl (s, h_just)
+     const unsigned char *s;
+     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+#endif
+{
+  return _x_falabel_other (s, h_just);
 }
 
 /* Compute width, in user coordinates, of label in the currently selected
@@ -190,17 +222,17 @@ _x_flabelwidth_other (s)
   if (_suppress_retrieve == false)
     /* retrieve X font */
     {
-      _plotter->x_label = s;	/* pass hint */
+      _plotter->drawstate->x_label = s;	/* pass hint */
       _plotter->retrieve_font ();
-      _plotter->x_label = NULL;
+      _plotter->drawstate->x_label = NULL; /* restore to default value */
     }
 
-  if (_plotter->drawstate->native_positioning)
+  if (_plotter->drawstate->x_native_positioning)
     /* have a non-XLFD font, or an XLFD with zero textrotation, no shearing */
     offset = IROUND(1000.0 * XTextWidth (_plotter->drawstate->x_font_struct, 
 					 (char *)s, 
 					 (int)(strlen((char *)s))) / 
-		    _plotter->drawstate->font_pixmatrix[0]);
+		    _plotter->drawstate->x_font_pixmatrix[0]);
   else				
     /* necessarily have an XLFD font, may need to take shearing into account */
     {
@@ -220,7 +252,34 @@ _x_flabelwidth_other (s)
   /* multiply normalized width by current font size in user coors */
   label_width = _plotter->drawstate->true_font_size * (double)offset / 1000.0;
 
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
 
   return label_width;
+}
+
+/* Counterparts of the preceding, for PS and PCL fonts.  If used by an
+   X [Drawable] Plotter, they simply invoke the preceding. */
+
+double
+#ifdef _HAVE_PROTOS
+_x_flabelwidth_ps (const unsigned char *s)
+#else
+_x_flabelwidth_ps (s)
+     const unsigned char *s;
+#endif
+{
+  return _x_flabelwidth_other (s);
+}
+
+double
+#ifdef _HAVE_PROTOS
+_x_flabelwidth_pcl (const unsigned char *s)
+#else
+_x_flabelwidth_pcl (s)
+     const unsigned char *s;
+#endif
+{
+  return _x_flabelwidth_other (s);
 }

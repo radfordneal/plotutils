@@ -5,7 +5,6 @@
    emit a page of graphics when closepl() is called. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -15,6 +14,8 @@ _h_openpl (void)
 _h_openpl ()
 #endif
 {
+  int i;
+
   if (_plotter->open)
     {
       _plotter->error ("openpl: invalid operation");
@@ -24,26 +25,70 @@ _h_openpl ()
   /* Prepare buffer in which we'll cache graphics code for this page. */
   _plotter->page = _new_outbuf ();
   
-  /* flag device as open */
-  _plotter->open = true;
-  _plotter->opened = true;
-  (_plotter->page_number)++;
+  /* With each call to openpl(), we reset our knowledge of the HP-GL
+     internal state, i.e. the dynamic derived-class-specific data members
+     of the HPGL or PCL Plotter.  The values are the same as are used in
+     initializing the Plotter (see h_defplot.c). */
+     
+  /* reset any soft-defined colors in the pen color array */
+  for (i = 0; i < HPGL2_MAX_NUM_PENS; i++)
+    if (_plotter->pen_defined[i] == 1) /* i.e. soft-defined */
+      _plotter->pen_defined[i] = 0; /* i.e. undefined */
 
-  /* space() not invoked yet, to set the user frame->device frame map */
-  _plotter->space_invoked = false;
+  /* reset current pen */
+  _plotter->pen = 1;  
 
-  if (_plotter->type == PL_PCL)
-    {
-      if (_plotter->page_number > 1) /* not first page */
-	/* eject previous page, by issuing PCL command */
-	{	
-	  strcpy (_plotter->page->point, "\014"); /* i.e. form feed */
-	  _update_buffer (_plotter->page);
+  /* if we can soft-define pen colors, reset free_pen data member by
+     determining what the next free pen is */
+  {
+    
+    bool undefined_pen_seen = false;
+    
+    if (_plotter->palette)	/* can soft-define pen colors */
+      for (i = 2; i < HPGL2_MAX_NUM_PENS; i++)
+	{
+	  if (_plotter->pen_defined[i] == 0)
+	    /* at least one pen with number > 1 is not yet defined */
+	    {
+	      /* record which such was encountered first */
+	      _plotter->free_pen = i;
+	      undefined_pen_seen = true;
+	      break;
+	    }
 	}
-      /* switch from PCL 5 to HP-GL/2 mode */
-      strcpy (_plotter->page->point, "\033%0B\n");
-      _update_buffer (_plotter->page);
-    }
+    if (!undefined_pen_seen)	
+      /* too many pens specified, can't soft-define colors */
+      _plotter->palette = false;
+  }
+  
+  /* reset additional data members of Plotter */
+  _plotter->bad_pen = false;  
+  _plotter->pendown = false;  
+  _plotter->pen_width = 0.001;  
+  _plotter->hpgl_line_type = HPGL_L_SOLID;
+  _plotter->hpgl_cap_style = HPGL_CAP_BUTT;
+  _plotter->hpgl_join_style = HPGL_JOIN_MITER;
+  _plotter->hpgl_miter_limit = 5.0; /* default HP-GL/2 value */
+  _plotter->fill_type = HPGL_FILL_SOLID_BI;
+  _plotter->shading_level = 0.0;
+  _plotter->pcl_symbol_set = PCL_ROMAN_8;  
+  _plotter->pcl_spacing = 0;  
+  _plotter->pcl_posture = 0;  
+  _plotter->pcl_stroke_weight = 0;  
+  _plotter->pcl_typeface = STICK_TYPEFACE;  
+  _plotter->hpgl_charset_lower = HP_ASCII;
+  _plotter->hpgl_charset_upper = HP_ASCII;
+  _plotter->relative_char_height = 0.0;
+  _plotter->relative_char_width = 0.0;  
+  _plotter->relative_label_rise = 0.0;    
+  _plotter->relative_label_run = 0.0;      
+  _plotter->char_slant_tangent = 0.0;      
+  _plotter->hpgl_position_is_unknown = true;
+  _plotter->hpgl_pos.x = 0;
+  _plotter->hpgl_pos.y = 0;
+
+  /* if a PCL Plotter, switch from PCL mode to HP-GL/2 mode */
+  _maybe_switch_to_hpgl ();
 
   /* output HP-GL prologue */
   if (_plotter->hpgl_version == 2)
@@ -70,8 +115,8 @@ _h_openpl ()
   /* set scaling points P1, P2 at lower left and upper right corners of
      the region (square) that we call our ``graphics display'' */
   sprintf (_plotter->page->point, "IP%d,%d,%d,%d;",
-	   IROUND(_plotter->p1x), IROUND(_plotter->p1y),
-	   IROUND(_plotter->p2x), IROUND(_plotter->p2y));
+	   IROUND(_plotter->p1.x), IROUND(_plotter->p1.y),
+	   IROUND(_plotter->p2.x), IROUND(_plotter->p2.y));
   _update_buffer (_plotter->page);
   
   /* Set up `scaled device coordinates' within the graphics display.  All
@@ -91,7 +136,7 @@ _h_openpl ()
 	 though many support only a default palette.) */
       if (_plotter->palette)
 	{
-	  sprintf (_plotter->page->point, "NP%d;", MAX_NUM_PENS);
+	  sprintf (_plotter->page->point, "NP%d;", HPGL2_MAX_NUM_PENS);
 	  _update_buffer (_plotter->page);
 	}
       /* use relative units for pen width */
@@ -118,9 +163,35 @@ _h_openpl ()
      remove it */
   _freeze_outbuf (_plotter->page);
 
-  /* create drawing state, add it as the first member of the linked list */
-  _plotter->savestate();			
+  /* invoke generic method, to e.g. create drawing state */
+  _g_openpl ();
 
   return 0;
 }
 
+void
+#ifdef _HAVE_PROTOS
+_h_maybe_switch_to_hpgl (void)
+#else
+_h_maybe_switch_to_hpgl ()
+#endif
+{
+}
+
+void
+#ifdef _HAVE_PROTOS
+_q_maybe_switch_to_hpgl (void)
+#else
+_q_maybe_switch_to_hpgl ()
+#endif
+{
+  if (_plotter->page_number > 0) /* not first page */
+    /* eject previous page, by issuing PCL command */
+    {	
+      strcpy (_plotter->page->point, "\f"); /* i.e. form feed */
+      _update_buffer (_plotter->page);
+    }
+  /* switch from PCL 5 to HP-GL/2 mode */
+  strcpy (_plotter->page->point, "\033%0B\n");
+  _update_buffer (_plotter->page);
+}

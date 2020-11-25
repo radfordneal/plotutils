@@ -1,7 +1,6 @@
 /* This file includes vector-related utility routines. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define VLENGTH(v) sqrt( (v).x * (v).x + (v).y * (v).y )

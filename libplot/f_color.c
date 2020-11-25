@@ -1,8 +1,8 @@
-/* This file contains device-specific color database access routines.
-   These routines are called by various FigPlotter methods. */
+/* This file contains device-specific color database access routines.  They
+   are called by various FigPlotter methods, before drawing objects.  They
+   set the appropriate FigPlotter-specific fields in the drawing state. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define ONEBYTE 0xff
@@ -28,10 +28,9 @@ int _libplotfig_use_pseudocolor = 0;
    partition of the color cube; see f_color2.c.) */
 
 /* forward references */
-static int _fig_color __P((int red, int green, int blue));
-static int _fig_pseudocolor __P((int red, int green, int blue));
+static int _fig_pseudocolor ____P((int red, int green, int blue));
 
-static int
+int
 #ifdef _HAVE_PROTOS
 _fig_color(int red, int green, int blue)
 #else
@@ -152,8 +151,7 @@ _f_set_pen_color()
   if (((_plotter->drawstate->fgcolor).red > 0xffff) 
       || ((_plotter->drawstate->fgcolor).green > 0xffff) 
       || ((_plotter->drawstate->fgcolor).blue > 0xffff))
-    _plotter->drawstate->fig_fgcolor =
-      _plotter->default_drawstate->fig_fgcolor;
+    _plotter->drawstate->fig_fgcolor = _default_drawstate.fig_fgcolor;
   else
     _plotter->drawstate->fig_fgcolor = 
       _fig_color ((_plotter->drawstate->fgcolor).red,
@@ -182,8 +180,7 @@ _f_set_fill_color()
   if (((_plotter->drawstate->fillcolor).red > 0xffff) 
       || ((_plotter->drawstate->fillcolor).green > 0xffff) 
       || ((_plotter->drawstate->fillcolor).blue > 0xffff))
-    _plotter->drawstate->fig_fillcolor = 
-      _plotter->default_drawstate->fig_fillcolor;
+    _plotter->drawstate->fig_fillcolor = _default_drawstate.fig_fillcolor;
   else
     _plotter->drawstate->fig_fillcolor = 
       _fig_color ((_plotter->drawstate->fillcolor).red,
@@ -224,7 +221,7 @@ _f_set_fill_color()
 
   /* OOB sets fill level to a non-OOB default value */
   if (fill_level > 1.)
-    fill_level = ((double)_plotter->default_drawstate->fill_level - 1.)/0xFFFE;
+    fill_level = ((double)_default_drawstate.fill_level - 1.)/0xFFFE;
 
   /* level = 0 turns off filling (objects will be transparent) */
   else if (fill_level < 0.)

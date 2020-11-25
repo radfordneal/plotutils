@@ -7,7 +7,6 @@
    lines'. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -18,7 +17,7 @@ _g_flinewidth(new_line_width)
      double new_line_width;
 #endif
 {
-  double det, device_line_width;
+  double device_line_width, min_sing_val, max_sing_val;
   int quantized_device_line_width;
 
   if (!_plotter->open)
@@ -37,9 +36,11 @@ _g_flinewidth(new_line_width)
   _plotter->drawstate->line_width = new_line_width;
   
   /* also compute and set the device-frame line width */
-  det = _plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[3] 
-    - _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[2];
-  device_line_width = sqrt(fabs(det)) * new_line_width;
+
+  _matrix_sing_vals (_plotter->drawstate->transform.m, 
+		     &min_sing_val, &max_sing_val);
+  device_line_width = min_sing_val * new_line_width;
+
   /* don't use 0-width lines if user specified nonzero width */
   quantized_device_line_width = IROUND(device_line_width);
   if (quantized_device_line_width == 0 && device_line_width > 0.0)

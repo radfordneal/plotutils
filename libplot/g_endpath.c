@@ -3,14 +3,14 @@
    invocation of such operations as cont(), arc(), etc.  The construction
    may be terminated, and the path object finalized, by an explict
    invocation of endpath().  If endpath() is invoked when no path is under
-   construction, it has no effect.
+   construction, it has no effect. */
 
-   In this generic version, which is intended for Plotters that draw paths
+/* In this generic version, which is intended for Plotters that draw paths
    in real time but nonetheless store them in a path buffer as they are
-   drawn, we simply deallocate the storage devoted to the path. */
+   drawn, we simply deallocate the storage devoted to the path.  I.e. we
+   don't emit any graphics code. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int

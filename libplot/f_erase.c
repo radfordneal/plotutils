@@ -5,7 +5,6 @@
    written to it, and forgets all user-defined colors.  */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -28,6 +27,10 @@ _f_erase ()
   /* reset our knowledge of xfig's internal state */
   _plotter->fig_drawing_depth = FIG_INITIAL_DEPTH;
   _plotter->fig_num_usercolors = 0;
+
+  /* on to next frame (for a Fig Plotter, which doesn't plot in real time,
+     only the last frame in the page is meaningful) */
+  _plotter->frame_number++;
 
   return 0;
 }

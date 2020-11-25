@@ -2,7 +2,6 @@
    arguments, and/or (ii) return integers rather than doubles. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -14,8 +13,8 @@ _g_arc (xc, yc, x0, y0, x1, y1)
 #endif
 {
   return _plotter->farc ((double)xc, (double)yc, 
-				    (double)x0, (double)y0, 
-				    (double)x1, (double)y1);
+			 (double)x0, (double)y0, 
+			 (double)x1, (double)y1);
 }
 
 int
@@ -27,8 +26,62 @@ _g_arcrel (dxc, dyc, dx0, dy0, dx1, dy1)
 #endif
 {
   return _plotter->farcrel ((double)dxc, (double)dyc, 
-				       (double)dx0, (double)dy0, 
-				       (double)dx1, (double)dy1);
+			    (double)dx0, (double)dy0, 
+			    (double)dx1, (double)dy1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+_g_bezier2 (int xc, int yc, int x0, int y0, int x1, int y1)
+#else
+_g_bezier2 (xc, yc, x0, y0, x1, y1)
+     int xc, yc, x0, y0, x1, y1;
+#endif
+{
+  return _plotter->fbezier2 ((double)xc, (double)yc, 
+			     (double)x0, (double)y0, 
+			     (double)x1, (double)y1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+_g_bezier2rel (int dxc, int dyc, int dx0, int dy0, int dx1, int dy1)
+#else
+_g_bezier2rel (dxc, dyc, dx0, dy0, dx1, dy1)
+     int dxc, dyc, dx0, dy0, dx1, dy1;
+#endif
+{
+  return _plotter->fbezier2rel ((double)dxc, (double)dyc, 
+				(double)dx0, (double)dy0, 
+				(double)dx1, (double)dy1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+_g_bezier3 (int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+#else
+_g_bezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
+     int x0, y0, x1, y1, x2, y2, x3, y3;
+#endif
+{
+  return _plotter->fbezier3 ((double)x0, (double)y0, 
+			     (double)x1, (double)y1, 
+			     (double)x2, (double)y2, 
+			     (double)x3, (double)y3);
+}
+
+int
+#ifdef _HAVE_PROTOS
+_g_bezier3rel (int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+#else
+_g_bezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
+     int x0, y0, x1, y1, x2, y2, x3, y3;
+#endif
+{
+  return _plotter->fbezier3rel ((double)x0, (double)y0, 
+				(double)x1, (double)y1, 
+				(double)x2, (double)y2, 
+				(double)x3, (double)y3);
 }
 
 int
@@ -51,7 +104,7 @@ _g_boxrel (dx0, dy0, dx1, dy1)
 #endif
 {
   return _plotter->fboxrel ((double)dx0, (double)dy0, 
-				       (double)dx1, (double)dy1);
+			    (double)dx1, (double)dy1);
 }
 
 int
@@ -107,8 +160,8 @@ _g_ellarc (xc, yc, x0, y0, x1, y1)
 #endif
 {
   return _plotter->fellarc ((double)xc, (double)yc, 
-				       (double)x0, (double)y0, 
-				       (double)x1, (double)y1);
+			    (double)x0, (double)y0, 
+			    (double)x1, (double)y1);
 }
 
 int
@@ -120,8 +173,8 @@ _g_ellarcrel (dxc, dyc, dx0, dy0, dx1, dy1)
 #endif
 {
   return _plotter->fellarcrel ((double)dxc, (double)dyc, 
-					  (double)dx0, (double)dy0, 
-					  (double)dx1, (double)dy1);
+			       (double)dx0, (double)dy0, 
+			       (double)dx1, (double)dy1);
 }
 
 int
@@ -133,7 +186,7 @@ _g_ellipse (x, y, rx, ry, angle)
 #endif
 {
   return _plotter->fellipse ((double)x, (double)y, 
-					(double)rx, (double)ry, (double)angle);
+			     (double)rx, (double)ry, (double)angle);
 }
 
 int
@@ -145,8 +198,8 @@ _g_ellipserel (dx, dy, rx, ry, angle)
 #endif
 {
   return _plotter->fellipserel ((double)dx, (double)dy, 
-					   (double)rx, (double)ry, 
-					   (double)angle);
+				(double)rx, (double)ry, 
+				(double)angle);
 }
 
 int 
@@ -184,7 +237,42 @@ _g_line (x0, y0, x1, y1)
 #endif
 {
   return _plotter->fline ((double)x0, (double)y0, 
-				     (double)x1, (double)y1);
+			  (double)x1, (double)y1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+_g_linedash (int n, const int *dashes, int offset)
+#else
+_g_linedash (n, dashes, offset)
+     int n;
+     const int *dashes;
+     int offset;
+#endif
+{
+  double *idashes;
+  int i, retval;
+
+  if (!_plotter->open)
+    {
+      _plotter->error ("linedash: invalid operation");
+      return -1;
+    }
+
+  /* sanity checks */
+  if (n < 0 || (n > 0 && dashes == NULL))
+    return -1;
+  for (i = 0; i < n; i++)
+    if (dashes[i] < 0)
+      return -1;
+
+  idashes = (double *)_plot_xmalloc ((unsigned int)n * sizeof(double));
+  for (i = 0; i < n; i++)
+    idashes[i] = dashes[i];
+  retval = _plotter->flinedash (n, idashes, (double)offset);
+  free (idashes);
+
+  return retval;
 }
 
 int
@@ -196,7 +284,7 @@ _g_linerel (dx0, dy0, dx1, dy1)
 #endif
 {
   return _plotter->flinerel ((double)dx0, (double)dy0, 
-					(double)dx1, (double)dy1);
+			     (double)dx1, (double)dy1);
 }
 
 int
@@ -234,7 +322,7 @@ _g_marker (x, y, type, size)
 #endif
 {
   return _plotter->fmarker ((double)x, (double)y, 
-				       type, (double)size);
+			    type, (double)size);
 }
 
 int
@@ -248,7 +336,7 @@ _g_markerrel (dx, dy, type, size)
 #endif
 {
   return _plotter->fmarkerrel ((double)dx, (double)dy, 
-					  type, (double)size);
+			       type, (double)size);
 }
 
 int
@@ -304,7 +392,7 @@ _g_space (x0, y0, x1, y1)
 #endif
 {
   return _plotter->fspace ((double)x0, (double)y0, 
-				      (double)x1, (double)y1);
+			   (double)x1, (double)y1);
 }
 
 int
@@ -316,8 +404,8 @@ _g_space2 (x0, y0, x1, y1, x2, y2)
 #endif
 {
   return _plotter->fspace2 ((double)x0, (double)y0, 
-				       (double)x1, (double)y1, 
-				       (double)x2, (double)y2);
+			    (double)x1, (double)y1, 
+			    (double)x2, (double)y2);
 }
 
 int

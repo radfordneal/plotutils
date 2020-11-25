@@ -1,12 +1,11 @@
 /* This file contains the capmod method, which is a GNU extension to
-   libplot.  It sets a drawing attribute: the cap mode used when drawing
-   subsequent lines and polylines. */
+   libplot.  It sets a drawing attribute: the cap mode used when
+   subsequently drawing open paths. */
 
 /* In this generic version, we simply store the new cap mode name in the
    drawing state. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -28,7 +27,7 @@ _g_capmod (s)
 
   /* null pointer resets to default */
   if ((!s) || !strcmp(s, "(null)"))
-    s = _plotter->default_drawstate->cap_mode;
+    s = _default_drawstate.cap_mode;
 
   free (_plotter->drawstate->cap_mode);
   _plotter->drawstate->cap_mode = (char *)_plot_xmalloc (strlen (s) + 1);
@@ -42,9 +41,11 @@ _g_capmod (s)
     _plotter->drawstate->cap_type = CAP_ROUND;
   else if (strcmp( s, "projecting") == 0)
     _plotter->drawstate->cap_type = CAP_PROJECT;
+  else if (strcmp( s, "triangular") == 0)
+    _plotter->drawstate->cap_type = CAP_TRIANGULAR;
   else
     /* don't recognize, silently switch to default mode */
-    return _g_capmod (_plotter->default_drawstate->cap_mode);
+    return _g_capmod (_default_drawstate.cap_mode);
   
   return 0;
 }

@@ -3,7 +3,6 @@
    x1,y1. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* Fig polyline subtypes */
@@ -21,6 +20,8 @@ _f_fbox (x0, y0, x1, y1)
 {
   int xd0, xd1, yd0, yd1;	/* in device coordinates */
   double xnew, ynew;
+  int line_style;
+  double nominal_spacing;
 
   if (!_plotter->open)
     {
@@ -43,6 +44,9 @@ _f_fbox (x0, y0, x1, y1)
   _plotter->set_pen_color();
   _plotter->set_fill_color();
   
+  /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
+  _f_compute_line_style (&line_style, &nominal_spacing);
+
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
@@ -51,7 +55,7 @@ _f_fbox (x0, y0, x1, y1)
 	  "#POLYLINE [BOX]\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %d %d\n",
 	  2,			/* polyline object */
 	  P_BOX,		/* polyline subtype */
-	  _fig_line_style[_plotter->drawstate->line_type], /* style */
+	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
 	  _plotter->drawstate->quantized_device_line_width, 
 	  _plotter->drawstate->fig_fgcolor,	/* pen color */
@@ -59,8 +63,7 @@ _f_fbox (x0, y0, x1, y1)
 	  _plotter->fig_drawing_depth, /* depth */
 	  0,			/* pen style, ignored */
 	  _plotter->drawstate->fig_fill_level, /* area fill */
-		  /* style val, in Fig display units (float) */
-	  _fig_dash_length[_plotter->drawstate->line_type], 
+	  nominal_spacing,	/* style val, in Fig display units (float) */
 	  _fig_join_style[_plotter->drawstate->join_type], /* join style */
 	  _fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
 	  0,			/* radius (of arc boxes, ignored here) */

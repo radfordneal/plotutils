@@ -6,7 +6,6 @@
    as unused on the current page. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -35,6 +34,10 @@ _p_erase ()
   for (i = 0; i < NUM_PCL_FONTS; i++)
     _plotter->page->pcl_font_used[i] = false;
 #endif
+
+  /* on to next frame (for a PS Plotter, which doesn't plot in real time,
+     only the last frame in the page is meaningful) */
+  _plotter->frame_number++;
 
   return 0;
 }

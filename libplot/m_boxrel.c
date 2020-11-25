@@ -4,7 +4,6 @@
    diagonal corners. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,22 +20,14 @@ _m_boxrel (x0, y0, x1, y1)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d %d %d %d\n", 
-		 (int)O_BOXREL, x0, y0, x1, y1);
-      else
-	{
-	  putc ((int)O_BOXREL, _plotter->outstream);
-	  _emit_integer (x0);
-	  _emit_integer (y0);
-	  _emit_integer (x1);
-	  _emit_integer (y1);
-	}
-    }
+  _meta_emit_byte ((int)O_BOXREL);
+  _meta_emit_integer (x0);
+  _meta_emit_integer (y0);
+  _meta_emit_integer (x1);
+  _meta_emit_integer (y1);
+  _meta_emit_terminator ();
 
-return 0;
+  return 0;
 }
 
 int
@@ -53,20 +44,12 @@ _m_fboxrel (x0, y0, x1, y1)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g %g %g %g\n", 
-		 (int)O_BOXREL, x0, y0, x1, y1);
-      else
-	{
-	  putc ((int)O_FBOXREL, _plotter->outstream);
-	  _emit_float (x0);
-	  _emit_float (y0);
-	  _emit_float (x1);
-	  _emit_float (y1);
-	}
-    }
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_BOXREL : (int)O_FBOXREL);
+  _meta_emit_float (x0);
+  _meta_emit_float (y0);
+  _meta_emit_float (x1);
+  _meta_emit_float (y1);
+  _meta_emit_terminator ();
   
   return 0;
 }

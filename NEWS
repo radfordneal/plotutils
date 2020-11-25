@@ -1,3 +1,107 @@
+Version 2.2 released, 3/99.  [Includes libplot 2.0, interface age=0.]
+
+libplotter: added support for iostreams.
+libplot: X Drawable Plotters can now use double buffering (a fatal
+	 error was identified and fixed, thanks to Georgy Salnikov).
+graph: increased number of orders of magnitude that a logarithmic axis
+         may span, before ticks not at powers of ten are omitted. 
+	 Was 4.0; now 5.0.  Suggested by Martin Ward.
+graph: -R option sometimes caused crashing on logarithmic axes, since it
+         could change the lower endpoint of the axis to zero.  Fixed.
+libplot: values "yes" and "fast" for USE_DOUBLE_BUFFERING are now
+	 equivalent.  If double buffering, X driver now automatically uses
+	 the DBE protocol extension (or the MBX extension) if available.
+libplot: X driver, very rarely, would sometimes block, waiting for user
+	 input such as mouse motion.  Traced to non-blocking behavior of
+	 select(), invoked by XEventsQueued(), invoked by XtAppPending().
+	 Problem now fixed (thanks, Nathan Salwen).
+libplot: Tektronix driver, when driving a kermit Tektronix emulator, can
+	 now set the background to any ansi.sys color.  So commands like
+	 "TERM=kermit graph -Ttek --bg-color=green" now work.
+libplot: outfile() operation declared obsolescent.  Now undocumented,
+	 and will eventually be dropped.	 
+libplot: fixed a bug in PCL and HP-GL Plotters that sometimes resulted in
+	 an infinite loop when drawing very short paths, or rendering text
+	 in very small font sizes.  Thanks, Stefan Wagner.
+libplot: PCL and HP-GL Plotters now support "triangular" caps and joins,
+	 in addition to the three standard cap types and join types.
+pic2plot: new utility, which can translate the pic language to any supported
+	graphics format, including X11.  Based on James Clark's gpic.
+libplot: functions linedash()/flinedash() added to API, supporting
+	arbitrary PS-style dashing styles.  Most Plotter types support them.
+	(Old, unused, Unix libplot `d' opcode now represents linedash.)
+libplot: fixed bug that was occasionally causing paths to be broken after
+	circular arc segments, in some output formats.
+libplot: Appearance of HersheyEUC font improved by shrinking the stroke
+	width.  Also, row 1, character 1 of the font is now a full-width
+	space, of the same width as any other Japanese character.
+plotfont: title of any character map for the HersheyEUC font now refers to
+	`row' of font, not `page', and character numbering changed too.
+	--jis-row option added, and --jis-page option declared obsolescent.
+libplot: non-solid line types ("dotted", "dotdashed", etc.)
+	redesigned, and are now as device-independent as possible.
+libplot: new "dotdotdashed" line style added, supported by all Plotters
+	except Tektronix Plotters.  "dotdotdotdashed" added too.
+graph: font size, tick size, and symbol size are now specified as fraction
+	of size of plotting box, where size means minimum dimension (width
+	or height).  Documentation clarified.
+graph: no more bogus error messages when `-N x' or `-N y' is specified.	
+graph: --toggle-switch-axis-end option renamed --toggle-axis-end, and `-E'
+	is made an alias for it.  Also, conventions reversed: `-E x' and
+	`-E y' now do what `-E y' and `-E x' would have done.
+graph: any of the three arguments to each of the -x and -y options (the
+	min, max, and spacing values for an axis) may now be supplied as
+	"-" (a single hyphen), to indicate that it should be computed from
+	the dataset.  E.g. "echo 0 0 1 1 2 0 | graph -x - 3 -" will work.
+libplot: paths may now contain segments that are quadratic and cubic Bezier
+	curves.  bezier2(), bezier3() etc. operations now included in API.
+	Illustrator Plotters now draw each ellipse, elliptic arc, and
+	circular arc using cubic Beziers, like Illustrator itself.
+libplot: fixed bugs dealing with multi-page HP-GL or PCL output files
+	(e.g., pages were incorrectly merged into a single page).
+plot: parsing of portable metafile format is now more flexible.  Arbitrary
+	white space can be included in file.
+libplot: fixed bug in x_endpath.c that would occasionally cause X errors
+	related to a bad drawable in an X_DrawPoints request.
+libplot: support for Adobe Illustrator version 3 format now obsolescent.
+	Format still supported, but no longer mentioned in documentation.
+libplot,graph: fixed bug in drawing marker symbols 14,21,28 (fancy
+	squares), and decreased sizes of symbols 30,31 (octagons).
+graph,plot: arguments of --font-size and --title-font-size arguments no
+	longer allowed to be >=1.0.  (By passing bogus values, lusers or
+	nefarious users could crash X servers).
+libplot: fixed bug dealing with retrieval of X fonts rotated 180 degrees.
+graph,tek2plot,plotfont: new --rotation option (can rotate plots
+	counterclockwise within the graphics display by 90, 180, or 270
+	degrees).
+libplot: new fillmod() operation.  For self-intersecting paths, can now
+	specify nonzero-winding-rule filling rather than even-odd filling.
+libplotter: new C++ library.  Provides base Plotter class, subclasses for
+	the different sorts of Plotter.  Massive restructuring of code.
+libplot: if line width is zero, the X driver now draws each line in a
+	polyline immediately (it doesn't wait until endpath() is invoked).
+	So if you do `graph -TX -W 0', and type in the coordinates of a
+	series of points manually, you'll now see the polyline drawn in
+	real time, as long as you also use the `-x' and `-y' options.
+libplot: text string format now supports "\fP" macro for switching to
+	previous font (cf. troff; "\fR", "\fI", "\fB" supported too).
+libplot: fmiterlimit() operation added to API.
+documentation: man pages for ode, spline, plot, tek2plot added.
+graph,plot,tek2plot,plotfont: `-T pnm' and `-T gif' now allowed.
+libplot: PNM driver added, which outputs PBM/PGM/PPM format.
+libplot: pseudo-GIF driver added, using miGIF run-length encoding routines
+	(thanks, Maus and ivo).  Incorporates X11 polygon filling
+	and wide line code, as a more or less independent module.
+libplot: selectpl() now returns the handle of the previously selected
+	Plotter.
+libplot: X Drawable and X Plotters now fill `rotated' ellipses (those whose
+	axes are not aligned with the coordinate axes) more speedily, using
+	the special X rendering algorithm for filling convex polygons.
+	This speeds up the the `drifting eye' example in the manual.
+libplot: fixed bugs in handling of "disconnected" line type.  Our
+	convention: no Plotter should draw anything when circle() or
+	ellipse() is invoked, if the current line type is "disconnected".
+
 Version 2.1.6 released, 10/98.  [Includes libplot 1.6, interface age=1.]
 
 plot: new `-s' option, which merges together all displayed pages. This is
@@ -61,7 +165,7 @@ texinfo documentation: full explanation given of the 18 supported
 libplot: escape sequences added for the 12 signs of the zodiac; they are
 	recognized in labels whenever the current font is a Hershey font.
 libplot: new escape sequences "\r^" and "\l^" added, for use in labels;
-	they shift right and left by 1/12 em, respectively.
+	they shift right and left by 1/12 em, respectively.  (Cf. troff.)
 libplot: 3 missing Japanese Katakana added to the HersheyEUC font (they
 	are the 3 that have no Hiragana counterpart).
 graph,plot,tek2plot,plotfont: `-T pcl' option added, for PCL 5 output.

@@ -35,7 +35,6 @@
    recently received point. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define FIVEBITS 0x1F
@@ -49,16 +48,13 @@ _tek_vector (xx, yy)
      int xx, yy;
 #endif
 {
-  char xx_high, yy_high;
-  char xx_low, yy_low;
-  char xx_topsig, yy_topsig;
-  char egm;
-  FILE *stream;
+  unsigned char xx_high, yy_high;
+  unsigned char xx_low, yy_low;
+  unsigned char xx_topsig, yy_topsig;
+  unsigned char egm;
+  unsigned char byte_buf[5];
+  int num_bytes = 0;
   
-  stream = _plotter->outstream;
-  if (stream == NULL)
-    return;
-
 #ifdef NO_WRAP			/* could completely restrict to box */
   if (xx < 0)
     xx = 0;
@@ -78,14 +74,17 @@ _tek_vector (xx, yy)
 
   /* The bit patterns 0x20, 0x40, 0x60 are magic */
 
-  putc (yy_high | 0x20, stream); /* bits 5 through 9 of yy */
+  byte_buf[num_bytes++] = yy_high | 0x20; /* bits 5 through 9 of yy */
 #ifdef CAN_OMIT_EGM
   if (egm)
 #endif
-      putc (egm | 0x60, stream);
-  putc (yy_low | 0x60, stream); /* bits 0 through 4 of yy */
-  putc (xx_high | 0x20, stream); /* bits 5 through 9 of xx */
-  putc (xx_low | 0x40, stream); /* bits 0 through 4 of xx */
+    byte_buf[num_bytes++] =   egm | 0x60;
+  byte_buf[num_bytes++] = yy_low  | 0x60; /* bits 0 through 4 of yy */
+  byte_buf[num_bytes++] = xx_high | 0x20; /* bits 5 through 9 of xx */
+  byte_buf[num_bytes++] = xx_low  | 0x40;  /* bits 0 through 4 of xx */
+
+  /* invoke low-level output routine */
+  _plotter->write_bytes (num_bytes, byte_buf);
 
   return;
 }
@@ -110,16 +109,13 @@ _tek_vector_compressed (xx, yy, oldxx, oldyy, force)
      bool force;
 #endif
 {
-  char xx_high, yy_high, oldxx_high, oldyy_high;
-  char xx_low, yy_low, oldyy_low;
-  char xx_top, yy_top;
-  char egm;
-  FILE *stream;
+  unsigned char xx_high, yy_high, oldxx_high, oldyy_high;
+  unsigned char xx_low, yy_low, oldyy_low;
+  unsigned char xx_top, yy_top;
+  unsigned char egm;
+  unsigned char byte_buf[5];
+  int num_bytes = 0;
   
-  stream = _plotter->outstream;
-  if (stream == NULL)
-    return;
-
 #ifdef NO_WRAP			/* could completely restrict to box */
   if (xx < 0)
     xx = 0;
@@ -148,19 +144,22 @@ _tek_vector_compressed (xx, yy, oldxx, oldyy, force)
   /* The bit patterns 0x20, 0x40, 0x60 are magic */
 
   if (yy_high != oldyy_high)
-    putc (yy_high | 0x20, stream); /* bits 11 through 7 of yy: Hi_Y */
+    byte_buf[num_bytes++] = yy_high | 0x20; /* bits 11 through 7 of yy: Hi_Y */
 
 #ifdef CAN_OMIT_EGM
   if (egm)
 #endif
-    putc (egm | 0x60, stream); /* bits 1 through 0 of xx and yy */
+    byte_buf[num_bytes++] = egm     | 0x60; /* bits 1 through 0 of xx and yy */
 #ifdef CAN_OMIT_LO_Y
   if ((yy_low != oldyy_low) || (xx_high != oldxx_high) || egm)
 #endif
-    putc (yy_low | 0x60, stream); /* bits 6 through 2 of yy: Lo_Y */
+    byte_buf[num_bytes++] = yy_low  | 0x60; /* bits 6 through 2 of yy: Lo_Y */
   if (xx_high != oldxx_high)
-    putc (xx_high | 0x20, stream); /* bits 11 through 7 of xx: Hi_X */
-  putc (xx_low | 0x40, stream); /* bits 6 through 2 of xx: Lo_X */
+    byte_buf[num_bytes++] = xx_high | 0x20; /* bits 11 through 7 of xx: Hi_X */
+  byte_buf[num_bytes++] = xx_low    | 0x40; /* bits 6 through 2 of xx: Lo_X */
+
+  /* invoke low-level output routine */
+  _plotter->write_bytes (num_bytes, byte_buf);
 
   return;
 }

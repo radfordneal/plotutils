@@ -1,21 +1,19 @@
 /* This file contains the savestate method, which is a GNU extension to
    libplot.  It creates a new drawing state and pushes it onto the stack of
    drawing states.  By definition, a `drawing state' comprises the set of
-   drawing attributes, and the state of any polyline being incrementally
-   drawn.
+   drawing attributes, and the state of any path being incrementally drawn.
 
    The new state will have the same drawing attributes as the old state.
-   If a polyline was being drawn incrementally in the old state, the new
-   state will not contain it.  The old state may be returned to by invoking
-   the restorestate method, which pops drawing states off the stack.  If
-   the incremental drawing of a polyline was in progress, it may be
-   returned to at that time. */
+   If a path was being drawn incrementally in the old state, the new state
+   will not contain it.  The old state may be returned to by invoking the
+   restorestate method, which pops drawing states off the stack.  If the
+   incremental drawing of a path was in progress, it may be returned to at
+   that time. */
 
-/* Note that this version, which is appropriate for XPlotters, constructs
+/* This version is for XDrawablePlotters (and XPlotters).  It constructs
    X GC's (i.e. graphics contexts) for the new drawing state. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -40,10 +38,10 @@ _x_savestate()
   _g_savestate();
 
   /* determine which if either drawable we'll construct the GC's for */
-  if (_plotter->drawable1)
-    drawable = _plotter->drawable1;
-  else if (_plotter->drawable2)
-    drawable = _plotter->drawable2;
+  if (_plotter->x_drawable1)
+    drawable = _plotter->x_drawable1;
+  else if (_plotter->x_drawable2)
+    drawable = _plotter->x_drawable2;
   else
     drawable = (Drawable)NULL;
 
@@ -57,19 +55,19 @@ _x_savestate()
 	    | GCPlaneMask | GCFunction | GCArcMode | GCFillRule
 	      |  GCLineStyle | GCLineWidth | GCJoinStyle | GCCapStyle | GCFont;
 	  /* copy GC used for drawing */
-	  XGetGCValues (_plotter->dpy, _plotter->drawstate->previous->gc_fg, 
+	  XGetGCValues (_plotter->x_dpy, _plotter->drawstate->previous->x_gc_fg, 
 			gcmask, &gcv);
-	  _plotter->drawstate->gc_fg = XCreateGC (_plotter->dpy, drawable, 
+	  _plotter->drawstate->x_gc_fg = XCreateGC (_plotter->x_dpy, drawable, 
 						  gcmask, &gcv);
 	  /* copy GC used for filling */
-	  XGetGCValues (_plotter->dpy, _plotter->drawstate->previous->gc_fill, 
+	  XGetGCValues (_plotter->x_dpy, _plotter->drawstate->previous->x_gc_fill, 
 			gcmask, &gcv);
-	  _plotter->drawstate->gc_fill = XCreateGC (_plotter->dpy, drawable, 
+	  _plotter->drawstate->x_gc_fill = XCreateGC (_plotter->x_dpy, drawable, 
 						    gcmask, &gcv);
 	  /* copy GC used for erasing */
-	  XGetGCValues (_plotter->dpy, _plotter->drawstate->previous->gc_bg, 
+	  XGetGCValues (_plotter->x_dpy, _plotter->drawstate->previous->x_gc_bg, 
 			gcmask, &gcv);
-	  _plotter->drawstate->gc_bg = XCreateGC (_plotter->dpy, drawable, 
+	  _plotter->drawstate->x_gc_bg = XCreateGC (_plotter->x_dpy, drawable, 
 						  gcmask, &gcv);
 	}
       else
@@ -79,16 +77,26 @@ _x_savestate()
 	  gcv.plane_mask = AllPlanes;
 	  gcv.function = GXcopy;
 	  gcv.arc_mode = ArcChord; /* libplot convention */
-	  gcv.fill_rule = EvenOddRule; /* libplot convention */
+	  switch (_default_drawstate.fill_rule_type)
+	    {
+	    case FILL_ODD_WINDING:
+	    default:
+	      gcv.fill_rule = EvenOddRule;
+	      break;
+	    case FILL_NONZERO_WINDING:
+	      gcv.fill_rule = WindingRule;
+	      break;
+	    }
 
-	  _plotter->drawstate->gc_fg = 
-	    XCreateGC (_plotter->dpy, drawable, gcmask, &gcv);
-	  _plotter->drawstate->gc_fill = 
-	    XCreateGC (_plotter->dpy, drawable, gcmask, &gcv);
-	  _plotter->drawstate->gc_bg = 
-	    XCreateGC (_plotter->dpy, drawable, gcmask, &gcv);
+	  _plotter->drawstate->x_gc_fg = 
+	    XCreateGC (_plotter->x_dpy, drawable, gcmask, &gcv);
+	  _plotter->drawstate->x_gc_fill = 
+	    XCreateGC (_plotter->x_dpy, drawable, gcmask, &gcv);
+	  _plotter->drawstate->x_gc_bg = 
+	    XCreateGC (_plotter->x_dpy, drawable, gcmask, &gcv);
 
 	  /* set the foreground color in each of our three GC's */
+	  /* UNNECESSARY? */
 	  _plotter->set_pen_color ();
 	  _plotter->set_fill_color ();
 	  _plotter->set_bg_color ();	  
@@ -103,7 +111,9 @@ _x_savestate()
 	}
     }
   
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
 
   return 0;
 }

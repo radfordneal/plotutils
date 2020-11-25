@@ -16,7 +16,7 @@ are based.
 		  is represented as an 8-bit quantity, i.e., an integer
 		  in the range 0..255.
 
-The following files are relevant to the 21 Hershey fonts built into GNU
+The following files are relevant to the 22 Hershey fonts built into GNU
 libplot, and accessible to the plotting utilities.
 
     ./demo-page: A sample page, in portable GNU metafile format, 

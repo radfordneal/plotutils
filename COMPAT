@@ -1,6 +1,18 @@
 These are some notes on backward compatibility of the plotutils package, on
 both the user and programmer levels.
 
+Release 2.2
+-----------
+
+Massive expansion of the C API, with new drivers, and introduction of
+libplotter (C++ class library).  Backward compatibility of the C API
+maintained, except that all functions now begin with "pl_".  Header file
+"plcompat.h", if needed, will redefine old function names as new function
+names.  Libplot version number is now 2.0.
+
+outfile() function, always more or less deprecated, now declared
+obsolescent.  No longer documented.
+
 Release 2.1.6
 -------------
 
@@ -8,7 +20,7 @@ AI driver added, but libplot API unchanged.  Libplot version number is now
 1.6.
 
 Support in plot.h header file for old names for endpath() and filltype(),
-which began in release 2.0 (see below), finally dropped.
+which began in plotutils-2.0 (see below), finally dropped.
 
 Release 2.1.5
 -------------

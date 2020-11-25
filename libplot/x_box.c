@@ -2,8 +2,9 @@
    It draws an object: an upright rectangle with diagonal corners x0,y0 and
    x1,y1. */
 
+/* This version is for XDrawablePlotters (and XPlotters). */
+
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -31,7 +32,8 @@ _x_fbox (x0, y0, x1, y1)
   if (!_plotter->drawstate->transform.axes_preserved)
     return _g_fbox (x0, y0, x1, y1);
 
-  _plotter->endpath (); /* flush polyline if any */
+  if (_plotter->drawstate->points_in_path > 0)
+    _plotter->endpath (); /* flush polyline if any */
 
   xd0 = IROUND(XD (x0, y0));
   yd0 = IROUND(YD (x0, y0));  
@@ -70,19 +72,21 @@ _x_fbox (x0, y0, x1, y1)
       /* select fill color as foreground color in GC used for filling */
       _plotter->set_fill_color();
 
-      if (_plotter->double_buffering != DBL_NONE)
-	XFillRectangle (_plotter->dpy, _plotter->drawable3,
-			_plotter->drawstate->gc_fill, 
+      if (_plotter->x_double_buffering != DBL_NONE)
+	/* double buffering, have a `x_drawable3' to draw into */
+	XFillRectangle (_plotter->x_dpy, _plotter->x_drawable3,
+			_plotter->drawstate->x_gc_fill, 
 			xdmin, ydmin, width, height);
       else
+	/* not double buffering, have no `x_drawable3' */
 	{
-	  if (_plotter->drawable1)
-	    XFillRectangle (_plotter->dpy, _plotter->drawable1, 
-			    _plotter->drawstate->gc_fill, 
+	  if (_plotter->x_drawable1)
+	    XFillRectangle (_plotter->x_dpy, _plotter->x_drawable1, 
+			    _plotter->drawstate->x_gc_fill, 
 			    xdmin, ydmin, width, height);
-	  if (_plotter->drawable2)
-	    XFillRectangle (_plotter->dpy, _plotter->drawable2, 
-			    _plotter->drawstate->gc_fill, 
+	  if (_plotter->x_drawable2)
+	    XFillRectangle (_plotter->x_dpy, _plotter->x_drawable2, 
+			    _plotter->drawstate->x_gc_fill, 
 			    xdmin, ydmin, width, height);
 	}
     }
@@ -90,19 +94,19 @@ _x_fbox (x0, y0, x1, y1)
   /* select pen color as foreground color in GC used for drawing */
   _plotter->set_pen_color();
 
-  if (_plotter->double_buffering != DBL_NONE)
-    XDrawRectangle (_plotter->dpy, _plotter->drawable3,
-		    _plotter->drawstate->gc_fg, 
+  if (_plotter->x_double_buffering != DBL_NONE)
+    XDrawRectangle (_plotter->x_dpy, _plotter->x_drawable3,
+		    _plotter->drawstate->x_gc_fg, 
 		    xdmin, ydmin, width, height);
   else
     {
-      if (_plotter->drawable1)
-	XDrawRectangle (_plotter->dpy, _plotter->drawable1, 
-			_plotter->drawstate->gc_fg, 
+      if (_plotter->x_drawable1)
+	XDrawRectangle (_plotter->x_dpy, _plotter->x_drawable1, 
+			_plotter->drawstate->x_gc_fg, 
 			xdmin, ydmin, width, height);
-      if (_plotter->drawable2)
-	XDrawRectangle (_plotter->dpy, _plotter->drawable2, 
-			_plotter->drawstate->gc_fg, 
+      if (_plotter->x_drawable2)
+	XDrawRectangle (_plotter->x_dpy, _plotter->x_drawable2, 
+			_plotter->drawstate->x_gc_fg, 
 			xdmin, ydmin, width, height);
     }
 
@@ -112,7 +116,9 @@ _x_fbox (x0, y0, x1, y1)
   _plotter->drawstate->pos.x = xnew;
   _plotter->drawstate->pos.y = ynew;
 
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
 
   return 0;
 }

@@ -13,7 +13,6 @@
    g_her_glyph.c.  Accented characters are formed as composites. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 
@@ -41,6 +40,11 @@
    (13) a Fig font id, for use by FigPlotter methods
    (14) an `iso8859-1' flag, for the PS driver, which must re-encode
 */
+
+/* IMPORTANT: The fonts in this array may be referred to elsewhere in the
+   code by number.  If you change the numbering of Postscript fonts, i.e.,
+   the order in which they appear in this array, be sure to update, e.g.,
+   the definitions DEFAULT_POSTSCRIPT_FONT_INDEX, etc. in extern.h. */
 
 const struct ps_font_info_struct _ps_font_info[] = {
 {
@@ -2673,7 +2677,7 @@ const struct typeface_info_struct _ps_typeface_info[] =
 
 /* The Hershey vector fonts we support.  Each character in a Hershey font
    is an index into the glyph array in g_her_glyphs.c.  Each
-   vector_font_info_struct includes these elements:
+   hershey_font_info_struct includes these elements:
 
    (1) PS-style name for the font
    (2) an alias for the font (for backward compatibility)
@@ -2758,12 +2762,13 @@ const struct typeface_info_struct _ps_typeface_info[] =
 
 #define CEDILLA UNDE   /* currently undefined, to be implemented someday */
 
-/* IMPORTANT: Several of the fonts in this array are referred to elsewhere
-   in the code by number.  If you change the numbering of Hershey fonts,
-   i.e., the order in which they appear in this array, be sure to update
-   the definitions HERSHEY_SERIF, HERSHEY_EUC etc. in extern.h. */
+/* IMPORTANT: The fonts in this array may be referred to elsewhere in the
+   code by number.  If you change the numbering of Hershey fonts, i.e., the
+   order in which they appear in this array, be sure to update, e.g., the
+   definitions DEFAULT_HERSHEY_FONT_INDEX, HERSHEY_SERIF, HERSHEY_EUC
+   etc. in extern.h. */
 
-const struct vector_font_info_struct _vector_font_info[] = 
+const struct hershey_font_info_struct _hershey_font_info[] = 
 {
   {
     "HersheySerif",		/* #0 */
@@ -3870,7 +3875,7 @@ const struct vector_font_info_struct _vector_font_info[] =
    are stored in the inaccessible 0x80--0x9f region (i.e., \0200--\0237
    region) of each font. */
 
-const struct accented_char_info_struct _vector_accented_char_info[] = 
+const struct accented_char_info_struct _hershey_accented_char_info[] = 
 {
   /* for HersheyCyrillic[-Oblique] (KOI8-R encoding) accented characters */
   {0243, 0305, 0212},		/* edieresis */
@@ -3938,13 +3943,13 @@ const struct accented_char_info_struct _vector_accented_char_info[] =
    (1) number of valid fonts [should be >= 2, since every typeface
        should include a symbol font (the zeroth font, the 1st listed)]
    (2) a list of fonts (each number is an index into
-       the _vector_font_info[] array above).
+       the _hershey_font_info[] array above).
 
    The number of valid fonts should be <= FONTS_PER_TYPEFACE; the
    initializers are filled out with dummy fonts to get arrays of length
    FONTS_PER_TYPEFACE. */
 
-const struct typeface_info_struct _vector_typeface_info[] = 
+const struct typeface_info_struct _hershey_typeface_info[] = 
 {
   /* Hershey Serif [including Cyrillic, Cyrillic-Obl., and EUC], typeface #0 */
   { 8, { 18, 0, 1, 2, 3, 4, 5, 8, 999, 999 } },

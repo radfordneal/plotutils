@@ -4,7 +4,6 @@
 /* TekPlotter objects display a point as a zero-length line segment. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -56,8 +55,8 @@ _t_fpoint (x, y)
   _tek_vector (ixx, iyy);
 
   /* update our notion of Tek's notion of position */
-  _plotter->pos.x = ixx;
-  _plotter->pos.y = iyy;
+  _plotter->tek_pos.x = ixx;
+  _plotter->tek_pos.y = iyy;
   
   return 0;
 }

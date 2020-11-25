@@ -9,7 +9,6 @@
    0xffff, for each of red, green, and blue). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -32,9 +31,9 @@ _g_fillcolor (red, green, blue)
   if ((red > 0xffff) || (green > 0xffff) || (blue > 0xffff))
     /* OOB switches to default */
     {
-      red = _plotter->default_drawstate->fillcolor.red;
-      green = _plotter->default_drawstate->fillcolor.green;
-      blue = _plotter->default_drawstate->fillcolor.blue;
+      red = _default_drawstate.fillcolor.red;
+      green = _default_drawstate.fillcolor.green;
+      blue = _default_drawstate.fillcolor.blue;
     }
 
   /* save our notion of fillcolor */

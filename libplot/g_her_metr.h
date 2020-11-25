@@ -1,12 +1,18 @@
 /* This header file gives the metrics for the vector fonts. */
 
-/* Our choice for width of strokes, in terms of virtual pixels.  According
-   to ``Calligraphy for Computers'', the Hershey fonts were designed to be
-   drawn by an electron beam the intensity of which fell to 50% at a
-   transverse displacement of one unit.  This number is magic (just
-   slightly greater than sqrt(2)). */
+/* Our choice for stroke width, in terms of virtual pixels.  This number is
+   magic: just slightly greater than sqrt(2), so that adjacent strokes that
+   are inclined at a 45 degree angle will overlap as they should.
+
+   (According to ``Calligraphy for Computers'', the Hershey fonts were
+   designed to be drawn by an electron beam the intensity of which fell to
+   50% at a transverse displacement of one unit.) */
 
 #define HERSHEY_STROKE_WIDTH 1.42
+
+/* This value gives good results for the Japanese characters (Kana and
+   Kanji). */
+#define HERSHEY_ORIENTAL_STROKE_WIDTH 1.175
 
 /* According to Allen Hershey, 1 em = 32 virtual pixels for his alphabets
    of principal size.  But taking into account the width of the strokes

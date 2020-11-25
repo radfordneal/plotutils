@@ -1,5 +1,5 @@
-/* This file defines the arrays _occidental_vector_glyphs[] and
-   _oriental_vector_glyphs[].  The first array includes the standard
+/* This file defines the arrays _occidental_hershey_glyphs[] and
+   _oriental_hershey_glyphs[].  The first array includes the standard
    (`occidental') Hershey glyphs digitized by Dr. Allen V. Hershey, some
    glyphs due to other people, and his Japanese Hiragana and Katakana
    glyphs.  The second array includes his digitizations of Japanese
@@ -54,7 +54,7 @@
 
    Additional references are given in the file ./doc/hershey.bib.
 
-   The _occidental_vector_glyphs[] array below was constructed from
+   The _occidental_hershey_glyphs[] array below was constructed from
    releases of the Hershey glyphs that are later than the one described in
    the 1976 NBS publication above.  For example, Fig. 15 of that work
    portrays 43 additional glyphs digitized by Norman Wolcott of the NBS;
@@ -62,7 +62,7 @@
    on how the array was assembled.  The original Hershey glyphs, including
    the 43 Wolcott glyphs, are stored in the 0..3999 slots of the array.
 
-   The _occidental_vector_glyphs[] array also includes non-Hershey glyphs
+   The _occidental_hershey_glyphs[] array also includes non-Hershey glyphs
    taken from various sources.  All post-Hershey glyphs have been placed in
    slots 4000..4194.  This includes a few glyphs taken from the UGS (the
    Unified Graphics System, developed by Bob Beach at SLAC; see Computer
@@ -74,10 +74,10 @@
 
    The Japanese Hiragana and Katakana glyphs digitized by Dr. Hershey,
    formerly located among the `oriental' glyphs, are now located in slots
-   4195..4399 of the _occidental_vector_glyphs[] array.
+   4195..4399 of the _occidental_hershey_glyphs[] array.
 
-   The format of the glyphs in the _occidental_vector_glyphs[] and
-   _oriental_vector_glyphs[] arrays is the format in which the Hershey
+   The format of the glyphs in the _occidental_hershey_glyphs[] and
+   _oriental_hershey_glyphs[] arrays is the format in which the Hershey
    glyphs were distributed to mod.sources in 1985(?) by Pete Holzmann, and
    is due to Jim Hurt, then at Cognition Inc.  Glyphs are encoded as
    strings consisting of pairs of printable ascii characters in the range
@@ -90,7 +90,7 @@
    are restricted to the range [-12,13].
 
    (Note: the non-Hershey pointing hand glyphs in slots 4040..4043 of the
-   _occidental_vector_glyphs[] array, which are due to Nelson Beebe,
+   _occidental_hershey_glyphs[] array, which are due to Nelson Beebe,
    include integers drawn from the range [-50,50].  So the four
    corresponding strings include characters drawn from outside the
    printable ASCII range, e.g. \204 (i.e. 0x84), which represents 50.)
@@ -112,13 +112,12 @@
    the four pointing hands.)  */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
-#define NUM_OCCIDENTAL_VECTOR_GLYPHS 4400 /*should agree with val in g_cntrlify.c */
-#define NUM_ORIENTAL_VECTOR_GLYPHS 5500 /* should agree with value in g_cntrlify.c */
+#define NUM_OCCIDENTAL_HERSHEY_GLYPHS 4400 /*should agree with val in g_cntrlify.c */
+#define NUM_ORIENTAL_HERSHEY_GLYPHS 5500 /* should agree with value in g_cntrlify.c */
 
-const char * const _occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
+const char * const _occidental_hershey_glyphs[NUM_OCCIDENTAL_HERSHEY_GLYPHS] =
 {
   /******** Hershey Glyphs 0 to 99 ********/   
   "",   "MWRMNV RRMVV RPSTS",   "MWOMOV ROMSMUNUPSQ ROQSQURUUSVOV",   "MXVNTMRMPNOPOSPURVTVVU",   "MWOMOV ROMRMTNUPUSTURVOV",   "MWOMOV ROMUM ROQSQ ROVUV",   "MVOMOV ROMUM ROQSQ",   "MXVNTMRMPNOPOSPURVTVVUVR RSRVR",   "MWOMOV RUMUV ROQUQ",   "PTRMRV",   "NUSMSTRVPVOTOS",   "MWOMOV RUMOS RQQUV",   "MVOMOV ROVUV",   "LXNMNV RNMRV RVMRV RVMVV",   "MWOMOV ROMUV RUMUV",   "MXRMPNOPOSPURVSVUUVSVPUNSMRM",   "MWOMOV ROMSMUNUQSROR",   "MXRMPNOPOSPURVSVUUVSVPUNSMRM RSTVW",   "MWOMOV ROMSMUNUQSROR RRRUV",   "MWUNSMQMONOOPPTRUSUUSVQVOU",   "MWRMRV RNMVM",   "MXOMOSPURVSVUUVSVM",   "MWNMRV RVMRV",   "LXNMPV RRMPV RRMTV RVMTV",   "MWOMUV RUMOV",   "MWNMRQRV RVMRQ",   "MWUMOV ROMUM ROVUV",   "MWRMNV RRMVV RPSTS",   "MWOMOV ROMSMUNUPSQ ROQSQURUUSVOV",   "MVOMOV ROMUM",   "MWRMNV RRMVV RNVVV",   "MWOMOV ROMUM ROQSQ ROVUV",   "MWUMOV ROMUM ROVUV",   "MWOMOV RUMUV ROQUQ",   "MXRMPNOPOSPURVSVUUVSVPUNSMRM RQQTR RTQQR",   "PTRMRV",   "MWOMOV RUMOS RQQUV",   "MWRMNV RRMVV",   "LXNMNV RNMRV RVMRV RVMVV",   "MWOMOV ROMUV RUMUV",   "MWOMUM RPQTR RTQPR ROVUV",   "MXRMPNOPOSPURVSVUUVSVPUNSMRM",   "MWOMOV RUMUV ROMUM",   "MWOMOV ROMSMUNUQSROR",   "MWOMRQOV ROMUM ROVUV",   "MWRMRV RNMVM",   "MWNONNOMPMQNRPRV RVOVNUMTMSNRP",   "LXRMRV RPONPNSPTTTVSVPTOPO",   "MWOMUV RUMOV",   "LXRMRV RNOOPOSQTSTUSUPVO",   "MXOVQVOROPPNRMSMUNVPVRTVVV",   "MWSMMV RSMUV ROSTS",   "MWQMNV RQMTMVNVPSQPQ RSQURUTTURVNV",   "LXVPUNTMRMPNOONQNSOUPVRVTUUT",   "MXQMNV RQMUMVOVQUTTURVNV",   "MVQMNV RQMVM RPQSQ RNVSV",   "MVQMNV RQMVM RPQSQ",   "LXVPUNTMRMPNOONQNSOUPVRVTUUSRS",   "MXQMNV RWMTV RPQUQ",   "PUTMQV",   "OVUMSSRUQVPVOUOT",   "MVQMNV RVMOS RRQTV",   "NVRMOV ROVTV",   "LYPMMV RPMQV RXMQV RXMUV",   "MXQMNV RQMTV RWMTV",   "LXRMPNOONQNSOUPVRVTUUTVRVPUNTMRM",   "MWQMNV RQMUMVNVPUQSRPR",   "LXRMPNOONQNSOUPVRVTUUTVRVPUNTMRM RQVPUPTQSRSSTTVUWVW",   "MWQMNV RQMUMVNVPUQSRPR RQRRUSVTVUU",   "MWVNTMRMPNPPQQTRUSUUSVPVNU",   "MVSMPV RPMVM",   "LXPMNSNUOVRVTUUSWM",   "MWOMQV RWMQV",   "KXNMNV RSMNV RSMSV RXMSV",   "NWQMTV RWMNV",   "NWQMSQQV RWMSQ",   "MWQMWMNVTV",   "",   "",   "",   "",   "",   "",   "LXNMRV RVMRV RNMVM",   "MWNLVX",   "LXRONU RROVU",   "",   "",   "",   "",   "",   "",   "",   "",   "",   "",   "",   "",   "",   "",   
@@ -485,7 +484,8 @@ const char * const _occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
      since that array now consists entirely of Kanji, and is optional (it
      can be omitted by a compile-time option -DNO_KANJI). */
 
-  /* Japanese period, comma, overbar [4195--4199] (orig. Oriental 6200--6202) */
+  /* Japanese period, comma, overbar, two unuseds [4195--4199] (first
+     three were originally Oriental 6200--6202) */
   "D_HYGZH[IZHY", "D_H[GZHYIZI\\H^G_", "D_HOJQZP\\Q RIP\\Q", "", "",
 
   /******** Hershey Glyphs 4200 to 4299 (orig. Oriental 6000 to 6099) ********/
@@ -501,7 +501,7 @@ const char * const _occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
 };
 
 #ifndef NO_KANJI
-const char * const _oriental_vector_glyphs[NUM_ORIENTAL_VECTOR_GLYPHS] =
+const char * const _oriental_hershey_glyphs[NUM_ORIENTAL_HERSHEY_GLYPHS] =
 {
 /******** Oriental Hershey Glyphs 0 to 99 ********/
   "", "D_GQ]QZOXQ RXQ[P", "", "", "", "", "", "D_GG]G[EYG RYG\\F RQGPNORNTLWJYG[ RRGQNPRNVLXIZG[ RQMYM RXMYL[MYP RYMXTWXVYTZQY RWYVZUZ RZMYTXXWZV[U[TZ", "D_II[IYGWI RWIZH RKQYQWOUQ RUQXP RGZ]Z[XYZ RYZ\\Y", "D_GG]G[EYG RYG\\F RQGQ[ RRGR[ RTMVNXQYSZSZRYPWNTMRM", "", "", "", "", "", "D_IHZHXFVH RVHYG RQHNZ RRHOZ RIPVP RUPVOXPWR RVPUZ RWPWRVZ RGZ]Z[XYZ RYZ\\Y", "D_GG]G[EYG RYG\\F RQGQLPQNULXJZG\\ RRGRMQROVLYI[G\\ RSOTRVVXY[\\][ RYY[[ RSOUSXWZY][ RIN[NYLWN RWNZM", "D_GG]G[EYG RYG\\F RTJVITHRLOPKTGW RUITKQOMSIVGW RQOQ\\ RRMR\\ RWPYR[U\\U\\TZRWPUO", "", "", "", "", "", "", "D_GG]G[EYG RYG\\F RYGYXXZW[ RYYYZX[ RZGZZY\\X\\W[UZ RKLKV RKLLMLV RLMSM RSMSU RRMSLTMTU RLTST", "", "D_IG[GYEWG RWGZF RQGQ] RRGR] RKKLMMPNPNOMMJJ RXJUP RXJYKUP RGR]R[PYR RYR\\Q", "D_HG\\GZEXG RXG[F RRGR[ RSGS[ RMPNOLNL[ RMOM[ RSP[PYNWP RWPZO RG[][[YY[ RY[\\Z", "", "", "", "", "", "D_GG]G[EYG RYG\\F RRGOM RRGSHOM RLMJLJ[ RKMK[ RKMXM RWMXLZMYO RXMX[ RYMY[ RKSXS RKYXY", "D_GG]G[EYG RYG\\F RQGQV RRGRV RKLIKI\\ RJLJ\\ RJLYL RXLYK[LZN RYLYXXZW[ RYYYZX[ RZLZZY\\X\\W[UZ RMOMW RMONONW RNVUV RUOUW RUOVOVW", "D_GG]G[EYG RYG\\F RQGQU RRGRU RLKJJJ\\ RKKK\\ RKKXK RWKXJZKYM RXKXXWZV[ RXYXZW[ RYKYZX\\W\\V[TZ RKPXP RGU]U[TZU", "", "", "", "", "", "", "", "D_NGN[ ROGO[ RTGT[ RUGU[ RGG]G[EYG\\F RKMILIU RJMJU RJMYM RXMYL[MZO RYMYU RZMZU RJTYT RG[][[YY[\\Z", "", "", "", "", "", "D_GG]G[EYG RYG\\F ROGMM RPGNM RMMRM RRMRWQX RQMRLSMSWRYQXOW RLOMPNROROQNPLO RWNSR RWNXOSR RKURS RKULVRS RTSUTWWXWXVWUTS RHMH\\ RHMIMI\\ RI[Z[ RZMZ\\ RZM[M[\\", "D_GG]G[EYG RYG\\F RQGQV RRGRV RLKLW RLKMLMW RMLVL RVLVW RULVKWLWW RMQVQ RMVVV RHKH\\ RHKIKI\\ RI[Z[ RZKZ\\ RZK[K[\\", "", "", "D_LGJFJOITHV RKGKOJSIUGW RKGXG RWGXFZGYI RXGXM RYGYM RKLXL RULVNXQ[S]R RVNXPZQ]R RMPMX RMPNQNX RNQUQ RUQUX RTQUPVQVX RNTUT RNWUW RH[\\[ZZY[", "D_GG]G[EYG RYG\\F RTGPJKMGO RVGPKLMGO RQJQP RRIRP RVKXLZN[N[MYLVK RGR]R[PYR RYR\\Q RQRQ[ RRRR[ RMVNULUL[ RMVM[ RRVZVXUWV RG[][[YY[ RY[\\Z", "", "", "", "D_GG]G[EYG RYG\\F RQGPJ RRGQI RSGQJ RMJKIKS RLJLS RLJWJ RVJWIYJXL RWJWS RXJXS RLMWM RLPWP RKSXS RNTKWGZ RNTOUKXGZ RNVXV RWUUWQZO[L\\H] RWUXVTYP[M\\H] RNVQYT[W\\[]]\\ ROWRYTZW[]\\", "", "", "", "D_GG]G[EYG RYG\\F ROGOS RPGPS RTGTS RUGUS RIJIO RIJJKJO RJKZK RZKZO RYKZJ[K[O RIO[O RGS]S[QYS RYS\\R RMVM[N\\V\\W[VZ RMVNVNZO[U[VZVX RQURXSXSWQU RJWIYHZH[I[JYJW RYW[Y\\[][]Z\\YYW", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "D_RHSGQFQ] RRGR] RJLHKHV RILIV RILZL RYLZK\\L[N RZLZV R[L[V RIUZU", "D_RHSGQFQLPPORMTJV RRGRMQPPRNTJV RRNSQTSVUWTUSSQ RJKHJH\\ RIKI\\ RIKZK RYKZJ\\K[M RZKZXYZX[ RZYZZY[ R[K[ZZ\\Y\\X[UZ", "", "", "", "", "", "", "", "", "", "D_KGIFIV RJGJV RJGYG RXGYF[GZI RYGYV RZGZV RQGQ\\ RRGR\\ RJNYN RJUYU", "", "", "", "D_RHSGQFQ\\ RRGR\\ RGL]L[JYL RYL\\K RPLMRJVGY RQMOQMTKVGY RSMTPURXV[Y]X RYV[X RSMTOWSZV]X RMWVWUVTW", "D_QFQ[ RQFRFR[ RJHJP RJHKHKP RKOXO RXHXP RXHYHYP RHSH\\ RHSISI\\ RI[Z[ RZSZ\\ RZS[S[\\", "", "", 
@@ -615,5 +615,5 @@ const char * const _oriental_vector_glyphs[NUM_ORIENTAL_VECTOR_GLYPHS] =
   "", "", "", "D_QGQV RRGRV RLGJFJP RKGKP RKGXG RWGXFZGYI RXGXP RYGYP RKKXK RKOXO RISZSYRXS RGV]V[UZV RIXHZG[G\\H\\IZIX RMXN\\O\\O[MX RSXT\\U\\U[SX RXXZZ[\\\\\\\\[ZYXX", "D_QFQR RRFRR RJEJL RJEKFKL RKFXF RXFXL RWFXEYFYL RKIXI RJLYL RIOZOYNXO RGR]R[QZR RITGUGVHVIT RMTNVOVOUMT RTTUVVVVUTT RZT[V\\V\\UZT RQVQ[ RQVRVR[ RJXZXYWXX RG[][[ZZ[", "", "", "", "", "", "", "", "", "", "", "D_MGNFLFLM RMGMM RGISIQHPI RHMRMQLPM RIOIT RIOJPJT RJPOP ROPOT RNPOOPPPT RITPT RIUJXKXKWIU ROUNX ROUPVNX RGZRX RGZH[RX RWGXFVFVQ RWGWQ RRK]K[JZK RRQZQ RZQYTWWUYR[ RYQZP[QZTXWVYR[O\\ RSRTUVXYZ\\[]Z RTUVWYY]Z", "", "", "", "", "", "D_SEQEPG RSEPG RKFKM RKFLGLM RLGWG RWGWM RVGWFXGXM RLIWI RLKWK RKMXM RQOQU RRORU RJOJU RKOKU RJOYO RXOXU RYOYU RKRXR RJUYU RNUNZM\\L] ROUOZN\\L]J] RTUT] RUUU] RGX]X[WZX", "", "", "", "", "", "", "D_RFSEQEQK RRFRK RLHMGKGKK RLHLK RRHXHWGVH RGK]K[JZK RRNSMQMQY RRNRY RLMMNNPOPOONNLM RVMTQ RVMWNTQ RJRYRXQWR RPRMVKX RQSOUKX RSTTUVXWXWWVVST RHMH\\ RHMIMI\\ RI[Z[ RZMZ\\ RZM[M[\\", "", "", "", "", "", "", "", "", "", "", "", "D_RHRGSFQFQH RHH\\HZGYH RLHNLOLOKLH RVHTL RVHWITL RGL]L[KZL RLOJNJX RKOKX RKOXO RWOXNZOYQ RXOXX RYOYX RKSXS RKWXW RQOQ[R\\\\\\][\\Y R[[\\[\\Z RRORZS[Z[\\Y]V", "", "", "", "", "D_NELEJHGL RNEGL RMFSF RRFSEUGRH RSFRH RTFRHQI RJHJO RJHKIKO RKIXI RXIXO RWIXHYIYO RKLXL RJOYO RQIQ[R\\\\\\][\\Z RRIRZS[[[\\Z]X RIQIY RIQJRJY RJRYR RYRYY RXRYQZRZY RJUYU RJXYX", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "D_", 
 };
 #else  /* NO_KANJI */
-const char * const _oriental_vector_glyphs[NUM_ORIENTAL_VECTOR_GLYPHS] = { };
+const char * const _oriental_hershey_glyphs[NUM_ORIENTAL_HERSHEY_GLYPHS] = { };
 #endif /* KANJI */

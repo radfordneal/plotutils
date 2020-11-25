@@ -2,7 +2,6 @@
    libplot.  It plots an object: a point with coordinates x,y. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* size of a `point' as fraction of diagonal distance between scaling

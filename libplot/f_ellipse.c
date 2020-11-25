@@ -8,7 +8,6 @@
    _f_draw_ellipse_internal(). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* subtypes of ELLIPSE object */
@@ -16,9 +15,7 @@
 #define SUBTYPE_ELLIPSE 1	/* subtype: ellipse defined by radii */
 #define SUBTYPE_CIRCLE  3	/* subtype: circle defined by radius */
 
-static int _f_draw_ellipse_internal __P((double x, double y, double rx, double ry, double angle, int subtype));
-
-static int
+int
 #ifdef _HAVE_PROTOS
 _f_draw_ellipse_internal (double x, double y, double rx, double ry, double angle, int subtype)
 #else
@@ -27,13 +24,15 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
      int subtype;
 #endif
 {
+  const char *format;
   double theta, mixing_angle;
   double ux, uy, vx, vy;
   double semi_axis_1_x, semi_axis_1_y;
   double semi_axis_2_x, semi_axis_2_y;  
   double rx_device, ry_device, theta_device;
   double costheta, sintheta;
-  const char *format;
+  double nominal_spacing;
+  int line_style;
 
   /* inclination angle (radians), in user frame */
   theta = M_PI * angle / 180.0;
@@ -83,6 +82,9 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
   _plotter->set_pen_color();
   _plotter->set_fill_color();
   
+  /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
+  _f_compute_line_style (&line_style, &nominal_spacing);
+
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
@@ -96,7 +98,7 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
 	  format,
 	  1,			/* ellipse object */
 	  subtype,		/* subtype, see above */
-	  _fig_line_style[_plotter->drawstate->line_type], /* style */
+	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
 	  _plotter->drawstate->quantized_device_line_width, 
 	  _plotter->drawstate->fig_fgcolor,	/* pen color */
@@ -104,8 +106,7 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
 	  _plotter->fig_drawing_depth, /* depth */
 	  0,			/* pen style, ignored */
 	  _plotter->drawstate->fig_fill_level, /* area fill */
-		  /* style val, in Fig display units (float) */
-	  _fig_dash_length[_plotter->drawstate->line_type], 
+	  nominal_spacing,	/* style val, in Fig display units (float) */
 	  1,			/* direction, always 1 */
 	  theta_device,		/* inclination angle, in radians (float) */
 	  IROUND(XD(x,y)),	/* center_x (not float, unlike arc) */
@@ -144,10 +145,14 @@ _f_fellipse (x, y, rx, ry, angle)
   _plotter->endpath (); /* flush polyline if any */
 
   if (!_plotter->drawstate->points_are_connected)
-    /* line type is `disconnected', so do nothing */
-    return 0;
-
-  return _f_draw_ellipse_internal (x, y, rx, ry, angle, SUBTYPE_ELLIPSE);
+    /* `disconnected' line type, so don't draw anything (libplot convention) */
+    {
+      _plotter->drawstate->pos.x = x; /* move to center of ellipse */
+      _plotter->drawstate->pos.y = y;
+      return 0;
+    }
+  else
+    return _f_draw_ellipse_internal (x, y, rx, ry, angle, SUBTYPE_ELLIPSE);
 }
 
 int
@@ -167,8 +172,12 @@ _f_fcircle (x, y, r)
   _plotter->endpath (); /* flush polyline if any */
 
   if (!_plotter->drawstate->points_are_connected)
-    /* line type is `disconnected', so do nothing */
-    return 0;
-
-  return _f_draw_ellipse_internal (x, y, r, r, 0.0, SUBTYPE_CIRCLE);
+    /* `disconnected' line type, so don't draw anything (libplot convention) */
+    {
+      _plotter->drawstate->pos.x = x; /* move to center of circle */
+      _plotter->drawstate->pos.y = y;
+      return 0;
+    }
+  else
+    return _f_draw_ellipse_internal (x, y, r, r, 0.0, SUBTYPE_CIRCLE);
 }

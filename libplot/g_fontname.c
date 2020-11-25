@@ -14,7 +14,6 @@
    the space() method. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 double
@@ -31,9 +30,25 @@ _g_ffontname (s)
       return -1;
     }
 
-  /* null pointer resets to default */
+  /* Null pointer resets to default.  (N.B. we don't look at the font_name
+     field in _default_drawstate, because it's a dummy.) */
   if ((s == NULL) || (*s == '\0') || !strcmp(s, "(null)"))
-    s = _plotter->default_drawstate->font_name;
+    switch (_plotter->default_font_type)
+      {
+      case F_HERSHEY:
+      default:
+	s = DEFAULT_HERSHEY_FONT;
+	break;
+      case F_POSTSCRIPT:
+	s = DEFAULT_POSTSCRIPT_FONT;
+	break;
+      case F_PCL:
+	s = DEFAULT_PCL_FONT;
+	break;
+      case F_STICK:
+	s = DEFAULT_STICK_FONT;
+	break;
+      }
 
   /* save new font name */
   free (_plotter->drawstate->font_name);

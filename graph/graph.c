@@ -32,6 +32,7 @@ struct option long_options[] =
   {"symbol",		ARG_OPTIONAL,	NULL, 'S'}, /* 0 or 1 or 2 */
   {"tick-size",		ARG_REQUIRED,	NULL, 'k'},
   {"toggle-auto-bump",	ARG_NONE,	NULL, 'B'},
+  {"toggle-axis-end",	ARG_REQUIRED,	NULL, 'E'},
   {"toggle-log-axis",	ARG_REQUIRED,	NULL, 'l'},
   {"toggle-no-ticks",	ARG_REQUIRED,	NULL, 'N'},
   {"toggle-round-to-next-tick",	ARG_REQUIRED,	NULL, 'R'},
@@ -53,11 +54,11 @@ struct option long_options[] =
   {"max-line-length",	ARG_REQUIRED,	NULL, 'M' << 8},
   {"pen-colors",	ARG_REQUIRED,	NULL, 'p' << 8},
   {"reposition",	ARG_REQUIRED,	NULL, 'R' << 8}, /* 3 */
+  {"rotation",		ARG_REQUIRED,	NULL, 'r' << 8},
   {"symbol-font-name",	ARG_REQUIRED,	NULL, 'G' << 8},
   {"title-font-name",	ARG_REQUIRED,	NULL, 'Z' << 8},
   {"title-font-size",	ARG_REQUIRED,	NULL, 'F' << 8},
   {"toggle-rotate-y-label",	ARG_NONE,	NULL, 'N' << 8},
-  {"toggle-switch-axis-end",	ARG_REQUIRED,	NULL, 's' << 8},
   {"page-size",		ARG_REQUIRED,	NULL, 'P' << 8},
   /* Options relevant only to raw graph (refers to plot(5) output) */
   {"portable-output",	ARG_NONE,	NULL, 'O'},
@@ -78,9 +79,9 @@ const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
 
 /* forward references */
-static void close_file __P ((char *filename, FILE *stream));
-static void open_file_for_reading __P ((char *filename, FILE **input));
-static bool parse_pen_string __P ((const char *pen_s));
+static void close_file ____P ((char *filename, FILE *stream));
+static void open_file_for_reading ____P ((char *filename, FILE **input));
+static bool parse_pen_string ____P ((const char *pen_s));
 
 int
 #ifdef _HAVE_PROTOS
@@ -96,6 +97,7 @@ main (argc, argv)
   int option;
   int opt_index;
   int errcnt = 0;		/* errors encountered in getopt parsing */
+  int matched;
   bool using_getopt = true;	/* true until end of command-line options */
   bool continue_parse = true;	/* reset e.g. when --help or --version seen */
   bool show_version = false;	/* show version message? */
@@ -126,7 +128,7 @@ main (argc, argv)
   int linemode_index = 1;	/* linemode for polylines, 1=solid, etc. */
   double plot_line_width = -0.001; /* polyline width (as frac. of display width), negative means default provided by libplot) */
   int symbol_index = 0;		/* 0=none, 1=dot, 2=plus, 3=asterisk, etc. */
-  double symbol_size = .03;	/* symbol size (as frac. of plotting box width) */
+  double symbol_size = .03;	/* symbol size (frac. of plotting box size) */
   double fill_fraction = -1.0;	/* negative means regions aren't filled */
   bool use_color = false;	/* color / monochrome */
 
@@ -137,10 +139,11 @@ main (argc, argv)
   /* Variables related to the point plotter */
 
   grid_type grid_spec = AXES_AND_BOX; /* frame type for the plot */
-  char *frame_color = "black";	/* color of frame (and plot, if no -C option)*/
-  char *bg_color = NULL;	/* color of background, if non-NULL */
-  bool save_screen = false;	/* save screen, i.e. no erase before plot? */
   bool no_rotate_y_label = false; /* used for pre-X11R6 servers */
+  bool save_screen = false;	/* save screen, i.e. no erase before plot? */
+  char *bg_color = NULL;	/* color of background, if non-NULL */
+  char *frame_color = "black";	/* color of frame (and plot, if no -C option)*/
+  int rotation_angle = ROT_0;	/* angle of plot within graphics display */
   int clip_mode = 1;		/* clipping mode (cf. gnuplot) */
   /* following variables are portmanteau: x and y are included as bitfields*/
   int log_axis = 0;		/* log axes or linear axes? */
@@ -159,7 +162,7 @@ main (argc, argv)
   double plot_height = .6;	/* height of the plot */
   double plot_width = .6;	/* width of the plot */
 
-  /* dimensions, expressed as fractions of the width of the plotting area */
+  /* dimensions, expressed as fractions of the size of the plotting area */
   double tick_size = .02;	/* size of tick marks (< 0.0 allowed) */
   double font_size = 0.0525;	/* fontsize */
   double title_font_size = 0.07; /* title fontsize */
@@ -221,10 +224,11 @@ main (argc, argv)
   /* parse argv[] */
   while (continue_parse)
     {
-      if (using_getopt)		/* true until end of options */
+      if (using_getopt)
+	/* end of options not reached yet */
 	{
 	  option = getopt_long (argc, argv, 
-				"-BCOVstF:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::", 
+				"-BCOVstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::", 
 			    long_options, &opt_index);
 	  if (option == EOF)	/* end of options */
 	    {
@@ -232,12 +236,15 @@ main (argc, argv)
 	      continue;		/* back to top of while loop */
 	    }
 	  if (option == 1)	/* filename embedded among options */
-	    if (strcmp (optarg, "-") == 0)
-	      data_file = stdin; /* interpret "-" as stdin */
-	    else
-	      open_file_for_reading (optarg, &data_file);
+	    {
+	      if (strcmp (optarg, "-") == 0)
+		data_file = stdin; /* interpret "-" as stdin */
+	      else
+		open_file_for_reading (optarg, &data_file);
+	    }
 	}
-      else			/* processing filenames manually */
+      else
+	/* end of options reached, processing filenames manually */
 	{
 	  if (optind >= argc)	/* all files processed */
 	    {
@@ -262,6 +269,11 @@ main (argc, argv)
 	    }
 	}
 
+      /* parse an option flag, which may be an option flag obtained from
+	 getopt, or a fake (a `1', indicating that a file has been seen on
+	 the command line after all genuine options have been processed, or
+	 that stdin should be read because no filenames have been seen) */
+
       switch (option)
 	{
 	  /* ----------- options with no argument --------------*/
@@ -280,7 +292,7 @@ main (argc, argv)
 	  use_color = (use_color == true ? false : true);
 	  break;
 	case 'O':
-	  parampl ("META_PORTABLE", "yes"); /* portable format, ARG NONE */
+	  pl_parampl ("META_PORTABLE", "yes"); /* portable format, ARG NONE */
 	  break;
 	case 'V' << 8:		/* Version, ARG NONE		*/
 	  show_version = true;
@@ -360,14 +372,20 @@ main (argc, argv)
 		       progname, optarg);
 	      errcnt++;
 	    }
-	  if (local_font_size < 0.0)
-	    fprintf (stderr, "%s: ignoring negative font size `%f'\n",
-		     progname, local_font_size);
-	  else if (local_font_size == 0.0)
-	    fprintf (stderr, "%s: ignoring zero font size\n",
-		     progname);
 	  else
-	    font_size = local_font_size;
+	    {
+	      if (local_font_size >= 1.0)
+		fprintf (stderr, "%s: ignoring too-large font size `%f' (must be < 1.0)\n",
+			 progname, local_font_size);
+	      else if (local_font_size < 0.0)
+		fprintf (stderr, "%s: ignoring negative font size `%f'\n",
+			 progname, local_font_size);
+	      else if (local_font_size == 0.0)
+		fprintf (stderr, "%s: ignoring zero font size\n",
+			 progname);
+	      else
+		font_size = local_font_size;
+	    }
 	  break;
 	case 'g':		/* Grid style, ARG REQUIRED	*/
 	  if (sscanf (optarg, "%d", &local_grid_style) <= 0)
@@ -480,14 +498,17 @@ main (argc, argv)
 		       progname, optarg);
 	      errcnt++;
 	    }
-	  if (local_fill_fraction > 1.0)
-	    fprintf (stderr, 
-		       "%s: ignoring bad region fill fraction `%f' (must be <=1.0)\n",
-		     progname, local_fill_fraction);
 	  else
 	    {
-	      fill_fraction = local_fill_fraction;
-	      new_fill_fraction = true;
+	      if (local_fill_fraction > 1.0)
+		fprintf (stderr, 
+			 "%s: ignoring bad region fill fraction `%f' (must be <=1.0)\n",
+			 progname, local_fill_fraction);
+	      else
+		{
+		  fill_fraction = local_fill_fraction;
+		  new_fill_fraction = true;
+		}
 	    }
 	  break;
 	case 'r':		/* Right shift, ARG REQUIRED */
@@ -522,6 +543,15 @@ main (argc, argv)
 	  break;
 	case 'F':		/* Font name, ARG REQUIRED      */
 	  font_name = xstrdup (optarg);
+	  break;
+	case 'r' << 8:		/* Rotation angle, ARG REQUIRED      */
+	  if (strcmp (optarg, "90") == 0)
+	    rotation_angle = ROT_90;
+	  else if (strcmp (optarg, "180") == 0)
+	    rotation_angle = ROT_180;
+	  else if (strcmp (optarg, "270") == 0)
+	    rotation_angle = ROT_270;
+	  else rotation_angle = ROT_0;
 	  break;
 	case 'Z' << 8:		/* Title Font name, ARG REQUIRED      */
 	  title_font_name = xstrdup (optarg);
@@ -564,12 +594,12 @@ main (argc, argv)
 	  if (sscanf (optarg, "%lf", &local_plot_line_width) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: plot line width must be a number, was `%s'\n",
+		       "%s: error: plot line thickness must be a number, was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
 	  if (local_plot_line_width < 0.0)
-	    fprintf (stderr, "%s: ignoring negative plot line width `%f'\n",
+	    fprintf (stderr, "%s: ignoring negative plot line thickness `%f'\n",
 		     progname, local_plot_line_width);
 	  else
 	    {
@@ -583,17 +613,17 @@ main (argc, argv)
 	case 'Y':		/* Y axis title, ARG REQUIRED	*/
 	  y_label = xstrdup (optarg);
 	  break;
-	case 's' << 8:		/* Toggle switching of axis to other end, 
+	case 'E':		/* Toggle switching of axis to other end, 
 				   ARG REQUIRED */
 	  switch (*optarg)
 	    {
 	    case 'x':
 	    case 'X':
-	      switch_axis_end ^= X_AXIS;
+	      switch_axis_end ^= Y_AXIS;
 	      break;
 	    case 'y':
 	    case 'Y':
-	      switch_axis_end ^= Y_AXIS;
+	      switch_axis_end ^= X_AXIS;
 	      break;
 	    default:
 	      fprintf (stderr, 
@@ -612,7 +642,7 @@ main (argc, argv)
 	    }
 	  break;
 	case 'B' << 8:		/* Bitmap size, ARG REQUIRED	*/
-	  parampl ("BITMAPSIZE", optarg);
+	  pl_parampl ("BITMAPSIZE", optarg);
 	  break;
 	case 'F' << 8:		/* Title font size, ARG REQUIRED	*/
 	  if (sscanf (optarg, "%lf", &local_title_font_size) <= 0)
@@ -622,7 +652,10 @@ main (argc, argv)
 		       progname, optarg);
 	      errcnt++;
 	    }
-	  if (local_title_font_size < 0.0)
+	  else if (local_title_font_size >= 1.0)
+	    fprintf (stderr, "%s: ignoring too-large title font size `%f' (must be < 1.0)\n",
+		     progname, local_title_font_size);
+	  else if (local_title_font_size < 0.0)
 	    fprintf (stderr, "%s: ignoring negative title font size `%f'\n",
 		     progname, local_title_font_size);
 	  if (local_title_font_size == 0.0)
@@ -635,24 +668,24 @@ main (argc, argv)
 	  if (sscanf (optarg, "%lf", &local_frame_line_width) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: frame line width must be a number, was `%s'\n",
+		       "%s: error: frame line thickness must be a number, was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	    }
 	  if (local_frame_line_width < 0.0)
-	    fprintf (stderr, "%s: ignoring negative frame line width `%f'\n",
+	    fprintf (stderr, "%s: ignoring negative frame line thickness `%f'\n",
 		     progname, local_frame_line_width);
 	  else
 	    frame_line_width = local_frame_line_width;
 	  break;
 	case 'M' << 8:		/* Max line length, ARG REQUIRED	*/
-	  parampl ("MAX_LINE_LENGTH", optarg);
+	  pl_parampl ("MAX_LINE_LENGTH", optarg);
 	  break;
 	case 'P' << 8:		/* Page size, ARG REQUIRED	*/
-	  parampl ("PAGESIZE", optarg);
+	  pl_parampl ("PAGESIZE", optarg);
 	  break;
 	case 'Q' << 8:		/* Plot rotation angle, ARG REQUIRED	*/
-	  parampl ("ROTATE", optarg);
+	  pl_parampl ("ROTATE", optarg);
 	  break;
 	case 'p' << 8:		/* Pen color string, ARG REQUIRED      */
 	  if (parse_pen_string (optarg) == false)
@@ -693,64 +726,117 @@ main (argc, argv)
 	  optind++;	/* tell getopt we recognized x_start */
 	  break;
 	case 'x':		/* X limits, ARG OPTIONAL [0,1,2,3] */
-	  if ((optind >= argc)
-	      || (sscanf (argv[optind], "%lf", &local_min_x) <= 0))
+	  matched = 0;
+	  if (optind >= argc
+	      || ((strcmp (argv[optind], "-") != 0)
+		  && (matched 
+		      = sscanf (argv[optind], "%lf", &local_min_x)) <= 0))
 	    {
 	      spec_min_x = spec_max_x = spec_spacing_x = false;
 	      break;
 	    }
-	  min_x = local_min_x;
-	  spec_min_x = true;
+	  if (matched > 0)
+	    {
+	      spec_min_x = true;
+	      min_x = local_min_x;
+	    }
+	  else
+	      spec_min_x = false;
 	  optind++;	/* tell getopt we recognized min_x */
-	  if ((optind >= argc)
-	      || (sscanf (argv [optind], "%lf", &local_max_x) <= 0))
+
+	  matched = 0;
+	  if (optind >= argc
+	      || ((strcmp (argv[optind], "-") != 0)
+		  && (matched 
+		      = sscanf (argv[optind], "%lf", &local_max_x)) <= 0))
 	    {
 	      spec_max_x = spec_spacing_x = false;
 	      break;
 	    }
-	  max_x = local_max_x;
-	  spec_max_x = true;
+	  if (matched > 0)
+	    {
+	      spec_max_x = true;
+	      max_x = local_max_x;
+	    }
+	  else
+	    spec_max_x = false;
 	  optind++;	/* tell getopt we recognized max_x */
-	  if ((optind >= argc)
-	      || (sscanf (argv [optind], "%lf", &local_spacing_x) <= 0))
+
+	  matched = 0;
+	  if (optind >= argc
+	      || ((strcmp (argv[optind], "-") != 0)
+		  && (matched 
+		      = sscanf (argv[optind], "%lf", &local_spacing_x)) <= 0))
 	    {
 	      spec_spacing_x = false;
 	      break;
 	    }
-	  spacing_x = local_spacing_x;
-	  spec_spacing_x = true;
+	  if (matched > 0)
+	    {
+	      spec_spacing_x = true;
+	      spacing_x = local_spacing_x;
+	    }
+	  else
+	      spec_spacing_x = false;
 	  optind++;	/* tell getopt we recognized spacing_x */
 	  break;
 
 	case 'y':		/* Y limits, ARG OPTIONAL [0,1,2,3] */
-	  if ((optind >= argc) 
-	      || (sscanf (argv [optind], "%lf", &local_min_y) <= 0))
+	  matched = 0;
+	  if (optind >= argc
+	      || ((strcmp (argv[optind], "-") != 0)
+		  && (matched 
+		      = sscanf (argv[optind], "%lf", &local_min_y)) <= 0))
 	    {
 	      spec_min_y = spec_max_y = spec_spacing_y = false;
 	      break;
 	    }
-	  min_y = local_min_y;
-	  spec_min_y = true;
+	  if (matched > 0)
+	    {
+	      spec_min_y = true;
+	      min_y = local_min_y;
+	    }
+	  else
+	      spec_min_y = false;
 	  optind++;	/* tell getopt we recognized min_y */
-	  if ((optind >= argc)
-	      || (sscanf (argv [optind], "%lf", &local_max_y) <= 0))
+
+	  matched = 0;
+	  if (optind >= argc
+	      || ((strcmp (argv[optind], "-") != 0)
+		  && (matched 
+		      = sscanf (argv[optind], "%lf", &local_max_y)) <= 0))
 	    {
 	      spec_max_y = spec_spacing_y = false;
 	      break;
 	    }
-	  max_y = local_max_y;
-	  spec_max_y = true;
-	  optind++;	/* tell getopt we recognized max_y */
-	  if ((optind >= argc)
-	      || (sscanf (argv [optind], "%lf", &local_spacing_y) <= 0))
+	  if (matched > 0)
 	    {
-	      spec_spacing_y = false;	      
+	      spec_max_y = true;
+	      max_y = local_max_y;
+	    }
+	  else
+	      spec_max_y = false;
+	  optind++;	/* tell getopt we recognized max_y */
+
+	  matched = 0;
+	  if (optind >= argc
+	      || ((strcmp (argv[optind], "-") != 0)
+		  && (matched 
+		      = sscanf (argv[optind], "%lf", &local_spacing_y)) <= 0))
+	    {
+	      spec_spacing_y = false;
 	      break;
 	    }
-	  spacing_y = local_spacing_y;
-	  spec_spacing_y = true;
+	  if (matched > 0)
+	    {
+	      spec_spacing_y = true;
+	      spacing_y = local_spacing_y;
+	    }
+	  else
+	      spec_spacing_y = false;
 	  optind++;	/* tell getopt we recognized spacing_y */
 	  break;
+
 	case 'S':		/* Symbol, ARG OPTIONAL	[0,1,2]		*/
 	  new_symbol = true;
 	  symbol_index = M_DOT; /* symbol # 1 is switched to by -S alone */
@@ -858,6 +944,7 @@ main (argc, argv)
 	      
 		  /* initialize plotter, using (in part) finalized arguments */
 		  initialize_plotter(display_type,
+				     rotation_angle,
 				     save_screen, /* for open_plotter() only */
 				     bg_color,
 				     frame_line_width,
@@ -896,15 +983,15 @@ main (argc, argv)
 		    }
 		  
 		  /* push new libplot drawing state onto stack of states */
-		  savestate();
+		  pl_savestate();
 
 		  /* concatenate the current transformation matrix with a
 		     matrix formed from the repositioning parameters (this
 		     will be in effect for duration of the plot) */
-		  fconcat (old_reposition_scale, 0.0, 
-			   0.0, old_reposition_scale,
-			   old_reposition_trans_x * PLOT_SIZE, 
-			   old_reposition_trans_y * PLOT_SIZE);
+		  pl_fconcat (old_reposition_scale, 0.0, 
+			      0.0, old_reposition_scale,
+			      old_reposition_trans_x * PLOT_SIZE, 
+			      old_reposition_trans_y * PLOT_SIZE);
 		  
 		  /* draw the plot frame (grid, ticks, etc.); draw a
 		     `canvas' (a background opaque white rectangle) only if
@@ -923,12 +1010,13 @@ main (argc, argv)
 	  
 	      /* pop the plot-specific libplot drawing state off the stack
                  of drawing states */
-	      restorestate();
+	      pl_restorestate();
 
 	      /* on to next plot */
 	      first_plot = false;
 	      first_file_of_plot = true;
-	    }
+
+	    } /* end of not first-file-of-plot case */
 	  
 	  break;
 
@@ -937,8 +1025,11 @@ main (argc, argv)
 	  /* File specified on command line, returned in order (along with
 	     the true options).  The first time we reach this point, we
 	     perform special initializations and determine whether or not,
-	     for the duration of this plot, we'll be acting as a filter.  A
-	     plot may consist of many files.  A plot in progress is
+	     for the duration of this plot, we'll be acting as a filter.
+	     We can do so if xmin, xmax, ymin, ymax have all been specified
+	     on the command line.
+
+	     A plot may consist of many files.  A plot in progress is
 	     terminated if a --reposition option (which moves us to the
 	     next plot of a multiplot) is seen, or when the last
 	     command-line option is processed. */
@@ -1032,14 +1123,14 @@ main (argc, argv)
 	      final_spacing_y = spacing_y;
 	      final_spec_spacing_y = spec_spacing_y;
 
-	      /* If user didn't specify the limits or tick spacing for an
-		 axis, by default we'll round the axis limits to the
-		 nearest tick, after computing them.  (If the limits were
-		 specified by the user, to request rounding the user must
-		 specify the -R option as well.) */
-	      if (!final_spec_min_x)
+	      /* If user didn't specify either the lower limit or the upper
+		 limit for an axis, by default we'll round the axis limits
+		 to the nearest tick, after computing them.  (If either
+		 limit was specified by the user, to request rounding the
+		 user must specify the -R option as well.) */
+	      if (!final_spec_min_x && !final_spec_max_x)
 		final_round_to_next_tick |= X_AXIS;
-	      if (!final_spec_min_y)
+	      if (!final_spec_min_y && !final_spec_max_y)
 		final_round_to_next_tick |= Y_AXIS;
 	      
 	      /* The case when x_min, x_max, y_min, y_max are all specified
@@ -1053,9 +1144,10 @@ main (argc, argv)
 			 && final_spec_min_y && final_spec_max_y) 
 			? true : false);
 
-	    } /* end of first-file-of-plot initialization */
+	    } /* end of first-file-of-plot case */
 
-	  if (filter)		/* will call read_and_plot() on the file */
+	  if (filter)
+	    /* filter flag is set, will call read_and_plot() on this file */
 	    {
 	      if (first_file_of_plot)
 		{
@@ -1065,6 +1157,7 @@ main (argc, argv)
 	      
 		  /* following is in effect for the entire plot */
 		  initialize_plotter(display_type,
+				     rotation_angle,
 				     save_screen, /* for open_plotter() only */
 				     bg_color,
 				     frame_line_width, 
@@ -1107,15 +1200,15 @@ main (argc, argv)
 		  
 		  /* push a plot-specific drawing state onto libplot's
                      stack of drawing states */
-		  savestate();
+		  pl_savestate();
 
 		  /* concatenate the current transformation matrix with a
 		     matrix formed from the repositioning parameters (this
 		     will take effect for the duration of the plot) */
-		  fconcat (reposition_scale, 0.0, 
-			   0.0, reposition_scale,
-			   reposition_trans_x * PLOT_SIZE, 
-			   reposition_trans_y * PLOT_SIZE);
+		  pl_fconcat (reposition_scale, 0.0, 
+			      0.0, reposition_scale,
+			      reposition_trans_x * PLOT_SIZE, 
+			      reposition_trans_y * PLOT_SIZE);
 	      
 		  /* draw the plot frame (grid, ticks, etc.); draw a
 		     `canvas' (a background opaque white rectangle) only if
@@ -1166,7 +1259,8 @@ main (argc, argv)
 
 	    } /* end of filter case */
 	  
-	  else	/* not acting as filter */
+	  else
+	    /* filter flag is set, will read and plot this file separately */
 
 	    /* Luser didn't specify enough information for us to act as a
 	       filter, so we do things the hard way: we call read_file() on
@@ -1226,7 +1320,7 @@ main (argc, argv)
 	    close_file (optarg, data_file);
 
 	  first_file_of_plot = false;
-	  break;		/* end of `case 1' in switch() */
+	  break;	/* end of `case 1' in switch() [i.e., filename seen] */
 	  
 	  /*---------------- End of options ----------------*/
 
@@ -1252,7 +1346,7 @@ main (argc, argv)
     }
   if (do_list_fonts)
     {
-      bool success;
+      int success;
 
       success = list_fonts (display_type, progname);
       if (success)
@@ -1262,7 +1356,7 @@ main (argc, argv)
     }
   if (show_fonts)
     {
-      bool success;
+      int success;
 
       success = display_fonts (display_type, progname);
       if (success)
@@ -1283,7 +1377,7 @@ main (argc, argv)
     {
       /* If we're acting as a real-time filter, then the plot is already
 	 drawn on the display and there's nothing for us to do.  But if
-	 not, we need to draw the plot. */
+	 not, the plot is stored internally and we need to draw it. */
       if (!filter)
 	{
 
@@ -1291,7 +1385,8 @@ main (argc, argv)
 	     prefix "final_" means these arguments were finalized at the
 	     time the first file of the plot was processed) */
 	  array_bounds (p, no_of_points, final_transpose_axes,
-			&final_min_x, &final_min_y, &final_max_x, &final_max_y,
+			&final_min_x, &final_min_y,
+			&final_max_x, &final_max_y,
 			final_spec_min_x, final_spec_min_y, 
 			final_spec_max_x, final_spec_max_y);
 	  
@@ -1300,6 +1395,7 @@ main (argc, argv)
 	    title_font_name = font_name;
 	      
 	  initialize_plotter(display_type, 
+			     rotation_angle,
 			     save_screen, /* for open_plotter() only */
 			     bg_color,
 			     frame_line_width,
@@ -1338,14 +1434,14 @@ main (argc, argv)
 	    }
 	  
 	  /* push new libplot drawing state onto stack of states */
-	  savestate();
+	  pl_savestate();
 	  
 	  /* concatenate the current transformation matrix with a
 	     matrix formed from the repositioning parameters */
-	  fconcat (reposition_scale, 0.0, 
-		   0.0, reposition_scale,
-		   reposition_trans_x * PLOT_SIZE, 
-		   reposition_trans_y * PLOT_SIZE);
+	  pl_fconcat (reposition_scale, 0.0, 
+		      0.0, reposition_scale,
+		      reposition_trans_x * PLOT_SIZE, 
+		      reposition_trans_y * PLOT_SIZE);
 	  
 	  /* draw the plot frame (grid, ticks, etc.); draw a `canvas' (a
 	     background opaque white rectangle) only if this isn't the
@@ -1362,7 +1458,7 @@ main (argc, argv)
 	} /* end of not-filter case */
 
       /* pop plot-specific drawing state off the stack of drawing states */
-      restorestate();
+      pl_restorestate();
 
     } /* end of nonempty-plot case */
   

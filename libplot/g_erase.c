@@ -6,7 +6,6 @@
    `page', discarding all objects written to it. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -25,7 +24,13 @@ _g_erase ()
   if (_plotter->drawstate->points_in_path > 0)
     _plotter->endpath(); /* flush polyline if any */
 
-  _reset_outbuf (_plotter->page); /* discard all objects */
+  /* if we have an output buffer, i.e., if we're not plotting in real time,
+     discard all objects */
+  if (_plotter->page)
+    _reset_outbuf (_plotter->page);
+
+  /* on to next frame */
+  _plotter->frame_number++;
 
   return 0;
 }

@@ -254,17 +254,17 @@ static const short yyrhs[] = {    58,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   107,   108,   111,   113,   124,   136,   163,   170,   182,   202,
-   241,   246,   256,   268,   270,   272,   277,   282,   289,   291,
-   299,   301,   309,   313,   317,   321,   325,   329,   336,   340,
-   346,   350,   354,   358,   362,   366,   370,   374,   378,   382,
-   386,   390,   394,   398,   402,   406,   410,   414,   418,   422,
-   426,   430,   434,   438,   442,   446,   450,   454,   458,   465,
-   473,   477,   481,   483,   490,   497,   504,   515,   581,   588,
-   597,   604,   611,   618,   625,   632,   639,   646,   653,   660,
-   667,   674,   681,   688,   695,   702,   709,   716,   723,   730,
-   737,   744,   751,   758,   765,   772,   779,   786,   793,   804,
-   816,   823,   830
+   107,   108,   111,   113,   124,   136,   165,   172,   184,   204,
+   244,   249,   259,   271,   273,   275,   280,   285,   292,   294,
+   302,   304,   312,   316,   320,   324,   328,   332,   339,   343,
+   349,   353,   357,   361,   365,   369,   373,   377,   381,   385,
+   389,   393,   397,   401,   405,   409,   413,   417,   421,   425,
+   429,   433,   437,   441,   445,   449,   453,   457,   461,   468,
+   476,   480,   484,   486,   493,   500,   507,   520,   607,   614,
+   625,   632,   639,   646,   653,   660,   667,   674,   681,   688,
+   695,   702,   709,   716,   723,   730,   737,   744,   751,   758,
+   765,   772,   779,   786,   793,   800,   807,   814,   821,   833,
+   846,   853,   860
 };
 #endif
 
@@ -1083,207 +1083,210 @@ case 3:
 case 4:
 #line 114 "gram.y"
 {
-                        struct sym *sp;
-
-                        sp = lookup(yyvsp[-3].lexptr->lx_u.lxu_name);
-                        sp->sy_value = eval(yyvsp[-1].exprptr);
-                        sp->sy_flags |= SF_INIT;
-                        lfree(yyvsp[-3].lexptr);
-                        efree(yyvsp[-1].exprptr);
-                        lfree(yyvsp[0].lexptr);
+			  struct sym *sp;
+			  
+			  sp = lookup(yyvsp[-3].lexptr->lx_u.lxu_name);
+			  sp->sy_value = eval(yyvsp[-1].exprptr);
+			  sp->sy_flags |= SF_INIT;
+			  lfree(yyvsp[-3].lexptr);
+			  efree(yyvsp[-1].exprptr);
+			  lfree(yyvsp[0].lexptr);
                         ;
     break;}
 case 5:
 #line 125 "gram.y"
 {
-                        if (errmess == NULL)
-                                errmess = "syntax error";
-			fprintf (stderr, "%s:%s:%d: %s\n", 
-				 progname, filename,
-				 (yyvsp[0].lexptr->lx_lino), errmess);
-                        errmess = NULL;
-                        lfree(yyvsp[0].lexptr);
-                        yyerrok;
-                        yyclearin;
+			  if (errmess == NULL)
+			    errmess = "syntax error";
+			  fprintf (stderr, "%s:%s:%d: %s\n", 
+				   progname, filename,
+				   (yyvsp[0].lexptr->lx_lino), errmess);
+			  errmess = NULL;
+			  lfree(yyvsp[0].lexptr);
+			  yyerrok;
+			  yyclearin;
                         ;
     break;}
 case 6:
 #line 137 "gram.y"
 {
-                        struct sym *sp;
-                        struct prt *pp, *qp;
-
-                        sp = lookup(yyvsp[-4].lexptr->lx_u.lxu_name);
-                        efree(sp->sy_expr);
-                        sp->sy_expr = yyvsp[-1].exprptr;
-                        sp->sy_flags |= SF_ISEQN;
-                        if (!sawprint) {
-                                for (pp=pqueue; pp!=NULL; pp=pp->pr_link)
-                                        if (pp->pr_sym == sp)
-                                                goto found;
-                                pp = palloc();
-                                pp->pr_sym = sp;
-                                if (pqueue == NULL)
-                                        pqueue = pp;
-                                else {
-                                        for (qp=pqueue; qp->pr_link!=NULL; )
-                                                qp = qp->pr_link;
-                                        qp->pr_link = pp;
+			  struct sym *sp;
+			  struct prt *pp, *qp;
+			  
+			  sp = lookup(yyvsp[-4].lexptr->lx_u.lxu_name);
+			  efree(sp->sy_expr);
+			  sp->sy_expr = yyvsp[-1].exprptr;
+			  sp->sy_flags |= SF_ISEQN;
+			  if (!sawprint) 
+			    {
+			      for (pp=pqueue; pp!=NULL; pp=pp->pr_link)
+				if (pp->pr_sym == sp)
+				  goto found;
+			      pp = palloc();
+			      pp->pr_sym = sp;
+			      if (pqueue == NULL)
+				pqueue = pp;
+			      else 
+				{
+				  for (qp=pqueue; qp->pr_link!=NULL; )
+				    qp = qp->pr_link;
+				  qp->pr_link = pp;
                                 }
-                        }
-                found:
-                        lfree(yyvsp[-4].lexptr);
-                        lfree(yyvsp[0].lexptr);
+			    }
+			found:
+			  lfree(yyvsp[-4].lexptr);
+			  lfree(yyvsp[0].lexptr);
                         ;
     break;}
 case 7:
-#line 164 "gram.y"
+#line 166 "gram.y"
 {
-                        sawprint = true;
-                        prerr = erritem;
-                        erritem = false;
-                        lfree(yyvsp[0].lexptr);
+			  sawprint = true;
+			  prerr = erritem;
+			  erritem = false;
+			  lfree(yyvsp[0].lexptr);
                         ;
     break;}
 case 8:
-#line 171 "gram.y"
+#line 173 "gram.y"
 {
-                        lfree(yyvsp[0].lexptr);
-                        tstart = yyvsp[-3].lexptr->lx_u.lxu_value;
-                        lfree(yyvsp[-3].lexptr);
-                        tstop = yyvsp[-1].lexptr->lx_u.lxu_value;
-                        lfree(yyvsp[-1].lexptr);
-                        if (!conflag)
-                                startstep();
-                        solve();
-                        sawstep = true;
+			  lfree(yyvsp[0].lexptr);
+			  tstart = yyvsp[-3].lexptr->lx_u.lxu_value;
+			  lfree(yyvsp[-3].lexptr);
+			  tstop = yyvsp[-1].lexptr->lx_u.lxu_value;
+			  lfree(yyvsp[-1].lexptr);
+			  if (!conflag)
+			    startstep();
+			  solve();
+			  sawstep = true;
                         ;
     break;}
 case 9:
-#line 183 "gram.y"
+#line 185 "gram.y"
 {
-			double savstep;
-			bool savconflag;
-
-                        lfree(yyvsp[0].lexptr);
-                        tstart = yyvsp[-5].lexptr->lx_u.lxu_value;
-                        lfree(yyvsp[-5].lexptr);
-                        tstop = yyvsp[-3].lexptr->lx_u.lxu_value;
-                        lfree(yyvsp[-3].lexptr);
-                        savstep = tstep;
-                        tstep = yyvsp[-1].lexptr->lx_u.lxu_value;
-                        lfree(yyvsp[-1].lexptr);
-                        savconflag = conflag;
-                        conflag = true;
-                        solve();
-                        tstep = savstep;
-                        conflag = savconflag;
-                        sawstep = true;
+			  double savstep;
+			  bool savconflag;
+			  
+			  lfree(yyvsp[0].lexptr);
+			  tstart = yyvsp[-5].lexptr->lx_u.lxu_value;
+			  lfree(yyvsp[-5].lexptr);
+			  tstop = yyvsp[-3].lexptr->lx_u.lxu_value;
+			  lfree(yyvsp[-3].lexptr);
+			  savstep = tstep;
+			  tstep = yyvsp[-1].lexptr->lx_u.lxu_value;
+			  lfree(yyvsp[-1].lexptr);
+			  savconflag = conflag;
+			  conflag = true;
+			  solve();
+			  tstep = savstep;
+			  conflag = savconflag;
+			  sawstep = true;
                         ;
     break;}
 case 10:
-#line 203 "gram.y"
+#line 205 "gram.y"
 {
-                        struct sym *sp;
-
-                        lfree(yyvsp[0].lexptr);
-                        sp = lookup(yyvsp[-1].lexptr->lx_u.lxu_name);
-                        lfree(yyvsp[-1].lexptr);
-                        printf ("\"%.*s\" is ",NAMMAX,sp->sy_name);
-                        switch (sp->sy_flags & SF_DEPV) {
-                        case SF_DEPV:
-                        case SF_ISEQN:
-                                printf ("a dynamic variable\n");
-                                break;
-                        case SF_INIT:
-                                printf ("an initialized constant\n");
-                                break;
-                        case 0:
-                                printf ("an uninitialized constant\n");
-                                break;
-                        default:
-                                panicn ("impossible (%d) in EXAM action",
-					sp->sy_flags);
-                        }
-                        printf ("value:");
-                        prval (sp->sy_value);
-                        printf ("\nprime:");
-                        prval (sp->sy_prime);
-                        printf ("\nsserr:");
-                        prval (sp->sy_sserr);
-                        printf ("\naberr:");
-                        prval (sp->sy_aberr);
-                        printf ("\nacerr:");
-                        prval (sp->sy_acerr);
-                        putchar ('\n');
-                        prexq(sp->sy_expr);
-                        fflush(stdout);
+			  struct sym *sp;
+			  
+			  lfree(yyvsp[0].lexptr);
+			  sp = lookup(yyvsp[-1].lexptr->lx_u.lxu_name);
+			  lfree(yyvsp[-1].lexptr);
+			  printf ("\"%.*s\" is ",NAMMAX,sp->sy_name);
+			  switch (sp->sy_flags & SF_DEPV)
+			    {
+			    case SF_DEPV:
+			    case SF_ISEQN:
+			      printf ("a dynamic variable\n");
+			      break;
+			    case SF_INIT:
+			      printf ("an initialized constant\n");
+			      break;
+			    case 0:
+			      printf ("an uninitialized constant\n");
+			      break;
+			    default:
+			      panicn ("impossible (%d) in EXAM action",
+				      sp->sy_flags);
+			    }
+			  printf ("value:");
+			  prval (sp->sy_value);
+			  printf ("\nprime:");
+			  prval (sp->sy_prime);
+			  printf ("\nsserr:");
+			  prval (sp->sy_sserr);
+			  printf ("\naberr:");
+			  prval (sp->sy_aberr);
+			  printf ("\nacerr:");
+			  prval (sp->sy_acerr);
+			  putchar ('\n');
+			  prexq(sp->sy_expr);
+			  fflush(stdout);
                         ;
     break;}
 case 11:
-#line 242 "gram.y"
+#line 245 "gram.y"
 {
-                        pfree(pqueue);
-                        pqueue = yyvsp[0].prtptr;
+			  pfree(pqueue);
+			  pqueue = yyvsp[0].prtptr;
                         ;
     break;}
 case 12:
-#line 247 "gram.y"
+#line 250 "gram.y"
 {
-                        struct prt *pp;
-
-                        for (pp=pqueue; pp->pr_link!=NULL; pp=pp->pr_link)
-                                ;
-                        pp->pr_link = yyvsp[0].prtptr;
+			  struct prt *pp;
+			  
+			  for (pp=pqueue; pp->pr_link!=NULL; pp=pp->pr_link)
+			    ;
+			  pp->pr_link = yyvsp[0].prtptr;
                         ;
     break;}
 case 13:
-#line 257 "gram.y"
+#line 260 "gram.y"
 {
-                        struct prt *pp;
-
-                        pp = palloc();
-                        pp->pr_sym = lookup(yyvsp[-1].lexptr->lx_u.lxu_name);
-                        pp->pr_which = (ent_cell)(yyvsp[0].simple);
-                        lfree(yyvsp[-1].lexptr);
-                        yyval.prtptr = pp;
+			  struct prt *pp;
+			  
+			  pp = palloc();
+			  pp->pr_sym = lookup(yyvsp[-1].lexptr->lx_u.lxu_name);
+			  pp->pr_which = (ent_cell)(yyvsp[0].simple);
+			  lfree(yyvsp[-1].lexptr);
+			  yyval.prtptr = pp;
                         ;
     break;}
 case 14:
-#line 269 "gram.y"
+#line 272 "gram.y"
 { yyval.simple = P_VALUE; ;
     break;}
 case 15:
-#line 271 "gram.y"
+#line 274 "gram.y"
 { yyval.simple = P_PRIME; ;
     break;}
 case 16:
-#line 273 "gram.y"
+#line 276 "gram.y"
 {
-                        yyval.simple = P_ACERR;
-                        erritem = true;
+			  yyval.simple = P_ACERR;
+			  erritem = true;
                         ;
     break;}
 case 17:
-#line 278 "gram.y"
+#line 281 "gram.y"
 {
-                        yyval.simple = P_ABERR;
-                        erritem = true;
+			  yyval.simple = P_ABERR;
+			  erritem = true;
                         ;
     break;}
 case 18:
-#line 283 "gram.y"
+#line 286 "gram.y"
 {
-                        yyval.simple = P_SSERR;
-                        erritem = true;
+			  yyval.simple = P_SSERR;
+			  erritem = true;
                         ;
     break;}
 case 19:
-#line 290 "gram.y"
+#line 293 "gram.y"
 { sawevery = false; ;
     break;}
 case 20:
-#line 292 "gram.y"
+#line 295 "gram.y"
 {
                         sawevery = true;
                         tevery = IROUND(yyvsp[0].lexptr->lx_u.lxu_value);
@@ -1291,703 +1294,730 @@ case 20:
                         ;
     break;}
 case 21:
-#line 300 "gram.y"
+#line 303 "gram.y"
 { sawfrom = false; ;
     break;}
 case 22:
-#line 302 "gram.y"
+#line 305 "gram.y"
 {
-                        sawfrom = true;
-                        tfrom = yyvsp[0].lexptr->lx_u.lxu_value;
-                        lfree(yyvsp[0].lexptr);
+			  sawfrom = true;
+			  tfrom = yyvsp[0].lexptr->lx_u.lxu_value;
+			  lfree(yyvsp[0].lexptr);
                         ;
     break;}
 case 23:
-#line 310 "gram.y"
+#line 313 "gram.y"
 {
-                        yyval.lexptr = yyvsp[-1].lexptr;
+			  yyval.lexptr = yyvsp[-1].lexptr;
                         ;
     break;}
 case 24:
-#line 314 "gram.y"
+#line 317 "gram.y"
 {
-                        CEXOP(yyvsp[-2].lexptr,yyvsp[0].lexptr,yyval.lexptr,+=)
+			  CEXOP(yyvsp[-2].lexptr,yyvsp[0].lexptr,yyval.lexptr,+=)
                         ;
     break;}
 case 25:
-#line 318 "gram.y"
+#line 321 "gram.y"
 {
-                        CEXOP(yyvsp[-2].lexptr,yyvsp[0].lexptr,yyval.lexptr,-=)
+			  CEXOP(yyvsp[-2].lexptr,yyvsp[0].lexptr,yyval.lexptr,-=)
                         ;
     break;}
 case 26:
-#line 322 "gram.y"
+#line 325 "gram.y"
 {
-                        CEXOP(yyvsp[-2].lexptr,yyvsp[0].lexptr,yyval.lexptr,*=)
+			  CEXOP(yyvsp[-2].lexptr,yyvsp[0].lexptr,yyval.lexptr,*=)
                         ;
     break;}
 case 27:
-#line 326 "gram.y"
+#line 329 "gram.y"
 {
-                        CEXOP(yyvsp[-2].lexptr,yyvsp[0].lexptr,yyval.lexptr,/=)
+			  CEXOP(yyvsp[-2].lexptr,yyvsp[0].lexptr,yyval.lexptr,/=)
                         ;
     break;}
 case 28:
-#line 330 "gram.y"
+#line 333 "gram.y"
 {
-                        yyvsp[-2].lexptr->lx_u.lxu_value =
-                                pow(yyvsp[-2].lexptr->lx_u.lxu_value,yyvsp[0].lexptr->lx_u.lxu_value);
-                        lfree(yyvsp[0].lexptr);
-                        yyval.lexptr = yyvsp[-2].lexptr;
+			  yyvsp[-2].lexptr->lx_u.lxu_value =
+			    pow(yyvsp[-2].lexptr->lx_u.lxu_value,yyvsp[0].lexptr->lx_u.lxu_value);
+			  lfree(yyvsp[0].lexptr);
+			  yyval.lexptr = yyvsp[-2].lexptr;
                         ;
     break;}
 case 29:
-#line 337 "gram.y"
+#line 340 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,sqrt)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,sqrt)
                         ;
     break;}
 case 30:
-#line 341 "gram.y"
+#line 344 "gram.y"
 {
-                        if (yyvsp[-1].lexptr->lx_u.lxu_value < 0)
-                                yyvsp[-1].lexptr->lx_u.lxu_value = -(yyvsp[-1].lexptr->lx_u.lxu_value);
-                        yyval.lexptr = yyvsp[-1].lexptr;
+			  if (yyvsp[-1].lexptr->lx_u.lxu_value < 0)
+			    yyvsp[-1].lexptr->lx_u.lxu_value = -(yyvsp[-1].lexptr->lx_u.lxu_value);
+			  yyval.lexptr = yyvsp[-1].lexptr;
                         ;
     break;}
 case 31:
-#line 347 "gram.y"
+#line 350 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,exp)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,exp)
                         ;
     break;}
 case 32:
-#line 351 "gram.y"
+#line 354 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,log)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,log)
                         ;
     break;}
 case 33:
-#line 355 "gram.y"
+#line 358 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,log10)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,log10)
                         ;
     break;}
 case 34:
-#line 359 "gram.y"
+#line 362 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,sin)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,sin)
                         ;
     break;}
 case 35:
-#line 363 "gram.y"
+#line 366 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,cos)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,cos)
                         ;
     break;}
 case 36:
-#line 367 "gram.y"
+#line 370 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,tan)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,tan)
                         ;
     break;}
 case 37:
-#line 371 "gram.y"
+#line 374 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,asinh)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,asinh)
                         ;
     break;}
 case 38:
-#line 375 "gram.y"
+#line 378 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,acosh)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,acosh)
                         ;
     break;}
 case 39:
-#line 379 "gram.y"
+#line 382 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,atanh)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,atanh)
                         ;
     break;}
 case 40:
-#line 383 "gram.y"
+#line 386 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,asin)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,asin)
                         ;
     break;}
 case 41:
-#line 387 "gram.y"
+#line 390 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,acos)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,acos)
                         ;
     break;}
 case 42:
-#line 391 "gram.y"
+#line 394 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,atan)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,atan)
                         ;
     break;}
 case 43:
-#line 395 "gram.y"
+#line 398 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,sinh)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,sinh)
                         ;
     break;}
 case 44:
-#line 399 "gram.y"
+#line 402 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,cosh)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,cosh)
                         ;
     break;}
 case 45:
-#line 403 "gram.y"
+#line 406 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,tanh)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,tanh)
                         ;
     break;}
 case 46:
-#line 407 "gram.y"
+#line 410 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,floor)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,floor)
                         ;
     break;}
 case 47:
-#line 411 "gram.y"
+#line 414 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,ceil)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,ceil)
                         ;
     break;}
 case 48:
-#line 415 "gram.y"
+#line 418 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,j0)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,j0)
                         ;
     break;}
 case 49:
-#line 419 "gram.y"
+#line 422 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,j1)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,j1)
                         ;
     break;}
 case 50:
-#line 423 "gram.y"
+#line 426 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,y0)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,y0)
                         ;
     break;}
 case 51:
-#line 427 "gram.y"
+#line 430 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,y1)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,y1)
                         ;
     break;}
 case 52:
-#line 431 "gram.y"
+#line 434 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,erfc)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,erfc)
                         ;
     break;}
 case 53:
-#line 435 "gram.y"
+#line 438 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,erf)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,erf)
                         ;
     break;}
 case 54:
-#line 439 "gram.y"
+#line 442 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,inverf)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,inverf)
                         ;
     break;}
 case 55:
-#line 443 "gram.y"
+#line 446 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,F_LGAMMA)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,F_LGAMMA)
                         ;
     break;}
 case 56:
-#line 447 "gram.y"
+#line 450 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,f_gamma)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,f_gamma)
                         ;
     break;}
 case 57:
-#line 451 "gram.y"
+#line 454 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,norm)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,norm)
                         ;
     break;}
 case 58:
-#line 455 "gram.y"
+#line 458 "gram.y"
 {
-                        CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,invnorm)
+			  CEXFUNC(yyvsp[-1].lexptr,yyval.lexptr,invnorm)
                         ;
     break;}
 case 59:
-#line 459 "gram.y"
+#line 462 "gram.y"
 {
-                        yyvsp[-3].lexptr->lx_u.lxu_value =
-                                igamma(yyvsp[-3].lexptr->lx_u.lxu_value,yyvsp[-1].lexptr->lx_u.lxu_value);
-                        lfree(yyvsp[-1].lexptr);
-                        yyval.lexptr = yyvsp[-3].lexptr;
+			  yyvsp[-3].lexptr->lx_u.lxu_value =
+			    igamma(yyvsp[-3].lexptr->lx_u.lxu_value,yyvsp[-1].lexptr->lx_u.lxu_value);
+			  lfree(yyvsp[-1].lexptr);
+			  yyval.lexptr = yyvsp[-3].lexptr;
                         ;
     break;}
 case 60:
-#line 466 "gram.y"
+#line 469 "gram.y"
 {
-                        yyvsp[-5].lexptr->lx_u.lxu_value =
-                                ibeta(yyvsp[-5].lexptr->lx_u.lxu_value,yyvsp[-3].lexptr->lx_u.lxu_value,yyvsp[-1].lexptr->lx_u.lxu_value);
-                        lfree(yyvsp[-3].lexptr);
-                        lfree(yyvsp[-1].lexptr);
-                        yyval.lexptr = yyvsp[-5].lexptr;
+			  yyvsp[-5].lexptr->lx_u.lxu_value =
+			    ibeta(yyvsp[-5].lexptr->lx_u.lxu_value,yyvsp[-3].lexptr->lx_u.lxu_value,yyvsp[-1].lexptr->lx_u.lxu_value);
+			  lfree(yyvsp[-3].lexptr);
+			  lfree(yyvsp[-1].lexptr);
+			  yyval.lexptr = yyvsp[-5].lexptr;
                         ;
     break;}
 case 61:
-#line 474 "gram.y"
+#line 477 "gram.y"
 {
-                        CEXFUNC(yyvsp[0].lexptr,yyval.lexptr,-)
+			  CEXFUNC(yyvsp[0].lexptr,yyval.lexptr,-)
                         ;
     break;}
 case 62:
-#line 478 "gram.y"
+#line 481 "gram.y"
 { yyval.lexptr = yyvsp[0].lexptr; ;
     break;}
 case 63:
-#line 482 "gram.y"
+#line 485 "gram.y"
 { yyval.exprptr = yyvsp[-1].exprptr; ;
     break;}
 case 64:
-#line 484 "gram.y"
+#line 487 "gram.y"
 {
-                        if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr))
-                                COMBINE(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,+=)
-                        else
-                                BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_PLUS);
+			  if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr))
+			    COMBINE(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,+=)
+			  else
+			    BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_PLUS);
                         ;
     break;}
 case 65:
-#line 491 "gram.y"
+#line 494 "gram.y"
 {
-                        if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr))
-                                COMBINE(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,-=)
-                        else
-                                BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_MINUS);
+			  if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr))
+			    COMBINE(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,-=)
+			  else
+			    BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_MINUS);
                         ;
     break;}
 case 66:
-#line 498 "gram.y"
+#line 501 "gram.y"
 {
-                        if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr))
-                                COMBINE(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,*=)
-                        else
-                                BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_MULT);
+			  if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr))
+			    COMBINE(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,*=)
+			  else
+			    BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_MULT);
                         ;
     break;}
 case 67:
-#line 505 "gram.y"
+#line 508 "gram.y"
 {
-                        if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr))
-                                COMBINE(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,/=)
-                        else if (ONECON(yyvsp[0].exprptr) && yyvsp[0].exprptr->ex_value!=0.) {
-                                /* division by constant */
-                                yyvsp[0].exprptr->ex_value = 1./yyvsp[0].exprptr->ex_value;
-                                BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_MULT);
-                        } else
-                                BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_DIV);
+			  if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr))
+			    COMBINE(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,/=)
+			  else if (ONECON(yyvsp[0].exprptr) && yyvsp[0].exprptr->ex_value!=0.) 
+			    {
+			      /* division by constant */
+			      yyvsp[0].exprptr->ex_value = 1./yyvsp[0].exprptr->ex_value;
+			      BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_MULT);
+			    } 
+			  else
+			    BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_DIV);
                         ;
     break;}
 case 68:
-#line 516 "gram.y"
+#line 521 "gram.y"
 {
-                        double f;
-			bool invert = false;
-
-                        if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr)) {
-                                /* case const ^ const */
-                                yyvsp[-2].exprptr->ex_value = pow(yyvsp[-2].exprptr->ex_value,yyvsp[0].exprptr->ex_value);
-                                efree(yyvsp[0].exprptr);
-                        } else if (ONECON(yyvsp[-2].exprptr)) {
-                                if (yyvsp[-2].exprptr->ex_value == 1.) {
-                                        /* case 1 ^ x */
-                                        efree(yyvsp[0].exprptr);
-                                        yyval.exprptr = yyvsp[-2].exprptr;
-                                } else
-                                        goto other;
-                        } else if (!ONECON(yyvsp[0].exprptr))
-                                goto other;
-                        else {
-                                f = yyvsp[0].exprptr->ex_value;
-                                if (f < 0.) {
-                                        /*
-                                         * negative exponent means
-                                         * to append an invert cmd
-                                         */
-                                        f = -f;
-                                        invert = true;
+			  double f;
+			  bool invert = false;
+			  
+			  if (TWOCON(yyvsp[-2].exprptr,yyvsp[0].exprptr)) 
+			    {
+			      /* case const ^ const */
+			      yyvsp[-2].exprptr->ex_value = pow(yyvsp[-2].exprptr->ex_value,yyvsp[0].exprptr->ex_value);
+			      efree(yyvsp[0].exprptr);
+			    } 
+			  else if (ONECON(yyvsp[-2].exprptr)) 
+			    {
+			      if (yyvsp[-2].exprptr->ex_value == 1.)
+				{
+				  /* case 1 ^ x */
+				  efree(yyvsp[0].exprptr);
+				  yyval.exprptr = yyvsp[-2].exprptr;
                                 }
-                                if (f == 2.) {
-                                        /* case x ^ 2 */
-                                        yyvsp[0].exprptr->ex_oper = O_SQAR;
-                                        concat(yyvsp[-2].exprptr,yyvsp[0].exprptr);
-                                        yyval.exprptr = yyvsp[-2].exprptr;
-                                } else if (f == 3.) {
-                                        /* case x ^ 3 */
-                                        yyvsp[0].exprptr->ex_oper = O_CUBE;
-                                        concat(yyvsp[-2].exprptr,yyvsp[0].exprptr);
-                                        yyval.exprptr = yyvsp[-2].exprptr;
-                                } else if (f == 0.5) {
-                                        /* case x ^ .5 */
-                                        yyvsp[0].exprptr->ex_oper = O_SQRT;
-                                        concat(yyvsp[-2].exprptr,yyvsp[0].exprptr);
-                                        yyval.exprptr = yyvsp[-2].exprptr;
-                                } else if (f == 1.5) {
-                                        /* case x ^ 1.5 */
-                                        yyvsp[0].exprptr->ex_oper = O_CUBE;
-                                        BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_SQRT);
-                                } else if (f == 1.) {
-                                        /* case x ^ 1 */
-                                        efree(yyvsp[0].exprptr);
-                                        yyval.exprptr = yyvsp[-2].exprptr;
-                                } else if (f == 0.) {
-                                        /* case x ^ 0 */
-                                        efree(yyvsp[-2].exprptr);
-                                        yyvsp[0].exprptr->ex_value = 1.;
-                                        yyval.exprptr = yyvsp[0].exprptr;
-                                } else {
-                        other:
-                                        /* default */
-                                        invert = false;
-                                        BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_POWER);
+			      else
+				goto other;
+			    }
+			  else if (!ONECON(yyvsp[0].exprptr))
+			    goto other;
+			  else 
+			    {
+			      f = yyvsp[0].exprptr->ex_value;
+			      if (f < 0.) 
+				{
+				  /*
+				   * negative exponent means
+				   * to append an invert cmd
+				   */
+				  f = -f;
+				  invert = true;
                                 }
-                                if (invert)
-                                        UNARY(yyval.exprptr,yyval.exprptr,O_INV)
-                        }
+			      if (f == 2.) 
+				{
+				  /* case x ^ 2 */
+				  yyvsp[0].exprptr->ex_oper = O_SQAR;
+				  concat(yyvsp[-2].exprptr,yyvsp[0].exprptr);
+				  yyval.exprptr = yyvsp[-2].exprptr;
+                                }
+			      else if (f == 3.) 
+				{
+				  /* case x ^ 3 */
+				  yyvsp[0].exprptr->ex_oper = O_CUBE;
+				  concat(yyvsp[-2].exprptr,yyvsp[0].exprptr);
+				  yyval.exprptr = yyvsp[-2].exprptr;
+                                }
+			      else if (f == 0.5) 
+				{
+				  /* case x ^ .5 */
+				  yyvsp[0].exprptr->ex_oper = O_SQRT;
+				  concat(yyvsp[-2].exprptr,yyvsp[0].exprptr);
+				  yyval.exprptr = yyvsp[-2].exprptr;
+                                }
+			      else if (f == 1.5) 
+				{
+				  /* case x ^ 1.5 */
+				  yyvsp[0].exprptr->ex_oper = O_CUBE;
+				  BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_SQRT);
+                                }
+			      else if (f == 1.) 
+				{
+				  /* case x ^ 1 */
+				  efree(yyvsp[0].exprptr);
+				  yyval.exprptr = yyvsp[-2].exprptr;
+                                }
+			      else if (f == 0.) 
+				{
+				  /* case x ^ 0 */
+				  efree(yyvsp[-2].exprptr);
+				  yyvsp[0].exprptr->ex_value = 1.;
+				  yyval.exprptr = yyvsp[0].exprptr;
+                                } 
+			      else 
+				{
+				other:
+				  /* default */
+				  invert = false;
+				  BINARY(yyvsp[-2].exprptr,yyvsp[0].exprptr,yyval.exprptr,O_POWER);
+                                }
+			      if (invert)
+				UNARY(yyval.exprptr,yyval.exprptr,O_INV)
+			    }
                         ;
     break;}
 case 69:
-#line 582 "gram.y"
+#line 608 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,sqrt)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_SQRT);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,sqrt)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_SQRT);
                         ;
     break;}
 case 70:
-#line 589 "gram.y"
+#line 615 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr)) {
-                                if (yyvsp[-1].exprptr->ex_value < 0)
-                                        yyvsp[-1].exprptr->ex_value = -(yyvsp[-1].exprptr->ex_value);
-                                yyval.exprptr = yyvsp[-1].exprptr;
-                        } else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ABS);
+			  if (ONECON(yyvsp[-1].exprptr)) 
+			    {
+			      if (yyvsp[-1].exprptr->ex_value < 0)
+				yyvsp[-1].exprptr->ex_value = -(yyvsp[-1].exprptr->ex_value);
+			      yyval.exprptr = yyvsp[-1].exprptr;
+			  } 
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ABS);
                         ;
     break;}
 case 71:
-#line 598 "gram.y"
+#line 626 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,exp)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_EXP);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,exp)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_EXP);
                         ;
     break;}
 case 72:
-#line 605 "gram.y"
+#line 633 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,log)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_LOG);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,log)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_LOG);
                         ;
     break;}
 case 73:
-#line 612 "gram.y"
+#line 640 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,log10)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_LOG10);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,log10)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_LOG10);
                         ;
     break;}
 case 74:
-#line 619 "gram.y"
+#line 647 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,sin)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_SIN);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,sin)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_SIN);
                         ;
     break;}
 case 75:
-#line 626 "gram.y"
+#line 654 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,cos)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_COS);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,cos)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_COS);
                         ;
     break;}
 case 76:
-#line 633 "gram.y"
+#line 661 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,tan)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_TAN);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,tan)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_TAN);
                         ;
     break;}
 case 77:
-#line 640 "gram.y"
+#line 668 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,asinh)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ASINH);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,asinh)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ASINH);
                         ;
     break;}
 case 78:
-#line 647 "gram.y"
+#line 675 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,acosh)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ACOSH);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,acosh)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ACOSH);
                         ;
     break;}
 case 79:
-#line 654 "gram.y"
+#line 682 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,atanh)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ATANH);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,atanh)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ATANH);
                         ;
     break;}
 case 80:
-#line 661 "gram.y"
+#line 689 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,asin)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ASIN);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,asin)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ASIN);
                         ;
     break;}
 case 81:
-#line 668 "gram.y"
+#line 696 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,acos)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ACOS);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,acos)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ACOS);
                         ;
     break;}
 case 82:
-#line 675 "gram.y"
+#line 703 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,atan)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ATAN);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,atan)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ATAN);
                         ;
     break;}
 case 83:
-#line 682 "gram.y"
+#line 710 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,sinh)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_SINH);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,sinh)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_SINH);
                         ;
     break;}
 case 84:
-#line 689 "gram.y"
+#line 717 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,cosh)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_COSH);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,cosh)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_COSH);
                         ;
     break;}
 case 85:
-#line 696 "gram.y"
+#line 724 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,tanh)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_TANH);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,tanh)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_TANH);
                         ;
     break;}
 case 86:
-#line 703 "gram.y"
+#line 731 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,floor)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_FLOOR);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,floor)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_FLOOR);
                         ;
     break;}
 case 87:
-#line 710 "gram.y"
+#line 738 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,ceil)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_CEIL);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,ceil)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_CEIL);
                         ;
     break;}
 case 88:
-#line 717 "gram.y"
+#line 745 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,j0)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_J0);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,j0)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_J0);
                         ;
     break;}
 case 89:
-#line 724 "gram.y"
+#line 752 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,j1)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_J1);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,j1)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_J1);
                         ;
     break;}
 case 90:
-#line 731 "gram.y"
+#line 759 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,y0)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_Y0);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,y0)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_Y0);
                         ;
     break;}
 case 91:
-#line 738 "gram.y"
+#line 766 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,y1)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_Y1);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,y1)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_Y1);
                         ;
     break;}
 case 92:
-#line 745 "gram.y"
+#line 773 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,F_LGAMMA)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_LGAMMA);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,F_LGAMMA)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_LGAMMA);
                         ;
     break;}
 case 93:
-#line 752 "gram.y"
+#line 780 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,f_gamma)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_GAMMA);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,f_gamma)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_GAMMA);
                         ;
     break;}
 case 94:
-#line 759 "gram.y"
+#line 787 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,erfc)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ERFC);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,erfc)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ERFC);
                         ;
     break;}
 case 95:
-#line 766 "gram.y"
+#line 794 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,erf)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ERF);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,erf)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_ERF);
                         ;
     break;}
 case 96:
-#line 773 "gram.y"
+#line 801 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,inverf)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_INVERF);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,inverf)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_INVERF);
                         ;
     break;}
 case 97:
-#line 780 "gram.y"
+#line 808 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,norm)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_NORM);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,norm)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_NORM);
                         ;
     break;}
 case 98:
-#line 787 "gram.y"
+#line 815 "gram.y"
 {
-                        if (ONECON(yyvsp[-1].exprptr))
-                                CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,invnorm)
-                        else
-                                UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_INVNORM);
+			  if (ONECON(yyvsp[-1].exprptr))
+			    CONFUNC(yyvsp[-1].exprptr,yyval.exprptr,invnorm)
+			  else
+			    UNARY(yyvsp[-1].exprptr,yyval.exprptr,O_INVNORM);
                         ;
     break;}
 case 99:
-#line 794 "gram.y"
+#line 822 "gram.y"
 {
-                        if (TWOCON(yyvsp[-3].exprptr,yyvsp[-1].exprptr)) {
-                                yyvsp[-3].exprptr->ex_value = 
-				  igamma(yyvsp[-3].exprptr->ex_value,yyvsp[-1].exprptr->ex_value);
-				efree(yyvsp[-1].exprptr);
-				yyval.exprptr = yyvsp[-3].exprptr;
-			       }
-			else 
-			  BINARY(yyvsp[-3].exprptr,yyvsp[-1].exprptr,yyval.exprptr,O_IGAMMA);
+			  if (TWOCON(yyvsp[-3].exprptr,yyvsp[-1].exprptr)) 
+			    {
+			      yyvsp[-3].exprptr->ex_value = 
+				igamma(yyvsp[-3].exprptr->ex_value,yyvsp[-1].exprptr->ex_value);
+			      efree(yyvsp[-1].exprptr);
+			      yyval.exprptr = yyvsp[-3].exprptr;
+			    }
+			  else 
+			    BINARY(yyvsp[-3].exprptr,yyvsp[-1].exprptr,yyval.exprptr,O_IGAMMA);
 		        ;
     break;}
 case 100:
-#line 805 "gram.y"
+#line 834 "gram.y"
 {
-                        if (THREECON(yyvsp[-5].exprptr,yyvsp[-3].exprptr,yyvsp[-1].exprptr)) {
-                                yyvsp[-5].exprptr->ex_value = 
-				  ibeta(yyvsp[-5].exprptr->ex_value,yyvsp[-3].exprptr->ex_value,yyvsp[-1].exprptr->ex_value);
-				efree(yyvsp[-3].exprptr);
-				efree(yyvsp[-1].exprptr);
-				yyval.exprptr = yyvsp[-5].exprptr;
-			       }
-			else 
-			  TERNARY(yyvsp[-5].exprptr,yyvsp[-3].exprptr,yyvsp[-1].exprptr,yyval.exprptr,O_IBETA);
+			  if (THREECON(yyvsp[-5].exprptr,yyvsp[-3].exprptr,yyvsp[-1].exprptr)) 
+			    {
+			      yyvsp[-5].exprptr->ex_value = 
+				ibeta(yyvsp[-5].exprptr->ex_value,yyvsp[-3].exprptr->ex_value,yyvsp[-1].exprptr->ex_value);
+			      efree(yyvsp[-3].exprptr);
+			      efree(yyvsp[-1].exprptr);
+			      yyval.exprptr = yyvsp[-5].exprptr;
+			    }
+			  else 
+			    TERNARY(yyvsp[-5].exprptr,yyvsp[-3].exprptr,yyvsp[-1].exprptr,yyval.exprptr,O_IBETA);
 		        ;
     break;}
 case 101:
-#line 817 "gram.y"
+#line 847 "gram.y"
 {
-                        if (ONECON(yyvsp[0].exprptr))
-                                CONFUNC(yyvsp[0].exprptr,yyval.exprptr,-)
-                        else
-                                UNARY(yyvsp[0].exprptr,yyval.exprptr,O_NEG);
+			  if (ONECON(yyvsp[0].exprptr))
+			    CONFUNC(yyvsp[0].exprptr,yyval.exprptr,-)
+			  else
+			    UNARY(yyvsp[0].exprptr,yyval.exprptr,O_NEG);
                         ;
     break;}
 case 102:
-#line 824 "gram.y"
+#line 854 "gram.y"
 {
-                        yyval.exprptr = ealloc();
-                        yyval.exprptr->ex_oper = O_CONST;
-                        yyval.exprptr->ex_value = yyvsp[0].lexptr->lx_u.lxu_value;
-                        lfree(yyvsp[0].lexptr);
+			  yyval.exprptr = ealloc();
+			  yyval.exprptr->ex_oper = O_CONST;
+			  yyval.exprptr->ex_value = yyvsp[0].lexptr->lx_u.lxu_value;
+			  lfree(yyvsp[0].lexptr);
                         ;
     break;}
 case 103:
-#line 831 "gram.y"
+#line 861 "gram.y"
 {
-                        yyval.exprptr = ealloc();
-                        yyval.exprptr->ex_oper = O_IDENT;
-                        yyval.exprptr->ex_sym = lookup(yyvsp[0].lexptr->lx_u.lxu_name);
-                        lfree(yyvsp[0].lexptr);
+			  yyval.exprptr = ealloc();
+			  yyval.exprptr->ex_oper = O_IDENT;
+			  yyval.exprptr->ex_sym = lookup(yyvsp[0].lexptr->lx_u.lxu_name);
+			  lfree(yyvsp[0].lexptr);
                         ;
     break;}
 }
@@ -2188,7 +2218,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 838 "gram.y"
+#line 868 "gram.y"
 
 
 int

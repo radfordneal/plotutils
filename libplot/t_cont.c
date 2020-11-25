@@ -16,7 +16,6 @@
      (4) invokes restorestate() to restore an earlier drawing state. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define DATAPOINTS_BUFSIZ 64	/* initial size */
@@ -47,10 +46,9 @@ _t_fcont (x, y)
 
   /* Invoke generic method.  This builds up the path by storing the point
      internally, with the storage deleted when endpath() is invoked.
-     Note that for TekPlotters, the `suppress_polyline_flushout' flag in
-     the drawing state is always set; see t_defstate.c.  This keeps the
-     generic method from calling endpath() when the stored polyline gets
-     too long. */
+     However, in any TekPlotter, the value of the `flush_long_polylines'
+     data member is false.  This keeps the generic method from calling
+     endpath() when the stored polyline gets too long. */
   retval = _g_fcont (x, y);
 
   /* Draw new line segment on Tektronix display, in real time */
@@ -58,7 +56,7 @@ _t_fcont (x, y)
   /* Skip drawing it if the pen color is white.  Since our TekPlotter class
      doesn't support filling, this is ok to do if the Tektronix isn't a
      kermit emulator (the kermit emulator supports color). */
-  if (_plotter->display_type != D_KERMIT 
+  if (_plotter->tek_display_type != D_KERMIT 
       && _plotter->drawstate->fgcolor.red == 0xffff
       && _plotter->drawstate->fgcolor.green == 0xffff
       && _plotter->drawstate->fgcolor.blue == 0xffff)
@@ -110,11 +108,11 @@ _t_fcont (x, y)
       int correct_tek_mode = 
 	_plotter->drawstate->points_are_connected ? MODE_PLOT : MODE_POINT;
 
-      if (_plotter->position_is_unknown
-	  || (_plotter->pos.x != istart.x)
-	  || (_plotter->pos.y != istart.y)
-	  || (_plotter->mode_is_unknown)
-	  || (_plotter->mode != correct_tek_mode))
+      if (_plotter->tek_position_is_unknown
+	  || (_plotter->tek_pos.x != istart.x)
+	  || (_plotter->tek_pos.y != istart.y)
+	  || (_plotter->tek_mode_is_unknown)
+	  || (_plotter->tek_mode != correct_tek_mode))
 	/* Move to desired position.  This automatically shifts the
 	   Tektronix to correct mode, PLOT or POINT; see comment above. */
 	_tek_move (istart.x, istart.y);
@@ -126,6 +124,11 @@ _t_fcont (x, y)
      Sync Tek's color too (significant only for kermit Tek emulator). */
   _plotter->set_attributes();  
   _plotter->set_pen_color();
+
+  /* Be sure the background color is correct too.  A background color may
+     be set in openpl() from the BG_COLOR parameter, but unless we do the
+     following, it won't take effect until erase() is invoked. */
+  _plotter->set_bg_color();     
 
   /* If this is the initial line segment of a polyline, force output of a
   vector even if the line segment has zero length, so that something
@@ -140,8 +143,8 @@ _t_fcont (x, y)
   _tek_vector_compressed (iend.x, iend.y, istart.x, istart.y, force);
       
   /* update our notion of Tek's notion of position */
-  _plotter->pos.x = iend.x;
-  _plotter->pos.y = iend.y;
+  _plotter->tek_pos.x = iend.x;
+  _plotter->tek_pos.y = iend.y;
 
   return retval;
 }

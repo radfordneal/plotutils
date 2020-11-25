@@ -1,9 +1,9 @@
 #include "sys-defines.h"
 
 /* forward references */
-Voidptr xmalloc __P((unsigned int length));
-Voidptr xrealloc __P((Voidptr p, unsigned int length));
-Voidptr xcalloc __P((unsigned int nmemb, unsigned int size));
+Voidptr xmalloc ____P((unsigned int length));
+Voidptr xrealloc ____P((Voidptr p, unsigned int length));
+Voidptr xcalloc ____P((unsigned int nmemb, unsigned int size));
 
 Voidptr 
 #ifdef _HAVE_PROTOS

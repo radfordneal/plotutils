@@ -1,10 +1,10 @@
 #include "sys-defines.h"
 
 /* forward references */
-char * xstrdup __P((const char *s));
+char * xstrdup ____P((const char *s));
 
 /* external */
-extern Voidptr xmalloc __P((unsigned int length));
+extern Voidptr xmalloc ____P((unsigned int length));
 
 char *
 #ifdef _HAVE_PROTOS

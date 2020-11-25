@@ -3,7 +3,6 @@
    drawing operations, in user units. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -23,17 +22,9 @@ _m_linewidth (new_line_width)
   /* invoke generic method */
   _g_flinewidth ((double)new_line_width);
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d\n", 
-		 (int)O_LINEWIDTH, new_line_width);
-      else
-	{
-	  putc ((int)O_LINEWIDTH, _plotter->outstream);
-	  _emit_integer (new_line_width);
-	}
-    }
+  _meta_emit_byte ((int)O_LINEWIDTH);
+  _meta_emit_integer (new_line_width);
+  _meta_emit_terminator ();
   
   return 0;
 }
@@ -55,17 +46,9 @@ _m_flinewidth (new_line_width)
   /* invoke generic method */
   _g_flinewidth (new_line_width);
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g\n", 
-		 (int)O_LINEWIDTH, new_line_width);
-      else
-	{
-	  putc ((int)O_FLINEWIDTH, _plotter->outstream);
-	  _emit_float (new_line_width);
-	}
-    }
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_LINEWIDTH : (int)O_FLINEWIDTH);
+  _meta_emit_float (new_line_width);
+  _meta_emit_terminator ();
   
   return 0;
 }

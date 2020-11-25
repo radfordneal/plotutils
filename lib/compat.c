@@ -1,3 +1,5 @@
+/* Replacement for system strerror() if it doesn't exist. */
+
 #include "sys-defines.h"
 
 #ifndef HAVE_STRERROR

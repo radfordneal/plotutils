@@ -5,7 +5,6 @@
    circle (a marker symbol). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int

@@ -80,7 +80,7 @@ typedef struct
 {
 /* parameters that are constant for the duration of each plot, and which
    affect the computation of the returned point structures */
-  bool transpose_axes;	/* x <-> y ? */
+  bool transpose_axes;		/* x <-> y ? */
   int log_axis;			/* x,y axes are logarithmic? (portmanteau) */
 /* parameters that are constant for the duration of each file  */
   data_type input_type;		/* file format (T_ASCII, T_DOUBLE, etc.) */
@@ -106,14 +106,14 @@ Reader;				/* internal state of a point reader */
 static Reader reader;		/* our point reader */
 
 /* forward references */
-static bool skip_whitespace __P ((FILE *stream));
-static int read_and_plot_dataset __P((FILE *input));
-static int read_dataset __P((FILE *input, Point **p, int *length, int *no_of_points));
-static int read_point __P ((FILE *input, Point *point));
-static int read_point_ascii __P ((FILE *input, Point *point));
-static int read_point_ascii_errorbar __P ((FILE *input, Point *point));
-static int read_point_binary __P ((FILE *input, Point *point, data_type input_type));
-static int read_point_gnuplot __P ((FILE *input, Point *point));
+static bool skip_whitespace ____P ((FILE *stream));
+static int read_and_plot_dataset ____P((FILE *input));
+static int read_dataset ____P((FILE *input, Point **p, int *length, int *no_of_points));
+static int read_point ____P ((FILE *input, Point *point));
+static int read_point_ascii ____P ((FILE *input, Point *point));
+static int read_point_ascii_errorbar ____P ((FILE *input, Point *point));
+static int read_point_binary ____P ((FILE *input, Point *point, data_type input_type));
+static int read_point_gnuplot ____P ((FILE *input, Point *point));
 
 /* initialize_reader() is called before reading data points from each file */
 
@@ -791,7 +791,7 @@ read_dataset (input, p_addr, length, no_of_points)
   Point *p = *p_addr;
   int success;
 
-  while (true)
+  for ( ; ; )
     {
       /*
        * Grow the buffer if needed
@@ -878,7 +878,7 @@ read_and_plot_dataset (input)
 {
   int success;
 
-  while (true)
+  for ( ; ; )
     {
       Point point;
 
@@ -928,8 +928,8 @@ read_and_plot_file (input)
          device */
       if (success != 4)
 	{
-	  endpath();
-	  flushpl();
+	  pl_endpath();
+	  pl_flushpl();
 	}
     }
   while (success != 1 && success != 4);	/* keep going until EOF seen */

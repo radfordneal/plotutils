@@ -1,5 +1,6 @@
+/* Replacement for system strcasecmp() if it doesn't exist. */
+
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #ifndef HAVE_STRCASECMP

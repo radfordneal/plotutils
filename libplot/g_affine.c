@@ -3,7 +3,6 @@
    user coordinates to device coordinates, as in Postscript. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int

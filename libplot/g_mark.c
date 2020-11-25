@@ -9,7 +9,6 @@
    approximately 5/8 times `size'. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* by convention, markers below have max dimensions 5/8 em = 0.625 em,
@@ -62,10 +61,11 @@ _g_fmarker (x, y, type, size)
     }
   else
     {
-      /* begin by saving the five relevant drawing attributes */
+      /* begin by saving the relevant drawing attributes */
       char *old_line_mode, *old_cap_mode, *old_join_mode;
       int old_fill_level;
       double old_line_width;
+      bool old_dash_array_in_effect;
 
       old_line_mode = (char *)_plot_xmalloc (strlen (_plotter->drawstate->line_mode) + 1);
       old_cap_mode = (char *)_plot_xmalloc (strlen (_plotter->drawstate->cap_mode) + 1);
@@ -74,6 +74,8 @@ _g_fmarker (x, y, type, size)
       strcpy (old_line_mode, _plotter->drawstate->line_mode);
       strcpy (old_cap_mode, _plotter->drawstate->cap_mode);
       strcpy (old_join_mode, _plotter->drawstate->join_mode);
+
+      old_dash_array_in_effect = _plotter->drawstate->dash_array_in_effect;
       old_line_width = _plotter->drawstate->line_width;
       old_fill_level = _plotter->drawstate->fill_level;
 
@@ -224,7 +226,7 @@ _g_fmarker (x, y, type, size)
 	  break;
 	case (int)M_FILLED_CIRCLE:	/* filled circle */
 	  _plotter->filltype (1);
-	  fcirclerel (0.0, 0.0, size);
+	  _plotter->fcirclerel (0.0, 0.0, size);
 	  break;
 	case (int)M_STARBURST:	/* starburst */
 	  _plotter->fmoverel (-0.5 * size, 0.0);
@@ -277,7 +279,8 @@ _g_fmarker (x, y, type, size)
 	  break;
 	case (int)M_FANCY_SQUARE:	/* ornate square */
 	  _plotter->filltype (0);
-	  fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _plotter->fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _plotter->fmoverel (0.5 * size, 0.5 * size);
 	  _plotter->fcontrel (0.5 * size, 0.5 * size);
 	  _plotter->fmoverel (-1.5 * size, -1.5 * size);	  
 	  _plotter->fcontrel (-0.5 * size, -0.5 * size);
@@ -306,7 +309,8 @@ _g_fmarker (x, y, type, size)
 	  break;
 	case (int)M_FILLED_FANCY_SQUARE:	/* filled ornate square */
 	  _plotter->filltype (1);
-	  fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _plotter->fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _plotter->fmoverel (0.5 * size, 0.5 * size);
 	  _plotter->fcontrel (0.5 * size, 0.5 * size);
 	  _plotter->fmoverel (-1.5 * size, -1.5 * size);	  
 	  _plotter->fcontrel (-0.5 * size, -0.5 * size);
@@ -335,7 +339,7 @@ _g_fmarker (x, y, type, size)
 	  break;
 	case (int)M_HALF_FILLED_SQUARE:	/* half_filled square */
 	  _plotter->filltype (NOMINAL_HALF);
-	  fboxrel (-size, -size, size, size);
+	  _plotter->fboxrel (-size, -size, size, size);
 	  _plotter->fmoverel (-size, -size);
 	  break;
 	case (int)M_HALF_FILLED_DIAMOND:	/* half_filled diamond */
@@ -373,11 +377,12 @@ _g_fmarker (x, y, type, size)
 	  break;
 	case (int)M_HALF_FILLED_CIRCLE:	/* half_filled circle */
 	  _plotter->filltype (NOMINAL_HALF);
-	  fcirclerel (0.0, 0.0, size);
+	  _plotter->fcirclerel (0.0, 0.0, size);
 	  break;
 	case (int)M_HALF_FILLED_FANCY_SQUARE:  /* half-filled ornate square */
 	  _plotter->filltype (NOMINAL_HALF);
-	  fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _plotter->fboxrel (-0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _plotter->fmoverel (0.5 * size, 0.5 * size);
 	  _plotter->fcontrel (0.5 * size, 0.5 * size);
 	  _plotter->fmoverel (-1.5 * size, -1.5 * size);	  
 	  _plotter->fcontrel (-0.5 * size, -0.5 * size);
@@ -406,39 +411,40 @@ _g_fmarker (x, y, type, size)
 	  break;
 	case (int)M_OCTAGON:		/* octagon */
 	  _plotter->filltype (0);
-	  _plotter->fmoverel (-2.0 * size, size);
-	  _plotter->fcontrel (0.0, -2.0 * size);
-	  _plotter->fcontrel (size, -size);
-	  _plotter->fcontrel (2.0 * size, 0.0);
-	  _plotter->fcontrel (size, size);
-	  _plotter->fcontrel (0.0, 2.0 * size);
-	  _plotter->fcontrel (-size, size);
-	  _plotter->fcontrel (-2.0 * size, 0.0);
-	  _plotter->fcontrel (-size, -size);
-	  _plotter->fmoverel (2.0 * size, -size);
+	  _plotter->fmoverel (-size, 0.5 * size);
+	  _plotter->fcontrel (0.0, -size);
+	  _plotter->fcontrel (0.5 * size, -0.5 * size);
+	  _plotter->fcontrel (size, 0.0);
+	  _plotter->fcontrel (0.5 * size, 0.5 * size);
+	  _plotter->fcontrel (0.0, size);
+	  _plotter->fcontrel (-0.5 * size, 0.5 * size);
+	  _plotter->fcontrel (-size, 0.0);
+	  _plotter->fcontrel (-0.5 * size, -0.5 * size);
+	  _plotter->fmoverel (size, -0.5 * size);
 	  break;
 	case (int)M_FILLED_OCTAGON:	/* filled octagon */
 	  _plotter->filltype (1);
-	  _plotter->fmoverel (-2.0 * size, size);
-	  _plotter->fcontrel (0.0, -2.0 * size);
-	  _plotter->fcontrel (size, -size);
-	  _plotter->fcontrel (2.0 * size, 0.0);
-	  _plotter->fcontrel (size, size);
-	  _plotter->fcontrel (0.0, 2.0 * size);
-	  _plotter->fcontrel (-size, size);
-	  _plotter->fcontrel (-2.0 * size, 0.0);
-	  _plotter->fcontrel (-size, -size);
-	  _plotter->fmoverel (2.0 * size, -size);
+	  _plotter->fmoverel (-size, 0.5 * size);
+	  _plotter->fcontrel (0.0, -size);
+	  _plotter->fcontrel (0.5 * size, -0.5 * size);
+	  _plotter->fcontrel (size, 0.0);
+	  _plotter->fcontrel (0.5 * size, 0.5 * size);
+	  _plotter->fcontrel (0.0, size);
+	  _plotter->fcontrel (-0.5 * size, 0.5 * size);
+	  _plotter->fcontrel (-size, 0.0);
+	  _plotter->fcontrel (-0.5 * size, -0.5 * size);
+	  _plotter->fmoverel (size, -0.5 * size);
 	  break;
 	}
 
-      /* restore the original values of the five relevant drawing attributes,
+      /* restore the original values of the relevant drawing attributes,
 	 and free storage */
       _plotter->linemod (old_line_mode);
       _plotter->capmod (old_cap_mode);
       _plotter->joinmod (old_join_mode);
       _plotter->flinewidth (old_line_width);
       _plotter->filltype (old_fill_level);
+      _plotter->drawstate->dash_array_in_effect = old_dash_array_in_effect;
       
       free (old_line_mode);
       free (old_cap_mode);

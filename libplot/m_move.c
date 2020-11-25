@@ -4,7 +4,6 @@
    device. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,18 +20,10 @@ _m_move (x, y)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d %d\n", 
-		 (int)O_MOVE, x, y);
-      else
-	{
-	  putc ((int)O_MOVE, _plotter->outstream);
-	  _emit_integer (x);
-	  _emit_integer (y);
-	}
-    }
+  _meta_emit_byte ((int)O_MOVE);
+  _meta_emit_integer (x);
+  _meta_emit_integer (y);
+  _meta_emit_terminator ();
   
   return 0;
 }
@@ -51,18 +42,10 @@ _m_fmove (x, y)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g %g\n", 
-		 (int)O_MOVE, x, y);
-      else
-	{
-	  putc ((int)O_FMOVE, _plotter->outstream);
-	  _emit_float (x);
-	  _emit_float (y);
-	}
-    }
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_MOVE : (int)O_FMOVE);
+  _meta_emit_float (x);
+  _meta_emit_float (y);
+  _meta_emit_terminator ();
   
   return 0;
 }

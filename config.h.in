@@ -22,6 +22,9 @@
 /* Define as the return type of signal handlers (int or void).  */
 #undef RETSIGTYPE
 
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+#undef size_t
+
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
    automatically deduced at run-time.
@@ -43,14 +46,11 @@
 /* Define if lex declares yytext as a char * by default, not a char[].  */
 #undef YYTEXT_POINTER
 
-/* Define to be the name of the distribution. */
-#undef PACKAGE
-
-/* Define to be the version of the distribution.  */
-#undef VERSION
-
 /* Define to signal compiler support for void and void * types */
 #define HAVE_VOID 1
+
+/* Define (if compiling as C++) to signal compiler support for bool type */
+#undef HAVE_BOOL
 
 /* Define under HP/UX to get matherr-related things from math.h. */
 #undef _HPUX_SOURCE
@@ -97,6 +97,9 @@
 /* Define if you have the memcpy function.  */
 #undef HAVE_MEMCPY
 
+/* Define if you have the memmove function.  */
+#undef HAVE_MEMMOVE
+
 /* Define if you have the strcasecmp function.  */
 #undef HAVE_STRCASECMP
 
@@ -127,11 +130,24 @@
 /* Define if you have the <strings.h> header file.  */
 #undef HAVE_STRINGS_H
 
+/* Define if you have the <sys/select.h> header file.  */
+#undef HAVE_SYS_SELECT_H
+
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
+
+/* Define if you have the <sys/types.h> header file.  */
+#undef HAVE_SYS_TYPES_H
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
 /* Define if you have the <values.h> header file.  */
 #undef HAVE_VALUES_H
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+

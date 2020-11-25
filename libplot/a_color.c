@@ -3,7 +3,6 @@
    output buffer). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 void

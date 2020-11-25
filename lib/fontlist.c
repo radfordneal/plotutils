@@ -4,10 +4,11 @@
 
 #include "sys-defines.h"
 #include "plot.h"
+#include "plotcompat.h"
 
 /* forward references */
-bool display_fonts __P((const char *display_type, const char *progname));
-bool list_fonts __P((const char *display_type, const char *progname));
+int display_fonts ____P((const char *display_type, const char *progname));
+int list_fonts ____P((const char *display_type, const char *progname));
 
 /* for use in printing font names in two columns; assumption is that all
    font names have lengths in range 0..MAX_FONTNAME_LEN, inclusive */
@@ -19,7 +20,7 @@ static char spaces[MAX_FONTNAME_LEN+1] = "                                   ";
 
    Font information is stored in ../libplot/g_fontdb.c. */
 
-struct vector_font_info_struct 
+struct hershey_font_info_struct 
 {
   char *name;			/* font name */
   char *othername;		/* an alias (for backward compatibility) */
@@ -31,7 +32,7 @@ struct vector_font_info_struct
   bool iso8859_1;		/* whether font encoding is iso8859-1 */
   bool visible;		/* whether font is visible, i.e. not internal */
 };
-extern struct vector_font_info_struct _vector_font_info[];
+extern struct hershey_font_info_struct _hershey_font_info[];
 
 struct ps_font_info_struct 
 {
@@ -111,13 +112,13 @@ extern const struct stick_font_info_struct _stick_font_info[];
    NULL-terminated.  This list also appears in the program text below. */
 #ifndef X_DISPLAY_MISSING
 static char *_known_devices[] =
-{ "X", "ai", "ps", "fig", "pcl", "hpgl", "tek", "meta", NULL };
+{ "X", "pnm", "gif", "ai", "ps", "fig", "pcl", "hpgl", "tek", "meta", NULL };
 #else
 static char *_known_devices[] =
-{ "ai", "ps", "fig", "pcl", "hpgl", "tek", "meta", NULL };
+{ "pnm", "gif", "ai", "ps", "fig", "pcl", "hpgl", "tek", "meta", NULL };
 #endif
 
-bool
+int
 #ifdef _HAVE_PROTOS
 display_fonts (const char *display_type, const char *progname)
 #else
@@ -141,24 +142,25 @@ display_fonts (display_type, progname)
 #ifndef X_DISPLAY_MISSING
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format: X, ai, ps, fig, pcl, hpgl, or tek.\n",
+where \"format\" is the output format:\n\
+X, pnm, gif, ai, ps, fig, pcl, hpgl, or tek.\n",
 	       progname);
-#else
+#else  /* X_DISPLAY_MISSING */
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format: ai, ps, fig, pcl, hpgl, or tek.\n",
+where \"format\" is the output format:\n\
+pnm, gif, ai, ps, fig, pcl, hpgl, or tek.\n",
 	       progname);
-#endif
-      return false;
+#endif /* X_DISPLAY_MISSING */
+      return 0;
     }
 
   if ((handle = newpl (display_type, NULL, stdout, stderr)) < 0)
-    /* shouldn't happen */
     {
       fprintf (stderr, 
 	       "%s: no font information on display device \"%s\" is available\n",
 	       progname, display_type);
-      return false;
+      return 0;
     }
   else
     selectpl (handle);
@@ -168,8 +170,8 @@ where \"format\" is the output format: ai, ps, fig, pcl, hpgl, or tek.\n",
       int visible_num;
 
       numfonts = 0;
-      for (i=0; _vector_font_info[i].name; i++)
-	if (_vector_font_info[i].visible)
+      for (i=0; _hershey_font_info[i].name; i++)
+	if (_hershey_font_info[i].visible)
 	numfonts++;
       odd = (numfonts % 2 == 1 ? true : false);
       numpairs = numfonts / 2;
@@ -178,8 +180,8 @@ where \"format\" is the output format: ai, ps, fig, pcl, hpgl, or tek.\n",
       j = 0;
       k = 0;
       visible_num = -1;
-      for (i=0; _vector_font_info[i].name; i++)
-	if (_vector_font_info[i].visible)
+      for (i=0; _hershey_font_info[i].name; i++)
+	if (_hershey_font_info[i].visible)
 	  {
 	    visible_num++;	/* visible_num is index into array of visibles */
 	    if (visible_num == 0)
@@ -194,25 +196,25 @@ where \"format\" is the output format: ai, ps, fig, pcl, hpgl, or tek.\n",
 	{
 	  int len;
 	  
-	  len = strlen (_vector_font_info[j].name);
-	  fprintf (stdout, "\t%s", _vector_font_info[j].name);
+	  len = strlen (_hershey_font_info[j].name);
+	  fprintf (stdout, "\t%s", _hershey_font_info[j].name);
 	  spaces[MAX_FONTNAME_LEN - len] = '\0';
 	  fputs (spaces, stdout);
 	  spaces[MAX_FONTNAME_LEN - len] = ' ';
-	  fprintf (stdout, "%s\n", _vector_font_info[k].name);
+	  fprintf (stdout, "%s\n", _hershey_font_info[k].name);
 	  /* bump both j and k */
 	  do
 	    j++;
-	  while (_vector_font_info[j].visible == false);
+	  while (_hershey_font_info[j].visible == false);
 	  if (i < numpairs - 1)
 	    {
 	      do
 		k++;
-	      while (_vector_font_info[k].visible == false);
+	      while (_hershey_font_info[k].visible == false);
 	    }
 	}
       if (odd)
-	fprintf (stdout, "\t%s\n", _vector_font_info[j].name);
+	fprintf (stdout, "\t%s\n", _hershey_font_info[j].name);
     }
 
   if (havecap ("STICK_FONTS"))
@@ -312,10 +314,10 @@ where \"format\" is the output format: ai, ps, fig, pcl, hpgl, or tek.\n",
       fprintf (stdout, "charter-medium-r-normal, may also be used.\n");
     }
 
-  return true;
+  return 1;
 }
 
-bool
+int
 #ifdef _HAVE_PROTOS
 list_fonts (const char *display_type, const char *progname)
 #else
@@ -340,15 +342,15 @@ list_fonts (display_type, progname)
       fprintf (stderr, 
 	       "%s: no font information on display device \"%s\" is available\n",
 	       progname, display_type);
-      return false;
+      return 0;
     }
   else
     selectpl (handle);
 
   if (havecap ("HERSHEY_FONTS"))
-    for (i=0; _vector_font_info[i].name; i++)
-      if (_vector_font_info[i].visible)
-	fprintf (stdout, "%s\n", _vector_font_info[i].name);
+    for (i=0; _hershey_font_info[i].name; i++)
+      if (_hershey_font_info[i].visible)
+	fprintf (stdout, "%s\n", _hershey_font_info[i].name);
 
   if (havecap ("PCL_FONTS"))
     for (i=0; _pcl_font_info[i].ps_name; i++)
@@ -362,5 +364,5 @@ list_fonts (display_type, progname)
     for (i=0; _ps_font_info[i].ps_name; i++)
       fprintf (stdout, "%s\n", _ps_font_info[i].ps_name);
 
-  return true;
+  return 1;
 }

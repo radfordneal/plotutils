@@ -9,7 +9,6 @@
    This file also contains the lower-level routine _string_to_color(). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 #include "g_colorname.h"
 
@@ -30,10 +29,20 @@ _g_pencolorname (name)
   const Colornameinfo *info;
   int intred, intgreen, intblue;
 
-  /* RGB values for default color: black */
-  intred = 0;
-  intgreen = 0;
-  intblue = 0;
+  if (!_plotter->open)
+    {
+      _plotter->error ("pencolorname: invalid operation");
+      return -1;
+    }
+
+  /* null pointer ignored */
+  if (!name)
+    return 0;
+
+  /* RGB values for default pen color */
+  intred = _default_drawstate.fgcolor.red;
+  intgreen = _default_drawstate.fgcolor.green;
+  intblue = _default_drawstate.fgcolor.blue;
 
   if (_string_to_color (name, &info))
     {
@@ -75,10 +84,20 @@ _g_fillcolorname (name)
   const Colornameinfo *info;
   int intred, intgreen, intblue;
 
-  /* RGB values for default color: black */
-  intred = 0;
-  intgreen = 0;
-  intblue = 0;
+  if (!_plotter->open)
+    {
+      _plotter->error ("fillcolorname: invalid operation");
+      return -1;
+    }
+
+  /* null pointer ignored */
+  if (!name)
+    return 0;
+
+  /* RGB values for default fill color */
+  intred = _default_drawstate.fillcolor.red;
+  intgreen = _default_drawstate.fillcolor.green;
+  intblue = _default_drawstate.fillcolor.blue;
 
   if (_string_to_color (name, &info))
     {
@@ -120,10 +139,20 @@ _g_bgcolorname (name)
   const Colornameinfo *info;
   int intred, intgreen, intblue;
 
-  /* RGB values for default color: white */
-  intred = 0xffff;
-  intgreen = 0xffff;
-  intblue = 0xffff;
+  if (!_plotter->open)
+    {
+      _plotter->error ("bgcolorname: invalid operation");
+      return -1;
+    }
+
+  /* null pointer ignored */
+  if (!name)
+    return 0;
+
+  /* RGB values for default color */
+  intred = _default_drawstate.bgcolor.red;
+  intgreen = _default_drawstate.bgcolor.green;
+  intblue = _default_drawstate.bgcolor.blue;
 
   if (_string_to_color (name, &info))
     {

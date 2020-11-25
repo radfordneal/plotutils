@@ -1,13 +1,12 @@
-/* This file contains device-specific color computation routines.  These
-   routines are called by various PSPlotter methods. */
+/* This file contains device-specific color computation routines.  They are
+   called by various PSPlotter methods, before drawing objects.  They set
+   the appropriate PSPlotter-specific fields in the drawing state. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* forward references */
-static int _idraw_pseudocolor __P((int red, int green, int blue));
-static void _compute_idraw_bgcolor __P((void));
+static int _idraw_pseudocolor ____P((int red, int green, int blue));
 
 /* we call this routine to evaluate _plotter->drawstate->ps_fgcolor lazily,
    i.e. only when needed (just before an object is written to the output
@@ -28,7 +27,7 @@ _p_set_pen_color()
     ((double)((_plotter->drawstate->fgcolor).blue))/0xFFFF;
 
   /* quantize for idraw */
-  _plotter->drawstate->idraw_fgcolor = 
+  _plotter->drawstate->ps_idraw_fgcolor = 
     _idraw_pseudocolor ((_plotter->drawstate->fgcolor).red,
 			(_plotter->drawstate->fgcolor).green,
 			(_plotter->drawstate->fgcolor).blue);
@@ -71,11 +70,12 @@ _p_set_fill_color()
   _plotter->set_pen_color();
 
   /* Quantize for idraw, in a complicated way; we can choose from among a
-     finite discrete set of values for idraw_bgcolor and idraw_shading, to
-     approximate the fill color.  We also adjust ps_fillcolor_* because
-     the PS interpreter will use the idraw_shading variable to interpolate
-     between fgcolor and bgcolor, i.e. fgcolor and fillcolor. */
-  _compute_idraw_bgcolor();
+     finite discrete set of values for ps_idraw_bgcolor and
+     ps_idraw_shading, to approximate the fill color.  We also adjust
+     ps_fillcolor_* because the PS interpreter will use the
+     ps_idraw_shading variable to interpolate between fgcolor and bgcolor,
+     i.e. fgcolor and fillcolor. */
+  _p_compute_idraw_bgcolor();
   
   return;
 }
@@ -135,7 +135,7 @@ _idraw_pseudocolor (red, green, blue)
    determined, this routine computes the idraw background color and idraw
    shading (0.0, 0.25, 0.5, 0.75, or 1.0) that will most closely match the
    user-specified fill color.  It is called only when the elements
-   ps_fillcolor_*, idraw_fgcolor_* of the drawing state have been filled in.
+   ps_fillcolor_*, ps_idraw_fgcolor_* of the drawing state have been filled in.
 
    At the end of this function we adjust ps_fillcolor_* so that the output
    file will produce similar colors when parsed both by idraw and the PS
@@ -145,11 +145,11 @@ _idraw_pseudocolor (red, green, blue)
    color.  That situation will occur only if the user-specified fill color
    is very close to the user-specified pen color. */
 
-static void
+void
 #ifdef _HAVE_PROTOS
-_compute_idraw_bgcolor(void )
+_p_compute_idraw_bgcolor(void)
 #else
-_compute_idraw_bgcolor()
+_p_compute_idraw_bgcolor()
 #endif
 {
   double truered, truegreen, trueblue;
@@ -163,9 +163,9 @@ _compute_idraw_bgcolor()
   truegreen = 0xFFFF * _plotter->drawstate->ps_fillcolor_green;
   trueblue = 0xFFFF * _plotter->drawstate->ps_fillcolor_blue;
 
-  fgred = (double)(_idraw_stdcolors[_plotter->drawstate->idraw_fgcolor].red);
-  fggreen = (double)(_idraw_stdcolors[_plotter->drawstate->idraw_fgcolor].green);
-  fgblue = (double)(_idraw_stdcolors[_plotter->drawstate->idraw_fgcolor].blue);
+  fgred = (double)(_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].red);
+  fggreen = (double)(_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].green);
+  fgblue = (double)(_idraw_stdcolors[_plotter->drawstate->ps_idraw_fgcolor].blue);
 
   for (i = 0; i < IDRAW_NUM_STD_COLORS; i++)
     {
@@ -200,8 +200,8 @@ _compute_idraw_bgcolor()
 	}
     }
 
-  _plotter->drawstate->idraw_bgcolor = best_bgcolor;
-  _plotter->drawstate->idraw_shading = best_shading;
+  _plotter->drawstate->ps_idraw_bgcolor = best_bgcolor;
+  _plotter->drawstate->ps_idraw_shading = best_shading;
 
   /* now adjust ps_fillcolor_* fields so that interpolation between
      ps_fgcolor_* and ps_fillcolor_*, as specified by the shade, will yield

@@ -9,7 +9,6 @@
    LtBlue is the only color in the interior of the cube. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 const Color _fig_stdcolors[FIG_NUM_STD_COLORS] = 

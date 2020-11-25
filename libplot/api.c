@@ -1,185 +1,131 @@
-/* This file defines the C binding for GNU libplot.  The C API consists of
-   functions that are wrappers around the methods that may be applied to
-   any Plotter object, plus four additional functions (newpl, selectpl,
-   deletepl, parampl) that are specific to the C binding.
+/* This file is specific to libplot, rather than libplotter.  It defines
+   the C API.  The C API consists of wrappers around the operations that
+   may be applied to any Plotter object, plus three additional functions
+   (newpl, selectpl, deletepl) that are specific to libplot, and parampl.
 
-   These four functions maintain an array of Plotter objects, and construct
-   and destroy them, as requested.  The _plotter pointer, which is
-   referenced in the basic functions, is a pointer to one of the objects in
-   the array of currently existing Plotters.  It must be selected by
-   calling selectpl.
+   newpl/selectpl/deletepl maintain the libplot/libplotter sparse array of
+   Plotter instances ("_plotters"), constructing and destroying them as
+   requested.  The "_plotter" pointer is positioned by calling selectpl.
+   It is a pointer to one of the instances in the array.
 
-   By default, _plotter points to a Plotter object that sends output in
-   metafile format to standard output.  That is for compatibility with
-   pre-GNU versions of libplot.
+   By convention, _plotter is initialized to point to a Plotter instance
+   that sends output in metafile format to standard output.  Initialization
+   takes place when the first Plotter operation is invoked, provided that
+   no Plotters have previously been created by calling newpl.  This
+   convention is for compatibility with the device-dependent pre-GNU
+   versions of libplot, which did not support newpl/select/deletepl.
 
-   Note that the parampl function is used to set device driver parameters,
-   i.e., Plotter class variables.  The parameter values in effect at the
-   time a Plotter object is created by invoking newpl are copied into the
-   object. */
+   The parampl function is not specific to the libplot API.  It is defined
+   in g_params.c. */
 
 #include "sys-defines.h"
-#include <signal.h>		/* for kill() */
-#include "plot.h"
 #include "extern.h"
-#include "g_params.h"
-
-/* global library variables (user-settable error handlers) */
-#ifdef _HAVE_PROTOS
-int (*libplot_warning_handler)(const char *) = NULL;
-int (*libplot_error_handler)(const char *) = NULL;
-#else
-int (*libplot_warning_handler)() = NULL;
-int (*libplot_error_handler)() = NULL;
-#endif
-
-/* This elides the argument prototypes if the compiler does not support
-   them. The name P__ is chosen in hopes that it will not collide with any
-   others. */
-
-#if __STDC__
-#define P__(a)	a
-#else
-#define P__(a)	()
-#endif
 
 /* Known Plotter types, indexed into by a short mnemonic case-insensitive
-   string: "meta"=metafile, "tek"=Tektronix, "hpgl"=HP-GL/2, "fig"=xfig,
-   "pcl"=PCL 5, "ps"=PS, "ai"="AI", "X"=X11, "Xdrawable"=X11 Drawable.
+   string: "generic"=generic (i.e. base Plotter class), "meta"=metafile,
+   "tek"=Tektronix, "hpgl"=HP-GL/2, "fig"=xfig, "pcl"=PCL 5, "ps"=PS,
+   "ai"="AI", "gif"=GIF, "pnm"=PNM (PBM/PGM/PPM), "X"=X11,
+   "Xdrawable"=X11Drawable.
+
    When a new Plotter of any type is constructed, the appropriate
-   `default_init' structure is copied into it.  Also, the appropriate
-   `initialize' routine is invoked.  Before the Plotter is destroyed, the
-   appropriate `terminate' routine is invoked. */
+   `default_init' structure is copied into it, and (temporarily) "_plotter"
+   is changed to point to it.  Then the appropriate `initialize' routine is
+   invoked.  Before the Plotter is destroyed, the appropriate `terminate'
+   routine is invoked similarly. */
 
 typedef struct 
 {
   const char *name;
-  plotter_type type;
   const Plotter *default_init;
-  bool (*initialize) P__((Plotter *plotter));
-  bool (*terminate) P__((Plotter *plotter));
 }
 Plotter_data;
 
-#undef P__
+/* Initializations for the function-pointer part of each type of Plotter.
+   Each of the initializing structures listed here is located in the
+   corresponding ?_defplot.c file. */
+static const Plotter_data _plotter_data[] = 
+{
+  {"generic", &_g_default_plotter},
+  {"meta", &_m_default_plotter},
+  {"tek", &_t_default_plotter},
+  {"hpgl", &_h_default_plotter},
+  {"pcl", &_q_default_plotter},
+  {"fig", &_f_default_plotter},
+  {"ps", &_p_default_plotter},
+  {"ai", &_a_default_plotter},
+  {"gif", &_i_default_plotter},
+  {"pnm", &_n_default_plotter},
+#ifndef X_DISPLAY_MISSING
+  {"Xdrawable", &_x_default_plotter},
+  {"X", &_y_default_plotter},
+#endif /* X_DISPLAY_MISSING */
+  {(const char *)NULL, (const Plotter *)NULL}
+};
 
-/* default plotter produces metafile output */
+/* default plotter type (must be one of the preceding) */
 #ifndef DEFAULT_PLOTTER_TYPE
 #define DEFAULT_PLOTTER_TYPE "meta"
 #endif
 
-/* each of the default Plotter structures here, with initialization and
-   termination routines, is located in the appropriate ?_defplot.c file */
-
-static const Plotter_data _plotter_data[] = 
-{
-  {"meta", PL_META, &_meta_default_plotter, 
-     _meta_init_plotter, _meta_terminate_plotter},
-  {"tek", PL_TEK, &_tek_default_plotter, 
-     _tek_init_plotter, _tek_terminate_plotter},
-  {"hpgl", PL_HPGL, &_hpgl_default_plotter, 
-     _hpgl_init_plotter, _hpgl_terminate_plotter},
-  {"pcl", PL_PCL, &_pcl_default_plotter, 
-     _hpgl_init_plotter, _hpgl_terminate_plotter}, /* not incorrect */
-  {"fig", PL_FIG, &_fig_default_plotter, 
-     _fig_init_plotter, _fig_terminate_plotter},
-  {"ps", PL_PS, &_ps_default_plotter, 
-     _ps_init_plotter, _ps_terminate_plotter},
-  {"ai", PL_AI, &_ai_default_plotter, 
-     _ai_init_plotter, _ai_terminate_plotter},
-#ifndef X_DISPLAY_MISSING
-  {"X", PL_X11, &_X_default_plotter, 
-     _X_init_plotter, _X_terminate_plotter},    
-  {"Xdrawable", PL_X11_DRAWABLE, &_X_drawable_default_plotter, 
-     _X_drawable_init_plotter, _X_drawable_terminate_plotter},    
-#endif /* X_DISPLAY_MISSING */
-  {(const char *)NULL, (plotter_type)0, (const Plotter *)NULL,
-     NULL, NULL},
-};
-
-/* array of plotter objects, needed by C binding */
-#define INITIAL_NUM_PLOTTERS 4
-static int _num_plotters = 0;	/* size of array */
-static Plotter **_plotters;
-
-/* distinguished plotter object, for functions in the C API to act on */
+/* distinguished Plotter instance, for libplot functions to act on (in
+   libplotter, _plotter is an alias for `this') */
 Plotter *_plotter = NULL;
 
 /* forward references */
-static bool _string_to_plotter_data __P((const char *type, int *position));
-static bool _type_to_plotter_data __P((plotter_type type, int *position));
-static void _api_error __P((const char *msg));
-static void _api_warning __P((const char *msg));
-static void _init_plotter_array __P((void));
-static void _copy_params_to_plotter __P((Plotter *plotter));
+static bool _string_to_plotter_data ____P((const char *type, int *position));
+static void _api_error ____P((const char *msg));
+static void _api_warning ____P((const char *msg));
+static void _create_and_select_default_plotter ____P((void));
 
-/* Initialize the array of plotters (on entry, _num_plotters should be 0).
-   This is invoked when the user calls, for the very first time, one of the
-   basic libplot functions. */
+/* Initialize the array of plotters to include a single Plotter, of default
+   type, in location zero; also, select that Plotter.  This is invoked when
+   the user calls, for the very first time, any of the Plotter methods. */
 static void
 #ifdef _HAVE_PROTOS
-_init_plotter_array (void)
+_create_and_select_default_plotter (void)
 #else
-_init_plotter_array ()
+_create_and_select_default_plotter ()
 #endif
 {
-  int i;
   bool found;
   int position;
 
-  /* set up plotter array */
-  _plotters = (Plotter **)_plot_xmalloc (INITIAL_NUM_PLOTTERS * sizeof(Plotter *));
-  for (i = 0; i < INITIAL_NUM_PLOTTERS; i++)
-    _plotters[i] = (Plotter *)NULL;
-  _num_plotters = INITIAL_NUM_PLOTTERS;
-  
-  /* determine initialization for the default plotter type */
   found = _string_to_plotter_data (DEFAULT_PLOTTER_TYPE, &position);
   if (!found)
     /* shouldn't happen (library installed wrong?), treat as fatal */
     _api_error ("cannot create plotter of default type");
   
-  /* copy initialization for default type into array slot #0 */
-  _plotters[0] = (Plotter *)_plot_xmalloc (sizeof(Plotter));
-  memcpy (_plotters[0], _plotter_data[position].default_init, sizeof(Plotter));
-  _plotters[0]->instream = stdin;
-  _plotters[0]->outstream = stdout;
-  _plotters[0]->errstream = stderr;
+  /* create new Plotter to serve as default Plotter */
+  _plotter = (Plotter *)_plot_xmalloc (sizeof(Plotter));
+  memcpy (_plotter, _plotter_data[position].default_init, sizeof(Plotter));
+  _plotter->infp = stdin;  
+  _plotter->outfp = stdout;
+  _plotter->errfp = stderr;
 
-  /* copy in the current values of class variables from _plot_params[] */
-  _copy_params_to_plotter (_plotters[0]);
-
-  /* do any needed extra initializiations (usually, initialize data members
-     from the class variables) */
-  _plotter_data[position].initialize (_plotters[0]);
-
-  /* select the just-created instance of the default plotter type */
-  selectpl (0);
+  /* Do any needed initializiations of _plotter (e.g., copy in the current
+     values of class variables from _plot_params[], initialize data members
+     from the class variables).  Also, add _plotter to _plotters[], as 0'th
+     element (this will create the _plotters[] array, as a default size). */
+  _plotter->initialize ();
 }
 
-/* These are the user-callable functions that are specific to the C
-   binding: newpl, selectpl, deletepl; also parampl. */
+/* These are the 3 user-callable functions that are specific to the C
+   binding: newpl, selectpl, deletepl. */
 
 /* user-callable */
 int 
 #ifdef _HAVE_PROTOS
-newpl (const char *type, FILE *instream, FILE *outstream, FILE *errstream)
+pl_newpl (const char *type, FILE *infile, FILE *outfile, FILE *errfile)
 #else
-newpl (type, instream, outstream, errstream)
+pl_newpl (type, infile, outfile, errfile)
      const char *type;
-     FILE *instream, *outstream, *errstream;
+     FILE *infile, *outfile, *errfile;
 #endif
 {
   bool found;
-  bool open_slot = false;
-  int i = 0;
-  int j;
-  int position;
+  int i, position;
+  Plotter *current_plotter;
   
-  /* initialize plotter array if necessary */
-  if (_num_plotters == 0)
-    _init_plotter_array ();
-
   /* determine initialization for specified plotter type */
   found = _string_to_plotter_data (type, &position);
   if (!found)
@@ -188,39 +134,33 @@ newpl (type, instream, outstream, errstream)
       return -1;
     }
 
-  /* be sure there is an open slot */
-  for (i = 0; i < _num_plotters; i++)
-    if (_plotters[i] == NULL)
-      {
-	open_slot = true;
-	break;
-      }
-  if (!open_slot)
-    /* expand array, clearing upper half */
-    {
-      i = _num_plotters;
-      _plotters = 
-	(Plotter **)_plot_xrealloc (_plotters, 
-				    2 * _num_plotters * sizeof (Plotter *));
-      for (j = _num_plotters; j < 2 * _num_plotters; j++)
-	_plotters[j] = (Plotter *)NULL;
-      _num_plotters *= 2;
-    }
-  
-  /* copy initialization for specified plotter type into open slot */
-  _plotters[i] = (Plotter *)_plot_xmalloc (sizeof(Plotter));
-  memcpy (_plotters[i], _plotter_data[position].default_init, sizeof(Plotter));
-  _plotters[i]->instream = instream;  
-  _plotters[i]->outstream = outstream;
-  _plotters[i]->errstream = errstream;
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
 
-  /* copy in the current values of class variables from _plot_params[] */
-  _copy_params_to_plotter (_plotters[i]);
-  
-  /* do any needed extra initializiations (usually, initialize data members
-     from the class variables) */
-  _plotter_data[position].initialize (_plotters[i]);
+  /* stash _plotter */
+  current_plotter = _plotter;
 
+  /* create Plotter */
+  _plotter = (Plotter *)_plot_xmalloc (sizeof(Plotter));
+  memcpy (_plotter, _plotter_data[position].default_init, sizeof(Plotter));
+  _plotter->infp = infile;  
+  _plotter->outfp = outfile;
+  _plotter->errfp = errfile;
+
+  /* do any needed initializiations of _plotter (e.g., copy in the current
+     values of class variables from _plot_params[], initialize data members
+     from the class variables), and also add _plotter to _plotters[] */
+  _plotter->initialize ();
+
+  /* determine index of new Plotter in _plotters[] (not very efficiently) */
+  for (i = 0; i < _plotters_len; i++)
+    if (_plotters[i] == _plotter)
+      break;
+
+  /* restore _plotter */
+  _plotter = current_plotter;
+
+  /* return index of just-created Plotter */
   return i;
 }
 
@@ -256,123 +196,48 @@ _string_to_plotter_data (type, position)
   return found;
 }
 
-/* utility function, used above; keys into table of Plotter types by the
-   contents of a Plotter's type field (e.g. P_META, etc.) */
-static bool
-#ifdef _HAVE_PROTOS
-_type_to_plotter_data (plotter_type type, int *position)
-#else
-_type_to_plotter_data (type, position)
-     plotter_type type;
-     int *position;
-#endif
-{
-  const Plotter_data *p = _plotter_data;
-  bool found = false;
-  int i = 0;
-  
-  /* search table of known plotter type mnemonics */
-  while (p->name)
-    {
-      if (type == p->type)
-	{
-	  found = true;
-	  break;
-	}
-      p++;
-      i++;
-    }
-  /* return pointer to plotter data through pointer */
-  if (found)
-    *position = i;
-  return found;
-}
-
-/* utility function, used above */
-static void 
-#ifdef _HAVE_PROTOS
-_copy_params_to_plotter (Plotter *plotter)
-#else
-_copy_params_to_plotter (plotter)
-     Plotter *plotter;
-#endif
-{
-  int j;
-  char *envs;
-
-  for (j = 0; j < NUM_DEVICE_DRIVER_PARAMETERS; j++)
-    {
-      if (!_plot_params[j].is_string)
-	/* not a string, just copy the void pointer into the plotter */
-	plotter->params[j] = _plot_params[j].value;
-
-      else
-	/* parameter value is a string, so use malloc and strcpy */
-	{
-	  if (_plot_params[j].value)
-	    /* have user-specified value */
-	    {
-	      plotter->params[j] = 
-		(char *)_plot_xmalloc (strlen ((char *)_plot_params[j].value) + 1);
-	      strcpy ((char *)plotter->params[j], 
-		      (char *)_plot_params[j].value);
-	    }
-	  else if ((envs = getenv (_plot_params[j].parameter)) != NULL)
-	    /* have value of environment variable */
-	    {
-	      plotter->params[j] = 
-		(char *)_plot_xmalloc (strlen (envs) + 1);
-	      strcpy ((char *)plotter->params[j], envs);
-	    }
-	  else if (_plot_params[j].default_value)
-	    /* have default libplot value */
-	    {
-	      plotter->params[j] = 
-		(char *)_plot_xmalloc (strlen ((char *)_plot_params[j].default_value) + 1);
-	      strcpy ((char *)plotter->params[j], 
-		      (char *)_plot_params[j].default_value);
-	    }
-	  else			/* punt */
-	    plotter->params[j] = NULL;
-	}
-    }
-}
-
-/* user-callable */
+/* user-callable, returns index of previously selected Plotter */
 int
 #ifdef _HAVE_PROTOS
-selectpl (int handle)
+pl_selectpl (int handle)
 #else
-selectpl (handle)
+pl_selectpl (handle)
      int handle;
 #endif
 {
-  if (handle < 0 || handle >= _num_plotters 
+  int i;
+
+  if (handle < 0 || handle >= _plotters_len 
       || _plotters[handle] == NULL)
     {
       _api_warning ("ignoring request to select a nonexistent plotter");
       return -1;
     }
 
+  /* determine index of previously selected Plotter in _plotters[] (not
+     very efficiently) */
+  for (i = 0; i < _plotters_len; i++)
+    if (_plotters[i] == _plotter)
+      break;
+
   /* alter value of the global _plotter pointer */
   _plotter = _plotters[handle];
 
-  return 0;
+  return i;
 }
 
 /* user-callable */
 int
 #ifdef _HAVE_PROTOS
-deletepl (int handle)
+pl_deletepl (int handle)
 #else
-deletepl (handle)
+pl_deletepl (handle)
      int handle;
 #endif
 {
   Plotter *current_plotter;
-  int j, position;
   
-  if (handle < 0 || handle >= _num_plotters 
+  if (handle < 0 || handle >= _plotters_len 
       || _plotters[handle] == NULL)
     {
       _api_warning ("ignoring request to delete a nonexistent plotter");
@@ -385,50 +250,24 @@ deletepl (handle)
       return -1;
     }
 
-  /* set _plotter to point to specified plotter */
+  /* save _plotter, set _plotter to point to specified plotter */
   current_plotter = _plotter;
-
-  /* if this plotter is open, close it */
   _plotter = _plotters[handle];
+
+  /* if specified plotter is open, close it */
   if (_plotter->open)
     _plotter->closepl ();
 
   /* Invoke an internal Plotter method before deletion.  For most Plotters
-     this is a no-op.  For a PS Plotter, this emits the Plotter's pages of
-     graphics to its output stream, and deallocates associated storage. */
-
-  if (_type_to_plotter_data (_plotter->type, &position))
-    _plotter_data[position].terminate (_plotter);
-  else
-    /* shouldn't happen */
-    {
-      _api_error ("cannot delete Plotter of unknown type");
-      return -1;
-    }
-
-#ifndef X_DISPLAY_MISSING
-  /* if an X Plotter, kill forked-off processes that are maintaining its
-     popped-up windows, provided that the VANISH_ON_DELETE parameter was
-     set to "yes" at Plotter creation time */
-  if (_plotter->vanish_on_delete)
-    {
-      for (j = 0; j < _plotter->num_pids; j++)
-	kill (_plotter->pids[j], SIGKILL);
-      if (_plotter->num_pids > 0)
-	{
-	  free (_plotter->pids);
-	  _plotter->pids = (pid_t *)NULL;
-	}
-    }
-#endif /* not X_DISPLAY_MISSING */
+     this private method merely frees any stored class variables.  For a PS
+     Plotter, it first emits the Plotter's pages of graphics to its output
+     stream and deallocates associated storage.  For an XPlotter, it kills
+     the forked-off processes that are maintaining its popped-up windows,
+     if any.  It also removes Plotter from _plotters[]; see g_defplot.c. */
+  _plotter->terminate ();
 
   /* tear down the plotter */
-  for (j = 0; j < NUM_DEVICE_DRIVER_PARAMETERS; j++)
-    if (_plot_params[j].is_string && _plotter->params[j] != NULL)
-      /* stored parameter is a previously malloc'd string, so free it */
-      free (_plotter->params[j]);
   free (_plotter);
-  _plotters[handle] = (Plotter *)NULL;
 
   /* restore _plotter pointer */
   _plotter = current_plotter;
@@ -436,163 +275,7 @@ deletepl (handle)
   return 0;
 }
 
-/* User-callable, affects only the _plot_params[] array, which implements
-   the C counterpart of class variables (see g_params.h). */
-int
-#ifdef _HAVE_PROTOS
-#ifdef NO_VOID_SUPPORT
-parampl (const char *parameter, char *value)
-#else
-parampl (const char *parameter, void *value)
-#endif
-#else  /* not _HAVE_PROTOS */
-#ifdef NO_VOID_SUPPORT
-parampl (parameter, value)
-     const char *parameter;
-     char *value;
-#else
-parampl (parameter, value)
-     const char *parameter;
-     void *value;
-#endif /* not NO_VOID_SUPPORT */
-#endif
-{
-  int j;
-
-  for (j = 0; j < NUM_DEVICE_DRIVER_PARAMETERS; j++)
-    {
-      if (strcmp (_plot_params[j].parameter, parameter) == 0)
-	{
-	  if (_plot_params[j].is_string)
-	    /* parameter value is a string, so treat specially: copy the
-	       string, byte by byte */
-	    {
-	      if (_plot_params[j].value)
-		free (_plot_params[j].value);
-	      if (value != NULL)
-		{
-		  _plot_params[j].value = 
-		    (char *)_plot_xmalloc (strlen ((char *)value) + 1);
-		  strcpy ((char *)_plot_params[j].value, (char *)value);
-		}
-	      else
-		_plot_params[j].value = NULL;
-	    }
-	  else
-	    /* parameter value is a (void *), so just copy the
-               user-specified pointer */
-	    _plot_params[j].value = value;
-	  
-	  /* matched, so return happily */
-	  return 0;
-	}
-    }
-
-  /* silently ignore requests to set unknown parameters */
-  return 0;
-}
-
-/* This is used when a Plotter is created and initialized, to retrieve
-   values of stored class variables.  [And also, if necessary, by the
-   public openpl() method.]  Class variables are copied into each Plotter
-   at creation time, by newpl(). */
-
-Voidptr
-#ifdef _HAVE_PROTOS
-_get_plot_param (const Plotter *plotter, const char *parameter_name)
-#else
-_get_plot_param (plotter, parameter_name)
-     const Plotter *plotter;
-     const char *parameter_name;
-#endif
-{
-  int j;
-
-  for (j = 0; j < NUM_DEVICE_DRIVER_PARAMETERS; j++)
-    if (strcmp (_plot_params[j].parameter, parameter_name) == 0)
-      return plotter->params[j];
-
-  return (Voidptr)NULL;		/* name not matched */
-}
-
-#ifndef X_DISPLAY_MISSING
-
-/* function called in x_closepl.c, before forking off a process to
-   manage a window */
-void
-#ifdef _HAVE_PROTOS
-_flush_plotter_outstreams (void)
-#else
-_flush_plotter_outstreams ()
-#endif
-{
-#ifndef HAVE_NULL_FLUSH
-  int i;
-
-  for (i = 0; i < _num_plotters; i++)
-    if (_plotters[i]) 
-      {
-	if (_plotters[i]->outstream)
-	  fflush (_plotters[i]->outstream);
-	if (_plotters[i]->errstream)
-	  fflush (_plotters[i]->errstream);
-      }
-#else
-  /* can do more: flush _all_ output streams before forking */
-  fflush ((FILE *)NULL);
-#endif /* HAVE_NULL_FLUSH */
-}
-
-/* function called in x_closepl.c, by a child process (forked off to manage
-   a window) */
-void
-#ifdef _HAVE_PROTOS
-_close_other_plotter_fds (Plotter *plotter)
-#else
-_close_other_plotter_fds (plotter)
-     Plotter *plotter;
-#endif
-{
-  int i;
-
-  for (i = 0; i < _num_plotters; i++)
-    if (_plotters[i] != NULL
-	&& _plotters[i] != plotter
-	&& _plotters[i]->type == PL_X11
-	&& _plotters[i]->opened
-	&& _plotters[i]->open
-	&& close (ConnectionNumber (_plotters[i]->dpy)) < 0)
-      /* shouldn't happen */
-      plotter->error ("couldn't close connection to X display");
-}
-
-/* function called in x_xevents.c, to process X events associated with
-   other open XPlotters */
-void
-#ifdef _HAVE_PROTOS
-_process_other_plotter_events (Plotter *plotter)
-#else
-_process_other_plotter_events (plotter)
-     Plotter *plotter;
-#endif
-{
-  int i;
-
-  for (i = 0; i < _num_plotters; i++)
-    if (_plotters[i] != NULL
-	&& _plotters[i] != plotter
-	&& _plotters[i]->type == PL_X11
-	&& _plotters[i]->opened
-	&& _plotters[i]->open
-	&& _plotters[i]->app_con != NULL) /* paranoia */
-      {
-	while (XtAppPending (_plotters[i]->app_con))
-	  XtAppProcessEvent (_plotters[i]->app_con, XtIMAll);
-      }
-}
-  
-#endif /* not X_DISPLAY_MISSING */
-
+
 /* function used in this file to print warning messages */
 static void
 #ifdef _HAVE_PROTOS
@@ -608,7 +291,7 @@ _api_warning (msg)
     fprintf (stderr, "libplot: %s\n", msg);
 }
 
-/* function used in this file to print warning messages */
+/* function used in this file to print error messages */
 static void
 #ifdef _HAVE_PROTOS
 _api_error (const char *msg)
@@ -626,1072 +309,1330 @@ _api_error (msg)
     }
 }
 
-/* The following are the C bindings for the methods that operate on objects
-   in the Plotter class.  Together with the four functions above (newpl,
-   selectpl, deletepl; also parampl), they make up the libplot C API.
+
+/* The following are the C wrappers around the public functions in the
+   Plotter class.  Together with the three functions above (newpl,
+   selectpl, deletepl), and parampl, they make up the libplot C API.
 
-   Each binding tests whether _num_plotters > 0, which determines whether
-   the array of plotters has been initialized.  That is because it makes no
-   sense to call these functions before the _plotter pointer points to a
-   non-NULL Plotter object.
+   Each binding tests whether _plotters_len > 0, which determines whether
+   the array of Plotter instances has been initialized.  That is because it
+   makes no sense to call these functions before the _plotter pointer is
+   non-NULL, i.e., points to a Plotter object.
 
    In fact, of the below functions, it really only makes sense to call
-   openpl, havecap, or outfile [deprecated], before the Plotter array is
-   initialized.  Calling any other of the below functions, before the
-   Plotter array is initialized, will generate an error message because
-   even though the call to _init_plotter_array will initialize the Plotter
-   array and select a default Plotter instance, the Plotter will not be
-   open.  No operation in the Plotter class, with the exception of the
-   just-mentioned ones, may be invoked unless the Plotter that is being
-   acted on is open. */
+   openpl, havecap, or outfile [deprecated] before the Plotter array is
+   initialized.  Calling any other of the below functions before the
+   Plotter array is initialized will generate an error message because even
+   though the call to _create_and_select_default_plotter will initialize
+   the Plotter array and select a default Plotter instance, the Plotter
+   will not be open.  No operation in the Plotter class, with the exception
+   of the just-mentioned ones, may be invoked unless the Plotter that is
+   being acted on is open. */
 
 int 
 #ifdef _HAVE_PROTOS
-alabel (int x_justify, int y_justify, const char *s)
+pl_alabel (int x_justify, int y_justify, const char *s)
 #else
-alabel (x_justify, y_justify, s)
+pl_alabel (x_justify, y_justify, s)
      int x_justify, y_justify;
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->alabel (x_justify, y_justify, s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-arc (int xc, int yc, int x0, int y0, int x1, int y1)
+pl_arc (int xc, int yc, int x0, int y0, int x1, int y1)
 #else
-arc (xc, yc, x0, y0, x1, y1)
+pl_arc (xc, yc, x0, y0, x1, y1)
      int xc, yc, x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->arc (xc, yc, x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-arcrel (int xc, int yc, int x0, int y0, int x1, int y1)
+pl_arcrel (int xc, int yc, int x0, int y0, int x1, int y1)
 #else
-arcrel (xc, yc, x0, y0, x1, y1)
+pl_arcrel (xc, yc, x0, y0, x1, y1)
      int xc, yc, x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->arcrel (xc, yc, x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-bgcolor (int red, int green, int blue)
+pl_bezier2 (int xc, int yc, int x0, int y0, int x1, int y1)
 #else
-bgcolor (red, green, blue)
+pl_bezier2 (xc, yc, x0, y0, x1, y1)
+     int xc, yc, x0, y0, x1, y1;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->bezier2 (xc, yc, x0, y0, x1, y1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_bezier2rel (int xc, int yc, int x0, int y0, int x1, int y1)
+#else
+pl_bezier2rel (xc, yc, x0, y0, x1, y1)
+     int xc, yc, x0, y0, x1, y1;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->bezier2rel (xc, yc, x0, y0, x1, y1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_bezier3 (int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+#else
+pl_bezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
+     int x0, y0, x1, y1, x2, y2, x3, y3;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->bezier3 (x0, y0, x1, y1, x2, y2, x3, y3);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_bezier3rel (int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+#else
+pl_bezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
+     int x0, y0, x1, y1, x2, y2, x3, y3;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->bezier3rel (x0, y0, x1, y1, x2, y2, x3, y3);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_bgcolor (int red, int green, int blue)
+#else
+pl_bgcolor (red, green, blue)
      int red, green, blue;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->bgcolor (red, green, blue);
 }
 
 int
 #ifdef _HAVE_PROTOS
-bgcolorname (const char *s)
+pl_bgcolorname (const char *s)
 #else
-bgcolorname (s)
+pl_bgcolorname (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->bgcolorname (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-box (int x0, int y0, int x1, int y1)
+pl_box (int x0, int y0, int x1, int y1)
 #else
-box (x0, y0, x1, y1)
+pl_box (x0, y0, x1, y1)
      int x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->box (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-boxrel (int x0, int y0, int x1, int y1)
+pl_boxrel (int x0, int y0, int x1, int y1)
 #else
-boxrel (x0, y0, x1, y1)
+pl_boxrel (x0, y0, x1, y1)
      int x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->boxrel (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-capmod (const char *s)
+pl_capmod (const char *s)
 #else
-capmod (s)
+pl_capmod (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->capmod (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-circle (int x, int y, int r)
+pl_circle (int x, int y, int r)
 #else
-circle (x, y, r)
+pl_circle (x, y, r)
      int x, y, r;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->circle (x, y, r);
 }
 
 int
 #ifdef _HAVE_PROTOS
-circlerel (int x, int y, int r)
+pl_circlerel (int x, int y, int r)
 #else
-circlerel (x, y, r)
+pl_circlerel (x, y, r)
      int x, y, r;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->circlerel (x, y, r);
 }
 
 int
 #ifdef _HAVE_PROTOS
-closepl (void)
+pl_closepl (void)
 #else
-closepl ()
+pl_closepl ()
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->closepl ();
 }
 
 int
 #ifdef _HAVE_PROTOS
-color (int red, int green, int blue)
+pl_color (int red, int green, int blue)
 #else
-color (red, green, blue)
+pl_color (red, green, blue)
      int red, green, blue;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->color (red, green, blue);
 }
 
 int
 #ifdef _HAVE_PROTOS
-colorname (const char *s)
+pl_colorname (const char *s)
 #else
-colorname (s)
+pl_colorname (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->colorname (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-cont (int x, int y)
+pl_cont (int x, int y)
 #else
-cont (x, y)
+pl_cont (x, y)
      int x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->cont (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-contrel (int x, int y)
+pl_contrel (int x, int y)
 #else
-contrel (x, y)
+pl_contrel (x, y)
      int x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->contrel (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-ellarc (int xc, int yc, int x0, int y0, int x1, int y1)
+pl_ellarc (int xc, int yc, int x0, int y0, int x1, int y1)
 #else
-ellarc (xc, yc, x0, y0, x1, y1)
+pl_ellarc (xc, yc, x0, y0, x1, y1)
      int xc, yc, x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->ellarc (xc, yc, x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-ellarcrel (int xc, int yc, int x0, int y0, int x1, int y1)
+pl_ellarcrel (int xc, int yc, int x0, int y0, int x1, int y1)
 #else
-ellarcrel (xc, yc, x0, y0, x1, y1)
+pl_ellarcrel (xc, yc, x0, y0, x1, y1)
      int xc, yc, x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->ellarcrel (xc, yc, x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-ellipse (int x, int y, int rx, int ry, int angle)
+pl_ellipse (int x, int y, int rx, int ry, int angle)
 #else
-ellipse (x, y, rx, ry, angle)
+pl_ellipse (x, y, rx, ry, angle)
      int x, y, rx, ry, angle;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->ellipse (x, y, rx, ry, angle);
 }
 
 int
 #ifdef _HAVE_PROTOS
-ellipserel (int x, int y, int rx, int ry, int angle)
+pl_ellipserel (int x, int y, int rx, int ry, int angle)
 #else
-ellipserel (x, y, rx, ry, angle)
+pl_ellipserel (x, y, rx, ry, angle)
      int x, y, rx, ry, angle;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->ellipserel (x, y, rx, ry, angle);
 }
 
 int
 #ifdef _HAVE_PROTOS
-endpath (void)
+pl_endpath (void)
 #else
-endpath ()
+pl_endpath ()
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->endpath ();
 }
 
 int
 #ifdef _HAVE_PROTOS
-erase (void)
+pl_erase (void)
 #else
-erase ()
+pl_erase ()
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->erase ();
 }
 
 int
 #ifdef _HAVE_PROTOS
-farc (double xc, double yc, double x0, double y0, double x1, double y1)
+pl_farc (double xc, double yc, double x0, double y0, double x1, double y1)
 #else
-farc (xc, yc, x0, y0, x1, y1)
+pl_farc (xc, yc, x0, y0, x1, y1)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->farc (xc, yc, x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-farcrel (double xc, double yc, double x0, double y0, double x1, double y1)
+pl_farcrel (double xc, double yc, double x0, double y0, double x1, double y1)
 #else
-farcrel (xc, yc, x0, y0, x1, y1)
+pl_farcrel (xc, yc, x0, y0, x1, y1)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->farcrel (xc, yc, x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fbox (double x0, double y0, double x1, double y1)
+pl_fbezier2 (double xc, double yc, double x0, double y0, double x1, double y1)
 #else
-fbox (x0, y0, x1, y1)
+pl_fbezier2 (xc, yc, x0, y0, x1, y1)
+     double xc, yc, x0, y0, x1, y1;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->fbezier2 (xc, yc, x0, y0, x1, y1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_fbezier2rel (double xc, double yc, double x0, double y0, double x1, double y1)
+#else
+pl_fbezier2rel (xc, yc, x0, y0, x1, y1)
+     double xc, yc, x0, y0, x1, y1;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->fbezier2rel (xc, yc, x0, y0, x1, y1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_fbezier3 (double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
+#else
+pl_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
+     double x0, y0, x1, y1, x2, y2, x3, y3;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_fbezier3rel (double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
+#else
+pl_fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
+     double x0, y0, x1, y1, x2, y2, x3, y3;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_fbox (double x0, double y0, double x1, double y1)
+#else
+pl_fbox (x0, y0, x1, y1)
      double x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fbox (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fboxrel (double x0, double y0, double x1, double y1)
+pl_fboxrel (double x0, double y0, double x1, double y1)
 #else
-fboxrel (x0, y0, x1, y1)
+pl_fboxrel (x0, y0, x1, y1)
      double x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fboxrel (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fcircle (double x, double y, double r)
+pl_fcircle (double x, double y, double r)
 #else
-fcircle (x, y, r)
+pl_fcircle (x, y, r)
      double x, y, r;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fcircle (x, y, r);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fcirclerel (double x, double y, double r)
+pl_fcirclerel (double x, double y, double r)
 #else
-fcirclerel (x, y, r)
+pl_fcirclerel (x, y, r)
      double x, y, r;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fcirclerel (x, y, r);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fconcat (double m0, double m1, double m2, double m3, double m4, double m5)
+pl_fconcat (double m0, double m1, double m2, double m3, double m4, double m5)
 #else
-fconcat (m0, m1, m2, m3, m4, m5)
+pl_fconcat (m0, m1, m2, m3, m4, m5)
      double m0, m1, m2, m3, m4, m5;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fconcat (m0, m1, m2, m3, m4, m5);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fcont (double x, double y)
+pl_fcont (double x, double y)
 #else
-fcont (x, y)
+pl_fcont (x, y)
      double x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fcont (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fcontrel (double x, double y)
+pl_fcontrel (double x, double y)
 #else
-fcontrel (x, y)
+pl_fcontrel (x, y)
      double x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fcontrel (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fellarc (double xc, double yc, double x0, double y0, double x1, double y1)
+pl_fellarc (double xc, double yc, double x0, double y0, double x1, double y1)
 #else
-fellarc (xc, yc, x0, y0, x1, y1)
+pl_fellarc (xc, yc, x0, y0, x1, y1)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fellarc (xc, yc, x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fellarcrel (double xc, double yc, double x0, double y0, double x1, double y1)
+pl_fellarcrel (double xc, double yc, double x0, double y0, double x1, double y1)
 #else
-fellarcrel (xc, yc, x0, y0, x1, y1)
+pl_fellarcrel (xc, yc, x0, y0, x1, y1)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fellarcrel (xc, yc, x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fellipse (double x, double y, double rx, double ry, double angle)
+pl_fellipse (double x, double y, double rx, double ry, double angle)
 #else
-fellipse (x, y, rx, ry, angle)
+pl_fellipse (x, y, rx, ry, angle)
      double x, y, rx, ry, angle;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fellipse (x, y, rx, ry, angle);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fellipserel (double x, double y, double rx, double ry, double angle)
+pl_fellipserel (double x, double y, double rx, double ry, double angle)
 #else
-fellipserel (x, y, rx, ry, angle)
+pl_fellipserel (x, y, rx, ry, angle)
      double x, y, rx, ry, angle;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fellipserel (x, y, rx, ry, angle);
 }
 
 double
 #ifdef _HAVE_PROTOS
-ffontname (const char *s)
+pl_ffontname (const char *s)
 #else
-ffontname (s)
+pl_ffontname (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->ffontname (s);
 }
 
 double
 #ifdef _HAVE_PROTOS
-ffontsize (double size)
+pl_ffontsize (double size)
 #else
-ffontsize (size)
+pl_ffontsize (size)
      double size;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->ffontsize (size);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fillcolor (int red, int green, int blue)
+pl_fillcolor (int red, int green, int blue)
 #else
-fillcolor (red, green, blue)
+pl_fillcolor (red, green, blue)
      int red, green, blue;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fillcolor (red, green, blue);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fillcolorname (const char *s)
+pl_fillcolorname (const char *s)
 #else
-fillcolorname (s)
+pl_fillcolorname (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fillcolorname (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-filltype (int level)
+pl_fillmod (const char *s)
 #else
-filltype (level)
+pl_fillmod (s)
+     const char *s;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->fillmod (s);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_filltype (int level)
+#else
+pl_filltype (level)
      int level;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->filltype (level);
 }
 
 double
 #ifdef _HAVE_PROTOS
-flabelwidth (const char *s)
+pl_flabelwidth (const char *s)
 #else
-flabelwidth (s)
+pl_flabelwidth (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->flabelwidth (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fline (double x0, double y0, double x1, double y1)
+pl_fline (double x0, double y0, double x1, double y1)
 #else
-fline (x0, y0, x1, y1)
+pl_fline (x0, y0, x1, y1)
      double x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fline (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-flinerel (double x0, double y0, double x1, double y1)
+pl_flinedash (int n, const double *dashes, double offset)
 #else
-flinerel (x0, y0, x1, y1)
+pl_flinedash (n, dashes, offset)
+     int n;
+     const double *dashes;
+     double offset;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->flinedash (n, dashes, offset);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_flinerel (double x0, double y0, double x1, double y1)
+#else
+pl_flinerel (x0, y0, x1, y1)
      double x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->flinerel (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-flinewidth (double size)
+pl_flinewidth (double size)
 #else
-flinewidth (size)
+pl_flinewidth (size)
      double size;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->flinewidth (size);
 }
 
 int
 #ifdef _HAVE_PROTOS
-flushpl (void)
+pl_flushpl (void)
 #else
-flushpl ()
+pl_flushpl ()
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->flushpl ();
 }
 
 int
 #ifdef _HAVE_PROTOS
-fmarker (double x, double y, int type, double size)
+pl_fmarker (double x, double y, int type, double size)
 #else
-fmarker (x, y, type, size)
+pl_fmarker (x, y, type, size)
      double x, y;
      int type;
      double size;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fmarker (x, y, type, size);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fmarkerrel (double x, double y, int type, double size)
+pl_fmarkerrel (double x, double y, int type, double size)
 #else
-fmarkerrel (x, y, type, size)
+pl_fmarkerrel (x, y, type, size)
      double x, y;
      int type;
      double size;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fmarkerrel (x, y, type, size);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fmove (double x, double y)
+pl_fmiterlimit (double limit)
 #else
-fmove (x, y)
+pl_fmiterlimit (limit)
+     double limit;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->fmiterlimit (limit);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_fmove (double x, double y)
+#else
+pl_fmove (x, y)
      double x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fmove (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fmoverel (double x, double y)
+pl_fmoverel (double x, double y)
 #else
-fmoverel (x, y)
+pl_fmoverel (x, y)
      double x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fmoverel (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fontname (const char *s)
+pl_fontname (const char *s)
 #else
-fontname (s)
+pl_fontname (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fontname (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fontsize (int size)
+pl_fontsize (int size)
 #else
-fontsize (size)
+pl_fontsize (size)
      int size;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fontsize (size);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fpoint (double x, double y)
+pl_fpoint (double x, double y)
 #else
-fpoint (x, y)
+pl_fpoint (x, y)
      double x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fpoint (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fpointrel (double x, double y)
+pl_fpointrel (double x, double y)
 #else
-fpointrel (x, y)
+pl_fpointrel (x, y)
      double x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fpointrel (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-frotate (double theta)
+pl_frotate (double theta)
 #else
-frotate (theta)
+pl_frotate (theta)
      double theta;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->frotate (theta);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fscale (double x, double y)
+pl_fscale (double x, double y)
 #else
-fscale (x, y)
+pl_fscale (x, y)
      double x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fscale (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fspace (double x0, double y0, double x1, double y1)
+pl_fspace (double x0, double y0, double x1, double y1)
 #else
-fspace (x0, y0, x1, y1)
+pl_fspace (x0, y0, x1, y1)
      double x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fspace (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-fspace2 (double x0, double y0, double x1, double y1, double x2, double y2)
+pl_fspace2 (double x0, double y0, double x1, double y1, double x2, double y2)
 #else
-fspace2 (x0, y0, x1, y1, x2, y2)
+pl_fspace2 (x0, y0, x1, y1, x2, y2)
      double x0, y0, x1, y1, x2, y2;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->fspace2 (x0, y0, x1, y1, x2, y2);
 }
 
 double
 #ifdef _HAVE_PROTOS
-ftextangle (double angle)
+pl_ftextangle (double angle)
 #else
-ftextangle (angle)
+pl_ftextangle (angle)
      double angle;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->ftextangle (angle);
 }
 
 int
 #ifdef _HAVE_PROTOS
-ftranslate (double x, double y)
+pl_ftranslate (double x, double y)
 #else
-ftranslate (x, y)
+pl_ftranslate (x, y)
      double x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->ftranslate (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-havecap (const char *s)
+pl_havecap (const char *s)
 #else
-havecap (s)
+pl_havecap (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->havecap (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-joinmod (const char *s)
+pl_joinmod (const char *s)
 #else
-joinmod (s)
+pl_joinmod (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->joinmod (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-label (const char *s)
+pl_label (const char *s)
 #else
-label (s)
+pl_label (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->label (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-labelwidth (const char *s)
+pl_labelwidth (const char *s)
 #else
-labelwidth (s)
+pl_labelwidth (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->labelwidth (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-line (int x0, int y0, int x1, int y1)
+pl_line (int x0, int y0, int x1, int y1)
 #else
-line (x0, y0, x1, y1)
+pl_line (x0, y0, x1, y1)
      int x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->line (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-linerel (int x0, int y0, int x1, int y1)
+pl_linerel (int x0, int y0, int x1, int y1)
 #else
-linerel (x0, y0, x1, y1)
+pl_linerel (x0, y0, x1, y1)
      int x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->linerel (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-linewidth (int size)
+pl_linewidth (int size)
 #else
-linewidth (size)
+pl_linewidth (size)
      int size;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->linewidth (size);
 }
 
 int
 #ifdef _HAVE_PROTOS
-linemod (const char *s)
+pl_linedash (int n, const int *dashes, int offset)
 #else
-linemod (s)
+pl_linedash (n, dashes, offset)
+     int n;
+     const int *dashes;
+     int offset;
+#endif
+{
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->linedash (n, dashes, offset);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_linemod (const char *s)
+#else
+pl_linemod (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->linemod (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-marker (int x, int y, int type, int size)
+pl_marker (int x, int y, int type, int size)
 #else
-marker (x, y, type, size)
+pl_marker (x, y, type, size)
      int x, y, type, size;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->marker (x, y, type, size);
 }
 
 int
 #ifdef _HAVE_PROTOS
-markerrel (int x, int y, int type, int size)
+pl_markerrel (int x, int y, int type, int size)
 #else
-markerrel (x, y, type, size)
+pl_markerrel (x, y, type, size)
      int x, y, type, size;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->markerrel (x, y, type, size);
 }
 
 int
 #ifdef _HAVE_PROTOS
-move (int x, int y)
+pl_move (int x, int y)
 #else
-move (x, y)
+pl_move (x, y)
      int x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->move (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-moverel (int x, int y)
+pl_moverel (int x, int y)
 #else
-moverel (x, y)
+pl_moverel (x, y)
      int x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->moverel (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-openpl (void)
+pl_openpl (void)
 #else
-openpl ()
+pl_openpl ()
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->openpl ();
 }
 
 FILE *
 #ifdef _HAVE_PROTOS
-outfile (FILE *newstream)
+pl_outfile (FILE *outfile)
 #else
-outfile (newstream)
-     FILE *newstream;
+pl_outfile (outfile)
+     FILE *outfile;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
-  return _plotter->outfile (newstream);
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _plotter->outfile (outfile);
 }
 
 int
 #ifdef _HAVE_PROTOS
-pencolor (int red, int green, int blue)
+pl_pencolor (int red, int green, int blue)
 #else
-pencolor (red, green, blue)
+pl_pencolor (red, green, blue)
      int red, green, blue;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->pencolor (red, green, blue);
 }
 
 int
 #ifdef _HAVE_PROTOS
-pencolorname (const char *s)
+pl_pencolorname (const char *s)
 #else
-pencolorname (s)
+pl_pencolorname (s)
      const char *s;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->pencolorname (s);
 }
 
 int
 #ifdef _HAVE_PROTOS
-point (int x, int y)
+pl_point (int x, int y)
 #else
-point (x, y)
+pl_point (x, y)
      int x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->point (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-pointrel (int x, int y)
+pl_pointrel (int x, int y)
 #else
-pointrel (x, y)
+pl_pointrel (x, y)
      int x, y;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->pointrel (x, y);
 }
 
 int
 #ifdef _HAVE_PROTOS
-restorestate (void)
+pl_restorestate (void)
 #else
-restorestate ()
+pl_restorestate ()
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->restorestate ();
 }
 
 int
 #ifdef _HAVE_PROTOS
-savestate (void)
+pl_savestate (void)
 #else
-savestate ()
+pl_savestate ()
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->savestate ();
 }
 
 int
 #ifdef _HAVE_PROTOS
-space (int x0, int y0, int x1, int y1)
+pl_space (int x0, int y0, int x1, int y1)
 #else
-space (x0, y0, x1, y1)
+pl_space (x0, y0, x1, y1)
      int x0, y0, x1, y1;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->space (x0, y0, x1, y1);
 }
 
 int
 #ifdef _HAVE_PROTOS
-space2 (int x0, int y0, int x1, int y1, int x2, int y2)
+pl_space2 (int x0, int y0, int x1, int y1, int x2, int y2)
 #else
-space2 (x0, y0, x1, y1, x2, y2)
+pl_space2 (x0, y0, x1, y1, x2, y2)
      int x0, y0, x1, y1, x2, y2;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->space2 (x0, y0, x1, y1, x2, y2);
 }
 
 int
 #ifdef _HAVE_PROTOS
-textangle (int angle)
+pl_textangle (int angle)
 #else
-textangle (angle)
+pl_textangle (angle)
      int angle;
 #endif
 {
-  if (_num_plotters == 0)
-    _init_plotter_array ();
+  if (_plotters_len == 0)
+    _create_and_select_default_plotter ();
   return _plotter->textangle (angle);
 }
+
+/* END OF WRAPPERS */
+
+
+/* The following forwarding function provides special support in libplot
+   for deriving Plotter classes from other Plotter classes.  This file is
+   the only reasonable place to put them. */
+
+/* Support deriving MetaPlotter class from Plotter class */
+
+/* Recompute device-frame line width, without (if the Plotter is a
+   MetaPlotter) emitting an op code.  See comments in g_concat.c and
+   m_concat.c. */
+void
+#ifdef _HAVE_PROTOS
+_recompute_device_line_width (void)
+#else
+_recompute_device_line_width ()
+#endif
+{
+  if (_plotter->type == PL_META)
+    _m_recompute_device_line_width ();
+  else
+    _g_recompute_device_line_width ();
+}
+
+/* Support deriving PCLPlotter class from HPGLPlotter class */
+
+/* Eject page (if page number > 1) and switch from PCL 5 mode to HP-GL/2
+   mode, if a PCL 5 printer (otherwise it's a no-op) */
+void
+#ifdef _HAVE_PROTOS
+_maybe_switch_to_hpgl (void)
+#else
+_maybe_switch_to_hpgl ()
+#endif
+{
+  if (_plotter->type == PL_HPGL)
+    _h_maybe_switch_to_hpgl ();
+  else if (_plotter->type == PL_PCL)
+    _q_maybe_switch_to_hpgl ();
+}
+
+/* Switch back to PCL 5 mode from HP-GL/2 mode, if a PCL 5 printer 
+   (otherwise it's a no-op) */
+void
+#ifdef _HAVE_PROTOS
+_maybe_switch_from_hpgl (void)
+#else
+_maybe_switch_from_hpgl ()
+#endif
+{
+  if (_plotter->type == PL_HPGL)
+    _h_maybe_switch_from_hpgl ();
+  else if (_plotter->type == PL_PCL)
+    _q_maybe_switch_from_hpgl ();
+}
+
+#ifndef X_DISPLAY_MISSING
+/* Support deriving XPlotter class from XDrawablePlotter class */
+
+/* Internal function for XDrawablePlotters/XPlotters (called in x_color.c,
+   if the original colormap fills up).  For XDrawablePlotters, it's a
+   no-op, but for XPlotters, we try to switch to a new colormap.  This
+   forwarding function is used only by libplot; in libplotter,
+   _maybe_get_new_colormap is a virtual function. */
+void
+#ifdef _HAVE_PROTOS
+_maybe_get_new_colormap (void)
+#else
+_maybe_get_new_colormap ()
+#endif
+{
+  if (_plotter->type == PL_X11_DRAWABLE)
+    _x_maybe_get_new_colormap ();
+  else if (_plotter->type == PL_X11)
+    _y_maybe_get_new_colormap ();
+}
+
+/* Internal function for XDrawablePlotters/XPlotters (called after most
+   drawing operations).  For XDrawablePlotters, it's a no-op, but for
+   XPlotters, we manually process all pending X events.  This forwarding
+   function is used only by libplot; in libplotter, _maybe_handle_x_events
+   is a virtual function. */
+void
+#ifdef _HAVE_PROTOS
+_maybe_handle_x_events (void)
+#else
+_maybe_handle_x_events ()
+#endif
+{
+  if (_plotter->type == PL_X11_DRAWABLE)
+    _x_maybe_handle_x_events ();
+  else if (_plotter->type == PL_X11)
+    _y_maybe_handle_x_events ();
+}
+#endif /* not X_DISPLAY_MISSING */

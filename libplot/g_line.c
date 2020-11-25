@@ -4,7 +4,6 @@
    line object to a polyline object. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int

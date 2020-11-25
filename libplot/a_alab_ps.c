@@ -7,7 +7,6 @@
    graphics cursor position is repositioned to the end of the string. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define GOOD_PRINTABLE_ASCII(c) ((c >= 0x20) && (c <= 0x7E))
@@ -311,4 +310,18 @@ _a_falabel_ps (s, h_just)
     _plotter->page->ps_font_used[master_font_index] = true;
 
   return width;
+}
+
+/* Counterpart of the preceding, for PCL fonts.  If used by the AI Plotter,
+   it simply invokes the preceding, which contains PCL font support. */
+double
+#ifdef _HAVE_PROTOS
+_a_falabel_pcl (const unsigned char *s, int h_just)
+#else
+_a_falabel_pcl (s, h_just)
+     const unsigned char *s;
+     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+#endif
+{
+  return _a_falabel_ps (s, h_just);
 }

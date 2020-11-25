@@ -16,7 +16,6 @@
    drawing state. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 double

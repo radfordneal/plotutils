@@ -38,92 +38,92 @@ extern int     curline;
 /*
  * external function declarations
  */
-bool check __P((void));
-bool hierror __P((void));
-bool intpr __P((double t));
-bool lowerror __P((void));
-bool xatof __P((char *s, double *dval));
-bool xatol __P((char *s, long int *ival));
-double eval __P((const struct expr *ep));
-void am __P((void));
-void ama __P((void));
-void args __P((int ac, char **av));
-void defalt __P((void));
-void eu __P((void));
-void efree __P((struct expr *ep));
-void field __P((void));
-void maxerr __P((void));
-void panic __P((const char *s));
-void panicn __P((const char *fmt, int n));
-void pfree __P((struct prt *pp));
-void printq __P((void));
-void prval __P((double x));
-void maxerror __P((void));
-void resetflt __P((void));
-void rk __P((void));
-void rka __P((void));
-void rterror __P((const char *s));
-void rterrors __P((const char *fmt, const char *s));
-void rtsquawks __P((const char *fmt, const char *s));
-void setflt __P((void));
-void sfree __P((struct sym *sp));
-void solve __P((void));
-void startstep __P((void));
-void title __P((void));
-void trivial __P((void));
-struct expr * ealloc __P((void));
-struct prt * palloc __P((void));
-struct sym * lookup __P((char *nam));
-struct sym * salloc __P((void));
-RETSIGTYPE fptrap __P((int sig));
+bool check ____P((void));
+bool hierror ____P((void));
+bool intpr ____P((double t));
+bool lowerror ____P((void));
+bool xatof ____P((char *s, double *dval));
+bool xatol ____P((char *s, long int *ival));
+double eval ____P((const struct expr *ep));
+void am ____P((void));
+void ama ____P((void));
+void args ____P((int ac, char **av));
+void defalt ____P((void));
+void eu ____P((void));
+void efree ____P((struct expr *ep));
+void field ____P((void));
+void maxerr ____P((void));
+void panic ____P((const char *s));
+void panicn ____P((const char *fmt, int n));
+void pfree ____P((struct prt *pp));
+void printq ____P((void));
+void prval ____P((double x));
+void maxerror ____P((void));
+void resetflt ____P((void));
+void rk ____P((void));
+void rka ____P((void));
+void rterror ____P((const char *s));
+void rterrors ____P((const char *fmt, const char *s));
+void rtsquawks ____P((const char *fmt, const char *s));
+void setflt ____P((void));
+void sfree ____P((struct sym *sp));
+void solve ____P((void));
+void startstep ____P((void));
+void title ____P((void));
+void trivial ____P((void));
+struct expr * ealloc ____P((void));
+struct prt * palloc ____P((void));
+struct sym * lookup ____P((char *nam));
+struct sym * salloc ____P((void));
+RETSIGTYPE fptrap ____P((int sig));
 
 /* in scanner or parser */
-int yyerror __P((const char *msg));
-int yylex __P((void));
-int yyparse __P((void));
-struct lex * lalloc __P((void));
-void concat __P((struct expr *e0, struct expr *e1));
-void lfree __P((struct lex *lp));
-void prexq __P((struct expr *ep));
+int yyerror ____P((const char *msg));
+int yylex ____P((void));
+int yyparse ____P((void));
+struct lex * lalloc ____P((void));
+void concat ____P((struct expr *e0, struct expr *e1));
+void lfree ____P((struct lex *lp));
+void prexq ____P((struct expr *ep));
 
 /* math library exception handling */
 #ifdef HAVE_MATHERR
-int matherr __P((struct exception *x));
+int matherr ____P((struct exception *x));
 #endif
 
 /* math functions in bessel.c and specfun.c */
 #ifndef HAVE_J0
-double j0 __P((double x));
-double j1 __P((double x));
-double y0 __P((double x));
-double y1 __P((double x));
+double j0 ____P((double x));
+double j1 ____P((double x));
+double y0 ____P((double x));
+double y1 ____P((double x));
 #endif
 #ifdef NO_SYSTEM_GAMMA
-double f_lgamma __P((double x));
+double f_lgamma ____P((double x));
 #else  /* not NO_SYSTEM_GAMMA, we link in vendor code */
 #ifdef HAVE_LGAMMA
-extern double lgamma __P((double x)); /* declaration may be gratuitous */
+extern double lgamma ____P((double x)); /* declaration may be gratuitous */
 #endif
 #ifdef HAVE_GAMMA
-extern double gamma __P((double x)); /* declaration may be gratuitous */
+extern double gamma ____P((double x)); /* declaration may be gratuitous */
 #endif
 #endif
-double f_gamma __P((double x));
+double f_gamma ____P((double x));
 #ifndef HAVE_ERF
-double erf __P((double x));
-double erfc __P((double x));
+double erf ____P((double x));
+double erfc ____P((double x));
 #endif
-double ibeta __P((double a, double b, double x));
-double igamma __P((double a, double x));
-double inverf __P((double p));
-double invnorm __P((double p));
-double norm __P((double x));
+double ibeta ____P((double a, double b, double x));
+double igamma ____P((double a, double x));
+double inverf ____P((double p));
+double invnorm ____P((double p));
+double norm ____P((double x));
 
 /* in libcommon */
-void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
-Voidptr xmalloc __P ((unsigned int size));
-char *xstrdup __P ((const char *s));
+void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
+Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
+Voidptr xmalloc ____P ((unsigned int size));
+char *xstrdup ____P ((const char *s));
 
 /* support C++ */
 #ifdef __BEGIN_DECLS
@@ -141,5 +141,5 @@ char *xstrdup __P ((const char *s));
 #endif
 
 __BEGIN_DECLS
-int yywrap __P((void));
+int yywrap ____P((void));
 __END_DECLS     

@@ -69,7 +69,7 @@ typedef struct
 
 static const Escape _iso_escape_tbl[NUM_ISO_ESCAPES] = 
 {
-  /* groff-style escape sequences */
+  /* escape sequences, taken from groff */
   {161, "r!", "exclamdown"},
   {162, "ct", "cent"},
   {163, "Po", "sterling"},
@@ -177,7 +177,10 @@ static const Escape _iso_escape_tbl[NUM_ISO_ESCAPES] =
 
 static const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] = 
 {
-  /* groff-style escape sequences */
+  /* escape sequences, taken from groff, except for (1) several characters
+   for which the escape sequences were invented, because groff has no
+   2-letter escape sequence for them, and (2) three characters (flagged)
+   that needed to have their escape sequences capitalized due to conflicts */
   {042, "fa", "universal"},
   {044, "te", "existential"},
   {047, "st", "suchthat"},
@@ -280,10 +283,10 @@ static const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] =
   {0306, "es", "emptyset"},
   {0307, "ca", "cap"},
   {0310, "cu", "cup"},
-  {0311, "SS", "superset"},
+  {0311, "SS", "superset"},	/* groff: sp.  Conflicts with \sp. */
   {0312, "ip", "reflexsuperset"},
   {0313, "n<", "notsubset"},
-  {0314, "SB", "subset"},
+  {0314, "SB", "subset"},	/* groff: sb.  Conflicts with \sb. */
   {0315, "ib", "reflexsubset"},
   {0316, "mo", "element"},
   {0317, "nm", "notelement"},
@@ -333,10 +336,10 @@ static const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] =
   {0371, "rc", "bracketrighttp"},
   {0372, "NO_ABBREV", "bracketrightex"},
   {0373, "rf", "bracketrightbt"},
-  {0374, "RT", "bracerighttp"},	/* conflict with "return" ! */
+  {0374, "RT", "bracerighttp"},	/* groff: rt.  Conflicts with \rt. */
   {0375, "rk", "bracerightmid"},
   {0376, "rb", "bracerightbt"},
-  /* traditional UGS aliases (redundant) */
+  /* traditional UGS aliases (undocumented and redundant; obsolete) */
   {0100, "~=", "congruent"},
   {0242, "pr", "minute"},
   {0245, "in", "infinity"},

@@ -45,6 +45,9 @@ typedef enum
 ((grid_spec == AXES) || (grid_spec == AXES_AND_BOX) \
  || (grid_spec == AXES_AND_BOX_AND_GRID))
 
+/* possible rotation angles for plot within graphics display */
+enum { ROT_0, ROT_90, ROT_180, ROT_270 };
+
 /* bit fields in portmanteau variables */
 enum { X_AXIS = 0x1, Y_AXIS = 0x2 };
 
@@ -66,43 +69,43 @@ extern const char	*progname; /* Program name */
 
 /*------------prototypes for libcommon functions----------------------------*/
 
-extern bool
-display_fonts __P((const char *display_type, const char *progname));
+extern int
+display_fonts ____P((const char *display_type, const char *progname));
 
-extern bool
-list_fonts __P((const char *display_type, const char *progname));
-
-extern void 
-display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
+extern int
+list_fonts ____P((const char *display_type, const char *progname));
 
 extern void 
-display_version __P((const char *progname));
+display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
+
+extern void 
+display_version ____P((const char *progname));
 
 extern Voidptr 
-xmalloc __P ((unsigned int length));
+xmalloc ____P ((unsigned int length));
 
 extern Voidptr 
-xrealloc __P ((Voidptr p, unsigned int length));
+xrealloc ____P ((Voidptr p, unsigned int length));
 
 extern char * 
-xstrdup __P((const char *s));
+xstrdup ____P((const char *s));
 
 /*--------------------------------prototypes--------------------------------*/
 
 extern void 
-array_bounds __P((const Point *p, int length, bool transpose_axes, 
+array_bounds ____P((const Point *p, int length, bool transpose_axes, 
 		  double *min_x, double *min_y,
 		  double *max_x, double *max_y, bool spec_min_x, bool
 		  spec_min_y, bool spec_max_x, bool spec_max_y));
 
 extern void
-read_file __P((FILE *input, Point **p, int *length, int *no_of_points));
+read_file ____P((FILE *input, Point **p, int *length, int *no_of_points));
 
 extern void 
-read_and_plot_file __P((FILE *input));
+read_and_plot_file ____P((FILE *input));
 
 extern void
-set_reader_parameters __P((data_type input_type, bool auto_abscissa, double
+set_reader_parameters ____P((data_type input_type, bool auto_abscissa, double
 			   delta_x, double abscissa, 
 			   int symbol, double symbol_size, 
 			   char *symbol_font_name, 
@@ -114,7 +117,7 @@ set_reader_parameters __P((data_type input_type, bool auto_abscissa, double
 			   bool new_fill_fraction, bool new_use_color));
 
 extern void
-initialize_reader __P((data_type input_type, bool auto_abscissa, double
+initialize_reader ____P((data_type input_type, bool auto_abscissa, double
 		       delta_x, double abscissa, bool transpose_axes, 
 		       int log_axis, bool auto_bump, 
 		       int symbol, double symbol_size, 
@@ -122,13 +125,14 @@ initialize_reader __P((data_type input_type, bool auto_abscissa, double
 		       double line_width, double fill_fraction, bool use_color));
 
 extern void
-reset_reader __P((void));
+reset_reader ____P((void));
 
 extern void
-set_plotter_parameters __P ((double plot_line_width, char *point_label_font_name));
+set_plotter_parameters ____P ((double plot_line_width, char *point_label_font_name));
 
 extern void
-initialize_plotter __P((char *display_type,
+initialize_plotter ____P((char *display_type,
+			int rotation_angle,
 			bool save_screen, 
 			char *bg_color,
 			double frame_line_width,
@@ -152,16 +156,16 @@ initialize_plotter __P((char *display_type,
 			bool transpose_axes));
 
 extern void
-plot_frame __P((bool draw_canvas));
+plot_frame ____P((bool draw_canvas));
 
 extern void
-plot_point_array __P((const Point *p, int length));
+plot_point_array ____P((const Point *p, int length));
 
 extern void
-plot_point __P((const Point *point));
+plot_point ____P((const Point *point));
 
 extern int
-open_plotter __P((void));
+open_plotter ____P((void));
 
 extern int
-close_plotter __P((void));
+close_plotter ____P((void));

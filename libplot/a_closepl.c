@@ -3,31 +3,30 @@
 
    For AIPlotter objects, we first output the Illustrator header.  We then
    output all objects, which we have saved in a resizable outbuf structure
-   for the current page.  Finally we fflush the _plotter->outstream and
-   reset all datastructures.
+   for the current page.  Finally we flush the output stream and reset all
+   datastructures.
 
    All this applies only if this is page #1, since an Illustrator file may
    contain no more than a single page of graphics.  Later pages are simply
    deallocated. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
-#ifndef HAVE_UNISTD_H
-#include <sys/types.h>		/* if unistd.h found, included with it */
+/* song and dance to define time_t, and declare both time() and ctime() */
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>		/* for time_t on some pre-ANSI Unix systems */
 #endif
-
 #ifdef TIME_WITH_SYS_TIME
-#include <sys/time.h>		/* for time() */
+#include <sys/time.h>		/* for time() on some pre-ANSI Unix systems */
 #include <time.h>		/* for ctime() */
-#else
+#else  /* not TIME_WITH_SYS_TIME, include only one (prefer <sys/time.h>) */
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#else
+#else  /* not HAVE_SYS_TIME_H */
 #include <time.h>
-#endif
-#endif
+#endif /* not HAVE_SYS_TIME_H */
+#endif /* not TIME_WITH_SYS_TIME */
 
 static const char *_ai_symbol_reencoding = "32/space\n/exclam\n/universal\n/numbersign\n/existential\n/percent\n/ampersand\n/suchthat\n/parenleft\n/parenright\n/asteriskmath\n/plus\n/comma\n/minus\n/period\n/slash\n/zero\n/one\n/two\n/three\n/four\n/five\n/six\n/seven\n/eight\n/nine\n/colon\n/semicolon\n/less\n/equal\n/greater\n/question\n/congruent\n/Alpha\n/Beta\n/Chi\n/Delta\n/Epsilon\n/Phi\n/Gamma\n/Eta\n/Iota\n/theta1\n/Kappa\n/Lambda\n/Mu\n/Nu\n/Omicron\n/Pi\n/Theta\n/Rho\n/Sigma\n/Tau\n/Upsilon\n/sigma1\n/Omega\n/Xi\n/Psi\n/Zeta\n/bracketleft\n/therefore\n/bracketright\n/perpendicular\n/underscore\n/radicalex\n/alpha\n/beta\n/chi\n/delta\n/epsilon\n/phi\n/gamma\n/eta\n/iota\n/phi1\n/kappa\n/lambda\n/mu\n/nu\n/omicron\n/pi\n/theta\n/rho\n/sigma\n/tau\n/upsilon\n/omega1\n/omega\n/xi\n/psi\n/zeta\n/braceleft\n/bar\n/braceright\n/similar\n161/Upsilon1\n/minute\n/lessequal\n/fraction\n/infinity\n/florin\n/club\n/diamond\n/heart\n/spade\n/arrowboth\n/arrowleft\n/arrowup\n/arrowright\n/arrowdown\n/degree\n/plusminus\n/second\n/greaterequal\n/multiply\n/proportional\n/partialdiff\n/bullet\n/divide\n/notequal\n/equivalence\n/approxequal\n/ellipsis\n/arrowvertex\n/arrowhorizex\n/carriagereturn\n/aleph\n/Ifraktur\n/Rfraktur\n/weierstrass\n/circlemultiply\n/circleplus\n/emptyset\n/intersection\n/union\n/propersuperset\n/reflexsuperset\n/notsubset\n/propersubset\n/reflexsubset\n/element\n/notelement\n/angle\n/gradient\n/registerserif\n/copyrightserif\n/trademarkserif\n/product\n/radical\n/dotmath\n/logicalnot\n/logicaland\n/logicalor\n/arrowdblboth\n/arrowdblleft\n/arrowdblup\n/arrowdblright\n/arrowdbldown\n/lozenge\n/angleleft\n/registersans\n/copyrightsans\n/trademarksans\n/summation\n/parenlefttp\n/parenleftex\n/parenleftbt\n/bracketlefttp\n/bracketleftex\n/bracketleftbt\n/bracelefttp\n/braceleftmid\n/braceleftbt\n/braceex\n241/angleright\n/integral\n/integraltp\n/integralex\n/integralbt\n/parenrighttp\n/parenrightex\n/parenrightbt\n/bracketrighttp\n/bracketrightex\n/bracketrightbt\n/bracerighttp\n/bracerightmid\n/bracerightbt\n";
 
@@ -41,7 +40,7 @@ _a_closepl ()
 #endif
 {
   bool fonts_used = false;
-  int i;
+  int i, retval;
 
   if (!_plotter->open)
     {
@@ -60,13 +59,17 @@ _a_closepl ()
   
   /* Output the page, but only if it's page #1 (currently AI format
      supports only one page of graphics output per file). */
-  if (_plotter->page_number == 1 && _plotter->outstream)
+  if (_plotter->page_number == 1)
     {
       char *time_s;
       double xmin, xmax, ymin, ymax;
       double xmid, ymid;
       int ixmid, iymid;
       time_t clock;
+      Outbuf *doc_header, *doc_trailer;
+
+      /* first, prepare AI header, and write it to an Outbuf */
+      doc_header = _new_outbuf ();
 
       /* compute center of graphics display in device coors (i.e. points) */
       xmid = 72 * (0.5 * (_plotter->display_coors.left 
@@ -77,12 +80,13 @@ _a_closepl ()
       iymid = IROUND(ymid);      
 
       /* emit first few comment lines */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%!PS-Adobe-3.0\n\
 %%%%Creator: GNU libplot drawing library %s\n\
 %%%%For: (Unknown) (Unknown)\n\
 %%%%Title: (Untitled)\n", 
 	       LIBPLOT_VERSION);
+      _update_buffer (doc_header);
 
       /* emit creation date and time, if possible */
       time(&clock);
@@ -95,94 +99,121 @@ _a_closepl ()
 	  retval = sscanf (time_s, "%s %s %s %s %s",
 			   weekday, month, day, hour_min_sec, year);
 	  if (retval == 5)
-	    fprintf (_plotter->outstream, "\
+	    {
+	      sprintf (doc_header->point, "\
 %%%%CreationDate: (%s %s %s) (%s)\n",
-		     day, month, year, hour_min_sec);
+		       day, month, year, hour_min_sec);
+	      _update_buffer (doc_header);
+	    }
 	}
 
       /* emit bounding box for the page */
       _bbox_of_outbuf (_plotter->page, &xmin, &xmax, &ymin, &ymax);
       if (xmin > xmax || ymin > ymax) /* no objects */
 	/* place degenerate box at center of page */
-	fprintf (_plotter->outstream, "\
+	sprintf (doc_header->point, "\
 %%%%BoundingBox: %d %d %d %d\n",
 		 ixmid, iymid, ixmid, iymid);
       else
 	/* emit true bounding box */
-	fprintf (_plotter->outstream, "\
+	sprintf (doc_header->point, "\
 %%%%BoundingBox: %d %d %d %d\n",
 		 IROUND(xmin - 0.5), IROUND(ymin - 0.5),
 		 IROUND(xmax + 0.5), IROUND(ymax + 0.5));
+      _update_buffer (doc_header);
       if (_plotter->ai_version >= AI_VERSION_5)
 	/* emit hi-res bounding box too */
 	{
 	  if (xmin > xmax || ymin > ymax) /* empty page */
 	    /* place degenerate box at center of page */
-	    fprintf (_plotter->outstream, "\
+	    sprintf (doc_header->point, "\
 %%%%HiResBoundingBox: %.4f %.4f %.4f %.4f\n",
 		     xmid, ymid, xmid, ymid);
 	  else
 	    /* emit true bounding box */
-	    fprintf (_plotter->outstream, "\
+	    sprintf (doc_header->point, "\
 %%%%HiResBoundingBox: %.4f %.4f %.4f %.4f\n",
 		     xmin, ymin, xmax, ymax);
+	  _update_buffer (doc_header);
 	}
 
       /* emit process colors used */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%%%DocumentProcessColors:");
+      _update_buffer (doc_header);
       if (_plotter->ai_cyan_used)
-	fprintf (_plotter->outstream, " Cyan");
+	{
+	  sprintf (doc_header->point, " Cyan");
+	  _update_buffer (doc_header);
+	}
       if (_plotter->ai_magenta_used)
-	fprintf (_plotter->outstream, " Magenta");
+	{
+	  sprintf (doc_header->point, " Magenta");
+	  _update_buffer (doc_header);
+	}
       if (_plotter->ai_yellow_used)
-	fprintf (_plotter->outstream, " Yellow");
+	{
+	  sprintf (doc_header->point, " Yellow");
+	  _update_buffer (doc_header);
+	}
       if (_plotter->ai_black_used)
-	fprintf (_plotter->outstream, " Black");
-      fprintf (_plotter->outstream, "\n");
-      
+	{
+	  sprintf (doc_header->point, " Black");
+	  _update_buffer (doc_header);
+	}
+      sprintf (doc_header->point, "\n");
+      _update_buffer (doc_header);      
+
       /* tell AI to include any PS [or PCL] fonts that are needed */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%%%DocumentFonts: ");
+      _update_buffer (doc_header);
       for (i = 0; i < NUM_PS_FONTS; i++)
 	if (_plotter->page->ps_font_used[i])
 	  {
 	    if (fonts_used)	/* not first font */
-	      fprintf (_plotter->outstream, 
+	      sprintf (doc_header->point, 
 		       "%%%%+ %s\n", _ps_font_info[i].ps_name);
 	    else		/* first font */
-	      fprintf (_plotter->outstream, 
+	      sprintf (doc_header->point, 
 		       "%s\n", _ps_font_info[i].ps_name);
+	    _update_buffer (doc_header);
 	    fonts_used = true;
 	  }
       for (i = 0; i < NUM_PCL_FONTS; i++)
 	if (_plotter->page->pcl_font_used[i])
 	  {
 	    if (fonts_used)	/* not first font */
-	      fprintf (_plotter->outstream, 
+	      sprintf (doc_header->point, 
 		       "%%%%+ %s\n", _pcl_font_info[i].ps_name);
 	    else		/* first font */
-	      fprintf (_plotter->outstream, 
+	      sprintf (doc_header->point, 
 		       "%s\n", _pcl_font_info[i].ps_name);
+	    _update_buffer (doc_header);
 	    fonts_used = true;
 	  }
       if (!fonts_used)
-	fprintf (_plotter->outstream, "\n");
+	{
+	  sprintf (doc_header->point, "\n");
+	  _update_buffer (doc_header);
+	}
 
       /* tell AI or print spooler that we need procsets */
       if (_plotter->ai_version == AI_VERSION_5)
 	{
-	  fprintf (_plotter->outstream, "\
+	  sprintf (doc_header->point, "\
 %%%%DocumentNeededResources: procset Adobe_level2_AI5 1.0 0\n\
 %%%%+ procset Adobe_typography_AI5 1.0 0\n\
 %%%%+ procset Adobe_Illustrator_AI6_vars Adobe_Illustrator_AI6\n\
 %%%%+ procset Adobe_Illustrator_AI5 1.0 0\n");
-	  fprintf (_plotter->outstream, "\
+	  _update_buffer (doc_header);
+	  sprintf (doc_header->point, "\
 %%AI5_FileFormat 3\n");
+	  _update_buffer (doc_header);
 	}
       else			/* AI_VERSION_3 */
 	{
-	  fprintf (_plotter->outstream, "\
+	  sprintf (doc_header->point, "\
 %%%%DocumentNeededResources: procset Adobe_packedarray 2.0 0\n\
 %%%%+ procset Adobe_cmykcolor 1.1 0\n\
 %%%%+ procset Adobe_cshow 1.1 0\n\
@@ -190,37 +221,43 @@ _a_closepl ()
 %%%%+ procset Adobe_typography_AI3 1.0 1\n\
 %%%%+ procset Adobe_pattern_AI3 1.0 0\n\
 %%%%+ procset Adobe_Illustrator_AI3 1.0 1\n");
+	  _update_buffer (doc_header);
 	}
 
       /* tell AI whether or not we're monochrome */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%AI3_ColorUsage: ");
+      _update_buffer (doc_header);
       if (_plotter->ai_cyan_used || _plotter->ai_magenta_used || _plotter->ai_yellow_used)
-	fprintf (_plotter->outstream, "Color\n");
+	sprintf (doc_header->point, "Color\n");
       else
-	fprintf (_plotter->outstream, "Black&White\n");
+	sprintf (doc_header->point, "Black&White\n");
+      _update_buffer (doc_header);
 
       /* place degenerate template box at center of graphics display, for
 	 centering */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%AI3_TemplateBox: %d %d %d %d\n",
 	       ixmid, iymid, ixmid, iymid);
+      _update_buffer (doc_header);
 
       /* specify nominal imageable area of the page */
       /* (we use our horizontal range, and the full page height) */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%AI3_TileBox: %d %d %d %d\n",
 	       IROUND(72 * _plotter->display_coors.left),
 	       0,
 	       IROUND(72 * _plotter->display_coors.right),
 	       IROUND(72 * _plotter->display_coors.extra));
+      _update_buffer (doc_header);
 	       
       /* misc comment lines, probably default values in value fields */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%AI3_DocumentPreview: None\n");
+      _update_buffer (doc_header);
       if (_plotter->ai_version >= AI_VERSION_5)
 	{
-	  fprintf (_plotter->outstream, "\
+	  sprintf (doc_header->point, "\
 %%AI5_ArtSize: %d %d\n\
 %%AI5_RulerUnits: %d\n\
 %%no_good_AI5_ArtFlags: 1 0 0 1 0 0 1 1 0\n\
@@ -237,55 +274,55 @@ _a_closepl ()
 		   IROUND(72 * _plotter->display_coors.extra),
 		   /* label AI's rulers with centimeters or inches */
 		   _plotter->use_metric ? 4 : 0);
+	  _update_buffer (doc_header);
 	}
       
       /* following three may be used only by old Macintosh versions of AI? */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%%%PageOrigin:%d %d\n",
 	       IROUND(72 * _plotter->display_coors.left), 0);
-      fprintf (_plotter->outstream, "\
+      _update_buffer (doc_header);
+      sprintf (doc_header->point, "\
 %%%%AI3_PaperRect:%d %d %d %d\n",
 	       -IROUND(72 * _plotter->display_coors.left),
 	       IROUND(72 * _plotter->display_coors.extra),
 	       IROUND(72 * _plotter->display_coors.right),
 	       0);
-      fprintf (_plotter->outstream, "\
+      _update_buffer (doc_header);
+      sprintf (doc_header->point, "\
 %%%%AI3_Margin:%d %d %d %d\n",
 	       IROUND(72 * _plotter->display_coors.left),
 	       0,
 	       -IROUND(72 * _plotter->display_coors.left),
 	       0);
+      _update_buffer (doc_header);
 
       if (_plotter->use_metric)
 	/* visible grid spacing = 1 cm, 3 subdivisions / division */
-	fprintf (_plotter->outstream, "\
+	sprintf (doc_header->point, "\
 %%AI7_GridSettings: %.4f 3 %.4f 3 1 0 0.8 0.8 0.8 0.9 0.9 0.9\n",
 		 72.0/2.54, 72.0/2.54);
       else
 	/* visible grid spacing = 1 in, 8 subdivisions / division */
-	fprintf (_plotter->outstream, "\
+	sprintf (doc_header->point, "\
 %%AI7_GridSettings: 72 8 72 8 1 0 0.8 0.8 0.8 0.9 0.9 0.9\n");
+      _update_buffer (doc_header);
       
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%%%EndComments\n");
+      _update_buffer (doc_header);
 
-      /* header emitted, so fflush it */
-      fflush(_plotter->outstream);
-      
       /* Prolog section: include the procsets */
       if (_plotter->ai_version == AI_VERSION_5)
-	{
-	  fprintf (_plotter->outstream, "\
+	sprintf (doc_header->point, "\
 %%%%BeginProlog\n\
 %%%%IncludeResource: procset Adobe_level2_AI5 1.0 0\n\
 %%%%IncludeResource: procset Adobe_typography_AI5 1.0 0\n\
 %%%%IncludeResource: procset Adobe_Illustrator_AI6_vars Adobe_Illustrator_AI6\n\
 %%%%IncludeResource: procset Adobe_Illustrator_AI5 1.0 0\n\
 %%%%EndProlog\n");
-	}
       else			/* AI_VERSION_3 */
-	{
-	  fprintf (_plotter->outstream, "\
+	sprintf (doc_header->point, "\
 %%%%BeginProlog\n\
 %%%%IncludeResource: procset Adobe_packedarray 2.0 0\n\
 Adobe_packedarray /initialize get exec\n\
@@ -296,54 +333,59 @@ Adobe_packedarray /initialize get exec\n\
 %%%%IncludeResource: procset Adobe_pattern_AI3 1.0 0\n\
 %%%%IncludeResource: procset Adobe_Illustrator_AI3 1.0 1\n\
 %%%%EndProlog\n");
-	}
+      _update_buffer (doc_header);
       
       /* beginning of Setup section */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%%%BeginSetup\n");
+      _update_buffer (doc_header);
 
       /* include fonts if any */
       if (fonts_used)
 	{
 	  for (i = 0; i < NUM_PS_FONTS; i++)
 	    if (_plotter->page->ps_font_used[i])
-	      fprintf (_plotter->outstream, "\
+	      {
+		sprintf (doc_header->point, "\
 %%%%IncludeFont: %s\n", 
 		       _ps_font_info[i].ps_name);
+		_update_buffer (doc_header);
+	      }
 	  for (i = 0; i < NUM_PCL_FONTS; i++)
 	    if (_plotter->page->pcl_font_used[i])
-	      fprintf (_plotter->outstream, "\
+	      {
+		sprintf (doc_header->point, "\
 %%%%IncludeFont: %s\n", 
-		       _pcl_font_info[i].ps_name);
+			 _pcl_font_info[i].ps_name);
+		_update_buffer (doc_header);
+	      }
 	}
 
       /* do setup of procsets */
       if (_plotter->ai_version == AI_VERSION_5)
-	{
-	  fprintf (_plotter->outstream, "\
+	sprintf (doc_header->point, "\
 Adobe_level2_AI5 /initialize get exec\n\
 Adobe_Illustrator_AI5_vars Adobe_Illustrator_AI5 Adobe_typography_AI5 /initialize get exec\n\
 Adobe_ColorImage_AI6 /initialize get exec\n\
 Adobe_Illustrator_AI5 /initialize get exec\n");
-	}
       else			/* AI_VERSION_3 */
-	{
-	  fprintf (_plotter->outstream, "\
+	sprintf (doc_header->point, "\
 Adobe_cmykcolor /initialize get exec\n\
 Adobe_cshow /initialize get exec\n\
 Adobe_customcolor /initialize get exec\n\
 Adobe_typography_AI3 /initialize get exec\n\
 Adobe_pattern_AI3 /initialize get exec\n\
 Adobe_Illustrator_AI3 /initialize get exec\n");
-	}
+      _update_buffer (doc_header);
 
       if (fonts_used)
 	/* do whatever font reencodings are needed */
 	{
 	  /* don't modify StandardEncoding */
-	  fprintf (_plotter->outstream, "\
-[\n\
+	  sprintf (doc_header->point, "[\n\
 TE\n");
+	  _update_buffer (doc_header);
+
           /* reencode each used font */
 	  for (i = 0; i < NUM_PS_FONTS; i++)
 	    if (_plotter->page->ps_font_used[i])
@@ -358,68 +400,72 @@ TE\n");
                   reencoding = _ai_symbol_reencoding;
                 else		/* don't know what to do */
                   reencoding = "";
- 	        fprintf (_plotter->outstream, "\
+ 	        sprintf (doc_header->point, "\
 %%AI3_BeginEncoding: _%s %s\n\
 [%s/_%s/%s 0 0 0 TZ\n\
 %%AI3_EndEncoding AdobeType\n",
 		       _ps_font_info[i].ps_name, _ps_font_info[i].ps_name,
                        reencoding,
 		       _ps_font_info[i].ps_name, _ps_font_info[i].ps_name);
+		_update_buffer (doc_header);
                }
 	  for (i = 0; i < NUM_PCL_FONTS; i++)
 	    if (_plotter->page->pcl_font_used[i])
-	        fprintf (_plotter->outstream, "\
+	      {
+	        sprintf (doc_header->point, "\
 %%AI3_BeginEncoding: _%s %s\n\
 [/_%s/%s 0 0 0 TZ\n\
 %%AI3_EndEncoding TrueType\n",
-		       _pcl_font_info[i].ps_name, _pcl_font_info[i].ps_name,
-		       _pcl_font_info[i].ps_name, _pcl_font_info[i].ps_name);
+			 _pcl_font_info[i].ps_name, _pcl_font_info[i].ps_name,
+			 _pcl_font_info[i].ps_name, _pcl_font_info[i].ps_name);
+		_update_buffer (doc_header);
+	      }
 	}
       /* end of Setup section */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_header->point, "\
 %%%%EndSetup\n");
+      _update_buffer (doc_header);
 
-      /* objects will belong to layer #1 (if layers are supported) */
       if (_plotter->ai_version >= AI_VERSION_5)
-	fprintf (_plotter->outstream, "\
+	/* objects will belong to layer #1 (if layers are supported) */
+	{
+	  sprintf (doc_header->point, "\
 %%AI5_BeginLayer\n\
 1 1 1 1 0 0 0 79 128 255 Lb\n\
 (Layer 1) Ln\n");
+	  _update_buffer (doc_header);
+	}
+      /* End of Document Header */
+      
+      /* Document header is now placed in its Outbuf, so do the same
+	 for the trailer (much shorter) */
+      doc_trailer = _new_outbuf ();
 
       if (_plotter->ai_version >= AI_VERSION_5)
-        /* switch to even-odd filling from nonzero-winding-number filling */
-	fprintf (_plotter->outstream, "\
-1 XR\n");
-
-      /* OUTPUT ALL CACHED OBJECTS */
-      if (_plotter->page->len > 0)
-	fputs (_plotter->page->base, _plotter->outstream); 
-
-      /* after outputing objects, end layer */
-      if (_plotter->ai_version >= AI_VERSION_5)
-        fprintf (_plotter->outstream, "\
+	/* after outputing objects, must end layer */
+	{
+	  sprintf (doc_trailer->point, "\
 LB\n\
 %%AI5_EndLayer--\n");
+	  _update_buffer (doc_trailer);
+	}
 
-      /* emit page trailer */
-      fprintf (_plotter->outstream, "\
+      sprintf (doc_trailer->point, "\
 %%%%PageTrailer\n\
 gsave annotatepage grestore showpage\n");
+      _update_buffer (doc_trailer);
 
       /* trailer: terminate procsets */
       if (_plotter->ai_version == AI_VERSION_5)
-        {
-          fprintf (_plotter->outstream, "\
+	sprintf (doc_trailer->point, "\
 %%%%Trailer\n\
 Adobe_Illustrator_AI5 /terminate get exec\n\
 Adobe_ColorImage_AI6 /terminate get exec\n\
 Adobe_typography_AI5 /terminate get exec\n\
 Adobe_level2_AI5 /terminate get exec\n\
 %%%%EOF\n");
-        }
       else			/* AI_VERSION_3 */
-        {
-          fprintf (_plotter->outstream, "\
+	sprintf (doc_trailer->point, "\
 %%%%Trailer\n\
 Adobe_Illustrator_AI3 /terminate get exec\n\
 Adobe_pattern_AI3 /terminate get exec\n\
@@ -429,11 +475,24 @@ Adobe_cshow /terminate get exec\n\
 Adobe_cmykcolor /terminate get exec\n\
 Adobe_packedarray /terminate get exec\n\
 %%%%EOF\n");
-        }
+      _update_buffer (doc_trailer);
+      /* End of Document Trailer */
+
+      /* WRITE DOCUMENT HEADER (and free its Outbuf) */
+      _plotter->write_string (doc_header->base); 
+      _delete_outbuf (doc_header);
+
+      /* WRITE AI CODE FOR OBJECTS */
+      if (_plotter->page->len > 0)
+	_plotter->write_string (_plotter->page->base); 
+
+      /* WRITE DOCUMENT TRAILER (and free its Outbuf) */
+      _plotter->write_string (doc_trailer->base); 
+      _delete_outbuf (doc_trailer);
     }
 
-  /* Delete the page buffer, since AI Plotters don't need to maintain a
-     linked list of pages. */
+  /* Delete the page buffer, since AI Plotters don't maintain a linked list
+     of pages. */
   _delete_outbuf (_plotter->page);
   _plotter->page = NULL;
 
@@ -448,31 +507,10 @@ Adobe_packedarray /terminate get exec\n\
   free (_plotter->drawstate);
   _plotter->drawstate = NULL;
 
-  /* reset our knowledge of Illustrator's internal state (necessary only if
-     user calls outfile() to reuse the Plotter) */
-  _plotter->ai_pen_cyan = _ai_default_plotter.ai_pen_cyan;
-  _plotter->ai_pen_magenta = _ai_default_plotter.ai_pen_magenta;
-  _plotter->ai_pen_yellow = _ai_default_plotter.ai_pen_yellow;
-  _plotter->ai_pen_black = _ai_default_plotter.ai_pen_black;
-  _plotter->ai_fill_cyan = _ai_default_plotter.ai_fill_cyan;
-  _plotter->ai_fill_magenta = _ai_default_plotter.ai_fill_magenta;
-  _plotter->ai_fill_yellow = _ai_default_plotter.ai_fill_yellow;
-  _plotter->ai_fill_black = _ai_default_plotter.ai_fill_black;
-  _plotter->ai_cyan_used = _ai_default_plotter.ai_cyan_used;
-  _plotter->ai_magenta_used = _ai_default_plotter.ai_magenta_used;
-  _plotter->ai_yellow_used = _ai_default_plotter.ai_yellow_used;
-  _plotter->ai_black_used = _ai_default_plotter.ai_black_used;
-  _plotter->ai_cap_style = _ai_default_plotter.ai_cap_style;
-  _plotter->ai_join_style = _ai_default_plotter.ai_join_style;
-  _plotter->ai_line_width = _ai_default_plotter.ai_line_width;
+  /* attempt to flush (will test whether stream is jammed) */
+  retval = _plotter->flushpl ();
 
   _plotter->open = false;	/* flag device as closed */
 
-  if (_plotter->outstream && fflush(_plotter->outstream) < 0)
-	{
-	  _plotter->error ("output stream jammed");
-	  return -1;
-	}
-  else
-    return 0;
+  return retval;
 }

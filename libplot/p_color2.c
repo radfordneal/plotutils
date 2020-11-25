@@ -1,5 +1,4 @@
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* idraw's 12 standard colors, taken from idraw source.  These are the only

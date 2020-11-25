@@ -10,7 +10,6 @@
    since they need to call free() to deallocate space for the strings. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -20,7 +19,7 @@ _g_restorestate(void)
 _g_restorestate()
 #endif
 {
-  State *oldstate = _plotter->drawstate->previous;
+  pl_DrawState *oldstate = _plotter->drawstate->previous;
 
   if (!_plotter->open)
     {
@@ -41,11 +40,16 @@ _g_restorestate()
     _plotter->endpath(); /* flush polyline if any */
 
   /* elements of current state that are strings are first freed */
+  free (_plotter->drawstate->fill_rule);
   free (_plotter->drawstate->line_mode);
   free (_plotter->drawstate->join_mode);
   free (_plotter->drawstate->cap_mode);
   free (_plotter->drawstate->font_name);
   
+  /* free dash array too, if nonempty */
+  if (_plotter->drawstate->dash_array_len > 0)
+    free (_plotter->drawstate->dash_array);
+
   /* pop current state off the stack */
   free (_plotter->drawstate);
   _plotter->drawstate = oldstate;

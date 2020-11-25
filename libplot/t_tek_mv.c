@@ -11,7 +11,6 @@
    concept).  That is just what we want. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 void
@@ -22,23 +21,18 @@ _tek_move (xx, yy)
      int xx, yy;
 #endif
 {
-  FILE *stream;
   int correct_tek_mode = 
     _plotter->drawstate->points_are_connected ? MODE_PLOT : MODE_POINT;
-
-  stream = _plotter->outstream;
-  if (stream == NULL)
-    return;
 
   switch (correct_tek_mode)
     {
     case MODE_POINT:
       /* ASCII FS, i.e. ^\ (enter POINT mode)*/
-      putc ('\034', stream); 
+      _plotter->write_byte ('\034'); 
       break;
     case MODE_PLOT:
       /* ASCII GS, i.e. ^] (enter PLOT mode) */
-      putc ('\035', stream); 
+      _plotter->write_byte ('\035'); 
       break;
     default:			/* shouldn't happen */
       return;
@@ -48,13 +42,13 @@ _tek_move (xx, yy)
   _tek_vector (xx, yy);
 
   /* Tek position is now correct */
-  _plotter->pos.x = xx;
-  _plotter->pos.y = yy;  
-  _plotter->position_is_unknown = false;
+  _plotter->tek_pos.x = xx;
+  _plotter->tek_pos.y = yy;  
+  _plotter->tek_position_is_unknown = false;
 
   /* Tek is now in correct mode for plotting vectors */
-  _plotter->mode_is_unknown = false;
-  _plotter->mode = correct_tek_mode;
+  _plotter->tek_mode_is_unknown = false;
+  _plotter->tek_mode = correct_tek_mode;
 
   /* re-emphasize: on return we'll be in either PLOT or POINT mode. */
   return;

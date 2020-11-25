@@ -5,25 +5,30 @@
    invocation of endpath().  If endpath() is invoked when no path is under
    construction, it has no effect. */
 
-/* This version is for XPlotters.  By construction, for XPlotters our path
-   storage buffer always includes either (1) a sequence of line segments,
-   or (2) a single circular or elliptic arc segment.  Those are the only
-   two sorts of path that X11 can handle.  (For the latter to be included,
-   the map from user to device coordinates must preserve axes.) */
+/* This version is for XDrawablePlotters (and XPlotters).  By construction,
+   for such Plotters our path storage buffer always includes either (1) a
+   polyline, i.e., a sequence of line segments, or (2) a single circular or
+   elliptic arc segment.  Those are the only two sorts of path that X11 can
+   handle.  (For the latter to be included, the map from user to device
+   coordinates must preserve axes.) */
+
+/* If the line style is "solid" and the path has zero width, it has already
+   been drawn; see x_cont.c.  So if the path doesn't need to be filled, we
+   don't do anything.  If it does, we fill it, and then redraw it. */
+
+/* When filling a polyline, we look at _plotter->convex_path to determine
+   which X rendering algorithm to use.  The default algorithm is Complex
+   (i.e. generic), but when drawing polygonal approximations to ellipses,
+   which we know must be convex, we use Convex to speed up rendering. */
 
 /* Note: should insert some more X protocol out-of-bounds checks into this
    file via the XOOB_INT and XOOB_UNSIGNED macros.  FIXME. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define DIST(p1, p2) sqrt( ((p1).x - (p2).x) * ((p1).x - (p2).x) \
 			  + ((p1).y - (p2).y) * ((p1).y - (p2).y))
-
-/* forward references */
-static void _draw_elliptic_X_arc __P((Point p0, Point p1, Point pc));
-static void _draw_elliptic_X_arc_2 __P((Point p0, Point p1, Point pc));
 
 int
 #ifdef _HAVE_PROTOS
@@ -72,7 +77,9 @@ _x_endpath ()
       _plotter->drawstate->datapoints_len = 0;
       _plotter->drawstate->points_in_path = 0;
 
-      _handle_x_events();
+      /* maybe flush X output buffer and handle X events (a no-op for
+	 XDrawablePlotters, which is overridden for XPlotters) */
+      _maybe_handle_x_events();
       return 0;
     }
 
@@ -100,7 +107,9 @@ _x_endpath ()
       _plotter->drawstate->datapoints_len = 0;
       _plotter->drawstate->points_in_path = 0;
 
-      _handle_x_events();
+      /* maybe flush X output buffer and handle X events (a no-op for
+	 XDrawablePlotters, which is overridden for XPlotters) */
+      _maybe_handle_x_events();
       return 0;
     }
 
@@ -164,7 +173,32 @@ _x_endpath ()
       return 0;
     }
   
-  /* general case: points are vertices of a polyline */
+  /* general case: points are vertices of a (non-disconnected) polyline */
+
+  /* Check for zero pen width, and a "solid" line style.  If so, we've
+     already drawn the polyline, segment by segment (see x_cont.c).  So if
+     there's no filling to be done, we just reset the buffer and return.
+     If there's filling to be done, we keep going... which means that we'll
+     fill the polyline, and then edge it a second time. */
+
+  if (_plotter->drawstate->line_type == L_SOLID
+      && !_plotter->drawstate->dash_array_in_effect
+      && _plotter->drawstate->quantized_device_line_width == 0
+      && _plotter->drawstate->fill_level == 0)
+    /* zero-width pen, no filling to be done */
+    {
+      /* reset path storage buffer */
+      if (_plotter->drawstate->points_in_path > 0)
+	{
+	  _plotter->drawstate->points_in_path = 0;
+	  free (_plotter->drawstate->datapoints);
+	  _plotter->drawstate->datapoints_len = 0;
+	}
+      /* maybe flush X output buffer and handle X events (a no-op for
+	 XDrawablePlotters, which is overridden for XPlotters) */
+      _maybe_handle_x_events();
+      return 0;
+    }
 
   /* prepare an array of XPoint structures (X11 uses short ints for these) */
   xarray = (XPoint *)_plot_xmalloc (_plotter->drawstate->points_in_path * sizeof(XPoint));
@@ -173,12 +207,17 @@ _x_endpath ()
   polyline_len = 0;
   for (i = 0; i < _plotter->drawstate->points_in_path; i++)
     {
+      GeneralizedPoint datapoint;
+      double xu, yu, xd, yd;
       int device_x, device_y;
 
-      device_x = IROUND(XD(_plotter->drawstate->datapoints[i].x, 
-			   _plotter->drawstate->datapoints[i].y));
-      device_y = IROUND(YD(_plotter->drawstate->datapoints[i].x, 
-			   _plotter->drawstate->datapoints[i].y));
+      datapoint = _plotter->drawstate->datapoints[i];
+      xu = datapoint.x;
+      yu = datapoint.y;
+      xd = XD(xu, yu);
+      yd = YD(xu, yu);
+      device_x = IROUND(xd);
+      device_y = IROUND(yd);
 
       if ((polyline_len == 0) 
 	  || (device_x != xarray[polyline_len-1].x) 
@@ -210,7 +249,10 @@ _x_endpath ()
   if (_plotter->drawstate->fill_level) 
     /* not transparent, must fill */
     {
-      if (_plotter->double_buffering != DBL_NONE)
+      int x_polygon_type 
+	= (_plotter->drawstate->convex_path ? Convex : Complex);
+
+      if (_plotter->x_double_buffering != DBL_NONE)
 	{
 	  if (!(_plotter->drawstate->points_in_path > 1 && polyline_len == 1))
 	    /* general subcase, not the abovementioned special subcase */
@@ -218,13 +260,13 @@ _x_endpath ()
 	      /* select fill color as foreground color in GC used for filling*/
 	      _plotter->set_fill_color();
 		  
-	      XFillPolygon (_plotter->dpy, _plotter->drawable3,
-			    _plotter->drawstate->gc_fill,
+	      XFillPolygon (_plotter->x_dpy, _plotter->x_drawable3,
+			    _plotter->drawstate->x_gc_fill,
 			    xarray, polyline_len,
-			    Complex, CoordModeOrigin);
+			    x_polygon_type, CoordModeOrigin);
 	    }
 	}
-      else		/* not double buffering, no `drawable3' */
+      else		/* not double buffering, no `x_drawable3' */
 	{
 	  if (!(_plotter->drawstate->points_in_path > 1 && polyline_len == 1))
 	    /* general subcase, not the abovementioned special subcase */
@@ -232,16 +274,16 @@ _x_endpath ()
 	      /* select fill color as foreground color in GC used for filling*/
 	      _plotter->set_fill_color();
 
-	      if (_plotter->drawable1)
-		XFillPolygon (_plotter->dpy, _plotter->drawable1, 
-			      _plotter->drawstate->gc_fill,
+	      if (_plotter->x_drawable1)
+		XFillPolygon (_plotter->x_dpy, _plotter->x_drawable1, 
+			      _plotter->drawstate->x_gc_fill,
 			      xarray, polyline_len,
-			      Complex, CoordModeOrigin);
-	      if (_plotter->drawable2)
-		XFillPolygon (_plotter->dpy, _plotter->drawable2, 
-			      _plotter->drawstate->gc_fill,
+			      x_polygon_type, CoordModeOrigin);
+	      if (_plotter->x_drawable2)
+		XFillPolygon (_plotter->x_dpy, _plotter->x_drawable2, 
+			      _plotter->drawstate->x_gc_fill,
 			      xarray, polyline_len,
-			      Complex, CoordModeOrigin);
+			      x_polygon_type, CoordModeOrigin);
 	    }
 	}
     }
@@ -255,8 +297,8 @@ _x_endpath ()
      the line width.  Provided that the cap mode isn't "butt", that is; if
      it is, we don't draw anything. */
   
-  if (_plotter->double_buffering != DBL_NONE)
-    /* double buffering, have a `drawable3' to draw into */
+  if (_plotter->x_double_buffering != DBL_NONE)
+    /* double buffering, have a `x_drawable3' to draw into */
     {
       if (_plotter->drawstate->points_in_path > 1 && polyline_len == 1)
 	/* special subcase */
@@ -264,25 +306,25 @@ _x_endpath ()
 	  if (_plotter->drawstate->cap_type != CAP_BUTT)
 	    {
 	      if (sp_size == 1) /* why why oh why? */
-		XDrawPoint (_plotter->dpy, _plotter->drawable3, 
-			    _plotter->drawstate->gc_fg, 
+		XDrawPoint (_plotter->x_dpy, _plotter->x_drawable3, 
+			    _plotter->drawstate->x_gc_fg, 
 			    xarray[0].x, xarray[0].y);
 	      else
-		XFillArc(_plotter->dpy, _plotter->drawable3,
-			 _plotter->drawstate->gc_fg, 
+		XFillArc(_plotter->x_dpy, _plotter->x_drawable3,
+			 _plotter->drawstate->x_gc_fg, 
 			 xloc, yloc, sp_size, sp_size,
 			 0, 64 * 360);
 	    }
 	}
       else
 	/* general subcase */
-	XDrawLines (_plotter->dpy, _plotter->drawable3, 
-		    _plotter->drawstate->gc_fg, 
+	XDrawLines (_plotter->x_dpy, _plotter->x_drawable3, 
+		    _plotter->drawstate->x_gc_fg, 
 		    xarray, polyline_len,
 		    CoordModeOrigin);
     }
   else
-    /* not double buffering, have no `drawable3' */
+    /* not double buffering, have no `x_drawable3' */
     {
       if (_plotter->drawstate->points_in_path > 1 && polyline_len == 1)
 	/* special subcase */
@@ -291,23 +333,25 @@ _x_endpath ()
 	    {
 	      if (sp_size == 1) /* why why oh why? */
 		{
-		  XDrawPoint (_plotter->dpy, _plotter->drawable1,
-			      _plotter->drawstate->gc_fg, 
-			      xarray[0].x, xarray[0].y);
-		  XDrawPoint (_plotter->dpy, _plotter->drawable2,
-			      _plotter->drawstate->gc_fg, 
-			      xarray[0].x, xarray[0].y);
+		  if (_plotter->x_drawable1)
+		    XDrawPoint (_plotter->x_dpy, _plotter->x_drawable1,
+				_plotter->drawstate->x_gc_fg, 
+				xarray[0].x, xarray[0].y);
+		  if (_plotter->x_drawable2)
+		    XDrawPoint (_plotter->x_dpy, _plotter->x_drawable2,
+				_plotter->drawstate->x_gc_fg, 
+				xarray[0].x, xarray[0].y);
 		}
 	      else
 		{
-		  if (_plotter->drawable1)
-		    XFillArc(_plotter->dpy, _plotter->drawable1,
-			     _plotter->drawstate->gc_fg, 
+		  if (_plotter->x_drawable1)
+		    XFillArc(_plotter->x_dpy, _plotter->x_drawable1,
+			     _plotter->drawstate->x_gc_fg, 
 			     xloc, yloc, sp_size, sp_size,
 			     0, 64 * 360);
-		  if (_plotter->drawable2)
-		    XFillArc(_plotter->dpy, _plotter->drawable2,
-			     _plotter->drawstate->gc_fg, 
+		  if (_plotter->x_drawable2)
+		    XFillArc(_plotter->x_dpy, _plotter->x_drawable2,
+			     _plotter->drawstate->x_gc_fg, 
 			     xloc, yloc, sp_size, sp_size,
 			     0, 64 * 360);
 		}
@@ -316,14 +360,14 @@ _x_endpath ()
       else
 	/* general subcase */
 	{
-	  if (_plotter->drawable1)
-	    XDrawLines (_plotter->dpy, _plotter->drawable1, 
-			_plotter->drawstate->gc_fg, 
+	  if (_plotter->x_drawable1)
+	    XDrawLines (_plotter->x_dpy, _plotter->x_drawable1, 
+			_plotter->drawstate->x_gc_fg, 
 			xarray, polyline_len,
 			CoordModeOrigin);
-	  if (_plotter->drawable2)
-	    XDrawLines (_plotter->dpy, _plotter->drawable2, 
-			_plotter->drawstate->gc_fg, 
+	  if (_plotter->x_drawable2)
+	    XDrawLines (_plotter->x_dpy, _plotter->x_drawable2, 
+			_plotter->drawstate->x_gc_fg, 
 			xarray, polyline_len,
 			CoordModeOrigin);
 	}
@@ -339,7 +383,9 @@ _x_endpath ()
       _plotter->drawstate->datapoints_len = 0;
     }
   
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
   return 0;
 }
 
@@ -350,7 +396,7 @@ _x_endpath ()
    a reflection through either or both axes).  So it will be a circular or
    elliptic arc in the device frame, of the sort that the X11 drawing
    protocol supports. */
-static void
+void
 #ifdef _HAVE_PROTOS
 _draw_elliptic_X_arc (Point p0, Point p1, Point pc)
 #else
@@ -427,7 +473,7 @@ _draw_elliptic_X_arc (p0, p1, pc)
    a reflection through either or both axes).  So it will be a
    quarter-ellipse in the device frame, of the sort that the X11 drawing
    protocol supports. */
-static void
+void
 #ifdef _HAVE_PROTOS
 _draw_elliptic_X_arc_2 (Point p0, Point p1, Point pc)
 #else
@@ -539,21 +585,21 @@ _draw_elliptic_X_arc_internal (xorigin, yorigin, squaresize_x, squaresize_y, sta
       /* select fill color as foreground color in GC used for filling */
       _plotter->set_fill_color();
 
-      if (_plotter->double_buffering != DBL_NONE)
-	XFillArc(_plotter->dpy, _plotter->drawable3, 
-		 _plotter->drawstate->gc_fill, 
+      if (_plotter->x_double_buffering != DBL_NONE)
+	XFillArc(_plotter->x_dpy, _plotter->x_drawable3, 
+		 _plotter->drawstate->x_gc_fill, 
 		 xorigin, yorigin, squaresize_x, squaresize_y,
 		 startangle, anglerange);
       else
 	{
-	  if (_plotter->drawable1)
-	    XFillArc(_plotter->dpy, _plotter->drawable1, 
-		     _plotter->drawstate->gc_fill, 
+	  if (_plotter->x_drawable1)
+	    XFillArc(_plotter->x_dpy, _plotter->x_drawable1, 
+		     _plotter->drawstate->x_gc_fill, 
 		     xorigin, yorigin, squaresize_x, squaresize_y,
 		     startangle, anglerange);
-	  if (_plotter->drawable2)
-	    XFillArc(_plotter->dpy, _plotter->drawable2, 
-		     _plotter->drawstate->gc_fill, 
+	  if (_plotter->x_drawable2)
+	    XFillArc(_plotter->x_dpy, _plotter->x_drawable2, 
+		     _plotter->drawstate->x_gc_fill, 
 		     xorigin, yorigin, squaresize_x, squaresize_y,
 		     startangle, anglerange);
 	}
@@ -562,21 +608,21 @@ _draw_elliptic_X_arc_internal (xorigin, yorigin, squaresize_x, squaresize_y, sta
   /* select pen color as foreground color in GC used for drawing */
   _plotter->set_pen_color();
 
-  if (_plotter->double_buffering != DBL_NONE)
-    XDrawArc(_plotter->dpy, _plotter->drawable3, 
-	     _plotter->drawstate->gc_fg, 
+  if (_plotter->x_double_buffering != DBL_NONE)
+    XDrawArc(_plotter->x_dpy, _plotter->x_drawable3, 
+	     _plotter->drawstate->x_gc_fg, 
 	     xorigin, yorigin, squaresize_x, squaresize_y,
 	     startangle, anglerange);
   else
     {
-      if (_plotter->drawable1)
-	XDrawArc(_plotter->dpy, _plotter->drawable1, 
-		 _plotter->drawstate->gc_fg, 
+      if (_plotter->x_drawable1)
+	XDrawArc(_plotter->x_dpy, _plotter->x_drawable1, 
+		 _plotter->drawstate->x_gc_fg, 
 		 xorigin, yorigin, squaresize_x, squaresize_y,
 		 startangle, anglerange);
-      if (_plotter->drawable2)
-	XDrawArc(_plotter->dpy, _plotter->drawable2, 
-		 _plotter->drawstate->gc_fg, 
+      if (_plotter->x_drawable2)
+	XDrawArc(_plotter->x_dpy, _plotter->x_drawable2, 
+		 _plotter->drawstate->x_gc_fg, 
 		 xorigin, yorigin, squaresize_x, squaresize_y,
 		 startangle, anglerange);
     }

@@ -5,7 +5,6 @@
    bits, i.e. 0x0000 through 0xffff, for each of red, green, and blue). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -22,19 +21,11 @@ _m_bgcolor (red, green, blue)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d %d %d\n", 
-		 (int)O_BGCOLOR, red, green, blue);
-      else
-	{
-	  putc ((int)O_BGCOLOR, _plotter->outstream);
-	  _emit_integer (red);
-	  _emit_integer (green);
-	  _emit_integer (blue);
-	}
-    }
+  _meta_emit_byte ((int)O_BGCOLOR);
+  _meta_emit_integer (red);
+  _meta_emit_integer (green);
+  _meta_emit_integer (blue);
+  _meta_emit_terminator ();
   
   /* invoke generic method */
   return _g_bgcolor (red, green, blue);

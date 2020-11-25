@@ -12,6 +12,9 @@
 /* Define to signal compiler support for void and void * types */
 #define HAVE_VOID 1
 
+/* Define (if compiling as C++) to signal compiler support for bool type */
+#undef HAVE_BOOL
+
 /* Define under HP/UX to get matherr-related things from math.h. */
 #undef _HPUX_SOURCE
 
@@ -38,4 +41,3 @@
 
 /* Define to enable support for the 35 PS fonts in PCL output */
 #undef USE_PS_FONTS_IN_PCL
-

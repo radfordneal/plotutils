@@ -2,7 +2,6 @@
    libplot.  It draws an object: a circle with center x,y and radius r. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -15,10 +14,17 @@ _h_fcircle (x, y, r)
 {
   double radius;
 
-  if (!_plotter->drawstate->points_are_connected)
-    /* line type is `disconnected', so do nothing */
+  if (!_plotter->open)
     {
-      _plotter->endpath (); /* flush polyline if any */
+      _plotter->error ("fcircle: invalid operation");
+      return -1;
+    }
+
+  if (!_plotter->drawstate->points_are_connected)
+    /* line type is `disconnected', so do nothing (libplot convention) */
+    {
+      /* just move to center (libplot convention), flushing any polyline */
+      _plotter->fmove (x, y);
       return 0;
     }
 
@@ -27,12 +33,6 @@ _h_fcircle (x, y, r)
   if (!_plotter->drawstate->transform.uniform)
     return _g_fcircle (x, y, r);
   
-  if (!_plotter->open)
-    {
-      _plotter->error ("fcircle: invalid operation");
-      return -1;
-    }
-
   /* otherwise use HP-GL's native circle-drawing facility, as follows */
 
   _plotter->endpath (); /* flush polyline if any */
@@ -40,10 +40,10 @@ _h_fcircle (x, y, r)
   radius = sqrt(XDV(r,0)*XDV(r,0)+YDV(r,0)*YDV(r,0));
   
   /* sync attributes, incl. pen width; move to center */
-  _plotter->set_attributes();
-  (_plotter->drawstate->pos).x = x;
-  (_plotter->drawstate->pos).y = y;
-  _plotter->set_position();
+  _plotter->set_attributes ();
+  _plotter->drawstate->pos.x = x;
+  _plotter->drawstate->pos.y = y;
+  _plotter->set_position ();
   
   if (_plotter->drawstate->fill_level)
     /* ideally, circle should be filled */

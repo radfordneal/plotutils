@@ -12,12 +12,8 @@
    at all (see x_retrieve.c). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 #include "g_her_metr.h"
-
-static bool _match_ps_font __P ((void));
-static bool _match_pcl_font __P ((void));
 
 void
 #ifdef _HAVE_PROTOS
@@ -26,7 +22,7 @@ _g_retrieve_font(void)
 _g_retrieve_font()
 #endif
 {
-  char *old_font_name;
+  char *old_font_name, *default_font_name;
   int i;
 
   /* try to match user-specified font name */
@@ -34,24 +30,24 @@ _g_retrieve_font()
   if (_plotter->have_hershey_fonts)
     /* should always be true... */
     {
-      /* is font a vector font? */
+      /* is font a Hershey font? */
       i = -1;
-      while (_vector_font_info[++i].name)
+      while (_hershey_font_info[++i].name)
 	{
-	  if (_vector_font_info[i].visible) /* i.e. font not internal-only */
-	    if (strcasecmp (_vector_font_info[i].name, 
+	  if (_hershey_font_info[i].visible) /* i.e. font not internal-only */
+	    if (strcasecmp (_hershey_font_info[i].name, 
 			    _plotter->drawstate->font_name) == 0
-		|| (_vector_font_info[i].othername
-		    && strcasecmp (_vector_font_info[i].othername, 
+		|| (_hershey_font_info[i].othername
+		    && strcasecmp (_hershey_font_info[i].othername, 
 				   _plotter->drawstate->font_name) == 0))
 	      {
 		_plotter->drawstate->font_type = F_HERSHEY;
 		_plotter->drawstate->typeface_index = 
-		  _vector_font_info[i].typeface_index;
+		  _hershey_font_info[i].typeface_index;
 		_plotter->drawstate->font_index = 
-		  _vector_font_info[i].font_index;
+		  _hershey_font_info[i].font_index;
 		_plotter->drawstate->font_is_iso8859_1 = 
-		  _vector_font_info[i].iso8859_1;
+		  _hershey_font_info[i].iso8859_1;
 		_plotter->drawstate->true_font_size = 
 		  _plotter->drawstate->font_size;
 		/* N.B. this macro uses true_font_size, see g_alabel_her.c */
@@ -69,24 +65,21 @@ _g_retrieve_font()
      occur on both lists.  So which list we search first depends on what
      type of Plotter we have. */
 
-  switch (_plotter->type)
+  if (_plotter->pcl_before_ps)
     {
-    case PL_PS:
-    default:
-      /* search PS font list first */
-      if (_plotter->have_ps_fonts && _match_ps_font())
-	return;
-      if (_plotter->have_pcl_fonts && _match_pcl_font())
-	return;
-      break;
-    case PL_HPGL:
-    case PL_PCL:
       /* search PCL font list first */      
       if (_plotter->have_pcl_fonts && _match_pcl_font())
 	return;
       if (_plotter->have_ps_fonts && _match_ps_font())
 	return;
-      break;
+    }
+  else
+    {
+      /* search PS font list first */
+      if (_plotter->have_ps_fonts && _match_ps_font())
+	return;
+      if (_plotter->have_pcl_fonts && _match_pcl_font())
+	return;
     }
 
   if (_plotter->have_stick_fonts)
@@ -124,32 +117,52 @@ _g_retrieve_font()
 	}
     }
 
-  /* Squawk if a substitution will be made, unless this is a Metafile
-     Plotter (in which case we'll substitute silently, and hope that string
-     widths won't be too far off). */
-  if (_plotter->type != PL_META && !_plotter->font_warning_issued)
+  /* Couldn't find the font in our builtin font database, so substitute the
+     default font for this Plotter.  Also squawk, unless this is a Metafile
+     Plotter.  (Metafile Plotters sometimes legitimately try to retrieve
+     fonts of type F_OTHER, i.e. X fonts not in the builtin database, and
+     we don't want to confuse the user.) */
+
+  switch (_plotter->default_font_type)
+    {
+    case F_HERSHEY:
+    default:
+      default_font_name = DEFAULT_HERSHEY_FONT;
+      break;
+    case F_POSTSCRIPT:
+      default_font_name = DEFAULT_POSTSCRIPT_FONT;
+      break;
+    case F_PCL:
+      default_font_name = DEFAULT_PCL_FONT;
+      break;
+    case F_STICK:
+      default_font_name = DEFAULT_STICK_FONT;
+      break;
+    }
+  
+  if (_plotter->issue_font_warning && !_plotter->font_warning_issued)
+    /* squawk, unless e.g. a Metafile Plotter */
     {
       char *buf;
       
-      buf = (char *)_plot_xmalloc (strlen (_plotter->drawstate->font_name) + strlen (_plotter->default_drawstate->font_name) + 100);
+      buf = (char *)_plot_xmalloc (strlen (_plotter->drawstate->font_name) + strlen (default_font_name) + 100);
       sprintf (buf, "cannot retrieve font \"%s\", using default \"%s\"", 
-	       _plotter->drawstate->font_name, 
-	       _plotter->default_drawstate->font_name);
+	       _plotter->drawstate->font_name, default_font_name);
       _plotter->warning (buf);
       free (buf);
       _plotter->font_warning_issued = true;
     }
 
+  /* do the substitution via a recursive call */
   old_font_name = _plotter->drawstate->font_name;
-  _plotter->drawstate->font_name = _plotter->default_drawstate->font_name;
-  /* do recursive call */
+  _plotter->drawstate->font_name = default_font_name;
   _g_retrieve_font();
   _plotter->drawstate->font_name = old_font_name;
   
   return;
 }
 
-static bool
+bool
 #ifdef _HAVE_PROTOS
 _match_pcl_font (void)
 #else
@@ -186,8 +199,7 @@ _match_pcl_font ()
   return false;
 }
 
-
-static bool
+bool
 #ifdef _HAVE_PROTOS
 _match_ps_font (void)
 #else

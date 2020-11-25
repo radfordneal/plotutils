@@ -15,7 +15,6 @@
    string. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 #include "g_control.h"
 
@@ -39,10 +38,8 @@
 #define IS_CENTERED_SYMBOL(c) (((c) >= 'A' && (c) <= 'O') || (c) == 'e')
 
 /* forward references */
-static unsigned char *_esc_esc_string __P((const unsigned char *s));
-static double _g_render_string_non_hershey __P((const char *s, bool do_render, int x_justify, int y_justify));
-static double _g_render_simple_string_non_hershey __P((const unsigned char *s, bool do_render, int h_just));
-static bool _simple_string __P((const unsigned short *codestring));
+static unsigned char *_esc_esc_string ____P((const unsigned char *s));
+static bool _simple_string ____P((const unsigned short *codestring));
 
 /* The generic versions of the flabelwidth() and falabel() methods.  After
    checking for control characters in the input string (not allowed), we
@@ -92,10 +89,10 @@ _g_alabel (x_justify, y_justify, s)
   if (_plotter->drawstate->font_type == F_HERSHEY)
     /* call Hershey-specific routine, since controlification acts
        differently (there are more control codes for Hershey strings) */
-    _g_falabel_hershey (x_justify, y_justify, (unsigned char *)t);
+    _plotter->falabel_hershey ((unsigned char *)t, x_justify, y_justify);
   else
     /* invoke routine below */
-    _g_render_string_non_hershey (t, true, x_justify, y_justify);
+    _render_non_hershey_string (t, true, x_justify, y_justify);
   free (t);
 
   return 0;
@@ -142,10 +139,10 @@ _g_flabelwidth (s)
   if (_plotter->drawstate->font_type == F_HERSHEY)
     /* call Hershey-specific routine, since controlification acts
        differently (there are more control codes for Hershey strings) */
-    width = _g_flabelwidth_hershey ((unsigned char *)t);
+    width = _plotter->flabelwidth_hershey ((unsigned char *)t);
   else
     /* invoke routine below; final two args are irrelevant */
-    width = _g_render_string_non_hershey (t, false, 'c', 'c');
+    width = _render_non_hershey_string (t, false, 'c', 'c');
   free (t);
 
   return width;
@@ -172,11 +169,11 @@ _g_flabelwidth (s)
    non-Hershey.  But due to failure to retrieve an X font, it is possible
    that the font could switch to a Hershey font during rendering. */
 
-static double
+double
 #ifdef _HAVE_PROTOS
-_g_render_string_non_hershey (const char *s, bool do_render, int x_justify, int y_justify)
+_render_non_hershey_string (const char *s, bool do_render, int x_justify, int y_justify)
 #else
-_g_render_string_non_hershey (s, do_render, x_justify, y_justify)
+_render_non_hershey_string (s, do_render, x_justify, y_justify)
      const char *s;
      bool do_render;		/* whether to draw the string */
      int x_justify, y_justify;
@@ -191,7 +188,7 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
   /* initial values of these attributes (will be restored at end) */
   double initial_font_size;
   char *initial_font_name;
-  our_font_type initial_font_type;
+  int initial_font_type;
   /* initial and saved locations */
   double initial_position_x = _plotter->drawstate->pos.x;
   double initial_position_y = _plotter->drawstate->pos.y;
@@ -212,7 +209,7 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
       /* compute label width in user units via a recursive call; final two
 	 args here are ignored */
 
-      overall_width = _g_render_string_non_hershey (s, false, 'c', 'c');
+      overall_width = _render_non_hershey_string (s, false, 'c', 'c');
       
       /* compute initial offsets that must be performed due to
        justification; also displacements that must be performed after
@@ -620,8 +617,8 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 		case F_HERSHEY:
 		  free (_plotter->drawstate->font_name);
 		  _plotter->drawstate->font_name =
-		    (char *)_plot_xmalloc(1 + strlen (_vector_font_info[new_font_index].name));
-		  strcpy (_plotter->drawstate->font_name, _vector_font_info[new_font_index].name);
+		    (char *)_plot_xmalloc(1 + strlen (_hershey_font_info[new_font_index].name));
+		  strcpy (_plotter->drawstate->font_name, _hershey_font_info[new_font_index].name);
 		  break;
 		case F_POSTSCRIPT:
 		  free (_plotter->drawstate->font_name);
@@ -677,7 +674,7 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 
 	  /* Compute width of single-font substring in user units, add it.
 	     Either render or not, as requested. */
-	  width += _g_render_simple_string_non_hershey (s, do_render, h_just);
+	  width += _render_simple_non_hershey_string (s, do_render, h_just);
 	  free (s);
 	}
     }
@@ -712,11 +709,11 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
    The rendering only takes place if the do_render flag is set.  If it is
    not, the width is returned only (the h_just argument being ignored). */
 
-static double 
+double 
 #ifdef _HAVE_PROTOS
-_g_render_simple_string_non_hershey (const unsigned char *s, bool do_render, int h_just)
+_render_simple_non_hershey_string (const unsigned char *s, bool do_render, int h_just)
 #else
-_g_render_simple_string_non_hershey (s, do_render, h_just)
+_render_simple_non_hershey_string (s, do_render, h_just)
      const unsigned char *s;
      bool do_render;
      int h_just;		/* horiz. justification: JUST_LEFT, etc. */
@@ -734,9 +731,10 @@ _g_render_simple_string_non_hershey (s, do_render, h_just)
 	
 	t = _esc_esc_string (s);
 	width = (do_render ? 
-		 _g_falabel_hershey ('l', 'x', t) : 
-		 _g_flabelwidth_hershey (t));
+		 _plotter->falabel_hershey (t, 'l', 'x') : 
+		 _plotter->flabelwidth_hershey (t));
 	free (t);
+	return width;
       }
       
     case F_POSTSCRIPT:
@@ -862,7 +860,8 @@ _g_flabelwidth_pcl (s)
    The first and last offsets in this formula provide the leading and
    trailing bits of whitespace.
 
-   2. Pre-HP-GL/2 (i.e. HPGL_VERSION="1.5").  There is automatic kerning,
+   2. Pre-HP-GL/2 (i.e. HPGL_VERSION="1.5", which is indicated by
+   _plotter->kern_stick_fonts being `true').  There is automatic kerning,
    according to HP's device-resident spacing tables (the spacing tables are
    in g_fontd2.c).  The string width we return is:
 
@@ -922,7 +921,7 @@ _g_flabelwidth_stick (s)
   master_font_index =
     (_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
 
-  if (_plotter->hpgl_version < 2)
+  if (_plotter->kern_stick_fonts) /* i.e. HPGL_VERSION < 2 */
     /* presumably HPGL_VERSION="1.5" i.e. HP7550A; have device-resident
        kerning, so we compute inter-character spacing from spacing tables
        in g_fontd2.c, which we know match the device-resident tables */
@@ -930,7 +929,7 @@ _g_flabelwidth_stick (s)
       const struct stick_kerning_table_struct *ktable_lower, *ktable_upper;
       const struct stick_spacing_table_struct *stable_lower, *stable_upper;
       const short *lower_spacing, *upper_spacing;	/* spacing tables */
-      int lower_rows, lower_cols, upper_rows, upper_cols; /* table sizes */
+      int lower_cols, upper_cols; 			/* table sizes */
       const char *lower_char_to_row, *lower_char_to_col; /* map char to pos */
       const char *upper_char_to_row, *upper_char_to_col; /* map char to pos */
       bool halves_use_different_tables; /* upper/lower spacing tables differ?*/
@@ -945,10 +944,9 @@ _g_flabelwidth_stick (s)
       halves_use_different_tables 
 	= (stable_lower != stable_upper ? true : false);
       
-      /* numbers of rows and columns in each of the two spacing tables */
-      lower_rows = stable_lower->rows;
+      /* numbers of columns in each of the two spacing tables (number of
+	 rows isn't used) */
       lower_cols = stable_lower->cols;  
-      upper_rows = stable_upper->rows;
       upper_cols = stable_upper->cols;  
       
       /* arrays (size 128), mapping character to row/column of spacing table */
@@ -1102,10 +1100,11 @@ _g_flabelwidth_stick (s)
 	    /(2 * _stick_font_info[master_font_index].raster_width_lower));
     }
   else
-    /* HPGL_VERSION="2", i.e. HP-GL/2; no device-resident kerning.  We use
-       a fixed offset between each pair of characters, which is the way
-       HP-GL/2 devices do it.  We also use this offset as the width of the
-       `bit of whitespace' that we add at beginning and end of label. */
+    /* must have HPGL_VERSION="2", i.e. HP-GL/2; no device-resident
+       kerning.  We use a fixed offset between each pair of characters,
+       which is the way HP-GL/2 devices do it.  We also use this offset as
+       the width of the `bit of whitespace' that we add at beginning and
+       end of label. */
     {
       /* loop through chars in label */
       for (index=0; s[index]!='\0'; index++)
@@ -1153,6 +1152,22 @@ _g_flabelwidth_stick (s)
   return _plotter->drawstate->true_font_size * (double)width;
 }
 
+
+/* A generic internal method that computes the width (total delta x) of a
+   character string to be rendered in an `other' font (one not in our
+   database).  Some types of Plotter which support their own fonts (e.g., X
+   Plotters) override this method, which does nothing. */
+
+double
+#ifdef _HAVE_PROTOS
+_g_flabelwidth_other (const unsigned char *s)
+#else
+_g_flabelwidth_other (s)
+     const unsigned char *s;
+#endif
+{
+  return 0.0;
+}
 
 /* test whether a controlified string is simple in the sense that it
    consists of characters in the same font, and no control codes */
@@ -1213,4 +1228,56 @@ _esc_esc_string (s)
   *tptr = '\0';
 
   return t;
+}
+
+/* Versions of the falabel() method that are specific to the case when the
+   current Plotter font is one of the four types of non-Hershey font.
+   These do nothing; derived (non-generic) Plotters must override them. */
+
+double
+#ifdef _HAVE_PROTOS
+_g_falabel_ps (const unsigned char *s, int h_just)
+#else
+_g_falabel_ps (s, h_just)
+     const unsigned char *s;
+     int h_just;
+#endif
+{
+  return 0.0;
+}
+
+double
+#ifdef _HAVE_PROTOS
+_g_falabel_pcl (const unsigned char *s, int h_just)
+#else
+_g_falabel_pcl (s, h_just)
+     const unsigned char *s;
+     int h_just;
+#endif
+{
+  return 0.0;
+}
+
+double
+#ifdef _HAVE_PROTOS
+_g_falabel_stick (const unsigned char *s, int h_just)
+#else
+_g_falabel_stick (s, h_just)
+     const unsigned char *s;
+     int h_just;
+#endif
+{
+  return 0.0;
+}
+
+double
+#ifdef _HAVE_PROTOS
+_g_falabel_other (const unsigned char *s, int h_just)
+#else
+_g_falabel_other (s, h_just)
+     const unsigned char *s;
+     int h_just;
+#endif
+{
+  return 0.0;
 }

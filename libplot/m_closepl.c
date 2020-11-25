@@ -2,7 +2,6 @@
    libplot.  It closes a Plotter object. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -12,6 +11,8 @@ _m_closepl (void)
 _m_closepl ()
 #endif
 {
+  int retval;
+
   if (!_plotter->open)
     {
       _plotter->error ("closepl: invalid operation");
@@ -25,22 +26,14 @@ _m_closepl ()
 	/* use generic method; we don't want to emit an op code */
 	_g_restorestate();
     }
-  _plotter->open = false;
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c\n",
-		 (int)O_CLOSEPL);
-      else
-	putc ((int)O_CLOSEPL, _plotter->outstream);
-    }
-  
-  if (_plotter->outstream && fflush (_plotter->outstream) < 0)
-    {
-      _plotter->error ("output stream jammed");
-      return -1;
-    }
-  else
-    return 0;
+  _meta_emit_byte ((int)O_CLOSEPL);
+  _meta_emit_terminator ();
+
+  /* attempt to flush (will test whether stream is jammed) */
+  retval = _plotter->flushpl ();
+
+  _plotter->open = false;	/* flag device as closed */
+
+  return retval;
 }

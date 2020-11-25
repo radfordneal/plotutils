@@ -6,7 +6,6 @@
    construction, it has no effect. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -22,14 +21,8 @@ _m_endpath ()
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c\n", 
-		 (int)O_ENDPATH);
-      else
-	putc ((int)O_ENDPATH, _plotter->outstream);
-    }
-      
+  _meta_emit_byte ((int)O_ENDPATH);
+  _meta_emit_terminator ();
+
   return 0;
 }

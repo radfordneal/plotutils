@@ -1,22 +1,28 @@
 /* This file contains functions that update the bounding box information
-   for a page whenever a new object (ellipse or line segment) is plotted.
-   Updating takes the line width into account.  The bounding box
-   information is stored in terms of device units, in the page's Outbuf
-   structure. */
+   for a page whenever a new object (ellipse, line segment, or Bezier
+   segment) is plotted.  Updating takes the line width into account, more
+   or less.  The bounding box information is stored in terms of device
+   units, in the page's Outbuf structure. */
+
+/* These functions need to be (non-public) members of the Plotter class,
+   since macros such as XD() and YD(), which they use to convert user units
+   to device units, access data members of the class.  They are still
+   written as if they aren't class members, though. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
-
-/* MITRE_COSINE_LIMIT is the maximum value the cosine of the angle between
-   two joining lines may have, if the join is to be mitered rather than
-   beveled.  In general it equals 1-2/(M*M), where M is the mitrelimit.  We
-   assume M=10.0, which is correct for Postscript. */
-#define MITRE_COSINE_LIMIT 0.98
 
 #define VLENGTH(v) sqrt( (v).x * (v).x + (v).y * (v).y )
 
 /* update bounding box due to drawing of ellipse (args are in user coors) */
+
+/* WARNING: This is not completely accurate, due to the nonzero width of
+   the pen used to draw the ellipse.  Notoriously, the outer boundary of a
+   `wide ellipse' isn't an ellipse at all: it's an eighth-order curve (see
+   Foley and van Damm).  Here we approximate it as an ellipse, with
+   semimajor and semiminor axes in the user frame increased by one-half of
+   the line width.  This approximation is good unless the line width is
+   large. */
 void
 #ifdef _HAVE_PROTOS
 _set_ellipse_bbox (Outbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth)
@@ -36,7 +42,7 @@ _set_ellipse_bbox (bufp, x, y, rx, ry, costheta, sintheta, linewidth)
   double theta_device, costheta_device, sintheta_device;
   double xdeviation, ydeviation;
 
-  /* take user-frame line width into account */
+  /* take user-frame line width into account (approximately! see above) */
   rx += 0.5 * linewidth;
   ry += 0.5 * linewidth;  
 
@@ -134,23 +140,44 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle)
     case CAP_ROUND:
       _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
       break;
+    case CAP_TRIANGULAR:
+      /* add projecting vertex */
+      v.x = xother - x;
+      v.y = yother - y;
+      _vscale (&v, halfwidth);
+      xs = x + v.x;
+      ys = y + v.y;
+      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      /* add other two vertices */
+      vrot.x = yother - y;
+      vrot.y = x - xother;
+      _vscale (&vrot, halfwidth);
+      xs = x + vrot.x;
+      ys = y + vrot.y;
+      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      xs = x - vrot.x;
+      ys = y - vrot.y;
+      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      break;
     }
 }
 
 /* update bounding box due to drawing of a line join (args are in user coors)*/
 void
 #ifdef _HAVE_PROTOS
-_set_line_join_bbox (Outbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle)
+_set_line_join_bbox (Outbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit)
 #else
-_set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinstyle)
+_set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinstyle, miterlimit)
      Outbuf *bufp;
      double xleft, yleft, x, y, xright, yright, linewidth;
      int joinstyle;
+     double miterlimit;
 #endif
 {
-  double halfwidth = 0.5 * linewidth;
-  Vector v1, v2;
+  Vector v1, v2, vsum;
   double v1len, v2len;
+  double halfwidth;
+  double mitrelen;
 
   switch (joinstyle)
     {
@@ -168,8 +195,13 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 	{
 	  double cosphi;
 	  
-	  cosphi = fabs (((v1.x * v2.x + v1.y * v2.y) / v1len) / v2len);
-	  if (cosphi > MITRE_COSINE_LIMIT)
+	  /* The maximum value the cosine of the angle between two joining
+	     lines may have, if the join is to be mitered rather than
+	     beveled, is 1-2/(M*M), where M is the mitrelimit.  This is
+	     because M equals the cosecant of one-half the minimum angle. */
+	  cosphi = ((v1.x * v2.x + v1.y * v2.y) / v1len) / v2len;
+	  if (miterlimit <= 1.0
+	      || (cosphi > (1.0 - 2.0 / (miterlimit * miterlimit))))
 	    /* bevel rather than miter */
 	    {
 	      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, CAP_BUTT);
@@ -177,9 +209,6 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 	    }
 	  else
 	    {
-	      double mitrelen;
-	      Vector vsum;
-	      
 	      mitrelen = sqrt (1.0 / (2.0 - 2.0 * cosphi)) * linewidth;
 	      vsum.x = v1.x + v2.x;
 	      vsum.y = v1.y + v2.y;
@@ -190,12 +219,161 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 	    }
 	}
       break;
+    case JOIN_TRIANGULAR:
+      /* add a miter vertex, and same vertices as when bevelling */
+      vsum.x = v1.x + v2.x;
+      vsum.y = v1.y + v2.y;
+      _vscale (&vsum, 0.5 * linewidth);
+      x -= vsum.x;
+      y -= vsum.y;
+      _update_bbox (bufp, XD(x,y), YD(x,y));
+      /* fall through */
     case JOIN_BEVEL:
       _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, CAP_BUTT);
       _set_line_end_bbox (bufp, x, y, xright, yright, linewidth, CAP_BUTT);
       break;
     case JOIN_ROUND:
+      halfwidth = 0.5 * linewidth;
       _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
       break;
+    }
+}
+
+/* Update bounding box due to drawing of a quadratic Bezier segment.  This
+   takes into account only extremal x/y values in the interior of the
+   segment, i.e. it doesn't take the endpoints into account. */
+
+/* WARNING: Like _set_ellipse_bbox above, this does not properly take line
+   width into account.  The boundary of a `thick Bezier' is not a nice
+   curve at all. */
+
+#define QUAD_COOR(t,x0,x1,x2) (((x0)-2*(x1)+(x2))*t*t + 2*((x1)-(x2))*t + (x2))
+
+void
+#ifdef _HAVE_PROTOS
+_set_bezier2_bbox (Outbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2)
+#else
+_set_bezier2_bbox (bufp, x0, y0, x1, y1, x2, y2)
+     Outbuf *bufp;
+     double x0, y0, x1, y1, x2, y2;
+#endif
+{
+  double a_x, b_x, t_x;
+  double a_y, b_y, t_y;  
+  double x, y, xdevice, ydevice;
+  double device_halfwidth = 0.5 * _plotter->drawstate->device_line_width;
+  
+  /* compute coeffs of linear equation at+b=0, for both x and y coors */
+  a_x = x0 - 2 * x1 + x2;
+  b_x = (x1 - x2);
+  a_y = y0 - 2 * y1 + y2;
+  b_y = (y1 - y2);
+  if (a_x != 0.0)		/* can solve the linear eqn. */
+    {
+      t_x = -b_x / a_x;
+      if (t_x > 0.0 && t_x < 1.0) /* root is in meaningful range */
+	{
+	  x = QUAD_COOR(t_x, x0, x1, x2);
+	  y = QUAD_COOR(t_x, y0, y1, y2);
+	  xdevice = XD(x,y);
+	  ydevice = YD(x,y);
+	  _update_bbox (bufp, xdevice + device_halfwidth, ydevice);
+	  _update_bbox (bufp, xdevice - device_halfwidth, ydevice);
+	}
+    }
+  if (a_y != 0.0)		/* can solve the linear eqn. */
+    {
+      t_y = -b_y / a_y;
+      if (t_y > 0.0 && t_y < 1.0) /* root is in meaningful range */
+	{
+	  x = QUAD_COOR(t_y, x0, x1, x2);
+	  y = QUAD_COOR(t_y, y0, y1, y2);
+	  xdevice = XD(x,y);
+	  ydevice = YD(x,y);
+	  _update_bbox (bufp, xdevice, ydevice + device_halfwidth);
+	  _update_bbox (bufp, xdevice, ydevice - device_halfwidth);
+	}
+    }
+}
+
+/* Update bounding box due to drawing of a cubic Bezier segment.  This
+   takes into account only extremal x/y values in the interior of the
+   segment, i.e. it doesn't take the endpoints into account. */
+
+/* WARNING: Like _set_ellipse_bbox above, this does not properly take line
+   width into account.  The boundary of a `thick Bezier' is not a nice
+   curve at all. */
+
+#define CUBIC_COOR(t,x0,x1,x2,x3) (((x0)-3*(x1)+3*(x2)-(x3))*t*t*t + 3*((x1)-2*(x2)+(x3))*t*t + 3*((x2)-(x3))*t + (x3))
+
+void
+#ifdef _HAVE_PROTOS
+_set_bezier3_bbox (Outbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
+#else
+_set_bezier3_bbox (bufp, x0, y0, x1, y1, x2, y2, x3, y3)
+     Outbuf *bufp;
+     double x0, y0, x1, y1, x2, y2, x3, y3;
+#endif
+{
+  double a_x, b_x, c_x, s_x, t_x;
+  double a_y, b_y, c_y, s_y, t_y;  
+  double x, y, xdevice, ydevice;
+  double device_halfwidth = 0.5 * _plotter->drawstate->device_line_width;
+  double sqrt_disc;
+  
+  /* compute coeffs of quad. equation at^2+bt+c=0, for both x and y coors */
+  a_x = x0 - 3 * x1 + 3 * x2 - x3;
+  b_x = 2 * (x1 - 2 * x2 + x3);
+  c_x = x2 - x3;
+  a_y = y0 - 3 * y1 + 3 * y2 - y3;
+  b_y = 2 * (y1 - 2 * y2 + y3);
+  c_y = y2 - y3;
+  if (a_x != 0.0)		/* can solve the quadratic */
+    {
+      sqrt_disc = sqrt (b_x * b_x - 4 * a_x * c_x);
+      s_x = (- b_x + sqrt_disc) / (2 * a_x);
+      t_x = (- b_x - sqrt_disc) / (2 * a_x);
+      if (s_x > 0.0 && s_x < 1.0) /* root is in meaningful range */
+	{
+	  x = CUBIC_COOR(s_x, x0, x1, x2, x3);
+	  y = CUBIC_COOR(s_x, y0, y1, y2, y3);
+	  xdevice = XD(x,y);
+	  ydevice = YD(x,y);
+	  _update_bbox (bufp, xdevice + device_halfwidth, ydevice);
+	  _update_bbox (bufp, xdevice - device_halfwidth, ydevice);
+	}
+      if (t_x > 0.0 && t_x < 1.0) /* root is in meaningful range */
+	{
+	  x = CUBIC_COOR(t_x, x0, x1, x2, x3);
+	  y = CUBIC_COOR(t_x, y0, y1, y2, y3);
+	  xdevice = XD(x,y);
+	  ydevice = YD(x,y);
+	  _update_bbox (bufp, xdevice + device_halfwidth, ydevice);
+	  _update_bbox (bufp, xdevice - device_halfwidth, ydevice);
+	}
+    }
+  if (a_y != 0.0)		/* can solve the quadratic */
+    {
+      sqrt_disc = sqrt (b_y * b_y - 4 * a_y * c_y);
+      s_y = (- b_y + sqrt_disc) / (2 * a_y);
+      t_y = (- b_y - sqrt_disc) / (2 * a_y);
+      if (s_y > 0.0 && s_y < 1.0) /* root is in meaningful range */
+	{
+	  x = CUBIC_COOR(s_y, x0, x1, x2, x3);
+	  y = CUBIC_COOR(s_y, y0, y1, y2, y3);
+	  xdevice = XD(x,y);
+	  ydevice = YD(x,y);
+	  _update_bbox (bufp, xdevice, ydevice + device_halfwidth);
+	  _update_bbox (bufp, xdevice, ydevice - device_halfwidth);
+	}
+      if (t_y > 0.0 && t_y < 1.0) /* root is in meaningful range */
+	{
+	  x = CUBIC_COOR(t_y, x0, x1, x2, x3);
+	  y = CUBIC_COOR(t_y, y0, y1, y2, y3);
+	  xdevice = XD(x,y);
+	  ydevice = YD(x,y);
+	  _update_bbox (bufp, xdevice, ydevice + device_halfwidth);
+	  _update_bbox (bufp, xdevice, ydevice - device_halfwidth);
+	}
     }
 }

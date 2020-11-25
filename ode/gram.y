@@ -112,156 +112,159 @@ stat            : SEP
                         { lfree($1); }
                 | IDENT '=' expr SEP
                         {
-                        struct sym *sp;
-
-                        sp = lookup($1->lx_u.lxu_name);
-                        sp->sy_value = eval($3);
-                        sp->sy_flags |= SF_INIT;
-                        lfree($1);
-                        efree($3);
-                        lfree($4);
+			  struct sym *sp;
+			  
+			  sp = lookup($1->lx_u.lxu_name);
+			  sp->sy_value = eval($3);
+			  sp->sy_flags |= SF_INIT;
+			  lfree($1);
+			  efree($3);
+			  lfree($4);
                         }
                 | error SEP
                         {
-                        if (errmess == NULL)
-                                errmess = "syntax error";
-			fprintf (stderr, "%s:%s:%d: %s\n", 
-				 progname, filename,
-				 ($2->lx_lino), errmess);
-                        errmess = NULL;
-                        lfree($2);
-                        yyerrok;
-                        yyclearin;
+			  if (errmess == NULL)
+			    errmess = "syntax error";
+			  fprintf (stderr, "%s:%s:%d: %s\n", 
+				   progname, filename,
+				   ($2->lx_lino), errmess);
+			  errmess = NULL;
+			  lfree($2);
+			  yyerrok;
+			  yyclearin;
                         }
                 | IDENT '\'' '=' expr SEP
                         {
-                        struct sym *sp;
-                        struct prt *pp, *qp;
-
-                        sp = lookup($1->lx_u.lxu_name);
-                        efree(sp->sy_expr);
-                        sp->sy_expr = $4;
-                        sp->sy_flags |= SF_ISEQN;
-                        if (!sawprint) {
-                                for (pp=pqueue; pp!=NULL; pp=pp->pr_link)
-                                        if (pp->pr_sym == sp)
-                                                goto found;
-                                pp = palloc();
-                                pp->pr_sym = sp;
-                                if (pqueue == NULL)
-                                        pqueue = pp;
-                                else {
-                                        for (qp=pqueue; qp->pr_link!=NULL; )
-                                                qp = qp->pr_link;
-                                        qp->pr_link = pp;
+			  struct sym *sp;
+			  struct prt *pp, *qp;
+			  
+			  sp = lookup($1->lx_u.lxu_name);
+			  efree(sp->sy_expr);
+			  sp->sy_expr = $4;
+			  sp->sy_flags |= SF_ISEQN;
+			  if (!sawprint) 
+			    {
+			      for (pp=pqueue; pp!=NULL; pp=pp->pr_link)
+				if (pp->pr_sym == sp)
+				  goto found;
+			      pp = palloc();
+			      pp->pr_sym = sp;
+			      if (pqueue == NULL)
+				pqueue = pp;
+			      else 
+				{
+				  for (qp=pqueue; qp->pr_link!=NULL; )
+				    qp = qp->pr_link;
+				  qp->pr_link = pp;
                                 }
-                        }
-                found:
-                        lfree($1);
-                        lfree($5);
+			    }
+			found:
+			  lfree($1);
+			  lfree($5);
                         }
                 | PRINT prtlist optevery optfrom SEP
                         {
-                        sawprint = true;
-                        prerr = erritem;
-                        erritem = false;
-                        lfree($5);
+			  sawprint = true;
+			  prerr = erritem;
+			  erritem = false;
+			  lfree($5);
                         }
                 | STEP cexpr ',' cexpr SEP
                         {
-                        lfree($5);
-                        tstart = $2->lx_u.lxu_value;
-                        lfree($2);
-                        tstop = $4->lx_u.lxu_value;
-                        lfree($4);
-                        if (!conflag)
-                                startstep();
-                        solve();
-                        sawstep = true;
+			  lfree($5);
+			  tstart = $2->lx_u.lxu_value;
+			  lfree($2);
+			  tstop = $4->lx_u.lxu_value;
+			  lfree($4);
+			  if (!conflag)
+			    startstep();
+			  solve();
+			  sawstep = true;
                         }
                 | STEP cexpr ',' cexpr ',' cexpr SEP
                         {
-			double savstep;
-			bool savconflag;
-
-                        lfree($7);
-                        tstart = $2->lx_u.lxu_value;
-                        lfree($2);
-                        tstop = $4->lx_u.lxu_value;
-                        lfree($4);
-                        savstep = tstep;
-                        tstep = $6->lx_u.lxu_value;
-                        lfree($6);
-                        savconflag = conflag;
-                        conflag = true;
-                        solve();
-                        tstep = savstep;
-                        conflag = savconflag;
-                        sawstep = true;
+			  double savstep;
+			  bool savconflag;
+			  
+			  lfree($7);
+			  tstart = $2->lx_u.lxu_value;
+			  lfree($2);
+			  tstop = $4->lx_u.lxu_value;
+			  lfree($4);
+			  savstep = tstep;
+			  tstep = $6->lx_u.lxu_value;
+			  lfree($6);
+			  savconflag = conflag;
+			  conflag = true;
+			  solve();
+			  tstep = savstep;
+			  conflag = savconflag;
+			  sawstep = true;
                         }
                 | EXAM IDENT SEP
                         {
-                        struct sym *sp;
-
-                        lfree($3);
-                        sp = lookup($2->lx_u.lxu_name);
-                        lfree($2);
-                        printf ("\"%.*s\" is ",NAMMAX,sp->sy_name);
-                        switch (sp->sy_flags & SF_DEPV) {
-                        case SF_DEPV:
-                        case SF_ISEQN:
-                                printf ("a dynamic variable\n");
-                                break;
-                        case SF_INIT:
-                                printf ("an initialized constant\n");
-                                break;
-                        case 0:
-                                printf ("an uninitialized constant\n");
-                                break;
-                        default:
-                                panicn ("impossible (%d) in EXAM action",
-					sp->sy_flags);
-                        }
-                        printf ("value:");
-                        prval (sp->sy_value);
-                        printf ("\nprime:");
-                        prval (sp->sy_prime);
-                        printf ("\nsserr:");
-                        prval (sp->sy_sserr);
-                        printf ("\naberr:");
-                        prval (sp->sy_aberr);
-                        printf ("\nacerr:");
-                        prval (sp->sy_acerr);
-                        putchar ('\n');
-                        prexq(sp->sy_expr);
-                        fflush(stdout);
+			  struct sym *sp;
+			  
+			  lfree($3);
+			  sp = lookup($2->lx_u.lxu_name);
+			  lfree($2);
+			  printf ("\"%.*s\" is ",NAMMAX,sp->sy_name);
+			  switch (sp->sy_flags & SF_DEPV)
+			    {
+			    case SF_DEPV:
+			    case SF_ISEQN:
+			      printf ("a dynamic variable\n");
+			      break;
+			    case SF_INIT:
+			      printf ("an initialized constant\n");
+			      break;
+			    case 0:
+			      printf ("an uninitialized constant\n");
+			      break;
+			    default:
+			      panicn ("impossible (%d) in EXAM action",
+				      sp->sy_flags);
+			    }
+			  printf ("value:");
+			  prval (sp->sy_value);
+			  printf ("\nprime:");
+			  prval (sp->sy_prime);
+			  printf ("\nsserr:");
+			  prval (sp->sy_sserr);
+			  printf ("\naberr:");
+			  prval (sp->sy_aberr);
+			  printf ("\nacerr:");
+			  prval (sp->sy_acerr);
+			  putchar ('\n');
+			  prexq(sp->sy_expr);
+			  fflush(stdout);
                         }
                 ;
 
 prtlist         : prtitem
                         {
-                        pfree(pqueue);
-                        pqueue = $1;
+			  pfree(pqueue);
+			  pqueue = $1;
                         }
                 | prtlist ',' prtitem
                         {
-                        struct prt *pp;
-
-                        for (pp=pqueue; pp->pr_link!=NULL; pp=pp->pr_link)
-                                ;
-                        pp->pr_link = $3;
+			  struct prt *pp;
+			  
+			  for (pp=pqueue; pp->pr_link!=NULL; pp=pp->pr_link)
+			    ;
+			  pp->pr_link = $3;
                         }
                 ;
 
 prtitem         : IDENT prttag
                         {
-                        struct prt *pp;
-
-                        pp = palloc();
-                        pp->pr_sym = lookup($1->lx_u.lxu_name);
-                        pp->pr_which = (ent_cell)($2);
-                        lfree($1);
-                        $$ = pp;
+			  struct prt *pp;
+			  
+			  pp = palloc();
+			  pp->pr_sym = lookup($1->lx_u.lxu_name);
+			  pp->pr_which = (ent_cell)($2);
+			  lfree($1);
+			  $$ = pp;
                         }
                 ;
 
@@ -271,18 +274,18 @@ prttag          : /* empty */
                         { $$ = P_PRIME; }
                 | '~'
                         {
-                        $$ = P_ACERR;
-                        erritem = true;
+			  $$ = P_ACERR;
+			  erritem = true;
                         }
                 | '!'
                         {
-                        $$ = P_ABERR;
-                        erritem = true;
+			  $$ = P_ABERR;
+			  erritem = true;
                         }
                 | '?'
                         {
-                        $$ = P_SSERR;
-                        erritem = true;
+			  $$ = P_SSERR;
+			  erritem = true;
                         }
                 ;
 
@@ -300,179 +303,179 @@ optfrom         : /* empty */
                         { sawfrom = false; }
                 | FROM cexpr
                         {
-                        sawfrom = true;
-                        tfrom = $2->lx_u.lxu_value;
-                        lfree($2);
+			  sawfrom = true;
+			  tfrom = $2->lx_u.lxu_value;
+			  lfree($2);
                         }
                 ;
 
 cexpr           : '(' cexpr ')'
                         {
-                        $$ = $2;
+			  $$ = $2;
                         }
                 | cexpr '+' cexpr
                         {
-                        CEXOP($1,$3,$$,+=)
+			  CEXOP($1,$3,$$,+=)
                         }
                 | cexpr '-' cexpr
                         {
-                        CEXOP($1,$3,$$,-=)
+			  CEXOP($1,$3,$$,-=)
                         }
                 | cexpr '*' cexpr
                         {
-                        CEXOP($1,$3,$$,*=)
+			  CEXOP($1,$3,$$,*=)
                         }
                 | cexpr '/' cexpr
                         {
-                        CEXOP($1,$3,$$,/=)
+			  CEXOP($1,$3,$$,/=)
                         }
                 | cexpr '^' cexpr
                         {
-                        $1->lx_u.lxu_value =
-                                pow($1->lx_u.lxu_value,$3->lx_u.lxu_value);
-                        lfree($3);
-                        $$ = $1;
+			  $1->lx_u.lxu_value =
+			    pow($1->lx_u.lxu_value,$3->lx_u.lxu_value);
+			  lfree($3);
+			  $$ = $1;
                         }
                 | SQRT '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,sqrt)
+			  CEXFUNC($3,$$,sqrt)
                         }
                 | ABS '(' cexpr ')'
                         {
-                        if ($3->lx_u.lxu_value < 0)
-                                $3->lx_u.lxu_value = -($3->lx_u.lxu_value);
-                        $$ = $3;
+			  if ($3->lx_u.lxu_value < 0)
+			    $3->lx_u.lxu_value = -($3->lx_u.lxu_value);
+			  $$ = $3;
                         }
                 | EXP '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,exp)
+			  CEXFUNC($3,$$,exp)
                         }
                 | LOG '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,log)
+			  CEXFUNC($3,$$,log)
                         }
                 | LOG10 '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,log10)
+			  CEXFUNC($3,$$,log10)
                         }
                 | SIN '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,sin)
+			  CEXFUNC($3,$$,sin)
                         }
                 | COS '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,cos)
+			  CEXFUNC($3,$$,cos)
                         }
                 | TAN '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,tan)
+			  CEXFUNC($3,$$,tan)
                         }
                 | ASINH '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,asinh)
+			  CEXFUNC($3,$$,asinh)
                         }
                 | ACOSH '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,acosh)
+			  CEXFUNC($3,$$,acosh)
                         }
                 | ATANH '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,atanh)
+			  CEXFUNC($3,$$,atanh)
                         }
                 | ASIN '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,asin)
+			  CEXFUNC($3,$$,asin)
                         }
                 | ACOS '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,acos)
+			  CEXFUNC($3,$$,acos)
                         }
                 | ATAN '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,atan)
+			  CEXFUNC($3,$$,atan)
                         }
                 | SINH '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,sinh)
+			  CEXFUNC($3,$$,sinh)
                         }
                 | COSH '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,cosh)
+			  CEXFUNC($3,$$,cosh)
                         }
                 | TANH '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,tanh)
+			  CEXFUNC($3,$$,tanh)
                         }
                 | FLOOR '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,floor)
+			  CEXFUNC($3,$$,floor)
                         }
                 | CEIL '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,ceil)
+			  CEXFUNC($3,$$,ceil)
                         }
                 | J0 '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,j0)
+			  CEXFUNC($3,$$,j0)
                         }
                 | J1 '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,j1)
+			  CEXFUNC($3,$$,j1)
                         }
                 | Y0 '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,y0)
+			  CEXFUNC($3,$$,y0)
                         }
                 | Y1 '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,y1)
+			  CEXFUNC($3,$$,y1)
                         }
                 | ERFC '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,erfc)
+			  CEXFUNC($3,$$,erfc)
                         }
                 | ERF '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,erf)
+			  CEXFUNC($3,$$,erf)
                         }
                 | INVERF '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,inverf)
+			  CEXFUNC($3,$$,inverf)
                         }
                 | LGAMMA '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,F_LGAMMA)
+			  CEXFUNC($3,$$,F_LGAMMA)
                         }
                 | GAMMA '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,f_gamma)
+			  CEXFUNC($3,$$,f_gamma)
                         }
                 | NORM '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,norm)
+			  CEXFUNC($3,$$,norm)
                         }
                 | INVNORM '(' cexpr ')'
                         {
-                        CEXFUNC($3,$$,invnorm)
+			  CEXFUNC($3,$$,invnorm)
                         }
                 | IGAMMA '(' cexpr ',' cexpr ')'
                         {
-                        $3->lx_u.lxu_value =
-                                igamma($3->lx_u.lxu_value,$5->lx_u.lxu_value);
-                        lfree($5);
-                        $$ = $3;
+			  $3->lx_u.lxu_value =
+			    igamma($3->lx_u.lxu_value,$5->lx_u.lxu_value);
+			  lfree($5);
+			  $$ = $3;
                         }
                 | IBETA '(' cexpr ',' cexpr ',' cexpr ')'
                         {
-                        $3->lx_u.lxu_value =
-                                ibeta($3->lx_u.lxu_value,$5->lx_u.lxu_value,$7->lx_u.lxu_value);
-                        lfree($5);
-                        lfree($7);
-                        $$ = $3;
+			  $3->lx_u.lxu_value =
+			    ibeta($3->lx_u.lxu_value,$5->lx_u.lxu_value,$7->lx_u.lxu_value);
+			  lfree($5);
+			  lfree($7);
+			  $$ = $3;
                         }
                 | '-' cexpr     %prec UMINUS
                         {
-                        CEXFUNC($2,$$,-)
+			  CEXFUNC($2,$$,-)
                         }
                 | NUMBER
                         { $$ = $1; }
@@ -482,357 +485,384 @@ expr            : '(' expr ')'
                         { $$ = $2; }
                 | expr '+' expr
                         {
-                        if (TWOCON($1,$3))
-                                COMBINE($1,$3,$$,+=)
-                        else
-                                BINARY($1,$3,$$,O_PLUS);
+			  if (TWOCON($1,$3))
+			    COMBINE($1,$3,$$,+=)
+			  else
+			    BINARY($1,$3,$$,O_PLUS);
                         }
                 | expr '-' expr
                         {
-                        if (TWOCON($1,$3))
-                                COMBINE($1,$3,$$,-=)
-                        else
-                                BINARY($1,$3,$$,O_MINUS);
+			  if (TWOCON($1,$3))
+			    COMBINE($1,$3,$$,-=)
+			  else
+			    BINARY($1,$3,$$,O_MINUS);
                         }
                 | expr '*' expr
                         {
-                        if (TWOCON($1,$3))
-                                COMBINE($1,$3,$$,*=)
-                        else
-                                BINARY($1,$3,$$,O_MULT);
+			  if (TWOCON($1,$3))
+			    COMBINE($1,$3,$$,*=)
+			  else
+			    BINARY($1,$3,$$,O_MULT);
                         }
                 | expr '/' expr
                         {
-                        if (TWOCON($1,$3))
-                                COMBINE($1,$3,$$,/=)
-                        else if (ONECON($3) && $3->ex_value!=0.) {
-                                /* division by constant */
-                                $3->ex_value = 1./$3->ex_value;
-                                BINARY($1,$3,$$,O_MULT);
-                        } else
-                                BINARY($1,$3,$$,O_DIV);
+			  if (TWOCON($1,$3))
+			    COMBINE($1,$3,$$,/=)
+			  else if (ONECON($3) && $3->ex_value!=0.) 
+			    {
+			      /* division by constant */
+			      $3->ex_value = 1./$3->ex_value;
+			      BINARY($1,$3,$$,O_MULT);
+			    } 
+			  else
+			    BINARY($1,$3,$$,O_DIV);
                         }
                 | expr '^' expr
                         {
-                        double f;
-			bool invert = false;
-
-                        if (TWOCON($1,$3)) {
-                                /* case const ^ const */
-                                $1->ex_value = pow($1->ex_value,$3->ex_value);
-                                efree($3);
-                        } else if (ONECON($1)) {
-                                if ($1->ex_value == 1.) {
-                                        /* case 1 ^ x */
-                                        efree($3);
-                                        $$ = $1;
-                                } else
-                                        goto other;
-                        } else if (!ONECON($3))
-                                goto other;
-                        else {
-                                f = $3->ex_value;
-                                if (f < 0.) {
-                                        /*
-                                         * negative exponent means
-                                         * to append an invert cmd
-                                         */
-                                        f = -f;
-                                        invert = true;
+			  double f;
+			  bool invert = false;
+			  
+			  if (TWOCON($1,$3)) 
+			    {
+			      /* case const ^ const */
+			      $1->ex_value = pow($1->ex_value,$3->ex_value);
+			      efree($3);
+			    } 
+			  else if (ONECON($1)) 
+			    {
+			      if ($1->ex_value == 1.)
+				{
+				  /* case 1 ^ x */
+				  efree($3);
+				  $$ = $1;
                                 }
-                                if (f == 2.) {
-                                        /* case x ^ 2 */
-                                        $3->ex_oper = O_SQAR;
-                                        concat($1,$3);
-                                        $$ = $1;
-                                } else if (f == 3.) {
-                                        /* case x ^ 3 */
-                                        $3->ex_oper = O_CUBE;
-                                        concat($1,$3);
-                                        $$ = $1;
-                                } else if (f == 0.5) {
-                                        /* case x ^ .5 */
-                                        $3->ex_oper = O_SQRT;
-                                        concat($1,$3);
-                                        $$ = $1;
-                                } else if (f == 1.5) {
-                                        /* case x ^ 1.5 */
-                                        $3->ex_oper = O_CUBE;
-                                        BINARY($1,$3,$$,O_SQRT);
-                                } else if (f == 1.) {
-                                        /* case x ^ 1 */
-                                        efree($3);
-                                        $$ = $1;
-                                } else if (f == 0.) {
-                                        /* case x ^ 0 */
-                                        efree($1);
-                                        $3->ex_value = 1.;
-                                        $$ = $3;
-                                } else {
-                        other:
-                                        /* default */
-                                        invert = false;
-                                        BINARY($1,$3,$$,O_POWER);
+			      else
+				goto other;
+			    }
+			  else if (!ONECON($3))
+			    goto other;
+			  else 
+			    {
+			      f = $3->ex_value;
+			      if (f < 0.) 
+				{
+				  /*
+				   * negative exponent means
+				   * to append an invert cmd
+				   */
+				  f = -f;
+				  invert = true;
                                 }
-                                if (invert)
-                                        UNARY($$,$$,O_INV)
-                        }
+			      if (f == 2.) 
+				{
+				  /* case x ^ 2 */
+				  $3->ex_oper = O_SQAR;
+				  concat($1,$3);
+				  $$ = $1;
+                                }
+			      else if (f == 3.) 
+				{
+				  /* case x ^ 3 */
+				  $3->ex_oper = O_CUBE;
+				  concat($1,$3);
+				  $$ = $1;
+                                }
+			      else if (f == 0.5) 
+				{
+				  /* case x ^ .5 */
+				  $3->ex_oper = O_SQRT;
+				  concat($1,$3);
+				  $$ = $1;
+                                }
+			      else if (f == 1.5) 
+				{
+				  /* case x ^ 1.5 */
+				  $3->ex_oper = O_CUBE;
+				  BINARY($1,$3,$$,O_SQRT);
+                                }
+			      else if (f == 1.) 
+				{
+				  /* case x ^ 1 */
+				  efree($3);
+				  $$ = $1;
+                                }
+			      else if (f == 0.) 
+				{
+				  /* case x ^ 0 */
+				  efree($1);
+				  $3->ex_value = 1.;
+				  $$ = $3;
+                                } 
+			      else 
+				{
+				other:
+				  /* default */
+				  invert = false;
+				  BINARY($1,$3,$$,O_POWER);
+                                }
+			      if (invert)
+				UNARY($$,$$,O_INV)
+			    }
                         }
                 | SQRT '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,sqrt)
-                        else
-                                UNARY($3,$$,O_SQRT);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,sqrt)
+			  else
+			    UNARY($3,$$,O_SQRT);
                         }
                 | ABS '(' expr ')'
                         {
-                        if (ONECON($3)) {
-                                if ($3->ex_value < 0)
-                                        $3->ex_value = -($3->ex_value);
-                                $$ = $3;
-                        } else
-                                UNARY($3,$$,O_ABS);
+			  if (ONECON($3)) 
+			    {
+			      if ($3->ex_value < 0)
+				$3->ex_value = -($3->ex_value);
+			      $$ = $3;
+			  } 
+			  else
+			    UNARY($3,$$,O_ABS);
                         }
                 | EXP '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,exp)
-                        else
-                                UNARY($3,$$,O_EXP);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,exp)
+			  else
+			    UNARY($3,$$,O_EXP);
                         }
                 | LOG '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,log)
-                        else
-                                UNARY($3,$$,O_LOG);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,log)
+			  else
+			    UNARY($3,$$,O_LOG);
                         }
                 | LOG10 '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,log10)
-                        else
-                                UNARY($3,$$,O_LOG10);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,log10)
+			  else
+			    UNARY($3,$$,O_LOG10);
                         }
                 | SIN '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,sin)
-                        else
-                                UNARY($3,$$,O_SIN);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,sin)
+			  else
+			    UNARY($3,$$,O_SIN);
                         }
                 | COS '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,cos)
-                        else
-                                UNARY($3,$$,O_COS);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,cos)
+			  else
+			    UNARY($3,$$,O_COS);
                         }
                 | TAN '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,tan)
-                        else
-                                UNARY($3,$$,O_TAN);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,tan)
+			  else
+			    UNARY($3,$$,O_TAN);
                         }
                 | ASINH '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,asinh)
-                        else
-                                UNARY($3,$$,O_ASINH);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,asinh)
+			  else
+			    UNARY($3,$$,O_ASINH);
                         }
                 | ACOSH '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,acosh)
-                        else
-                                UNARY($3,$$,O_ACOSH);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,acosh)
+			  else
+			    UNARY($3,$$,O_ACOSH);
                         }
                 | ATANH '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,atanh)
-                        else
-                                UNARY($3,$$,O_ATANH);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,atanh)
+			  else
+			    UNARY($3,$$,O_ATANH);
                         }
                 | ASIN '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,asin)
-                        else
-                                UNARY($3,$$,O_ASIN);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,asin)
+			  else
+			    UNARY($3,$$,O_ASIN);
                         }
                 | ACOS '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,acos)
-                        else
-                                UNARY($3,$$,O_ACOS);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,acos)
+			  else
+			    UNARY($3,$$,O_ACOS);
                         }
                 | ATAN '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,atan)
-                        else
-                                UNARY($3,$$,O_ATAN);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,atan)
+			  else
+			    UNARY($3,$$,O_ATAN);
                         }
                 | SINH '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,sinh)
-                        else
-                                UNARY($3,$$,O_SINH);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,sinh)
+			  else
+			    UNARY($3,$$,O_SINH);
                         }
                 | COSH '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,cosh)
-                        else
-                                UNARY($3,$$,O_COSH);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,cosh)
+			  else
+			    UNARY($3,$$,O_COSH);
                         }
                 | TANH '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,tanh)
-                        else
-                                UNARY($3,$$,O_TANH);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,tanh)
+			  else
+			    UNARY($3,$$,O_TANH);
                         }
                 | FLOOR '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,floor)
-                        else
-                                UNARY($3,$$,O_FLOOR);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,floor)
+			  else
+			    UNARY($3,$$,O_FLOOR);
                         }
                 | CEIL '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,ceil)
-                        else
-                                UNARY($3,$$,O_CEIL);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,ceil)
+			  else
+			    UNARY($3,$$,O_CEIL);
                         }
                 | J0 '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,j0)
-                        else
-                                UNARY($3,$$,O_J0);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,j0)
+			  else
+			    UNARY($3,$$,O_J0);
                         }
                 | J1 '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,j1)
-                        else
-                                UNARY($3,$$,O_J1);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,j1)
+			  else
+			    UNARY($3,$$,O_J1);
                         }
                 | Y0 '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,y0)
-                        else
-                                UNARY($3,$$,O_Y0);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,y0)
+			  else
+			    UNARY($3,$$,O_Y0);
                         }
                 | Y1 '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,y1)
-                        else
-                                UNARY($3,$$,O_Y1);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,y1)
+			  else
+			    UNARY($3,$$,O_Y1);
                         }
                 | LGAMMA '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,F_LGAMMA)
-                        else
-                                UNARY($3,$$,O_LGAMMA);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,F_LGAMMA)
+			  else
+			    UNARY($3,$$,O_LGAMMA);
                         }
                 | GAMMA '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,f_gamma)
-                        else
-                                UNARY($3,$$,O_GAMMA);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,f_gamma)
+			  else
+			    UNARY($3,$$,O_GAMMA);
                         }
                 | ERFC '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,erfc)
-                        else
-                                UNARY($3,$$,O_ERFC);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,erfc)
+			  else
+			    UNARY($3,$$,O_ERFC);
                         }
                 | ERF '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,erf)
-                        else
-                                UNARY($3,$$,O_ERF);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,erf)
+			  else
+			    UNARY($3,$$,O_ERF);
                         }
                 | INVERF '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,inverf)
-                        else
-                                UNARY($3,$$,O_INVERF);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,inverf)
+			  else
+			    UNARY($3,$$,O_INVERF);
                         }
                 | NORM '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,norm)
-                        else
-                                UNARY($3,$$,O_NORM);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,norm)
+			  else
+			    UNARY($3,$$,O_NORM);
                         }
                 | INVNORM '(' expr ')'
                         {
-                        if (ONECON($3))
-                                CONFUNC($3,$$,invnorm)
-                        else
-                                UNARY($3,$$,O_INVNORM);
+			  if (ONECON($3))
+			    CONFUNC($3,$$,invnorm)
+			  else
+			    UNARY($3,$$,O_INVNORM);
                         }
                 | IGAMMA '(' expr ',' expr ')'
                         {
-                        if (TWOCON($3,$5)) {
-                                $3->ex_value = 
-				  igamma($3->ex_value,$5->ex_value);
-				efree($5);
-				$$ = $3;
-			       }
-			else 
-			  BINARY($3,$5,$$,O_IGAMMA);
+			  if (TWOCON($3,$5)) 
+			    {
+			      $3->ex_value = 
+				igamma($3->ex_value,$5->ex_value);
+			      efree($5);
+			      $$ = $3;
+			    }
+			  else 
+			    BINARY($3,$5,$$,O_IGAMMA);
 		        }
                 | IBETA '(' expr ',' expr ',' expr ')'
                         {
-                        if (THREECON($3,$5,$7)) {
-                                $3->ex_value = 
-				  ibeta($3->ex_value,$5->ex_value,$7->ex_value);
-				efree($5);
-				efree($7);
-				$$ = $3;
-			       }
-			else 
-			  TERNARY($3,$5,$7,$$,O_IBETA);
+			  if (THREECON($3,$5,$7)) 
+			    {
+			      $3->ex_value = 
+				ibeta($3->ex_value,$5->ex_value,$7->ex_value);
+			      efree($5);
+			      efree($7);
+			      $$ = $3;
+			    }
+			  else 
+			    TERNARY($3,$5,$7,$$,O_IBETA);
 		        }
                 | '-' expr      %prec UMINUS
                         {
-                        if (ONECON($2))
-                                CONFUNC($2,$$,-)
-                        else
-                                UNARY($2,$$,O_NEG);
+			  if (ONECON($2))
+			    CONFUNC($2,$$,-)
+			  else
+			    UNARY($2,$$,O_NEG);
                         }
                 | NUMBER
                         {
-                        $$ = ealloc();
-                        $$->ex_oper = O_CONST;
-                        $$->ex_value = $1->lx_u.lxu_value;
-                        lfree($1);
+			  $$ = ealloc();
+			  $$->ex_oper = O_CONST;
+			  $$->ex_value = $1->lx_u.lxu_value;
+			  lfree($1);
                         }
                 | IDENT
                         {
-                        $$ = ealloc();
-                        $$->ex_oper = O_IDENT;
-                        $$->ex_sym = lookup($1->lx_u.lxu_name);
-                        lfree($1);
+			  $$ = ealloc();
+			  $$->ex_oper = O_IDENT;
+			  $$->ex_sym = lookup($1->lx_u.lxu_name);
+			  lfree($1);
                         }
                 ;
 %%

@@ -10,7 +10,6 @@
    switched to.  */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -29,17 +28,9 @@ _m_textangle (angle)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d\n", 
-		 (int)O_TEXTANGLE, angle);
-      else
-	{
-	  putc ((int)O_TEXTANGLE, _plotter->outstream);
-	  _emit_integer (angle);
-	}  
-    }
+  _meta_emit_byte ((int)O_TEXTANGLE);
+  _meta_emit_integer (angle);
+  _meta_emit_terminator ();
 
   /* invoke generic method */
   retval = _g_ftextangle ((double)angle);
@@ -61,17 +52,9 @@ _m_ftextangle (angle)
       return -1;
     }
 
-  if (_plotter->outstream == NULL)
-    return 0.0;
-
-  if (_plotter->portable_output)
-    fprintf (_plotter->outstream, "%c %g\n",
-	     (int)O_TEXTANGLE, angle);
-  else
-    {
-      putc ((int)O_FTEXTANGLE, _plotter->outstream);
-      _emit_float (angle);
-    }  
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_TEXTANGLE : (int)O_FTEXTANGLE);
+  _meta_emit_float (angle);
+  _meta_emit_terminator ();
 
   /* invoke generic method */
   return _g_ftextangle (angle);

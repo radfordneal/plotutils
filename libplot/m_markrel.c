@@ -4,7 +4,6 @@
    specified type and size. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -23,21 +22,13 @@ _m_markerrel (x, y, type, size)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d %d %d %d\n",
-		 (int)O_MARKERREL, x, y, type, size);
-      else
-	{
-	  putc ((int)O_MARKERREL, _plotter->outstream);
-	  _emit_integer (x);
-	  _emit_integer (y);
-	  _emit_integer (type);
-	  _emit_integer (size);
-	}
-    }
-  
+  _meta_emit_byte ((int)O_MARKERREL);
+  _meta_emit_integer (x);
+  _meta_emit_integer (y);
+  _meta_emit_integer (type);
+  _meta_emit_integer (size);
+  _meta_emit_terminator ();
+      
   return 0;
 }
 
@@ -57,20 +48,12 @@ _m_fmarkerrel (x, y, type, size)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g %g %d %g\n",
-		 (int)O_MARKERREL, x, y, type, size);
-      else
-	{
-	  putc ((int)O_FMARKERREL, _plotter->outstream);
-	  _emit_float (x);
-	  _emit_float (y);
-	  _emit_integer (type);
-	  _emit_float (size);
-	}
-    }
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_MARKERREL : (int)O_FMARKERREL);
+  _meta_emit_float (x);
+  _meta_emit_float (y);
+  _meta_emit_integer (type);
+  _meta_emit_float (size);
+  _meta_emit_terminator ();
   
   return 0;
 }

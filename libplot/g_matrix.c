@@ -1,5 +1,4 @@
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* _matrix_product computes the product of two PS-style transformation
@@ -36,9 +35,10 @@ _matrix_product (m, n, product)
    Hadamard's 3-line theorem, this geometric mean is an upper bound on the
    true l^2 norm.
 
-   This function is called only by g_space.c, p_alabel_ps.c and p_point.c,
-   to select appropriate line widths and font sizes.  For the purposes of
-   those functions, the above approximation should suffice. */
+   This function is called only by a_alab_ps.c, a_point.c, g_space.c,
+   m_space.c, p_alab_ps.c, and p_point.c, to select appropriate line widths
+   and font sizes.  For the purposes of those functions, the above
+   approximation should suffice. */
 
 double 
 #ifdef _HAVE_PROTOS
@@ -73,3 +73,45 @@ _matrix_norm (m)
  /* l^2 norm of m is sqrt of l^2 norm of m * mt */
   return sqrt(sqrt(norm1 * norm2));
 }     
+
+/* Compute the minimum and maximum singular values of a 2-by-2 matrix M.
+   The singular values are the square roots of the eigenvalues of M times
+   its transpose. */
+
+void
+#ifdef _HAVE_PROTOS
+_matrix_sing_vals (const double m[6], double *min_sing_val, double *max_sing_val)
+#else
+_matrix_sing_vals (m, min_sing_val, max_sing_val)
+     const double m[6];
+     double *min_sing_val, *max_sing_val;
+#endif
+{
+  double mt[4], pm[4];
+  double trace, det, disc, sqrtdisc;
+  double s1, s2;
+
+  mt[0] = m[0];			/* transpose of m */
+  mt[1] = m[2];
+  mt[2] = m[1];
+  mt[3] = m[3];
+  
+  pm[0] = m[0] * mt[0] + m[1] * mt[2]; /* pm = m * mt */
+  pm[1] = m[0] * mt[1] + m[1] * mt[3];  
+  pm[2] = m[2] * mt[0] + m[3] * mt[2];
+  pm[3] = m[2] * mt[1] + m[3] * mt[3];  
+
+  trace = pm[0] + pm[3];
+  det = pm[0] * pm[3] - pm[1] * pm[2];
+  /* s^2 + b s + c = 0, where b = -trace, c = det */
+  disc = trace * trace - 4.0 * det;
+  disc = DMAX(0.0, disc);	/* paranoia */
+  sqrtdisc = sqrt (disc);
+  s1 = 0.5 * (trace - sqrtdisc);
+  s2 = 0.5 * (trace + sqrtdisc);  
+  s1 = DMAX(0.0, s1);		/* paranoia */
+  s2 = DMAX(0.0, s2);		/* paranoia */
+
+  *min_sing_val = sqrt(s1);
+  *max_sing_val = sqrt(s2);
+}

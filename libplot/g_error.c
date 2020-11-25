@@ -1,9 +1,8 @@
-/* This file contains the generic error and warning methods.  They simply
-   write the specified message to the plotter error stream, if it has one.
-   In the case of an error, the program exits. */
+/* This file contains the generic warning and error methods.  They simply
+   write the specified message to the plotter error stream, if it has
+   one. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 void
@@ -16,8 +15,12 @@ _g_warning (msg)
 {
   if (libplot_warning_handler != NULL)
     (*libplot_warning_handler)(msg);
-  else if (_plotter->errstream != NULL)
-    fprintf (_plotter->errstream, "libplot: %s\n", msg);
+  else if (_plotter->errfp)
+    fprintf (_plotter->errfp, "libplot: %s\n", msg);
+#ifdef LIBPLOTTER
+  else if (_plotter->outstream)
+    (*(_plotter->outstream)) << "libplot: " << msg << '\n';
+#endif
 }
 
 void
@@ -30,8 +33,10 @@ _g_error (msg)
 {
   if (libplot_error_handler != NULL)
     (*libplot_error_handler)(msg);
-  else if (_plotter->errstream != NULL)
-    fprintf (_plotter->errstream, "libplot: error: %s\n", msg);
-
-  exit (EXIT_FAILURE);
+  else if (_plotter->errfp)
+    fprintf (_plotter->errfp, "libplot: error: %s\n", msg);
+#ifdef LIBPLOTTER
+  else if (_plotter->outstream)
+    (*(_plotter->outstream)) << "libplot: error: " << msg << '\n';
+#endif
 }

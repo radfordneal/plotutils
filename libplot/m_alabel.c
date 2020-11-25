@@ -3,7 +3,6 @@
    Horizontal and vertical justification must be specified. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* ALABEL takes three arguments X_JUSTIFY, Y_JUSTIFY, and S, and places the
@@ -23,30 +22,16 @@ _m_alabel (x_justify, y_justify, s)
      const char *s;
 #endif
 {
-  char x_justify_c, y_justify_c;
-  char *nl;
-  
-  x_justify_c = (char)x_justify;
-  y_justify_c = (char)y_justify;
-
   if (!_plotter->open)
     {
       _plotter->error ("alabel: invalid operation");
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      /* null pointer handled specially */
-      if (s == NULL)
-	s = "(null)";
-      
-      if ((nl = strchr (s, '\n')))
-	*nl = '\0';		/* don't grok multiline arg strings */
-      
-      fprintf(_plotter->outstream, "%c%c%c%s\n", 
-	      (int)O_ALABEL, x_justify_c, y_justify_c, s);
-    }
+  _meta_emit_byte ((int)O_ALABEL);
+  _meta_emit_byte (x_justify);
+  _meta_emit_byte (y_justify);
+  _meta_emit_string (s);
   
   return 0;
 }

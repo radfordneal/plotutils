@@ -3,7 +3,6 @@
    drawing operations, in user units. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int

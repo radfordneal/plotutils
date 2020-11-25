@@ -1,16 +1,20 @@
-/* For TekPlotter objects, setting the pen color has no effect unless the
-   plotter is using the Tektronix emulation of MS-DOS kermit.  If so, we
-   compute a quantized color and output the appropriate ANSI escape 
-   sequence. */
+/* For TekPlotter objects, setting the pen color or background color has no
+   effect unless the plotter is using the Tektronix emulation of MS-DOS
+   kermit.  If so, we compute a quantized color and output the appropriate
+   ANSI escape sequence, if the color is different from the ANSI.SYS color
+   the emulation is currently using.
+
+   When the TekPlotter is created, the current ANSI.SYS pen and bg colors
+   are set to -1 (see t_defplot.c).  That's a nonsensical value, equivalent
+   to `unknown'. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define ONEBYTE (0xff)
 
 /* forward references */
-static int _kermit_pseudocolor __P((int red, int green, int blue));
+static int _kermit_pseudocolor ____P((int red, int green, int blue));
 
 void
 #ifdef _HAVE_PROTOS
@@ -19,7 +23,7 @@ _t_set_pen_color(void)
 _t_set_pen_color()
 #endif
 {
-  if (_plotter->display_type == D_KERMIT)
+  if (_plotter->tek_display_type == D_KERMIT)
     {
       int new_kermit_fgcolor;
 
@@ -27,18 +31,33 @@ _t_set_pen_color()
 	_kermit_pseudocolor (_plotter->drawstate->fgcolor.red, 
 			     _plotter->drawstate->fgcolor.green, 
 			     _plotter->drawstate->fgcolor.blue);
-      /* we can't be sure the background is black or white, so don't draw
-	 with a black or a white pen: map them to gray30 and gray55 */
-      if (new_kermit_fgcolor == ANSI_SYS_BLACK)
-	new_kermit_fgcolor = ANSI_SYS_GRAY30;
-      if (new_kermit_fgcolor == ANSI_SYS_WHITE)
-	new_kermit_fgcolor = ANSI_SYS_GRAY55;
-      if (new_kermit_fgcolor != _plotter->kermit_fgcolor)
+      if (new_kermit_fgcolor != _plotter->tek_kermit_fgcolor)
 	{
-	  if (_plotter->outstream)
-	    fprintf (_plotter->outstream,
-		     _kermit_fgcolor_escapes[new_kermit_fgcolor]);
-	  _plotter->kermit_fgcolor = new_kermit_fgcolor;
+	  _plotter->write_string (_kermit_fgcolor_escapes[new_kermit_fgcolor]);
+	  _plotter->tek_kermit_fgcolor = new_kermit_fgcolor;
+	}
+    }
+}  
+
+void
+#ifdef _HAVE_PROTOS
+_t_set_bg_color(void)
+#else
+_t_set_bg_color()
+#endif
+{
+  if (_plotter->tek_display_type == D_KERMIT)
+    {
+      int new_kermit_bgcolor;
+
+      new_kermit_bgcolor = 
+	_kermit_pseudocolor (_plotter->drawstate->bgcolor.red, 
+			     _plotter->drawstate->bgcolor.green, 
+			     _plotter->drawstate->bgcolor.blue);
+      if (new_kermit_bgcolor != _plotter->tek_kermit_bgcolor)
+	{
+	  _plotter->write_string (_kermit_bgcolor_escapes[new_kermit_bgcolor]);
+	  _plotter->tek_kermit_bgcolor = new_kermit_bgcolor;
 	}
     }
 }  

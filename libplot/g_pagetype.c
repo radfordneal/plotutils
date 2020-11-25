@@ -3,7 +3,6 @@
    PAGESIZE parameter. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 #include "g_pagetype.h"
 

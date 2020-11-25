@@ -1,10 +1,9 @@
 /* This file contains the arcrel() method, which is a GNU extension to
    libplot.  arcrel() is simply a version of arc() that uses relative
-   coordinates.  It draws an object: a counterclockwise arc with specified
-   center, beginning, and end. */
+   coordinates.  It draws an object: an arc with specified center,
+   beginning, and end. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,22 +20,14 @@ _m_arcrel (xc, yc, x0, y0, x1, y1)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d %d %d %d %d %d\n", 
-		 (int)O_ARCREL, xc, yc, x0, y0, x1, y1);
-      else
-	{
-	  putc ((int)O_ARCREL, _plotter->outstream);
-	  _emit_integer (xc);
-	  _emit_integer (yc);
-	  _emit_integer (x0);
-	  _emit_integer (y0);
-	  _emit_integer (x1);
-	  _emit_integer (y1);
-	}
-    }
+  _meta_emit_byte ((int)O_ARCREL);
+  _meta_emit_integer (xc);
+  _meta_emit_integer (yc);
+  _meta_emit_integer (x0);
+  _meta_emit_integer (y0);
+  _meta_emit_integer (x1);
+  _meta_emit_integer (y1);
+  _meta_emit_terminator ();
 
   return 0;
 }
@@ -55,22 +46,14 @@ _m_farcrel (xc, yc, x0, y0, x1, y1)
       return -1;
     }
 
-  if (_plotter->outstream == NULL)
-    return 0;
-
-  if (_plotter->portable_output)
-    fprintf (_plotter->outstream, "%c %g %g %g %g %g %g\n", 
-	     (int)O_ARCREL, xc, yc, x0, y0, x1, y1);
-  else
-    {
-      putc ((int)O_FARCREL, _plotter->outstream);
-      _emit_float (xc);
-      _emit_float (yc);
-      _emit_float (x0);
-      _emit_float (y0);
-      _emit_float (x1);
-      _emit_float (y1);
-    }
-
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_ARCREL : (int)O_FARCREL);
+  _meta_emit_float (xc);
+  _meta_emit_float (yc);
+  _meta_emit_float (x0);
+  _meta_emit_float (y0);
+  _meta_emit_float (x1);
+  _meta_emit_float (y1);
+  _meta_emit_terminator ();
+  
   return 0;
 }

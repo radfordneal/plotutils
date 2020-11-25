@@ -1,8 +1,17 @@
 /* This file contains the point method, which is a standard part of
    libplot.  It plots an object: a point with coordinates x,y. */
 
+/* This version is for XDrawablePlotters and XPlotters.  It calls
+   _maybe_handle_x_events(), which is a no-op for the former but not the
+   latter (it flushes the X output buffer and may also check for events).
+   Since point() is used mostly by people drawing images, it may be invoked
+   a great many times.  To speed things up, the call to
+   _maybe_handle_x_events() is performed only once per X_POINT_FLUSH_PERIOD
+   invocations of this function. */
+
+#define X_POINT_FLUSH_PERIOD 8
+
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -13,37 +22,58 @@ _x_fpoint (x, y)
      double x, y;
 #endif
 {
+  static int point_count = 0;
+
+  int ix, iy;
+  Color oldcolor, newcolor;
+
   if (!_plotter->open)
     {
       _plotter->error ("fpoint: invalid operation");
       return -1;
     }
 
-  _plotter->endpath(); /* flush polyline if any */
+  if (_plotter->drawstate->points_in_path > 0)
+    _plotter->endpath(); /* flush polyline if any */
   
-  /* select pen color as foreground color in GC used for drawing */
+  /* set pen color as foreground color in GC used for drawing (but first,
+     check whether we can avoid a function call) */
+  newcolor = _plotter->drawstate->fgcolor;
+  oldcolor = _plotter->drawstate->x_current_fgcolor; /* i.e. as stored in gc */
+  if (newcolor.red != oldcolor.red 
+      || newcolor.green != oldcolor.green 
+      || newcolor.blue != oldcolor.blue
+      || ! _plotter->drawstate->x_fgcolor_status)
   _plotter->set_pen_color();
 
-  if (_plotter->double_buffering != DBL_NONE)
-	XDrawPoint (_plotter->dpy, _plotter->drawable3, 
-		    _plotter->drawstate->gc_fg, 
-		    IROUND(XD(x,y)), IROUND(YD(x,y)));
+  ix = IROUND(XD(x,y));
+  iy = IROUND(YD(x,y));  
+  if (_plotter->x_double_buffering != DBL_NONE)
+	/* double buffering, have a `x_drawable3' to draw into */
+	XDrawPoint (_plotter->x_dpy, _plotter->x_drawable3, 
+		    _plotter->drawstate->x_gc_fg, 
+		    ix, iy);
   else
+    /* not double buffering, have no `x_drawable3' */
     {
-      if (_plotter->drawable1)
-	XDrawPoint (_plotter->dpy, _plotter->drawable1, 
-		    _plotter->drawstate->gc_fg, 
-		    IROUND(XD(x,y)), IROUND(YD(x,y)));
-      if (_plotter->drawable2)
-	XDrawPoint (_plotter->dpy, _plotter->drawable2, 
-		    _plotter->drawstate->gc_fg, 
-		    IROUND(XD(x,y)), IROUND(YD(x,y)));
+      if (_plotter->x_drawable1)
+	XDrawPoint (_plotter->x_dpy, _plotter->x_drawable1, 
+		    _plotter->drawstate->x_gc_fg, 
+		    ix, iy);
+      if (_plotter->x_drawable2)
+	XDrawPoint (_plotter->x_dpy, _plotter->x_drawable2, 
+		    _plotter->drawstate->x_gc_fg, 
+		    ix, iy);
     }
 				
   _plotter->drawstate->pos.x = x; /* move to the point */
   _plotter->drawstate->pos.y = y;
 
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  if (point_count % X_POINT_FLUSH_PERIOD == 0)
+    _maybe_handle_x_events();
+  point_count++;
 
   return 0;
 }

@@ -54,9 +54,7 @@ long i00afunc ();
 #define ADDRESS_FUNCTION(arg) &(arg)
 #endif
 
-#define	NULL	0
-
-extern Voidptr xmalloc ();
+extern Voidptr xmalloc ____P((unsigned int length));
 
 /* Define STACK_DIRECTION if you know the direction of stack
    growth for your system; otherwise it will be automatically
@@ -80,7 +78,11 @@ static int stack_dir;		/* 1 or -1 once known.  */
 #define	STACK_DIR	stack_dir
 
 static void
+#ifdef _HAVE_PROTOS
+_x_retrieve_font (void)
+#else
 find_stack_direction ()
+#endif
 {
   static char *addr = NULL;	/* Address of first `dummy', once known.  */
   auto char dummy;		/* To get stack address.  */
@@ -134,8 +136,12 @@ static header *last_alloca_header = NULL;	/* -> last alloca header.  */
    implementations of C, for example under Gould's UTX/32.  */
 
 Voidptr
+#ifdef _HAVE_PROTOS
+alloca (unsigned size)
+#else
 alloca (size)
      unsigned size;
+#endif
 {
   auto char probe;		/* Probes stack depth: */
   register char *depth = ADDRESS_FUNCTION (probe);
@@ -173,17 +179,17 @@ alloca (size)
   /* Allocate combined header + user data storage.  */
 
   {
-    register Voidptr new = xmalloc (sizeof (header) + size);
+    register Voidptr newptr = xmalloc (sizeof (header) + size);
     /* Address of header.  */
 
-    ((header *) new)->h.next = last_alloca_header;
-    ((header *) new)->h.deep = depth;
+    ((header *) newptr)->h.next = last_alloca_header;
+    ((header *) newptr)->h.deep = depth;
 
-    last_alloca_header = (header *) new;
+    last_alloca_header = (header *) newptr;
 
     /* User storage begins just after header.  */
 
-    return (Voidptr) ((char *) new + sizeof (header));
+    return (Voidptr) ((char *) newptr + sizeof (header));
   }
 }
 

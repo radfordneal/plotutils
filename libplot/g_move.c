@@ -4,7 +4,6 @@
    device. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,7 +20,8 @@ _g_fmove (x, y)
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  if (_plotter->drawstate->points_in_path > 0)
+    _plotter->endpath ();	/* flush polyline if any */
 
   _plotter->drawstate->pos.x = x; /* update our notion of position */
   _plotter->drawstate->pos.y = y;

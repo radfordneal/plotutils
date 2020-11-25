@@ -120,7 +120,7 @@ struct hershey_word demo_word[NUM_DEMO_WORDS] =
 
   {"LEXIKON", "HersheySerifSymbol-Bold",      
      { 1., 0., 0., 1., 0., -780.}, 'c'},
-  {"\\#N3719\\#N4724", "HersheySerif",      
+  {"\\#J3d71\\#J463b", "HersheySerif",      
      { 1./.7, 0., 0., 1./.7, 0., -1420.}, 'c'},
   {"Wissenschaft", "HersheyGothicGerman",
      { 1., 0., 0., 1., 0., -2060.}, 'c'},
@@ -146,31 +146,31 @@ main()
 {
   int handle, i;
 
-  parampl ("META_PORTABLE", "yes");
-  handle = newpl ("meta", stdin, stdout, stderr);
-  selectpl (handle);
+  pl_parampl ("META_PORTABLE", "yes");
+  handle = pl_newpl ("meta", stdin, stdout, stderr);
+  pl_selectpl (handle);
 
-  openpl();
-  erase();
-  fspace (LLX, LLY, URX, URY);
+  pl_openpl();
+  pl_erase();
+  pl_fspace (LLX, LLY, URX, URY);
 
   for (i = 0; i < NUM_DEMO_WORDS; i++)
     {
-      savestate();
-      fontname (demo_word[i].fontname);
-      fconcat (demo_word[i].m[0], demo_word[i].m[1], 
-	       demo_word[i].m[2], demo_word[i].m[3],
-	       demo_word[i].m[4], demo_word[i].m[5]);
-      ffontsize (BASE_FONTSIZE);
-      fmove (0.0, 0.0);
-      alabel (demo_word[i].just, 'c', demo_word[i].word);
-      restorestate();
+      pl_savestate();
+      pl_fontname (demo_word[i].fontname);
+      pl_fconcat (demo_word[i].m[0], demo_word[i].m[1], 
+		  demo_word[i].m[2], demo_word[i].m[3],
+		  demo_word[i].m[4], demo_word[i].m[5]);
+      pl_ffontsize (BASE_FONTSIZE);
+      pl_fmove (0.0, 0.0);
+      pl_alabel (demo_word[i].just, 'c', demo_word[i].word);
+      pl_restorestate();
     }
 
-  closepl();
+  pl_closepl();
 
-  selectpl (0);
-  deletepl (handle);
+  pl_selectpl (0);
+  pl_deletepl (handle);
 
   return 0;
 }

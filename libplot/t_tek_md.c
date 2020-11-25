@@ -72,7 +72,6 @@
 */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 void
@@ -83,47 +82,41 @@ _tek_mode(newmode)
      int newmode;
 #endif
 {
-  FILE *stream;
-  
-  stream = _plotter->outstream;
-  if (stream == NULL)
-    return;
-
-  if (_plotter->mode_is_unknown || _plotter->mode != newmode)
+  if (_plotter->tek_mode_is_unknown || _plotter->tek_mode != newmode)
     /* need to emit escape sequence */
     {
       switch (newmode)
 	{
 	case MODE_ALPHA:
 	  /* ASCII US, i.e. ^_ (enter alpha mode) */
-	  putc ('\037', stream);
+	  _plotter->write_byte ('\037');
 	  break;
 	case MODE_PLOT:
-	  if ((_plotter->mode_is_unknown) || (_plotter->mode == MODE_POINT)
-	      || (_plotter->mode == MODE_INCREMENTAL))
+	  if ((_plotter->tek_mode_is_unknown) || (_plotter->tek_mode == MODE_POINT)
+	      || (_plotter->tek_mode == MODE_INCREMENTAL))
 	    /* ASCII US, i.e. ^_ (enter alpha) */
-	    putc ('\037', stream);
+	    _plotter->write_byte ('\037');
 	  /* ASCII GS, i.e. ^] (enter vector mode)*/
-	  putc ('\035', stream);
+	  _plotter->write_byte ('\035');
 	  break;
 	case MODE_POINT:
-	  if ((_plotter->mode_is_unknown) || 
-	      (_plotter->mode == MODE_INCREMENTAL))
+	  if ((_plotter->tek_mode_is_unknown) || 
+	      (_plotter->tek_mode == MODE_INCREMENTAL))
 	    /* ASCII US, i.e. ^_ (enter alpha) */
-	    putc ('\037', stream); 
+	    _plotter->write_byte ('\037'); 
 	  /* ASCII FS, i.e. ^\ (enter point mode) */
-	  putc ('\034', stream); 
+	  _plotter->write_byte ('\034'); 
 	  break;
 	case MODE_INCREMENTAL:
 	  /* ASCII RS, i.e. ^^ (enter incplot mode)*/
-	  putc ('\036', stream); 
+	  _plotter->write_byte ('\036'); 
 	  break;
 	default:
 	  break;
 	}
 
       /* Tektronix is now in specified internal state */
-      _plotter->mode = newmode;
-      _plotter->mode_is_unknown = false;
+      _plotter->tek_mode = newmode;
+      _plotter->tek_mode_is_unknown = false;
     }
 }

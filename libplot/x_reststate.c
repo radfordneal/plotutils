@@ -4,8 +4,9 @@
    present, and may not be popped off) are created and pushed onto the
    stack by invoking the savestate() method. */
 
+/* This version is for XDrawablePlotters (and XPlotters). */
+
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -15,7 +16,7 @@ _x_restorestate(void)
 _x_restorestate()
 #endif
 {
-  State *oldstate = _plotter->drawstate->previous;
+  pl_DrawState *oldstate = _plotter->drawstate->previous;
 
   if (!_plotter->open)
     {
@@ -35,27 +36,34 @@ _x_restorestate()
     _plotter->endpath(); /* flush polyline if any */
 
   /* elements of current state that are strings are first freed */
+  free (_plotter->drawstate->fill_rule);
   free (_plotter->drawstate->line_mode);
   free (_plotter->drawstate->join_mode);
   free (_plotter->drawstate->cap_mode);
   free (_plotter->drawstate->font_name);
   
+  /* free dash array too, if nonempty */
+  if (_plotter->drawstate->dash_array_len > 0)
+    free (_plotter->drawstate->dash_array);
+
   /* N.B. we do _not_ free _plotter->drawstate->x_font_struct */
 
   /* Free graphics contexts, if we have them -- and to have them, must have
      at least one drawable (see x_savestate.c). */
-  if (_plotter->drawable1 || _plotter->drawable2)
+  if (_plotter->x_drawable1 || _plotter->x_drawable2)
     {
-      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fg);
-      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fill);
-      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_bg);
+      XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fg);
+      XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fill);
+      XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_bg);
     }
 
   /* pop current state off the stack */
   free (_plotter->drawstate);
   _plotter->drawstate = oldstate;
 
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
 
   return 0;
 }

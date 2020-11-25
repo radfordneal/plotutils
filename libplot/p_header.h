@@ -59,7 +59,7 @@ static const char * const _ps_procset[] =
 /numGraphicParameters 17 def\n\
 /stringLimit 65535 def\n\
 /arrowHeight 8 def\n\
-/arrowWidth 4 def\n\n\
+/eoFillRule true def\n\n\
 /Begin { save numGraphicParameters dict begin } def\n\
 /End { end restore } def\n\
 \n\
@@ -245,9 +245,9 @@ patternGrayLevel -1 ne {\n\
 fgred bgred fgred sub patternGrayLevel mul add\n\
 fggreen bggreen fggreen sub patternGrayLevel mul add\n\
 fgblue bgblue fgblue sub patternGrayLevel mul add setrgbcolor\n\
-eofill\n\
+eoFillRule { eofill } { fill } ifelse\n\
 } {\n\
-eoclip\n\
+eoFillRule { eoclip } { clip } ifelse\n\
 originalCTM setmatrix\n\
 pathbbox /t exch def /r exch def /b exch def /l exch def\n\
 /w r l sub ceiling cvi def\n\
@@ -255,7 +255,7 @@ pathbbox /t exch def /r exch def /b exch def /l exch def\n\
 /imageByteWidth w 8 div ceiling cvi def\n\
 /imageHeight h def\n\
 bgred bggreen bgblue setrgbcolor\n\
-eofill\n\
+eoFillRule { eofill } { fill } ifelse\n\
 fgred fggreen fgblue setrgbcolor\n\
 w 0 gt h 0 gt and {\n\
 l b translate w h scale\n\

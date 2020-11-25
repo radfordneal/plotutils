@@ -9,7 +9,6 @@
    pencolorname and fillcolorname.  */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int

@@ -6,7 +6,6 @@
    to draw the box. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -25,7 +24,10 @@ _g_fbox (x0, y0, x1, y1)
       return -1;
     }
 
+  /* move to starting vertex; invoke endpath() to flush out any path in
+     progress */
   _plotter->fmove (x0, y0);
+
   _plotter->fcont (x0, y1);
   _plotter->fcont (x1, y1);
   _plotter->fcont (x1, y0);
@@ -34,7 +36,9 @@ _g_fbox (x0, y0, x1, y1)
   /* move to center (libplot convention); this will invoke endpath() */
   xnew = 0.5 * (x0 + x1);
   ynew = 0.5 * (y0 + y1);
+  _plotter->drawstate->convex_path = true; /* pass hint to endpath() */
   _plotter->fmove (xnew, ynew);
+  _plotter->drawstate->convex_path = false; /* restore hint value */
 
   return 0;
 }

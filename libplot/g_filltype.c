@@ -13,7 +13,6 @@
    value. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -35,7 +34,7 @@ _g_filltype (level)
 
   if ((level < 0) || (level > 0xffff))
     /* OOB switches to default */
-    level = _plotter->default_drawstate->fill_level;
+    level = _default_drawstate.fill_level;
 
   _plotter->drawstate->fill_level = level;
   

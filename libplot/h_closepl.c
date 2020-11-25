@@ -5,15 +5,10 @@
 
    For HPGL Plotter objects, we output all plotted objects, which we have
    saved in a resizable outbuf structure for the current page.  An HP-GL or
-   HP-GL/2 prologue and epilogue are included.  We then fflush the
-   _plotter->outstream and reset all datastructures.
-
-   For PCL Plotters, we don't actually emit anything; we're maintaining a
-   linked list of pages, and output is accomplished when the Plotters is
-   deleted (see h_defplot.c). */
+   HP-GL/2 prologue and epilogue are included.  We then flush the output
+   stream, and reset all datastructures. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -23,7 +18,7 @@ _h_closepl (void)
 _h_closepl ()
 #endif
 {
-  int retval = 0;
+  int retval;
 
   if (!_plotter->open)
     {
@@ -70,29 +65,18 @@ _h_closepl ()
   sprintf (_plotter->page->point, "\n");
   _update_buffer (_plotter->page);
 
-  if (_plotter->type == PL_PCL)
-    /* switch back from HP-GL/2 to PCL 5 mode */
-    {
-      strcpy (_plotter->page->point, "\033%0A");
-      _update_buffer (_plotter->page);
-    }
-
+  /* if a PCL Plotter, switch back from HP-GL/2 mode to PCL mode */
+  _maybe_switch_from_hpgl ();
+  
   /* set this, so that no drawing on the next page will take place without
      a pen advance */
-  _plotter->position_is_unknown = true;
+  _plotter->hpgl_position_is_unknown = true;
 
-  if (_plotter->outstream)
-    {
-      /* OUTPUT HP-GL or HP-GL/2 FOR THIS PAGE */
-      if (_plotter->page->len > 0)
-	/* should always be true, since we just wrote some */
-	fputs (_plotter->page->base, _plotter->outstream); 
-      if (fflush(_plotter->outstream) < 0)
-	{
-	  _plotter->error ("output stream jammed");
-	  retval = -1;
-	}
-    }
+  /* OUTPUT HP-GL or HP-GL/2 FOR THIS PAGE */
+  if (_plotter->page->len > 0)
+    /* should always be true, since we just wrote some */
+    _plotter->write_string (_plotter->page->base); 
+
   /* Delete the page buffer, since HP-GL Plotters don't maintain a
      linked list of pages. */
   _delete_outbuf (_plotter->page);
@@ -109,8 +93,32 @@ _h_closepl ()
   free (_plotter->drawstate);
   _plotter->drawstate = NULL;
 
+  /* attempt to flush (will test whether stream is jammed) */
+  retval = _plotter->flushpl ();
+
   _plotter->pendown = false;
   _plotter->open = false;	/* flag device as closed */
 
   return retval;
+}
+
+void
+#ifdef _HAVE_PROTOS
+_h_maybe_switch_from_hpgl (void)
+#else
+_h_maybe_switch_from_hpgl ()
+#endif
+{
+}
+
+void
+#ifdef _HAVE_PROTOS
+_q_maybe_switch_from_hpgl (void)
+#else
+_q_maybe_switch_from_hpgl ()
+#endif
+{
+  /* switch back from HP-GL/2 to PCL 5 mode */
+  strcpy (_plotter->page->point, "\033%0A");
+  _update_buffer (_plotter->page);
 }

@@ -11,7 +11,6 @@
    all right, since label justification is handled at a higher level. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define GOOD_PRINTABLE_ASCII(c) ((c >= 0x20) && (c <= 0x7E))
@@ -164,7 +163,7 @@ _p_falabel_ps (s, h_just)
   /* idraw directive, plus prologue instruction: set foreground color */
   _plotter->set_pen_color();	/* invoked lazily, i.e. when needed */
   sprintf (_plotter->page->point, "%%I cfg %s\n%g %g %g SetCFg\n",
-	   _idraw_stdcolornames[_plotter->drawstate->idraw_fgcolor],
+	   _idraw_stdcolornames[_plotter->drawstate->ps_idraw_fgcolor],
 	   _plotter->drawstate->ps_fgcolor_red,
 	   _plotter->drawstate->ps_fgcolor_green,
 	   _plotter->drawstate->ps_fgcolor_blue);
@@ -316,4 +315,18 @@ End\n\
 #endif
 
   return width;
+}
+
+/* Counterpart of the preceding, for PCL fonts.  If used by the PS Plotter,
+   it simply invokes the preceding, which contains PCL font support. */
+double
+#ifdef _HAVE_PROTOS
+_p_falabel_pcl (const unsigned char *s, int h_just)
+#else
+_p_falabel_pcl (s, h_just)
+     const unsigned char *s;
+     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+#endif
+{
+  return _p_falabel_ps (s, h_just);
 }

@@ -5,7 +5,6 @@
    (that is the only sort of point that xfig supports). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* xfig polyline subtypes */
@@ -41,15 +40,14 @@ _f_fpoint (x, y)
 	  "#POLYLINE [OPEN]\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %d %d\n\t%d %d\n",
 	  2,			/* polyline object */
 	  P_OPEN,		/* polyline subtype */
-	  _fig_line_style[_plotter->drawstate->line_type], /* style */
+	  FIG_L_SOLID,		/* style */
 	  1,			/* thickness, in Fig display units */
 	  _plotter->drawstate->fig_fgcolor, /* pen color */
 	  _plotter->drawstate->fig_fgcolor, /* fill color */
 	  _plotter->fig_drawing_depth, /* depth */
 	  0,			/* pen style, ignored */
 	  20,			/* fig fill level (20 = full intensity) */
-		  /* style val, in Fig display units (float) */
-	  _fig_dash_length[_plotter->drawstate->line_type], 
+	  0.0,			/* style val, ignored (?) */
 	  FIG_JOIN_ROUND,	/* join style = round */
 	  FIG_CAP_ROUND,	/* cap style = round */
 	  0,			/* radius (of arc boxes, ignored) */

@@ -4,7 +4,6 @@
    obsoleted by the alabel method, which allows justification. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int

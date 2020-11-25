@@ -36,8 +36,8 @@ struct option long_options[] =
 int hidden_options[] = { 0 };
 
 /* forward references */
-static void display_version __P((const char *progname));
-static void fatal __P((const char *s));
+static void display_version ____P((const char *progname));
+static void fatal ____P((const char *s));
 
 static void
 #ifdef _HAVE_PROTOS
@@ -88,7 +88,7 @@ main (argc, argv)
   double local_tstep, local_hmax;
   FILE *infile = NULL;
 
-  while (true)
+  for ( ; ; )
     {
       option = getopt_long (argc, argv, "e:f:h:p:r:stA::E::R::V", long_options, &opt_index);
       if (option == 0)

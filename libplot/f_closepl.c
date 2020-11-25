@@ -4,15 +4,14 @@
    For FigPlotter objects, we first output all user-defined colors [``color
    pseudo-objects''], which must appear first in the .fig file.  We then
    output all genuine objects, which we have saved in a resizable outbuf
-   structure for the current page.  Finally we fflush the
-   _plotter->outstream and reset all datastructures.
+   structure for the current page.  Finally we fflush the output stream and
+   reset all datastructures.
 
    All this applies only if this is page #1, since a Fig file may contain
    no more than a single page of graphics.  Later pages are simply
    deallocated. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -22,8 +21,8 @@ _f_closepl (void)
 _f_closepl ()
 #endif
 {
-  int i;
-
+  int i, retval;
+  
   if (!_plotter->open)
     {
       _plotter->error ("closepl: invalid operation");
@@ -41,41 +40,52 @@ _f_closepl ()
   
   /* Output the page, but only if it's page #1 (currently Fig format
      supports only one page of graphics output per file). */
-  if (_plotter->page_number == 1 && _plotter->outstream)
+  if (_plotter->page_number == 1)
     {
       const char *units;
-
+      Outbuf *fig_header;
+      
+      /* prepare Fig header, write it to an Outbuf */
+      fig_header = _new_outbuf ();
+      
       units = (_plotter->use_metric ? "Metric" : "Inches");
-      fprintf(_plotter->outstream, "#FIG 3.2\n%s\n%s\n%s\n%s\n%.2f\n%s\n%d\n%d %d\n",
-	      "Portrait",	/* portrait mode */
-	      "Center",		/* justification */
-	      units,
-	      _plotter->page_type,
-	      100.00,
-	      "Single",
-	      -2,
-	      IROUND(FIG_UNITS_PER_INCH), /* Fig units per inch */
-	      2			/* origin in lower left corner (ignored) */
-	      );
-      fflush(_plotter->outstream);
+      sprintf (fig_header->point,
+	       "#FIG 3.2\n%s\n%s\n%s\n%s\n%.2f\n%s\n%d\n%d %d\n",
+	       "Portrait",	/* portrait mode, not landscape */
+	       "Center",	/* justification */
+	       units,
+	       _plotter->page_type,
+	       100.00,
+	       "Single",
+	       -2,
+	       IROUND(FIG_UNITS_PER_INCH), /* Fig units per inch */
+	       2		/* origin in lower left corner (ignored) */
+	       );
+      _update_buffer (fig_header);
       
       /* output user-defined colors if any */
       for (i = 0; i < _plotter->fig_num_usercolors; i++)
 	{
-	  fprintf(_plotter->outstream, 
-		  "#COLOR\n%d %d #%06lx\n",
-		  0,		/* color pseudo-object */
-		  FIG_USER_COLOR_MIN + i,  /* color number, in xfig's range */
-		  _plotter->fig_usercolors[i] /* 24-bit RGB value */
-		  );
+	  sprintf (fig_header->point,
+		   "#COLOR\n%d %d #%06lx\n",
+		   0,	               /* color pseudo-object */
+		   FIG_USER_COLOR_MIN + i, /* color num, in xfig's range */
+		   _plotter->fig_usercolors[i] /* 24-bit RGB value */
+		   );
+	  _update_buffer (fig_header);
 	}
+	  
+      /* WRITE HEADER (and free its Outbuf) */
+      _plotter->write_string (fig_header->base); 
+      _delete_outbuf (fig_header);
       
-      if (_plotter->page->len > 0) /* output all cached objects */
-	fputs (_plotter->page->base, _plotter->outstream); 
+      /* WRITE OUT ALL FIG OBJECTS */
+      if (_plotter->page->len > 0)
+	_plotter->write_string (_plotter->page->base); 
     }
   
-  /* Delete the page buffer, since Fig Plotters don't need to maintain a
-     linked list of pages. */
+  /* Delete the page buffer, since Fig Plotters don't maintain a linked
+     list of pages. */
   _delete_outbuf (_plotter->page);
   _plotter->page = NULL;
 
@@ -90,18 +100,10 @@ _f_closepl ()
   free (_plotter->drawstate);
   _plotter->drawstate = NULL;
 
-  /* reset our knowledge of xfig's internal state (necessary only if user
-     calls outfile() to reuse the Plotter) */
-  _plotter->fig_drawing_depth = FIG_INITIAL_DEPTH;
-  _plotter->fig_num_usercolors = 0;
+  /* attempt to flush (will test whether stream is jammed) */
+  retval = _plotter->flushpl ();
 
   _plotter->open = false;	/* flag device as closed */
 
-  if (_plotter->outstream && fflush(_plotter->outstream) < 0)
-	{
-	  _plotter->error ("output stream jammed");
-	  return -1;
-	}
-  else
-    return 0;
+  return retval;
 }

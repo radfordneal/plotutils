@@ -4,7 +4,6 @@
    radius. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,19 +20,11 @@ _m_circlerel (x, y, r)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d %d %d\n", 
-		 (int)O_CIRCLEREL, x, y, r);
-      else
-	{
-	  putc ((int)O_CIRCLEREL, _plotter->outstream);
-	  _emit_integer (x);
-	  _emit_integer (y);
-	  _emit_integer (r);
-	}
-    }
+  _meta_emit_byte ((int)O_CIRCLEREL);
+  _meta_emit_integer (x);
+  _meta_emit_integer (y);
+  _meta_emit_integer (r);
+  _meta_emit_terminator ();
 
   return 0;
 }
@@ -52,19 +43,11 @@ _m_fcirclerel (x, y, r)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g %g %g\n", 
-		 (int)O_CIRCLEREL, x, y, r);
-      else
-	{
-	  putc ((int)O_FCIRCLEREL, _plotter->outstream);
-	  _emit_float (x);
-	  _emit_float (y);
-	  _emit_float (r);
-	}
-    }
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_CIRCLEREL : (int)O_FCIRCLEREL);
+  _meta_emit_float (x);
+  _meta_emit_float (y);
+  _meta_emit_float (r);
+  _meta_emit_terminator ();
   
   return 0;
 }
@@ -83,18 +66,13 @@ _m_ellipserel (x, y, rx, ry, angle)
       return -1;
     }
 
-  if (_plotter->portable_output)
-    fprintf (_plotter->outstream, "%c %d %d %d %d %d\n", 
-	     (int)O_ELLIPSEREL, x, y, rx, ry, angle);
-  else
-    {
-      putc ((int)O_ELLIPSEREL, _plotter->outstream);
-      _emit_integer (x);
-      _emit_integer (y);
-      _emit_integer (rx);
-      _emit_integer (ry);
-      _emit_integer (angle);
-    }
+  _meta_emit_byte ((int)O_ELLIPSEREL);
+  _meta_emit_integer (x);
+  _meta_emit_integer (y);
+  _meta_emit_integer (rx);
+  _meta_emit_integer (ry);
+  _meta_emit_integer (angle);
+  _meta_emit_terminator ();
 
   return 0;
 }
@@ -113,18 +91,13 @@ _m_fellipserel (x, y, rx, ry, angle)
       return -1;
     }
 
-  if (_plotter->portable_output)
-    fprintf (_plotter->outstream, "%c %g %g %g %g %g\n", 
-	     (int)O_ELLIPSEREL, x, y, rx, ry, angle);
-  else
-    {
-      putc ((int)O_FELLIPSEREL, _plotter->outstream);
-      _emit_float (x);
-      _emit_float (y);
-      _emit_float (rx);
-      _emit_float (ry);
-      _emit_float (angle);
-    }
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_ELLIPSEREL : (int)O_FELLIPSEREL);
+  _meta_emit_float (x);
+  _meta_emit_float (y);
+  _meta_emit_float (rx);
+  _meta_emit_float (ry);
+  _meta_emit_float (angle);
+  _meta_emit_terminator ();
 
   return 0;
 }

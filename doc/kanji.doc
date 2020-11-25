@@ -3,12 +3,14 @@ built into the GNU libplot library and the GNU plotting utilities based on
 it, such as `graph'.  For each Kanji, the table lists its index according
 to three different numbering schemes, and one or more possible meanings.
 
-In all, 603 Kanji are available.  They were digitized by Dr. Allen V.
-Hershey of the U.S. Naval Surface Weapons Center (Dahlgren, VA) in the
-mid-1960s.  The 603 include many Kanji of scientific interest.  For an
-explanation of how they were chosen, see his technical report "Calligraphy
-for Computers".  (Available from the U.S. National Technical Information
-Service at +1 703 487 4650; ask for item number AD662398.)
+In all, 603 Kanji are available.  They include 596 of the 2965 Level 1
+(i.e., frequently used) Kanji, and seven additional Level 2 Kanji.  The
+603 Kanji were digitized by Dr. Allen V. Hershey of the U.S. Naval Surface
+Weapons Center (Dahlgren, VA) in the mid-1960s.  They include many Kanji
+used in scientific writing.  For an explanation of how the 603 were chosen,
+see his technical report "Calligraphy for Computers".  (Available from the
+U.S. National Technical Information Service at +1 703 487 4650; ask for
+item number AD662398.)
 
 These Kanji are part of the HersheyEUC font, which is employed for drawing
 multibyte Japanese text strings.  But you may also use these Kanji while
@@ -53,6 +55,10 @@ numberings (Unicode, Nelson, etc.) are given.  The KANJIDIC file is
 available at ftp://ftp.monash.edu.au/pub/nihongo/kanjidic.gz , and
 documentation on its format is available at
 ftp://ftp.monash.edu.au/pub/nihongo/kanjidic.doc .
+
+
+Level 1 Kanji (total number: 596)
+---------------------------------
 
 JIS	Unicode	Nelson		Meaning(s)
 ---	------	------		----------
@@ -653,6 +659,13 @@ J4f42	U548c	N3268	 {harmony} {Japanese style} {peace} {soften} {Japan}
 J4f43	U8a71	N4358	 {tale} {talk}
 J4f44	U6b6a	N0054	 {warp} {bend} {strained} {distort}
 J4f47	U60d1	N1710	 {beguile} {delusion} {perplexity}
+
+Level 2 Kanji (total number: 7)
+-------------------------------
+
+JIS	Unicode	Nelson		Meaning(s)
+---	------	------		----------
+
 J534c	U55c5	N0973	 {smell} {sniff} {scent}
 J5879	U6208	N1794	 {halberd} {arms} {festival car} {float}
 J5960	U6369	N1942	 {screw} {twist} {wrench} {distort}

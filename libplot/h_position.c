@@ -6,7 +6,6 @@
    uniquely determined.  */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 void
@@ -24,8 +23,8 @@ _h_set_position ()
   xnew = IROUND(XD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y));
   ynew = IROUND(YD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y));  
 
-  if (_plotter->position_is_unknown == true
-      || xnew != _plotter->pos.x || ynew != _plotter->pos.y)
+  if (_plotter->hpgl_position_is_unknown == true
+      || xnew != _plotter->hpgl_pos.x || ynew != _plotter->hpgl_pos.y)
     {
       if (_plotter->pendown == true)
 	{
@@ -37,8 +36,8 @@ _h_set_position ()
       _update_buffer (_plotter->page);
 
       /* update our knowledge of pen position */
-      _plotter->position_is_unknown = false;
-      _plotter->pos.x = xnew;
-      _plotter->pos.y = ynew;
+      _plotter->hpgl_position_is_unknown = false;
+      _plotter->hpgl_pos.x = xnew;
+      _plotter->hpgl_pos.y = ynew;
     }
 }

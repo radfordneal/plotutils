@@ -10,36 +10,29 @@
    elements such as arcs). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
-/* 16-bit brush patterns for idraw (1 = on, 0 = off), indexed by line type */
-const long _idraw_brush_pattern[NUM_LINE_TYPES] = 
-/* solid, dotted, dotdashed, shortdashed, longdashed */
-{ 0xffff, 0x8888, 0xc3f0, 0xf0f0, 0xffc0 };
+/* Each dash and gap in our canonical line modes ("shortdashed",
+   "dotdashed") etc. has length that we take to be an integer multiple of
+   the line width.  (For the integers, see g_dash2.c).  Actually, when
+   performing this computation we impose a floor on the line width (so that
+   measured in the device frame, the following is the minimum value for the
+   nominal line width). */
+#define MIN_NOMINAL_LINE_WIDTH_IN_POINTS 1.0
 
-/* Corresponding dash arrays for PS (cylically used, on/off/on/off...).
-   PS_DASH_ARRAY_LEN is defined in extern.h as 4; do not change it without
-   checking the code below (it depends on this value). */
-const char _ps_dash_array[NUM_LINE_TYPES][PS_DASH_ARRAY_LEN] =
-/* these on/off bit patterns are those used by our X11 driver, and also by
-   the xterm Tektronix emulator, except that the emulator seems incorrectly
-   to have on and off interchanged */
-{
-  {0, 0, 0, 0},			/* solid (dummy) */
-  {1, 3, 1, 3},			/* dotted */
-  {1, 3, 4, 3},			/* dotdashed */
-  {4, 4, 4, 4},			/* shortdashed */
-  {7, 4, 7, 4}			/* longdashed */
-};
+/* 16-bit brush patterns for idraw (1 = on, 0 = off), indexed by our
+   internal numbering of line styles, i.e. by L_{SOLID,DOTTED,DOTDASHED,
+   SHORTDASHED,LONGDASHED,DOTDOTDASHED,DOTDOTDOTDASHED} */ 
+const long _idraw_brush_pattern[NUM_LINE_STYLES] = 
+{ 0xffff, 0x8888, 0xfc30, 0xf0f0, 0xffc0, 0xfccc, 0xfdb6 };
 
-/* PS join styles, indexed by internal join type number (miter/rd./bevel) */
+/* PS join styles, indexed by internal number (miter/rd./bevel/triangular) */
 const int _ps_join_style[] =
-{ PS_JOIN_MITER, PS_JOIN_ROUND, PS_JOIN_BEVEL };
+{ PS_JOIN_MITER, PS_JOIN_ROUND, PS_JOIN_BEVEL, PS_JOIN_ROUND };
 
-/* PS cap styles, indexed by internal cap type number (butt/rd./project) */
+/* PS cap styles, indexed by internal number (butt/rd./project/triangular) */
 const int _ps_cap_style[] =
-{ PS_CAP_BUTT, PS_CAP_ROUND, PS_CAP_PROJECT };
+{ PS_CAP_BUTT, PS_CAP_ROUND, PS_CAP_PROJECT, PS_CAP_ROUND };
 
 int
 #ifdef _HAVE_PROTOS
@@ -48,17 +41,16 @@ _p_endpath (void)
 _p_endpath ()
 #endif
 {
-  int i, numpoints;
-  bool closed, singular_map;
-  double linewidth, invnorm = 0.0, granularity = 1.0;
-  double dashbuf[PS_DASH_ARRAY_LEN], scale;
-
+  bool closed;
+  double granularity, line_width;
+  int i, numpoints, index_start, index_increment;
+  
   if (!_plotter->open)
     {
       _plotter->error ("endpath: invalid operation");
       return -1;
     }
-
+  
   if (_plotter->drawstate->points_in_path == 0)	/* nothing to do */
     return 0;
   if (_plotter->drawstate->points_in_path == 1)	/* shouldn't happen */
@@ -81,7 +73,7 @@ _p_endpath ()
      temporary datapoints buffer for this.  This is a hack, needed because
      the fcircle() method calls endpath(), which would otherwise mess the
      real databuffer up. */
-
+  
   if (!_plotter->drawstate->points_are_connected)
     {
       Point saved_pos;
@@ -117,144 +109,18 @@ _p_endpath ()
     }
   
   /* general case: points are vertices of a polyline */
-
-  /* compute reciprocal norm of user->device affine transformation; need
-     this because transformation matrices we'll emit must be normalized */
-  {
-    double det, norm;
-    
-    det = _plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[3]
-      - _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[2];
-    norm = sqrt(fabs(det));
-    /* granularity = scaleup factor for user coordinates, so that when
-       they're emitted as integers, resolution loss won't be excessive.
-       CTM entries will be scaled down by this factor. */
-    granularity = norm / (PS_MIN_RESOLUTION);
-    if (norm != 0.0)
-      {
-	/* invnorm is `norm' of device->user coordinate transformation */
-	invnorm = 1.0 / norm;
-	singular_map = false;
-      }
-    else
-      singular_map = true;
-  }
-
+  
   /* includes idraw instruction: start of MLine or Poly */
   if (closed)
-    strcpy (_plotter->page->point, "\
-Begin %I Poly\n");
+    strcpy (_plotter->page->point, "Begin %I Poly\n");
   else
-    strcpy (_plotter->page->point, "\
-Begin %I MLine\n");
+    strcpy (_plotter->page->point, "Begin %I MLine\n");
   _update_buffer (_plotter->page);
 
-  /* redefine `originalCTM' matrix, which is the CTM applied when the
-     polyline is stroked (as opposed to drawn).  We define it to be the
-     same as the one in effect when the polyline was drawn. */
-  if (singular_map != true)
-    {
-      int integer_linewidth = _plotter->drawstate->quantized_device_line_width;
-      double double_linewidth = _plotter->drawstate->device_line_width;
-      double linewidth_adjust;
+  granularity = _p_emit_common_attributes ();
 
-      /* adjustment needed, due to our specifying line widths as integers */
-      if (integer_linewidth != 0)
-	linewidth_adjust = double_linewidth / integer_linewidth;
-      else
-	linewidth_adjust = 1.0;
-
-      strcpy (_plotter->page->point, "\
-[");
-      _update_buffer (_plotter->page);
-
-      for (i = 0; i < 4; i++)
-	{
-	  sprintf (_plotter->page->point, "%.7g ", 
-		   linewidth_adjust * invnorm * _plotter->drawstate->transform.m[i]);
-	  _update_buffer (_plotter->page);
-	}
-      _update_buffer (_plotter->page);
-      strcpy (_plotter->page->point, "\
-0 0 ] trueoriginalCTM originalCTM\n\
-concatmatrix pop\n");
-      _update_buffer (_plotter->page);
-    }
-
-  /* specify cap style and join style */
-  sprintf (_plotter->page->point, "\
-%d setlinecap %d setlinejoin\n",
-	   _ps_cap_style[_plotter->drawstate->cap_type], 
-	   _ps_join_style[_plotter->drawstate->join_type]);
-  _update_buffer (_plotter->page);
-
-  /* idraw instruction: brush type (spec'd as bit vector) */
-  sprintf (_plotter->page->point, "\
-%%I b %ld\n", 
-	   _idraw_brush_pattern[_plotter->drawstate->line_type]);
-  _update_buffer (_plotter->page);
-
-  /* compute PS dash array for this line type (scale by line width
-     if larger than 1 device unit, i.e., 1 point) */
-  scale = _plotter->drawstate->device_line_width;
-  if (scale < 1.0)
-    scale = 1.0;
-  for (i = 0; i < PS_DASH_ARRAY_LEN; i++)
-    dashbuf[i] = scale * _ps_dash_array[_plotter->drawstate->line_type][i];
-
-  /* PS instruction: SetB (i.e. setbrush), with args
-     LineWidth, LeftArrow, RightArrow, DashArray, DashOffset. */
-  /* Note LineWidth must be an integer for idraw compatibility. */
-  if (_plotter->drawstate->line_type == L_SOLID)
-    sprintf (_plotter->page->point, "\
-%d 0 0 [ ] 0 SetB\n", 
-  	     _plotter->drawstate->quantized_device_line_width);
-  else
-    /* emit dash array.  THIS ASSUMES PS_DASH_ARRAY_LEN = 4. */
-    sprintf (_plotter->page->point, "\
-%d 0 0 [ %.3g %.3g %.3g %.3g ] 0 SetB\n", 
-  	     _plotter->drawstate->quantized_device_line_width,
-             dashbuf[0], dashbuf[1], dashbuf[2], dashbuf[3]);
-  _update_buffer (_plotter->page);
-  
-  /* idraw instruction: set foreground color */
-  _plotter->set_pen_color();  /* invoked lazily, i.e. when needed */
-  sprintf (_plotter->page->point, "\
-%%I cfg %s\n\
-%g %g %g SetCFg\n",
-	   _idraw_stdcolornames[_plotter->drawstate->idraw_fgcolor],
-	   _plotter->drawstate->ps_fgcolor_red, 
-	   _plotter->drawstate->ps_fgcolor_green, 
-	   _plotter->drawstate->ps_fgcolor_blue);
-  _update_buffer (_plotter->page);
-  
-  /* idraw instruction: set background color */
-  _plotter->set_fill_color();  /* invoked lazily, i.e. when needed */
-  sprintf (_plotter->page->point, "\
-%%I cbg %s\n\
-%g %g %g SetCBg\n",
-	   _idraw_stdcolornames[_plotter->drawstate->idraw_bgcolor],
-	   _plotter->drawstate->ps_fillcolor_red, 
-	   _plotter->drawstate->ps_fillcolor_green, 
-	   _plotter->drawstate->ps_fillcolor_blue);
-  _update_buffer (_plotter->page);
-  
-  /* includes idraw instruction: set fill pattern */
-  if (_plotter->drawstate->fill_level == 0)	/* transparent */
-    sprintf (_plotter->page->point, "\
-%%I p\n\
-none SetP\n");
-  else	/* filled, i.e. shaded, in the sense of idraw */
-    sprintf (_plotter->page->point, "\
-%%I p\n\
-%f SetP\n", 
-	     _idraw_stdshadings[_plotter->drawstate->idraw_shading]);
-  _update_buffer (_plotter->page);
-  
   /* includes idraw instruction: transformation matrix (all 6 elements) */
-  strcpy (_plotter->page->point, "\
-%I t\n\
-["); 
+  strcpy (_plotter->page->point, "%I t\n["); 
   _update_buffer (_plotter->page);
   for (i = 0; i < 6; i++)
     {
@@ -274,16 +140,30 @@ none SetP\n");
 	   _plotter->drawstate->points_in_path - (closed ? 1 : 0));
   _update_buffer (_plotter->page);
 
-  linewidth = _plotter->drawstate->line_width;
+  line_width = _plotter->drawstate->line_width;
   /* number of points to be output */
   numpoints = _plotter->drawstate->points_in_path - (closed ? 1 : 0);
-  for (i=0; i < numpoints; i++)
+
+  /* if polyline is closed, loop through points _backward_, since the
+     `Poly' function in the idraw prologue draws closed polylines in
+     reverse, and we want the dasharray to be interpreted correctly */
+  if (closed)
+    {
+      index_start = numpoints - 1;
+      index_increment = -1;
+    }
+  else
+    {
+      index_start = 0;
+      index_increment = 1;
+    }
+  for (i = index_start; i >= 0 && i <= numpoints - 1; i += index_increment)
     {
       /* output the data point */
       sprintf (_plotter->page->point, "\
 %d %d\n",
-	       IROUND(granularity * (_plotter->drawstate->datapoints[i]).x),
-	       IROUND(granularity * (_plotter->drawstate->datapoints[i]).y));
+	       IROUND(granularity * _plotter->drawstate->datapoints[i].x),
+	       IROUND(granularity * _plotter->drawstate->datapoints[i].y));
       _update_buffer (_plotter->page);
       
       /* update bounding box */
@@ -298,7 +178,7 @@ none SetP\n");
 			      _plotter->drawstate->datapoints[i].y,
 			      _plotter->drawstate->datapoints[otherp].x,
 			      _plotter->drawstate->datapoints[otherp].y,
-			      linewidth, _plotter->drawstate->cap_type);
+			      line_width, _plotter->drawstate->cap_type);
 	}
       else
 	/* a join rather than an end */
@@ -324,7 +204,9 @@ none SetP\n");
 			      _plotter->drawstate->datapoints[b].y,
 			      _plotter->drawstate->datapoints[c].x,
 			      _plotter->drawstate->datapoints[c].y,
-			      linewidth, _plotter->drawstate->join_type);
+			      line_width,
+                              _plotter->drawstate->join_type,
+			      _plotter->drawstate->miter_limit);
 	}
     }
   
@@ -344,4 +226,250 @@ End\n\n", numpoints);
   _plotter->drawstate->points_in_path = 0;
 
   return 0;
+}
+
+/* Emit the common attributes, for PS and idraw, of any path or ellipse
+   object.  This includes the CTM, fill rule, cap and join styles and miter
+   limit, dash array, foreground and background colors, and idraw brush.
+   
+   Return value is the `granularity': a factor by which user-frame
+   coordinates, when emitted to the output file as integers, should be
+   scaled up.  This is to avoid loss of precision when using integer
+   coordinates.  The CTM emitted here will automatically compensate for
+   this factor. */
+
+double
+#ifdef _HAVE_PROTOS
+_p_emit_common_attributes (void)
+#else
+_p_emit_common_attributes ()
+#endif
+{
+  bool singular_map;
+  double *dashbuf, dash_cycle_length, offset, scale;
+  double display_size_in_points, min_dash_unit;
+  double invnorm = 0.0, granularity = 1.0;
+  double linewidth_adjust = 1.0;
+  double min_sing_val, max_sing_val;
+  double norm;
+  int i, num_dashes;
+  Displaycoors info;
+
+  /* compute norm of user->device affine transformation */
+
+  /* This minimum singular value isn't really the norm.  But it's the
+     nominal device-frame line width divided by the actual user-frame
+     line-width (see g_linewidth.c), and that's what we need. */
+  _matrix_sing_vals (_plotter->drawstate->transform.m,
+		     &min_sing_val, &max_sing_val);
+  norm = min_sing_val;
+
+  /* granularity = scaleup factor for user coordinates, so that when
+     they're emitted as integers, resolution loss won't be excessive.
+     CTM entries will be scaled down by this factor. */
+  granularity = norm / (PS_MIN_RESOLUTION);
+  if (norm != 0.0)
+    {
+      /* invnorm is `norm' of device->user coordinate transformation */
+      invnorm = 1.0 / norm;
+      singular_map = false;
+    }
+  else
+    singular_map = true;
+
+  /* redefine `originalCTM' matrix, which is the CTM applied when the
+     polyline is stroked (as opposed to drawn).  We define it to be the
+     same as the one in effect when the polyline was drawn. */
+  if (singular_map != true)
+    {
+      int integer_linewidth = _plotter->drawstate->quantized_device_line_width;
+      double double_linewidth = _plotter->drawstate->device_line_width;
+
+      /* adjustment to CTM needed, due to our specifying line widths as
+         integers */
+      if (integer_linewidth != 0)
+	linewidth_adjust = double_linewidth / integer_linewidth;
+      else
+	linewidth_adjust = 1.0;
+
+      strcpy (_plotter->page->point, "[");
+      _update_buffer (_plotter->page);
+
+      for (i = 0; i < 4; i++)
+	{
+	  sprintf (_plotter->page->point, "%.7g ", 
+		   linewidth_adjust * invnorm * _plotter->drawstate->transform.m[i]);
+	  _update_buffer (_plotter->page);
+	}
+      _update_buffer (_plotter->page);
+      strcpy (_plotter->page->point, "\
+0 0 ] trueoriginalCTM originalCTM\n\
+concatmatrix pop\n");
+      _update_buffer (_plotter->page);
+    }
+  
+  /* specify cap style and join style, and miter limit if mitering */
+  if (_plotter->drawstate->join_type == JOIN_MITER)
+    sprintf (_plotter->page->point, "\
+%d setlinecap %d setlinejoin %.4g setmiterlimit\n",
+	     _ps_cap_style[_plotter->drawstate->cap_type], 
+	     _ps_join_style[_plotter->drawstate->join_type],
+	     _plotter->drawstate->miter_limit);
+  else
+    sprintf (_plotter->page->point, "\
+%d setlinecap %d setlinejoin\n",
+	     _ps_cap_style[_plotter->drawstate->cap_type], 
+	     _ps_join_style[_plotter->drawstate->join_type]);
+  _update_buffer (_plotter->page);
+  
+  /* specify fill rule (i.e. whether to use even-odd filling) */
+  if (_plotter->drawstate->fill_rule_type == FILL_NONZERO_WINDING)
+    sprintf (_plotter->page->point, "\
+/eoFillRule false def\n");
+  else
+    sprintf (_plotter->page->point, "\
+/eoFillRule true def\n");
+  _update_buffer (_plotter->page);
+  
+  if (_plotter->drawstate->dash_array_in_effect)
+    /* have user-specified dash array */
+    {
+      /* idraw instruction: brush type (spec'd as bit vector, but for now
+	 we just use a solid brush */
+      sprintf (_plotter->page->point, "\
+%%I b %ld\n", 
+	       (long int)0xffff);
+      _update_buffer (_plotter->page);
+  
+      num_dashes = _plotter->drawstate->dash_array_len;
+      if (num_dashes > 0)
+	dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+      else
+	dashbuf = NULL;
+      /* take the adjustment to the CTM into account */
+      scale = norm / linewidth_adjust;
+
+      dash_cycle_length = 0.0;
+      for (i = 0; i < num_dashes; i++)
+	{
+	  double dashlen;
+
+	  dashlen = _plotter->drawstate->dash_array[i];
+	  dash_cycle_length += dashlen;
+	  dashbuf[i] = scale * dashlen;
+	}
+	  
+      if (dash_cycle_length > 0.0)
+	/* choose an offset in range 0..true_cycle_length */
+	{
+	  double true_cycle_length;
+	  
+	  offset = _plotter->drawstate->dash_offset;
+	  true_cycle_length = 
+	    dash_cycle_length * (num_dashes % 2 == 1 ? 2 : 1);
+	  while (offset < 0.0)
+	    offset += true_cycle_length;
+	  offset = fmod (offset, true_cycle_length);
+	  offset *= scale;
+	}
+      else
+	offset = 0.0;
+    }
+  else
+    /* have one of the canonical line types */
+    {
+      /* idraw brush type (spec'd as bit vector) */
+      sprintf (_plotter->page->point, "\
+%%I b %ld\n", 
+	       _idraw_brush_pattern[_plotter->drawstate->line_type]);
+      _update_buffer (_plotter->page);
+  
+      if (_plotter->drawstate->line_type == L_SOLID)
+	{
+	  num_dashes = 0;
+	  dashbuf = NULL;
+	  offset = 0.0;
+	}
+      else
+	{
+	  const int *dash_array;
+
+	  /* compute PS dash array for this line type */
+	  dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	  num_dashes =
+	    _line_styles[_plotter->drawstate->line_type].dash_array_len;
+	  dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+
+	  /* scale the array of integers by line width (actually by floored
+	     line width; see comments at head of file) */
+	  info = _plotter->display_coors;
+	  display_size_in_points = (_plotter->device_units_per_inch
+				    * DMIN(info.right - info.left, 
+					   info.top - info.bottom));
+	  min_dash_unit = (MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
+			   * display_size_in_points);
+	  scale = DMAX(min_dash_unit,
+		       _plotter->drawstate->device_line_width);
+	  /* take the adjustment to the CTM into account */
+	  scale /= linewidth_adjust;
+
+	  for (i = 0; i < num_dashes; i++)
+	    dashbuf[i] = scale * dash_array[i];
+	  offset = 0.0;
+	}
+    }
+
+  /* PS instruction: SetB (i.e. setbrush), with args
+     LineWidth, LeftArrow, RightArrow, DashArray, DashOffset. */
+  /* Note LineWidth must be an integer for idraw compatibility. */
+  
+  /* emit dash array */
+  sprintf (_plotter->page->point, "%d 0 0 [ ", 
+	   _plotter->drawstate->quantized_device_line_width);
+  _update_buffer (_plotter->page);
+  for (i = 0; i < num_dashes; i++)
+    {
+      sprintf (_plotter->page->point, "%.3g ", dashbuf[i]);
+      _update_buffer (_plotter->page);
+    }
+  sprintf (_plotter->page->point, "] %.3g SetB\n", offset);
+  _update_buffer (_plotter->page);
+  free (dashbuf);
+  
+  /* idraw instruction: set foreground color */
+  _plotter->set_pen_color(); /* invoked lazily, i.e. when needed */
+  sprintf (_plotter->page->point, "\
+%%I cfg %s\n\
+%g %g %g SetCFg\n",
+	   _idraw_stdcolornames[_plotter->drawstate->ps_idraw_fgcolor],
+	   _plotter->drawstate->ps_fgcolor_red, 
+	   _plotter->drawstate->ps_fgcolor_green, 
+	   _plotter->drawstate->ps_fgcolor_blue);
+  _update_buffer (_plotter->page);
+  
+  /* idraw instruction: set background color */
+  _plotter->set_fill_color(); /* invoked lazily, i.e. when needed */
+  sprintf (_plotter->page->point, "\
+%%I cbg %s\n\
+%g %g %g SetCBg\n",
+	   _idraw_stdcolornames[_plotter->drawstate->ps_idraw_bgcolor],
+	   _plotter->drawstate->ps_fillcolor_red, 
+	   _plotter->drawstate->ps_fillcolor_green, 
+	   _plotter->drawstate->ps_fillcolor_blue);
+  _update_buffer (_plotter->page);
+  
+  /* includes idraw instruction: set fill pattern */
+  if (_plotter->drawstate->fill_level == 0)	/* transparent */
+    sprintf (_plotter->page->point, "\
+%%I p\n\
+none SetP\n");
+  else			/* filled, i.e. shaded, in the sense of idraw */
+    sprintf (_plotter->page->point, "\
+%%I p\n\
+%f SetP\n", 
+	     _idraw_stdshadings[_plotter->drawstate->ps_idraw_shading]);
+  _update_buffer (_plotter->page);
+  
+  /* return factor we'll later use to scale up user-frame coordinates */
+  return granularity;
 }

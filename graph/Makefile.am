@@ -3,7 +3,7 @@
 bin_PROGRAMS = graph
 
 graph_SOURCES = graph.c misc.c linemode.c reader.c plotter.c 
-graph_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ../libplot/libplot.la $(X_LIBS) $(X_TOOLKIT_LIBS) $(X_PRE_LIBS) $(X_BASIC_LIBS) $(X_EXTRA_LIBS)
+graph_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ../libplot/libplot.la
 noinst_HEADERS = extern.h
 
 INCLUDES = -I$(srcdir)/../include

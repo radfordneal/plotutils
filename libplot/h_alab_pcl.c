@@ -44,7 +44,6 @@
    the upper half. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 #include "h_stick.h"
 
@@ -208,7 +207,7 @@ _h_falabel_pcl (s, h_just)
 	     half; if so, we'll ignore all 8-bit characters.  We set the
 	     charset number for the upper half to be -1 if this is to be
 	     the case (see table in g_fontdb.c). */
-	  if (_stick_font_info[master_font_index].hp_charset_upper < 0)
+	  if (_stick_font_info[master_font_index].hpgl_charset_upper < 0)
 	    bogus_upper_half = true;
 
 	  /* temp string for rewritten label */
@@ -352,7 +351,7 @@ _h_falabel_pcl (s, h_just)
       _update_buffer (_plotter->page);
 
       /* where is the plotter pen now located?? we don't know, exactly */
-      _plotter->position_is_unknown = true;
+      _plotter->hpgl_position_is_unknown = true;
     }
 
    if (created_temp_string)
@@ -371,4 +370,32 @@ _h_falabel_pcl (s, h_just)
   _plotter->drawstate->pos.y += sintheta * width;
 
   return width;
+}
+
+/* Counterparts of the preceding function, for PS fonts and Stick fonts;
+   they simply invoke the preceding, which includes PS font and Stick
+   font support. */
+
+double
+#ifdef _HAVE_PROTOS
+_h_falabel_ps (const unsigned char *s, int h_just)
+#else
+_h_falabel_ps (s, h_just)
+     const unsigned char *s;
+     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+#endif
+{
+  return _h_falabel_pcl (s, h_just);
+}
+
+double
+#ifdef _HAVE_PROTOS
+_h_falabel_stick (const unsigned char *s, int h_just)
+#else
+_h_falabel_stick (s, h_just)
+     const unsigned char *s;
+     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+#endif
+{
+  return _h_falabel_pcl (s, h_just);
 }

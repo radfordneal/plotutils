@@ -1,7 +1,11 @@
+/* Wrappers for standard storage allocation functions, for
+   libplot/libplotter with the exception of the MI scan conversion module,
+   which has its own more complicated versions (see g_mialloc.c). */
+
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
+/* wrapper for malloc() */
 Voidptr 
 #ifdef _HAVE_PROTOS
 _plot_xmalloc (unsigned int size)
@@ -11,17 +15,18 @@ _plot_xmalloc (size)
 #endif
 {
   Voidptr p;
-  p = (Voidptr) malloc (size);
 
-  if (p == (Voidptr) NULL)
+  p = (Voidptr) malloc (size);
+  if (p == (Voidptr)NULL)
     {
       fprintf (stderr, "libplot: ");
-      perror ("malloc failed");
+      perror ("out of memory");
       exit (EXIT_FAILURE);
     }
   return p;
 }
 
+/* wrapper for calloc() */
 Voidptr 
 #ifdef _HAVE_PROTOS
 _plot_xcalloc (unsigned int nmemb, unsigned int size)
@@ -31,17 +36,18 @@ _plot_xcalloc (nmemb, size)
 #endif
 {
   Voidptr p;
-  p = (Voidptr) calloc (nmemb, size);
 
-  if (p == (Voidptr) NULL)
+  p = (Voidptr) calloc (nmemb, size);
+  if (p == (Voidptr)NULL)
     {
       fprintf (stderr, "libplot: ");
-      perror ("calloc failed");
+      perror ("out of memory");
       exit (EXIT_FAILURE);
     }
   return p;
 }
 
+/* wrapper for realloc() */
 Voidptr 
 #ifdef _HAVE_PROTOS
 _plot_xrealloc (Voidptr p, unsigned int size)
@@ -52,11 +58,10 @@ _plot_xrealloc (p, size)
 #endif
 {
   p = (Voidptr) realloc (p, size);
-
-  if (p == (Voidptr) NULL)
+  if (p == (Voidptr)NULL)
     {
       fprintf (stderr, "libplot: ");
-      perror ("realloc failed");
+      perror ("out of memory");
       exit (EXIT_FAILURE);
     }
   return p;

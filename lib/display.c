@@ -15,9 +15,9 @@ extern struct option long_options[];
 #define	ARG_OPTIONAL	2
 
 /* forward references */
-bool elementp __P((int item, const int *list));
-void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-void display_version __P((const char *progname));
+bool elementp ____P((int item, const int *list));
+void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
+void display_version ____P((const char *progname));
 
 bool
 #ifdef _HAVE_PROTOS
@@ -100,14 +100,16 @@ display_usage (progname, omit_vals, appendage, fonts)
 #ifndef X_DISPLAY_MISSING
     fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format: X, ai, ps, fig, pcl, hpgl, or tek.\n",
+where \"format\" is the output format:\n\
+X, pnm, gif, ai, ps, fig, pcl, hpgl, or tek.\n",
 	     progname);
-#else
+#else  /* X_DISPLAY_MISSING */
     fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
-where \"format\" is the output format: ai, ps, fig, pcl, hpgl, or tek.\n",
+where \"format\" is the output format:\n\
+gif, pnm, ai, ps, fig, pcl, hpgl, or tek.\n",
 	     progname);
-#endif
+#endif /* X_DISPLAY_MISSING */
 
   if ((appendage != NULL) || fonts)
     fputs ("\n", stdout);

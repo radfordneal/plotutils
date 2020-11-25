@@ -8,16 +8,11 @@
    PCL format. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* Shearing factor for oblique fonts, new_x = x + SHEAR * y  */
 
 #define SHEAR (2.0/7.0)
-
-/* forward references */
-static bool _hpgl_maybe_update_font __P((void));
-static bool _hpgl2_maybe_update_font __P((void));
 
 void
 #ifdef _HAVE_PROTOS
@@ -31,7 +26,7 @@ _h_set_font ()
   double cos_slant = 1.0, sin_slant = 0.0;
   double dx, dy, perpdx, perpdy;
   double len, perplen, tan_slant;
-  double relative_label_run, relative_label_rise;
+  double new_relative_label_run, new_relative_label_rise;
   double theta, sintheta, costheta;
   
   /* sanity check, should be unnecessary */
@@ -76,21 +71,21 @@ _h_set_font ()
   /* Compute rise and run, relative to scaling points. (Either or both can
      be negative; overall normalization, e.g. the `100', is irrelevant.  We
      include the `100' to express them as percentages.) */
-  relative_label_run =  100 * dx / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
-  relative_label_rise = 100 * dy / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
-  if (relative_label_run != 0.0 || relative_label_rise != 0.0)
+  new_relative_label_run =  100 * dx / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
+  new_relative_label_rise = 100 * dy / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
+  if (new_relative_label_run != 0.0 || new_relative_label_rise != 0.0)
     /* (will always be true except when the font size is so small
        there's really no point in printing the label) */
     {
       /* update device-frame label rotation angle if needed */
-      if (_plotter->relative_label_run != relative_label_run
-	  || _plotter->relative_label_rise != relative_label_rise)
+      if (_plotter->relative_label_run != new_relative_label_run
+	  || _plotter->relative_label_rise != new_relative_label_rise)
 	{    
 	  sprintf (_plotter->page->point, "DR%.3f,%.3f;",
-		   relative_label_run, relative_label_rise);
+		   new_relative_label_run, new_relative_label_rise);
 	  _update_buffer (_plotter->page);
-	  _plotter->relative_label_run = relative_label_run;
-	  _plotter->relative_label_rise = relative_label_rise;
+	  _plotter->relative_label_run = new_relative_label_run;
+	  _plotter->relative_label_rise = new_relative_label_rise;
 	}
     }
 
@@ -137,26 +132,26 @@ _h_set_font ()
   {
     int orientation = _plotter->drawstate->transform.nonreflection ? 1 : -1;
     double fractional_char_width, fractional_char_height;    
-    double relative_char_width, relative_char_height;
+    double new_relative_char_width, new_relative_char_height;
 
     fractional_char_width = 0.5;
     fractional_char_height = 1.4 * 0.5;
 
-    relative_char_width = fractional_char_width * 100 * len / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
-    relative_char_height = 
+    new_relative_char_width = fractional_char_width * 100 * len / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
+    new_relative_char_height = 
       fractional_char_height * 100 * orientation * cos_slant * perplen / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
     
     /* emit SR instruction only if font was changed or if current
        size was wrong */
     if (font_changed || 
-	(relative_char_width != _plotter->relative_char_width
-	 || relative_char_height != _plotter->relative_char_height))
+	(new_relative_char_width != _plotter->relative_char_width
+	 || new_relative_char_height != _plotter->relative_char_height))
       {
 	sprintf (_plotter->page->point, "SR%.3f,%.3f;", 
-		 relative_char_width, relative_char_height);
+		 new_relative_char_width, new_relative_char_height);
 	_update_buffer (_plotter->page);
-	_plotter->relative_char_width = relative_char_width;
-	_plotter->relative_char_height = relative_char_height;
+	_plotter->relative_char_width = new_relative_char_width;
+	_plotter->relative_char_height = new_relative_char_height;
       }
   }
 
@@ -172,7 +167,7 @@ _h_set_font ()
 /* If needed, emit a font-change command, HP-GL/2 style.  Return value
    indicates whether font was changed. */
 
-static bool
+bool
 #ifdef _HAVE_PROTOS
 _hpgl2_maybe_update_font (void)
 #else
@@ -320,7 +315,7 @@ _hpgl2_maybe_update_font ()
    (This is used only for Stick fonts, which is all that pre-HP/GL-2
    devices had.)  Return value indicates whether font was changed. */
 
-static bool
+bool
 #ifdef _HAVE_PROTOS
 _hpgl_maybe_update_font (void)
 #else
@@ -328,34 +323,34 @@ _hpgl_maybe_update_font ()
 #endif
 {
   bool font_change = false;
-  int hp_charset_lower, hp_charset_upper, master_font_index;
+  int new_hpgl_charset_lower, new_hpgl_charset_upper, master_font_index;
 
   /* compute index of font in master table of fonts, in g_fontdb.c */
   master_font_index =
     (_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
   
   /* determine HP character set numbers (old style, pre-HP-GL/2) */
-  hp_charset_lower = _stick_font_info[master_font_index].hp_charset_lower;
-  hp_charset_upper = _stick_font_info[master_font_index].hp_charset_upper;
+  new_hpgl_charset_lower = _stick_font_info[master_font_index].hpgl_charset_lower;
+  new_hpgl_charset_upper = _stick_font_info[master_font_index].hpgl_charset_upper;
 
   /* select charset for lower half of font */
-  if (hp_charset_lower != _plotter->hp_charset_lower)
+  if (new_hpgl_charset_lower != _plotter->hpgl_charset_lower)
     {
-      sprintf (_plotter->page->point, "CS%d;", hp_charset_lower);
+      sprintf (_plotter->page->point, "CS%d;", new_hpgl_charset_lower);
       _update_buffer (_plotter->page);
-      _plotter->hp_charset_lower = hp_charset_lower;
+      _plotter->hpgl_charset_lower = new_hpgl_charset_lower;
       font_change = true;
     }
 
   /* select charset for upper half, if we have a genuine one (a negative
      value for the upper charset is our way of flagging that this is a
      7-bit font; see h_alab_pcl.c) */
-  if (hp_charset_upper >= 0 
-      && hp_charset_upper != _plotter->hp_charset_upper)
+  if (new_hpgl_charset_upper >= 0 
+      && new_hpgl_charset_upper != _plotter->hpgl_charset_upper)
     {
-      sprintf (_plotter->page->point, "CA%d;", hp_charset_upper);
+      sprintf (_plotter->page->point, "CA%d;", new_hpgl_charset_upper);
       _update_buffer (_plotter->page);
-      _plotter->hp_charset_upper = hp_charset_upper;
+      _plotter->hpgl_charset_upper = new_hpgl_charset_upper;
       font_change = true;
     }
 

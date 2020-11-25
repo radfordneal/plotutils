@@ -12,7 +12,6 @@
    that fig will see, and use, will be precisely an integer. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 void
@@ -30,8 +29,8 @@ _f_retrieve_font()
   /* invoke generic method */
   _g_retrieve_font();
 
-  if (_plotter->drawstate->font_type != F_POSTSCRIPT)
-    /* must be Hershey font, no additional quantization */
+  if (_plotter->drawstate->font_type == F_HERSHEY)
+    /* no additional quantization */
     return;
   
   if (!_plotter->drawstate->transform.uniform 
@@ -41,21 +40,21 @@ _f_retrieve_font()
       char *user_specified_name;
 
       user_specified_name = _plotter->drawstate->font_name;
-      _plotter->drawstate->font_name = FIG_DEFAULT_HERSHEY_FONT;
+      _plotter->drawstate->font_name = DEFAULT_HERSHEY_FONT;
       _f_retrieve_font();	/* recursive call */
       _plotter->drawstate->font_name = user_specified_name;
       return;
 
+      /* squawk [commented out, was confusing users] */
 #if 0
-      /* squawk */
-      if (!_plotter->font_warning_issued)
+      if (_plotter->issue_font_warning && !_plotter->font_warning_issued)
 	{
 	  char *buf;
 	  
-	  buf = (char *)_plot_xmalloc (strlen (_plotter->drawstate->font_name) + strlen (FIG_DEFAULT_HERSHEY_FONT) + 100);
+	  buf = (char *)_plot_xmalloc (strlen (_plotter->drawstate->font_name) + strlen (DEFAULT_HERSHEY_FONT) + 100);
 	  sprintf (buf, "cannot retrieve font \"%s\", using default \"%s\"", 
 		   _plotter->drawstate->font_name, 
-		   FIG_DEFAULT_HERSHEY_FONT);
+		   DEFAULT_HERSHEY_FONT);
 	  _plotter->warning (buf);
 	  free (buf);
 	  _plotter->font_warning_issued = true;

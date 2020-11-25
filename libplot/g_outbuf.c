@@ -7,8 +7,8 @@
 
    Outbufs are resized when they are too full.  The strange resizing method
    (_UPDATE_BUFFER) is needed because on many systems, sprintf() does not
-   return the number of characters it writes.  _UPDATE_BUFFER is called
-   after each call to sprintf(); it is not invoked automatically.
+   return the number of characters it writes.  _UPDATE_BUFFER must be
+   called after each call to sprintf(); it is not invoked automatically.
    
    Output buffers of this sort are a bit of a kludge.  They may eventually
    be replaced or supplemented by an in-core object hierarchy, which
@@ -21,12 +21,14 @@
    at that time will be untouched by a later call to _RESET_OUTBUF. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
-/* initial length for an Outbuf (should be large enough to handle any
-   single one of our sprintf's [including final NUL] without overflow). */
-#define INITIAL_OUTBUF_LEN 256
+/* Initial length for an Outbuf (should be large enough to handle any
+   single one of our sprintf's or strcpy's [including final NUL] without
+   overflow).  Note: in p_defplot.c we write long blocks of Postscript
+   initialization code (see p_header.h) into an Outbuf, so this should be
+   quite large. */
+#define INITIAL_OUTBUF_LEN 8192
 
 Outbuf *
 #ifdef _HAVE_PROTOS
@@ -120,6 +122,7 @@ _update_buffer (bufp)
   bufp->contents += additional;
   
   if (bufp->contents + 1 > bufp->len) /* need room for NUL */
+    /* shouldn't happen! */
     {
       fprintf (stderr, "libplot: output buffer overrun\n");
       exit (EXIT_FAILURE);

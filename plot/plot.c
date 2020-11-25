@@ -6,7 +6,14 @@
 
 #include "sys-defines.h"
 #include "plot.h"
+#include "plotcompat.h"
 #include "getopt.h"
+
+/* Obsolete op codes (no longer listed in plot.h) */
+#define O_COLOR 'C'
+#define O_FROTATE 'V'
+#define O_FSCALE 'X'
+#define O_FTRANSLATE 'Q'
 
 /* The six input formats we recognize */
 typedef enum 
@@ -114,24 +121,24 @@ int hidden_options[] = { (int)'I', 0 };
 
 
 /* forward references */
-bool read_plot __P((FILE *in_stream));
-char *read_string __P((FILE *input, bool *badstatus));
-double read_float __P((FILE *input, bool *badstatus));
-double read_int __P((FILE *input, bool *badstatus));
-int maybe_closepl __P((void));
-int maybe_openpl __P((void));
-int read_true_int __P((FILE *input, bool *badstatus));
-unsigned char read_byte_as_unsigned_char __P((FILE *input, bool *badstatus));
-unsigned int read_byte_as_unsigned_int __P((FILE *input, bool *badstatus));
+bool read_plot ____P((FILE *in_stream));
+char *read_string ____P((FILE *input, bool *badstatus));
+double read_float ____P((FILE *input, bool *badstatus));
+double read_int ____P((FILE *input, bool *badstatus));
+int maybe_closepl ____P((void));
+int maybe_openpl ____P((void));
+int read_true_int ____P((FILE *input, bool *badstatus));
+unsigned char read_byte_as_unsigned_char ____P((FILE *input, bool *badstatus));
+unsigned int read_byte_as_unsigned_int ____P((FILE *input, bool *badstatus));
 /* from libcommon */
-extern bool display_fonts __P((const char *display_type, const char *progname));
-extern bool list_fonts __P((const char *display_type, const char *progname));
-extern void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version __P((const char *progname)); 
-extern Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
-extern Voidptr xmalloc __P ((unsigned int size));
-extern Voidptr xrealloc __P ((Voidptr p, unsigned int length));
-extern char *xstrdup __P ((const char *s));
+extern int display_fonts ____P((const char *display_type, const char *progname));
+extern int list_fonts ____P((const char *display_type, const char *progname));
+extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
+extern void display_version ____P((const char *progname)); 
+extern Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
+extern Voidptr xmalloc ____P ((unsigned int size));
+extern Voidptr xrealloc ____P ((Voidptr p, unsigned int length));
+extern char *xstrdup ____P ((const char *s));
 
 
 int
@@ -199,8 +206,11 @@ main (argc, argv)
 		errcnt++;
 		break;
 	      }
-	    if (local_font_size < 0.0)
-	      fprintf (stderr, "%s: warning: ignoring negative initial font size `%f'\n",
+	    if (local_font_size > 1.0)
+	      fprintf (stderr, "%s: ignoring too-large initial font size `%f' (must be < 1.0)\n", 
+		       progname, local_font_size);
+	    else if (local_font_size < 0.0)
+	      fprintf (stderr, "%s: ignoring negative initial font size `%f'\n",
 		       progname, local_font_size);
 	    else if (local_font_size == 0.0)
 	      fprintf (stderr, "%s: ignoring zero initial font size\n",
@@ -231,13 +241,13 @@ main (argc, argv)
 	    if (sscanf (optarg, "%lf", &local_line_width) <= 0)
 	      {
 		fprintf (stderr,
-			 "%s: error: initial line width must be a number, was `%s'\n",
+			 "%s: error: initial line thickness must be a number, was `%s'\n",
 			 progname, optarg);
 		errcnt++;
 		break;
 	      }
 	    if (local_line_width < 0.0)
-	      fprintf (stderr, "%s: ignoring negative initial line width `%f'\n",
+	      fprintf (stderr, "%s: ignoring negative initial line thickness `%f'\n",
 		       progname, local_line_width);
 	    else
 	      line_width = local_line_width;
@@ -294,7 +304,7 @@ main (argc, argv)
     }
   if (do_list_fonts)
     {
-      bool success;
+      int success;
 
       success = list_fonts (display_type, progname);
       if (success)
@@ -304,7 +314,7 @@ main (argc, argv)
     }
   if (show_fonts)
     {
-      bool success;
+      int success;
 
       success = display_fonts (display_type, progname);
       if (success)
@@ -429,7 +439,7 @@ read_plot (in_stream)
   bool parameters_initted = false; /* user-specified parameters initted? */
   bool unrec = false;	/* unrecognized command seen? */
   char *s;
-  double x0, y0, x1, y1, x2, y2;
+  double x0, y0, x1, y1, x2, y2, x3, y3;
   int i0, i1, i2;
   int instruction;
   static int current_page = 1;	/* page count is continued from file to file */
@@ -508,6 +518,54 @@ read_plot (in_stream)
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      farcrel (x0, y0, x1, y1, x2, y2);
+	  break;
+	case (int)O_BEZIER2:
+	  x0 = read_int (in_stream, &argerr);
+	  y0 = read_int (in_stream, &argerr);
+	  x1 = read_int (in_stream, &argerr);
+	  y1 = read_int (in_stream, &argerr); 
+	  x2 = read_int (in_stream, &argerr);
+	  y2 = read_int (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fbezier2 (x0, y0, x1, y1, x2, y2);
+	  break;
+	case (int)O_BEZIER2REL:
+	  x0 = read_int (in_stream, &argerr);
+	  y0 = read_int (in_stream, &argerr);
+	  x1 = read_int (in_stream, &argerr);
+	  y1 = read_int (in_stream, &argerr); 
+	  x2 = read_int (in_stream, &argerr);
+	  y2 = read_int (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fbezier2rel (x0, y0, x1, y1, x2, y2);
+	  break;
+	case (int)O_BEZIER3:
+	  x0 = read_int (in_stream, &argerr);
+	  y0 = read_int (in_stream, &argerr);
+	  x1 = read_int (in_stream, &argerr);
+	  y1 = read_int (in_stream, &argerr); 
+	  x2 = read_int (in_stream, &argerr);
+	  y2 = read_int (in_stream, &argerr); 
+	  x3 = read_int (in_stream, &argerr);
+	  y3 = read_int (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3);
+	  break;
+	case (int)O_BEZIER3REL:
+	  x0 = read_int (in_stream, &argerr);
+	  y0 = read_int (in_stream, &argerr);
+	  x1 = read_int (in_stream, &argerr);
+	  y1 = read_int (in_stream, &argerr); 
+	  x2 = read_int (in_stream, &argerr);
+	  y2 = read_int (in_stream, &argerr); 
+	  x3 = read_int (in_stream, &argerr);
+	  y3 = read_int (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3);
 	  break;
 	case (int)O_BGCOLOR:
 	  /* parse args as unsigned ints rather than ints */
@@ -704,13 +762,6 @@ read_plot (in_stream)
 	    if (merge_pages == false) /* i.e. not merging frames */
 	      erase ();
 	  break;
-	case (int)O_FILLTYPE:
-	  /* parse args as unsigned ints rather than ints */
-	  i0 = read_true_int (in_stream, &argerr)&0xFFFF;
-	  if (!argerr)
-	    if (!single_page_is_requested || current_page == requested_page)
-	      filltype (i0);
-	  break;
 	case (int)O_FILLCOLOR:
 	  /* parse args as unsigned ints rather than ints */
 	  i0 = read_true_int (in_stream, &argerr)&0xFFFF;
@@ -719,6 +770,22 @@ read_plot (in_stream)
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      fillcolor (i0, i1, i2);
+	  break;
+	case (int)O_FILLMOD:
+	  s = read_string (in_stream, &argerr);
+	  if (!argerr)
+	    {
+	      if (!single_page_is_requested || current_page == requested_page)
+		fillmod (s);
+	      free (s);
+	    }
+	  break;
+	case (int)O_FILLTYPE:
+	  /* parse args as unsigned ints rather than ints */
+	  i0 = read_true_int (in_stream, &argerr)&0xFFFF;
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      filltype (i0);
 	  break;
 	case (int)O_FONTNAME:
 	  s = read_string (in_stream, &argerr);
@@ -765,6 +832,25 @@ read_plot (in_stream)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      fline (x0, y0, x1, y1);
 	  break;
+	case (int)O_LINEDASH:
+	  {
+	    int n, i;
+	    double *dash_array, phase;
+
+	    n = read_true_int (in_stream, &argerr);
+	    if (n > 0)
+	      dash_array = (double *)xmalloc((unsigned int)n * sizeof(double));
+	    else
+	      dash_array = NULL;
+	    for (i = 0; i < n; i++)
+	      dash_array[i] = read_int (in_stream, &argerr);
+	    phase = read_int (in_stream, &argerr);
+	    if (!argerr)
+	      if (!single_page_is_requested || current_page == requested_page)
+		flinedash (n, dash_array, phase);
+	    free (dash_array);
+	    break;
+	  }
 	case (int)O_LINEREL:
 	  x0 = read_int (in_stream, &argerr);
 	  y0 = read_int (in_stream, &argerr);
@@ -966,7 +1052,7 @@ read_plot (in_stream)
 	      ftextangle (x0);
 	  break;
 
-        /* floating point counterparts to the above */
+        /* floating point counterparts to some of the above */
 	case (int)O_FARC:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
@@ -988,6 +1074,54 @@ read_plot (in_stream)
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      farcrel (x0, y0, x1, y1, x2, y2);
+	  break;
+	case (int)O_FBEZIER2:
+	  x0 = read_float (in_stream, &argerr);
+	  y0 = read_float (in_stream, &argerr);
+	  x1 = read_float (in_stream, &argerr);
+	  y1 = read_float (in_stream, &argerr); 
+	  x2 = read_float (in_stream, &argerr);
+	  y2 = read_float (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fbezier2 (x0, y0, x1, y1, x2, y2);
+	  break;
+	case (int)O_FBEZIER2REL:
+	  x0 = read_float (in_stream, &argerr);
+	  y0 = read_float (in_stream, &argerr);
+	  x1 = read_float (in_stream, &argerr);
+	  y1 = read_float (in_stream, &argerr); 
+	  x2 = read_float (in_stream, &argerr);
+	  y2 = read_float (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fbezier2rel (x0, y0, x1, y1, x2, y2);
+	  break;
+	case (int)O_FBEZIER3:
+	  x0 = read_float (in_stream, &argerr);
+	  y0 = read_float (in_stream, &argerr);
+	  x1 = read_float (in_stream, &argerr);
+	  y1 = read_float (in_stream, &argerr); 
+	  x2 = read_float (in_stream, &argerr);
+	  y2 = read_float (in_stream, &argerr); 
+	  x3 = read_float (in_stream, &argerr);
+	  y3 = read_float (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3);
+	  break;
+	case (int)O_FBEZIER3REL:
+	  x0 = read_float (in_stream, &argerr);
+	  y0 = read_float (in_stream, &argerr);
+	  x1 = read_float (in_stream, &argerr);
+	  y1 = read_float (in_stream, &argerr); 
+	  x2 = read_float (in_stream, &argerr);
+	  y2 = read_float (in_stream, &argerr); 
+	  x3 = read_float (in_stream, &argerr);
+	  y3 = read_float (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3);
 	  break;
 	case (int)O_FBOX:
 	  x0 = read_float (in_stream, &argerr);
@@ -1097,6 +1231,25 @@ read_plot (in_stream)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      fline (x0, y0, x1, y1);
 	  break;
+	case (int)O_FLINEDASH:
+	  {
+	    int n, i;
+	    double *dash_array, phase;
+
+	    n = read_true_int (in_stream, &argerr);
+	    if (n > 0)
+	      dash_array = (double *)xmalloc((unsigned int)n * sizeof(double));
+	    else
+	      dash_array = NULL;
+	    for (i = 0; i < n; i++)
+	      dash_array[i] = read_float (in_stream, &argerr);
+	    phase = read_float (in_stream, &argerr);
+	    if (!argerr)
+	      if (!single_page_is_requested || current_page == requested_page)
+		flinedash (n, dash_array, phase);
+	    free (dash_array);
+	    break;
+	  }
 	case (int)O_FLINEREL:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
@@ -1242,6 +1395,12 @@ read_plot (in_stream)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      fconcat (x0, y0, x1, y1, x2, y2);
 	  break;
+	case (int)O_FMITERLIMIT:
+	  x0 = read_float (in_stream, &argerr);
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      fmiterlimit (x0);
+	  break;
 	case (int)O_FROTATE:	/* obsolete op code, to be removed */
 	  x0 = read_float (in_stream, &argerr);
 	  if (!argerr)
@@ -1262,12 +1421,19 @@ read_plot (in_stream)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      ftranslate (x0, y0);
 	  break;
+	case ' ':
         case '\n':
+        case '\r':
+        case '\t':
+        case '\v':
+        case '\f':
+	  /* extra whitespace is all right in portable formats */
 	  if (input_format == GNU_PORTABLE
 	      || input_format == GNU_OLD_PORTABLE)
-	    /* harmless, ignore */
 	    break;
-	  /* FALLTHRU if a non-ascii format */
+	  else			/* not harmless */
+	    unrec = true;
+	  break;
 	default:
 	  unrec = true;
 	  break;
@@ -1624,7 +1790,7 @@ read_string (input, badstatus)
     return 0;
 
   buffer = (char *)xmalloc ((unsigned int)buffer_length);
-  while (true)
+  for ( ; ; )
     {
       if (length >= buffer_length)
 	{

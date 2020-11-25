@@ -1,25 +1,19 @@
-/* This internal method is invoked before drawing any object.  It sets
-   the relevant attributes (cap type, join type, line width) to what they
-   should be. */
+/* This internal method is invoked by an Illustrator Plotter before drawing
+   any object.  It sets the relevant attributes (fill rule [if filling],
+   cap type, join type, miter limit, line width) to what they should be. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
-/* Dash arrays for PS (cylically used, on/off/on/off...), indexed by line
-   type.  PS_DASH_ARRAY_LEN is defined in extern.h as 4; do not change it
-   without checking the code below (it depends on this value). */
-const char _ai_dash_array[NUM_LINE_TYPES][PS_DASH_ARRAY_LEN] =
-/* these on/off bit patterns are those used by our X11 driver, and also by
-   the xterm Tektronix emulator, except that the emulator seems incorrectly
-   to have on and off interchanged */
-{
-  {0, 0, 0, 0},			/* solid (dummy) */
-  {1, 3, 1, 3},			/* dotted */
-  {1, 3, 4, 3},			/* dotdashed */
-  {4, 4, 4, 4},			/* shortdashed */
-  {7, 4, 7, 4}			/* longdashed */
-};
+/* Pseudo line type, which we use internally when AI's line type,
+   i.e. dashing style, is set to agree with what the user specifies with
+   linedash(), rather than with what the user specifies with linemod().
+   Should not equal any of our canonical line types, i.e. L_SOLID etc. */
+#define SPECIAL_AI_LINE_TYPE 100
+
+/* AI fill rule types (in version 5 and later), indexed into by our
+   internal fill rule number (FILL_ODD_WINDING/FILL_NONZERO_WINDING) */
+const int _ai_fill_rule[] = { AI_FILL_ODD_WINDING, AI_FILL_NONZERO_WINDING };
 
 void
 #ifdef _HAVE_PROTOS
@@ -29,13 +23,25 @@ _a_set_attributes ()
 #endif
 {
   bool changed_width = false;
-  double dashbuf[PS_DASH_ARRAY_LEN], scale;
+  int desired_fill_rule = _ai_fill_rule[_plotter->drawstate->fill_rule_type];
   double desired_ai_line_width = _plotter->drawstate->device_line_width;
   int desired_ai_cap_style = _ps_cap_style[_plotter->drawstate->cap_type];
   int desired_ai_join_style = _ps_join_style[_plotter->drawstate->join_type];
+  double desired_ai_miter_limit = _plotter->drawstate->miter_limit;
   int desired_ai_line_type = _plotter->drawstate->line_type;  
   int i;
+  double display_size_in_points, min_dash_unit;
+  Displaycoors info;
 
+  if (_plotter->ai_version >= AI_VERSION_5
+      && _plotter->drawstate->fill_level > 0
+      && _plotter->ai_fill_rule_type != desired_fill_rule)
+    {
+      sprintf (_plotter->page->point, "%d XR\n", desired_fill_rule);
+      _update_buffer (_plotter->page);
+      _plotter->ai_fill_rule_type = desired_fill_rule;
+    }
+  
   if (_plotter->ai_cap_style != desired_ai_cap_style)
     {
       sprintf (_plotter->page->point, "%d J\n", desired_ai_cap_style);
@@ -50,6 +56,14 @@ _a_set_attributes ()
       _plotter->ai_join_style = desired_ai_join_style;
     }
 
+  if (_plotter->drawstate->join_type == JOIN_MITER
+      && _plotter->ai_miter_limit != desired_ai_miter_limit)
+    {
+      sprintf (_plotter->page->point, "%.4g M\n", desired_ai_miter_limit);
+      _update_buffer (_plotter->page);
+      _plotter->ai_miter_limit = desired_ai_miter_limit;
+    }
+
   if (_plotter->ai_line_width != desired_ai_line_width)
     {
       sprintf (_plotter->page->point, "%.4f w\n", desired_ai_line_width);
@@ -58,28 +72,113 @@ _a_set_attributes ()
       changed_width = true;
     }
 
-  if (_plotter->ai_line_type != desired_ai_line_type
+  if (_plotter->drawstate->dash_array_in_effect
+      || _plotter->ai_line_type != desired_ai_line_type
       || (changed_width && desired_ai_line_type != L_SOLID))
+    /* must tell AI which dash array to use */
     {
-      /* compute PS dash array for this line type (scale by line width
-	 if larger than 1 device unit, i.e., 1 point) */
-      scale = _plotter->drawstate->device_line_width;
-      if (scale < 1.0)
-	scale = 1.0;
-      for (i = 0; i < PS_DASH_ARRAY_LEN; i++)
-	dashbuf[i] = scale * _ps_dash_array[_plotter->drawstate->line_type][i];
+      double *dashbuf;
+      int num_dashes;
+      double offset;
       
-      /* emit dash array.  THIS ASSUMES PS_DASH_ARRAY_LEN = 4. */
-      if (desired_ai_line_type == L_SOLID)
-	sprintf (_plotter->page->point, "\
-[] 0 d\n");			/* no actual dash array */
-      else
-        sprintf (_plotter->page->point, "\
-[%.4f %.4f %.4f %.4f] 0 d\n", 
-                 dashbuf[0], dashbuf[1], dashbuf[2], dashbuf[3]);
-      _update_buffer (_plotter->page);
-      _plotter->ai_line_type = desired_ai_line_type;
-    }
+      if (_plotter->drawstate->dash_array_in_effect)
+	/* have user-specified dash array */
+	{
+	  num_dashes = _plotter->drawstate->dash_array_len;
 
+	  if (num_dashes > 0)
+	    /* non-solid line type */
+	    {
+	      double min_sing_val, max_sing_val;
+	      
+	      /* compute minimum singular value of user->device coordinate
+		 map, which we use as a multiplicative factor to convert
+		 line widths (cf. g_linewidth.c), dash lengths, etc. */
+	      _matrix_sing_vals (_plotter->drawstate->transform.m, 
+				 &min_sing_val, &max_sing_val);
+	      
+	      dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+
+	      for (i = 0; i < num_dashes; i++)
+		{
+		  double dashlen;
+
+		  dashlen =
+		    min_sing_val * _plotter->drawstate->dash_array[i];
+		  dashbuf[i] = dashlen;
+		}
+	      offset = min_sing_val * _plotter->drawstate->dash_offset;
+	    }
+	  else
+	    /* zero-length dash array, i.e. solid line type */
+	    {
+	      dashbuf = NULL;
+	      offset = 0;
+	    }
+
+	  /* we'll keep track of the fact that AI is using a special
+	     user-specified dash array by setting the `hpgl_line_type' data
+	     member to this bogus value */
+	  desired_ai_line_type = SPECIAL_AI_LINE_TYPE;
+	}
+      else
+	/* dash array not in effect, have a canonical line type instead */
+	{
+	  if (desired_ai_line_type == L_SOLID)
+	    {
+	      num_dashes = 0;
+	      dashbuf = NULL;
+	      offset = 0.0;
+	    }
+	  else
+	    {
+	      const int *dash_array;
+	      double scale;
+	      
+	      num_dashes =
+		_line_styles[_plotter->drawstate->line_type].dash_array_len;
+	      dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
+
+	      /* compute PS dash array for this line type */
+	      dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	      /* scale the array of integers by line width (actually by
+		 floored line width; see comments at head of file) */
+	      info = _plotter->display_coors;
+	      display_size_in_points = (_plotter->device_units_per_inch
+					* DMIN(info.right - info.left, 
+					       info.top - info.bottom));
+	      min_dash_unit = (MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
+			       * display_size_in_points);
+	      scale = DMAX(min_dash_unit,
+			   _plotter->drawstate->device_line_width);
+
+	      for (i = 0; i < num_dashes; i++)
+		dashbuf[i] = scale * dash_array[i];
+	      offset = 0.0;
+	    }
+	}
+
+      /* emit dash array */
+      sprintf (_plotter->page->point, "[");
+      _update_buffer (_plotter->page);
+      for (i = 0; i < num_dashes; i++)
+	{
+	  if (i == 0)
+	    sprintf (_plotter->page->point, "%.4f", dashbuf[i]);
+	  else
+	    sprintf (_plotter->page->point, " %.4f", dashbuf[i]);	  
+	  _update_buffer (_plotter->page);      
+	}
+      sprintf (_plotter->page->point, "] %.4f d\n", offset);
+      _update_buffer (_plotter->page);
+
+      /* Update our knowledge of AI's line type (i.e. dashing style). 
+	 This new value will be one of L_SOLID etc., or the pseudo value
+	 SPECIAL_AI_LINE_TYPE. */
+      _plotter->ai_line_type = desired_ai_line_type;
+
+      free (dashbuf);
+    }
+  
   return;
 }

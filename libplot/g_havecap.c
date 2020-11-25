@@ -7,7 +7,6 @@
 
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -22,6 +21,12 @@ _g_havecap (s)
     return _plotter->have_wide_lines;
   else if (strcasecmp (s, "SOLID_FILL") == 0)
     return _plotter->have_solid_fill;
+  else if (strcasecmp (s, "DASH_ARRAY") == 0)
+    return _plotter->have_dash_array;
+  else if (strcasecmp (s, "EVEN_ODD_FILL") == 0)
+    return _plotter->have_odd_winding_fill;
+  else if (strcasecmp (s, "NONZERO_WINDING_NUMBER_FILL") == 0)
+    return _plotter->have_nonzero_winding_fill;
   else if (strcasecmp (s, "SETTABLE_BACKGROUND") == 0)
     return _plotter->have_settable_bg;
   else if (strcasecmp (s, "HERSHEY_FONTS") == 0)

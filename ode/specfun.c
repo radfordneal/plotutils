@@ -77,25 +77,25 @@
 #ifdef NO_SYSTEM_GAMMA
 #define SIGNGAM our_signgam
 static int SIGNGAM;
-double f_lgamma __P((double x));
-static double lgamneg __P((double x));
-static double lgampos __P((double x));
+double f_lgamma ____P((double x));
+static double lgamneg ____P((double x));
+static double lgampos ____P((double x));
 #else  /* not NO_SYSTEM_GAMMA, we link in vendor code */
 #define SIGNGAM signgam
 extern int SIGNGAM;
 #endif
-double f_gamma __P((double x));
+double f_gamma ____P((double x));
 
 #ifndef HAVE_ERF
-double erf __P((double x));
-double erfc __P((double x));
+double erf ____P((double x));
+double erfc ____P((double x));
 #endif
-double ibeta __P((double a, double b, double x));
-double igamma __P((double a, double x));
-double inverf __P((double p));
-double invnorm __P((double p));
-double norm __P((double x));
-static double confrac __P((double a, double b, double x));
+double ibeta ____P((double a, double b, double x));
+double igamma ____P((double a, double x));
+double inverf ____P((double p));
+double invnorm ____P((double p));
+double norm ____P((double x));
+static double confrac ____P((double a, double b, double x));
 
 /* Our gamma function.  F_LGAMMA(), which this calls, computes the log of
    the gamma function, with the sign being returned in SIGNGAM.  F_LGAMMA()

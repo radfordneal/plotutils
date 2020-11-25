@@ -2,7 +2,6 @@
    libplot.  It erases all objects on the graphics device display. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -18,14 +17,11 @@ _m_erase ()
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c\n", 
-		 (int)O_ERASE);
-      else
-	putc ((int)O_ERASE, _plotter->outstream);
-    }
+  _meta_emit_byte ((int)O_ERASE);
+  _meta_emit_terminator ();
+
+  /* on to next frame */
+  _plotter->frame_number++;
 
   return 0;
 }

@@ -100,6 +100,9 @@ enum { NORTH = 04, SOUTH = 010, EAST = 01, WEST = 02 };
 #define PRINTABLE_ASCII(c) ((c >= 0x20) && (c <= 0x7E))
 #define	BEL		07
 
+/* possible rotation angles for plot within graphics display */
+enum { ROT_0, ROT_90, ROT_180, ROT_270 };
+
 /* masks for coordinate-reading DFA */
 #define ONE_BIT (0x1)
 #define TWO_BITS (0x3)
@@ -127,6 +130,7 @@ struct option long_options[] =
   { "page-number",	ARG_REQUIRED,	NULL, 'p' },
   { "page-size",	ARG_REQUIRED,	NULL, 'P' << 8 },
   { "position-chars",	ARG_NONE,	NULL, 'S' << 8 },
+  { "rotation",		ARG_REQUIRED,	NULL, 'r' << 8},
   { "use-tek-fonts",	ARG_NONE,	NULL, 't' << 8 },
   /* Options relevant only to raw tek2plot (refers to metafile output) */
   { "portable-output",	ARG_NONE,	NULL, 'O' },
@@ -182,31 +186,31 @@ char *bg_color = NULL;		/* initial bg color, can be spec'd by user */
 char *font_name = NULL;		/* initial font name, can be spec'd by user */
 char *pen_color = NULL;		/* initial pen color, can be spec'd by user */
 double line_width = -1.0;	/* initial line width, <0 means default */
+int rotation_angle = ROT_0;	/* angle of plot within graphics display */
 int requested_page = 0;		/* user sets this via -p option */
 
 /* variables used in parser */
 bool plotter_open = false;
 bool plotter_opened = false;
-bool tek_page_is_nonempty = false;
 int cur_X = 0, cur_Y = 0;	/* graphics cursor position in Tek coors */
 int current_page = 0;		/* page count */
 
 /* forward references */
-bool getpoint __P((int *xcoor, int *ycoor, FILE *stream, int *badstatus, int *margin));
-bool read_plot __P((FILE *in_stream));
-int read_byte __P((FILE *stream, int *badstatus));
-void begin_page __P((void));
-void end_page __P((void));
-void set_font_size __P ((int new_fontsize));
-void unread_byte __P((int byte, FILE *in_stream, int *badstatus));
+bool getpoint ____P((int *xcoor, int *ycoor, FILE *stream, int *badstatus, int *margin));
+bool read_plot ____P((FILE *in_stream));
+int read_byte ____P((FILE *stream, int *badstatus));
+void begin_page ____P((void));
+void end_page ____P((void));
+void set_font_size ____P ((int new_fontsize));
+void unread_byte ____P((int byte, FILE *in_stream, int *badstatus));
 /* from libcommon */
-extern bool display_fonts __P((const char *display_type, const char *progname));
-extern bool list_fonts __P((const char *display_type, const char *progname));
-extern void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version __P((const char *progname)); 
-extern Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
-extern Voidptr xmalloc __P ((unsigned int size));
-extern char *xstrdup __P ((const char *s));
+extern int display_fonts ____P((const char *display_type, const char *progname));
+extern int list_fonts ____P((const char *display_type, const char *progname));
+extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
+extern void display_version ____P((const char *progname)); 
+extern Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
+extern Voidptr xmalloc ____P ((unsigned int size));
+extern char *xstrdup ____P ((const char *s));
 
 int
 #ifdef _HAVE_PROTOS
@@ -264,19 +268,19 @@ main (argc, argv)
 	  if (sscanf (optarg, "%lf", &local_line_width) <= 0)
 	    {
 	      fprintf (stderr,
-		       "%s: error: line width must be a number, was `%s'\n",
+		       "%s: error: line thickness must be a number, was `%s'\n",
 		       progname, optarg);
 	      errcnt++;
 	      break;
 	    }
 	  if (local_line_width < 0.0)
-	    fprintf (stderr, "%s: ignoring negative frame line width `%f'\n",
+	    fprintf (stderr, "%s: ignoring negative line thickness `%f'\n",
 		     progname, local_line_width);
 	  else
 	    line_width = local_line_width;
 	  break;
 	case 'O':		/* Portable version of metafile output */
-	  parampl ("META_PORTABLE", "yes");
+	  pl_parampl ("META_PORTABLE", "yes");
 	  break;
 
 	  /*---------------- Long options below here ----------------*/
@@ -285,23 +289,29 @@ main (argc, argv)
 	  strcpy (bg_color, optarg);
 	  break;
 	case 'B' << 8:		/* Bitmap size */
-	  parampl ("BITMAPSIZE", optarg);
+	  pl_parampl ("BITMAPSIZE", optarg);
 	  break;
 	case 'C' << 8:		/* Set the initial pen color */
 	  pen_color = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (pen_color, optarg);
 	  break;
 	case 'M' << 8:		/* Max line length */
-	  parampl ("MAX_LINE_LENGTH", optarg);
+	  pl_parampl ("MAX_LINE_LENGTH", optarg);
 	  break;
 	case 'P' << 8:		/* Page size */
-	  parampl ("PAGESIZE", optarg);
+	  pl_parampl ("PAGESIZE", optarg);
 	  break;
 	case 'S' << 8:		/* Position chars in text strings individually */
 	  position_indiv_chars = true;
 	  break;
-	case 'Q' << 8:		/* Plot rotation angle, ARG REQUIRED	*/
-	  parampl ("ROTATE", optarg);
+	case 'r' << 8:		/* Rotation angle */
+	  if (strcmp (optarg, "90") == 0)
+	    rotation_angle = ROT_90;
+	  else if (strcmp (optarg, "180") == 0)
+	    rotation_angle = ROT_180;
+	  else if (strcmp (optarg, "270") == 0)
+	    rotation_angle = ROT_270;
+	  else rotation_angle = ROT_0;
 	  break;
 	case 't' << 8:		/* Use Tektronix fonts (must be installed) */
 	  if (strcmp (display_type, "X") == 0)
@@ -339,7 +349,7 @@ main (argc, argv)
     }
   if (do_list_fonts)
     {
-      bool success;
+      int success;
 
       success = list_fonts (display_type, progname);
       if (success)
@@ -349,7 +359,7 @@ main (argc, argv)
     }
   if (show_fonts)
     {
-      bool success;
+      int success;
 
       success = display_fonts (display_type, progname);
       if (success)
@@ -363,18 +373,20 @@ main (argc, argv)
       return EXIT_SUCCESS;
     }
 
-  parampl ("USE_DOUBLE_BUFFERING", "no");
   if (bg_color)
     /* select user-specified background color */
-    parampl ("BG_COLOR", bg_color);
+    pl_parampl ("BG_COLOR", bg_color);
 
-  if ((handle = newpl (display_type, NULL, stdout, stderr)) < 0)
+  /* turn off special interpretation of `erase' in GIF Plotters */
+  pl_parampl ("GIF_ANIMATION", "no");
+
+  if ((handle = pl_newpl (display_type, NULL, stdout, stderr)) < 0)
     {
       fprintf (stderr, "%s: error: could not open plot device\n", progname);
       return EXIT_FAILURE;
     }
   else
-    selectpl (handle);
+    pl_selectpl (handle);
 
   retval = EXIT_SUCCESS;
   if (optind < argc)
@@ -451,8 +463,8 @@ main (argc, argv)
 	}
     }
 
-  selectpl (0);
-  if (deletepl (handle) < 0)
+  pl_selectpl (0);
+  if (pl_deletepl (handle) < 0)
     {
       fprintf (stderr, "%s: error: could not close plot device\n", progname);
       retval = EXIT_FAILURE;
@@ -558,7 +570,7 @@ getpoint (xcoor, ycoor, in_stream, badstatus, margin)
   if (*badstatus)
     return false;
 
-  while (true)
+  for ( ; ; )
     {
       byte_read = read_byte (in_stream, badstatus);
       if (*badstatus)
@@ -865,15 +877,15 @@ read_plot (in_stream)
 		  {
 		    int halfwidth = TekChar[fontsize].hsize / 2;
 
-		    move (x_here + halfwidth, y_here + YOFFSET);
-		    alabel ('c', 'b', text);
+		    pl_move (x_here + halfwidth, y_here + YOFFSET);
+		    pl_alabel ('c', 'b', text);
 		  }
 		else
 		  {
-		    move (x_here, y_here + YOFFSET);
-		    alabel ('l', 'b', text);
+		    pl_move (x_here, y_here + YOFFSET);
+		    pl_alabel ('l', 'b', text);
 		  }
-		move (cur_X, cur_Y);
+		pl_move (cur_X, cur_Y);
 	      }
 
 	  } /* end of CASE_PRINT */
@@ -895,13 +907,13 @@ read_plot (in_stream)
 		    {
 		      if (plotter_open == false)
 			begin_page ();
-		      cont (x, y + YOFFSET);
+		      pl_cont (x, y + YOFFSET);
 		    }
 		  else
 		    {
 		      /* N.B. Don't begin a new page just for a move() */ 
 		      if (plotter_open == true)
-			move (x, y + YOFFSET);
+			pl_move (x, y + YOFFSET);
 		    }
 		}
 	      cur_X = x;
@@ -924,7 +936,7 @@ read_plot (in_stream)
 		{
 		  if (plotter_open == false)
 		    begin_page ();
-		  point (x, y + YOFFSET);
+		  pl_point (x, y + YOFFSET);
 		}
 	      cur_X = x;
 	      cur_Y = y;
@@ -945,7 +957,7 @@ read_plot (in_stream)
 		{
 		  if (plotter_open == false)
 		    begin_page ();
-		  point (x, y + YOFFSET);
+		  pl_point (x, y + YOFFSET);
 		}
 	      cur_X = x;
 	      cur_Y = y;
@@ -979,13 +991,13 @@ read_plot (in_stream)
 		{
 		  if (plotter_open == false)
 		    begin_page ();
-		  cont (x, y + YOFFSET);
+		  pl_cont (x, y + YOFFSET);
 		}
 	      else
 		{
 		  /* N.B. Don't begin a new page just for a move() */
 		  if (plotter_open == true)
-		    move (x, y + YOFFSET);
+		    pl_move (x, y + YOFFSET);
 		}
 	    }
 	  cur_X = x;
@@ -1136,7 +1148,7 @@ read_plot (in_stream)
 		{
 		  if (plotter_open == false)
 		    begin_page ();
-		  linemod (linemodes[linetype]);
+		  pl_linemod (linemodes[linetype]);
 		}
 	      if (fontsize != 0)
 		{
@@ -1169,7 +1181,7 @@ read_plot (in_stream)
 		if (plotter_open == false)
 		  begin_page ();
 		linetype = c;
-		linemod (linemodes[linetype]);
+		pl_linemod (linemodes[linetype]);
 	      }
 	  Tparsestate = curstate;
 	  break;
@@ -1194,7 +1206,7 @@ read_plot (in_stream)
 	    int i;		/* length of arg bytes, incl. separators */
 	    
 	    i = 0;
-	    while (true)
+	    for ( ; ; )
 	      {
 		c = read_byte (in_stream, &badstatus);
 		if (badstatus)
@@ -1225,7 +1237,7 @@ read_plot (in_stream)
 	    
 	    if (i == 3 && (type == 'h' || type == 'l')
 		&& (ansi[0] == '?' && ansi[1] == '3' && ansi[2] == '8'))
-	      /* ignore requested switch to Tek or VT100 mode */
+	      /* switch to Tek or VT100 mode, ignore */
 	      break;
 
 	    if (i == 4 && type == 'm' 
@@ -1240,9 +1252,9 @@ read_plot (in_stream)
 		  begin_page ();
 		intensity = ansi[0] - '0';
 		color_index = ansi[3] - '0';
-		pencolor (ansi_color[8 * intensity + color_index].red,
-			  ansi_color[8 * intensity + color_index].green,
-			  ansi_color[8 * intensity + color_index].blue);
+		pl_pencolor (ansi_color[8 * intensity + color_index].red,
+			     ansi_color[8 * intensity + color_index].green,
+			     ansi_color[8 * intensity + color_index].blue);
 		break;
 	      }
 	  }
@@ -1307,22 +1319,22 @@ set_font_size (new_fontsize)
 	{
 	case 0:
 	default:
-	  fontname ("tekfont0");
+	  pl_fontname ("tekfont0");
 	  break;
 	case 1:
-	  fontname ("tekfont1");
+	  pl_fontname ("tekfont1");
 	  break;
 	case 2:
-	  fontname ("tekfont2");
+	  pl_fontname ("tekfont2");
 	  break;
 	case 3:
-	  fontname ("tekfont3");
+	  pl_fontname ("tekfont3");
 	  break;
 	}
     }
   else
     /* we presumably are using a scalable font */
-    ffontsize ((double)(TekChar[new_fontsize].hsize) / CHAR_WIDTH);
+    pl_ffontsize ((double)(TekChar[new_fontsize].hsize) / CHAR_WIDTH);
 }
 
 void
@@ -1332,7 +1344,7 @@ begin_page (void)
 begin_page ()
 #endif
 {
-  if (openpl () < 0)
+  if (pl_openpl () < 0)
     {
       fprintf (stderr, 
 	       "%s: error: could not open plot device\n", 
@@ -1343,41 +1355,62 @@ begin_page ()
   plotter_opened = true;
 
   /* set background color, set affine map from user frame to device frame */
-  erase();
-  space (0, 0, TEK_WIDTH - 1, TEK_WIDTH - 1);
+  pl_erase();
+  switch ((int)(rotation_angle))
+    {
+    case (int)ROT_0:
+    default:
+      pl_space (0, 0, TEK_WIDTH - 1, TEK_WIDTH - 1);
+      break;
+    case (int)ROT_90:
+      pl_space2 (0, TEK_WIDTH - 1,
+	      0, 0,
+	      TEK_WIDTH - 1, TEK_WIDTH - 1);
+      break;
+    case (int)ROT_180:
+      pl_space2 (TEK_WIDTH - 1, TEK_WIDTH - 1,
+	      0, TEK_WIDTH - 1,
+	      TEK_WIDTH - 1, 0);
+      break;
+    case (int)ROT_270:
+      pl_space2 (TEK_WIDTH - 1, 0,
+	      TEK_WIDTH - 1, TEK_WIDTH - 1,
+	      0, 0);
+      break;
+    }
 
   /* improve smoothness of plotted curves */
-  joinmod ("round");
+  pl_joinmod ("round");
   /* may be necessary if zero-length lines are to display as points */
-  capmod ("round");
+  pl_capmod ("round");
 
   /* optionally initialize pen color, font, fontsize, line width */
   if (pen_color)
-    pencolorname (pen_color);
+    pl_pencolorname (pen_color);
   if (use_tek_fonts)
-    fontname ("tekfont0");
+    pl_fontname ("tekfont0");
   else
     {
       if (font_name)
-	fontname (font_name);
+	pl_fontname (font_name);
       else
 	{
-	  if (havecap ("PS_FONTS") == 1)
-	    fontname (DEFAULT_PS_FONT_NAME);
-	  else if (havecap ("PCL_FONTS") == 1)
-	    fontname (DEFAULT_PCL_FONT_NAME);
+	  if (pl_havecap ("PS_FONTS") == 1)
+	    pl_fontname (DEFAULT_PS_FONT_NAME);
+	  else if (pl_havecap ("PCL_FONTS") == 1)
+	    pl_fontname (DEFAULT_PCL_FONT_NAME);
 	  else
 	    /* use Hershey font as a default */
-	    fontname (DEFAULT_HERSHEY_FONT_NAME);
+	    pl_fontname (DEFAULT_HERSHEY_FONT_NAME);
 	}
       /* `large' is default size */
-      ffontsize ((double)(TekChar[0].hsize) / CHAR_WIDTH);
+      pl_ffontsize ((double)(TekChar[0].hsize) / CHAR_WIDTH);
     }
   if (line_width >= 0.0)
-    flinewidth (line_width * TEK_WIDTH);
+    pl_flinewidth (line_width * TEK_WIDTH);
 
   /* move to current position on page */
-  move (cur_X, cur_Y + YOFFSET);
+  pl_move (cur_X, cur_Y + YOFFSET);
 }
 
 void
@@ -1387,7 +1420,7 @@ end_page (void)
 end_page ()
 #endif
 {
-  if (closepl () < 0)
+  if (pl_closepl () < 0)
     {
       fprintf (stderr, 
 	       "%s: error: could not close plot device\n",

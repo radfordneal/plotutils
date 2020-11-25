@@ -5,7 +5,6 @@
    codes, depending on the Tektronix type. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,38 +20,25 @@ _t_openpl ()
       return -1;
     }
 
-  /* flag device as open */
-  _plotter->open = true;
-  _plotter->opened = true;
-  (_plotter->page_number)++;
-
-  /* space() not invoked yet, to set the user frame->device frame map */
-  _plotter->space_invoked = false;
+  /* invoke generic method, to e.g. create drawing state */
+  _g_openpl ();
 
   /* send graphics initialization commands to output stream if necessary */
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->display_type == D_XTERM 
-	  || _plotter->display_type == D_KERMIT)
-	/* VT340 command, put xterm / kermit into Tek mode.*/
-	fprintf (_plotter->outstream, "\033[?38h");
-    }
+  if (_plotter->tek_display_type == D_XTERM 
+      || _plotter->tek_display_type == D_KERMIT)
+    /* VT340 command, put xterm / kermit into Tek mode.*/
+    _plotter->write_string ("\033[?38h");
 
-  /* create drawing state, add it as the first member of the linked list */
-  _plotter->savestate();			
-
-  if (_plotter->outstream)
+  if (_plotter->tek_display_type == D_KERMIT)
     {
-      if (_plotter->display_type == D_KERMIT)
-	{
-	  /* select default background color [presumably white or off-white] */
-	  fprintf (_plotter->outstream,
-		   _kermit_bgcolor_escapes[_plotter->kermit_bgcolor]);
-	  /* select default foreground color [presumably black or off-black] */
-	  fprintf (_plotter->outstream, 
-		   _kermit_fgcolor_escapes[_plotter->kermit_fgcolor]);
-	}
+      const char *bg_color_name_s;
+
+      /* if there's a user-specified background color, set it; it will take
+	 effect only when erase() is invoked */
+      bg_color_name_s = (const char *)_get_plot_param ("BG_COLOR");
+      if (bg_color_name_s)
+	_plotter->bgcolorname (bg_color_name_s);
     }
 
   return 0;

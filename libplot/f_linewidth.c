@@ -8,7 +8,6 @@
    than `Fig units'. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int 

@@ -14,7 +14,6 @@
    space() method. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 double
@@ -36,9 +35,8 @@ _m_ffontname (s)
   /* invoke generic method to retrieve font into the drawing state */
   size = _g_ffontname (s);
 
-  if (_plotter->outstream)
-    fprintf (_plotter->outstream, "%c%s\n", 
-	     (int)O_FONTNAME, _plotter->drawstate->font_name);
+  _meta_emit_byte ((int)O_FONTNAME);
+  _meta_emit_string (_plotter->drawstate->font_name);
 
   return size;
 }

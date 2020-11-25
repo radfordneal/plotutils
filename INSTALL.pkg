@@ -5,22 +5,32 @@ longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
 author and current maintainer, Robert Maier <rsm@math.arizona.edu>.
 
 These are package-specific installation instructions: PLEASE READ THEM.
-*** Item A.1 is especially important. ***
 
-Before reading the below, you should glance through the generic
-installation instructions in the file INSTALL.  The instructions in that
-file may be summed up as follows.  You build a GNU package by typing
-`./configure' and then `make'.  After building, you may run validation
-tests on the package by typing `make check'.  To install the package, you
-type `make install'.  A documentation file, in `info' format, is installed
-as part of this process.  You may produce a copy of the documentation for
-the package, in dvi format, by typing `make dvi'.  This assumes that you
-have the TeX document formatter installed.
+Before reading them, you should glance through the generic installation
+instructions in the file INSTALL.  The instructions in that file may be
+summed up as follows.  You build a GNU package by typing `./configure' and
+then `make'.  After building, you may run validation tests on the package
+by typing `make check'.  To install the package, you type `make install'.
+A documentation file, in `info' format, is installed as part of this
+process.  You may produce a copy of the documentation for the package, in
+dvi format, by typing `make dvi'.  This assumes that you have the TeX
+document formatter installed.
+
+The most important point not mentioned in the file INSTALL is the following.
+
+    If you have a working C++ compiler and would like to build the
+    `libplotter' class library and the pic2plot utility, both of which are
+    written in C++, you should add the `--enable-libplotter' option to the
+    `./configure' command.
+
+The rest of this file discusses possible installation problems.  There are
+some additional options that you can add to the `./configure' command.
+They are mentioned too, in passing.
 
 ----------------------------------------------------------------------
 
-Problems not mentioned in the INSTALL file are summarized in the following
-three sections.  They cover:
+Possible problems not mentioned in the INSTALL file are summarized in the
+following three sections.  They cover:
 
 (A) Problems related to building the GNU libplot graphics library.
 
@@ -39,149 +49,23 @@ By default, the application programs `graph', `plot', `tek2plot', and
 
 If for any reason you wish to disable support for the shared version of
 libplot, you may begin by doing `./configure --disable-shared' instead of
-`./configure'.  Note though that two of the problem reports below (#A.2 and
-#A.3) mention difficulties in creating the _unshared_ version, rather than
-the shared version.
+`./configure'.
 
-A.1. You may already have a version of GNU libplot installed on your
-system.  Check to see if there are any files named libplot.* in the library
-installation directory, which by default is `/usr/local/lib'.  If so, 
-YOU SHOULD MOVE OR RENAME THEM BEFORE BUILDING THE PACKAGE.  The reason is
-that the installation scripts may erroneously try to link with them.
-At the very least, this will adversely affect the outcome of the tests 
-run by doing `make check'.
-
-A.2: Suns running Solaris.  
-
-This package has been successfully built and installed on Suns running
-Solaris 2.5 (with the SunPro 4.0 `cc' compiler) and Solaris 2.6 (with the
-SunPro 4.0 `cc' and with GNU gcc).  The shared version of libplot will be
-created if the package is compiled with gcc.
-
-However, some problems have been reported with the linking of libplot on
-Suns running Solaris (2.5 and 2.6, at least).  These problems are difficult
-to reproduce.  They are probably due to one of two causes: (a) a buffer
-overrun problem in the Solaris `printf' command or in the Solaris
-`/bin/sh', triggered by the linking together of an unusually large number
-of object modules to form libplot, or (b) an incorrectly configured
-compiler/linker setup.  In both cases, the symptom is that unshared version
-of the libplot library fails to be created, or is created improperly (e.g.,
-is empty, so that later linking of the utility programs with it does not
-succeed).  You may get error messages like ".libs/libplot.a: No such file",
-or "make: Fatal error: Command failed for target `libplot.la'", or more
-serious-sounding messages, such as "Segmentation Fault" or "Bus Error".
-
-Here are some possible workarounds.  You may need to apply more than one 
-of them.
-
-A.2a. On Suns running Solaris 2.x, you may see a message like "Segmentation
-Fault printf: line too long" during the installation process.  This
-indicates that the problem is definitely due to the bug in the Solaris
-`printf' command, at least in part.  The bug in `printf' may also cause the
-linking of libplot to fail without the message being printed.  In either
-case, the fix is to obtain and install the GNU shellutils package, which
-includes a working version of `printf'.  You may also need to install the
-GNU shell, `bash' (see A.2b below).
-
-A.2b.  On Suns running Solaris 2.x, you may see a message like "Bus error"
-during the linking process.  The fix is to obtain and install the GNU
-shell, `bash'.  If necessary, after you do `./configure', manually modify
-the file `Makefile' in the top-level directory so that SHELL is defined to
-point to the copy of `bash' that you have installed.  You may also need to
-install the GNU shellutils package to obtain a working version of `printf'
-(see A.2a above).
-
-A.2c.  On Suns running Solaris 2.x, your problems may be due to an
-incorrectly installed compiler/linker setup.  Solaris systems do not come
-with compilers, and either Sun's SunPro compiler `cc' or the GNU compiler
-`gcc' must be installed.  (A BSD-compatible compiler `ucbcc' is also
-supported.)  Compiler installation under Solaris is not a trivial matter.
-Usually, users must set environment variables for the correct compiler and
-related utilities to be executed.  Some of the reported problems with this
-package on Solaris systems have probably been due to incorrect or
-incomplete compiler installations, which caused a mixture of SunPro, GNU,
-and BSD-compatible tools to be used during the build process.
-
-The most frequently reported problem on Solaris 2.x systems that does not
-seem to be due to problems with `printf' or `/bin/sh' is the usual one:
-at some point in the build process, you may get an error message like
-".libs/libplot.a: No such file", or "make: Fatal error: Command failed for
-target `libplot.la'".  This indicates that the unshared version of the
-libplot library was somehow not created as it should have been.  You may be
-able to create it manually, as follows.
-
-    1.  Go to the directory ./libplot, and examine the Makefile.
-    2.  Extract the long list of .lo files beginning on the 
-	"cond1libplot_la_OBJECTS:" line, and put it in a file called OBJECTS.
-	(The list starts with "api.lo" and ends with "y_openpl.lo".)
-    3.  Manually run the command     ar cru .libs/libplot.a `cat OBJECTS`
-        in that directory.
-
-With luck, this will create the unshared library ./libs/libplot.a.  
-You may then go back to the top directory and type `make' to continue
-the installation.
-
-A.3.: DEC Alpha systems.
-
-There are problems with the linking of the libplot library on DEC Alphas
-running OSF 3.x, though apparently not OSF 4.0.  The problems are due to
-bugs (buffer overrun problems) in DEC's shell and/or other command-line
-utilities.  They occur because an unusually large number of object modules
-are linked together to construct the library.  The symptom is that the
-unshared version of the libplot library, libplot.la or libplot.a, is either
-not created or turns out to be empty.
-
-A.3a.  On DEC Alphas running OSF 3.2 (though apparently not OSF 4.x), you
-may get a message like "Segmentation Fault printf: line too long" during
-the installation process.  This is due to a bug (a buffer overrun problem)
-in DEC's `printf' command.  The fix is to obtain and install the GNU
-shellutils package, which includes a working version of `printf'.  It has
-been reported that renaming `/usr/ucb/printf', for the duration of the
-installation, may also work around the problem.  You may also need to
-install the GNU shellutils package (see A.3b below).
-
-A.3b.  On DEC Alphas running OSF 3.x (though apparently not OSF 4.x), a
-problem similar to the Solaris problem discussed in A.2a, above, has been
-reported to occur.  It is due to a bug (a buffer overrun problem) in the
-version of /bin/sh that comes with OSF/1.  It should be possible to work
-around the problem by installing the GNU shell, `bash'.  If necessary,
-after you do `./configure', manually modify the file `Makefile' in the
-top-level directory so that SHELL is defined to point to the copy of `bash'
-that you have installed.  You may also need to install the GNU shellutils
-package to obtain a working version of `printf' (see A.3a above).
-
-A.4.: Silicon Graphics systems.  
-
-A.4a.  On Silicon Graphics systems running IRIX 6.x, you may get error
+    
+A.1. On Silicon Graphics systems running IRIX 6.x, you may get error
 messages about `GP overflow'.  If so, you should do `make distclean' and
 start over, this time doing two things differently.  (1) After running
 `./configure', modify, by hand, the file `./libtool'.  In that file, change
-the line "archive_cmds=...", which will be located at about line #125, to
-include the options `-multigot -shared', rather than just `-shared'.  (2)
-Do `make CFLAGS="-O -multigot"' instead of just `make'.
+the line "archive_cmds=...", which will be located at about line #170, to
+include the options `-multigot -shared', rather than just `-shared'.
+(2) Do `make CFLAGS="-O -multigot"' instead of just `make'.
 
-A.4b.  On Silicon Graphics systems running IRIX 6.3 (though not IRIX 6.4 or
-5.x), it has been reported that during the linking of the libplot DLL you
-may get error messages like
-
-  ld: ERROR 48: Cannot access registry file ./so_locations (Invalid argument) \
-- ignored.
-  ld: FATAL 51: Can't assign virtual addresses for libplot.so within specified\
- range.  Please check your registry file ./so_locations.
- 
-A fix for this problem, if any, is unknown.  (It is possible that this
-problem is due to a wrongly configured compiler/linker setup.)  If you
-encounter it, you should do a `make distclean' and then 
-`./configure --disable-shared', to avoid creating the libplot DLL.
-
-A.5.: HP-UX systems.  
-
-On some HP-UX systems, the `sed' program is broken.  It is possible that
-this may cause unusual problems for libtool, the script that prepares the
-libplot library.  If mysterious problems occur during the compilation and
-linking of libplot on an HP-UX system, you should install a working version
-of `sed', such as GNU sed, and try again.  There are also problems on HP-UX
-systems related to the X Window System (see below).
+A.2. On some HP-UX systems, the `sed' program is broken.  It is possible
+that this may cause unusual problems for libtool, the script that prepares
+the libplot library.  If mysterious problems occur during the compilation
+and linking of libplot on an HP-UX system, you should install a working
+version of `sed', such as GNU sed, and try again.  There are also problems
+on HP-UX systems related to the X Window System (see below).
 
 ----------------------------------------------------------------------
 
@@ -194,42 +78,17 @@ installed in `/usr/local/lib'.  On some systems you may need to run a
 command (such as `ldconfig'), or even reboot, to let your system know that
 a new DLL has been installed.  On some systems you may need to add
 `/usr/local/lib' to your LD_LIBRARY_PATH environment variable in order to
-use the `graph', `plot', and `tek2plot' programs after they have been
-installed.  You will be cautioned about problems of this sort, if any, at
-installation time.
+use the `graph', `plot', `tek2plot', `plotfont', and `pic2plot' programs
+after they have been installed.  You will be cautioned about problems of
+this sort, if any, at installation time.
 
-B.2. If the installation process has any problem preparing or installing
-the documentation files (in `info' format), you should install the current
-release of the GNU texinfo package, which contains the current version of
-the GNU `makeinfo' and `install-info' programs.  That should fix the
-problem.
+B.2. If you have a recent laser printer that can use the 35 standard
+Postscript fonts even when in PCL 5 or HP-GL/2 mode, such as a 4000-series
+HP LaserJet, you may wish to add the `--enable-ps-fonts-in-pcl' option
+to `./configure'.  No additional font installation is required, since the
+Postscript fonts are internal to the printer.
 
-B.3. As part of the installation process, the header file ./include/plot.h
-is installed in a place on your system where the gcc C compiler will find
-it.  If you wish to use cc as well as (or instead of) gcc, you should copy
-plot.h manually to the directory `/usr/include', where cc will find it.
-plot.h is not installed in `/usr/include' by default, since many
-administrators prefer not to add files to that directory.
-
-B.4. If you are installing this package with DJGPP under MS-DOS, the very
-first thing you should do is rename the file `install-sh' in this directory
-to `install.sh'.  This is on account of filename length limitations in
-MS-DOS.  If `./configure' reports that it is unable to find certain
-executable programs that it should in fact find, you may need to replace
-many of the occurrences of `test -f' in `./configure' and `./ltmain' by
-`test -x' (to compensate for the ".exe" extension that MS-DOS uses).  These
-potential problems are reported by Michel de Ruiter <mdruiter@cs.vu.nl>.
-Contact him for additional information on MS-DOS installations.
-
-B.5. If you are installing this package with DJGPP under MS-DOS, one or
-more of the validation tests performed by doing `make check' may fail on
-account of incorrect formatting of floating-point numbers.  The same is
-true if you are installing the package on an old NeXT machine.  Failures of
-this sort are more or less harmless.  But if any of the validation tests
-should fail on any other system, please report it to
-<bug-gnu-utils@gnu.org>.
-
-B.6. By default, the 45 fonts that are built into recent HP LaserJets are
+B.3. By default, the 45 fonts that are built into recent HP LaserJets are
 available to the plotting utilities when you produce PCL 5 or HP-GL/2
 output, e.g., when you do `graph -T pcl' or `graph -T hpgl'.  You may wish
 to have these 45 fonts available when you produce X or Postscript output,
@@ -238,11 +97,37 @@ and/or the `--enable-lj-fonts-in-ps' option to `./configure'.  Of course
 you would also need to acquire the fonts and install them.  This is fairly
 easy.  Instructions are in the file INSTALL.fonts.
 
-B.7. If you have a recent laser printer that can use the 35 standard
-Postscript fonts even when in PCL 5 or HP-GL/2 mode, such as a 4000-series
-HP LaserJet, you may also wish to add the `--enable-ps-fonts-in-pcl' option
-to `./configure'.  No additional font installation is required, since the
-Postscript fonts are internal to the printer.
+B.4. If the installation process has any problem preparing or installing
+the documentation files (in `info' format), you should install the current
+release of the GNU texinfo package, which contains the current version of
+the GNU `makeinfo' and `install-info' programs.  That should fix the
+problem.
+
+B.5. As part of the installation process, the header file ./include/plot.h
+is installed in a place on your system where the gcc C compiler will find
+it.  If you wish to use cc as well as (or instead of) gcc, you should copy
+plot.h manually to the directory `/usr/include', where cc will find it.
+plot.h is not installed in `/usr/include' by default, since many
+administrators prefer not to add files to that directory.
+
+B.6. If you are installing this package with DJGPP under MS-DOS, the very
+first thing you should do is rename the file `install-sh' in this directory
+to `install.sh'.  This is on account of filename length limitations in
+MS-DOS.  If `./configure' reports that it is unable to find certain
+executable programs that it should in fact find, you may also need to
+replace many of the occurrences of `test -f' in `./configure' and
+`./ltmain' by `test -x' (to compensate for the ".exe" extension that MS-DOS
+uses).  These potential problems are reported by Michel de Ruiter
+<mdruiter@cs.vu.nl>.  Contact him for additional information on MS-DOS
+installations.
+
+B.7.  One or more of the validation tests performed by doing `make check'
+may fail on account of incorrect formatting of floating-point numbers.
+This is the case if you are installing with DJGPP under MS-DOS, for
+example.  It may also occur if you are installing the package on an old
+NeXT machine.  Failures of this sort are more or less harmless.  But if any
+of the validation tests should fail on any other system, please report it
+to <bug-gnu-utils@gnu.org>.
 
 ----------------------------------------------------------------------
 
@@ -270,12 +155,13 @@ HP/UX, and some IBM systems) you should begin by doing `./configure
 configured correctly.  
 
 The only advantage of using Motif widgets, which are not free, is that you
-will be able to use Motif's drag-and-drop facility to drag graphics out of
-popped-up X Windows.
+may be able to use Motif's drag-and-drop facility to drag graphics out of
+popped-up X Windows, e.g., the window popped up by `graph -T X'.
 
-C.4. Hewlett-Packard HP/UX systems that are running HP/UX 9.xx or earlier
-have Motif widgets, but the Motif files are stored in unusual places.  On
-such systems, besides doing `./configure --with-motif' you should do
+C.4. Old Hewlett-Packard HP/UX systems that are running HP/UX 9.xx or
+earlier have Motif widgets, but the Motif files are stored in unusual
+places.  On such systems, besides doing `./configure --with-motif' you
+may need to do
 
 	make CFLAGS="-O -I/usr/include/Motif1.2 -L/usr/lib/Motif1.2"
 
@@ -294,19 +180,12 @@ instead of Motif widgets, you should do `./configure' and then
 
 rather than just `make'.
 
-C.6. On SGI systems, if you do `./configure --with-motif' to use Motif
-widgets, and compile the package with cc rather than gcc, you may need to
-do `make install' BEFORE doing `make check'.  That is because the
-uninstalled utilities may not link properly with the uninstalled libplot
-library, causing segmentation errors when the validation tests are run, or
-"Cannot successfully map soname" error messages.
-
-C.7. On Suns that are running SunOS 4.1.x with the ancient OpenWindows 3.0
+C.6. On Suns that are running SunOS 4.1.x with the ancient OpenWindows 3.0
 version of the X Window System, the Xmu and Xt libraries may not link
 correctly.  If so, you will get error messages dealing with "undefined
-symbols" when linking the programs `graph', `plot', `tek2plot', and
-`plotfont'.  To solve this problem, please contact your local Sun office
-and request the following patches:
+symbols" when linking the five programs `graph', `plot', `tek2plot',
+`plotfont', and `pic2plot'.  To solve this problem, please contact your
+local Sun office and request the following patches:
 
   Patch i.d.      Description
   100512-02       4.1.x OpenWindows 3.0 libXt Jumbo patch
@@ -314,27 +193,50 @@ and request the following patches:
                           shared libXmu
 
 If you are using Sun's cc as your compiler, you may be able to work around
-this problem not by contacting Sun, but simply by typing
+this problem not by contacting Sun, but by modifying the Makefiles in the
+five directories `graph', `plot', `tek2plot', `plotfont', and `pic2plot'
+by hand.  Here is how you can do this.
 
-    make X_TOOLKIT_LIBS="-lXaw -Bstatic -lXmu -lXt -Bdynamic"
+The following explanation applies to graph/Makefile; the four other
+Makefiles are treated similarly.  In graph/Makefile, locate the line
+beginning
 
-rather than `make'.  If you are using gcc as your compiler, this will not
-work; but it is possible to work around the problem by extracting the two
-files named `sharedlib.o' from libXmu.a and libXt.a and adding them to the
-list of objects to be linked.  This is tricky, and contacting Sun to
+graph$(EXEEXT):
+
+The second line after that should begin with a tab character.  After the
+tab, it should read:
+
+$(LINK) $(graph_LDFLAGS) $(graph_OBJECTS) $(graph_LDADD) $(LIBS)
+
+Replace this line by:
+
+LD_LIBRARY_PATH="../libplot/.libs:$LD_LIBRARY_PATH" cc -O -o .libs/graph \
+graph.o ../lib/libcommon.a ../lib/libfontlist.a -lplot -L/usr/lib/X11 \
+-lXaw -Bstatic -lXmu -lXt -Bdynamic -lXext -lX11 -lm
+
+(as before, preceded by a tab character).  You would modify the four other
+Makefiles similarly, except that the two occurrences of `graph' on the
+above line would be replaced by `plot', `tek2plot', `plotfont', and
+`pic2plot', in turn.
+
+If you are using gcc rather than cc as your compiler, this approach will
+not work; but it may be possible to work around the problem by extracting
+the two files named `sharedlib.o' from libXmu.a and libXt.a and adding them
+to the list of objects to be linked.  This is tricky, and contacting Sun to
 request the two patches, instead, is recommended.
 
 A much better workaround is to obtain and install the X11R6 version of the
 X Window System.  Unlike the version that came with SunOS 4.1.x, it
 supports rotated and affinely transformed (`sheared') fonts.
 
-C.8. A problem similar to #C.7 (i.e., error messages about "unresolved
+C.7. A problem similar to #C.6 (i.e., error messages about "unresolved
 symbols") may occur on Suns running SunOS 4.1.x that are equipped with much
 more recent versions of the X Window System libraries.  The problem may
-occur if the package is compiled with cc rather than gcc, and the shared
-version of libplot is not built.  A workaround is to force the use of the
-unshared version of the libXt library by doing:
+occur if the package is compiled with cc rather than gcc.  The workaround
+is similar, except that the modified lines should end with
 
-    make X_TOOLKIT_LIBS="-lXaw -lXmu -Bstatic -lXt -Bdynamic"
+-lXaw -lXmu -Bstatic -lXt -Bdynamic -lXext -lX11 -lm
 
-rather than just `make'.
+instead of
+
+-lXaw -Bstatic -lXmu -lXt -Bdynamic -lXext -lX11 -lm

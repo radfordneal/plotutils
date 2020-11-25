@@ -4,7 +4,6 @@
    x-axis). */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,21 +20,13 @@ _m_ellipse (x, y, rx, ry, angle)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d %d %d %d %d\n", 
-		 (int)O_ELLIPSE, x, y, rx, ry, angle);
-      else
-	{
-	  putc ((int)O_ELLIPSE, _plotter->outstream);
-	  _emit_integer (x);
-	  _emit_integer (y);
-	  _emit_integer (rx);
-      _emit_integer (ry);
-	  _emit_integer (angle);
-	}
-    }
+  _meta_emit_byte ((int)O_ELLIPSE);
+  _meta_emit_integer (x);
+  _meta_emit_integer (y);
+  _meta_emit_integer (rx);
+  _meta_emit_integer (ry);
+  _meta_emit_integer (angle);
+  _meta_emit_terminator ();
   
   return 0;
 }
@@ -54,21 +45,13 @@ _m_fellipse (x, y, rx, ry, angle)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g %g %g %g %g\n", 
-		 (int)O_ELLIPSE, x, y, rx, ry, angle);
-      else
-	{
-	  putc ((int)O_FELLIPSE, _plotter->outstream);
-	  _emit_float (x);
-	  _emit_float (y);
-	  _emit_float (rx);
-	  _emit_float (ry);
-	  _emit_float (angle);
-	}
-    }
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_ELLIPSE : (int)O_FELLIPSE);
+  _meta_emit_float (x);
+  _meta_emit_float (y);
+  _meta_emit_float (rx);
+  _meta_emit_float (ry);
+  _meta_emit_float (angle);
+  _meta_emit_terminator ();
   
   return 0;
 }

@@ -13,7 +13,6 @@
    value. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h" 
 
 int
@@ -30,17 +29,9 @@ _m_filltype (level)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %d\n", 
-		 (int)O_FILLTYPE, level);
-      else
-	{
-	  putc ((int)O_FILLTYPE, _plotter->outstream);
-	  _emit_integer (level);
-	}
-    }
+  _meta_emit_byte ((int)O_FILLTYPE);
+  _meta_emit_integer (level);
+  _meta_emit_terminator ();
   
   /* invoke generic method */
   return _g_filltype (level);

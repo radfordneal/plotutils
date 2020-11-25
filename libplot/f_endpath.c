@@ -12,7 +12,6 @@
    the map from user to device coordinates must be uniform.) */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* xfig polyline subtypes */
@@ -21,28 +20,20 @@
 #define P_CLOSED 3
 
 /* Fig's line styles, indexed into by internal line number
-   (L_SOLID/L_DOTTED/ L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED. */
-const int _fig_line_style[NUM_LINE_TYPES] =
-{ FIG_L_SOLID, FIG_L_DOTTED, FIG_L_DASHDOTTED, FIG_L_DASHED, FIG_L_DASHED };
+   (L_SOLID/L_DOTTED/L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED/L_DOTDOTDASHED) */
+const int _fig_line_style[NUM_LINE_STYLES] =
+{ FIG_L_SOLID, FIG_L_DOTTED, FIG_L_DASHDOTTED, FIG_L_DASHED, FIG_L_DASHED,
+    FIG_L_DASHDOUBLEDOTTED, FIG_L_DASHTRIPLEDOTTED };
 
-/* Fig's `style value', i.e. inter-dot length or on-and-off segment length,
-   indexed into by internal line number (L_SOLID/L_DOTTED/
-   L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED; dash length ignored for
-   L_SOLID).  Units are Fig display units.  We'll scale these values by the
-   line width (in Fig display units). */
-const double _fig_dash_length[NUM_LINE_TYPES] =
-{ 0.0, 2.0, 6.0, 4.0, 8.0 };
-
-/* Fig join styles, indexed by internal join type number (miter/rd./bevel) */
+/* Fig join styles, indexed by internal number (miter/rd./bevel/triangular) */
 const int _fig_join_style[] =
-{ FIG_JOIN_MITER, FIG_JOIN_ROUND, FIG_JOIN_BEVEL };
+{ FIG_JOIN_MITER, FIG_JOIN_ROUND, FIG_JOIN_BEVEL, FIG_JOIN_ROUND };
 
-/* Fig cap styles, indexed by internal cap type number (butt/rd./project) */
+/* Fig cap styles, indexed by internal number (butt/rd./project/triangular) */
 const int _fig_cap_style[] =
-{ FIG_CAP_BUTT, FIG_CAP_ROUND, FIG_CAP_PROJECT };
+{ FIG_CAP_BUTT, FIG_CAP_ROUND, FIG_CAP_PROJECT, FIG_CAP_ROUND };
 
-/* forward references */
-static void _f_emit_arc __P((double xc, double yc, double x0, double y0, double x1, double y1));
+#define FUZZ 0.0000001
 
 int
 #ifdef _HAVE_PROTOS
@@ -53,8 +44,9 @@ _f_endpath ()
 {
   bool closed; 
   const char *format;
-  int i, dash_scale, polyline_subtype;
-    
+  int i, polyline_subtype, line_style;
+  double nominal_spacing;
+
   if (!_plotter->open)
     {
       _plotter->error ("endpath: invalid operation");
@@ -155,20 +147,18 @@ _f_endpath ()
   _plotter->set_pen_color();
   _plotter->set_fill_color();
   
+  /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
+  _f_compute_line_style (&line_style, &nominal_spacing);
+
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
-
-  /* we scale dash length by line width */
-  dash_scale = _plotter->drawstate->quantized_device_line_width;
-  if (dash_scale == 0)
-    dash_scale = 1;
 
   sprintf(_plotter->page->point,
 	  format,
 	  2,			/* polyline object */
 	  polyline_subtype,	/* polyline subtype */
-	  _fig_line_style[_plotter->drawstate->line_type], /* style */
+	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
 	  _plotter->drawstate->quantized_device_line_width, 
 	  _plotter->drawstate->fig_fgcolor, /* pen color */
@@ -176,8 +166,7 @@ _f_endpath ()
 	  _plotter->fig_drawing_depth, /* depth */
 	  0,			/* pen style, ignored */
 	  _plotter->drawstate->fig_fill_level, /* area fill */
-		  /* style val, in Fig display units (float) */
-	  dash_scale * _fig_dash_length[_plotter->drawstate->line_type],
+	  nominal_spacing,	/* style val, in Fig display units (float) */
 	  _fig_join_style[_plotter->drawstate->join_type], /* join style */
 	  _fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
 	  0,			/* radius (of arc boxes, ignored here) */
@@ -189,6 +178,17 @@ _f_endpath ()
 
   for (i=0; i<_plotter->drawstate->points_in_path; i++)
     {
+      GeneralizedPoint datapoint;
+      double xu, yu, xd, yd;
+      int device_x, device_y;
+
+      datapoint = _plotter->drawstate->datapoints[i];
+      xu = datapoint.x;
+      yu = datapoint.y;
+      xd = XD(xu, yu);
+      yd = YD(xu, yu);
+      device_x = IROUND(xd);
+      device_y = IROUND(yd);
 
       if ((i%5) == 0)
 	sprintf (_plotter->page->point, "\n\t"); /* make human-readable */
@@ -196,12 +196,7 @@ _f_endpath ()
 	sprintf (_plotter->page->point, " ");
       _update_buffer (_plotter->page);
 
-      sprintf (_plotter->page->point, 
-	       "%d %d", 
-	       IROUND(XD((_plotter->drawstate->datapoints)[i].x,
-			 (_plotter->drawstate->datapoints)[i].y)),
-	       IROUND(YD((_plotter->drawstate->datapoints)[i].x,
-			 (_plotter->drawstate->datapoints)[i].y)));
+      sprintf (_plotter->page->point, "%d %d", device_x, device_y);
       _update_buffer (_plotter->page);
     }
   sprintf (_plotter->page->point, "\n");
@@ -219,12 +214,12 @@ _f_endpath ()
    not a polyline, but a single circular arc.  If an arc was placed there,
    we can count on the map from the user frame to the device frame being
    isotropic (so the arc will be circular in the device frame too), and we
-   can count on the arc not being of zero length.  See f_arc.c. */
+   can count on the arc not being of zero length. */
 
 #define DIST(p1, p2) sqrt( ((p1).x - (p2).x) * ((p1).x - (p2).x) \
 			  + ((p1).y - (p2).y) * ((p1).y - (p2).y))
 
-static void
+void
 #ifdef _HAVE_PROTOS
 _f_emit_arc (double xc, double yc, double x0, double y0, double x1, double y1)
 #else
@@ -232,10 +227,10 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  Point p0, p1, pc, pm, pb;
+  Point p0, p1, pc, pb;
   Vector v, v0, v1;
-  double cross, radius;
-  int orientation;
+  double cross, radius, nominal_spacing;
+  int line_style, orientation;
 
   pc.x = xc, pc.y = yc;
   p0.x = x0, p0.y = y0;
@@ -256,9 +251,6 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
 
   radius = DIST(pc, p0);	/* radius is distance to p0 or p1 */
 
-  pm.x = 0.5 * (p0.x + p1.x);	/* midpoint of chord from p0 to p1 */
-  pm.y = 0.5 * (p0.y + p1.y);  
-
   v.x = p1.x - p0.x;		/* chord vector from p0 to p1 */
   v.y = p1.y - p0.y;
       
@@ -270,6 +262,9 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
   _plotter->set_pen_color();
   _plotter->set_fill_color();
   
+  /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
+  _f_compute_line_style (&line_style, &nominal_spacing);
+
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
@@ -292,7 +287,7 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
 	  "#ARC\n%d %d %d %d %d %d %d %d %d %.3f %d %d %d %d %.3f %.3f %d %d %d %d %d %d\n",
 	  5,			/* arc object */
 	  1,			/* open-ended arc subtype */
-	  _fig_line_style[_plotter->drawstate->line_type], /* style */
+	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
 	  _plotter->drawstate->quantized_device_line_width, 
 	  _plotter->drawstate->fig_fgcolor, /* pen color */
@@ -300,8 +295,7 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
 	  _plotter->fig_drawing_depth, /* depth */
 	  0,			/* pen style, ignored */
 	  _plotter->drawstate->fig_fill_level, /* area fill */
-	  			/* style val, in Fig display units (float) */
-	  _fig_dash_length[_plotter->drawstate->line_type], 
+	  nominal_spacing,	/* style val, in Fig display units (float) */
 	  _fig_cap_style[_plotter->drawstate->cap_type], /* cap style */
 	  1,			/* counterclockwise */
 	  0,			/* no forward arrow */
@@ -317,4 +311,121 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
   _update_buffer (_plotter->page);
 
   return;
+}
+
+/* compute appropriate Fig line style, and also appropriate value for Fig's
+   notion of `dash length/dot gap' (in Fig display units) */
+void
+#ifdef _HAVE_PROTOS
+_f_compute_line_style (int *style, double *spacing)
+#else
+_f_compute_line_style (style, spacing)
+     int *style;
+     double *spacing;
+#endif
+{
+  int fig_line_style;
+  double fig_nominal_spacing;
+    
+  if (_plotter->drawstate->dash_array_in_effect
+      && _plotter->drawstate->dash_array_len == 2
+      && (_plotter->drawstate->dash_array[1]
+	  == _plotter->drawstate->dash_array[0]))
+    /* special case of user-specified dashing (equal on/off lengths);
+       we map this into Fig's `dashed' line type */
+    {
+      double min_sing_val, max_sing_val;
+
+      /* Minimum singular value is the nominal device-frame line width
+	 divided by the actual user-frame line-width (see g_linewidth.c),
+	 so it's the user->device frame conversion factor. */
+      _matrix_sing_vals (_plotter->drawstate->transform.m,
+			 &min_sing_val, &max_sing_val);
+
+      /* desired cycle length in Fig display units */
+      fig_nominal_spacing =
+	FIG_UNITS_TO_FIG_DISPLAY_UNITS(min_sing_val * 2.0 * _plotter->drawstate->dash_array[0]);
+      fig_line_style = FIG_L_DASHED;
+    }
+  else if (_plotter->drawstate->dash_array_in_effect
+	   && _plotter->drawstate->dash_array_len == 2
+	   && (_plotter->drawstate->dash_array[1]
+	       > (3 - FUZZ) * _plotter->drawstate->dash_array[0])
+	   && (_plotter->drawstate->dash_array[1]
+	       < (3 + FUZZ) * _plotter->drawstate->dash_array[0]))
+    /* special case of user-specified dashing (gap length = 3 * dash length);
+       we map this into Fig's `dotted' line type, since it agrees with
+       libplot's convention for dashing `dotted' lines (see g_dash2.c) */
+    {
+      double min_sing_val, max_sing_val;
+
+      _matrix_sing_vals (_plotter->drawstate->transform.m,
+			 &min_sing_val, &max_sing_val);
+
+      /* desired cycle length in Fig display units */
+      fig_nominal_spacing =
+	FIG_UNITS_TO_FIG_DISPLAY_UNITS(min_sing_val * 4.0 * _plotter->drawstate->dash_array[0]);
+      fig_line_style = FIG_L_DOTTED;
+    }
+  else
+    /* canonical line type; retrieve dash array from database (in g_dash2.c) */
+    {
+      int i, num_dashes, cycle_length;
+      const int *dash_array;
+      double display_size_in_fig_units, min_dash_unit, dash_unit;
+      Displaycoors info;
+
+      num_dashes =
+	_line_styles[_plotter->drawstate->line_type].dash_array_len;
+      dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+      cycle_length = 0;
+      for (i = 0; i < num_dashes; i++)
+	cycle_length += dash_array[i];
+      /* multiply cycle length of dash array by device-frame line width in
+	 Fig display units, with a floor on the latter (see comments at
+	 head of file) */
+      info = _plotter->display_coors;
+      display_size_in_fig_units = (_plotter->device_units_per_inch
+				   * DMIN(info.right - info.left, 
+				      info.bottom - info.top)); /* flipped y */
+      min_dash_unit = MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
+	* FIG_UNITS_TO_FIG_DISPLAY_UNITS(display_size_in_fig_units);
+      dash_unit = DMAX(min_dash_unit, _plotter->drawstate->device_line_width);
+
+      /* desired cycle length in Fig display units */
+      fig_nominal_spacing = cycle_length * dash_unit;
+      fig_line_style = _fig_line_style[_plotter->drawstate->line_type];
+    }
+      
+  /* compensate for Fig's (or fig2dev's) peculiarities; value stored in Fig
+     output file isn't really the cycle length */
+  switch (fig_line_style)
+    {
+    case FIG_L_SOLID:
+    default:			/* shouldn't happen */
+      break;
+    case FIG_L_DOTTED:
+      fig_nominal_spacing -= 1.0;
+      break;
+    case FIG_L_DASHDOTTED:
+      fig_nominal_spacing -= 1.0;
+      /* fall thru */
+    case FIG_L_DASHED:
+      fig_nominal_spacing *= 0.5;
+      break;
+    case FIG_L_DASHDOUBLEDOTTED:
+      fig_nominal_spacing -= 2.0;
+      fig_nominal_spacing /= (1.9 + 1/3.0); /* really */
+      break;
+    case FIG_L_DASHTRIPLEDOTTED:
+      fig_nominal_spacing -= 3.0;
+      fig_nominal_spacing /= 2.4;
+      break;
+    }
+  if (fig_nominal_spacing <= 1.0)
+    fig_nominal_spacing = 1.0;
+
+  /* pass back what Fig will need */
+  *style = fig_line_style;
+  *spacing = fig_nominal_spacing;
 }

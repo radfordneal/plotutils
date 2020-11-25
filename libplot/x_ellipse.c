@@ -3,8 +3,9 @@
    of length rx and ry (the former at a specified angle with the
    x-axis). */
 
+/* This version is for XDrawablePlotters (and XPlotters). */
+
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 /* In this version, we first check to see if the angle of inclination is
@@ -33,12 +34,16 @@ _x_fellipse (xc, yc, rx, ry, angle)
     }
 
   if (!_plotter->drawstate->points_are_connected)
-    /* line type is `disconnected', so do nothing */
+    /* line type is `disconnected', so do nothing (libplot convention) */
     {
-      _plotter->endpath ();
+      /* just move to center (a libplot convention), flushing path if any */
+      _plotter->fmove (xc, yc);
       return 0;
     }
   
+  if (_plotter->drawstate->points_in_path > 0)
+    _plotter->endpath ();	/* flush path if any */
+
  /* if angle is multiple of 90 degrees, modify to permit use of native X
     arc rendering */
   if (angle == (double) (90 * ninetymult))
@@ -54,15 +59,21 @@ _x_fellipse (xc, yc, rx, ry, angle)
 	}
     }
 
-  /* if ellipse must be drawn at an angle, or affine map from user frame to
+  /* If ellipse must be drawn at an angle, or affine map from user frame to
      device frame does not preserve coordinate axes, call the generic class
-     method to draw an inscribed polyline */
+     method to draw an inscribed polyline.  Specify that it's convex (to
+     speed up rendering, if we're filling). */
+
   if (angle != 0.0 || !(_plotter->drawstate->transform.axes_preserved))
-    return _g_fellipse (xc, yc, rx, ry, angle);
+    {
+      int retval;
+
+      /* draw, move to center, flush out */
+      retval = _g_fellipse (xc, yc, rx, ry, angle); 
+      return retval;
+    }
 
   /* otherwise use X11's native ellipse-drawing facility, as follows */
-
-  _plotter->endpath (); /* flush polyline if any */
 
   rx = (rx < 0.0 ? -rx : rx);	/* avoid obscure X problems */
   ry = (ry < 0.0 ? -ry : ry);  
@@ -96,7 +107,9 @@ _x_fellipse (xc, yc, rx, ry, angle)
   _plotter->drawstate->pos.x = xc; /* move to center (a libplot convention) */
   _plotter->drawstate->pos.y = yc;
   
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
   
   return 0;
 }

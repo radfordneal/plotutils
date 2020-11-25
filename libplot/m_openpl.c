@@ -2,7 +2,6 @@
    libplot.  It opens a Plotter object. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -29,29 +28,27 @@ _m_openpl ()
   /* space() not invoked yet, to set the user frame->device frame map */
   _plotter->space_invoked = false;
 
-  if (_plotter->outstream)
+  if (not_previously_opened)
+    /* emit metafile header, i.e. magic string */
     {
-      /* format type 0 = pre-GNU, type 1 = GNU binary, type 2 = GNU portable */
-      
-      if (not_previously_opened)
-	/* emit metafile header, i.e. magic string */
-	{
-	  if (_plotter->portable_output)
-	    fprintf (_plotter->outstream, "%s 2\n", PLOT_MAGIC);
-	  else
-	    fprintf (_plotter->outstream, "%s 1\n", PLOT_MAGIC);
-	}
-      
-      if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c\n",
-		 (int)O_OPENPL);
+      _plotter->write_string (PLOT_MAGIC);
+
+      /* format type 1 = GNU binary, type 2 = GNU portable */
+      if (_plotter->meta_portable_output)
+	_plotter->write_string (" 2\n");
       else
-	putc ((int)O_OPENPL, _plotter->outstream);
+	_plotter->write_string (" 1\n");
     }
+
+  _meta_emit_byte ((int)O_OPENPL);
+  _meta_emit_terminator ();
   
   /* create drawing state, add it as the first member of the linked list;
      use generic method because we don't want to emit an op code */
   _g_savestate();			
+
+  /* frames in page are numbered starting with zero */
+  _plotter->frame_number = 0;
 
   return 0;
 }

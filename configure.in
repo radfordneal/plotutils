@@ -1,86 +1,30 @@
 dnl Configure template for the GNU plotutils package.
-dnl Copyright (C) 1989-98 Free Software Foundation, Inc.
+dnl Copyright (C) 1989-99 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(graph/graph.c)
-AM_INIT_AUTOMAKE(plotutils, 2.1.6)
+AM_INIT_AUTOMAKE(plotutils, 2.2)
 AM_CONFIG_HEADER(config.h)
-
-dnl Determine extension (e.g. ".exe") on executables, if any.
-AM_EXEEXT
 
 dnl We now use libtool to make and installed a shared library.
 AM_PROG_LIBTOOL
 
-dnl Checks for programs.
-AC_PROG_CC
-AC_PROG_INSTALL
-AC_PROG_MAKE_SET
-AC_PROG_YACC
+dnl Determine extension (e.g. ".exe") on executables, if any.
+AC_EXEEXT
 
-dnl We now have automake use a replacement for lex if lex is missing.
-AM_PROG_LEX
-
-dnl Checks for header files.
-AC_CHECK_HEADERS(malloc.h string.h strings.h sys/time.h unistd.h limits.h float.h values.h)
-AC_HEADER_STDC
-
-dnl X-specific headers and libraries (by default, we support X but not Motif)
-AC_PATH_XTRA
-AC_SUBST(X_CFLAGS)
-AC_SUBST(X_LIBS)
-AC_SUBST(X_TOOLKIT_LIBS)
-AC_SUBST(X_PRE_LIBS)
-AC_SUBST(X_BASIC_LIBS)
-AC_SUBST(X_EXTRA_LIBS)
-AC_ARG_WITH(x, [  --with-x                use the X Window System], if test "$withval" != "no"; then X_BASIC_LIBS="-lXext -lX11"; X_TOOLKIT_LIBS="-lXt"; else X_BASIC_LIBS=""; X_TOOLKIT_LIBS=""; fi, X_BASIC_LIBS="-lXext -lX11"; X_TOOLKIT_LIBS="-lXt")
-AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], if test "$X_TOOLKIT_LIBS" = ""; then X_TOOLKIT_LIBS=""; else X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"; AC_CHECK_LIB(Xp, XpQueryExtension, X_BASIC_LIBS="-lXp $X_BASIC_LIBS", , -lXext -lX11) fi; AC_DEFINE(USE_MOTIF), if test "$X_TOOLKIT_LIBS" = ""; then X_TOOLKIT_LIBS=""; else X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS"; fi;)
-AM_CONDITIONAL(NO_X, test "$no_x" = yes)
-dnl Check in -lXext for double buffering extensions to X11.
-AC_CHECK_LIB(Xext, XdbeQueryExtension, AC_DEFINE(HAVE_DBE_SUPPORT), , -lX11)
-AC_CHECK_LIB(Xext, XmbufQueryExtension, AC_DEFINE(HAVE_MBX_SUPPORT), , -lX11)
-AC_CHECK_HEADERS(X11/extensions/Xdbe.h X11/extensions/multibuf.h)
-
-dnl Typedefs, structures, and compiler characteristics.
+dnl Compiler characteristics and typedefs.
 AC_MSG_CHECKING(for void)
-AC_TRY_COMPILE(, [void *foo = 0;], 
-  [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_VOID)], [AC_MSG_RESULT(no)])
+AC_TRY_COMPILE(, [void *foo = 0;], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_VOID)], [AC_MSG_RESULT(no)])
 AC_C_CONST
-AC_HEADER_TIME
-AC_TYPE_SIGNAL
+AC_TYPE_SIZE_T
 AC_TYPE_PID_T
-
-dnl Override default "-g -O2", for libplot especially.
-CFLAGS="-O"
-
-dnl Non-X library functions and auxiliary libraries.
-dnl 
-dnl SGI's have matherr in libmx.a, not libm.a
-AC_CHECK_LIB(mx, matherr, LIBS="$LIBS -lmx", LIBS="$LIBS -lm")
-AC_CHECK_FUNCS(memcpy strchr strcasecmp strerror matherr j0 erf)
-dnl lgamma() and gamma() both compute the log of the gamma function.  There
-dnl are old systems out there which do not have lgamma (the name was
-dnl introduced after BSD 4.2), but which do have gamma.  Also some systems,
-dnl new and old, have lgamma but not gamma.
-AC_CHECK_FUNCS(lgamma gamma)
-dnl Motif on Sys-V derived systems requires -lPW.  Harmless to include it
-dnl (but we only need it if --with-motif is specified).  Precede it
-dnl by -lc because some of its definitions may conflict with the standard
-dnl library.  Similarly check for -lgen, which Motif on Solaris needs.
-AC_CHECK_LIB(gen, regex, LIBS="$LIBS -lc -lgen", LIBS="$LIBS")
-AC_CHECK_LIB(PW, regex, LIBS="$LIBS -lc -lPW", LIBS="$LIBS")
-
-dnl HP/UX needs a cpp definition for math.h to define matherr-related things
-AC_EGREP_HEADER(_HPUX_SOURCE, math.h, AC_EGREP_HEADER(matherr, math.h, AC_DEFINE(_HPUX_SOURCE)))
-
-dnl Sui generis.
-AC_FUNC_ALLOCA
+AC_TYPE_SIGNAL
 
 dnl Check whether fflush(NULL) works
-AC_MSG_CHECKING(whether fflushing a null FILE pointer works)
+AC_MSG_CHECKING(whether flushing a null FILE pointer works)
 AC_TRY_RUN([
 #include <stdio.h>
-main()
+int main()
 {
   FILE *fpw, *fpr;
   char test_array[7];
@@ -95,9 +39,85 @@ main()
     exit(0); }], 
 [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_NULL_FLUSH)], [AC_MSG_RESULT(no); AC_DEFINE(DONT_HAVE_NULL_FLUSH)], [AC_MSG_RESULT(no); AC_DEFINE(DONT_HAVE_NULL_FLUSH)])
 
+dnl Checks for header files, both ANSI C headers and nonstandard headers.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(string.h limits.h float.h)
+AC_CHECK_HEADERS(malloc.h strings.h unistd.h values.h sys/select.h sys/time.h sys/types.h)
+AC_HEADER_TIME
+
+dnl HP/UX needs a cpp definition for math.h to define matherr-related things
+AC_EGREP_HEADER(_HPUX_SOURCE, math.h, AC_EGREP_HEADER(matherr, math.h, AC_DEFINE(_HPUX_SOURCE)))
+
+dnl Sui generis.
+AC_FUNC_ALLOCA
+
 dnl Necessitated by lack of support in autoconf for libtool.
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/.lo/g'`
 AC_SUBST(LTALLOCA)
+
+dnl Checks for programs
+AC_PROG_YACC
+AM_PROG_LEX
+
+dnl Non-X library functions and auxiliary libraries.
+dnl 
+dnl SGI's have matherr in libmx.a, not libm.a
+AC_CHECK_LIB(mx, matherr, LIBS="$LIBS -lmx", LIBS="$LIBS -lm")
+AC_CHECK_FUNCS(memcpy memmove strchr strcasecmp strerror matherr j0 erf)
+dnl lgamma() and gamma() both compute the log of the gamma function.  There
+dnl are old systems out there which do not have lgamma (the name was
+dnl introduced after BSD 4.2), but which do have gamma.  Also some systems,
+dnl new and old, have lgamma but not gamma.
+AC_CHECK_FUNCS(lgamma gamma)
+
+dnl Prepare to support X.  If the user gave the command-line option
+dnl --without-x, AC_PATH_XTRA will set no_x to "yes".  Otherwise, it will
+dnl add appropriate preprocessor flags to X_CFLAGS, and appropriate linker
+dnl flags to X_LIBS.  It also checks for system-specific X libraries, and
+dnl adds them to X_PRE_LIBS or X_EXTRA_LIBS, as appropriate.  (The former
+dnl is where "-lSM -lICE" goes, in X11R6.)  We define the X_TOOLKIT_LIBS
+dnl and X_BASIC_LIBS argument vectors ourselves, and if X is to be
+dnl supported, we'll concatenate the whole lot of these into a command line
+dnl for libtool.  See, e.g., the libplot_la_LIBADD line in
+dnl libplot/Makefile.am.
+
+AC_PATH_XTRA
+AC_SUBST(X_CFLAGS)
+AC_SUBST(X_LIBS)
+AC_SUBST(X_TOOLKIT_LIBS)
+AC_SUBST(X_PRE_LIBS)
+AC_SUBST(X_BASIC_LIBS)
+AC_SUBST(X_EXTRA_LIBS)
+
+X_TOOLKIT_LIBS="-lXt"
+X_BASIC_LIBS="-lXext -lX11"
+
+dnl Check in -lXext for double buffering extensions to X11, and check
+dnl whether appropriate header files are present.  (Some systems have one
+dnl but not the other.)
+our_saved_LDFLAGS="$LDFLAGS"
+LDFLAGS="$X_LIBS $LDFLAGS"
+AC_CHECK_LIB(Xext, XdbeQueryExtension, AC_DEFINE(HAVE_DBE_SUPPORT), , -lX11)
+AC_CHECK_LIB(Xext, XmbufQueryExtension, AC_DEFINE(HAVE_MBX_SUPPORT), , -lX11)
+LDFLAGS="$our_saved_LDFLAGS"
+our_saved_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$X_CFLAGS $CPPFLAGS"
+AC_CHECK_HEADERS(X11/extensions/Xdbe.h X11/extensions/multibuf.h)
+CPPFLAGS="$our_saved_CPPFLAGS"
+
+dnl If user specified --with-motif (which requires X support), place -lXm
+dnl at the head of X_TOOLKIT_LIBS, otherwise place -lXaw -lXmu there.
+dnl Recent releases of Motif require -lXp for printing, so if found, place
+dnl it before -lXext -lX11 in X_BASIC_LIBS.  Also, Motif on Sys-V derived
+dnl systems requires -lPW.  If found, add it to LIBS, but precede it by -lc
+dnl because some of its definitions may conflict with the standard library.
+dnl Similarly check for -lgen, which Motif on Solaris needs.
+
+AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"; AC_CHECK_LIB(Xp, XpQueryExtension, X_BASIC_LIBS="-lXp $X_BASIC_LIBS", , -lXext -lX11) AC_CHECK_LIB(gen, regex, LIBS="$LIBS -lc -lgen", LIBS="$LIBS") AC_CHECK_LIB(PW, regex, LIBS="$LIBS -lc -lPW", LIBS="$LIBS") AC_DEFINE(USE_MOTIF), X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS")
+
+dnl Our Makefile.am files test the automake variable NO_X to determine
+dnl whether X should be supported.
+AM_CONDITIONAL(NO_X, test "$no_x" = yes)
 
 AC_ARG_ENABLE(ps-fonts-in-pcl, [  --enable-ps-fonts-in-pcl   enable use of PS fonts in PCL and HP-GL/2 output], echo enabling support for the 35 PS fonts in PCL 5 and HP-GL/2 output; ps_fonts_in_pcl=1; AC_DEFINE(USE_PS_FONTS_IN_PCL), ps_fonts_in_pcl=0)
 AC_SUBST(ps_fonts_in_pcl)
@@ -106,4 +126,14 @@ AC_ARG_ENABLE(lj-fonts-in-ps, [  --enable-lj-fonts-in-ps    enable use of LaserJ
 
 AC_ARG_ENABLE(lj-fonts-in-x, [  --enable-lj-fonts-in-x     enable use of LaserJet fonts on X displays], echo enabling support for the 45 LaserJet fonts on X displays; AC_DEFINE(USE_LJ_FONTS_IN_X))
 
-AC_OUTPUT(Makefile double/Makefile graph/Makefile info/Makefile lib/Makefile libplot/Makefile plot/Makefile tek2plot/Makefile tek2plot/teksamples/Makefile plotfont/Makefile spline/Makefile ode/Makefile ode-examples/Makefile include/Makefile doc/Makefile fonts/Makefile fonts/bdf/Makefile fonts/pcf/Makefile fonts/pfb/Makefile test/Makefile)
+dnl Do we compile libplotter, the C++ library, and other C++ software?
+AC_LANG_SAVE
+AC_ARG_ENABLE(libplotter, [  --enable-libplotter     build the C++ Plotter class library], echo enabling support for the C++ class library; [AC_PROG_CXX] no_libplotter="no"; AC_MSG_CHECKING(whether ${CXX-g++} supports bool); [AC_LANG_CPLUSPLUS] AC_TRY_COMPILE(, [bool foo = true;], AC_MSG_RESULT(yes); AC_DEFINE(HAVE_BOOL), AC_MSG_RESULT(no)), no_libplotter="yes"; extralib="")
+AC_LANG_RESTORE
+AM_CONDITIONAL(NO_LIBPLOTTER, test "$no_libplotter" = yes)
+
+dnl Override default "-g -O2", for libplot/libplotter especially.
+CFLAGS="-O"
+CXXFLAGS="-O"
+
+AC_OUTPUT(Makefile double/Makefile graph/Makefile pic2plot/Makefile pic2plot/doc/Makefile pic2plot/libgroff/Makefile pic2plot/include/Makefile info/Makefile lib/Makefile libplot/Makefile libplotter/Makefile plot/Makefile tek2plot/Makefile tek2plot/teksamples/Makefile plotfont/Makefile spline/Makefile ode/Makefile ode-examples/Makefile include/Makefile doc/Makefile fonts/Makefile fonts/bdf/Makefile fonts/pcf/Makefile fonts/pfb/Makefile test/Makefile)

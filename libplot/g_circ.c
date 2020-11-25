@@ -4,7 +4,6 @@
 /* In this generic version, we simply call the ellipse method. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -21,12 +20,17 @@ _g_fcircle (x, y, r)
       return -1;
     }
 
+  /* draw only if line type isn't `disconnected' (libplot convention) */
   if (!_plotter->drawstate->points_are_connected)
-    /* line type is `disconnected', so do nothing */
     {
-      _plotter->endpath (); /* flush polyline if any */
+      /* just move to center of circle, flushing path if any (a libplot
+         convention) */
+      _plotter->fmove (x, y);	
       return 0;
     }
-
-  return _plotter->fellipse (x, y, r, r, 0.0);
+  else
+    /* invoke `ellipse' method with equal semi-axes; this will first flush
+       any stored path, and end by moving to center of ellipse (libplot
+       convention) */
+    return _plotter->fellipse (x, y, r, r, 0.0);
 }

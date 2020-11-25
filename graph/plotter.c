@@ -12,7 +12,7 @@
       a `pendown' flag
 
       a symbol type (a small integer, interpreted as a marker type)
-      a symbol size (a fraction of the size of the plotting area)
+      a symbol size (a fraction of the size of the plotting box)
       a symbol font name (relevant only for symbol types >= 32)
       a linemode (a small integer)
       a linewidth (a fraction of the size of the display device)
@@ -92,8 +92,8 @@ enum { ACCEPTED = 0x1, CLIPPED_FIRST = 0x2, CLIPPED_SECOND = 0x4 };
 #define TRIAL_NUMBER_OF_TICK_INTERVALS 5
 #define MAX_NUM_SUBTICKS 29	/* max num. of linearly spaced subticks */
 #define RELATIVE_SUBTICK_SIZE 0.4 /* subtick_size / tick_size */
-/* if a log axis spans >4.0 orders of magnitude, don't plot log subsubticks */
-#define MAX_DECADES_WITH_LOG_SUBSUBTICKS 4.0 
+/* if a log axis spans >5.0 orders of magnitude, don't plot log subsubticks */
+#define MAX_DECADES_WITH_LOG_SUBSUBTICKS 5.0 
 
 /* inter-tick spacing types, returned by scale1() and spacing_type() */
 #define S_ONE 0
@@ -173,10 +173,10 @@ static Transform x_trans, y_trans; /* transformations applied to user coors
 #define YN(y) YP(YSQ(YS(y)))
 
 /* Size Scale: convert distances, or sizes, from normalized coors to
-   libplot coordinates.  (Used for tick, symbol, and font sizes.)  The max
+   libplot coordinates.  (Used for tick, symbol, and font sizes.)  The min
    should really be precomputed. */
 #define SS(x) \
-(DMAX(x_trans.output_range * x_trans.squeezed_range, \
+(DMIN(x_trans.output_range * x_trans.squeezed_range, \
 	     y_trans.output_range * y_trans.squeezed_range) * (x))
 
 /* The `x_axis' and `y_axis' structs specify layout of the two axes, for
@@ -229,6 +229,7 @@ typedef struct
   /* following elements are parameters (not updated during plotter operation)*/
   int handle;			/* Plotter handle from libplot */
   char *display_type;		/* mnemonic: type of libplot device driver */
+  int rotation_angle;		/* one of ROT_{0,90,180,270} */
   bool save_screen;		/* erase display when opening plotter? */
   char *bg_color;		/* color of background, if non-NULL */
   grid_type grid_spec;		/* frame specification */
@@ -255,11 +256,11 @@ typedef struct
 static Plotter plotter;
 
 /* forward references */
-static int clip_line __P((double *x0_p, double *y0_p, double *x1_p, double *y1_p));
-static int spacing_type __P((double spacing));
-static outcode compute_outcode __P((double x, double y, bool tolerant));
-static void plot_errorbar __P((const Point *p));
-static void prepare_axis __P((Axis *axisp, Transform *trans, 
+static int clip_line ____P((double *x0_p, double *y0_p, double *x1_p, double *y1_p));
+static int spacing_type ____P((double spacing));
+static outcode compute_outcode ____P((double x, double y, bool tolerant));
+static void plot_errorbar ____P((const Point *p));
+static void prepare_axis ____P((Axis *axisp, Transform *trans, 
 		       double min, double max, double spacing, 
 		       char *font_name, double font_size, char *label, 
 		       double subsubtick_spacing, 
@@ -267,13 +268,13 @@ static void prepare_axis __P((Axis *axisp, Transform *trans,
 		       bool round_to_next_tick, bool log_axis,
 		       bool reverse_axis, bool switch_axis_end, 
 		       bool omit_ticks));
-static void plot_abscissa_log_subsubtick __P((double xval));
-static void plot_ordinate_log_subsubtick __P((double xval));
-static void print_tick_label __P((char *labelbuf, Axis axis, Transform transform, double val));
-static void scale1 __P((double min, double max, 
+static void plot_abscissa_log_subsubtick ____P((double xval));
+static void plot_ordinate_log_subsubtick ____P((double xval));
+static void print_tick_label ____P((char *labelbuf, Axis axis, Transform transform, double val));
+static void scale1 ____P((double min, double max, 
 		 double *tick_spacing, int *tick_spacing_type));
-static void set_line_style __P((int style, bool use_color));
-static void transpose_portmanteau __P((int *val));
+static void set_line_style ____P((int style, bool use_color));
+static void transpose_portmanteau ____P((int *val));
 
 
 /* print_tick_label() prints a label on an axis tick.  The format depends
@@ -606,7 +607,7 @@ prepare_axis (axisp, trans,
       if (user_specified_subsubticks)
 	/* Special Case.  If user specified the `spacing' argument to -x or
 	   -y on a logarithmic axis, our usual tick-generating and
-	   -plotting algorithms are disabled.  So we don't bother with
+	   tick-plotting algorithms are disabled.  So we don't bother with
 	   min_tick_count or several other fields of the axis struct;
 	   instead we just compute a new (rounded) max, min, and range.
 	   Since most data are stored as logs, this is complicated. */
@@ -619,7 +620,9 @@ prepare_axis (axisp, trans,
 				   / subsubtick_spacing));
 	  max_count = (int)(ceil ((true_max - FUZZ * true_range) 
 				  / subsubtick_spacing));
-	  min = log10 (min_count * subsubtick_spacing);
+	  /* avoid core dump, do *not* reduce minimum to zero! */
+	  if (min_count > 0)
+	    min = log10 (min_count * subsubtick_spacing);
 	  max = log10 (max_count * subsubtick_spacing);	  
 	  range = max - min;
 	  min_tick_count = max_tick_count = 0; /* keep gcc happy */
@@ -732,7 +735,8 @@ prepare_axis (axisp, trans,
 
 void 
 #ifdef _HAVE_PROTOS
-initialize_plotter(char *display_type, bool save_screen, char *bg_color,
+initialize_plotter(char *display_type, int rotation_angle, 
+		   bool save_screen, char *bg_color,
 		   double frame_line_width, char *frame_color, char *title, 
 		   char *title_font_name, double title_font_size, 
 		   double tick_size, grid_type grid_spec, double x_min, 
@@ -747,7 +751,7 @@ initialize_plotter(char *display_type, bool save_screen, char *bg_color,
 		   int omit_ticks, int clip_mode, double blankout_fraction,
 		   bool transpose_axes)
 #else
-initialize_plotter(display_type, save_screen, bg_color,
+initialize_plotter(display_type, rotation_angle, save_screen, bg_color,
 		   frame_line_width, frame_color,
 		   title, title_font_name, title_font_size,
 		   tick_size, grid_spec, 
@@ -763,6 +767,7 @@ initialize_plotter(display_type, save_screen, bg_color,
 		   clip_mode, blankout_fraction,
 		   transpose_axes)
      char *display_type;	/* mnemonic: type of libplot display driver */
+     int rotation_angle;	/* ROT_{0, 90, 180, 270} */
      bool save_screen;		/* whether or not to erase */
      char *bg_color;		/* color of background, if non-NULL */
      double frame_line_width;	/* fractional width of lines in the frame */
@@ -953,6 +958,7 @@ initialize_plotter(display_type, save_screen, bg_color,
   plotter.subtick_size = RELATIVE_SUBTICK_SIZE * tick_size;
   plotter.grid_spec = grid_spec;
   plotter.clip_mode = clip_mode;
+  plotter.rotation_angle = rotation_angle;
 
   /* fill in the Transform and Axis structures for each coordinate */
   prepare_axis(&x_axis, &x_trans,
@@ -1031,7 +1037,7 @@ initialize_plotter(display_type, save_screen, bg_color,
   /* The following is a version of (plotter.frame_line_width)/2 (expressed
      in terms of libplot coordinates) which the plotter uses as an offset,
      to get highly accurate positioning of ticks and labels. */
-  if (frame_line_width < 0.0 || havecap ("WIDE_LINES") == 0)
+  if (frame_line_width < 0.0 || pl_havecap ("WIDE_LINES") == 0)
     plotter.half_line_width = 0.0;/* N.B. <0.0 -> default width, pres. small */
   else
     plotter.half_line_width = 0.5 * frame_line_width * x_trans.output_range;
@@ -1051,17 +1057,37 @@ open_plotter()
 {
   if (plotter.bg_color)
     /* select user-specified background color */
-    parampl ("BG_COLOR", plotter.bg_color);
-  parampl ("USE_DOUBLE_BUFFERING", "no");
-  if ((plotter.handle = newpl (plotter.display_type, NULL, stdout, stderr)) < 0)
+    pl_parampl ("BG_COLOR", plotter.bg_color);
+  if ((plotter.handle = pl_newpl (plotter.display_type, NULL, stdout, stderr)) < 0)
     return -1;
   else
-    selectpl (plotter.handle);
-  if (openpl () < 0)
+    pl_selectpl (plotter.handle);
+  if (pl_openpl () < 0)
     return -1;
   if (!plotter.save_screen || plotter.bg_color)
-    erase ();
-  fspace (0.0, 0.0, (double)PLOT_SIZE, (double)PLOT_SIZE);
+    pl_erase ();
+  switch ((int)(plotter.rotation_angle))
+    {
+    case (int)ROT_0:
+    default:
+      pl_fspace (0.0, 0.0, (double)PLOT_SIZE, (double)PLOT_SIZE);
+      break;
+    case (int)ROT_90:
+      pl_fspace2 (0.0, (double)PLOT_SIZE,
+		  0.0, 0.0,
+		  (double)PLOT_SIZE, (double)PLOT_SIZE);
+      break;
+    case (int)ROT_180:
+      pl_fspace2 ((double)PLOT_SIZE, (double)PLOT_SIZE,
+		  0.0, (double)PLOT_SIZE,
+		  (double)PLOT_SIZE, 0.0);
+      break;
+    case (int)ROT_270:
+      pl_fspace2 ((double)PLOT_SIZE, 0.0,
+		  (double)PLOT_SIZE, (double)PLOT_SIZE,
+		  0.0, 0.0);
+      break;
+    }
 
   return 0;
 }
@@ -1075,13 +1101,13 @@ close_plotter()
 {
   int retval;
 
-  retval = closepl ();
+  retval = pl_closepl ();
   if (retval < 0)
     return -1;
   else
     {
-      selectpl (0);
-      return deletepl (plotter.handle);
+      pl_selectpl (0);
+      return pl_deletepl (plotter.handle);
     }
 }
 
@@ -1129,32 +1155,32 @@ plot_frame (draw_canvas)
 {
   static bool tick_warning_printed = false; /*when too few labelled ticks*/
 
-  savestate();	/* wrap savestate()--restorestate() around all 9 tasks */
+  pl_savestate();   /* wrap savestate()--restorestate() around all 9 tasks */
 
   /* set color for plot frame (and for plot also, if a monochrome one) */
   if (plotter.frame_color)
-    pencolorname (plotter.frame_color);
+    pl_pencolorname (plotter.frame_color);
 
-  /* set line width as a fraction of width of display, <0.0 means default */
-  flinewidth (plotter.frame_line_width * x_trans.output_range);
-  linemod ("solid");		/* axes and plotting box will be solid */
+  /* set line width as a fraction of size of display, <0.0 means default */
+  pl_flinewidth (plotter.frame_line_width * (double)PLOT_SIZE);
+  pl_linemod ("solid");		/* axes and plotting box will be solid */
 
   /* 0.  DRAW AN OPAQUE WHITE BOX */
 
   if (draw_canvas)
     {
-      savestate();
+      pl_savestate();
       /* use user-specified background color (if any) instead of white */
-      if (havecap ("SETTABLE_BACKGROUND") != 0 && plotter.bg_color)
-	colorname (plotter.bg_color);
+      if (pl_havecap ("SETTABLE_BACKGROUND") != 0 && plotter.bg_color)
+	pl_colorname (plotter.bg_color);
       else
-	colorname ("white");
-      filltype (1);		/* turn on filling */
-      fbox (XP(XSQ(0.5 - 0.5 * plotter.blankout_fraction)), 
-	    YP(YSQ(0.5 - 0.5 * plotter.blankout_fraction)),
-	    XP(XSQ(0.5 + 0.5 * plotter.blankout_fraction)),
-	    YP(YSQ(0.5 + 0.5 * plotter.blankout_fraction)));
-      restorestate();
+	pl_colorname ("white");
+      pl_filltype (1);		/* turn on filling */
+      pl_fbox (XP(XSQ(0.5 - 0.5 * plotter.blankout_fraction)), 
+	       YP(YSQ(0.5 - 0.5 * plotter.blankout_fraction)),
+	       XP(XSQ(0.5 + 0.5 * plotter.blankout_fraction)),
+	       YP(YSQ(0.5 + 0.5 * plotter.blankout_fraction)));
+      pl_restorestate();
     }
 
   /* 1.  DRAW THE TITLE, I.E. THE TOP LABEL */
@@ -1166,18 +1192,18 @@ plot_frame (draw_canvas)
       double title_font_size;
 
       /* switch to our font for drawing title */
-      fontname (plotter.title_font_name);
-      title_font_size = ffontsize (SS(plotter.title_font_size));
+      pl_fontname (plotter.title_font_name);
+      title_font_size = pl_ffontsize (SS(plotter.title_font_size));
 
-      fmove (XP(XSQ(0.5)), 
-	     YP(YSQ(1.0 
-		    + (((plotter.grid_spec == AXES_AND_BOX 
-			 || plotter.grid_spec == AXES)
-			&& (plotter.tick_size <= 0.0) ? 1.0 : 0.5)
-		       * fabs(plotter.tick_size))))
-	     + 0.65 * title_font_size
-	     + plotter.half_line_width);
-      alabel ('c', 'b', plotter.title);	/* title is centered, bottom spec'd */
+      pl_fmove (XP(XSQ(0.5)), 
+		YP(YSQ(1.0 
+		       + (((plotter.grid_spec == AXES_AND_BOX 
+			    || plotter.grid_spec == AXES)
+			   && (plotter.tick_size <= 0.0) ? 1.0 : 0.5)
+			  * fabs(plotter.tick_size))))
+		+ 0.65 * title_font_size
+		+ plotter.half_line_width);
+      pl_alabel ('c', 'b', plotter.title); /* title centered, bottom spec'd */
     }
 
   /* 2.  DRAW AXES FOR THE PLOT */
@@ -1187,8 +1213,8 @@ plot_frame (draw_canvas)
     case AXES_AND_BOX_AND_GRID:
     case AXES_AND_BOX:
       /* draw a box, not just a pair of axes */
-      fbox (XP(XSQ(0.0)), YP(YSQ(0.0)),
-	    XP(XSQ(1.0)), YP(YSQ(1.0)));
+      pl_fbox (XP(XSQ(0.0)), YP(YSQ(0.0)),
+	       XP(XSQ(1.0)), YP(YSQ(1.0)));
       break;
     case AXES:
       {
@@ -1209,9 +1235,9 @@ plot_frame (draw_canvas)
 		? YN(y_axis.other_axis_loc) - plotter.half_line_width
 		: YN(y_axis.alt_other_axis_loc) + plotter.half_line_width);
 	
-	fmove (xstart, ystart);
-	fcont (xmid, ymid);
-	fcont (xend, yend);
+	pl_fmove (xstart, ystart);
+	pl_fcont (xmid, ymid);
+	pl_fcont (xend, yend);
       }
       break;
     case AXES_AT_ORIGIN:
@@ -1225,10 +1251,10 @@ plot_frame (draw_canvas)
 		? YN(y_axis.alt_other_axis_loc)
 		: YN(y_axis.other_axis_loc));
 	
-	fline (xpos, YP(YSQ(0.0)) - plotter.half_line_width,
-	       xpos, YP(YSQ(1.0)) + plotter.half_line_width);
-	fline (XP(XSQ(0.0)) - plotter.half_line_width, ypos, 
-	       XP(XSQ(1.0)) + plotter.half_line_width, ypos);	
+	pl_fline (xpos, YP(YSQ(0.0)) - plotter.half_line_width,
+		  xpos, YP(YSQ(1.0)) + plotter.half_line_width);
+	pl_fline (XP(XSQ(0.0)) - plotter.half_line_width, ypos, 
+		  XP(XSQ(1.0)) + plotter.half_line_width, ypos);	
       }
       break;
     case NO_AXES:
@@ -1247,8 +1273,8 @@ plot_frame (draw_canvas)
       char labelbuf[2048];
 
       /* switch to our font for drawing x axis label and tick labels */
-      fontname (x_axis.font_name);
-      ffontsize (SS(x_axis.font_size));
+      pl_fontname (x_axis.font_name);
+      pl_ffontsize (SS(x_axis.font_size));
       
       for (i = x_axis.min_tick_count; i <= x_axis.max_tick_count; i++) 
 	/* tick range can be empty */
@@ -1270,13 +1296,13 @@ plot_frame (draw_canvas)
 		   && (y_axis.other_axis_loc != y_trans.input_max)))
 	    /* print labels below bottom boundary */
 	    {
-	      fmove (XV (xval),
-		     YN (y_axis.other_axis_loc)
-		     - (SS ((plotter.tick_size >= 0.0 ? 0.75 : 1.75) * fabs(plotter.tick_size))
-			+ plotter.half_line_width));
+	      pl_fmove (XV (xval),
+			YN (y_axis.other_axis_loc)
+			- (SS ((plotter.tick_size >= 0.0 ? 0.75 : 1.75) * fabs(plotter.tick_size))
+			   + plotter.half_line_width));
 	      print_tick_label (labelbuf, x_axis, x_trans,
 				(x_axis.type == A_LOG10) ? pow (10.0, xval) : xval);
-	      alabel('c', 't', labelbuf);
+	      pl_alabel('c', 't', labelbuf);
 	      x_axis.labelled_ticks++;
 	    }
 	  else
@@ -1289,13 +1315,13 @@ plot_frame (draw_canvas)
 		   && (y_axis.other_axis_loc != y_trans.input_min)
 		   && (y_axis.other_axis_loc != y_trans.input_max)))
 	      {
-		fmove (XV (xval),
-		       YN (y_axis.alt_other_axis_loc)
-		       + (SS ((plotter.tick_size >= 0.0 ? 0.75 : 1.75) * fabs(plotter.tick_size))
-			  + plotter.half_line_width));
+		pl_fmove (XV (xval),
+			  YN (y_axis.alt_other_axis_loc)
+			  + (SS ((plotter.tick_size >= 0.0 ? 0.75 : 1.75) * fabs(plotter.tick_size))
+			     + plotter.half_line_width));
 		print_tick_label (labelbuf, x_axis, x_trans,
 				  (x_axis.type == A_LOG10) ? pow (10.0, xval) : xval);
-		alabel('c', 'b', labelbuf);
+		pl_alabel('c', 'b', labelbuf);
 		x_axis.labelled_ticks++;
 	      }
 	  
@@ -1303,17 +1329,17 @@ plot_frame (draw_canvas)
 	  switch (plotter.grid_spec)
 	    {
 	    case AXES_AND_BOX_AND_GRID:
-	      linemod ("dotted");
-	      fmove (XV(xval), YP(YSQ(0.0)));
-	      fcont (XV(xval), YP(YSQ(1.0)));
-	      linemod ("solid");
+	      pl_linemod ("dotted");
+	      pl_fmove (XV(xval), YP(YSQ(0.0)));
+	      pl_fcont (XV(xval), YP(YSQ(1.0)));
+	      pl_linemod ("solid");
 	      /* fall through */
 	    case AXES_AND_BOX:
 	      if (!y_axis.switch_axis_end)
 		{
-		  fmove (XV (xval), 
+		  pl_fmove (XV (xval), 
 			 YN (y_axis.alt_other_axis_loc));
-		  fcont (XV (xval), 
+		  pl_fcont (XV (xval), 
 			 YN (y_axis.alt_other_axis_loc)
 			 - (SS (plotter.tick_size)
 			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
@@ -1321,9 +1347,9 @@ plot_frame (draw_canvas)
 		}
 	      else
 		{
-		  fmove (XV (xval), 
+		  pl_fmove (XV (xval), 
 			 YN (y_axis.other_axis_loc));
-		  fcont (XV (xval), 
+		  pl_fcont (XV (xval), 
 			 YN (y_axis.other_axis_loc)
 			 + (SS (plotter.tick_size)
 			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
@@ -1334,9 +1360,9 @@ plot_frame (draw_canvas)
 	    case AXES_AT_ORIGIN:
 	      if (!y_axis.switch_axis_end)
 		{
-		  fmove (XV (xval), 
+		  pl_fmove (XV (xval), 
 			 YN (y_axis.other_axis_loc));
-		  fcont (XV (xval), 
+		  pl_fcont (XV (xval), 
 			 YN (y_axis.other_axis_loc)
 			 + (SS (plotter.tick_size)
 			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
@@ -1344,9 +1370,9 @@ plot_frame (draw_canvas)
 		}
 	      else
 		{
-		  fmove (XV (xval), 
+		  pl_fmove (XV (xval), 
 			 YN (y_axis.alt_other_axis_loc));
-		  fcont (XV (xval), 
+		  pl_fcont (XV (xval), 
 			 YN (y_axis.alt_other_axis_loc)
 			 - (SS (plotter.tick_size)
 			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
@@ -1384,9 +1410,9 @@ plot_frame (draw_canvas)
 		  /* draw on both sides */
 		  if (!y_axis.switch_axis_end)
 		    {
-		      fmove (XV (xval), 
+		      pl_fmove (XV (xval), 
 			     YN (y_axis.alt_other_axis_loc));
-		      fcont (XV (xval), 
+		      pl_fcont (XV (xval), 
 			     YN (y_axis.alt_other_axis_loc)
 			     - (subtick_size
 				+ (subtick_size > 0.0 ? plotter.half_line_width
@@ -1394,9 +1420,9 @@ plot_frame (draw_canvas)
 		    }
 		  else
 		    {
-		      fmove (XV (xval), 
+		      pl_fmove (XV (xval), 
 			     YN (y_axis.other_axis_loc));
-		      fcont (XV (xval), 
+		      pl_fcont (XV (xval), 
 			     YN (y_axis.other_axis_loc)
 			     + (subtick_size
 				+ (subtick_size > 0.0 ? plotter.half_line_width
@@ -1408,9 +1434,9 @@ plot_frame (draw_canvas)
 		  if (!y_axis.switch_axis_end)
 		    /* draw on only one side */
 		    {
-		      fmove (XV (xval), 
+		      pl_fmove (XV (xval), 
 			     YN (y_axis.other_axis_loc));
-		      fcont (XV (xval), 
+		      pl_fcont (XV (xval), 
 			     YN (y_axis.other_axis_loc)
 			     + (subtick_size
 				+ (subtick_size > 0.0 ? plotter.half_line_width
@@ -1418,9 +1444,9 @@ plot_frame (draw_canvas)
 		    }
 		  else
 		    {
-		      fmove (XV (xval), 
+		      pl_fmove (XV (xval), 
 			     YN (y_axis.alt_other_axis_loc));
-		      fcont (XV (xval), 
+		      pl_fcont (XV (xval), 
 			     YN (y_axis.alt_other_axis_loc)
 			     - (subtick_size
 				+ (subtick_size > 0.0 ? plotter.half_line_width
@@ -1438,10 +1464,10 @@ plot_frame (draw_canvas)
 	  && x_axis.type == A_LINEAR
 	  && x_trans.input_min * x_trans.input_max < 0.0)
 	{
-	  linemod ("dotted");
-	  fline (XV(0.0), YP(YSQ(0.0)),
+	  pl_linemod ("dotted");
+	  pl_fline (XV(0.0), YP(YSQ(0.0)),
 		 XV(0.0), YP(YSQ(1.0)));
-	  linemod ("solid");	  
+	  pl_linemod ("solid");	  
 	}
     }
   
@@ -1456,8 +1482,8 @@ plot_frame (draw_canvas)
       char labelbuf[2048];
 
       /* switch to our font for drawing y axis label and tick labels */
-      fontname (y_axis.font_name);
-      ffontsize (SS(y_axis.font_size));
+      pl_fontname (y_axis.font_name);
+      pl_ffontsize (SS(y_axis.font_size));
       
       for (i = y_axis.min_tick_count; i <= y_axis.max_tick_count; i++) 
 	/* range can be empty */
@@ -1481,15 +1507,15 @@ plot_frame (draw_canvas)
 	    {
 	      double new_width;
 
-	      fmove (XN (x_axis.other_axis_loc)
+	      pl_fmove (XN (x_axis.other_axis_loc)
 		     - (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
 			   * fabs(plotter.tick_size))
 			+ plotter.half_line_width),
 		     YV (yval));
 	      print_tick_label (labelbuf, y_axis, y_trans,
 				(y_axis.type == A_LOG10) ? pow (10.0, yval) : yval);
-	      new_width = flabelwidth (labelbuf);
-	      alabel ('r', 'c', labelbuf);
+	      new_width = pl_flabelwidth (labelbuf);
+	      pl_alabel ('r', 'c', labelbuf);
 	      y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
 	      y_axis.labelled_ticks++;
 	    }
@@ -1505,15 +1531,15 @@ plot_frame (draw_canvas)
 	    {
 	      double new_width;
 
-	      fmove (XN (x_axis.alt_other_axis_loc)
+	      pl_fmove (XN (x_axis.alt_other_axis_loc)
 		    + (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
 			  * fabs(plotter.tick_size))
 		       + plotter.half_line_width),
 		     YV (yval));
 	      print_tick_label (labelbuf, y_axis, y_trans,
 				(y_axis.type == A_LOG10) ? pow (10.0, yval) : yval);
-	      new_width = flabelwidth (labelbuf);
-	      alabel ('l', 'c', labelbuf);
+	      new_width = pl_flabelwidth (labelbuf);
+	      pl_alabel ('l', 'c', labelbuf);
 	      y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
 	      y_axis.labelled_ticks++;
 	    }
@@ -1522,17 +1548,17 @@ plot_frame (draw_canvas)
 	  switch (plotter.grid_spec)
 	    {
 	    case AXES_AND_BOX_AND_GRID:
-	      linemod ("dotted");
-	      fmove (XP(XSQ(0.0)), YV (yval));
-	      fcont (XP(XSQ(1.0)), YV (yval));
-	      linemod ("solid");
+	      pl_linemod ("dotted");
+	      pl_fmove (XP(XSQ(0.0)), YV (yval));
+	      pl_fcont (XP(XSQ(1.0)), YV (yval));
+	      pl_linemod ("solid");
 	      /* fall through */
 	    case AXES_AND_BOX:
 	      if (!x_axis.switch_axis_end)
 		{
-		  fmove (XN (x_axis.alt_other_axis_loc),
+		  pl_fmove (XN (x_axis.alt_other_axis_loc),
 			 YV (yval));
-		  fcont (XN (x_axis.alt_other_axis_loc)
+		  pl_fcont (XN (x_axis.alt_other_axis_loc)
 			 - (SS (plotter.tick_size) 
 			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
 			       : -plotter.half_line_width)),
@@ -1540,9 +1566,9 @@ plot_frame (draw_canvas)
 		}
 	      else
 		{
-		  fmove (XN (x_axis.other_axis_loc),
+		  pl_fmove (XN (x_axis.other_axis_loc),
 			 YV (yval));
-		  fcont (XN (x_axis.other_axis_loc)
+		  pl_fcont (XN (x_axis.other_axis_loc)
 			 + (SS (plotter.tick_size) 
 			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
 			       : -plotter.half_line_width)),
@@ -1553,9 +1579,9 @@ plot_frame (draw_canvas)
 	    case AXES_AT_ORIGIN:
 	      if (!x_axis.switch_axis_end)
 		{
-		  fmove (XN (x_axis.other_axis_loc),
+		  pl_fmove (XN (x_axis.other_axis_loc),
 			 YV (yval));
-		  fcont (XN (x_axis.other_axis_loc)
+		  pl_fcont (XN (x_axis.other_axis_loc)
 			 + (SS (plotter.tick_size) 
 			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
 			       : -plotter.half_line_width)),
@@ -1563,9 +1589,9 @@ plot_frame (draw_canvas)
 		}
 	      else
 		{
-		  fmove (XN (x_axis.alt_other_axis_loc),
+		  pl_fmove (XN (x_axis.alt_other_axis_loc),
 			 YV (yval));
-		  fcont (XN (x_axis.alt_other_axis_loc)
+		  pl_fcont (XN (x_axis.alt_other_axis_loc)
 			 - (SS (plotter.tick_size) 
 			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
 			       : -plotter.half_line_width)),
@@ -1603,9 +1629,9 @@ plot_frame (draw_canvas)
 		case AXES_AND_BOX:
 		  if (!x_axis.switch_axis_end)
 		    {
-		      fmove (XN (x_axis.alt_other_axis_loc),
+		      pl_fmove (XN (x_axis.alt_other_axis_loc),
 			     YV (yval));
-		      fcont (XN (x_axis.alt_other_axis_loc)
+		      pl_fcont (XN (x_axis.alt_other_axis_loc)
 			     - (subtick_size
 				+ (subtick_size > 0.0 ? plotter.half_line_width
 				   : -plotter.half_line_width)),
@@ -1613,9 +1639,9 @@ plot_frame (draw_canvas)
 		    }
 		  else
 		    {
-		      fmove (XN (x_axis.other_axis_loc),
+		      pl_fmove (XN (x_axis.other_axis_loc),
 			     YV (yval));
-		      fcont (XN (x_axis.other_axis_loc)
+		      pl_fcont (XN (x_axis.other_axis_loc)
 			     + (subtick_size
 				+ (subtick_size > 0.0 ? plotter.half_line_width
 				   : -plotter.half_line_width)),
@@ -1626,9 +1652,9 @@ plot_frame (draw_canvas)
 		case AXES_AT_ORIGIN:
 		  if (!x_axis.switch_axis_end)
 		    {
-		      fmove (XN (x_axis.other_axis_loc),
+		      pl_fmove (XN (x_axis.other_axis_loc),
 			     YV (yval));
-		      fcont (XN (x_axis.other_axis_loc)
+		      pl_fcont (XN (x_axis.other_axis_loc)
 			     + (subtick_size
 				+ (subtick_size > 0.0 ? plotter.half_line_width
 				   : -plotter.half_line_width)),
@@ -1636,9 +1662,9 @@ plot_frame (draw_canvas)
 		    }
 		  else
 		    {
-		      fmove (XN (x_axis.alt_other_axis_loc),
+		      pl_fmove (XN (x_axis.alt_other_axis_loc),
 			     YV (yval));
-		      fcont (XN (x_axis.alt_other_axis_loc)
+		      pl_fcont (XN (x_axis.alt_other_axis_loc)
 			     - (subtick_size
 			       + (subtick_size > 0.0 ? plotter.half_line_width
 				  : -plotter.half_line_width)),
@@ -1656,10 +1682,10 @@ plot_frame (draw_canvas)
 	  && y_axis.type == A_LINEAR
 	  && y_trans.input_min * y_trans.input_max < 0.0)
 	{
-	  linemod ("dotted");
-	  fline (XP(XSQ(0.0)), YV(0.0),
+	  pl_linemod ("dotted");
+	  pl_fline (XP(XSQ(0.0)), YV(0.0),
 		 XP(XSQ(1.0)), YV(0.0));
-	  linemod ("solid");	  
+	  pl_linemod ("solid");	  
 	}
     }
 
@@ -1777,8 +1803,8 @@ plot_frame (draw_canvas)
       double xloc;
 
       /* switch to our font for drawing x axis label and tick labels */
-      fontname (x_axis.font_name);
-      x_axis_font_size = ffontsize (SS(x_axis.font_size));
+      pl_fontname (x_axis.font_name);
+      x_axis_font_size = pl_ffontsize (SS(x_axis.font_size));
 
       if (plotter.grid_spec != AXES_AT_ORIGIN)
 	/* center the label on the axis */
@@ -1799,23 +1825,23 @@ plot_frame (draw_canvas)
       
       if (!y_axis.switch_axis_end) /* axis on bottom, label below it */
 	{
-	  fmove (XV (xloc), 
+	  pl_fmove (XV (xloc), 
 		 YN (y_axis.other_axis_loc)
 		 - (SS ((plotter.tick_size >= 0.0 ? 0.875 : 2.125) 
 			* fabs(plotter.tick_size))
 		    + (6*x_axis_font_size)/5
 		    + plotter.half_line_width));
-	  alabel ('c', 't', x_axis.label);
+	  pl_alabel ('c', 't', x_axis.label);
 	}
       else			/* axis on top, label above it */
 	{
-	  fmove (XV (xloc), 
+	  pl_fmove (XV (xloc), 
 		 YN (y_axis.alt_other_axis_loc)
 		 + (SS ((plotter.tick_size >= 0.0 ? 0.875 : 2.125) 
 			* fabs(plotter.tick_size))
 		    + (6*x_axis_font_size)/5
 		    + plotter.half_line_width));
-	  alabel ('c', 'b', x_axis.label);
+	  pl_alabel ('c', 'b', x_axis.label);
 	}
     }
 
@@ -1828,8 +1854,8 @@ plot_frame (draw_canvas)
       double yloc;
 
       /* switch to our font for drawing y axis label and tick labels */
-      fontname (y_axis.font_name);
-      y_axis_font_size = ffontsize (SS(y_axis.font_size));
+      pl_fontname (y_axis.font_name);
+      y_axis_font_size = pl_ffontsize (SS(y_axis.font_size));
 
       if (plotter.grid_spec != AXES_AT_ORIGIN)
 	/* center the label on the axis */
@@ -1852,7 +1878,7 @@ plot_frame (draw_canvas)
 
       if (!x_axis.switch_axis_end)
 	{
-	  fmove (XN (x_axis.other_axis_loc)
+	  pl_fmove (XN (x_axis.other_axis_loc)
 		 - (libplot_has_font_metrics ?
 		    (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
 			* fabs(plotter.tick_size)) 
@@ -1868,17 +1894,17 @@ plot_frame (draw_canvas)
 	  if (libplot_has_font_metrics
 	      && !plotter.no_rotate_y_label) /* can rotate label */
 	    {
-	      textangle (90);
-	      alabel ('c', 'x', y_axis.label);
-	      textangle (0);
+	      pl_textangle (90);
+	      pl_alabel ('c', 'x', y_axis.label);
+	      pl_textangle (0);
 	    }
 	  else
 	    /* non-rotated axis label, right justified */
-	    alabel ('r', 'c', y_axis.label);
+	    pl_alabel ('r', 'c', y_axis.label);
 	}
       else
 	{
-	  fmove (XN (x_axis.alt_other_axis_loc)
+	  pl_fmove (XN (x_axis.alt_other_axis_loc)
 		 + (libplot_has_font_metrics ?
 		    (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
 			* fabs(plotter.tick_size)) 
@@ -1894,29 +1920,31 @@ plot_frame (draw_canvas)
 	  if (libplot_has_font_metrics
 	      && !plotter.no_rotate_y_label) /* can rotate label */
 	    {
-	      textangle (90);
-	      alabel ('c', 't', y_axis.label);
-	      textangle (0);
+	      pl_textangle (90);
+	      pl_alabel ('c', 't', y_axis.label);
+	      pl_textangle (0);
 	    }
 	  else
 	    /* non-rotated axis label, left justified */
-	    alabel ('l', 'c', y_axis.label);
+	    pl_alabel ('l', 'c', y_axis.label);
 	}
     }
 
   /* END OF TASKS */
 
   /* flush frame to device */
-  flushpl();
+  pl_flushpl();
 
-  restorestate();
+  pl_restorestate();
 
   if (plotter.grid_spec != NO_AXES)
     {
       if (!tick_warning_printed && 
-	  (x_axis.labelled_ticks <= 2 || y_axis.labelled_ticks <= 2))
+	  ((!x_axis.omit_ticks && x_axis.labelled_ticks <= 2)
+	   || (!y_axis.omit_ticks && y_axis.labelled_ticks <= 2)))
 	{
-	  fprintf (stderr, "%s: too few labelled axis ticks, set tick spacing manually\n",
+	  fprintf (stderr,
+		   "%s: too few labelled axis ticks, adjust tick spacing manually\n",
 		   progname);
 	  tick_warning_printed = true;
 	}
@@ -1944,8 +1972,8 @@ plot_abscissa_log_subsubtick (xval)
   double subsubtick_size = SS(plotter.subtick_size);
       
   /* switch to our font for drawing x axis label and tick labels */
-  fontname (x_axis.font_name);
-  ffontsize (SS(x_axis.font_size));
+  pl_fontname (x_axis.font_name);
+  pl_ffontsize (SS(x_axis.font_size));
   
   /* discard subsubtick locations outside plotting area */
   if (xval < x_trans.input_min - FUZZ * xrange
@@ -1959,22 +1987,22 @@ plot_abscissa_log_subsubtick (xval)
 			pow (10.0, xval));
       if (!y_axis.switch_axis_end)
 	{
-	  fmove (XV (xval),
+	  pl_fmove (XV (xval),
 		 YN (y_axis.other_axis_loc)
 		 - ((tick_size >= 0 ? 0.75 : 1.75)
 		    * fabs((double)tick_size)
 		    + plotter.half_line_width));
-	  alabel('c', 't', labelbuf);
+	  pl_alabel('c', 't', labelbuf);
 	  x_axis.labelled_ticks++;
 	}
       else
 	{
-	  fmove (XV (xval),
+	  pl_fmove (XV (xval),
 		 YN (y_axis.alt_other_axis_loc)
 		 + ((tick_size >= 0 ? 0.75 : 1.75) 
 		    * fabs((double)tick_size)
 		    + plotter.half_line_width));
-	  alabel('c', 'b', labelbuf);
+	  pl_alabel('c', 'b', labelbuf);
 	  x_axis.labelled_ticks++;
 	}
     }
@@ -1983,17 +2011,17 @@ plot_abscissa_log_subsubtick (xval)
   switch (plotter.grid_spec)
     {
     case AXES_AND_BOX_AND_GRID:
-      linemod ("dotted");
-      fmove (XV (xval), YP(YSQ(0.0)));
-      fcont (XV (xval), YP(YSQ(1.0)));
-      linemod ("solid");
+      pl_linemod ("dotted");
+      pl_fmove (XV (xval), YP(YSQ(0.0)));
+      pl_fcont (XV (xval), YP(YSQ(1.0)));
+      pl_linemod ("solid");
       /* fall through */
     case AXES_AND_BOX:
       if (!y_axis.switch_axis_end)
 	{
-	  fmove (XV (xval), 
+	  pl_fmove (XV (xval), 
 		 YN (y_axis.alt_other_axis_loc));
-	  fcont (XV (xval),
+	  pl_fcont (XV (xval),
 		 YN (y_axis.alt_other_axis_loc)
 		 - (subsubtick_size
 		    + (subsubtick_size > 0.0
@@ -2002,9 +2030,9 @@ plot_abscissa_log_subsubtick (xval)
 	}
       else
 	{
-	  fmove (XV (xval), 
+	  pl_fmove (XV (xval), 
 		 YN (y_axis.other_axis_loc));
-	  fcont (XV (xval),
+	  pl_fcont (XV (xval),
 		 YN (y_axis.other_axis_loc)
 		 + (subsubtick_size
 		    + (subsubtick_size > 0.0
@@ -2016,9 +2044,9 @@ plot_abscissa_log_subsubtick (xval)
     case AXES_AT_ORIGIN:
       if (!y_axis.switch_axis_end)
 	{
-	  fmove (XV (xval), 
+	  pl_fmove (XV (xval), 
 		 YN (y_axis.other_axis_loc));
-	  fcont (XV (xval), 
+	  pl_fcont (XV (xval), 
 		 YN (y_axis.other_axis_loc)
 		 + (subsubtick_size
 		    + (subsubtick_size > 0.0 
@@ -2027,9 +2055,9 @@ plot_abscissa_log_subsubtick (xval)
 	}
       else
 	{
-	  fmove (XV (xval), 
+	  pl_fmove (XV (xval), 
 		 YN (y_axis.alt_other_axis_loc));
-	  fcont (XV (xval), 
+	  pl_fcont (XV (xval), 
 		 YN (y_axis.alt_other_axis_loc)
 		 - (subsubtick_size
 		    + (subsubtick_size > 0.0 
@@ -2057,8 +2085,8 @@ plot_ordinate_log_subsubtick (yval)
   double subsubtick_size = SS(plotter.subtick_size);
     
   /* switch to our font for drawing y axis label and tick labels */
-  fontname (y_axis.font_name);
-  ffontsize (SS(y_axis.font_size));
+  pl_fontname (y_axis.font_name);
+  pl_ffontsize (SS(y_axis.font_size));
   
   /* discard subsubtick locations outside plotting area */
   if (yval < y_trans.input_min - FUZZ * yrange
@@ -2074,25 +2102,25 @@ plot_ordinate_log_subsubtick (yval)
 			pow (10.0, yval));
       if (!x_axis.switch_axis_end)
 	{
-	  fmove (XN(x_axis.other_axis_loc)
+	  pl_fmove (XN(x_axis.other_axis_loc)
 		 - ((tick_size >= 0 ? 0.75 : 1.75) 
 		    * fabs((double)tick_size)
 		    + plotter.half_line_width),
 		 YV (yval));
-	  new_width = flabelwidth (labelbuf);
-	  alabel ('r', 'c', labelbuf);
+	  new_width = pl_flabelwidth (labelbuf);
+	  pl_alabel ('r', 'c', labelbuf);
 	  y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
 	  y_axis.labelled_ticks++;
 	}
       else
 	{
-	  fmove (XN(x_axis.alt_other_axis_loc)
+	  pl_fmove (XN(x_axis.alt_other_axis_loc)
 		 + ((tick_size >= 0 ? 0.75 : 1.75) 
 		    * fabs((double)tick_size)
 		    + plotter.half_line_width),
 		YV (yval));
-	  new_width = flabelwidth (labelbuf);
-	  alabel ('l', 'c', labelbuf);
+	  new_width = pl_flabelwidth (labelbuf);
+	  pl_alabel ('l', 'c', labelbuf);
 	  y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
 	  y_axis.labelled_ticks++;
 	}
@@ -2102,17 +2130,17 @@ plot_ordinate_log_subsubtick (yval)
   switch (plotter.grid_spec)
     {
     case AXES_AND_BOX_AND_GRID:
-      linemod ("dotted");
-      fmove (XP(XSQ(0.0)), YV (yval));
-      fcont (XP(XSQ(1.0)), YV (yval));
-      linemod ("solid");
+      pl_linemod ("dotted");
+      pl_fmove (XP(XSQ(0.0)), YV (yval));
+      pl_fcont (XP(XSQ(1.0)), YV (yval));
+      pl_linemod ("solid");
       /* fall through */
     case AXES_AND_BOX:
       if (!x_axis.switch_axis_end)		      
 	{
-	  fmove (XN (x_axis.alt_other_axis_loc),
+	  pl_fmove (XN (x_axis.alt_other_axis_loc),
 		 YV (yval));
-	  fcont (XN (x_axis.alt_other_axis_loc)
+	  pl_fcont (XN (x_axis.alt_other_axis_loc)
 		 - (subsubtick_size
 		    + (subsubtick_size > 0.0 
 		       ? plotter.half_line_width
@@ -2121,9 +2149,9 @@ plot_ordinate_log_subsubtick (yval)
 	}
       else
 	{
-	  fmove (XN (x_axis.other_axis_loc),
+	  pl_fmove (XN (x_axis.other_axis_loc),
 		 YV (yval));
-	  fcont (XN (x_axis.other_axis_loc)
+	  pl_fcont (XN (x_axis.other_axis_loc)
 		 + (subsubtick_size
 		    + (subsubtick_size > 0.0 
 		       ? plotter.half_line_width
@@ -2135,9 +2163,9 @@ plot_ordinate_log_subsubtick (yval)
     case AXES_AT_ORIGIN:
       if (!x_axis.switch_axis_end)
 	{
-	  fmove (XN (x_axis.other_axis_loc),
+	  pl_fmove (XN (x_axis.other_axis_loc),
 		 YV (yval));
-	  fcont (XN (x_axis.other_axis_loc)
+	  pl_fcont (XN (x_axis.other_axis_loc)
 		 + (subsubtick_size
 		    + (subsubtick_size > 0.0 
 		       ? plotter.half_line_width
@@ -2146,9 +2174,9 @@ plot_ordinate_log_subsubtick (yval)
 	}
       else
 	{
-	  fmove (XN (x_axis.alt_other_axis_loc),
+	  pl_fmove (XN (x_axis.alt_other_axis_loc),
 		 YV (yval));
-	  fcont (XN (x_axis.alt_other_axis_loc)
+	  pl_fcont (XN (x_axis.alt_other_axis_loc)
 		 - (subsubtick_size
 		   + (plotter.tick_size > 0.0 
 		      ? plotter.half_line_width
@@ -2162,7 +2190,7 @@ plot_ordinate_log_subsubtick (yval)
 }
 
 
-/* set_line_style() maps from linemodes to physical linemodes.  See
+/* set_line_style() maps from pl_linemodes to physical pl_linemodes.  See
  * explanation at head of file. */
 
 static void
@@ -2177,16 +2205,16 @@ set_line_style (style, use_color)
   if (!use_color)		/* monochrome */
     {
       if (style > 0)
-	/* don't issue linemod if style<=0, since no polyline will be drawn */
+	/* don't issue pl_linemod if style<=0, since no polyline will be drawn */
 	{
 	  int i;
 
 	  i = (style - 1) % NO_OF_LINEMODES;
-	  linemod (linemodes[i]);      
+	  pl_linemod (linemodes[i]);      
 	}
       
       /* use same color as used for plot frame */
-      colorname (plotter.frame_color);
+      pl_colorname (plotter.frame_color);
     }
   else				/* color */
     {
@@ -2196,17 +2224,17 @@ set_line_style (style, use_color)
 	{
 	  i = ((style - 1) / NO_OF_LINEMODES) % NO_OF_LINEMODES;
 	  j = (style - 1) % NO_OF_LINEMODES;
-	  linemod (linemodes[i]);            
+	  pl_linemod (linemodes[i]);            
 	}
 
       else if (style == 0)	/* use first color, as if -m 1 was spec'd */
 				/* (no line will be drawn) */
 	j = 0;
 
-      else			/* neg. linemode (no line will be drawn) */
+      else			/* neg. pl_linemode (no line will be drawn) */
 	j = (-style - 1) % (NO_OF_LINEMODES - 1);
 
-      colorname (colorstyle[j]);
+      pl_colorname (colorstyle[j]);
     }
 }
 
@@ -2231,7 +2259,7 @@ plot_point_array (p, length)
 }
 
 /* plot_point() plots a single point, including the appropriate symbol and
- * errorbar(s) if any.  It may call either fcont() or fmove(), depending on
+ * errorbar(s) if any.  It may call either pl_fcont() or pl_fmove(), depending on
  * whether the pendown flag is set or not.  Gnuplot-style clipping (clip
  * mode = 0,1,2) is supported.  Of the plotter's global variables, it makes
  * heavy use of the x_trans and y_trans structures, which specify the
@@ -2262,13 +2290,13 @@ plot_point (point)
       set_line_style (point->linemode, point->use_color);
 
       /* N.B. linewidth < 0.0 means use libplot default */
-      flinewidth (point->line_width * (double)PLOT_SIZE);
+      pl_flinewidth (point->line_width * (double)PLOT_SIZE);
       
       if (point->fill_fraction < 0.0)
 	intfill = 0;		/* transparent */
       else			/* guaranteed to be <= 1.0 */
 	intfill = 1 + IROUND((1.0 - point->fill_fraction) * 0xfffe);
-      filltype (intfill);
+      pl_filltype (intfill);
     }
 
   /* have endpoints of new line segment */
@@ -2286,7 +2314,7 @@ plot_point (point)
 
   if (!(clipval & ACCEPTED))	/* rejected in toto */
     {
-      fmove (XV (point->x), YV (point->y)); /* move with pen up */      
+      pl_fmove (XV (point->x), YV (point->y)); /* move with pen up */      
       return;
     }
 
@@ -2298,21 +2326,21 @@ plot_point (point)
 	case 0:
 	  if ((clipval & CLIPPED_FIRST) || (clipval & CLIPPED_SECOND))
 	    /* clipped on at least one end, so move with pen up */
-	    fmove (XV (point->x), YV (point->y));
+	    pl_fmove (XV (point->x), YV (point->y));
 	  else
 	    /* line segment within box, so move with pen down */
 	    {
 	      if (!plotter.first_point_of_plot)
-		fcont (XV (point->x), YV (point->y));
+		pl_fcont (XV (point->x), YV (point->y));
 	      else
-		fmove (XV (point->x), YV (point->y));
+		pl_fmove (XV (point->x), YV (point->y));
 	    }
 	  break;
 	case 1:
 	default:
 	  if ((clipval & CLIPPED_FIRST) && (clipval & CLIPPED_SECOND))
 	    /* both OOB, so move with pen up */
-	    fmove (XV (point->x), YV (point->y));
+	    pl_fmove (XV (point->x), YV (point->y));
 	  else			
 	    /* at most one point is OOB */
 	    {
@@ -2321,41 +2349,41 @@ plot_point (point)
 		  if (!plotter.first_point_of_plot)
 		    {
 		      /* move to clipped current point, draw line segment */
-		      fmove (XV (local_x0), YV (local_y0));
-		      fcont (XV (point->x), YV (point->y));
+		      pl_fmove (XV (local_x0), YV (local_y0));
+		      pl_fcont (XV (point->x), YV (point->y));
 		    }
 		  else
-		    fmove (XV (point->x), YV (point->y));
+		    pl_fmove (XV (point->x), YV (point->y));
 		}
 	      else		/* current point not OOB, new point OOB */
 		{
 		  if (!plotter.first_point_of_plot)
 		    {
 		      /* draw line segment to clipped new point */
-		      fcont (XV (local_x1), YV (local_y1));
+		      pl_fcont (XV (local_x1), YV (local_y1));
 		      /* N.B. lib's notion of position now differs from ours */
 		    }
 		  else
-		    fmove (XV (point->x), YV (point->y));
+		    pl_fmove (XV (point->x), YV (point->y));
 		}
 	    }
 	  break;
 	case 2:
 	  if ((clipval & CLIPPED_FIRST) || plotter.first_point_of_plot)
 	    /* move to clipped current point if necc. */
-	    fmove (XV (local_x0), YV (local_y0));
+	    pl_fmove (XV (local_x0), YV (local_y0));
 	  
 	  /* draw line segment to clipped new point */
-	  fcont (XV (local_x1), YV (local_y1));
+	  pl_fcont (XV (local_x1), YV (local_y1));
 	  
 	  if (clipval & CLIPPED_SECOND)
 	    /* new point OOB, so move to new point, breaking polyline */
-	    fmove (XV (point->x), YV (point->y)); 
+	    pl_fmove (XV (point->x), YV (point->y)); 
 	  break;
 	}
     }
   else				/* move with pen up */
-    fmove (XV (point->x), YV (point->y)); 
+    pl_fmove (XV (point->x), YV (point->y)); 
 
   plotter.first_point_of_plot = false;
   
@@ -2363,17 +2391,17 @@ plot_point (point)
   if (clipval & CLIPPED_SECOND)
     return;
 
-  /* plot symbol and errorbar, doing a savestate()--restorestate() to keep
+  /* plot symbol and errorbar, doing a pl_savestate()--pl_restorestate() to keep
      from breaking the polyline under construction (if any) */
   if (point->symbol >= 32)	/* yow, a character */
     {
       /* will do a font change, so save & restore state */
-      savestate();
+      pl_savestate();
       plot_errorbar (point);
-      fontname (point->symbol_font_name);
-      fmarker (XV(point->x), YV(point->y), 
+      pl_fontname (point->symbol_font_name);
+      pl_fmarker (XV(point->x), YV(point->y), 
 	       point->symbol, SS(point->symbol_size));
-      restorestate();
+      pl_restorestate();
     }
 
   else if (point->symbol > 0)	/* a marker symbol */
@@ -2381,17 +2409,17 @@ plot_point (point)
       if (point->linemode > 0)
 	/* drawing a line, so (to keep from breaking it) save & restore state*/
 	{
-	  savestate();
+	  pl_savestate();
 	  plot_errorbar (point); /* may or may not have an errorbar */
-	  fmarker (XV(point->x), YV(point->y), 
+	  pl_fmarker (XV(point->x), YV(point->y), 
 		  point->symbol, SS(point->symbol_size));
-	  restorestate();
+	  pl_restorestate();
 	}
       else
 	/* not drawing a line, so just place the marker */
 	{
 	  plot_errorbar (point);
-	  fmarker (XV(point->x), YV(point->y), 
+	  pl_fmarker (XV(point->x), YV(point->y), 
 		   point->symbol, SS(point->symbol_size));
 	}
     }
@@ -2400,7 +2428,7 @@ plot_point (point)
     /* backward compatibility: -m 0 (even with -S 0) plots a dot */
     {
       plot_errorbar (point);
-      fmarker (XV(point->x), YV(point->y), M_DOT, SS(point->symbol_size));
+      pl_fmarker (XV(point->x), YV(point->y), M_DOT, SS(point->symbol_size));
     }
 
   else				/* no symbol */
@@ -2408,9 +2436,9 @@ plot_point (point)
       if (point->linemode > 0)
 	/* drawing a line, so (to keep from breaking it) save & restore state*/
 	{
-	  savestate ();
+	  pl_savestate ();
 	  plot_errorbar (point);      
-	  restorestate ();
+	  pl_restorestate ();
 	}
       else
 	/* no polyline, no symbol either; just draw errorbar */
@@ -2444,7 +2472,7 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
   bool accepted;
   int clipval = 0;
   
-  do
+  for ( ; ; )
     {
       if (!(outcode0 | outcode1)) /* accept */
 	{
@@ -2497,7 +2525,6 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
 	    }
 	}
     }
-  while (true);
 
   if (accepted)
     {
@@ -2574,26 +2601,26 @@ plot_errorbar (p)
   if (p->have_x_errorbar || p->have_y_errorbar)
     /* save & restore state, since error bars are solid */
     {
-      savestate();
-      linemod ("solid");
+      pl_savestate();
+      pl_linemod ("solid");
 	
       if (p->have_x_errorbar)
 	{
-	  fline (XV(p->xmin), YV(p->y) - 0.5 * SS(p->symbol_size),
+	  pl_fline (XV(p->xmin), YV(p->y) - 0.5 * SS(p->symbol_size),
 		 XV(p->xmin), YV(p->y) + 0.5 * SS(p->symbol_size));
-	  fline (XV(p->xmin), YV(p->y), XV(p->xmax), YV(p->y));
-	  fline (XV(p->xmax), YV(p->y) - 0.5 * SS(p->symbol_size),
+	  pl_fline (XV(p->xmin), YV(p->y), XV(p->xmax), YV(p->y));
+	  pl_fline (XV(p->xmax), YV(p->y) - 0.5 * SS(p->symbol_size),
 		 XV(p->xmax), YV(p->y) + 0.5 * SS(p->symbol_size));
 	}
       if (p->have_y_errorbar)
 	{
-	  fline (XV(p->x) - 0.5 * SS(p->symbol_size), YV(p->ymin),
+	  pl_fline (XV(p->x) - 0.5 * SS(p->symbol_size), YV(p->ymin),
 		 XV(p->x) + 0.5 * SS(p->symbol_size), YV(p->ymin));
-	  fline (XV(p->x), YV(p->ymin), XV(p->x), YV(p->ymax));
-	  fline (XV(p->x) - 0.5 * SS(p->symbol_size), YV(p->ymax),
+	  pl_fline (XV(p->x), YV(p->ymin), XV(p->x), YV(p->ymax));
+	  pl_fline (XV(p->x) - 0.5 * SS(p->symbol_size), YV(p->ymax),
 		 XV(p->x) + 0.5 * SS(p->symbol_size), YV(p->ymax));
 	}
 
-      restorestate();
+      pl_restorestate();
     }
 }

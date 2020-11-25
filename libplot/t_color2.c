@@ -9,7 +9,6 @@
    gray are the only colors in the interior of the cube. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 const Color _kermit_stdcolors[KERMIT_NUM_STD_COLORS] = 

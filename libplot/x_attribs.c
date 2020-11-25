@@ -1,40 +1,13 @@
-/* This internal method is invoked before drawing any polyline.  It sets
-   the relevant attributes in our X graphics contexts (line type, cap type,
-   join type, line width) to what they should be. */
+/* This internal method is invoked by an XDrawablePlotter (or XPlotter)
+   before drawing any polyline.  It sets the relevant attributes in our X
+   graphics contexts (line type, cap type, join type, line width, fill
+   rule) to what they should be. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
-/* the canonical four non-solid line patterns */
-
-#define DOTTED_LENGTH 2
-#define DOTDASHED_LENGTH 4
-#define SHORTDASHED_LENGTH 2
-#define LONGDASHED_LENGTH 2
-
-#define MAX_DASH_LENGTH 4	/* max of preceding pattern lengths */
-
-/* these on/off bit patterns are those used by the xterm Tektronix
-   emulator, except that the emulator seems incorrectly to have on and
-   off interchanged */
-static const char dotted[DOTTED_LENGTH]		  = { 1, 3 };
-static const char dotdashed[DOTDASHED_LENGTH] 	  = { 1, 3, 4, 3 };  
-static const char shortdashed[SHORTDASHED_LENGTH] = { 4, 4 };  
-static const char longdashed[LONGDASHED_LENGTH]   = { 7, 4 };    
-
-/* N.B. ps4014, the Tek->PS translator in Adobe's Transcript package, uses
-   { 1, 2 }, { 1, 2, 8, 2 }, { 2, 2 }, { 12, 2 } instead. */
-
-/* N.B. a genuine Tektronix 4014 (with Enhanced Graphics Module) uses { 1,
-   1 }, { 1, 1, 5, 1 }, { 3, 1 }, { 6, 2 }.  See the Tektronix 4014 Service
-   Instruction Manual (dated Aug. 1974) for the diode array that produces
-   these patterns. */
-
-/* We scale the above bit patterns by (essentially) the line width, but we
-   can't scale by too great a factor, because each entry needs to be <= 255
-   to fit in a char.  We make the entries <= 127 to be on the safe side. */
-#define MAX_SCALE 18
+/* The length of each dash must fit in an unsigned char (X11 convention) */
+#define MAX_DASH_LENGTH 255
 
 void
 #ifdef _HAVE_PROTOS
@@ -44,52 +17,103 @@ _x_set_attributes ()
 #endif
 {
   XGCValues gcv;
-  char dashbuf[MAX_DASH_LENGTH];
-  int scale, i;
 
-  /* scale by line width in terms of pixels, if nonzero */
-  scale = _plotter->drawstate->quantized_device_line_width;
-  if (scale <= 0)
-    scale = 1;
-  if (scale > MAX_SCALE)
-    scale = MAX_SCALE;
-
-  switch (_plotter->drawstate->line_type)
+  if (_plotter->drawstate->dash_array_in_effect)
+    /* have user-specified dash array */
     {
-    case L_SOLID:
-    default:
-      gcv.line_style = LineSolid;
-      break;
-    case L_DOTTED:
-      for (i = 0; i < DOTTED_LENGTH; i++)
-	dashbuf[i] = scale * dotted[i];
-      XSetDashes (_plotter->dpy, _plotter->drawstate->gc_fg, 
-		  0, dashbuf, DOTTED_LENGTH);
-      gcv.line_style = LineOnOffDash;
-      break;
-    case L_DOTDASHED:
-      for (i = 0; i < DOTDASHED_LENGTH; i++)
-	dashbuf[i] = scale * dotdashed[i];
-      XSetDashes (_plotter->dpy, _plotter->drawstate->gc_fg, 
-		  0, dashbuf, DOTDASHED_LENGTH);
-      gcv.line_style = LineOnOffDash;
-      break;
-    case L_SHORTDASHED:
-      for (i = 0; i < SHORTDASHED_LENGTH; i++)
-	dashbuf[i] = scale * shortdashed[i];
-      XSetDashes (_plotter->dpy, _plotter->drawstate->gc_fg, 
-		  0, dashbuf, SHORTDASHED_LENGTH);
-      gcv.line_style = LineOnOffDash;
-      break;
-    case L_LONGDASHED:
-      for (i = 0; i < LONGDASHED_LENGTH; i++)
-	dashbuf[i] = scale * longdashed[i];
-      XSetDashes (_plotter->dpy, _plotter->drawstate->gc_fg, 
-		  0, dashbuf, LONGDASHED_LENGTH);
-      gcv.line_style = LineOnOffDash;
-      break;
-    }
+      int num_dashes, offset;
+      unsigned char *dashbuf;
 
+      num_dashes = _plotter->drawstate->dash_array_len;
+      if (num_dashes > 0)
+	{
+	  bool odd_length;
+	  double min_sing_val, max_sing_val;
+	  int i, dash_cycle_length;
+
+	  /* compute minimum singular value of user->device coordinate map,
+	     which we use as a multiplicative factor to convert line widths
+	     (cf. g_linewidth.c), dash lengths, etc. */
+	  _matrix_sing_vals (_plotter->drawstate->transform.m, 
+			     &min_sing_val, &max_sing_val);
+
+	  odd_length = (num_dashes & 1 ? true : false);
+	  dashbuf = (unsigned char *)_plot_xmalloc ((odd_length ? 2 : 1) * num_dashes * sizeof(unsigned char));
+	  dash_cycle_length = 0;
+	  for (i = 0; i < num_dashes; i++)
+	    {
+	      double unrounded_dashlen;
+	      int dashlen;
+
+	      unrounded_dashlen = 
+		min_sing_val * _plotter->drawstate->dash_array[i];
+
+	      dashlen = IROUND(unrounded_dashlen);
+	      dashlen = IMAX(dashlen, 1);
+	      dashlen = IMIN(dashlen, MAX_DASH_LENGTH);
+
+	      /* convert dash length, int -> unsigned char */
+	      dashbuf[i] = (unsigned int)dashlen;
+	      dash_cycle_length += dashlen;
+	      if (odd_length)
+		{
+		  dashbuf[num_dashes + i] = (unsigned int)dashlen;
+		  dash_cycle_length += dashlen;
+		}
+	    }
+	  if (odd_length)
+	    num_dashes *= 2;
+
+	  offset = IROUND(min_sing_val * _plotter->drawstate->dash_offset);
+	  if (dash_cycle_length > 0)
+	    /* choose an offset in range 0..dash_cycle_length-1 */
+	    {
+	      while (offset < 0)
+		offset += dash_cycle_length;
+	      offset %= dash_cycle_length;
+	    }
+
+	  XSetDashes (_plotter->x_dpy, _plotter->drawstate->x_gc_fg, 
+		      offset, (char *)dashbuf, num_dashes);
+	  free (dashbuf);
+	  gcv.line_style = LineOnOffDash;
+	}
+      else			/* no dashes, will draw as solid line */
+	gcv.line_style = LineSolid;
+
+    }
+  else
+    /* have one of the canonical line types */
+    {
+      if (_plotter->drawstate->line_type != L_SOLID)
+	{
+	  const int *dash_array;
+	  unsigned char dashbuf[MAX_DASH_ARRAY_LEN];
+	  int i, scale, num_dashes;
+
+	  num_dashes = _line_styles[_plotter->drawstate->line_type].dash_array_len;	  
+	  dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	  /* scale by line width in terms of pixels, if nonzero */
+	  scale = _plotter->drawstate->quantized_device_line_width;
+	  if (scale <= 0)
+	    scale = 1;
+	  for (i = 0; i < num_dashes; i++)
+	    {
+	      int dashlen;
+	      
+	      dashlen = scale * dash_array[i];
+	      dashlen = IMAX(dashlen, 1);
+	      dashlen = IMIN(dashlen, MAX_DASH_LENGTH);
+	      dashbuf[i] = (unsigned int)dashlen; /* int->unsigned char */
+	    }
+	  XSetDashes (_plotter->x_dpy, _plotter->drawstate->x_gc_fg, 
+		      0, (char *)dashbuf, num_dashes);
+	  gcv.line_style = LineOnOffDash;	  
+	}
+      else			/* no dashes */
+	gcv.line_style = LineSolid;
+    }
+  
   /* in GC, set line cap type */
   switch (_plotter->drawstate->cap_type)
     {
@@ -102,6 +126,9 @@ _x_set_attributes ()
       break;
     case CAP_PROJECT:
       gcv.cap_style = CapProjecting;
+      break;
+    case CAP_TRIANGULAR:	/* not supported by X11 */
+      gcv.cap_style = CapRound;
       break;
     }
 
@@ -118,19 +145,36 @@ _x_set_attributes ()
     case JOIN_BEVEL:
       gcv.join_style = JoinBevel;
       break;
+    case JOIN_TRIANGULAR:	/* not supported by X11 */
+      gcv.join_style = JoinRound;
+      break;
+    }
+
+  /* in GC, set fill rule */
+  switch (_plotter->drawstate->fill_rule_type)
+    {
+    case FILL_ODD_WINDING:
+    default:
+      gcv.fill_rule = EvenOddRule;
+      break;
+    case FILL_NONZERO_WINDING:
+      gcv.fill_rule = WindingRule;
+      break;
     }
 
   /* in GC, set line width in device coors (pixels) */
   gcv.line_width = _plotter->drawstate->quantized_device_line_width;
 
-  /* change both our GC's: the one used for drawing, and the one used for
-     filling */
-  XChangeGC (_plotter->dpy, _plotter->drawstate->gc_fg, 
-	     GCLineStyle | GCCapStyle | GCJoinStyle | GCLineWidth, &gcv);
-  XChangeGC (_plotter->dpy, _plotter->drawstate->gc_fill, 
-	     GCLineStyle | GCCapStyle | GCJoinStyle | GCLineWidth, &gcv);
+  /* make the same changes to both our GC's: the one used for drawing, and
+     the one used for filling (this is overdoing things a bit) */
+  XChangeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fg, 
+	     GCLineStyle|GCCapStyle|GCJoinStyle|GCLineWidth|GCFillRule, &gcv);
+  XChangeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fill, 
+	     GCLineStyle|GCCapStyle|GCJoinStyle|GCLineWidth|GCFillRule, &gcv);
   
-  _handle_x_events();
+  /* maybe flush X output buffer and handle X events (a no-op for
+     XDrawablePlotters, which is overridden for XPlotters) */
+  _maybe_handle_x_events();
 
   return;
 }

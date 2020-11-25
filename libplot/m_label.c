@@ -4,7 +4,6 @@
    obsoleted by the alabel method, which allows justification. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -15,25 +14,14 @@ _m_label (s)
     const char *s;
 #endif
 {
-  char *nl;
-
   if (!_plotter->open)
     {
       _plotter->error ("label: invalid operation");
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      /* null pointer handled specially */
-      if (s == NULL)
-	s = "(null)";
-      
-      if ((nl = strchr (s, '\n')))
-	*nl = '\0';		/* don't grok multiline arg strings */
-      
-      fprintf (_plotter->outstream, "%c%s\n", (int)O_LABEL, s);
-    }
+  _meta_emit_byte ((int)O_LABEL);
+  _meta_emit_string (s);
 
   return 0;
 }

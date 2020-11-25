@@ -22,7 +22,7 @@
    of the corresponding input record.  (Fields are numbered starting with
    zero.)  In the `-f' specification, fields may be repeated.
 
-   You can use the `-m' option to multiply all the input fields by a
+   You can use the `-t' option to multiply all the input fields by a
    constant, and `-p' to add a constant to each of the input fields.
 
    `double' can also join streams of records together.  The `-j' and `-J'
@@ -32,7 +32,14 @@
    rather than size 2, and the first field of each output record will be
    taken from the corresponding record in `filename'.  So the `-j' option
    `prepends' a component to each record.  Similarly, `-J' will append a
-   component.
+   component.  You can also use `-T' and `-P' to specify a `times file'
+   and a `plus file', which will respectively multiply each record
+   by a number taken from the times file, and add to the components of
+   each record a number taken from the plus file.
+
+   The `-d' (--dataset-limits) option takes three args: min, max, and
+   spacing.  It specifies a linear progression through each dataset
+   that is processed, and is useful for `thinning out' large datasets.
 
    `double' does not require that its input file(s) consist of only a
    single dataset.  However, the lengths of the corresponding datasets
@@ -79,7 +86,6 @@ struct option long_options[] =
   /* integer arg */
   {"record-length",		ARG_REQUIRED,	NULL, 'R'},
   {"fields",			ARG_OPTIONAL,	NULL, 'f'}, /* 0,1,2, or ... */
-  {"record-limits",		ARG_OPTIONAL,	NULL, 'r'}, /* 0,1,2,3 args*/
   {"dataset-limits",		ARG_OPTIONAL,	NULL, 'd'}, /* 0,1,2,3 args*/
   /* flags */
   {"version",			ARG_NONE,	NULL, 'V' << 8},
@@ -91,22 +97,22 @@ struct option long_options[] =
 int hidden_options[] = { 0 };
 
 /* forward references */
-bool mung_dataset __P ((FILE *input, int record_length, int *field_array, int field_array_len, double scale, double baseline, FILE *add_fp, FILE *mult_fp, FILE *pre_join_fp, FILE *post_join_fp, int precision, bool suppress));
-bool read_float __P ((FILE *input, double *dptr));
-bool skip_whitespace __P ((FILE *stream));
-bool write_float __P ((double data, int precision));
-int get_record __P ((FILE *input, double *record, int record_length));
-void maybe_emit_oob_warning __P ((void));
-void open_file __P ((char *name, FILE **fpp));
-void output_dataset_separator __P ((void));
-void set_format_type __P ((char *s, data_type *typep));
+bool mung_dataset ____P ((FILE *input, int record_length, int *field_array, int field_array_len, double scale, double baseline, FILE *add_fp, FILE *mult_fp, FILE *pre_join_fp, FILE *post_join_fp, int precision, bool suppress));
+bool read_float ____P ((FILE *input, double *dptr));
+bool skip_whitespace ____P ((FILE *stream));
+bool write_float ____P ((double data, int precision));
+int get_record ____P ((FILE *input, double *record, int record_length));
+void maybe_emit_oob_warning ____P ((void));
+void open_file ____P ((char *name, FILE **fpp));
+void output_dataset_separator ____P ((void));
+void set_format_type ____P ((char *s, data_type *typep));
 /* from libcommon */
-extern void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version __P((const char *progname)); 
-extern Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
-extern Voidptr xmalloc __P ((unsigned int length));
-extern Voidptr xrealloc __P ((Voidptr p, unsigned int length));
-extern char *xstrdup __P ((const char *s));
+extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
+extern void display_version ____P((const char *progname)); 
+extern Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
+extern Voidptr xmalloc ____P ((unsigned int length));
+extern Voidptr xrealloc ____P ((Voidptr p, unsigned int length));
+extern char *xstrdup ____P ((const char *s));
 
 
 int
@@ -130,18 +136,16 @@ main (argc, argv)
   FILE *pre_join_fp = NULL, *post_join_fp = NULL;
   double scale = 1.0, baseline = 0.0; /* mult., additive constants */
   int record_length = 1;	/* default record length */
-  int record_min = 0, record_max = INT_MAX, record_spacing = 1;
   int dataset_min = 0, dataset_max = INT_MAX, dataset_spacing = 1;  
-  int local_record_min, local_record_max, local_record_spacing;
   int local_dataset_min, local_dataset_max, local_dataset_spacing;  
   int *field_array = NULL;	/* array of indices we'll extract */
   int field_array_len = 0;	/* initial size of field_array[] */
   int dataset_index = 0;	/* running count */
   bool more_points, dataset_printed = false;
 
-  while (true)
+  for ( ; ; )
     {
-      option = getopt_long (argc, argv, "I:O:q:T:P:j:J:t:p:R:r::f::d::", long_options, &opt_index);
+      option = getopt_long (argc, argv, "I:O:q:T:P:j:J:t:p:R:f::d::", long_options, &opt_index);
       if (option == 0)
 	option = long_options[opt_index].val;
 
@@ -220,27 +224,6 @@ main (argc, argv)
 
 	  /* ----- Options with a variable number of arguments ----- */
 
-	case 'r':		/* Record limits, ARG OPTIONAL [0,1,2,3] */
-	  if (optind >= argc)
-	    break;
-	  if (sscanf (argv[optind], "%d", &local_record_min) <= 0)
-	    break;
-	  record_min = local_record_min;
-	  optind++;	/* tell getopt we recognized record_min */
-	  if (optind >= argc)
-	    break;
-	  if (sscanf (argv [optind], "%d", &local_record_max) <= 0)
-	    break;
-	  record_max = local_record_max;
-	  optind++;	/* tell getopt we recognized record_max */
-	  if (optind >= argc)
-	    break;
-	  if (sscanf (argv [optind], "%d", &local_record_spacing) <= 0)
-	    break;
-	  record_spacing = local_record_spacing;
-	  optind++;	/* tell getopt we recognized record_spacing */
-	  break;
-
 	case 'd':		/* Dataset limits, ARG OPTIONAL [0,1,2,3] */
 	  if (optind >= argc)
 	    break;
@@ -263,7 +246,7 @@ main (argc, argv)
 	  break;
 
 	case 'f':
-	  while (true)
+	  for ( ; ; )
 	    {
 	      int field_index;
 
@@ -325,13 +308,6 @@ main (argc, argv)
     {
       fprintf (stderr, "%s: error: bad dataset spacing `%d' (must be > 0)\n",
 	       progname, dataset_spacing);
-      return EXIT_FAILURE;
-    }
-
-  if (record_spacing < 1)
-    {
-      fprintf (stderr, "%s: error: bad record spacing `%d' (must be > 0)\n",
-	       progname, record_spacing);
       return EXIT_FAILURE;
     }
 
@@ -737,7 +713,7 @@ mung_dataset (input, record_length, field_array, field_array_len, scale, baselin
 	fseek(post_join_fp, 0L, 0);
     }
 
-  while (true)
+  for ( ; ; )
     {
       int i;
       int success;

@@ -1,19 +1,16 @@
-For version 2.x
----------------
+For plotutils version 2.x
+-------------------------
 
-libplot: add the display list concept (will facilitate addition of support
-for compound objects and much else).
+libplot: add the display list concept (will facilitate adding support for
+compound objects and much else).
 
 libplot: support copying graphics from one Plotter to another (via display
-list)
-
-libplot: Support CGM format.  Check that CGM is importable into Corel Draw
-as well as Illustrator.
+list).
 
 libsciplot: new library.  Incorporate all functionality of VOGLE, PGPLOT,
-and PLPLOT libraries; check into GLE and PLOTPLUS, XYPLOT.  Think about
-Guile, and Tcl/Tk, and Python.  libsciplot will support contouring, but not
-3d surface plots yet.
+and PLPLOT libraries; check into GLE, PLOTPLUS, XYPLOT, DISLIN.  Think
+about Guile, and Tcl/Tk, and Python.  libsciplot will support contouring,
+but not 3d surface plots yet.
 
 graph: librarify the plotting routines, and incorporate them in libsciplot.
 N.B. need better clipping for filled regions (present gnuplot-style
@@ -22,25 +19,20 @@ clipping scheme is right for unfilled regions but wrong for filled ones)
 libsciplot: when plotting a curve containing data points, symbols should be
 plotted _last_, after endpath() is called.
 
+plot: should document that `plot -TX' will use double buffering if
+environment variable USE_DOUBLE_BUFFERING is "yes".  Maybe make that
+user-settable via an option?
+
 libplot: support object-level clipping
 
-libplot: add support for compound objects, Bezier cubic spline objects.
-Also add a simpler spline primitive, guaranteed to go through all
-intermediate points (both open/closed are OK).  Have native support in X11
-for this [XDraw] and in PS/idraw.
+libplot: add support for compound objects
 
-libplot: paths should be be able to contain portions that are Beziers, 
-as well as portions that are line segments and circular/elliptic arcs.
+libplot: add support for tiling instead of solid filling
 
-libplot: add support for subpaths and nonzero-winding-number filling
-(rather than just even-odd filling)
+libplot: add support for subpaths i.e. compound paths.
 
 graph: new option to put frame on top of plot, not vice versa.
 maybe automatic, if `plotting is real time' capability is set?
-
-libplot: add a command to set miter limit for line joins, to the API
-Takes effect only for PS, HP-GL output.  Affects bounding box computations
-(see g_range.c).
 
 libplot X drawable support: add parameter(s) for offset of canvas within
 drawable?
@@ -57,14 +49,17 @@ graph: fix positioning of top labels, especially at large sizes
 
 ode: add atan2() function
 
+libplot: Support CGM format.  Check that CGM is importable into Corel Draw
+as well as Illustrator.
+
+libplot: add triangular cap mode, join mode to more types of Plotter
+
+write more man pages.
 
 Major Enhancements (Possible, Probable, or Certain)
 ---------------------------------------------------
 
-libplot: support PGML output format, maybe VML.  Also, Macromedia's Flash
-.SWF format.
-
-libplot: C++ binding
+libplot: support PGML output format, maybe VML.
 
 ode: extend parser to plot functions as well as solve differential equations
 
@@ -75,18 +70,16 @@ graph parsing: allow all command-line options in data files, on comment lines
 
 graph: Write alternative parser for interactive version (gnuplot replacement).
 
-Write a sort of pic2plot program, supporting all output types of course.
-
 libplot: add interactivity (e.g. getloc()), during openpl()...closepl().
 Need to translate back to user coordinates.  [For libsciplot, even
 further?]  For Tektronix driver, implement GIN mode (need stty twiddling?).
 Also need char input (cf. starbase).
 
-libplot: write a version producing a bitmap format (e.g. PBM); use new
-freeware rasterizer for type 1 fonts [t1lib, by Rainer Menzner; see
+libplot: use freeware rasterizer for type 1 fonts [t1lib, by Rainer
+Menzner; see
 ftp://ftp.neuroinformatik.ruhr-uni-bochum.de/pub/software/t1lib ].
 
-libplot: gradient fill
+libplot: gradient fill?
 
 Break out spline() as subroutine(s), cf. fitpack?  Cf. IMSL interface.
 Similarly with plot frame / axis drawing.  For this, check into NCAR
@@ -111,16 +104,21 @@ Other needed math software:
 Low-priority items (may be done someday)
 ----------------------------------------
 
+libplot X driver: should use a non-default visual if the default visual
+isn't read-only?
+
+libplot X driver: solve the problem of zombie children.
+
 libplot: spline the Hershey fonts, use new spline primitive to draw them.
 
-old HP-GL pen plotters can't handle full range of coordinates in many of
-our page types [see libplot/g_pagetype.h; our current page sizes, taken
-from AutoCAD, may not be appropriate for older plotters?]
+Very old HP-GL pen plotters can't handle full range of coordinates in many
+of our page types [see libplot/g_pagetype.h; our current page sizes, taken
+from AutoCAD, may not be appropriate for very old pen plotters?]
 
 Improve libplot error reporting: change libplot error handler to use name
-of executable
+of executable.
 
-Add comment() function, takes printable string as arg (no control chars)
+Add comment() function, takes printable string as arg (no control chars).
 
 ode: need no stack blowout
 
@@ -128,18 +126,17 @@ Hershey fonts:
 1. add euro and cedilla
 2. add support for Hershey indexical positioning on baseline?
 
-graph, plot, tek2plot: add --display and --geometry options?
+graph, plot, tek2plot, plotfont, etc.: add --display and --geometry
+options?
 
 check into test/plot2tek.test (not currently run, seems to give
 system-dependent behavior depending on rounding mode?)
 
-libplot: In X driver, need sanity check on font size: should switch to a
-Hershey font if requested font is larger than display size.
+libplot text string format: \mk..\rt etc. could be stack machine; should
+also include overline, underline, radical, display fractions etc.  Cf. eqn
+and Allen Hershey's typesetting.
 
-libplot text string format: \mk..\rt etc. should be stack machine; include
-overline, underline, radical etc.  Cf. Allen Hershey's typesetting.
+libplot: polyline hatching as well as filling?
 
-libplot: polyline hatching as well as filling
-
-libplot: add support for raster objects
-
+libplot: add support for rectangular raster objects ("device independent
+rasters").

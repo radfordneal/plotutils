@@ -1,0 +1,1626 @@
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+AS = @AS@
+CC = @CC@
+CXX = @CXX@
+DLLTOOL = @DLLTOOL@
+EXEEXT = @EXEEXT@
+LD = @LD@
+LEX = @LEX@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+LTALLOCA = @LTALLOCA@
+MAKEINFO = @MAKEINFO@
+NM = @NM@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
+VERSION = @VERSION@
+X_BASIC_LIBS = @X_BASIC_LIBS@
+X_CFLAGS = @X_CFLAGS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
+YACC = @YACC@
+ps_fonts_in_pcl = @ps_fonts_in_pcl@
+
+lib_LTLIBRARIES = libplotter.la
+
+libplotter_la_LDFLAGS = -version-info 2:0:0
+
+INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOTTER
+
+GSRC = g_affine.cc g_alabel.cc g_alab_her.cc g_arc.cc g_bez.cc g_bgcolor.cc g_box.cc g_capmod.cc g_circ.cc g_clipper.cc g_closepl.cc g_colors.cc g_colorname.cc g_concat.cc g_cont.cc g_cntrlify.cc g_dash.cc g_dash2.cc g_defplot.cc g_defstate.cc g_ellipse.cc g_endpath.cc g_error.cc g_erase.cc g_filltype.cc g_fillcolor.cc g_fillrule.cc g_flushpl.cc g_fontdb.cc g_fontd2.cc g_fontname.cc g_fontsize.cc g_havecap.cc g_her_glyph.cc g_integer.cc g_iso.cc g_joinmod.cc g_label.cc g_line.cc g_linemod.cc g_linewidth.cc g_mark.cc g_matrix.cc g_miscmi.cc g_miter.cc g_miarc.cc g_mialloc.cc g_mifllarc.cc g_mifllrct.cc g_mifllspn.cc g_mifplycon.cc g_miply.cc g_miplycon.cc g_miplygen.cc g_miplypnt.cc g_miplyutil.cc g_mispans.cc g_miwidelin.cc g_mizerarc.cc g_mizerolin.cc g_move.cc g_openpl.cc g_outbuf.cc g_outfile.cc g_pagetype.cc g_params.cc g_pencolor.cc g_point.cc g_relative.cc g_range.cc g_reststate.cc g_retrieve.cc g_savestate.cc g_space.cc g_textangle.cc g_vector.cc g_write.cc g_xmalloc.cc g_xstring.cc
+
+
+MSRC = m_alabel.cc m_arc.cc m_arcrel.cc m_bez.cc m_bezrel.cc m_bgcolor.cc m_box.cc m_boxrel.cc m_capmod.cc m_circ.cc m_circrel.cc m_closepl.cc m_concat.cc m_cont.cc m_contrel.cc m_dash.cc m_defplot.cc m_earc.cc m_earcrel.cc m_ellipse.cc m_emit.cc m_endpath.cc m_erase.cc m_filltype.cc m_fillcolor.cc m_fillrule.cc m_fontname.cc m_fontsize.cc m_joinmod.cc m_label.cc m_line.cc m_linemod.cc m_linerel.cc m_linewidth.cc m_mark.cc m_markrel.cc m_miter.cc m_move.cc m_moverel.cc m_openpl.cc m_pencolor.cc m_point.cc m_pointrel.cc m_reststate.cc m_savestate.cc m_space.cc m_textangle.cc
+
+
+TSRC = t_attribs.cc t_closepl.cc t_color.cc t_color2.cc t_cont.cc t_defplot.cc t_erase.cc t_openpl.cc t_point.cc t_tek_md.cc t_tek_mv.cc t_tek_vec.cc
+
+
+HSRC = h_alab_pcl.cc h_attribs.cc h_circ.cc h_closepl.cc h_color.cc h_defplot.cc h_endpath.cc h_box.cc h_font.cc h_openpl.cc h_position.cc h_linewidth.cc h_point.cc
+
+
+FSRC = f_alab_ps.cc f_box.cc f_closepl.cc f_color.cc f_color2.cc f_defplot.cc f_ellipse.cc f_endpath.cc f_erase.cc f_linewidth.cc f_openpl.cc f_point.cc f_retrieve.cc
+
+
+NSRC = n_closepl.cc n_defplot.cc n_ellipse.cc n_endpath.cc n_erase.cc n_openpl.cc n_point.cc
+
+
+ISRC = i_closepl.cc i_color.cc i_defplot.cc i_ellipse.cc i_endpath.cc i_erase.cc i_openpl.cc i_point.cc i_rle.cc
+
+
+PSRC = p_alab_ps.cc p_closepl.cc p_color.cc p_color2.cc p_defplot.cc p_ellipse.cc p_endpath.cc p_erase.cc p_openpl.cc p_point.cc
+
+
+ASRC = a_alab_ps.cc a_attribs.cc a_color.cc a_closepl.cc a_defplot.cc a_endpath.cc a_openpl.cc a_point.cc
+
+
+XSRC = x_alab_x.cc x_attribs.cc x_box.cc x_closepl.cc x_color.cc x_cont.cc x_defplot.cc x_ellipse.cc x_endpath.cc x_erase.cc x_flushpl.cc x_openpl.cc x_point.cc x_reststate.cc x_retrieve.cc x_savestate.cc
+
+
+YSRC = y_closepl.cc y_defplot.cc y_erase.cc y_openpl.cc
+@NO_X_TRUE@ALLSRC = $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(ASRC) $(ISRC) $(NSRC) 
+@NO_X_FALSE@ALLSRC = $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(ASRC) $(ISRC) $(NSRC) $(XSRC) $(YSRC)
+
+ALLHEADERS = extern.h g_arc.h g_colorname.h g_control.h g_cntrlify.h g_her_metr.h g_mi.h g_mifllarc.h g_mifply.h g_miline.h g_miply.h g_miscanfill.h g_mispans.h g_miwidelin.h g_mizerarc.h g_jis.h g_pagetype.h g_params.h h_stick.h i_rle.h p_header.h
+
+
+noinst_HEADERS = $(ALLHEADERS)
+
+CLEANFILES = $(ALLSRC) $(ALLHEADERS)
+
+libplotter_la_SOURCES = $(ALLSRC)
+@NO_X_TRUE@libplotter_la_LIBADD = 
+@NO_X_FALSE@libplotter_la_LIBADD = $(X_LIBS) $(X_TOOLKIT_LIBS) $(X_PRE_LIBS) $(X_BASIC_LIBS) $(X_EXTRA_LIBS)
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(lib_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+@NO_X_TRUE@libplotter_la_DEPENDENCIES = 
+@NO_X_FALSE@libplotter_la_DEPENDENCIES = 
+@NO_X_TRUE@libplotter_la_OBJECTS =  g_affine.lo g_alabel.lo \
+@NO_X_TRUE@g_alab_her.lo g_arc.lo g_bez.lo g_bgcolor.lo g_box.lo \
+@NO_X_TRUE@g_capmod.lo g_circ.lo g_clipper.lo g_closepl.lo g_colors.lo \
+@NO_X_TRUE@g_colorname.lo g_concat.lo g_cont.lo g_cntrlify.lo g_dash.lo \
+@NO_X_TRUE@g_dash2.lo g_defplot.lo g_defstate.lo g_ellipse.lo \
+@NO_X_TRUE@g_endpath.lo g_error.lo g_erase.lo g_filltype.lo \
+@NO_X_TRUE@g_fillcolor.lo g_fillrule.lo g_flushpl.lo g_fontdb.lo \
+@NO_X_TRUE@g_fontd2.lo g_fontname.lo g_fontsize.lo g_havecap.lo \
+@NO_X_TRUE@g_her_glyph.lo g_integer.lo g_iso.lo g_joinmod.lo g_label.lo \
+@NO_X_TRUE@g_line.lo g_linemod.lo g_linewidth.lo g_mark.lo g_matrix.lo \
+@NO_X_TRUE@g_miscmi.lo g_miter.lo g_miarc.lo g_mialloc.lo g_mifllarc.lo \
+@NO_X_TRUE@g_mifllrct.lo g_mifllspn.lo g_mifplycon.lo g_miply.lo \
+@NO_X_TRUE@g_miplycon.lo g_miplygen.lo g_miplypnt.lo g_miplyutil.lo \
+@NO_X_TRUE@g_mispans.lo g_miwidelin.lo g_mizerarc.lo g_mizerolin.lo \
+@NO_X_TRUE@g_move.lo g_openpl.lo g_outbuf.lo g_outfile.lo g_pagetype.lo \
+@NO_X_TRUE@g_params.lo g_pencolor.lo g_point.lo g_relative.lo \
+@NO_X_TRUE@g_range.lo g_reststate.lo g_retrieve.lo g_savestate.lo \
+@NO_X_TRUE@g_space.lo g_textangle.lo g_vector.lo g_write.lo \
+@NO_X_TRUE@g_xmalloc.lo g_xstring.lo m_alabel.lo m_arc.lo m_arcrel.lo \
+@NO_X_TRUE@m_bez.lo m_bezrel.lo m_bgcolor.lo m_box.lo m_boxrel.lo \
+@NO_X_TRUE@m_capmod.lo m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo \
+@NO_X_TRUE@m_cont.lo m_contrel.lo m_dash.lo m_defplot.lo m_earc.lo \
+@NO_X_TRUE@m_earcrel.lo m_ellipse.lo m_emit.lo m_endpath.lo m_erase.lo \
+@NO_X_TRUE@m_filltype.lo m_fillcolor.lo m_fillrule.lo m_fontname.lo \
+@NO_X_TRUE@m_fontsize.lo m_joinmod.lo m_label.lo m_line.lo m_linemod.lo \
+@NO_X_TRUE@m_linerel.lo m_linewidth.lo m_mark.lo m_markrel.lo \
+@NO_X_TRUE@m_miter.lo m_move.lo m_moverel.lo m_openpl.lo m_pencolor.lo \
+@NO_X_TRUE@m_point.lo m_pointrel.lo m_reststate.lo m_savestate.lo \
+@NO_X_TRUE@m_space.lo m_textangle.lo t_attribs.lo t_closepl.lo \
+@NO_X_TRUE@t_color.lo t_color2.lo t_cont.lo t_defplot.lo t_erase.lo \
+@NO_X_TRUE@t_openpl.lo t_point.lo t_tek_md.lo t_tek_mv.lo t_tek_vec.lo \
+@NO_X_TRUE@h_alab_pcl.lo h_attribs.lo h_circ.lo h_closepl.lo h_color.lo \
+@NO_X_TRUE@h_defplot.lo h_endpath.lo h_box.lo h_font.lo h_openpl.lo \
+@NO_X_TRUE@h_position.lo h_linewidth.lo h_point.lo f_alab_ps.lo \
+@NO_X_TRUE@f_box.lo f_closepl.lo f_color.lo f_color2.lo f_defplot.lo \
+@NO_X_TRUE@f_ellipse.lo f_endpath.lo f_erase.lo f_linewidth.lo \
+@NO_X_TRUE@f_openpl.lo f_point.lo f_retrieve.lo p_alab_ps.lo \
+@NO_X_TRUE@p_closepl.lo p_color.lo p_color2.lo p_defplot.lo \
+@NO_X_TRUE@p_ellipse.lo p_endpath.lo p_erase.lo p_openpl.lo p_point.lo \
+@NO_X_TRUE@a_alab_ps.lo a_attribs.lo a_color.lo a_closepl.lo \
+@NO_X_TRUE@a_defplot.lo a_endpath.lo a_openpl.lo a_point.lo \
+@NO_X_TRUE@i_closepl.lo i_color.lo i_defplot.lo i_ellipse.lo \
+@NO_X_TRUE@i_endpath.lo i_erase.lo i_openpl.lo i_point.lo i_rle.lo \
+@NO_X_TRUE@n_closepl.lo n_defplot.lo n_ellipse.lo n_endpath.lo \
+@NO_X_TRUE@n_erase.lo n_openpl.lo n_point.lo
+@NO_X_FALSE@libplotter_la_OBJECTS =  g_affine.lo g_alabel.lo \
+@NO_X_FALSE@g_alab_her.lo g_arc.lo g_bez.lo g_bgcolor.lo g_box.lo \
+@NO_X_FALSE@g_capmod.lo g_circ.lo g_clipper.lo g_closepl.lo g_colors.lo \
+@NO_X_FALSE@g_colorname.lo g_concat.lo g_cont.lo g_cntrlify.lo \
+@NO_X_FALSE@g_dash.lo g_dash2.lo g_defplot.lo g_defstate.lo \
+@NO_X_FALSE@g_ellipse.lo g_endpath.lo g_error.lo g_erase.lo \
+@NO_X_FALSE@g_filltype.lo g_fillcolor.lo g_fillrule.lo g_flushpl.lo \
+@NO_X_FALSE@g_fontdb.lo g_fontd2.lo g_fontname.lo g_fontsize.lo \
+@NO_X_FALSE@g_havecap.lo g_her_glyph.lo g_integer.lo g_iso.lo \
+@NO_X_FALSE@g_joinmod.lo g_label.lo g_line.lo g_linemod.lo \
+@NO_X_FALSE@g_linewidth.lo g_mark.lo g_matrix.lo g_miscmi.lo g_miter.lo \
+@NO_X_FALSE@g_miarc.lo g_mialloc.lo g_mifllarc.lo g_mifllrct.lo \
+@NO_X_FALSE@g_mifllspn.lo g_mifplycon.lo g_miply.lo g_miplycon.lo \
+@NO_X_FALSE@g_miplygen.lo g_miplypnt.lo g_miplyutil.lo g_mispans.lo \
+@NO_X_FALSE@g_miwidelin.lo g_mizerarc.lo g_mizerolin.lo g_move.lo \
+@NO_X_FALSE@g_openpl.lo g_outbuf.lo g_outfile.lo g_pagetype.lo \
+@NO_X_FALSE@g_params.lo g_pencolor.lo g_point.lo g_relative.lo \
+@NO_X_FALSE@g_range.lo g_reststate.lo g_retrieve.lo g_savestate.lo \
+@NO_X_FALSE@g_space.lo g_textangle.lo g_vector.lo g_write.lo \
+@NO_X_FALSE@g_xmalloc.lo g_xstring.lo m_alabel.lo m_arc.lo m_arcrel.lo \
+@NO_X_FALSE@m_bez.lo m_bezrel.lo m_bgcolor.lo m_box.lo m_boxrel.lo \
+@NO_X_FALSE@m_capmod.lo m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo \
+@NO_X_FALSE@m_cont.lo m_contrel.lo m_dash.lo m_defplot.lo m_earc.lo \
+@NO_X_FALSE@m_earcrel.lo m_ellipse.lo m_emit.lo m_endpath.lo m_erase.lo \
+@NO_X_FALSE@m_filltype.lo m_fillcolor.lo m_fillrule.lo m_fontname.lo \
+@NO_X_FALSE@m_fontsize.lo m_joinmod.lo m_label.lo m_line.lo \
+@NO_X_FALSE@m_linemod.lo m_linerel.lo m_linewidth.lo m_mark.lo \
+@NO_X_FALSE@m_markrel.lo m_miter.lo m_move.lo m_moverel.lo m_openpl.lo \
+@NO_X_FALSE@m_pencolor.lo m_point.lo m_pointrel.lo m_reststate.lo \
+@NO_X_FALSE@m_savestate.lo m_space.lo m_textangle.lo t_attribs.lo \
+@NO_X_FALSE@t_closepl.lo t_color.lo t_color2.lo t_cont.lo t_defplot.lo \
+@NO_X_FALSE@t_erase.lo t_openpl.lo t_point.lo t_tek_md.lo t_tek_mv.lo \
+@NO_X_FALSE@t_tek_vec.lo h_alab_pcl.lo h_attribs.lo h_circ.lo \
+@NO_X_FALSE@h_closepl.lo h_color.lo h_defplot.lo h_endpath.lo h_box.lo \
+@NO_X_FALSE@h_font.lo h_openpl.lo h_position.lo h_linewidth.lo \
+@NO_X_FALSE@h_point.lo f_alab_ps.lo f_box.lo f_closepl.lo f_color.lo \
+@NO_X_FALSE@f_color2.lo f_defplot.lo f_ellipse.lo f_endpath.lo \
+@NO_X_FALSE@f_erase.lo f_linewidth.lo f_openpl.lo f_point.lo \
+@NO_X_FALSE@f_retrieve.lo p_alab_ps.lo p_closepl.lo p_color.lo \
+@NO_X_FALSE@p_color2.lo p_defplot.lo p_ellipse.lo p_endpath.lo \
+@NO_X_FALSE@p_erase.lo p_openpl.lo p_point.lo a_alab_ps.lo a_attribs.lo \
+@NO_X_FALSE@a_color.lo a_closepl.lo a_defplot.lo a_endpath.lo \
+@NO_X_FALSE@a_openpl.lo a_point.lo i_closepl.lo i_color.lo i_defplot.lo \
+@NO_X_FALSE@i_ellipse.lo i_endpath.lo i_erase.lo i_openpl.lo i_point.lo \
+@NO_X_FALSE@i_rle.lo n_closepl.lo n_defplot.lo n_ellipse.lo \
+@NO_X_FALSE@n_endpath.lo n_erase.lo n_openpl.lo n_point.lo x_alab_x.lo \
+@NO_X_FALSE@x_attribs.lo x_box.lo x_closepl.lo x_color.lo x_cont.lo \
+@NO_X_FALSE@x_defplot.lo x_ellipse.lo x_endpath.lo x_erase.lo \
+@NO_X_FALSE@x_flushpl.lo x_openpl.lo x_point.lo x_reststate.lo \
+@NO_X_FALSE@x_retrieve.lo x_savestate.lo y_closepl.lo y_defplot.lo \
+@NO_X_FALSE@y_erase.lo y_openpl.lo
+CXXFLAGS = @CXXFLAGS@
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+HEADERS =  $(noinst_HEADERS)
+
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = gtar
+GZIP_ENV = --best
+SOURCES = $(libplotter_la_SOURCES)
+OBJECTS = $(libplotter_la_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .cc .lo .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps libplotter/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-libLTLIBRARIES:
+
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
+
+distclean-libLTLIBRARIES:
+
+maintainer-clean-libLTLIBRARIES:
+
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(libdir)/$$p; \
+	done
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+libplotter.la: $(libplotter_la_OBJECTS) $(libplotter_la_DEPENDENCIES)
+	$(CXXLINK) -rpath $(libdir) $(libplotter_la_LDFLAGS) $(libplotter_la_OBJECTS) $(libplotter_la_LIBADD) $(LIBS)
+.cc.o:
+	$(CXXCOMPILE) -c $<
+.cc.lo:
+	$(LTCXXCOMPILE) -c $<
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = libplotter
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+a_alab_ps.lo a_alab_ps.o : a_alab_ps.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+a_attribs.lo a_attribs.o : a_attribs.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+a_closepl.lo a_closepl.o : a_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+a_color.lo a_color.o : a_color.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+a_defplot.lo a_defplot.o : a_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+a_endpath.lo a_endpath.o : a_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+a_openpl.lo a_openpl.o : a_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+a_point.lo a_point.o : a_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+f_alab_ps.lo f_alab_ps.o : f_alab_ps.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+f_box.lo f_box.o : f_box.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+f_closepl.lo f_closepl.o : f_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+f_color.lo f_color.o : f_color.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+f_color2.lo f_color2.o : f_color2.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+f_defplot.lo f_defplot.o : f_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+f_ellipse.lo f_ellipse.o : f_ellipse.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+f_endpath.lo f_endpath.o : f_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+f_erase.lo f_erase.o : f_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+f_linewidth.lo f_linewidth.o : f_linewidth.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+f_openpl.lo f_openpl.o : f_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+f_point.lo f_point.o : f_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+f_retrieve.lo f_retrieve.o : f_retrieve.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_affine.lo g_affine.o : g_affine.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_alab_her.lo g_alab_her.o : g_alab_her.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_control.h \
+	g_her_metr.h
+g_alabel.lo g_alabel.o : g_alabel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_control.h
+g_arc.lo g_arc.o : g_arc.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h g_arc.h
+g_bez.lo g_bez.o : g_bez.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_bgcolor.lo g_bgcolor.o : g_bgcolor.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_box.lo g_box.o : g_box.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_capmod.lo g_capmod.o : g_capmod.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_circ.lo g_circ.o : g_circ.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_clipper.lo g_clipper.o : g_clipper.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_closepl.lo g_closepl.o : g_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_cntrlify.lo g_cntrlify.o : g_cntrlify.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_control.h \
+	g_cntrlify.h g_jis.h
+g_colorname.lo g_colorname.o : g_colorname.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_colorname.h
+g_colors.lo g_colors.o : g_colors.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_concat.lo g_concat.o : g_concat.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_cont.lo g_cont.o : g_cont.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_dash.lo g_dash.o : g_dash.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_dash2.lo g_dash2.o : g_dash2.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_defplot.lo g_defplot.o : g_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_defstate.lo g_defstate.o : g_defstate.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_ellipse.lo g_ellipse.o : g_ellipse.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_endpath.lo g_endpath.o : g_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_erase.lo g_erase.o : g_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_error.lo g_error.o : g_error.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_fillcolor.lo g_fillcolor.o : g_fillcolor.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_fillrule.lo g_fillrule.o : g_fillrule.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_filltype.lo g_filltype.o : g_filltype.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_flushpl.lo g_flushpl.o : g_flushpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_fontd2.lo g_fontd2.o : g_fontd2.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_fontdb.lo g_fontdb.o : g_fontdb.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_fontname.lo g_fontname.o : g_fontname.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_fontsize.lo g_fontsize.o : g_fontsize.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_havecap.lo g_havecap.o : g_havecap.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_her_glyph.lo g_her_glyph.o : g_her_glyph.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_integer.lo g_integer.o : g_integer.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_iso.lo g_iso.o : g_iso.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_joinmod.lo g_joinmod.o : g_joinmod.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_label.lo g_label.o : g_label.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_line.lo g_line.o : g_line.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_linemod.lo g_linemod.o : g_linemod.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_linewidth.lo g_linewidth.o : g_linewidth.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_mark.lo g_mark.o : g_mark.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_matrix.lo g_matrix.o : g_matrix.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_mialloc.lo g_mialloc.o : g_mialloc.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_miarc.lo g_miarc.o : g_miarc.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h g_mi.h g_mifply.h g_mifllarc.h
+g_mifllarc.lo g_mifllarc.o : g_mifllarc.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_mifllarc.h
+g_mifllrct.lo g_mifllrct.o : g_mifllrct.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h
+g_mifllspn.lo g_mifllspn.o : g_mifllspn.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h
+g_mifplycon.lo g_mifplycon.o : g_mifplycon.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_mifply.h
+g_miply.lo g_miply.o : g_miply.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h g_mi.h
+g_miplycon.lo g_miplycon.o : g_miplycon.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_miscanfill.h
+g_miplygen.lo g_miplygen.o : g_miplygen.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_miscanfill.h \
+	g_miply.h
+g_miplypnt.lo g_miplypnt.o : g_miplypnt.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h
+g_miplyutil.lo g_miplyutil.o : g_miplyutil.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_miscanfill.h \
+	g_miply.h
+g_miscmi.lo g_miscmi.o : g_miscmi.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h
+g_mispans.lo g_mispans.o : g_mispans.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_mispans.h
+g_miter.lo g_miter.o : g_miter.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_miwidelin.lo g_miwidelin.o : g_miwidelin.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_mispans.h \
+	g_miwidelin.h
+g_mizerarc.lo g_mizerarc.o : g_mizerarc.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_mizerarc.h
+g_mizerolin.lo g_mizerolin.o : g_mizerolin.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h g_miline.h
+g_move.lo g_move.o : g_move.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_openpl.lo g_openpl.o : g_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_outbuf.lo g_outbuf.o : g_outbuf.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_outfile.lo g_outfile.o : g_outfile.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_pagetype.lo g_pagetype.o : g_pagetype.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_pagetype.h
+g_params.lo g_params.o : g_params.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_params.h
+g_pencolor.lo g_pencolor.o : g_pencolor.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_point.lo g_point.o : g_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_range.lo g_range.o : g_range.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_relative.lo g_relative.o : g_relative.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_reststate.lo g_reststate.o : g_reststate.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_retrieve.lo g_retrieve.o : g_retrieve.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_her_metr.h
+g_savestate.lo g_savestate.o : g_savestate.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_space.lo g_space.o : g_space.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_textangle.lo g_textangle.o : g_textangle.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_vector.lo g_vector.o : g_vector.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_write.lo g_write.o : g_write.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_xmalloc.lo g_xmalloc.o : g_xmalloc.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_xstring.lo g_xstring.o : g_xstring.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+h_alab_pcl.lo h_alab_pcl.o : h_alab_pcl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h h_stick.h
+h_attribs.lo h_attribs.o : h_attribs.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+h_box.lo h_box.o : h_box.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+h_circ.lo h_circ.o : h_circ.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+h_closepl.lo h_closepl.o : h_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+h_color.lo h_color.o : h_color.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+h_defplot.lo h_defplot.o : h_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+h_endpath.lo h_endpath.o : h_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+h_font.lo h_font.o : h_font.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+h_linewidth.lo h_linewidth.o : h_linewidth.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+h_openpl.lo h_openpl.o : h_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+h_point.lo h_point.o : h_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+h_position.lo h_position.o : h_position.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+i_closepl.lo i_closepl.o : i_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h i_rle.h
+i_color.lo i_color.o : i_color.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+i_defplot.lo i_defplot.o : i_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+i_ellipse.lo i_ellipse.o : i_ellipse.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h
+i_endpath.lo i_endpath.o : i_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h
+i_erase.lo i_erase.o : i_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+i_openpl.lo i_openpl.o : i_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+i_point.lo i_point.o : i_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+i_rle.lo i_rle.o : i_rle.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h i_rle.h
+m_alabel.lo m_alabel.o : m_alabel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_arc.lo m_arc.o : m_arc.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_arcrel.lo m_arcrel.o : m_arcrel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_bez.lo m_bez.o : m_bez.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_bezrel.lo m_bezrel.o : m_bezrel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_bgcolor.lo m_bgcolor.o : m_bgcolor.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_box.lo m_box.o : m_box.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_boxrel.lo m_boxrel.o : m_boxrel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_capmod.lo m_capmod.o : m_capmod.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_circ.lo m_circ.o : m_circ.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_circrel.lo m_circrel.o : m_circrel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_closepl.lo m_closepl.o : m_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_concat.lo m_concat.o : m_concat.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_cont.lo m_cont.o : m_cont.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_contrel.lo m_contrel.o : m_contrel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_dash.lo m_dash.o : m_dash.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_defplot.lo m_defplot.o : m_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_earc.lo m_earc.o : m_earc.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_earcrel.lo m_earcrel.o : m_earcrel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_ellipse.lo m_ellipse.o : m_ellipse.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_emit.lo m_emit.o : m_emit.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_endpath.lo m_endpath.o : m_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_erase.lo m_erase.o : m_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_fillcolor.lo m_fillcolor.o : m_fillcolor.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_fillrule.lo m_fillrule.o : m_fillrule.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_filltype.lo m_filltype.o : m_filltype.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_fontname.lo m_fontname.o : m_fontname.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_fontsize.lo m_fontsize.o : m_fontsize.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_joinmod.lo m_joinmod.o : m_joinmod.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_label.lo m_label.o : m_label.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_line.lo m_line.o : m_line.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_linemod.lo m_linemod.o : m_linemod.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_linerel.lo m_linerel.o : m_linerel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_linewidth.lo m_linewidth.o : m_linewidth.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_mark.lo m_mark.o : m_mark.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_markrel.lo m_markrel.o : m_markrel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_miter.lo m_miter.o : m_miter.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_move.lo m_move.o : m_move.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_moverel.lo m_moverel.o : m_moverel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_openpl.lo m_openpl.o : m_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_pencolor.lo m_pencolor.o : m_pencolor.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_point.lo m_point.o : m_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_pointrel.lo m_pointrel.o : m_pointrel.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_reststate.lo m_reststate.o : m_reststate.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_savestate.lo m_savestate.o : m_savestate.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_space.lo m_space.o : m_space.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+m_textangle.lo m_textangle.o : m_textangle.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+n_closepl.lo n_closepl.o : n_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+n_defplot.lo n_defplot.o : n_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+n_ellipse.lo n_ellipse.o : n_ellipse.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h
+n_endpath.lo n_endpath.o : n_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_mi.h
+n_erase.lo n_erase.o : n_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+n_openpl.lo n_openpl.o : n_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+n_point.lo n_point.o : n_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+p_alab_ps.lo p_alab_ps.o : p_alab_ps.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+p_closepl.lo p_closepl.o : p_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+p_color.lo p_color.o : p_color.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+p_color2.lo p_color2.o : p_color2.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+p_defplot.lo p_defplot.o : p_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h p_header.h
+p_ellipse.lo p_ellipse.o : p_ellipse.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+p_endpath.lo p_endpath.o : p_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+p_erase.lo p_erase.o : p_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+p_openpl.lo p_openpl.o : p_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+p_point.lo p_point.o : p_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+t_attribs.lo t_attribs.o : t_attribs.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+t_closepl.lo t_closepl.o : t_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+t_color.lo t_color.o : t_color.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+t_color2.lo t_color2.o : t_color2.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+t_cont.lo t_cont.o : t_cont.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+t_defplot.lo t_defplot.o : t_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+t_erase.lo t_erase.o : t_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+t_openpl.lo t_openpl.o : t_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+t_point.lo t_point.o : t_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+t_tek_md.lo t_tek_md.o : t_tek_md.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+t_tek_mv.lo t_tek_mv.o : t_tek_mv.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+t_tek_vec.lo t_tek_vec.o : t_tek_vec.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_alab_x.lo x_alab_x.o : x_alab_x.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_attribs.lo x_attribs.o : x_attribs.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_box.lo x_box.o : x_box.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+x_closepl.lo x_closepl.o : x_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_color.lo x_color.o : x_color.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+x_cont.lo x_cont.o : x_cont.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+x_defplot.lo x_defplot.o : x_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_ellipse.lo x_ellipse.o : x_ellipse.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_endpath.lo x_endpath.o : x_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_erase.lo x_erase.o : x_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+x_flushpl.lo x_flushpl.o : x_flushpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_openpl.lo x_openpl.o : x_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_point.lo x_point.o : x_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+x_reststate.lo x_reststate.o : x_reststate.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+x_retrieve.lo x_retrieve.o : x_retrieve.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h g_her_metr.h
+x_savestate.lo x_savestate.o : x_savestate.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+y_closepl.lo y_closepl.o : y_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+y_defplot.lo y_defplot.o : y_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+y_erase.lo y_erase.o : y_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+y_openpl.lo y_openpl.o : y_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am: install-libLTLIBRARIES
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-libLTLIBRARIES
+uninstall: uninstall-am
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(libdir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-libLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-tags \
+		mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-libLTLIBRARIES clean-compile clean-libtool clean-tags \
+		clean-generic mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-libLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-tags distclean-generic \
+		clean-am
+	-rm -f libtool
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-libLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-tags maintainer-clean-generic \
+		distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
+uninstall-libLTLIBRARIES install-libLTLIBRARIES mostlyclean-compile \
+distclean-compile clean-compile maintainer-clean-compile \
+mostlyclean-libtool distclean-libtool clean-libtool \
+maintainer-clean-libtool tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+a_alab_ps.cc: $(top_srcdir)/libplot/a_alab_ps.c $(ALLHEADERS)
+	@rm -f a_alab_ps.cc ; if $(LN_S) $(top_srcdir)/libplot/a_alab_ps.c a_alab_ps.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_alab_ps.c a_alab_ps.cc ; fi
+
+a_attribs.cc: $(top_srcdir)/libplot/a_attribs.c $(ALLHEADERS)
+	@rm -f a_attribs.cc ; if $(LN_S) $(top_srcdir)/libplot/a_attribs.c a_attribs.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_attribs.c a_attribs.cc ; fi
+
+a_closepl.cc: $(top_srcdir)/libplot/a_closepl.c $(ALLHEADERS)
+	@rm -f a_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/a_closepl.c a_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_closepl.c a_closepl.cc ; fi
+
+a_color.cc: $(top_srcdir)/libplot/a_color.c $(ALLHEADERS)
+	@rm -f a_color.cc ; if $(LN_S) $(top_srcdir)/libplot/a_color.c a_color.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_color.c a_color.cc ; fi
+
+a_defplot.cc: $(top_srcdir)/libplot/a_defplot.c $(ALLHEADERS)
+	@rm -f a_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/a_defplot.c a_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_defplot.c a_defplot.cc ; fi
+
+a_endpath.cc: $(top_srcdir)/libplot/a_endpath.c $(ALLHEADERS)
+	@rm -f a_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/a_endpath.c a_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_endpath.c a_endpath.cc ; fi
+
+a_openpl.cc: $(top_srcdir)/libplot/a_openpl.c $(ALLHEADERS)
+	@rm -f a_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/a_openpl.c a_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_openpl.c a_openpl.cc ; fi
+
+a_point.cc: $(top_srcdir)/libplot/a_point.c $(ALLHEADERS)
+	@rm -f a_point.cc ; if $(LN_S) $(top_srcdir)/libplot/a_point.c a_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_point.c a_point.cc ; fi
+
+f_alab_ps.cc: $(top_srcdir)/libplot/f_alab_ps.c $(ALLHEADERS)
+	@rm -f f_alab_ps.cc ; if $(LN_S) $(top_srcdir)/libplot/f_alab_ps.c f_alab_ps.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_alab_ps.c f_alab_ps.cc ; fi
+
+f_box.cc: $(top_srcdir)/libplot/f_box.c $(ALLHEADERS)
+	@rm -f f_box.cc ; if $(LN_S) $(top_srcdir)/libplot/f_box.c f_box.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_box.c f_box.cc ; fi
+
+f_closepl.cc: $(top_srcdir)/libplot/f_closepl.c $(ALLHEADERS)
+	@rm -f f_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/f_closepl.c f_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_closepl.c f_closepl.cc ; fi
+
+f_color.cc: $(top_srcdir)/libplot/f_color.c $(ALLHEADERS)
+	@rm -f f_color.cc ; if $(LN_S) $(top_srcdir)/libplot/f_color.c f_color.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_color.c f_color.cc ; fi
+
+f_color2.cc: $(top_srcdir)/libplot/f_color2.c $(ALLHEADERS)
+	@rm -f f_color2.cc ; if $(LN_S) $(top_srcdir)/libplot/f_color2.c f_color2.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_color2.c f_color2.cc ; fi
+
+f_defplot.cc: $(top_srcdir)/libplot/f_defplot.c $(ALLHEADERS)
+	@rm -f f_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/f_defplot.c f_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_defplot.c f_defplot.cc ; fi
+
+f_ellipse.cc: $(top_srcdir)/libplot/f_ellipse.c $(ALLHEADERS)
+	@rm -f f_ellipse.cc ; if $(LN_S) $(top_srcdir)/libplot/f_ellipse.c f_ellipse.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_ellipse.c f_ellipse.cc ; fi
+
+f_endpath.cc: $(top_srcdir)/libplot/f_endpath.c $(ALLHEADERS)
+	@rm -f f_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/f_endpath.c f_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_endpath.c f_endpath.cc ; fi
+
+f_erase.cc: $(top_srcdir)/libplot/f_erase.c $(ALLHEADERS)
+	@rm -f f_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/f_erase.c f_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_erase.c f_erase.cc ; fi
+
+f_linewidth.cc: $(top_srcdir)/libplot/f_linewidth.c $(ALLHEADERS)
+	@rm -f f_linewidth.cc ; if $(LN_S) $(top_srcdir)/libplot/f_linewidth.c f_linewidth.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_linewidth.c f_linewidth.cc ; fi
+
+f_openpl.cc: $(top_srcdir)/libplot/f_openpl.c $(ALLHEADERS)
+	@rm -f f_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/f_openpl.c f_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_openpl.c f_openpl.cc ; fi
+
+f_point.cc: $(top_srcdir)/libplot/f_point.c $(ALLHEADERS)
+	@rm -f f_point.cc ; if $(LN_S) $(top_srcdir)/libplot/f_point.c f_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_point.c f_point.cc ; fi
+
+f_retrieve.cc: $(top_srcdir)/libplot/f_retrieve.c $(ALLHEADERS)
+	@rm -f f_retrieve.cc ; if $(LN_S) $(top_srcdir)/libplot/f_retrieve.c f_retrieve.cc ; then true ; else cp -p $(top_srcdir)/libplot/f_retrieve.c f_retrieve.cc ; fi
+
+g_affine.cc: $(top_srcdir)/libplot/g_affine.c $(ALLHEADERS)
+	@rm -f g_affine.cc ; if $(LN_S) $(top_srcdir)/libplot/g_affine.c g_affine.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_affine.c g_affine.cc ; fi
+
+g_alab_her.cc: $(top_srcdir)/libplot/g_alab_her.c $(ALLHEADERS)
+	@rm -f g_alab_her.cc ; if $(LN_S) $(top_srcdir)/libplot/g_alab_her.c g_alab_her.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_alab_her.c g_alab_her.cc ; fi
+
+g_alabel.cc: $(top_srcdir)/libplot/g_alabel.c $(ALLHEADERS)
+	@rm -f g_alabel.cc ; if $(LN_S) $(top_srcdir)/libplot/g_alabel.c g_alabel.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_alabel.c g_alabel.cc ; fi
+
+g_arc.cc: $(top_srcdir)/libplot/g_arc.c $(ALLHEADERS)
+	@rm -f g_arc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_arc.c g_arc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_arc.c g_arc.cc ; fi
+
+g_bez.cc: $(top_srcdir)/libplot/g_bez.c $(ALLHEADERS)
+	@rm -f g_bez.cc ; if $(LN_S) $(top_srcdir)/libplot/g_bez.c g_bez.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_bez.c g_bez.cc ; fi
+
+g_bgcolor.cc: $(top_srcdir)/libplot/g_bgcolor.c $(ALLHEADERS)
+	@rm -f g_bgcolor.cc ; if $(LN_S) $(top_srcdir)/libplot/g_bgcolor.c g_bgcolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_bgcolor.c g_bgcolor.cc ; fi
+
+g_box.cc: $(top_srcdir)/libplot/g_box.c $(ALLHEADERS)
+	@rm -f g_box.cc ; if $(LN_S) $(top_srcdir)/libplot/g_box.c g_box.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_box.c g_box.cc ; fi
+
+g_capmod.cc: $(top_srcdir)/libplot/g_capmod.c $(ALLHEADERS)
+	@rm -f g_capmod.cc ; if $(LN_S) $(top_srcdir)/libplot/g_capmod.c g_capmod.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_capmod.c g_capmod.cc ; fi
+
+g_circ.cc: $(top_srcdir)/libplot/g_circ.c $(ALLHEADERS)
+	@rm -f g_circ.cc ; if $(LN_S) $(top_srcdir)/libplot/g_circ.c g_circ.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_circ.c g_circ.cc ; fi
+
+g_clipper.cc: $(top_srcdir)/libplot/g_clipper.c $(ALLHEADERS)
+	@rm -f g_clipper.cc ; if $(LN_S) $(top_srcdir)/libplot/g_clipper.c g_clipper.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_clipper.c g_clipper.cc ; fi
+
+g_closepl.cc: $(top_srcdir)/libplot/g_closepl.c $(ALLHEADERS)
+	@rm -f g_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/g_closepl.c g_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_closepl.c g_closepl.cc ; fi
+
+g_cntrlify.cc: $(top_srcdir)/libplot/g_cntrlify.c $(ALLHEADERS)
+	@rm -f g_cntrlify.cc ; if $(LN_S) $(top_srcdir)/libplot/g_cntrlify.c g_cntrlify.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_cntrlify.c g_cntrlify.cc ; fi
+
+g_colorname.cc: $(top_srcdir)/libplot/g_colorname.c $(ALLHEADERS)
+	@rm -f g_colorname.cc ; if $(LN_S) $(top_srcdir)/libplot/g_colorname.c g_colorname.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_colorname.c g_colorname.cc ; fi
+
+g_colors.cc: $(top_srcdir)/libplot/g_colors.c $(ALLHEADERS)
+	@rm -f g_colors.cc ; if $(LN_S) $(top_srcdir)/libplot/g_colors.c g_colors.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_colors.c g_colors.cc ; fi
+
+g_concat.cc: $(top_srcdir)/libplot/g_concat.c $(ALLHEADERS)
+	@rm -f g_concat.cc ; if $(LN_S) $(top_srcdir)/libplot/g_concat.c g_concat.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_concat.c g_concat.cc ; fi
+
+g_cont.cc: $(top_srcdir)/libplot/g_cont.c $(ALLHEADERS)
+	@rm -f g_cont.cc ; if $(LN_S) $(top_srcdir)/libplot/g_cont.c g_cont.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_cont.c g_cont.cc ; fi
+
+g_dash.cc: $(top_srcdir)/libplot/g_dash.c $(ALLHEADERS)
+	@rm -f g_dash.cc ; if $(LN_S) $(top_srcdir)/libplot/g_dash.c g_dash.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_dash.c g_dash.cc ; fi
+
+g_dash2.cc: $(top_srcdir)/libplot/g_dash2.c $(ALLHEADERS)
+	@rm -f g_dash2.cc ; if $(LN_S) $(top_srcdir)/libplot/g_dash2.c g_dash2.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_dash2.c g_dash2.cc ; fi
+
+g_defplot.cc: $(top_srcdir)/libplot/g_defplot.c $(ALLHEADERS)
+	@rm -f g_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/g_defplot.c g_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_defplot.c g_defplot.cc ; fi
+
+g_defstate.cc: $(top_srcdir)/libplot/g_defstate.c $(ALLHEADERS)
+	@rm -f g_defstate.cc ; if $(LN_S) $(top_srcdir)/libplot/g_defstate.c g_defstate.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_defstate.c g_defstate.cc ; fi
+
+g_ellipse.cc: $(top_srcdir)/libplot/g_ellipse.c $(ALLHEADERS)
+	@rm -f g_ellipse.cc ; if $(LN_S) $(top_srcdir)/libplot/g_ellipse.c g_ellipse.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_ellipse.c g_ellipse.cc ; fi
+
+g_endpath.cc: $(top_srcdir)/libplot/g_endpath.c $(ALLHEADERS)
+	@rm -f g_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/g_endpath.c g_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_endpath.c g_endpath.cc ; fi
+
+g_erase.cc: $(top_srcdir)/libplot/g_erase.c $(ALLHEADERS)
+	@rm -f g_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/g_erase.c g_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_erase.c g_erase.cc ; fi
+
+g_error.cc: $(top_srcdir)/libplot/g_error.c $(ALLHEADERS)
+	@rm -f g_error.cc ; if $(LN_S) $(top_srcdir)/libplot/g_error.c g_error.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_error.c g_error.cc ; fi
+
+g_fillcolor.cc: $(top_srcdir)/libplot/g_fillcolor.c $(ALLHEADERS)
+	@rm -f g_fillcolor.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fillcolor.c g_fillcolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fillcolor.c g_fillcolor.cc ; fi
+
+g_fillrule.cc: $(top_srcdir)/libplot/g_fillrule.c $(ALLHEADERS)
+	@rm -f g_fillrule.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fillrule.c g_fillrule.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fillrule.c g_fillrule.cc ; fi
+
+g_filltype.cc: $(top_srcdir)/libplot/g_filltype.c $(ALLHEADERS)
+	@rm -f g_filltype.cc ; if $(LN_S) $(top_srcdir)/libplot/g_filltype.c g_filltype.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_filltype.c g_filltype.cc ; fi
+
+g_flushpl.cc: $(top_srcdir)/libplot/g_flushpl.c $(ALLHEADERS)
+	@rm -f g_flushpl.cc ; if $(LN_S) $(top_srcdir)/libplot/g_flushpl.c g_flushpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_flushpl.c g_flushpl.cc ; fi
+
+g_fontd2.cc: $(top_srcdir)/libplot/g_fontd2.c $(ALLHEADERS)
+	@rm -f g_fontd2.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fontd2.c g_fontd2.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fontd2.c g_fontd2.cc ; fi
+
+g_fontdb.cc: $(top_srcdir)/libplot/g_fontdb.c $(ALLHEADERS)
+	@rm -f g_fontdb.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fontdb.c g_fontdb.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fontdb.c g_fontdb.cc ; fi
+
+g_fontname.cc: $(top_srcdir)/libplot/g_fontname.c $(ALLHEADERS)
+	@rm -f g_fontname.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fontname.c g_fontname.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fontname.c g_fontname.cc ; fi
+
+g_fontsize.cc: $(top_srcdir)/libplot/g_fontsize.c $(ALLHEADERS)
+	@rm -f g_fontsize.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fontsize.c g_fontsize.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fontsize.c g_fontsize.cc ; fi
+
+g_havecap.cc: $(top_srcdir)/libplot/g_havecap.c $(ALLHEADERS)
+	@rm -f g_havecap.cc ; if $(LN_S) $(top_srcdir)/libplot/g_havecap.c g_havecap.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_havecap.c g_havecap.cc ; fi
+
+g_her_glyph.cc: $(top_srcdir)/libplot/g_her_glyph.c $(ALLHEADERS)
+	@rm -f g_her_glyph.cc ; if $(LN_S) $(top_srcdir)/libplot/g_her_glyph.c g_her_glyph.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_her_glyph.c g_her_glyph.cc ; fi
+
+g_integer.cc: $(top_srcdir)/libplot/g_integer.c $(ALLHEADERS)
+	@rm -f g_integer.cc ; if $(LN_S) $(top_srcdir)/libplot/g_integer.c g_integer.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_integer.c g_integer.cc ; fi
+
+g_iso.cc: $(top_srcdir)/libplot/g_iso.c $(ALLHEADERS)
+	@rm -f g_iso.cc ; if $(LN_S) $(top_srcdir)/libplot/g_iso.c g_iso.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_iso.c g_iso.cc ; fi
+
+g_joinmod.cc: $(top_srcdir)/libplot/g_joinmod.c $(ALLHEADERS)
+	@rm -f g_joinmod.cc ; if $(LN_S) $(top_srcdir)/libplot/g_joinmod.c g_joinmod.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_joinmod.c g_joinmod.cc ; fi
+
+g_label.cc: $(top_srcdir)/libplot/g_label.c $(ALLHEADERS)
+	@rm -f g_label.cc ; if $(LN_S) $(top_srcdir)/libplot/g_label.c g_label.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_label.c g_label.cc ; fi
+
+g_line.cc: $(top_srcdir)/libplot/g_line.c $(ALLHEADERS)
+	@rm -f g_line.cc ; if $(LN_S) $(top_srcdir)/libplot/g_line.c g_line.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_line.c g_line.cc ; fi
+
+g_linemod.cc: $(top_srcdir)/libplot/g_linemod.c $(ALLHEADERS)
+	@rm -f g_linemod.cc ; if $(LN_S) $(top_srcdir)/libplot/g_linemod.c g_linemod.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_linemod.c g_linemod.cc ; fi
+
+g_linewidth.cc: $(top_srcdir)/libplot/g_linewidth.c $(ALLHEADERS)
+	@rm -f g_linewidth.cc ; if $(LN_S) $(top_srcdir)/libplot/g_linewidth.c g_linewidth.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_linewidth.c g_linewidth.cc ; fi
+
+g_mark.cc: $(top_srcdir)/libplot/g_mark.c $(ALLHEADERS)
+	@rm -f g_mark.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mark.c g_mark.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mark.c g_mark.cc ; fi
+
+g_matrix.cc: $(top_srcdir)/libplot/g_matrix.c $(ALLHEADERS)
+	@rm -f g_matrix.cc ; if $(LN_S) $(top_srcdir)/libplot/g_matrix.c g_matrix.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_matrix.c g_matrix.cc ; fi
+
+g_miscmi.cc: $(top_srcdir)/libplot/g_miscmi.c $(ALLHEADERS)
+	@rm -f g_miscmi.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miscmi.c g_miscmi.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miscmi.c g_miscmi.cc ; fi
+
+g_miter.cc: $(top_srcdir)/libplot/g_miter.c $(ALLHEADERS)
+	@rm -f g_miter.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miter.c g_miter.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miter.c g_miter.cc ; fi
+
+g_mialloc.cc: $(top_srcdir)/libplot/g_mialloc.c $(ALLHEADERS)
+	@rm -f g_mialloc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mialloc.c g_mialloc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mialloc.c g_mialloc.cc ; fi
+
+g_miarc.cc: $(top_srcdir)/libplot/g_miarc.c $(ALLHEADERS)
+	@rm -f g_miarc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miarc.c g_miarc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miarc.c g_miarc.cc ; fi
+
+g_mifllarc.cc: $(top_srcdir)/libplot/g_mifllarc.c $(ALLHEADERS)
+	@rm -f g_mifllarc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mifllarc.c g_mifllarc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mifllarc.c g_mifllarc.cc ; fi
+
+g_mifllrct.cc: $(top_srcdir)/libplot/g_mifllrct.c $(ALLHEADERS)
+	@rm -f g_mifllrct.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mifllrct.c g_mifllrct.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mifllrct.c g_mifllrct.cc ; fi
+
+g_mifllspn.cc: $(top_srcdir)/libplot/g_mifllspn.c $(ALLHEADERS)
+	@rm -f g_mifllspn.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mifllspn.c g_mifllspn.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mifllspn.c g_mifllspn.cc ; fi
+
+g_mifplycon.cc: $(top_srcdir)/libplot/g_mifplycon.c $(ALLHEADERS)
+	@rm -f g_mifplycon.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mifplycon.c g_mifplycon.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mifplycon.c g_mifplycon.cc ; fi
+
+g_miply.cc: $(top_srcdir)/libplot/g_miply.c $(ALLHEADERS)
+	@rm -f g_miply.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miply.c g_miply.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miply.c g_miply.cc ; fi
+
+g_miplycon.cc: $(top_srcdir)/libplot/g_miplycon.c $(ALLHEADERS)
+	@rm -f g_miplycon.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miplycon.c g_miplycon.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miplycon.c g_miplycon.cc ; fi
+
+g_miplygen.cc: $(top_srcdir)/libplot/g_miplygen.c $(ALLHEADERS)
+	@rm -f g_miplygen.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miplygen.c g_miplygen.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miplygen.c g_miplygen.cc ; fi
+
+g_miplypnt.cc: $(top_srcdir)/libplot/g_miplypnt.c $(ALLHEADERS)
+	@rm -f g_miplypnt.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miplypnt.c g_miplypnt.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miplypnt.c g_miplypnt.cc ; fi
+
+g_miplyutil.cc: $(top_srcdir)/libplot/g_miplyutil.c $(ALLHEADERS)
+	@rm -f g_miplyutil.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miplyutil.c g_miplyutil.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miplyutil.c g_miplyutil.cc ; fi
+
+g_mispans.cc: $(top_srcdir)/libplot/g_mispans.c $(ALLHEADERS)
+	@rm -f g_mispans.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mispans.c g_mispans.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mispans.c g_mispans.cc ; fi
+
+g_miwidelin.cc: $(top_srcdir)/libplot/g_miwidelin.c $(ALLHEADERS)
+	@rm -f g_miwidelin.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miwidelin.c g_miwidelin.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miwidelin.c g_miwidelin.cc ; fi
+
+g_mizerarc.cc: $(top_srcdir)/libplot/g_mizerarc.c $(ALLHEADERS)
+	@rm -f g_mizerarc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mizerarc.c g_mizerarc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mizerarc.c g_mizerarc.cc ; fi
+
+g_mizerolin.cc: $(top_srcdir)/libplot/g_mizerolin.c $(ALLHEADERS)
+	@rm -f g_mizerolin.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mizerolin.c g_mizerolin.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mizerolin.c g_mizerolin.cc ; fi
+
+g_move.cc: $(top_srcdir)/libplot/g_move.c $(ALLHEADERS)
+	@rm -f g_move.cc ; if $(LN_S) $(top_srcdir)/libplot/g_move.c g_move.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_move.c g_move.cc ; fi
+
+g_openpl.cc: $(top_srcdir)/libplot/g_openpl.c $(ALLHEADERS)
+	@rm -f g_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/g_openpl.c g_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_openpl.c g_openpl.cc ; fi
+
+g_outbuf.cc: $(top_srcdir)/libplot/g_outbuf.c $(ALLHEADERS)
+	@rm -f g_outbuf.cc ; if $(LN_S) $(top_srcdir)/libplot/g_outbuf.c g_outbuf.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_outbuf.c g_outbuf.cc ; fi
+
+g_outfile.cc: $(top_srcdir)/libplot/g_outfile.c $(ALLHEADERS)
+	@rm -f g_outfile.cc ; if $(LN_S) $(top_srcdir)/libplot/g_outfile.c g_outfile.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_outfile.c g_outfile.cc ; fi
+
+g_pagetype.cc: $(top_srcdir)/libplot/g_pagetype.c $(ALLHEADERS)
+	@rm -f g_pagetype.cc ; if $(LN_S) $(top_srcdir)/libplot/g_pagetype.c g_pagetype.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_pagetype.c g_pagetype.cc ; fi
+
+g_params.cc: $(top_srcdir)/libplot/g_params.c $(ALLHEADERS)
+	@rm -f g_params.cc ; if $(LN_S) $(top_srcdir)/libplot/g_params.c g_params.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_params.c g_params.cc ; fi
+
+g_pencolor.cc: $(top_srcdir)/libplot/g_pencolor.c $(ALLHEADERS)
+	@rm -f g_pencolor.cc ; if $(LN_S) $(top_srcdir)/libplot/g_pencolor.c g_pencolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_pencolor.c g_pencolor.cc ; fi
+
+g_point.cc: $(top_srcdir)/libplot/g_point.c $(ALLHEADERS)
+	@rm -f g_point.cc ; if $(LN_S) $(top_srcdir)/libplot/g_point.c g_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_point.c g_point.cc ; fi
+
+g_range.cc: $(top_srcdir)/libplot/g_range.c $(ALLHEADERS)
+	@rm -f g_range.cc ; if $(LN_S) $(top_srcdir)/libplot/g_range.c g_range.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_range.c g_range.cc ; fi
+
+g_relative.cc: $(top_srcdir)/libplot/g_relative.c $(ALLHEADERS)
+	@rm -f g_relative.cc ; if $(LN_S) $(top_srcdir)/libplot/g_relative.c g_relative.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_relative.c g_relative.cc ; fi
+
+g_reststate.cc: $(top_srcdir)/libplot/g_reststate.c $(ALLHEADERS)
+	@rm -f g_reststate.cc ; if $(LN_S) $(top_srcdir)/libplot/g_reststate.c g_reststate.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_reststate.c g_reststate.cc ; fi
+
+g_retrieve.cc: $(top_srcdir)/libplot/g_retrieve.c $(ALLHEADERS)
+	@rm -f g_retrieve.cc ; if $(LN_S) $(top_srcdir)/libplot/g_retrieve.c g_retrieve.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_retrieve.c g_retrieve.cc ; fi
+
+g_savestate.cc: $(top_srcdir)/libplot/g_savestate.c $(ALLHEADERS)
+	@rm -f g_savestate.cc ; if $(LN_S) $(top_srcdir)/libplot/g_savestate.c g_savestate.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_savestate.c g_savestate.cc ; fi
+
+g_space.cc: $(top_srcdir)/libplot/g_space.c $(ALLHEADERS)
+	@rm -f g_space.cc ; if $(LN_S) $(top_srcdir)/libplot/g_space.c g_space.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_space.c g_space.cc ; fi
+
+g_textangle.cc: $(top_srcdir)/libplot/g_textangle.c $(ALLHEADERS)
+	@rm -f g_textangle.cc ; if $(LN_S) $(top_srcdir)/libplot/g_textangle.c g_textangle.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_textangle.c g_textangle.cc ; fi
+
+g_vector.cc: $(top_srcdir)/libplot/g_vector.c $(ALLHEADERS)
+	@rm -f g_vector.cc ; if $(LN_S) $(top_srcdir)/libplot/g_vector.c g_vector.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_vector.c g_vector.cc ; fi
+
+g_write.cc: $(top_srcdir)/libplot/g_write.c $(ALLHEADERS)
+	@rm -f g_write.cc ; if $(LN_S) $(top_srcdir)/libplot/g_write.c g_write.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_write.c g_write.cc ; fi
+
+g_xmalloc.cc: $(top_srcdir)/libplot/g_xmalloc.c $(ALLHEADERS)
+	@rm -f g_xmalloc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_xmalloc.c g_xmalloc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_xmalloc.c g_xmalloc.cc ; fi
+
+g_xstring.cc: $(top_srcdir)/libplot/g_xstring.c $(ALLHEADERS)
+	@rm -f g_xstring.cc ; if $(LN_S) $(top_srcdir)/libplot/g_xstring.c g_xstring.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_xstring.c g_xstring.cc ; fi
+
+h_alab_pcl.cc: $(top_srcdir)/libplot/h_alab_pcl.c $(ALLHEADERS)
+	@rm -f h_alab_pcl.cc ; if $(LN_S) $(top_srcdir)/libplot/h_alab_pcl.c h_alab_pcl.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_alab_pcl.c h_alab_pcl.cc ; fi
+
+h_attribs.cc: $(top_srcdir)/libplot/h_attribs.c $(ALLHEADERS)
+	@rm -f h_attribs.cc ; if $(LN_S) $(top_srcdir)/libplot/h_attribs.c h_attribs.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_attribs.c h_attribs.cc ; fi
+
+h_box.cc: $(top_srcdir)/libplot/h_box.c $(ALLHEADERS)
+	@rm -f h_box.cc ; if $(LN_S) $(top_srcdir)/libplot/h_box.c h_box.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_box.c h_box.cc ; fi
+
+h_circ.cc: $(top_srcdir)/libplot/h_circ.c $(ALLHEADERS)
+	@rm -f h_circ.cc ; if $(LN_S) $(top_srcdir)/libplot/h_circ.c h_circ.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_circ.c h_circ.cc ; fi
+
+h_closepl.cc: $(top_srcdir)/libplot/h_closepl.c $(ALLHEADERS)
+	@rm -f h_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/h_closepl.c h_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_closepl.c h_closepl.cc ; fi
+
+h_color.cc: $(top_srcdir)/libplot/h_color.c $(ALLHEADERS)
+	@rm -f h_color.cc ; if $(LN_S) $(top_srcdir)/libplot/h_color.c h_color.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_color.c h_color.cc ; fi
+
+h_defplot.cc: $(top_srcdir)/libplot/h_defplot.c $(ALLHEADERS)
+	@rm -f h_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/h_defplot.c h_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_defplot.c h_defplot.cc ; fi
+
+h_endpath.cc: $(top_srcdir)/libplot/h_endpath.c $(ALLHEADERS)
+	@rm -f h_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/h_endpath.c h_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_endpath.c h_endpath.cc ; fi
+
+h_font.cc: $(top_srcdir)/libplot/h_font.c $(ALLHEADERS)
+	@rm -f h_font.cc ; if $(LN_S) $(top_srcdir)/libplot/h_font.c h_font.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_font.c h_font.cc ; fi
+
+h_linewidth.cc: $(top_srcdir)/libplot/h_linewidth.c $(ALLHEADERS)
+	@rm -f h_linewidth.cc ; if $(LN_S) $(top_srcdir)/libplot/h_linewidth.c h_linewidth.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_linewidth.c h_linewidth.cc ; fi
+
+h_openpl.cc: $(top_srcdir)/libplot/h_openpl.c $(ALLHEADERS)
+	@rm -f h_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/h_openpl.c h_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_openpl.c h_openpl.cc ; fi
+
+h_point.cc: $(top_srcdir)/libplot/h_point.c $(ALLHEADERS)
+	@rm -f h_point.cc ; if $(LN_S) $(top_srcdir)/libplot/h_point.c h_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_point.c h_point.cc ; fi
+
+h_position.cc: $(top_srcdir)/libplot/h_position.c $(ALLHEADERS)
+	@rm -f h_position.cc ; if $(LN_S) $(top_srcdir)/libplot/h_position.c h_position.cc ; then true ; else cp -p $(top_srcdir)/libplot/h_position.c h_position.cc ; fi
+
+n_closepl.cc: $(top_srcdir)/libplot/n_closepl.c $(ALLHEADERS)
+	@rm -f n_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/n_closepl.c n_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/n_closepl.c n_closepl.cc ; fi
+
+n_defplot.cc: $(top_srcdir)/libplot/n_defplot.c $(ALLHEADERS)
+	@rm -f n_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/n_defplot.c n_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/n_defplot.c n_defplot.cc ; fi
+
+n_ellipse.cc: $(top_srcdir)/libplot/n_ellipse.c $(ALLHEADERS)
+	@rm -f n_ellipse.cc ; if $(LN_S) $(top_srcdir)/libplot/n_ellipse.c n_ellipse.cc ; then true ; else cp -p $(top_srcdir)/libplot/n_ellipse.c n_ellipse.cc ; fi
+
+n_endpath.cc: $(top_srcdir)/libplot/n_endpath.c $(ALLHEADERS)
+	@rm -f n_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/n_endpath.c n_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/n_endpath.c n_endpath.cc ; fi
+
+n_erase.cc: $(top_srcdir)/libplot/n_erase.c $(ALLHEADERS)
+	@rm -f n_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/n_erase.c n_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/n_erase.c n_erase.cc ; fi
+
+n_openpl.cc: $(top_srcdir)/libplot/n_openpl.c $(ALLHEADERS)
+	@rm -f n_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/n_openpl.c n_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/n_openpl.c n_openpl.cc ; fi
+
+n_point.cc: $(top_srcdir)/libplot/n_point.c $(ALLHEADERS)
+	@rm -f n_point.cc ; if $(LN_S) $(top_srcdir)/libplot/n_point.c n_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/n_point.c n_point.cc ; fi
+
+i_closepl.cc: $(top_srcdir)/libplot/i_closepl.c $(ALLHEADERS)
+	@rm -f i_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/i_closepl.c i_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_closepl.c i_closepl.cc ; fi
+
+i_color.cc: $(top_srcdir)/libplot/i_color.c $(ALLHEADERS)
+	@rm -f i_color.cc ; if $(LN_S) $(top_srcdir)/libplot/i_color.c i_color.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_color.c i_color.cc ; fi
+
+i_defplot.cc: $(top_srcdir)/libplot/i_defplot.c $(ALLHEADERS)
+	@rm -f i_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/i_defplot.c i_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_defplot.c i_defplot.cc ; fi
+
+i_ellipse.cc: $(top_srcdir)/libplot/i_ellipse.c $(ALLHEADERS)
+	@rm -f i_ellipse.cc ; if $(LN_S) $(top_srcdir)/libplot/i_ellipse.c i_ellipse.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_ellipse.c i_ellipse.cc ; fi
+
+i_endpath.cc: $(top_srcdir)/libplot/i_endpath.c $(ALLHEADERS)
+	@rm -f i_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/i_endpath.c i_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_endpath.c i_endpath.cc ; fi
+
+i_erase.cc: $(top_srcdir)/libplot/i_erase.c $(ALLHEADERS)
+	@rm -f i_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/i_erase.c i_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_erase.c i_erase.cc ; fi
+
+i_openpl.cc: $(top_srcdir)/libplot/i_openpl.c $(ALLHEADERS)
+	@rm -f i_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/i_openpl.c i_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_openpl.c i_openpl.cc ; fi
+
+i_point.cc: $(top_srcdir)/libplot/i_point.c $(ALLHEADERS)
+	@rm -f i_point.cc ; if $(LN_S) $(top_srcdir)/libplot/i_point.c i_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_point.c i_point.cc ; fi
+
+i_rle.cc: $(top_srcdir)/libplot/i_rle.c $(ALLHEADERS)
+	@rm -f i_rle.cc ; if $(LN_S) $(top_srcdir)/libplot/i_rle.c i_rle.cc ; then true ; else cp -p $(top_srcdir)/libplot/i_rle.c i_rle.cc ; fi
+
+m_alabel.cc: $(top_srcdir)/libplot/m_alabel.c $(ALLHEADERS)
+	@rm -f m_alabel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_alabel.c m_alabel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_alabel.c m_alabel.cc ; fi
+
+m_arc.cc: $(top_srcdir)/libplot/m_arc.c $(ALLHEADERS)
+	@rm -f m_arc.cc ; if $(LN_S) $(top_srcdir)/libplot/m_arc.c m_arc.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_arc.c m_arc.cc ; fi
+
+m_arcrel.cc: $(top_srcdir)/libplot/m_arcrel.c $(ALLHEADERS)
+	@rm -f m_arcrel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_arcrel.c m_arcrel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_arcrel.c m_arcrel.cc ; fi
+
+m_bez.cc: $(top_srcdir)/libplot/m_bez.c $(ALLHEADERS)
+	@rm -f m_bez.cc ; if $(LN_S) $(top_srcdir)/libplot/m_bez.c m_bez.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_bez.c m_bez.cc ; fi
+
+m_bezrel.cc: $(top_srcdir)/libplot/m_bezrel.c $(ALLHEADERS)
+	@rm -f m_bezrel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_bezrel.c m_bezrel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_bezrel.c m_bezrel.cc ; fi
+
+m_bgcolor.cc: $(top_srcdir)/libplot/m_bgcolor.c $(ALLHEADERS)
+	@rm -f m_bgcolor.cc ; if $(LN_S) $(top_srcdir)/libplot/m_bgcolor.c m_bgcolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_bgcolor.c m_bgcolor.cc ; fi
+
+m_box.cc: $(top_srcdir)/libplot/m_box.c $(ALLHEADERS)
+	@rm -f m_box.cc ; if $(LN_S) $(top_srcdir)/libplot/m_box.c m_box.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_box.c m_box.cc ; fi
+
+m_boxrel.cc: $(top_srcdir)/libplot/m_boxrel.c $(ALLHEADERS)
+	@rm -f m_boxrel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_boxrel.c m_boxrel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_boxrel.c m_boxrel.cc ; fi
+
+m_capmod.cc: $(top_srcdir)/libplot/m_capmod.c $(ALLHEADERS)
+	@rm -f m_capmod.cc ; if $(LN_S) $(top_srcdir)/libplot/m_capmod.c m_capmod.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_capmod.c m_capmod.cc ; fi
+
+m_circ.cc: $(top_srcdir)/libplot/m_circ.c $(ALLHEADERS)
+	@rm -f m_circ.cc ; if $(LN_S) $(top_srcdir)/libplot/m_circ.c m_circ.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_circ.c m_circ.cc ; fi
+
+m_circrel.cc: $(top_srcdir)/libplot/m_circrel.c $(ALLHEADERS)
+	@rm -f m_circrel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_circrel.c m_circrel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_circrel.c m_circrel.cc ; fi
+
+m_closepl.cc: $(top_srcdir)/libplot/m_closepl.c $(ALLHEADERS)
+	@rm -f m_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/m_closepl.c m_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_closepl.c m_closepl.cc ; fi
+
+m_concat.cc: $(top_srcdir)/libplot/m_concat.c $(ALLHEADERS)
+	@rm -f m_concat.cc ; if $(LN_S) $(top_srcdir)/libplot/m_concat.c m_concat.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_concat.c m_concat.cc ; fi
+
+m_cont.cc: $(top_srcdir)/libplot/m_cont.c $(ALLHEADERS)
+	@rm -f m_cont.cc ; if $(LN_S) $(top_srcdir)/libplot/m_cont.c m_cont.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_cont.c m_cont.cc ; fi
+
+m_dash.cc: $(top_srcdir)/libplot/m_dash.c $(ALLHEADERS)
+	@rm -f m_dash.cc ; if $(LN_S) $(top_srcdir)/libplot/m_dash.c m_dash.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_dash.c m_dash.cc ; fi
+
+m_contrel.cc: $(top_srcdir)/libplot/m_contrel.c $(ALLHEADERS)
+	@rm -f m_contrel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_contrel.c m_contrel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_contrel.c m_contrel.cc ; fi
+
+m_defplot.cc: $(top_srcdir)/libplot/m_defplot.c $(ALLHEADERS)
+	@rm -f m_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/m_defplot.c m_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_defplot.c m_defplot.cc ; fi
+
+m_earc.cc: $(top_srcdir)/libplot/m_earc.c $(ALLHEADERS)
+	@rm -f m_earc.cc ; if $(LN_S) $(top_srcdir)/libplot/m_earc.c m_earc.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_earc.c m_earc.cc ; fi
+
+m_earcrel.cc: $(top_srcdir)/libplot/m_earcrel.c $(ALLHEADERS)
+	@rm -f m_earcrel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_earcrel.c m_earcrel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_earcrel.c m_earcrel.cc ; fi
+
+m_ellipse.cc: $(top_srcdir)/libplot/m_ellipse.c $(ALLHEADERS)
+	@rm -f m_ellipse.cc ; if $(LN_S) $(top_srcdir)/libplot/m_ellipse.c m_ellipse.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_ellipse.c m_ellipse.cc ; fi
+
+m_emit.cc: $(top_srcdir)/libplot/m_emit.c $(ALLHEADERS)
+	@rm -f m_emit.cc ; if $(LN_S) $(top_srcdir)/libplot/m_emit.c m_emit.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_emit.c m_emit.cc ; fi
+
+m_endpath.cc: $(top_srcdir)/libplot/m_endpath.c $(ALLHEADERS)
+	@rm -f m_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/m_endpath.c m_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_endpath.c m_endpath.cc ; fi
+
+m_erase.cc: $(top_srcdir)/libplot/m_erase.c $(ALLHEADERS)
+	@rm -f m_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/m_erase.c m_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_erase.c m_erase.cc ; fi
+
+m_fillcolor.cc: $(top_srcdir)/libplot/m_fillcolor.c $(ALLHEADERS)
+	@rm -f m_fillcolor.cc ; if $(LN_S) $(top_srcdir)/libplot/m_fillcolor.c m_fillcolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_fillcolor.c m_fillcolor.cc ; fi
+
+m_fillrule.cc: $(top_srcdir)/libplot/m_fillrule.c $(ALLHEADERS)
+	@rm -f m_fillrule.cc ; if $(LN_S) $(top_srcdir)/libplot/m_fillrule.c m_fillrule.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_fillrule.c m_fillrule.cc ; fi
+
+m_filltype.cc: $(top_srcdir)/libplot/m_filltype.c $(ALLHEADERS)
+	@rm -f m_filltype.cc ; if $(LN_S) $(top_srcdir)/libplot/m_filltype.c m_filltype.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_filltype.c m_filltype.cc ; fi
+
+m_fontname.cc: $(top_srcdir)/libplot/m_fontname.c $(ALLHEADERS)
+	@rm -f m_fontname.cc ; if $(LN_S) $(top_srcdir)/libplot/m_fontname.c m_fontname.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_fontname.c m_fontname.cc ; fi
+
+m_fontsize.cc: $(top_srcdir)/libplot/m_fontsize.c $(ALLHEADERS)
+	@rm -f m_fontsize.cc ; if $(LN_S) $(top_srcdir)/libplot/m_fontsize.c m_fontsize.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_fontsize.c m_fontsize.cc ; fi
+
+m_joinmod.cc: $(top_srcdir)/libplot/m_joinmod.c $(ALLHEADERS)
+	@rm -f m_joinmod.cc ; if $(LN_S) $(top_srcdir)/libplot/m_joinmod.c m_joinmod.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_joinmod.c m_joinmod.cc ; fi
+
+m_label.cc: $(top_srcdir)/libplot/m_label.c $(ALLHEADERS)
+	@rm -f m_label.cc ; if $(LN_S) $(top_srcdir)/libplot/m_label.c m_label.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_label.c m_label.cc ; fi
+
+m_line.cc: $(top_srcdir)/libplot/m_line.c $(ALLHEADERS)
+	@rm -f m_line.cc ; if $(LN_S) $(top_srcdir)/libplot/m_line.c m_line.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_line.c m_line.cc ; fi
+
+m_linemod.cc: $(top_srcdir)/libplot/m_linemod.c $(ALLHEADERS)
+	@rm -f m_linemod.cc ; if $(LN_S) $(top_srcdir)/libplot/m_linemod.c m_linemod.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_linemod.c m_linemod.cc ; fi
+
+m_linerel.cc: $(top_srcdir)/libplot/m_linerel.c $(ALLHEADERS)
+	@rm -f m_linerel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_linerel.c m_linerel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_linerel.c m_linerel.cc ; fi
+
+m_linewidth.cc: $(top_srcdir)/libplot/m_linewidth.c $(ALLHEADERS)
+	@rm -f m_linewidth.cc ; if $(LN_S) $(top_srcdir)/libplot/m_linewidth.c m_linewidth.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_linewidth.c m_linewidth.cc ; fi
+
+m_mark.cc: $(top_srcdir)/libplot/m_mark.c $(ALLHEADERS)
+	@rm -f m_mark.cc ; if $(LN_S) $(top_srcdir)/libplot/m_mark.c m_mark.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_mark.c m_mark.cc ; fi
+
+m_markrel.cc: $(top_srcdir)/libplot/m_markrel.c $(ALLHEADERS)
+	@rm -f m_markrel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_markrel.c m_markrel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_markrel.c m_markrel.cc ; fi
+
+m_miter.cc: $(top_srcdir)/libplot/m_miter.c $(ALLHEADERS)
+	@rm -f m_miter.cc ; if $(LN_S) $(top_srcdir)/libplot/m_miter.c m_miter.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_miter.c m_miter.cc ; fi
+
+m_move.cc: $(top_srcdir)/libplot/m_move.c $(ALLHEADERS)
+	@rm -f m_move.cc ; if $(LN_S) $(top_srcdir)/libplot/m_move.c m_move.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_move.c m_move.cc ; fi
+
+m_moverel.cc: $(top_srcdir)/libplot/m_moverel.c $(ALLHEADERS)
+	@rm -f m_moverel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_moverel.c m_moverel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_moverel.c m_moverel.cc ; fi
+
+m_openpl.cc: $(top_srcdir)/libplot/m_openpl.c $(ALLHEADERS)
+	@rm -f m_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/m_openpl.c m_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_openpl.c m_openpl.cc ; fi
+
+m_pencolor.cc: $(top_srcdir)/libplot/m_pencolor.c $(ALLHEADERS)
+	@rm -f m_pencolor.cc ; if $(LN_S) $(top_srcdir)/libplot/m_pencolor.c m_pencolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_pencolor.c m_pencolor.cc ; fi
+
+m_point.cc: $(top_srcdir)/libplot/m_point.c $(ALLHEADERS)
+	@rm -f m_point.cc ; if $(LN_S) $(top_srcdir)/libplot/m_point.c m_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_point.c m_point.cc ; fi
+
+m_pointrel.cc: $(top_srcdir)/libplot/m_pointrel.c $(ALLHEADERS)
+	@rm -f m_pointrel.cc ; if $(LN_S) $(top_srcdir)/libplot/m_pointrel.c m_pointrel.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_pointrel.c m_pointrel.cc ; fi
+
+m_reststate.cc: $(top_srcdir)/libplot/m_reststate.c $(ALLHEADERS)
+	@rm -f m_reststate.cc ; if $(LN_S) $(top_srcdir)/libplot/m_reststate.c m_reststate.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_reststate.c m_reststate.cc ; fi
+
+m_savestate.cc: $(top_srcdir)/libplot/m_savestate.c $(ALLHEADERS)
+	@rm -f m_savestate.cc ; if $(LN_S) $(top_srcdir)/libplot/m_savestate.c m_savestate.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_savestate.c m_savestate.cc ; fi
+
+m_space.cc: $(top_srcdir)/libplot/m_space.c $(ALLHEADERS)
+	@rm -f m_space.cc ; if $(LN_S) $(top_srcdir)/libplot/m_space.c m_space.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_space.c m_space.cc ; fi
+
+m_textangle.cc: $(top_srcdir)/libplot/m_textangle.c $(ALLHEADERS)
+	@rm -f m_textangle.cc ; if $(LN_S) $(top_srcdir)/libplot/m_textangle.c m_textangle.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_textangle.c m_textangle.cc ; fi
+
+p_alab_ps.cc: $(top_srcdir)/libplot/p_alab_ps.c $(ALLHEADERS)
+	@rm -f p_alab_ps.cc ; if $(LN_S) $(top_srcdir)/libplot/p_alab_ps.c p_alab_ps.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_alab_ps.c p_alab_ps.cc ; fi
+
+p_closepl.cc: $(top_srcdir)/libplot/p_closepl.c $(ALLHEADERS)
+	@rm -f p_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/p_closepl.c p_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_closepl.c p_closepl.cc ; fi
+
+p_color.cc: $(top_srcdir)/libplot/p_color.c $(ALLHEADERS)
+	@rm -f p_color.cc ; if $(LN_S) $(top_srcdir)/libplot/p_color.c p_color.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_color.c p_color.cc ; fi
+
+p_color2.cc: $(top_srcdir)/libplot/p_color2.c $(ALLHEADERS)
+	@rm -f p_color2.cc ; if $(LN_S) $(top_srcdir)/libplot/p_color2.c p_color2.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_color2.c p_color2.cc ; fi
+
+p_defplot.cc: $(top_srcdir)/libplot/p_defplot.c $(ALLHEADERS)
+	@rm -f p_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/p_defplot.c p_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_defplot.c p_defplot.cc ; fi
+
+p_ellipse.cc: $(top_srcdir)/libplot/p_ellipse.c $(ALLHEADERS)
+	@rm -f p_ellipse.cc ; if $(LN_S) $(top_srcdir)/libplot/p_ellipse.c p_ellipse.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_ellipse.c p_ellipse.cc ; fi
+
+p_endpath.cc: $(top_srcdir)/libplot/p_endpath.c $(ALLHEADERS)
+	@rm -f p_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/p_endpath.c p_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_endpath.c p_endpath.cc ; fi
+
+p_erase.cc: $(top_srcdir)/libplot/p_erase.c $(ALLHEADERS)
+	@rm -f p_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/p_erase.c p_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_erase.c p_erase.cc ; fi
+
+p_openpl.cc: $(top_srcdir)/libplot/p_openpl.c $(ALLHEADERS)
+	@rm -f p_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/p_openpl.c p_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_openpl.c p_openpl.cc ; fi
+
+p_point.cc: $(top_srcdir)/libplot/p_point.c $(ALLHEADERS)
+	@rm -f p_point.cc ; if $(LN_S) $(top_srcdir)/libplot/p_point.c p_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_point.c p_point.cc ; fi
+
+t_attribs.cc: $(top_srcdir)/libplot/t_attribs.c $(ALLHEADERS)
+	@rm -f t_attribs.cc ; if $(LN_S) $(top_srcdir)/libplot/t_attribs.c t_attribs.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_attribs.c t_attribs.cc ; fi
+
+t_closepl.cc: $(top_srcdir)/libplot/t_closepl.c $(ALLHEADERS)
+	@rm -f t_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/t_closepl.c t_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_closepl.c t_closepl.cc ; fi
+
+t_color.cc: $(top_srcdir)/libplot/t_color.c $(ALLHEADERS)
+	@rm -f t_color.cc ; if $(LN_S) $(top_srcdir)/libplot/t_color.c t_color.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_color.c t_color.cc ; fi
+
+t_color2.cc: $(top_srcdir)/libplot/t_color2.c $(ALLHEADERS)
+	@rm -f t_color2.cc ; if $(LN_S) $(top_srcdir)/libplot/t_color2.c t_color2.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_color2.c t_color2.cc ; fi
+
+t_cont.cc: $(top_srcdir)/libplot/t_cont.c $(ALLHEADERS)
+	@rm -f t_cont.cc ; if $(LN_S) $(top_srcdir)/libplot/t_cont.c t_cont.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_cont.c t_cont.cc ; fi
+
+t_defplot.cc: $(top_srcdir)/libplot/t_defplot.c $(ALLHEADERS)
+	@rm -f t_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/t_defplot.c t_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_defplot.c t_defplot.cc ; fi
+
+t_erase.cc: $(top_srcdir)/libplot/t_erase.c $(ALLHEADERS)
+	@rm -f t_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/t_erase.c t_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_erase.c t_erase.cc ; fi
+
+t_openpl.cc: $(top_srcdir)/libplot/t_openpl.c $(ALLHEADERS)
+	@rm -f t_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/t_openpl.c t_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_openpl.c t_openpl.cc ; fi
+
+t_point.cc: $(top_srcdir)/libplot/t_point.c $(ALLHEADERS)
+	@rm -f t_point.cc ; if $(LN_S) $(top_srcdir)/libplot/t_point.c t_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_point.c t_point.cc ; fi
+
+t_tek_md.cc: $(top_srcdir)/libplot/t_tek_md.c $(ALLHEADERS)
+	@rm -f t_tek_md.cc ; if $(LN_S) $(top_srcdir)/libplot/t_tek_md.c t_tek_md.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_tek_md.c t_tek_md.cc ; fi
+
+t_tek_mv.cc: $(top_srcdir)/libplot/t_tek_mv.c $(ALLHEADERS)
+	@rm -f t_tek_mv.cc ; if $(LN_S) $(top_srcdir)/libplot/t_tek_mv.c t_tek_mv.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_tek_mv.c t_tek_mv.cc ; fi
+
+t_tek_vec.cc: $(top_srcdir)/libplot/t_tek_vec.c $(ALLHEADERS)
+	@rm -f t_tek_vec.cc ; if $(LN_S) $(top_srcdir)/libplot/t_tek_vec.c t_tek_vec.cc ; then true ; else cp -p $(top_srcdir)/libplot/t_tek_vec.c t_tek_vec.cc ; fi
+
+x_alab_x.cc: $(top_srcdir)/libplot/x_alab_x.c $(ALLHEADERS)
+	@rm -f x_alab_x.cc ; if $(LN_S) $(top_srcdir)/libplot/x_alab_x.c x_alab_x.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_alab_x.c x_alab_x.cc ; fi
+
+x_attribs.cc: $(top_srcdir)/libplot/x_attribs.c $(ALLHEADERS)
+	@rm -f x_attribs.cc ; if $(LN_S) $(top_srcdir)/libplot/x_attribs.c x_attribs.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_attribs.c x_attribs.cc ; fi
+
+x_box.cc: $(top_srcdir)/libplot/x_box.c $(ALLHEADERS)
+	@rm -f x_box.cc ; if $(LN_S) $(top_srcdir)/libplot/x_box.c x_box.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_box.c x_box.cc ; fi
+
+x_closepl.cc: $(top_srcdir)/libplot/x_closepl.c $(ALLHEADERS)
+	@rm -f x_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/x_closepl.c x_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_closepl.c x_closepl.cc ; fi
+
+x_color.cc: $(top_srcdir)/libplot/x_color.c $(ALLHEADERS)
+	@rm -f x_color.cc ; if $(LN_S) $(top_srcdir)/libplot/x_color.c x_color.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_color.c x_color.cc ; fi
+
+x_cont.cc: $(top_srcdir)/libplot/x_cont.c $(ALLHEADERS)
+	@rm -f x_cont.cc ; if $(LN_S) $(top_srcdir)/libplot/x_cont.c x_cont.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_cont.c x_cont.cc ; fi
+
+x_defplot.cc: $(top_srcdir)/libplot/x_defplot.c $(ALLHEADERS)
+	@rm -f x_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/x_defplot.c x_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_defplot.c x_defplot.cc ; fi
+
+x_ellipse.cc: $(top_srcdir)/libplot/x_ellipse.c $(ALLHEADERS)
+	@rm -f x_ellipse.cc ; if $(LN_S) $(top_srcdir)/libplot/x_ellipse.c x_ellipse.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_ellipse.c x_ellipse.cc ; fi
+
+x_endpath.cc: $(top_srcdir)/libplot/x_endpath.c $(ALLHEADERS)
+	@rm -f x_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/x_endpath.c x_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_endpath.c x_endpath.cc ; fi
+
+x_erase.cc: $(top_srcdir)/libplot/x_erase.c $(ALLHEADERS)
+	@rm -f x_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/x_erase.c x_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_erase.c x_erase.cc ; fi
+
+x_flushpl.cc: $(top_srcdir)/libplot/x_flushpl.c $(ALLHEADERS)
+	@rm -f x_flushpl.cc ; if $(LN_S) $(top_srcdir)/libplot/x_flushpl.c x_flushpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_flushpl.c x_flushpl.cc ; fi
+
+x_openpl.cc: $(top_srcdir)/libplot/x_openpl.c $(ALLHEADERS)
+	@rm -f x_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/x_openpl.c x_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_openpl.c x_openpl.cc ; fi
+
+x_point.cc: $(top_srcdir)/libplot/x_point.c $(ALLHEADERS)
+	@rm -f x_point.cc ; if $(LN_S) $(top_srcdir)/libplot/x_point.c x_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_point.c x_point.cc ; fi
+
+x_reststate.cc: $(top_srcdir)/libplot/x_reststate.c $(ALLHEADERS)
+	@rm -f x_reststate.cc ; if $(LN_S) $(top_srcdir)/libplot/x_reststate.c x_reststate.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_reststate.c x_reststate.cc ; fi
+
+x_retrieve.cc: $(top_srcdir)/libplot/x_retrieve.c $(ALLHEADERS)
+	@rm -f x_retrieve.cc ; if $(LN_S) $(top_srcdir)/libplot/x_retrieve.c x_retrieve.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_retrieve.c x_retrieve.cc ; fi
+
+x_savestate.cc: $(top_srcdir)/libplot/x_savestate.c $(ALLHEADERS)
+	@rm -f x_savestate.cc ; if $(LN_S) $(top_srcdir)/libplot/x_savestate.c x_savestate.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_savestate.c x_savestate.cc ; fi
+
+y_closepl.cc: $(top_srcdir)/libplot/y_closepl.c $(ALLHEADERS)
+	@rm -f y_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/y_closepl.c y_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/y_closepl.c y_closepl.cc ; fi
+
+y_defplot.cc: $(top_srcdir)/libplot/y_defplot.c $(ALLHEADERS)
+	@rm -f y_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/y_defplot.c y_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/y_defplot.c y_defplot.cc ; fi
+
+y_erase.cc: $(top_srcdir)/libplot/y_erase.c $(ALLHEADERS)
+	@rm -f y_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/y_erase.c y_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/y_erase.c y_erase.cc ; fi
+
+y_openpl.cc: $(top_srcdir)/libplot/y_openpl.c $(ALLHEADERS)
+	@rm -f y_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/y_openpl.c y_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/y_openpl.c y_openpl.cc ; fi
+
+extern.h: $(top_srcdir)/libplot/extern.h
+	@rm -f extern.h ; if $(LN_S) $(top_srcdir)/libplot/extern.h extern.h ; then true ; else cp -p $(top_srcdir)/libplot/extern.h extern.h ; fi
+
+g_arc.h: $(top_srcdir)/libplot/g_arc.h
+	@rm -f g_arc.h ; if $(LN_S) $(top_srcdir)/libplot/g_arc.h g_arc.h ; then true ; else cp -p $(top_srcdir)/libplot/g_arc.h g_arc.h ; fi
+
+g_cntrlify.h: $(top_srcdir)/libplot/g_cntrlify.h
+	@rm -f g_cntrlify.h ; if $(LN_S) $(top_srcdir)/libplot/g_cntrlify.h g_cntrlify.h ; then true ; else cp -p $(top_srcdir)/libplot/g_cntrlify.h g_cntrlify.h ; fi
+
+g_colorname.h: $(top_srcdir)/libplot/g_colorname.h
+	@rm -f g_colorname.h ; if $(LN_S) $(top_srcdir)/libplot/g_colorname.h g_colorname.h ; then true ; else cp -p $(top_srcdir)/libplot/g_colorname.h g_colorname.h ; fi
+
+g_control.h: $(top_srcdir)/libplot/g_control.h
+	@rm -f g_control.h ; if $(LN_S) $(top_srcdir)/libplot/g_control.h g_control.h ; then true ; else cp -p $(top_srcdir)/libplot/g_control.h g_control.h ; fi
+
+g_her_metr.h: $(top_srcdir)/libplot/g_her_metr.h
+	@rm -f g_her_metr.h ; if $(LN_S) $(top_srcdir)/libplot/g_her_metr.h g_her_metr.h ; then true ; else cp -p $(top_srcdir)/libplot/g_her_metr.h g_her_metr.h ; fi
+
+g_jis.h: $(top_srcdir)/libplot/g_jis.h
+	@rm -f g_jis.h ; if $(LN_S) $(top_srcdir)/libplot/g_jis.h g_jis.h ; then true ; else cp -p $(top_srcdir)/libplot/g_jis.h g_jis.h ; fi
+
+g_mi.h: $(top_srcdir)/libplot/g_mi.h
+	@rm -f g_mi.h ; if $(LN_S) $(top_srcdir)/libplot/g_mi.h g_mi.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mi.h g_mi.h ; fi
+
+g_mifllarc.h: $(top_srcdir)/libplot/g_mifllarc.h
+	@rm -f g_mifllarc.h ; if $(LN_S) $(top_srcdir)/libplot/g_mifllarc.h g_mifllarc.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mifllarc.h g_mifllarc.h ; fi
+
+g_mifply.h: $(top_srcdir)/libplot/g_mifply.h
+	@rm -f g_mifply.h ; if $(LN_S) $(top_srcdir)/libplot/g_mifply.h g_mifply.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mifply.h g_mifply.h ; fi
+
+g_miline.h: $(top_srcdir)/libplot/g_miline.h
+	@rm -f g_miline.h ; if $(LN_S) $(top_srcdir)/libplot/g_miline.h g_miline.h ; then true ; else cp -p $(top_srcdir)/libplot/g_miline.h g_miline.h ; fi
+
+g_miply.h: $(top_srcdir)/libplot/g_miply.h
+	@rm -f g_miply.h ; if $(LN_S) $(top_srcdir)/libplot/g_miply.h g_miply.h ; then true ; else cp -p $(top_srcdir)/libplot/g_miply.h g_miply.h ; fi
+
+g_miscanfill.h: $(top_srcdir)/libplot/g_miscanfill.h
+	@rm -f g_miscanfill.h ; if $(LN_S) $(top_srcdir)/libplot/g_miscanfill.h g_miscanfill.h ; then true ; else cp -p $(top_srcdir)/libplot/g_miscanfill.h g_miscanfill.h ; fi
+
+g_mispans.h: $(top_srcdir)/libplot/g_mispans.h
+	@rm -f g_mispans.h ; if $(LN_S) $(top_srcdir)/libplot/g_mispans.h g_mispans.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mispans.h g_mispans.h ; fi
+
+g_miwidelin.h: $(top_srcdir)/libplot/g_miwidelin.h
+	@rm -f g_miwidelin.h ; if $(LN_S) $(top_srcdir)/libplot/g_miwidelin.h g_miwidelin.h ; then true ; else cp -p $(top_srcdir)/libplot/g_miwidelin.h g_miwidelin.h ; fi
+
+g_mizerarc.h: $(top_srcdir)/libplot/g_mizerarc.h
+	@rm -f g_mizerarc.h ; if $(LN_S) $(top_srcdir)/libplot/g_mizerarc.h g_mizerarc.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mizerarc.h g_mizerarc.h ; fi
+
+g_pagetype.h: $(top_srcdir)/libplot/g_pagetype.h
+	@rm -f g_pagetype.h ; if $(LN_S) $(top_srcdir)/libplot/g_pagetype.h g_pagetype.h ; then true ; else cp -p $(top_srcdir)/libplot/g_pagetype.h g_pagetype.h ; fi
+
+g_params.h: $(top_srcdir)/libplot/g_params.h
+	@rm -f g_params.h ; if $(LN_S) $(top_srcdir)/libplot/g_params.h g_params.h ; then true ; else cp -p $(top_srcdir)/libplot/g_params.h g_params.h ; fi
+
+h_stick.h: $(top_srcdir)/libplot/h_stick.h
+	@rm -f h_stick.h ; if $(LN_S) $(top_srcdir)/libplot/h_stick.h h_stick.h ; then true ; else cp -p $(top_srcdir)/libplot/h_stick.h h_stick.h ; fi
+
+i_rle.h: $(top_srcdir)/libplot/i_rle.h
+	@rm -f i_rle.h ; if $(LN_S) $(top_srcdir)/libplot/i_rle.h i_rle.h ; then true ; else cp -p $(top_srcdir)/libplot/i_rle.h i_rle.h ; fi
+
+p_header.h: $(top_srcdir)/libplot/p_header.h
+	@rm -f p_header.h ; if $(LN_S) $(top_srcdir)/libplot/p_header.h p_header.h ; then true ; else cp -p $(top_srcdir)/libplot/p_header.h p_header.h ; fi
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

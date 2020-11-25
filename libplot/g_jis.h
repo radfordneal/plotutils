@@ -29,6 +29,8 @@ struct kanjipair
 
 static const struct kanjipair _builtin_kanji_glyphs[] =
 {
+  /* 596 Level 1 Kanji */
+  /* row 16 */
   {0x3021, 43},
   {0x3026, 2829},
   {0x302d, 62},
@@ -45,6 +47,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3070, 3294},
   {0x3078, 1026},
   {0x307a, 1562},
+  /* row 17 */
   {0x3122, 5006},
   {0x3126, 878},
   {0x3127, 1280},
@@ -61,6 +64,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3176, 1125},
   {0x3177, 2083},
   {0x317e, 1504},
+  /* row 18 */
   {0x3221, 1885},
   {0x3223, 2361},
   {0x3226, 2922},
@@ -88,6 +92,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3268, 50},
   {0x3272, 4306},
   {0x3273, 1028},
+  /* row 19 */
   {0x3323, 2264},
   {0x3324, 2553},
   {0x3326, 2998},
@@ -103,6 +108,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3358, 1271},
   {0x335a, 2324},
   {0x3364, 703},
+  /* row 20 */
   {0x3424, 2977},
   {0x3428, 1322},
   {0x342c, 1466},
@@ -119,6 +125,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3470, 1098},
   {0x3476, 1496},
   {0x347c, 3785},
+  /* row 21 */
   {0x3521, 2379},
   {0x3522, 1582},
   {0x3524, 2480},
@@ -142,6 +149,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3577, 4548},
   {0x357b, 5281},
   {0x357e, 295},
+  /* row 22 */
   {0x3621, 431},
   {0x3626, 581},
   {0x362d, 1135},
@@ -159,6 +167,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3671, 3128},
   {0x3675, 3317},
   {0x367e, 1386},
+  /* row 23 */
   {0x3738, 449},
   {0x3739, 534},
   {0x373e, 2937},
@@ -176,6 +185,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x376c, 4205},
   {0x376e, 2169},
   {0x3777, 1045},
+  /* row 24 */
   {0x3824, 2868},
   {0x3826, 3180},
   {0x3828, 3543},
@@ -205,6 +215,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3878, 579},
   {0x387d, 868},
   {0x387e, 101},
+  /* row 25 */
   {0x3929, 1451},
   {0x3931, 1683},
   {0x393d, 2343},
@@ -224,6 +235,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3975, 5403},
   {0x397c, 5236},
   {0x397e, 4660},
+  /* row 26 */
   {0x3a21, 2430},
   {0x3a23, 352},
   {0x3a2c, 2261},
@@ -237,6 +249,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3a6e, 407},
   {0x3a72, 2119},
   {0x3a79, 2256},
+  /* row 27 */
   {0x3b2e, 3113},
   {0x3b30, 8},
   {0x3b33, 1407},
@@ -266,6 +279,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3b7a, 1281},
   {0x3b7d, 1903},
   {0x3b7e, 2126},
+  /* row 28 */
   {0x3c21, 638},
   {0x3c27, 3209},
   {0x3c28, 3228},
@@ -294,6 +308,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3c72, 2573},
   {0x3c73, 5186},
   {0x3c7e, 622},
+  /* row 29 */
   {0x3d29, 3273},
   {0x3d2a, 3521},
   {0x3d2e, 3863},
@@ -312,6 +327,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3d71, 3719},
   {0x3d77, 1185},
   {0x3d7c, 4993},
+  /* row 30 */
   {0x3e26, 321},
   {0x3e2e, 1355},
   {0x3e2f, 166},
@@ -329,6 +345,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3e6f, 1364},
   {0x3e75, 2839},
   {0x3e78, 4002},
+  /* row 31 */
   {0x3f22, 2303},
   {0x3f27, 3889},
   {0x3f29, 5154},
@@ -349,6 +366,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x3f65, 2482},
   {0x3f69, 3676},
   {0x3f74, 2057},
+  /* row 32 */
   {0x402d, 1666},
   {0x402e, 1799},
   {0x4030, 2436},
@@ -375,6 +393,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x406e, 1447},
   {0x4070, 1823},
   {0x407e, 3580},
+  /* row 33 */
   {0x4125, 3873},
   {0x4130, 595},
   {0x4133, 2770},
@@ -392,6 +411,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4176, 4539},
   {0x417c, 540},
   {0x417d, 1137},
+  /* row 34 */
   {0x4224, 4701},
   {0x4226, 509},
   {0x422b, 196},
@@ -414,6 +434,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x426a, 2164},
   {0x426c, 2655},
   {0x4274, 2503},
+  /* row 35 */
   {0x4323, 4721},
   {0x432b, 4458},
   {0x432f, 4384},
@@ -436,6 +457,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x436b, 53},
   {0x436c, 2236},
   {0x436e, 4115},
+  /* row 36 */
   {0x442b, 3788},
   {0x442c, 2702},
   {0x4436, 4543},
@@ -450,6 +472,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4472, 1914},
   {0x4478, 3285},
   {0x4479, 3581},
+  /* row 37 */
   {0x4526, 1987},
   {0x452a, 3097},
   {0x452f, 931},
@@ -471,6 +494,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4574, 2745},
   {0x4576, 1359},
   {0x4579, 3396},
+  /* row 38 */
   {0x4626, 4465},
   {0x4630, 730},
   {0x4631, 619},
@@ -487,6 +511,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4679, 3724},
   {0x467c, 2097},
   {0x467e, 574},
+  /* row 39 */
   {0x4721, 1189},
   {0x472e, 2797},
   {0x472f, 188},
@@ -497,6 +522,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4769, 3275},
   {0x4772, 3095},
   {0x477e, 5385},
+  /* row 40 */
   {0x4821, 49},
   {0x482c, 577},
   {0x482f, 3092},
@@ -513,6 +539,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4878, 1383},
   {0x4879, 1631},
   {0x487e, 3658},
+  /* row 41 */
   {0x4921, 5421},
   {0x492e, 3397},
   {0x4934, 33},
@@ -528,6 +555,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4969, 4488},
   {0x4977, 5148},
   {0x497d, 1484},
+  /* row 42 */
   {0x4a23, 4255},
   {0x4a26, 173},
   {0x4a2a, 2857},
@@ -545,6 +573,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4a6c, 2466},
   {0x4a7c, 2084},
   {0x4a7d, 2082},
+  /* row 43 */
   {0x4b21, 2535},
   {0x4b26, 3749},
   {0x4b4c, 751},
@@ -554,6 +583,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4b68, 2467},
   {0x4b74, 855},
   {0x4b7c, 7},
+  /* row 44 */
   {0x4c23, 913},
   {0x4c24, 179},
   {0x4c29, 1316},
@@ -573,6 +603,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4c74, 4074},
   {0x4c78, 2233},
   {0x4c7d, 2534},
+  /* row 45 */
   {0x4d2d, 3727},
   {0x4d30, 2565},
   {0x4d3a, 5030},
@@ -592,6 +623,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4d72, 1431},
   {0x4d78, 3264},
   {0x4d7d, 2942},
+  /* row 46 */
   {0x4e24, 4813},
   {0x4e25, 5040},
   {0x4e26, 5005},
@@ -615,6 +647,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4e6d, 5048},
   {0x4e6e, 5056},
   {0x4e73, 2438},
+  /* row 47 */
   {0x4f22, 4702},
   {0x4f27, 2750},
   {0x4f29, 4561},
@@ -625,13 +658,14 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
   {0x4f43, 4358},
   {0x4f44, 54},
   {0x4f47, 1710},
-  {0x534c, 973},
-  {0x5879, 1794},
-  {0x5960, 1942},
-  {0x626f, 3200},
-  {0x6446, 3458},
-  {0x6647, 5083},
-  {0x6d55, 4633},
+  /* 7 additional Level 2 Kanji */
+  {0x534c, 973},		/* row 51 */
+  {0x5879, 1794},		/* row 56 */
+  {0x5960, 1942},		/* row 57 */
+  {0x626f, 3200},		/* row 66 */
+  {0x6446, 3458},		/* row 68 */
+  {0x6647, 5083},		/* row 70 */
+  {0x6d55, 4633},		/* row 77 */
   {0, 0}
 };
 
@@ -650,7 +684,7 @@ struct jis_entry
 static const struct jis_entry _builtin_jis_chars[] =
 {
 /* Row 1 [misc.] */
-  {0x2121, HERSHEY_SERIF, ' '},
+  {0x2121, HERSHEY_SERIF, RAW_HERSHEY_GLYPH + 4399}, /* full-width space */
   {0x2122, HERSHEY_HIRAGANA, 0x79},
   {0x2123, HERSHEY_HIRAGANA, 0x7a},
   {0x2124, HERSHEY_SERIF, ','},

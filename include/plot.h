@@ -1,4 +1,4 @@
-/* This is plot.h, the user-level include file for GNU libplot, a shared
+/* This is "plot.h", the public header file for GNU libplot, a shared
    library for 2-dimensional vector graphics. */
 
 /* stdio.h must be included before this file is included. */
@@ -11,8 +11,10 @@
 #ifndef _PLOT_H_
 #define _PLOT_H_ 1
 
-/* This version of plot.h accompanies GNU libplot version 1.6. */
-#define LIBPLOT_VERSION "1.6"
+/***********************************************************************/
+
+/* This version of plot.h accompanies GNU libplot version 2.0 */
+#define LIBPLOT_VERSION "2.0"
 
 /* support C++ */
 #ifdef __BEGIN_DECLS
@@ -58,120 +60,136 @@ __BEGIN_DECLS
 /* THE C API */
 
 /* THE GLOBAL FUNCTIONS IN GNU LIBPLOT */
-/* There are 81 basic functions, plus 4 that are specific to the C binding */
+/* There are 92 basic functions, plus 4 that are specific to the C binding */
 
 /* 13 functions in traditional (pre-GNU) libplot */
-int arc ___P ((int xc, int yc, int x0, int y0, int x1, int y1));
-int box ___P ((int x0, int y0, int x1, int y1)); /* no op code, originally */
-int circle ___P ((int x, int y, int r));
-int closepl ___P ((void));	/* no op code, originally */
-int cont ___P ((int x, int y));
-int erase ___P ((void));
-int label ___P ((___const char *s));
-int line ___P ((int x0, int y0, int x1, int y1));
-int linemod ___P ((___const char *s));
-int move ___P ((int x, int y));
-int openpl ___P ((void));	/* no op code, originally */
-int point ___P ((int x, int y));
-int space ___P ((int x0, int y0, int x1, int y1));
+int pl_arc ___P((int xc, int yc, int x0, int y0, int x1, int y1));
+int pl_box ___P((int x0, int y0, int x1, int y1)); /* no op code, originally */
+int pl_circle ___P((int x, int y, int r));
+int pl_closepl ___P((void));	/* no op code, originally */
+int pl_cont ___P((int x, int y));
+int pl_erase ___P((void));
+int pl_label ___P((___const char *s));
+int pl_line ___P((int x0, int y0, int x1, int y1));
+int pl_linemod ___P((___const char *s));
+int pl_move ___P((int x, int y));
+int pl_openpl ___P((void));	/* no op code, originally */
+int pl_point ___P((int x, int y));
+int pl_space ___P((int x0, int y0, int x1, int y1));
 
-/* 37 additional functions in GNU libplot */
-int alabel ___P ((int x_justify, int y_justify, ___const char *s));
-int arcrel ___P ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-int bgcolor ___P ((int red, int green, int blue));
-int bgcolorname ___P ((___const char *name));
-int boxrel ___P ((int dx0, int dy0, int dx1, int dy1));
-int capmod ___P ((___const char *s));
-int circlerel ___P ((int dx, int dy, int r));
-int color ___P ((int red, int green, int blue));
-int colorname ___P ((___const char *name));
-int contrel ___P ((int x, int y));
-int ellarc ___P ((int xc, int yc, int x0, int y0, int x1, int y1));
-int ellarcrel ___P ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-int ellipse ___P ((int x, int y, int rx, int ry, int angle));
-int ellipserel ___P ((int dx, int dy, int rx, int ry, int angle));
-int endpath ___P((void));
-int filltype ___P ((int level));
-int fillcolor ___P ((int red, int green, int blue));
-int fillcolorname ___P ((___const char *name));
-int flushpl ___P ((void));
-int fontname ___P ((___const char *s));
-int fontsize ___P ((int size));
-int havecap ___P ((___const char *s));
-int joinmod ___P ((___const char *s));
-int labelwidth ___P ((___const char *s));
-int linerel ___P ((int dx0, int dy0, int dx1, int dy1));
-int linewidth ___P ((int size));
-int marker ___P ((int x, int y, int type, int size));
-int markerrel ___P ((int dx, int dy, int type, int size));
-int moverel ___P ((int x, int y));
-FILE* outfile ___P((FILE* newstream));
-int pencolor ___P ((int red, int green, int blue));
-int pencolorname ___P ((___const char *name));
-int pointrel ___P ((int dx, int dy));
-int restorestate ___P((void));
-int savestate ___P((void));
-int space2 ___P ((int x0, int y0, int x1, int y1, int x2, int y2));
-int textangle ___P ((int angle));
+/* 42 additional functions in GNU libplot, plus an obsolescent one */
+FILE* pl_outfile ___P((FILE* outfile));/* OBSOLESCENT */
+int pl_alabel ___P((int x_justify, int y_justify, ___const char *s));
+int pl_arcrel ___P((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+int pl_bezier2 ___P((int x0, int y0, int x1, int y1, int x2, int y2));
+int pl_bezier2rel ___P((int dx0, int dy0, int dx1, int dy1, int dx2, int dy2));
+int pl_bezier3 ___P((int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3));
+int pl_bezier3rel ___P((int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3));
+int pl_bgcolor ___P((int red, int green, int blue));
+int pl_bgcolorname ___P((___const char *name));
+int pl_boxrel ___P((int dx0, int dy0, int dx1, int dy1));
+int pl_capmod ___P((___const char *s));
+int pl_circlerel ___P((int dx, int dy, int r));
+int pl_color ___P((int red, int green, int blue));
+int pl_colorname ___P((___const char *name));
+int pl_contrel ___P((int x, int y));
+int pl_ellarc ___P((int xc, int yc, int x0, int y0, int x1, int y1));
+int pl_ellarcrel ___P((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+int pl_ellipse ___P((int x, int y, int rx, int ry, int angle));
+int pl_ellipserel ___P((int dx, int dy, int rx, int ry, int angle));
+int pl_endpath ___P((void));
+int pl_fillcolor ___P((int red, int green, int blue));
+int pl_fillcolorname ___P((___const char *name));
+int pl_fillmod ___P((___const char *s));
+int pl_filltype ___P((int level));
+int pl_flushpl ___P((void));
+int pl_fontname ___P((___const char *s));
+int pl_fontsize ___P((int size));
+int pl_havecap ___P((___const char *s));
+int pl_joinmod ___P((___const char *s));
+int pl_labelwidth ___P((___const char *s));
+int pl_linedash ___P((int n, const int *dashes, int offset));
+int pl_linerel ___P((int dx0, int dy0, int dx1, int dy1));
+int pl_linewidth ___P((int size));
+int pl_marker ___P((int x, int y, int type, int size));
+int pl_markerrel ___P((int dx, int dy, int type, int size));
+int pl_moverel ___P((int x, int y));
+int pl_pencolor ___P((int red, int green, int blue));
+int pl_pencolorname ___P((___const char *name));
+int pl_pointrel ___P((int dx, int dy));
+int pl_restorestate ___P((void));
+int pl_savestate ___P((void));
+int pl_space2 ___P((int x0, int y0, int x1, int y1, int x2, int y2));
+int pl_textangle ___P((int angle));
 
-/* 27 floating point counterparts to some of the above (all GNU additions) */
-double ffontname ___P ((___const char *s));
-double ffontsize ___P ((double size));
-double flabelwidth ___P ((___const char *s));
-double ftextangle ___P ((double angle));
-int farc ___P ((double xc, double yc, double x0, double y0, double x1, double y1));
-int farcrel ___P ((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-int fbox ___P ((double x0, double y0, double x1, double y1));
-int fboxrel ___P ((double dx0, double dy0, double dx1, double dy1));
-int fcircle ___P ((double x, double y, double r));
-int fcirclerel ___P ((double dx, double dy, double r));
-int fcont ___P ((double x, double y));
-int fcontrel ___P ((double x, double y));
-int fellarc ___P ((double xc, double yc, double x0, double y0, double x1, double y1));
-int fellarcrel ___P ((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-int fellipse ___P ((double x, double y, double rx, double ry, double angle));
-int fellipserel ___P ((double dx, double dy, double rx, double ry, double angle));
-int fline ___P ((double x0, double y0, double x1, double y1));
-int flinerel ___P ((double dx0, double dy0, double dx1, double dy1));
-int flinewidth ___P ((double size));
-int fmarker ___P ((double x, double y, int type, double size));
-int fmarkerrel ___P ((double dx, double dy, int type, double size));
-int fmove ___P ((double x, double y));
-int fmoverel ___P ((double x, double y));
-int fpoint ___P ((double x, double y));
-int fpointrel ___P ((double dx, double dy));
-int fspace ___P ((double x0, double y0, double x1, double y1));
-int fspace2 ___P ((double x0, double y0, double x1, double y1, double x2, double y2));
+/* 32 floating point counterparts to some of the above (all GNU additions) */
+double pl_ffontname ___P((___const char *s));
+double pl_ffontsize ___P((double size));
+double pl_flabelwidth ___P((___const char *s));
+double pl_ftextangle ___P((double angle));
+int pl_farc ___P((double xc, double yc, double x0, double y0, double x1, double y1));
+int pl_farcrel ___P((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
+int pl_fbezier2 ___P((double x0, double y0, double x1, double y1, double x2, double y2));
+int pl_fbezier2rel ___P((double dx0, double dy0, double dx1, double dy1, double dx2, double dy2));
+int pl_fbezier3 ___P((double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
+int pl_fbezier3rel ___P((double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3));
+int pl_fbox ___P((double x0, double y0, double x1, double y1));
+int pl_fboxrel ___P((double dx0, double dy0, double dx1, double dy1));
+int pl_fcircle ___P((double x, double y, double r));
+int pl_fcirclerel ___P((double dx, double dy, double r));
+int pl_fcont ___P((double x, double y));
+int pl_fcontrel ___P((double dx, double dy));
+int pl_fellarc ___P((double xc, double yc, double x0, double y0, double x1, double y1));
+int pl_fellarcrel ___P((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
+int pl_fellipse ___P((double x, double y, double rx, double ry, double angle));
+int pl_fellipserel ___P((double dx, double dy, double rx, double ry, double angle));
+int pl_flinedash ___P((int n, const double *dashes, double offset));
+int pl_fline ___P((double x0, double y0, double x1, double y1));
+int pl_flinerel ___P((double dx0, double dy0, double dx1, double dy1));
+int pl_flinewidth ___P((double size));
+int pl_fmarker ___P((double x, double y, int type, double size));
+int pl_fmarkerrel ___P((double dx, double dy, int type, double size));
+int pl_fmove ___P((double x, double y));
+int pl_fmoverel ___P((double dx, double dy));
+int pl_fpoint ___P((double x, double y));
+int pl_fpointrel ___P((double dx, double dy));
+int pl_fspace ___P((double x0, double y0, double x1, double y1));
+int pl_fspace2 ___P((double x0, double y0, double x1, double y1, double x2, double y2));
 
-/* 4 floating point operations with no integer counterpart (GNU additions) */
-int fconcat ___P ((double m0, double m1, double m2, double m3, double m4, double m5));
-int frotate ___P ((double theta));
-int fscale ___P ((double x, double y));
-int ftranslate ___P ((double x, double y));
+/* 5 floating point operations with no integer counterpart (GNU additions) */
+int pl_fconcat ___P((double m0, double m1, double m2, double m3, double m4, double m5));
+int pl_fmiterlimit ___P((double limit));
+int pl_frotate ___P((double theta));
+int pl_fscale ___P((double x, double y));
+int pl_ftranslate ___P((double x, double y));
 
 /* 4 functions specific to the C binding (for construction/destruction of
    Plotters, and setting of Plotter parameters) */
-int newpl ___P((___const char *type, FILE *instream, FILE *outstream, FILE *errstream));
-int selectpl ___P ((int handle));
-int deletepl ___P ((int handle));
+int pl_newpl ___P((___const char *type, FILE *infile, FILE *outfile, FILE *errfile));
+int pl_selectpl ___P((int handle));
+int pl_deletepl ___P((int handle));
 #ifdef NO_VOID_SUPPORT
-int parampl ___P ((___const char *parameter, char *value));
+int pl_parampl ___P((___const char *parameter, char *value));
 #else
-int parampl ___P ((___const char *parameter, void *value));
+int pl_parampl ___P((___const char *parameter, void *value));
 #endif
 
 __END_DECLS
 
 /* THE GLOBAL VARIABLES IN GNU LIBPLOT */
 /* There are two; both are user-settable error handlers. */
-extern int (*libplot_warning_handler) ___P ((___const char *msg));
-extern int (*libplot_error_handler) ___P ((___const char *msg));
+extern int (*libplot_warning_handler) ___P((___const char *msg));
+extern int (*libplot_error_handler) ___P((___const char *msg));
 
 #undef ___const
 #undef ___P
 
-/* Symbol types for the marker() function, extending over the range 0..31
-   (1 through 5 are as in GKS).  
+/***********************************************************************/
+
+#ifndef _PLOTTER_H_	/* allow inclusion of both plot.h, plotter.h */
+
+/* Symbol types for the marker() function, extending over the range 0..31.
+   (1 through 5 are the same as in the GKS [Graphical Kernel System].)
 
    These are now defined as enums rather than ints.  Cast them to ints if
    necessary. */
@@ -187,18 +205,15 @@ enum
   M_HALF_FILLED_FANCY_DIAMOND, M_OCTAGON, M_FILLED_OCTAGON 
 };
 
-/* ONE-BYTE OP CODES FOR GNU METAFILE FORMAT
-   These are now defined as enums rather than ints.  Cast them to ints if
-   necessary. */
+/* ONE-BYTE OPERATION CODES FOR GNU METAFILE FORMAT. These are now defined
+   as enums rather than ints.  Cast them to ints if necessary.
 
-/* There are 68 currently used op codes, including 25 that are used only in
-   binary metafiles, not in portable metafiles.  Several obsolete op codes
-   are listed below only because the `plot' filter still supports them. 
-   They will be removed in a later release. */
+   There are 80 currently used op codes, including 30 that are used only in
+   binary metafiles, not in portable metafiles. */
 
-/* 10 op codes for primitive graphics operations, as in Unix plot(5) format. */
 enum
 {  
+/* 10 op codes for primitive graphics operations, as in Unix plot(5) format. */
   O_ARC		=	'a',  
   O_CIRCLE	=	'c',  
   O_CONT	=	'n',
@@ -210,16 +225,19 @@ enum
   O_POINT	=	'p',
   O_SPACE	=	's',
   
-  /* 32 op codes that are GNU extensions [plus an obsolete one] */
+/* 38 op codes that are GNU extensions */
   O_ALABEL	=	'T',
   O_ARCREL	=	'A',
+  O_BEZIER2	=       'q',
+  O_BEZIER2REL	=       'r',
+  O_BEZIER3	=       'y',
+  O_BEZIER3REL	=       'z',
   O_BGCOLOR	=	'~',
-  O_BOX		=	'B',	/* not a separate op code in Unix plot(5) */
+  O_BOX		=	'B',	/* not an op code in Unix plot(5) */
   O_BOXREL	=	'H',
   O_CAPMOD	=	'K',
   O_CIRCLEREL	=	'G',
-  O_CLOSEPL	=	'x',
-  O_COLOR	=	'C',	/* obsolete, to be removed */
+  O_CLOSEPL	=	'x',	/* not an op code in Unix plot(5) */
   O_COMMENT	=	'#',
   O_CONTREL	=	'N',
   O_ELLARC	=	'?',
@@ -229,15 +247,17 @@ enum
   O_ENDPATH	=	'E',
   O_FILLTYPE	=	'L',
   O_FILLCOLOR	=	'D',
+  O_FILLMOD	=	'g',
   O_FONTNAME	=	'F',
   O_FONTSIZE	=	'S',
   O_JOINMOD	=	'J',
+  O_LINEDASH	= 	'd',
   O_LINEREL	=	'I',
   O_LINEWIDTH	=	'W',
   O_MARKER	=	'Y',
   O_MARKERREL	=	'Z',
   O_MOVEREL	=	'M',
-  O_OPENPL	=	'o',
+  O_OPENPL	=	'o',	/* not an op code in Unix plot(5) */
   O_PENCOLOR	=	'-',
   O_POINTREL	=	'P',
   O_RESTORESTATE=	'O',
@@ -245,10 +265,15 @@ enum
   O_SPACE2	=	':',
   O_TEXTANGLE	=	'R',
 
-/* 25 floating point counterparts to some of the above.  Used only in
-     binary GNU metafile format, not in portable GNU metafile format. */
+/* 30 floating point counterparts to some of the above.  Used only in
+   binary GNU metafile format, not in portable (human-readable) metafile
+   format, so they are not even slightly mnemonic. */
   O_FARC	=	'1',
   O_FARCREL	=	'2',
+  O_FBEZIER2	=       '`',
+  O_FBEZIER2REL	=       '\'',
+  O_FBEZIER3	=       ',',
+  O_FBEZIER3REL	=       '.',
   O_FBOX	=	'3',
   O_FBOXREL	=	'4',
   O_FCIRCLE	=	'5',
@@ -261,6 +286,7 @@ enum
   O_FELLIPSEREL	=	'[',
   O_FFONTSIZE	=	'7',
   O_FLINE	=	'8',
+  O_FLINEDASH	= 	'w',
   O_FLINEREL	=	'9',
   O_FLINEWIDTH	=	'0',
   O_FMARKER	=	'!',
@@ -273,12 +299,13 @@ enum
   O_FSPACE2	=	';',
   O_FTEXTANGLE	=	'(',
 
-/* 1 op code for a floating point operation with no integer counterpart
-   [plus 3 obsolete ones] */
-  O_FCONCAT	=	'\\',
-  O_FROTATE	=	'V',	/* obsolete, to be removed */
-  O_FSCALE	=	'X',	/* obsolete, to be removed */
-  O_FTRANSLATE	=	'Q'	/* obsolete, to be removed */
+/* 2 op codes for floating point operations with no integer counterpart */
+  O_FCONCAT		=	'\\',
+  O_FMITERLIMIT		=	'i'
 };
 
-#endif /* _PLOT_H_ */
+#endif /* not _PLOTTER_H_ */
+
+/***********************************************************************/
+
+#endif /* not _PLOT_H_ */

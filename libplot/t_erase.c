@@ -2,7 +2,6 @@
    libplot.  It erases the graphics device display. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -19,24 +18,30 @@ _t_erase ()
     }
 
   _plotter->endpath (); /* flush polyline if any (could simply
-				      interrupt it in mid-assemblage) */
+			   interrupt it in mid-assemblage) */
 
-  if (_plotter->outstream)
-    fputs ("\033\014", _plotter->outstream); /* ASCII ESC C-l, i.e. ^[^l */
-  _plotter->mode = MODE_ALPHA;	/* erase enters alpha mode */
+  /* erase: emit ESC C-l, i.e. ^[^l */
+  _plotter->write_string ("\033\014");
+  _plotter->tek_mode = MODE_ALPHA; /* erasing enters alpha mode */
 
-  /* Note: kermit Tek emulator seems to enter graphics mode on seeing ESC
-     C-l , not alpha mode.  Maybe we should specify MODE_PLOT above,
+  /* Note: kermit Tek emulator, on seeing ESC C-l , seems to enter graphics
+     mode, not alpha mode.  Maybe we should specify MODE_PLOT above,
      instead of MODE_ALPHA?  The above won't hurt though, because we don't
      use MODE_ALPHA anyway (we'll have to switch away from it). */
 
-  if (_plotter->outstream)
-    fflush (_plotter->outstream);
+  /* set background color (a no-op unless we're writing to a kermit
+     Tektronix emulator, see t_color.c) */
+  _plotter->set_bg_color ();
+
+  _plotter->flushpl ();
 #ifdef GENUINE_TEKTRONIX
-  if (_plotter->display_type == D_GENERIC)
+  if (_plotter->tek_display_type == D_GENERIC)
     sleep(1);			/* give storage tube time to clear */
 #endif
   
+  /* on to next frame */
+  _plotter->frame_number++;
+
   return 0;
 }
 

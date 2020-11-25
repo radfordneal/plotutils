@@ -5,7 +5,6 @@
    extend this line object to a polyline object. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int
@@ -22,21 +21,13 @@ _m_linerel (x0, y0, x1, y1)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf(_plotter->outstream, "%c %d %d %d %d\n", 
-		(int)O_LINEREL, x0, y0, x1, y1);
-      else
-	{
-	  putc ((int)O_LINEREL, _plotter->outstream);
-	  _emit_integer (x0);
-	  _emit_integer (y0);
-	  _emit_integer (x1);
-	  _emit_integer (y1);
-	}
-    }
-
+  _meta_emit_byte ((int)O_LINEREL);
+  _meta_emit_integer (x0);
+  _meta_emit_integer (y0);
+  _meta_emit_integer (x1);
+  _meta_emit_integer (y1);
+  _meta_emit_terminator ();
+  
   return 0;
 }
 
@@ -54,20 +45,12 @@ _m_flinerel (x0, y0, x1, y1)
       return -1;
     }
 
-  if (_plotter->outstream)
-    {
-      if (_plotter->portable_output)
-	fprintf(_plotter->outstream, "%c %g %g %g %g\n", 
-		(int)O_LINEREL, x0, y0, x1, y1);
-      else
-	{
-	  putc ((int)O_FLINEREL, _plotter->outstream);
-	  _emit_float (x0);
-	  _emit_float (y0);
-	  _emit_float (x1);
-	  _emit_float (y1);
-	}
-    }
-
+  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_LINEREL : (int)O_FLINEREL);
+  _meta_emit_float (x0);
+  _meta_emit_float (y0);
+  _meta_emit_float (x1);
+  _meta_emit_float (y1);
+  _meta_emit_terminator ();
+  
   return 0;
 }

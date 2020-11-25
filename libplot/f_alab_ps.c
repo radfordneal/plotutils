@@ -12,7 +12,6 @@
    format supports them. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define FONT_TYPE_LATEX 0	/* don't support LaTeX fonts currently */

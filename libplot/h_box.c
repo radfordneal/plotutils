@@ -3,7 +3,6 @@
    x1,y1. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 int

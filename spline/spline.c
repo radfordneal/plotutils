@@ -142,34 +142,34 @@ const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";
 
 /* forward references */
-bool do_bessel __P ((FILE *input, int ydimension, int auto_abscissa, double auto_t, double auto_delta, double first_t, double last_t, double spacing_t, int precision, bool suppress_abscissa));
-bool is_monotonic __P ((int n, double *t));
-bool read_data __P ((FILE *input, int *len, int *used, int auto_abscissa, double auto_t, double auto_delta, double **t, int ydimension, double **y, double **z));
-bool read_float __P((FILE *input, double *dptr));
-bool skip_whitespace __P ((FILE *stream));
-bool write_point __P((double t, double *y, int ydimension, int precision, bool suppress_abscissa));
-double interpolate __P ((int n, double *t, double *y, double *z, double x, double tension, bool periodic));
-double quotient_sin_func __P((double x, double y));
-double quotient_sinh_func __P((double x, double y));
-double sin_func __P((double x));
-double sinh_func __P((double x));
-double tan_func __P((double x));
-double tanh_func __P((double x));
-int read_point __P ((FILE *input, double *t, double *y, int ydimension, bool *first_point, int auto_abscissa, double *auto_t, double auto_delta, double *stored));
-void do_bessel_range __P ((double abscissa0, double abscissa1, double *value0, double *value1, double *slope0, double *slope1, double first_t, double last_t, double spacing_t, int ydimension, int precision, bool endit, bool suppress_abscissa));
-void do_spline __P ((int used, int len, double **t, int ydimension, double **y, double **z, double tension, bool periodic, bool spec_boundary_condition, double boundary_condition, int precision, double first_t, double last_t, double spacing_t, int no_of_intervals, bool spec_first_t, bool spec_last_t, bool spec_spacing_t, bool spec_no_of_intervals, bool suppress_abscissa));
-void fit __P ((int n, double *t, double *y, double *z, double k, double tension, bool periodic));
-void maybe_emit_oob_warning __P ((void));
-void non_monotonic_error __P((void));
-void output_dataset_separator __P ((void));
-void set_format_type __P ((char *s, data_type *typep));
+bool do_bessel ____P ((FILE *input, int ydimension, int auto_abscissa, double auto_t, double auto_delta, double first_t, double last_t, double spacing_t, int precision, bool suppress_abscissa));
+bool is_monotonic ____P ((int n, double *t));
+bool read_data ____P ((FILE *input, int *len, int *used, int auto_abscissa, double auto_t, double auto_delta, double **t, int ydimension, double **y, double **z));
+bool read_float ____P((FILE *input, double *dptr));
+bool skip_whitespace ____P ((FILE *stream));
+bool write_point ____P((double t, double *y, int ydimension, int precision, bool suppress_abscissa));
+double interpolate ____P ((int n, double *t, double *y, double *z, double x, double tension, bool periodic));
+double quotient_sin_func ____P((double x, double y));
+double quotient_sinh_func ____P((double x, double y));
+double sin_func ____P((double x));
+double sinh_func ____P((double x));
+double tan_func ____P((double x));
+double tanh_func ____P((double x));
+int read_point ____P ((FILE *input, double *t, double *y, int ydimension, bool *first_point, int auto_abscissa, double *auto_t, double auto_delta, double *stored));
+void do_bessel_range ____P ((double abscissa0, double abscissa1, double *value0, double *value1, double *slope0, double *slope1, double first_t, double last_t, double spacing_t, int ydimension, int precision, bool endit, bool suppress_abscissa));
+void do_spline ____P ((int used, int len, double **t, int ydimension, double **y, double **z, double tension, bool periodic, bool spec_boundary_condition, double boundary_condition, int precision, double first_t, double last_t, double spacing_t, int no_of_intervals, bool spec_first_t, bool spec_last_t, bool spec_spacing_t, bool spec_no_of_intervals, bool suppress_abscissa));
+void fit ____P ((int n, double *t, double *y, double *z, double k, double tension, bool periodic));
+void maybe_emit_oob_warning ____P ((void));
+void non_monotonic_error ____P((void));
+void output_dataset_separator ____P ((void));
+void set_format_type ____P ((char *s, data_type *typep));
 /* from libcommon */
-extern void display_usage __P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-extern void display_version __P((const char *progname)); 
-extern Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
-extern Voidptr xmalloc __P ((unsigned int size));
-extern Voidptr xrealloc __P ((Voidptr p, unsigned int length));
-extern char *xstrdup __P ((const char *s));
+extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
+extern void display_version ____P((const char *progname)); 
+extern Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
+extern Voidptr xmalloc ____P ((unsigned int size));
+extern Voidptr xrealloc ____P ((Voidptr p, unsigned int length));
+extern char *xstrdup ____P ((const char *s));
 
 
 int
@@ -210,7 +210,7 @@ main (argc, argv)
   double local_t_start, local_delta_t;
   int local_precision;
 
-  while (true)
+  for ( ; ; )
     {
       option = getopt_long (argc, argv, "fpsAd:I:O:P:k:n:t:x:T:a::", long_options, &opt_index);
       if (option == 0)
@@ -1322,7 +1322,7 @@ read_data (input, len, used, auto_abscissa, auto_t, auto_delta, t, ydimension, y
 
   yy = (double *)xmalloc (sizeof(double) * ydimension);
   stored = (double *)xmalloc (sizeof(double) * ydimension);
-  while (true)
+  for ( ; ; )
     {
       if ((++ *used) >= *len)
 	{
@@ -1588,7 +1588,7 @@ do_bessel (input, ydimension, auto_abscissa, auto_t, auto_delta, first_t, last_t
   for (i = 0; i < 4; i++)
     yy[i] = (double *)xmalloc (ydimension * sizeof(double));
 
-  while (true)
+  for ( ; ; )
     {
       success = read_point (input, &t, y, ydimension, &first,
 			    auto_abscissa, &auto_t, auto_delta, stored);

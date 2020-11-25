@@ -11,7 +11,6 @@
    independence, so away the range goes. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 
 #define GOOD_ISO(c) (((c >= 0x20) && (c <= 0x7E)) || ((c >= 0xA0) && (c <= 0xFF)))

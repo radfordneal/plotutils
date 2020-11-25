@@ -23,7 +23,7 @@ under X Windows, if these fonts are available on your X display.  It is
 best to have an X11R6 ("release 6") X server, since X11R6 servers support
 arbitrary rotation and scaling of fonts.
 
-Many X servers (for example, many releases of XFree86 for Linux) do not
+Many X servers (for example, many releases of XFree86 for GNU/Linux) do not
 supply all 35 standard Postscript fonts.  However, all modern X servers,
 such as X11R6 servers, support fonts in Type 1 format.  If your X server is
 a modern one, there is nothing to stop you from buying Type 1 versions of
@@ -150,7 +150,7 @@ previewer.  To do this, you would need to add 45 new entries to the
 Ghostscript `Fontmap' file, one per font.  This file is usually in a
 subdirectory of /usr/local/share/ghostscript or /usr/share/ghostscript.
 The format of this file should be self-explanatory: it lists the name of
-each font and the file name of the .pfb file that contains it.  The 45 .pfb
+each font and the name of the .pfb file that contains it.  The 45 .pfb
 files from Hewlett-Packard have obscure names, but by looking at them you
 should be able to figure out which contains which font.  For example, the
 file `0037____.pfb' contains the Arial-Roman font.
@@ -178,7 +178,7 @@ Ascii"] format.  There is a standard program, `t1ascii', which can do this.
 It is part of the `t1utils' package, which is available in many standard
 archives.  After converting the .pfb files to .pfa files, you would send
 each of the needed .pfa files to your printer, as if it were a Postscript
-documented to be printed.  Be sure to precede each .pfa file by the magic
+document to be printed.  Be sure to precede each .pfa file by the magic
 lines
 
 %!PS-Adobe-3.0 ExitServer
