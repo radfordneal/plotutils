@@ -1,0 +1,14 @@
+Description: Invoke AC_PROG_CXX, autoreconf fails otherwise.
+Forwarded: http://article.gmane.org/gmane.comp.gnu.plotutils.bugs/23
+Author: Floris Bruynooghe <flub@devork.be>
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -64,6 +66,7 @@
+ # Note: this can apparently alter CFLAGS, on a few platforms, e.g., on
+ # SCO OpenServer 5 (i.e. *-*-sco3.2v5*), "-belf" is added.
+ AC_PROG_LIBTOOL
++AC_PROG_CXX
+ 
+ # Determine extension (e.g. ".exe") on executables, if any.
+ AC_EXEEXT

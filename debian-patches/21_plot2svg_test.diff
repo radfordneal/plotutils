@@ -1,0 +1,18 @@
+Description: Fix plot2svg test.
+ 20_svg_attribute_syntax introduces a whitespace change which breaks the
+ testsuite, update output file.
+Author: Andreas Metzler <ametzler@debian.org>
+Origin: vendor
+Forwarded: no
+
+--- plotutils-2.6.orig/test/plot2svg.xout
++++ plotutils-2.6/test/plot2svg.xout
+@@ -351,7 +351,7 @@
+ <line x1="1024" y1="2944" x2="1011.7" y2="2944" stroke-width="4.8188" />
+ <line x1="3072" y1="3072" x2="3084.3" y2="3072" stroke-width="4.8188" />
+ <line x1="1024" y1="3072" x2="1011.7" y2="3072" stroke-width="4.8188" />
+-<line x1="1024" y1="1536" x2="3072" y2="1536" stroke-width="4.8188" stroke-dasharray="4.8188, 14.456"/>
++<line x1="1024" y1="1536" x2="3072" y2="1536" stroke-width="4.8188" stroke-dasharray="4.8188, 14.456" />
+ <polygon points="1364.7,794.51 1357.3,787.06 1364.7,783.34 1372.2,787.06 " stroke-width="5.2876" stroke-linejoin="round" />
+ <polyline points="1364.7,790.78 1361,787.06 1368.4,787.06 1364.7,790.78 " stroke-width="5.2876" stroke-linecap="round" stroke-linejoin="round" />
+ <polyline points="1364.7,768.44 1361,764.72 1353.5,760.99 1361,757.27 1361,723.76 1368.4,716.31 1375.9,723.76 " stroke-width="5.2876" stroke-linecap="round" stroke-linejoin="round" />
