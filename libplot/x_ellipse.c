@@ -85,33 +85,49 @@ _x_fellipse (xc, yc, rx, ry, angle)
     if (squaresize_y == 0 && ry > 0.0)
       squaresize_y = 1;
     
-    /* place current line attributes in the X GC */
+    /* place current line attributes in GC's used for drawing and filling */
     _plotter->set_attributes();  
 
     if (_plotter->drawstate->fill_level) /* not transparent */
       {
-	/* select fill color as X foreground color */
+	/* select fill color as foreground color in GC used for filling */
 	_plotter->set_fill_color();
 
-	if (_plotter->drawable1)
-	  XFillArc(_plotter->dpy, _plotter->drawable1, 
-		   _plotter->drawstate->gc, 
+	if (_plotter->double_buffering)
+	  XFillArc(_plotter->dpy, _plotter->drawable3,
+		   _plotter->drawstate->gc_fill, 
 		   xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
-	if (_plotter->drawable2)
-	  XFillArc(_plotter->dpy, _plotter->drawable2, 
-		   _plotter->drawstate->gc, 
-		   xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
+	else
+	  {
+	    if (_plotter->drawable1)
+	      XFillArc(_plotter->dpy, _plotter->drawable1, 
+		       _plotter->drawstate->gc_fill, 
+		       xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
+	    if (_plotter->drawable2)
+	      XFillArc(_plotter->dpy, _plotter->drawable2, 
+		       _plotter->drawstate->gc_fill, 
+		       xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
+	  }
       }
     
-    /* select pen color as X foreground color */
+    /* select pen color as foreground color in GC used for drawing */
     _plotter->set_pen_color();
 
-    if (_plotter->drawable1)
-      XDrawArc(_plotter->dpy, _plotter->drawable1, _plotter->drawstate->gc, 
+    if (_plotter->double_buffering)
+      XDrawArc(_plotter->dpy, _plotter->drawable3, 
+	       _plotter->drawstate->gc_fg,
 	       xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
-    if (_plotter->drawable2)
-      XDrawArc(_plotter->dpy, _plotter->drawable2, _plotter->drawstate->gc, 
-	       xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
+    else
+      {
+	if (_plotter->drawable1)
+	  XDrawArc(_plotter->dpy, _plotter->drawable1, 
+		   _plotter->drawstate->gc_fg,
+		   xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
+	if (_plotter->drawable2)
+	  XDrawArc(_plotter->dpy, _plotter->drawable2, 
+		   _plotter->drawstate->gc_fg,
+		   xorigin, yorigin, squaresize_x, squaresize_y, 0, 64 * 360);
+      }
   }
   
   _plotter->drawstate->pos.x = xc; /* move to center (a libplot convention) */

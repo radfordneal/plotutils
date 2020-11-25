@@ -102,7 +102,7 @@ _f_falabel_ps (s, h_just)
      Incidentally, the height of the rectangular hot region should really
      be the string ascent (from its bounding box), not the font ascent.
      But since we don't include the bounding boxes of individual characters
-     in our fontdb.c, we have no way of computing the former. */
+     in our g_fontdb.c, we have no way of computing the former. */
 
   horizontal_fig_x = XDV(horizontal_x, horizontal_y);
   horizontal_fig_y = YDV(horizontal_x, horizontal_y);  

@@ -65,10 +65,10 @@ _t_openpl ()
 	{
 	  /* select default background color [presumably white or off-white] */
 	  fprintf (_plotter->outstream,
-		   _kermit_bgcolor_escapes[_tek_default_plotter.kermit_bgcolor]);
+		   _kermit_bgcolor_escapes[_plotter->kermit_bgcolor]);
 	  /* select default foreground color [presumably black or off-black] */
 	  fprintf (_plotter->outstream, 
-		   _kermit_fgcolor_escapes[_tek_default_plotter.kermit_fgcolor]);
+		   _kermit_fgcolor_escapes[_plotter->kermit_fgcolor]);
 	}
     }
 

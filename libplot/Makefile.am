@@ -36,8 +36,8 @@ f_defplot.c f_defstate.c f_ellipse.c f_endpath.c f_erase.c f_linewidth.c \
 f_openpl.c f_point.c f_retrieve.c
 
 PSRC = p_alab_ps.c p_closepl.c p_color.c p_color2.c p_defplot.c \
-p_defstate.c p_ellipse.c p_endpath.c p_erase.c p_header.c p_openpl.c \
-p_point.c p_range.c
+p_defstate.c p_ellipse.c p_endpath.c p_erase.c p_openpl.c p_point.c \
+p_range.c
 
 XSRC = x_alab_X.c x_arc.c x_attribs.c x_box.c x_closepl.c x_color.c \
 x_defplot.c x_defstate.c x_earc.c x_ellipse.c x_endpath.c x_erase.c \
@@ -56,7 +56,7 @@ libplot_la_SOURCES = $(ALLSRC)
 libplot_la_LDFLAGS = -version-info 1:0:1
 
 noinst_HEADERS = extern.h g_colorname.h g_control.h g_cntrlify.h \
-g_fakearc.h g_her_metr.h g_jis.h g_pagetype.h g_params.h h_stick.h
+g_fakearc.h g_her_metr.h g_jis.h g_pagetype.h g_params.h h_stick.h p_header.h
 
 EXTRA_libplot_la_SOURCES = x_alab_X.c x_arc.c x_attribs.c x_box.c \
 x_closepl.c x_color.c x_defplot.c x_defstate.c x_earc.c x_ellipse.c \

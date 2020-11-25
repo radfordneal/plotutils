@@ -16,7 +16,7 @@
    codes (e.g. C_BEGIN_SUBSCRIPT) appearing in extern.h. */
 
 #define NUM_CONTROLS 16
-const char * _control_tbl[NUM_CONTROLS] =
+const char * const _control_tbl[NUM_CONTROLS] =
 {
   /* \sp = start superscript */
   "sp",
@@ -55,8 +55,8 @@ const char * _control_tbl[NUM_CONTROLS] =
 typedef struct 
 {
   unsigned char byte;
-  const char *string;
-  const char *ps_name;
+  const char * const string;
+  const char * const ps_name;
 } Escape;
 
 /* The basic translation table, applying to all ISO-Latin-1 fonts. */
@@ -373,7 +373,7 @@ const Escape _special_escape_tbl[NUM_SPECIAL_ESCAPES] =
   {0225, "ST", "star"},
   {0226, "AS", "ascendingnode"},
   {0227, "DE", "descendingnode"},
-  /* final `s', treated specially in controlify.c */
+  /* final `s', treated specially in g_cntrlify.c */
 #define FINAL_LOWERCASE_S 0230  
   {0230, "s-", "s1"},
   /* non-astronomical Hershey glyphs */
@@ -417,7 +417,7 @@ const Raiseinfo _raised_char_tbl[NUM_RAISED_CHARS] =
 typedef struct
 {
   unsigned char from;
-  const char *to;
+  const char * const to;
   int except_font;
 } Deligature;
 
@@ -435,8 +435,8 @@ const Deligature _deligature_char_tbl[NUM_DELIGATURED_CHARS] =
 
 typedef struct
 {
-  const char *from;
-  const char *to;
+  const char * const from;
+  const char * const to;
   int except_font;
 } Deligature_escape;
 
@@ -457,12 +457,12 @@ const Deligature_escape _deligature_escape_tbl[NUM_DELIGATURED_ESCAPES] =
    last, with strcmp().
 
    The Hershey fonts are indicated by their index in the internal table of
-   fonts, in fontdb.c. */
+   fonts, in g_fontdb.c. */
 
 typedef struct
 {
   int font;
-  const char *from;
+  const char * const from;
   unsigned char byte;
 } Ligature;
 
@@ -495,5 +495,5 @@ const Ligature _ligature_tbl[NUM_LIGATURES] =
 };
 
 /* Must equal the index of the HersheyEUC font, in the internal font table
-   in fontdb.c.  SHOULD NOT BE HERE. */
+   in g_fontdb.c.  SHOULD NOT BE HERE. */
 #define HERSHEY_EUC_FONT 16

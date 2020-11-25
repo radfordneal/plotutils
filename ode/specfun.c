@@ -177,7 +177,7 @@ f_gamma (x)
  */
 
 /* high-precision values from Ray Toy <toy@rtp.ericsson.se> */
-static double a[] = 
+static const double a[] = 
 {
        .99999999999980993227684700473478296744476168282198,
     676.52036812188509856700919044401903816411251975244084,

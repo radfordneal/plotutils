@@ -25,7 +25,7 @@
 #endif
 #endif
 
-extern const char *_ps_header[6]; /* in p_header.c */
+#include "p_header.h"		/* Idraw Postscript header */
 
 int
 #ifdef _HAVE_PROTOS

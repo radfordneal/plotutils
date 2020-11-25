@@ -15,7 +15,8 @@
 
    Note that the parampl function is used to set device driver parameters,
    i.e., Plotter class variables.  The parameter values in effect at the
-   time a Plotter object is created are copied into the object. */
+   time a Plotter object is created by invoking newpl are copied into the
+   object. */
 
 #include "sys-defines.h"
 #include <signal.h>		/* for kill() */
@@ -34,13 +35,14 @@ int (*libplot_error_handler)() = NULL;
 
 /* known plotter types, indexed into by a short mnemonic string:
    "meta"=metafile, "tek"=Tektronix, "hpgl"=HP-GL/2, "fig"=xfig, "ps"=PS,
-   "x"=X11.  The `default plotter' structures are simply copied into a new
-   Plotter struct at the time it is constructed. */
+   "X"=X11, "Xdrawable"=X11 Drawable.  The `default plotter' structures are
+   simply copied into a new Plotter struct at the time it is
+   constructed. */
 
 typedef struct 
 {
-  const char *name;
-  Plotter *init;
+  const char * const name;
+  const Plotter * const init;
 }
 plotter_initialization;
 
@@ -49,7 +51,7 @@ plotter_initialization;
 #define DEFAULT_PLOTTER_TYPE "meta"
 #endif
 
-static plotter_initialization _plotter_initializations[] = 
+static const plotter_initialization _plotter_initializations[] = 
 {
   {"meta", &_meta_default_plotter},
   {"tek", &_tek_default_plotter},
@@ -60,7 +62,7 @@ static plotter_initialization _plotter_initializations[] =
   {"X", &_X_default_plotter},    
   {"Xdrawable", &_X_drawable_default_plotter},    
 #endif /* X_DISPLAY_MISSING */
-  {(const char *)NULL, (Plotter *)NULL},    
+  {(const char *)NULL, (const Plotter *)NULL},    
 };
 
 /* array of plotter objects, needed by C binding */
@@ -71,11 +73,8 @@ static Plotter **_plotters;
 /* distinguished plotter object, for functions in the C API to act on */
 Plotter *_plotter = NULL;
 
-/* forward references (first two are used in x_closepl.c) */
-extern void _close_other_plotter_fds __P((Plotter *plotter));
-extern void _flush_plotter_outstreams __P((void));
-extern void _process_other_plotter_events __P((Plotter *plotter));
-static bool _string_to_plotter_init __P((const char *type, Plotter **pptr));
+/* forward references */
+static bool _string_to_plotter_init __P((const char *type, const Plotter **pptr));
 static void _api_warning __P((const char *msg));
 static void _init_plotter_array __P((void));
 static void _copy_params_to_plotter __P((Plotter *plotter));
@@ -92,7 +91,7 @@ _init_plotter_array ()
 {
   int i;
   bool found;
-  Plotter *plotter;
+  const Plotter *plotter;
 
   /* set up plotter array */
   _plotters = (Plotter **)_plot_xmalloc (INITIAL_NUM_PLOTTERS * sizeof(Plotter *));
@@ -136,11 +135,11 @@ newpl (type, instream, outstream, errstream)
      FILE *instream, *outstream, *errstream;
 #endif
 {
+  bool found;
   bool open_slot = false;
   int i = 0;
   int j;
-  Plotter *plotter;
-  bool found;
+  const Plotter *plotter;	/* initialization, will copy in */
   
   /* initialize plotter array if necessary */
   if (_num_plotters == 0)
@@ -189,14 +188,14 @@ newpl (type, instream, outstream, errstream)
 /* utility function, used above */
 static bool
 #ifdef _HAVE_PROTOS
-_string_to_plotter_init (const char *type, Plotter **pptr)
+_string_to_plotter_init (const char *type, const Plotter **pptr)
 #else
 _string_to_plotter_init (type, pptr)
      const char *type;
-     Plotter **pptr;
+     const Plotter **pptr;
 #endif
 {
-  plotter_initialization *p = _plotter_initializations;
+  const plotter_initialization *p = _plotter_initializations;
   bool found = false;
   
   /* search table of known plotter type mnemonics */
@@ -338,11 +337,8 @@ deletepl (handle)
   /* tear down the plotter */
   for (j = 0; j < NUM_DEVICE_DRIVER_PARAMETERS; j++)
     if (_plot_params[j].is_string && _plotter->params[j] != NULL)
-      /* stored parameter is a previously allocated string, so deallocate */
+      /* stored parameter is a previously malloc'd string, so free it */
       free (_plotter->params[j]);
-    /* Could do some additional deallocations here.  For an XPlotter, the
-       `fontlist' member of the XPlotter object, which is a list of
-       retrieved X fonts, should be freed.  FIXME. */
   free (_plotter);
   _plotters[handle] = (Plotter *)NULL;
 
@@ -397,14 +393,19 @@ parampl (parameter, value)
 	  return 0;
 	}
     }
+  /*
   _api_warning ("ignoring request to set an unknown parameter");
   return -1;
+  */
+
+  /* we now ignore requests to set unknown parameters */
+  return 0;
 }
 
 /* called in each openpl() method, to retrieve value of a class variable,
    in order to initialize the appropriate data field of a Plotter object */
 
-void *
+Voidptr
 #ifdef _HAVE_PROTOS
 _get_plot_param (const char *parameter_name)
 #else
@@ -418,7 +419,7 @@ _get_plot_param (parameter_name)
     if (strcmp (_plot_params[j].parameter, parameter_name) == 0)
       return _plotter->params[j];
 
-  return (void *)NULL;		/* name not matched */
+  return (Voidptr)NULL;		/* name not matched */
 }
 
 #ifndef X_DISPLAY_MISSING

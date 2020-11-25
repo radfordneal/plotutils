@@ -20,7 +20,7 @@
    h_openpl.c). */
 
 /* initialization for _plotter */
-Plotter _hpgl_default_plotter = 
+const Plotter _hpgl_default_plotter = 
 {
   /* methods */
   _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _h_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _h_endpath, _g_erase, _h_farc, _g_farcrel, _g_fbox, _g_fboxrel, _h_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _h_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _h_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _h_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
@@ -36,6 +36,7 @@ Plotter _hpgl_default_plotter =
   /* private low-level `sync color' methods */
   _h_set_pen_color,
   _h_set_fill_color,
+  NULL,
   /* private low-level `sync position' method */
   _h_set_position,
   /* error handlers */
@@ -125,13 +126,18 @@ Plotter _hpgl_default_plotter =
   /* elements specific to the X11 and X11 Drawable device drivers */
   (Drawable)NULL,		/* an X drawable (e.g. a window) */
   (Drawable)NULL,		/* an X drawable (e.g. a pixmap) */
+  (Pixmap)NULL,			/* used if double buffering */
   (Fontrecord *)NULL,		/* head of list of retrieved X fonts */
+  (Colorrecord *)NULL,		/* head of list of retrieved color cells */
   (Display *)NULL,		/* display */
   (Colormap)NULL,		/* colormap */
+  false,			/* speed up animation by double buffering? */
+  0,				/* number of frame in page */
   /* elements specific to the X11 device driver */
   (XtAppContext)NULL,		/* application context */
   (Widget)NULL,			/* toplevel widget */
   (Widget)NULL,			/* Label widget */
+  false,			/* using private colormap? */
   false,			/* window(s) disappear on Plotter deletion? */
 #endif /* X_DISPLAY_MISSING */
 

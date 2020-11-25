@@ -1,18 +1,14 @@
 /* The following is a Postscript prologue which defines a set of macros and
    constants which are used in rendering graphics on the page.  It is split
    into several comparatively short pieces, because some compilers have
-   difficulty with strings that are too long.
+   difficulty with strings that are too long.  It is #included by p_closepl.c.
 
    This prologue was written by John Interrante
    <interran@uluru.stanford.edu>.  (Thanks to John for generously providing
    it, and for helpful comments.)  For more information see the InterViews
    distribution on interviews.stanford.edu. */
 
-#include "sys-defines.h"
-#include "plot.h"
-#include "extern.h"
-
-const char *_ps_header[6] =
+static const char * const _ps_header[] =
 {"\
 /DrawDict 50 dict def\n\
 DrawDict begin\n\

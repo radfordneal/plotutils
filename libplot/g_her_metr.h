@@ -93,7 +93,7 @@
 /************************************************************************/
 
 /* Some miscellaneous information on typesetting mathematics, taken from
-   Allen Hershey's 1969 TR (see hershey_glyphs.c):
+   Allen Hershey's 1969 TR (see g_her_glyph.c):
 
    Subscripts and superscripts, in math text, should be in indexical size.
    The centerline of subscripts/superscripts would be lowered/raised by 10

@@ -55,11 +55,11 @@
 /* An XLFD template, with holes into which we can punch the base name (a
    string with exactly three hyphens in it) and the integer size in terms
    of pixels */
-static const char *_xlfd_template = "-*-%s-*-%d-*-*-*-*-*-*-*";
+static const char * const _xlfd_template = "-*-%s-*-%d-*-*-*-*-*-*-*";
 
 /* XLFD template for an affinely transformed font (with holes for the base
    name and for four dimensions, in terms of pixels) */
-static const char *_xlfd_template_with_scaling = "-*-%s-*-[%s %s %s %s]-*-*-*-*-*-*-*";
+static const char * const _xlfd_template_with_scaling = "-*-%s-*-[%s %s %s %s]-*-*-*-*-*-*-*";
 
 #define NUM_XLFD_FIELDS 14
 #define FIELD_FOUNDRY 0
@@ -172,7 +172,7 @@ _x_retrieve_font ()
    tried, in order.
 
    1. `name' is taken to be an alias for an XLFD base name, as listed in
-   our table in fontdb.c.  (Aliases for the 35 standard font names appear
+   our table in g_fontdb.c.  (Aliases for the 35 standard font names appear
    there).  E.g., name="times-roman".
 
    2. `name' is taken to be an XLFD base name (no aliasing), of the form
@@ -429,7 +429,7 @@ _x_select_font (name)
   bool missing = true;
 
   /* attempt to find font in our per-Plotter font list */
-  for (fptr = _plotter->fontlist; fptr; fptr = fptr->next)
+  for (fptr = _plotter->x_fontlist; fptr; fptr = fptr->next)
     if (strcmp (name, fptr->name) == 0)
       {
 	missing = false;
@@ -449,14 +449,16 @@ _x_select_font (name)
 	  strcpy (tmpname, name);
 	  record->name = tmpname;
 	  record->x_font_struct = _plotter->drawstate->x_font_struct;
-	  record->next = _plotter->fontlist;
-	  _plotter->fontlist = record;
+	  record->next = _plotter->x_fontlist;
+	  _plotter->x_fontlist = record;
 	}
     }
 
   if (_plotter->drawstate->x_font_struct) /* if we have a font */
     {
-      XSetFont (_plotter->dpy, _plotter->drawstate->gc, 
+      /* set font in GC used for drawing (the other GC, used for filling,
+	 is left alone) */
+      XSetFont (_plotter->dpy, _plotter->drawstate->gc_fg,
 		_plotter->drawstate->x_font_struct->fid);
       /* fill in abovementioned fields */
       _set_x_font_dimensions (_plotter->drawstate->x_font_struct);

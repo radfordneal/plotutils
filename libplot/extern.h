@@ -66,8 +66,8 @@ struct pcl_font_info_struct
 
 extern const struct pcl_font_info_struct _pcl_font_info[];
 
-/* our information about the vector fonts in g_fontdb.c, and the typefaces
-   they belong to */
+/* our information about the vector fonts (i.e. Hershey fonts) in
+   g_fontdb.c, and the typefaces they belong to */
 
 struct vector_font_info_struct 
 {
@@ -78,7 +78,7 @@ struct vector_font_info_struct
   int font_index;		/* which font within typeface this is */
   bool obliquing;		/* whether to apply obliquing */
   bool iso8859_1;		/* whether font encoding is iso8859-1 */
-  bool visible;		/* whether font is visible, i.e. not internal */
+  bool visible;			/* whether font is visible, i.e. not internal*/
 };
 
 extern const struct vector_font_info_struct _vector_font_info[];
@@ -99,14 +99,9 @@ extern const struct accented_char_info_struct _vector_accented_char_info[];
 #define ACC1 (16384 + 1)	/* elevate by 7 Hershey units */
 #define ACC2 (16384 + 2)	/* same, also shift right by 2 units */
 
-/* a flag in the glyph number indicating a small Kana */
+/* a flag in a Hershey glyph number indicating a small Kana */
 
 #define KS 8192
-
-/* arrays of Hershey vector glyphs */
-
-extern const char *_occidental_vector_glyphs[];
-extern const char *_oriental_vector_glyphs[];
 
 /* typeface information, see g_fontdb.c */
 
@@ -121,6 +116,15 @@ struct typeface_info_struct
 extern const struct typeface_info_struct _ps_typeface_info[];
 extern const struct typeface_info_struct _pcl_typeface_info[];
 extern const struct typeface_info_struct _vector_typeface_info[];
+
+/* arrays of Hershey vector glyphs, see g_her_glyph.c */
+
+extern const char * const _occidental_vector_glyphs[];
+extern const char * const _oriental_vector_glyphs[];
+
+/* position of `undefined character' symbol (several horizontal strokes)
+   in the _occidental_vector_glyphs[] array */
+#define UNDE 4023
 
 /***********************************************************************/
 /* GENERAL DEFINITIONS, TYPEDEFS, & EXTERNAL VARIABLES                 */
@@ -175,7 +179,8 @@ typedef struct
   int blue;
 } Color;
 
-/* structure used in colorname.c for storing names of colors we recognize */
+/* structure used in g_colorname.c for storing names of colors we
+   recognize, and corresponding 24-bit RGB color */
 
 typedef struct
 {
@@ -184,6 +189,8 @@ typedef struct
   unsigned char green;
   unsigned char blue;
 } Colornameinfo;
+
+/* information on known page types (e.g. "letter", "a4") */
 
 typedef struct
 {
@@ -194,9 +201,9 @@ Displaycoors;
 
 typedef struct
 {
-  const char *name;
+  const char *name;		/* page type, e.g. "letter" */
   bool metric;			/* metric vs. Imperial, advisory only */
-  Displaycoors fig, ps, hpgl;	/* coordinates for several devices */
+  Displaycoors fig, ps, hpgl;	/* coors of corners of display (device-dep.) */
 } Pagedata;
 
 extern const Pagedata _pagedata[]; /* array of known page types */
@@ -256,7 +263,7 @@ typedef enum
 #define YUV(x,y) ((- _plotter->drawstate->transform.m[1] * (x) + _plotter->drawstate->transform.m[0] * (y)) / (_plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[3] - _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[2]))
 
 /*************************************************************************/
-/* MISC. DEFS ON POLYLINES and ARCS (relevant to all or most display devices)*/
+/* MISC. DEFS on POLYLINES and ARCS (relevant to all or most display devices)*/
 /*************************************************************************/
 
 /* Default length an unfilled polyline is allowed to grow to, before it is
@@ -322,13 +329,13 @@ typedef enum
   D_GENERIC, D_KERMIT, D_XTERM
 } tek_display_type;
 
-/* colors supported by MS-DOS kermit Tek emulation, see colordb2.c */
+/* colors supported by MS-DOS kermit Tek emulation, see t_color2.c */
 
 #define KERMIT_NUM_STD_COLORS 16
 extern const Color _kermit_stdcolors[KERMIT_NUM_STD_COLORS];
-extern const char *_kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS];
-extern const char *_kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS];
-/* must agree with the ordering in colordb2.c */
+extern const char * const _kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS];
+extern const char * const _kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS];
+/* must agree with the ordering in t_color2.c */
 #define ANSI_SYS_BLACK   0
 #define ANSI_SYS_GRAY30  8
 #define ANSI_SYS_GRAY55  7
@@ -457,8 +464,8 @@ extern const int _fig_join_style[], _fig_cap_style[];
 
 /* these constants for Fig colors are hardcoded in xfig */
 
-#define FIG_STD_COLOR_MIN 0	/* see colordb2.c for colors 0,...,31 */
-#define C_BLACK 0		/* i.e. #0 in table in colordb2.c */
+#define FIG_STD_COLOR_MIN 0	/* see f_color2.c for colors 0,...,31 */
+#define C_BLACK 0		/* i.e. #0 in table in f_color2.c */
 #define C_WHITE 7		/* i.e. #7 in table */
 #define FIG_NUM_STD_COLORS 32
 #define FIG_USER_COLOR_MIN 32
@@ -500,7 +507,7 @@ extern const Color _fig_stdcolors[FIG_NUM_STD_COLORS];
 /* arrays, see p_endpath.c, indexed by line type */
 
 extern const long _ps_line_type_bit_vector[]; /* idraw linestyle, 16-bit brush */
-extern const char *_ps_line_type_setdash[]; /* dasharray arg, for PS `setdash' */
+extern const char * const _ps_line_type_setdash[]; /* dasharray arg, for PS `setdash' */
 
 /* PS line join and line cap styles */
 
@@ -516,14 +523,14 @@ extern const char *_ps_line_type_setdash[]; /* dasharray arg, for PS `setdash' *
    and cap type numbers (miter/rd./bevel and butt/rd./project) */
 extern const int _ps_join_style[], _ps_cap_style[];
 
-/* information on colors known to idraw, see colordb2.c */
+/* information on colors known to idraw, see p_color2.c */
 
 #define IDRAW_NUM_STD_COLORS 12
 
 extern const Color _idraw_stdcolors[IDRAW_NUM_STD_COLORS];
-extern const char *_idraw_stdcolornames[IDRAW_NUM_STD_COLORS];
+extern const char * const _idraw_stdcolornames[IDRAW_NUM_STD_COLORS];
 
-/* information on shadings known to idraw, see colordb2.c */
+/* information on shadings known to idraw, see p_color2.c */
 
 #define IDRAW_NUM_STD_SHADINGS 5
 
@@ -541,9 +548,17 @@ typedef struct lib_fontrecord
 {
   char *name;			/* font name, e.g. XLFD name */
   XFontStruct *x_font_struct;	/* font structure */
-  struct lib_fontrecord *next;	/* most previously retrieved font */
+  struct lib_fontrecord *next;	/* most recently retrieved font */
 } Fontrecord;
-#endif
+
+/* We keep track of allocated color cells similarly */
+typedef struct lib_colorrecord
+{
+  XColor rgb;			/* RGB value and pixel value (if any) */
+  bool allocated;		/* pixel value successfully allocated? */
+  int frame;			/* frame that cell was most recently used in*/
+  struct lib_colorrecord *next;	/* most recently retrieved color cell */
+} Colorrecord;
 
 /* used as a backup, if we can't retrieve an X font */
 #define X_DEFAULT_HERSHEY_FONT "HersheySerif"
@@ -552,6 +567,7 @@ typedef struct lib_fontrecord
 #define XOOB_UNSIGNED(x) ((x) > (int)0xffff)
 #define XOOB_INT(x) ((x) > (int)0x7fff || (x) < (int)(-0x8000))
 
+#endif
 /***********************************************************************/
 /* DRAWING STATE AND DEVICE STATE */
 /***********************************************************************/
@@ -598,6 +614,11 @@ typedef struct lib_state
   double device_line_width;	/* line width in device coordinates */
   int quantized_device_line_width; /* line width, quantized to integer */
   bool suppress_polyline_flushout; /* suppress endpath while drawing a path? */
+/* default values for certain modal attributes, used when an out-of-range
+   value is requested (these two are special because unlike all others,
+   they're modified by space()) */
+  double default_line_width;	/* width of lines in user coordinates */
+  double default_font_size;	/* font size in user coordinates */
 /* elements specific to the HP-GL drawing state */
   double hpgl_pen_width;	/* pen width (frac of diag dist betw P1,P2) */
 /* elements specific to the fig drawing state */
@@ -616,33 +637,42 @@ typedef struct lib_state
   int idraw_bgcolor;		/* index of idraw bgcolor in table */
   int idraw_shading;		/* index of idraw shading in table */
 #ifndef X_DISPLAY_MISSING
-/* elements specific to the X11 and X11 Drawable drawing states */
+/* elements specific to the X11 and X11 Drawable drawing state */
   double font_pixmatrix[4];	/* pixel matrix, parsed from font name */
   bool native_positioning;	/* if set, can use XDrawString() etc. */
-  GC gc;			/* graphics context, for drawing */
-  XFontStruct *x_font_struct;	/* font structure (used in alabel.c) */
-  unsigned long x_bgcolor;	/* background color (pixel value) */
+  GC gc_fg;			/* graphics context, for drawing */
+  GC gc_fill;			/* graphics context, for filling */
+  GC gc_bg;			/* graphics context, for erasing */
+  XFontStruct *x_font_struct;	/* font structure (used in x_alab_X.c) */
+  Color current_fgcolor;	/* foreground color (RGB) */
+  Color current_fillcolor;	/* fill color (RGB) */
+  Color current_bgcolor;	/* background color (RGB) */
+  int current_fill_level;	/* fill level used in computing pixel val */
   unsigned long x_fgcolor;	/* foreground color (pixel value) */
   unsigned long x_fillcolor;	/* fill color (pixel value) */
+  unsigned long x_bgcolor;	/* background color (pixel value) */
+  bool x_fgcolor_status;	/* foreground pixel is genuine? */
+  bool x_fillcolor_status;	/* fill pixel is genuine? */
+  bool x_bgcolor_status;	/* background pixel is genuine? */
 #endif /* X_DISPLAY_MISSING */
 /* pointer to previous state */
   struct lib_state *previous;
 } State;
 
 /* default drawing states for supported plotter types */
-extern State _meta_default_drawstate, _tek_default_drawstate, _hpgl_default_drawstate, _fig_default_drawstate, _ps_default_drawstate, _X_default_drawstate;
+extern const State _meta_default_drawstate, _tek_default_drawstate, _hpgl_default_drawstate, _fig_default_drawstate, _ps_default_drawstate, _X_default_drawstate;
 
 /* supported plotter types */
 #define PL_META 0		/* GNU graphics metafile */
 #define PL_TEK 1		/* Tektronix 4014 with EGM */
 #define PL_HPGL 2		/* HP-GL and HP-GL/2 */
-#define PL_FIG 3		/* xfig 3.x */
+#define PL_FIG 3		/* xfig 3.1 */
 #define PL_PS 4			/* Postscript */
 #define PL_X11 5		/* X11 */
 #define PL_X11_DRAWABLE 6	/* X11 Drawable */
 
 /* recognized device driver parameters (key/value) are in g_params.h */
-#define NUM_DEVICE_DRIVER_PARAMETERS 17
+#define NUM_DEVICE_DRIVER_PARAMETERS 20
 
 /* This elides the argument prototypes if the compiler does not support
    them. The name P__ is chosen in hopes that it will not collide with any
@@ -759,6 +789,7 @@ typedef struct
   /* private low-level `sync color' methods */
   void (*set_pen_color) P__((void));
   void (*set_fill_color) P__((void));  
+  void (*set_bg_color) P__((void));  
   /* private low-level `sync position' method */
   void (*set_position) P__((void));
   /* error handlers */
@@ -775,7 +806,7 @@ typedef struct
   FILE *outstream;		/* output stream if any */
   FILE *errstream;		/* error stream if any */
   /* low-level device driver parameters */
-  void *params[NUM_DEVICE_DRIVER_PARAMETERS];
+  Voidptr params[NUM_DEVICE_DRIVER_PARAMETERS];
   /* capabilities */            /* capabilities: 0/1/2 = no/yes/maybe */
   int have_wide_lines;	
   int have_solid_fill;
@@ -792,7 +823,7 @@ typedef struct
   int num_pids;			/* number of pids in list */
   /* drawing state(s) */
   State *drawstate;		/* pointer to top of drawing state stack */
-  State *default_drawstate;	/* for initialization and resetting */
+  const State *default_drawstate; /* for initialization and resetting */
   /* dimensions */
   bool bitmap_device;		/* bitmap display device? */
   int imin, imax, jmin, jmax;	/* range of coordinates (for a bitmap device)*/
@@ -859,13 +890,18 @@ typedef struct
 /* elements specific to both the X11 and the X11 Drawable device drivers */
   Drawable drawable1;		/* an X drawable (e.g. a pixmap) */
   Drawable drawable2;		/* an X drawable (e.g. a window) */
-  Fontrecord *fontlist;		/* head of list of retrieved X fonts */
+  Pixmap drawable3;		/* used if double buffering */
+  Fontrecord *x_fontlist;	/* head of list of retrieved X fonts */
+  Colorrecord *x_colorlist;	/* head of list of retrieved X color cells */
   Display *dpy;			/* display */
-/* elements specific to the X11 device driver */
   Colormap cmap;		/* colormap */
+  bool double_buffering;	/* speed up animation by double buffering? */
+  int frame_number;		/* number of frame in page */
+/* elements specific to the X11 device driver */
   XtAppContext app_con;		/* application context */
   Widget toplevel;		/* toplevel widget */
   Widget canvas;		/* Label widget */
+  bool private_cmap;		/* using private colormap? */
   bool vanish_on_delete;	/* window(s) disappear on Plotter deletion? */
 #endif /* X_DISPLAY_MISSING */
 /* arrays used by various device drivers (see above), positioned at end,
@@ -882,7 +918,7 @@ typedef struct
 extern Plotter *_plotter;
 
 /* for initialization of plotters */
-extern Plotter _meta_default_plotter, _tek_default_plotter, _hpgl_default_plotter, _fig_default_plotter, _ps_default_plotter, _X_default_plotter, _X_drawable_default_plotter;
+extern const Plotter _meta_default_plotter, _tek_default_plotter, _hpgl_default_plotter, _fig_default_plotter, _ps_default_plotter, _X_default_plotter, _X_drawable_default_plotter;
 
 /************************************************************************/
 /* PROTOTYPES */
@@ -953,12 +989,16 @@ extern void _get_range P__ ((double *xmin, double *xmax, double *ymin, double *y
 /* private methods */
 extern void _handle_x_events P__ ((void));
 
-/* in api.c */
-extern void * _get_plot_param P__ ((const char *parameter)); 
+/* in api.c; final three are used by X driver */
+extern Voidptr _get_plot_param P__ ((const char *parameter)); 
+extern void _close_other_plotter_fds P__ ((Plotter *plotter));
+extern void _flush_plotter_outstreams P__ ((void));
+extern void _process_other_plotter_events P__ ((Plotter *plotter));
 
 /* The following are declarations of the device-specific versions of
    plotter methods.  The initial letter indicates the device specificity.
-   g=generic, m=metafile, t=Tektronix, h=HP-GL/2, f=xfig, p=PS, x=X11. */
+   g=generic, m=metafile, t=Tektronix, h=HP-GL/2, f=xfig, p=PS, x=X11,
+   y=X11 Drawable.  Many of these do not exist. */
 
 extern FILE* _g_outfile P__((FILE* newstream));
 extern double _g_falabel_hershey P__((int x_justify, int y_justify, const unsigned char *s));
@@ -1548,6 +1588,7 @@ extern int _x_space2 P__ ((int x0, int y0, int x1, int y1, int x2, int y2));
 extern int _x_textangle P__ ((int angle));
 extern void _x_retrieve_font P__((void));
 extern void _x_set_attributes P__ ((void));
+extern void _x_set_bg_color P__((void));
 extern void _x_set_fill_color P__((void));
 extern void _x_set_pen_color P__((void));
 

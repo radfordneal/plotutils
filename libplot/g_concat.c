@@ -38,7 +38,7 @@ _g_fconcat (m0, m1, m2, m3, m4, m5)
 
   _matrix_product (m, _plotter->drawstate->transform.m, _plotter->drawstate->transform.m);
 
-  /* following code as in space.c */
+  /* following code as in g_space.c */
 
   /* does map preserve axis directions? */
   _plotter->drawstate->transform.axes_preserved = 

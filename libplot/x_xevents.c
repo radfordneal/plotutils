@@ -2,6 +2,8 @@
 #include "plot.h"
 #include "extern.h"
 
+#define X_EVENT_HANDLING_PERIOD 4
+
 /* _handle_x_events() handles any pending X events.  We call this at the
    end of most of the XPlotter methods.  (Since the same methods are used
    by XDrawablePlotters, this gets called when invoking drawing operations
@@ -15,10 +17,10 @@
    More than one XPlotter may be open at a time, in which case
    _handle_x_events() will update the windows associated with each open
    connection (since libplot uses only a single X application context, for
-   all XPlotters). */
+   all XPlotters).
 
-/* external function in api.c, at least for the C binding */
-extern void _process_other_plotter_events __P ((Plotter *plotter));
+   This function takes effect only once per X_EVENT_HANDLING_PERIOD
+   invocations. */
 
 void
 #ifdef _HAVE_PROTOS
@@ -27,12 +29,18 @@ _handle_x_events(void)
 _handle_x_events()
 #endif
 {
+  static int count = 0;
+
   if (_plotter->type == PL_X11)
     /* an XPlotter, not an XDrawablePlotter, so need to handle events */
     {
-      _process_other_plotter_events (_plotter);
-
-      while (XtAppPending (_plotter->app_con))
-	XtAppProcessEvent (_plotter->app_con, XtIMAll);
+      if (count % X_EVENT_HANDLING_PERIOD == 0)
+	{
+	  _process_other_plotter_events (_plotter);
+	  
+	  while (XtAppPending (_plotter->app_con))
+	    XtAppProcessEvent (_plotter->app_con, XtIMAll);
+	}
+      count++;
     }
 }

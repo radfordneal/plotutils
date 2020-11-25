@@ -25,6 +25,7 @@ _x_restorestate()
 
   if (_plotter->drawstate->previous == NULL)
     {
+      /* attempt to pop the lowest state off the stack */
       _plotter->error ("restorestate: invalid operation");
       return -1;
     }
@@ -40,12 +41,16 @@ _x_restorestate()
   free (_plotter->drawstate->cap_mode);
   free (_plotter->drawstate->font_name);
   
-  /* N.B. we do _not_ attempt to free _plotter->drawstate->x_font_struct */
+  /* N.B. we do _not_ free _plotter->drawstate->x_font_struct */
 
-  /* free graphics context, if we have one -- and to have one (see
-     x_savestate.c), must have at least one drawable */
+  /* Free graphics contexts, if we have them -- and to have them, must have
+     at least one drawable (see x_savestate.c). */
   if (_plotter->drawable1 || _plotter->drawable2)
-    XFreeGC (_plotter->dpy, _plotter->drawstate->gc);
+    {
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fg);
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fill);
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_bg);
+    }
 
   /* pop current state off the stack */
   free (_plotter->drawstate);

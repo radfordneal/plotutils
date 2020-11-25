@@ -1,6 +1,12 @@
 These are some notes on backward compatibility of the plotutils package, on
 both the user and programmer levels.
 
+Release 2.1.1
+-----------
+
+No additions to libplot API, though libplot was improved in various ways.
+The libplot version number is now 1.1.
+
 Release 2.1
 -----------
 

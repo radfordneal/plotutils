@@ -1,3 +1,34 @@
+Version 2.1.1 released, 5/98.  [Includes libplot 1.1, interface age=1.]
+
+libplot: to permit smooth animations, double buffering is now implemented 
+	for X and X Drawable Plotters.  Double buffering is turned on
+	if a new device parameter, USE_DOUBLE_BUFFERING, is set to "yes"
+	at Plotter creation time.  Successive frames of graphics are 
+	separated by invocations of erase().
+libplot: X and X Drawable Plotters now maintain a local cache of X color
+	cells, and no longer automatically allocate new one(s) for each
+	plotted object.  This speeds up rendering, and avoids a memory leak
+	in the X server.  If color cells in the standard colormap are
+	exhausted, an X Plotter (but not an X Drawable Plotter) will switch
+	to a private colormap.
+libplot: new device driver parameters, BG_COLOR and XDRAWABLE_COLORMAP.
+	Former allows background color of an X or X Drawable Plotter to
+	be specified at creation time; latter adds support for
+	non-default colormaps.
+libplot: bug in point() that affected X Drawable Plotters now fixed.
+libplot: erase() now acts correctly on X and X Drawable Plotters: any
+	path under construction is flushed out before erasure.
+libplot: nearly all internal read-only tables now defined as `const', so
+	that on	most systems the linker will place them in a sharable 
+	read-only data section.
+libplot: X driver now visibly displays zero-length line segments, if cap mode 
+	is `round' or `projecting'.  This fixes a problem with `tek2plot -TX',
+	since Tektronix files use zero-length lines as points.
+tek2plot: now uses rounded cap mode for line segments obtained from vectors,
+	to improve visibility of zero-length lines.  Rounded join mode 
+	now used too, to smooth out curves.
+texinfo documentation: now processed correctly by texi2html.
+
 Version 2.1 released, 4/98.  [Includes libplot 1.0, interface age=1.]
 
 graph:  may access the new Euro currency symbol by using the '\eu' escape 

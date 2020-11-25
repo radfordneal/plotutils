@@ -28,7 +28,7 @@ _g_savestate()
 #endif
 {
   State *oldstate = _plotter->drawstate;
-  State *copyfrom;
+  const State *copyfrom;
 
   if (!_plotter->open)
     {

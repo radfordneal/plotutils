@@ -12,7 +12,7 @@
    returned to at that time. */
 
 /* Note that this version, which is appropriate for XPlotters, constructs
-   an X gc (i.e. graphics context) for the new drawing state. */
+   X GC's (i.e. graphics contexts) for the new drawing state. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -39,7 +39,7 @@ _x_savestate()
      of the current one, or of the default one if stack is empty */
   _g_savestate();
 
-  /* determine which if either drawable we'll construct the GC for */
+  /* determine which if either drawable we'll construct the GC's for */
   if (_plotter->drawable1)
     drawable = _plotter->drawable1;
   else if (_plotter->drawable2)
@@ -48,32 +48,49 @@ _x_savestate()
     drawable = (Drawable)NULL;
 
   if (drawable != (Drawable)NULL)
-    /* prepare GC for new drawing state, focusing on attributes we use */
+    /* prepare GC's for new drawing state, focusing on attributes we use */
     {
       if (_plotter->drawstate->previous)
-	/* there was a previous drawing state, can copy contents of old GC */
+	/* there was a previous drawing state, can copy contents of old GC's */
 	{
 	  gcmask = GCForeground | GCBackground 
 	    | GCPlaneMask | GCFunction | GCArcMode
 	      |  GCLineStyle | GCLineWidth | GCJoinStyle | GCCapStyle | GCFont;
-	  XGetGCValues (_plotter->dpy, _plotter->drawstate->previous->gc, 
+	  /* copy GC used for drawing */
+	  XGetGCValues (_plotter->dpy, _plotter->drawstate->previous->gc_fg, 
 			gcmask, &gcv);
-	  _plotter->drawstate->gc = XCreateGC (_plotter->dpy, drawable, 
-					       gcmask, &gcv);
+	  _plotter->drawstate->gc_fg = XCreateGC (_plotter->dpy, drawable, 
+						  gcmask, &gcv);
+	  /* copy GC used for filling */
+	  XGetGCValues (_plotter->dpy, _plotter->drawstate->previous->gc_fill, 
+			gcmask, &gcv);
+	  _plotter->drawstate->gc_fill = XCreateGC (_plotter->dpy, drawable, 
+						    gcmask, &gcv);
+	  /* copy GC used for erasing */
+	  XGetGCValues (_plotter->dpy, _plotter->drawstate->previous->gc_bg, 
+			gcmask, &gcv);
+	  _plotter->drawstate->gc_bg = XCreateGC (_plotter->dpy, drawable, 
+						  gcmask, &gcv);
 	}
       else
-	/* stack must have been empty, must build new GC from scratch */
+	/* stack must have been empty, must build new GC's from scratch */
 	{
-	  gcmask = GCForeground | GCBackground
-	    | GCPlaneMask | GCFunction | GCArcMode;
-	  /* set foreground, background colors (det'd in openpl.c) */
-	  gcv.background = _plotter->default_drawstate->x_bgcolor; 
-	  gcv.foreground = _plotter->default_drawstate->x_fgcolor;
+	  gcmask = GCPlaneMask | GCFunction | GCArcMode;
 	  gcv.plane_mask = AllPlanes;
 	  gcv.function = GXcopy;
 	  gcv.arc_mode = ArcChord; /* libplot convention */
-	  _plotter->drawstate->gc = 
+
+	  _plotter->drawstate->gc_fg = 
 	    XCreateGC (_plotter->dpy, drawable, gcmask, &gcv);
+	  _plotter->drawstate->gc_fill = 
+	    XCreateGC (_plotter->dpy, drawable, gcmask, &gcv);
+	  _plotter->drawstate->gc_bg = 
+	    XCreateGC (_plotter->dpy, drawable, gcmask, &gcv);
+
+	  /* set the foreground color in each of our three GC's */
+	  _plotter->set_pen_color ();
+	  _plotter->set_fill_color ();
+	  _plotter->set_bg_color ();	  
 
 	  /* We no longer retrieve a default font from the X server here. */
 	  /* space(), when invoked (which we require after invoking

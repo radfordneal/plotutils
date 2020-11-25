@@ -34,14 +34,14 @@ static String _xplot_resources[] =
 };
 
 /* command-line mimicry; we punch in the display and geometry */
-static const char *_fake_argv[] = { XPLOT_APP_NAME, "-display", NULL, "-geometry", NULL, NULL };
+static char *_fake_argv[] = { XPLOT_APP_NAME, "-display", NULL, "-geometry", NULL, NULL };
 #define FAKE_ARGV_DISPLAY_SLOT 2
 #define FAKE_ARGV_GEOMETRY_SLOT 4
 #define DEFAULT_FAKE_ARGC 3	/* assuming -geometry option not included */
 
 /* translate mouse clicks to `quit if closed', i.e. quit if already forked
    off, and not otherwise */
-static String _xplot_translations =
+static const String _xplot_translations =
 #ifdef USE_MOTIF
 "<Btn1Down>:	quit_if_closed()\n\
  <Btn2Down>:	ProcessDrag()\n\
@@ -97,9 +97,10 @@ _x_openpl ()
 {
   Arg wargs[10];		/* werewolves */
   Dimension window_height, window_width;
+  Pixmap bg_pixmap;
   Screen *screen_struct;	/* screen structure */
   String *copied_fake_argv;
-  const char *length_s, *vanish_s;
+  const char *length_s, *vanish_s, *bg_color_name_s, *double_buffer_s;
   int i, fake_argc, copied_fake_argc;
   int screen;			/* screen number */
   static bool toolkit_initted = false;
@@ -234,10 +235,6 @@ _x_openpl ()
       return -2;
     }
   
-  /* With each connection to the display, reset list of retrieved X fonts. */
-  /* Should free the previous list to avoid a memory leak; FIXME. */
-  _plotter->fontlist = (Fontrecord *)NULL;
-
   /* find out how long polylines can get */
   _plotter->hard_polyline_length_limit = 
     XMaxRequestSize(_plotter->dpy) / 2;
@@ -318,57 +315,63 @@ _x_openpl ()
 			       value_mask, &attributes);
     }
 
-  /* Create background pixmap for Label widget; 2nd arg specifies screen.
-     Store it in Plotter struct as `drawable #1'. */
-  _plotter->drawable1 
-    = (Drawable)XCreatePixmap(_plotter->dpy, 
-			      _plotter->drawable2,
-			      (unsigned int)window_width, 
-			      (unsigned int)window_height, 
-			      (unsigned int)PlanesOfScreen(screen_struct));
-
-  /* save foreground and background colors for initial drawing state; store
-     in default drawing state because there's no real drawing state in the
-     XPlotter yet */
-  _plotter->default_drawstate->x_fgcolor = BlackPixelOfScreen(screen_struct);
-  _plotter->default_drawstate->x_bgcolor = WhitePixelOfScreen(screen_struct);
+  /* create background pixmap for Label widget; 2nd arg determines screen */
+  bg_pixmap = XCreatePixmap(_plotter->dpy, 
+			     _plotter->drawable2,
+			     (unsigned int)window_width, 
+			     (unsigned int)window_height, 
+			     (unsigned int)PlanesOfScreen(screen_struct));
   
-  /* get background color of the Label widget's window (user-settable) */
-  /* COMMENTED OUT because we now always use white (see line immy. above) */
-  /*
-  {
-    XColor canvas_background;
-    
-    XtSetArg (wargs[0], XtNbackground, &canvas_background);
-    XtGetValues (_plotter->canvas, wargs, (Cardinal)1);
-    _plotter->default_drawstate->x_bgcolor = canvas_background.pixel;
-  }
-  */
+  /* if user requested double buffering, use this pixmap as the only
+     drawable into which we'll draw; otherwise use it as the 2nd of two
+     drawables into which we'll draw, the other being the window */
+  double_buffer_s = (const char *)_get_plot_param ("USE_DOUBLE_BUFFERING");
+  if (strcmp (double_buffer_s, "yes") == 0)
+    {
+      _plotter->drawable3 = (Drawable)bg_pixmap;
+      _plotter->double_buffering = true;
+    }
+  else
+    _plotter->drawable1 = (Drawable)bg_pixmap;
 
   /* flag Plotter as open (and as having been opened at least once) */
   _plotter->open = true;
   _plotter->opened = true;
   (_plotter->page_number)++;
 
-  /* Create an initial drawing state with default attributes, including the
-     just-computed foreground and background colors, and an X GC.  The
-     drawing state won't be fully ready for drawing graphics, since it
-     won't contain an X font.  To retrieve the initial X font, the user
-     will need to invoke space() after openpl(). */
+  /* this is initial frame of this page */
+  _plotter->frame_number = 0;
+
+  /* Create an initial drawing state with default attributes, including an
+     X GC.  The drawing state won't be ready for drawing graphics, since it
+     won't contain an X font or a meaningful line width.  To retrieve an X
+     font and set the line width, the user will need to invoke space()
+     after openpl(). */
   _plotter->savestate ();
   
-  /* erase pixmap and window by filling them with the background color, via
-     XFillRectangle (the just-created drawing state, with the mentioned
-     attributes, is used for this) */
+  /* if there's a user-specified background color, set it in drawing state */
+  bg_color_name_s = (const char *)_get_plot_param ("BG_COLOR");
+  if (bg_color_name_s)
+    _plotter->bgcolorname (bg_color_name_s);
+  
+  /* clear both pixmap and window by filling them with the background
+     color, via XFillRectangle (the just-created drawing state, with the
+     mentioned attributes, is used for this) */
   _plotter->erase ();
   
+  /* If double buffering, must invoke `erase' one more time to clear both
+     pixmap and window, since what `erase' does in that case is (1) copy
+     pixmap to window, and (2) clear pixmap. */
+  if (_plotter->double_buffering)
+    _plotter->erase ();
+
   /* install pixmap as the Label widget's background pixmap */
 #ifdef USE_MOTIF
-  XtSetArg (wargs[0], XmNlabelPixmap, (Pixmap)_plotter->drawable1);
+  XtSetArg (wargs[0], XmNlabelPixmap, (Pixmap)bg_pixmap);
   XtSetArg (wargs[1], XmNlabelType, XmPIXMAP);
   XtSetValues (_plotter->canvas, wargs, (Cardinal)2);
 #else
-  XtSetArg (wargs[0], XtNbitmap, (Pixmap)_plotter->drawable1);
+  XtSetArg (wargs[0], XtNbitmap, (Pixmap)bg_pixmap);
   XtSetValues (_plotter->canvas, wargs, (Cardinal)1);
 #endif
 

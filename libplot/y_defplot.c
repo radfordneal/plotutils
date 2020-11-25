@@ -4,7 +4,7 @@
    C API.
 
    This is identical to the initialization for an XPlotter, except that
-   _y_openpl.c and _y_closepl.c replace _x_openpl.c and _x_closepl.c.  (An
+   _y_openpl and _y_closepl replace _x_openpl and _x_closepl.  (An
    XDrawablePlotter has a Drawable passed to it as a driver parameter.) */
 
 #include "sys-defines.h"
@@ -12,7 +12,7 @@
 #include "extern.h"
 
 /* initialization for _plotter */
-Plotter _X_drawable_default_plotter = 
+const Plotter _X_drawable_default_plotter = 
 {
   /* methods */
   _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _y_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _x_endpath,  _x_erase, _x_farc, _g_farcrel, _x_fbox, _g_fboxrel, _g_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _x_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _g_flinewidth, _x_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _x_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _y_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _x_restorestate, _x_savestate, _g_space, _g_space2, _g_textangle,
@@ -28,6 +28,7 @@ Plotter _X_drawable_default_plotter =
   /* private low-level `sync color' methods */
   _x_set_pen_color,
   _x_set_fill_color,
+  _x_set_bg_color,
   /* private low-level `sync position' method */
   NULL,
   /* internal error handlers */
@@ -117,13 +118,18 @@ Plotter _X_drawable_default_plotter =
   /* elements specific to the X11 and X11 Drawable device drivers */
   (Drawable)NULL,		/* an X drawable (e.g. a window) */
   (Drawable)NULL,		/* an X drawable (e.g. a pixmap) */
+  (Pixmap)NULL,			/* used if double buffering */
   (Fontrecord *)NULL,		/* head of list of retrieved X fonts */
+  (Colorrecord *)NULL,		/* head of list of retrieved color cells */
   (Display *)NULL,		/* display */
   (Colormap)NULL,		/* colormap */
+  false,			/* speed up animation by double buffering? */
+  0,				/* number of frame in page */
   /* elements specific to the X11 device driver */
   (XtAppContext)NULL,		/* application context */
   (Widget)NULL,			/* toplevel widget */
   (Widget)NULL,			/* Label widget */
+  false,			/* using private colormap? */
   false,			/* window(s) disappear on Plotter deletion? */
 #endif /* X_DISPLAY_MISSING */
 

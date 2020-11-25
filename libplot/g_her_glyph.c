@@ -1,11 +1,11 @@
 /* This file defines the arrays _occidental_vector_glyphs[] and
    _oriental_vector_glyphs[].  The first array includes the standard
    (`occidental') Hershey glyphs digitized by Dr. Allen V. Hershey, some
-   glyphs due to other people, and his Japanese Hiraga and Katakana glyphs.
-   The second array includes his digitizations of Japanese ideographic
-   symbols (Kanji glyphs).  It originally included the Hiragana and
-   Katakana glyphs as well, but they were moved to the first array because
-   some people may not wish to include Kanji support.
+   glyphs due to other people, and his Japanese Hiragana and Katakana
+   glyphs.  The second array includes his digitizations of Japanese
+   ideographic symbols (Kanji glyphs).  It originally included the Hiragana
+   and Katakana glyphs as well, but they were moved to the first array
+   because some people may not wish to include Kanji support.
 
    Dr. Hershey digitized the glyphs c. 1967, at what is now the U.S. Naval
    Surface Weapons Center in Dahlgren, Virginia.  For many years he
@@ -85,8 +85,8 @@
    Graphics, Fall 1974, pp. 22-23).  As well, it includes some freeware
    glyphs developed by Thomas Wolff <wolff@inf.fu-berlin.de> and
    distributed as part of the Ghostscript distribution.  The Beach and
-   Wolff glyphs are used in the HersheySymbol font.  Locally developed
-   glyphs have been added too.  
+   Wolff glyphs are used in the HersheySymbol fonts.  Locally developed
+   glyphs (accented characters, etc.) have been added too.
 
    The Japanese Hiragana and Katakana glyphs digitized by Dr. Hershey,
    formerly located among the `oriental' glyphs, have been placed in slots
@@ -99,41 +99,43 @@
    strings consisting of pairs of printable ascii characters in the range
    0x20 to 0x7e, i.e. SP (ascii space) through ~ (ascii tilde).  Each
    character in the range [0x20,0x7e] encodes an integer.  The integer may
-   be obtained from the character by subtracting 'R', i.e, 0x52.  So
-   integers in the range [-0x32,0x2c], i.e., [-50,44], may be represented.
-   The integers appearing in the occidental Hershey glyphs are restricted
-   to the range [-41,41], and those in the oriental glyphs to the range
-   [-12,13].
+   be obtained from the character by subtracting 'R', i.e, 0x52.  Integers
+   in the range [-0x32,0x2c], i.e., [-50,44], may be represented in this
+   way.  Actually, all integers appearing in the occidental Hershey glyphs
+   are restricted to the range [-41,41], and those in the oriental glyphs
+   are restricted to the range [-12,13].
 
-   (Exception: the non-Hershey pointing hand glyphs, #4040--#4043, which
-   are due to Nelson Beebe, include integers drawn from the range [-50,50].
-   So the four corresponding strings include characters drawn from outside
-   the printable ASCII range, e.g. \204 (i.e. 0x84), which represents 50.)
+   (Note: the non-Hershey pointing hand glyphs, which are due to Nelson
+   Beebe and are included here as 4040..4043 in the
+   _occidental_vector_glyphs[] array, include integers drawn from the range
+   [-50,50].  So the four corresponding strings include characters drawn
+   from outside the printable ASCII range, e.g. \204 (i.e. 0x84), which
+   represents 50.)
 
    The first two characters in each string encode the x range
    (xinit,xfinal) of a glyph.  (The `width' of the glyph, as distinct from
    the x extent of its bounding box, is xfinal - xinit.)  Subsequent pairs
-   encode (x1,y1),(x2,y2),(x3,y3),..., the coordinates of points.  The
-   glyph is drawn by moving to (x1,y1), stroking a vector to (x2,y2),
+   encode (x1,y1),(x2,y2),(x3,y3),..., i.e., the coordinates of points.
+   The glyph is drawn by moving to (x1,y1), stroking a vector to (x2,y2),
    stroking a vector to (x3,y3), etc.  The pair (-50,0), which is encoded
    as the pair of characters " R", if encountered in the string is
-   interpreted in a special way: it signals that the vector immediately
-   following should be draw with pen up, i.e., should be interpreted simply
-   as a motion directive.
+   interpreted as a `pen up' command: the vector immediately following
+   should be drawn with pen up, i.e., should be interpreted as a motion
+   command rather than a drawing command.
 
    (The pair (-50,0) could conceivably appear in the abovementioned
    pointing hand glyphs as the coordinates of a vector endpoint, but
    fortunately it does not.  So Jim Hurt's encoding scheme works, even for
-   the pointing hands.)  */
+   the four pointing hands.)  */
 
 #include "sys-defines.h"
 #include "plot.h"
 #include "extern.h"
 
-#define NUM_OCCIDENTAL_VECTOR_GLYPHS 4400 /*should agree with val in controlify.c */
-#define NUM_ORIENTAL_VECTOR_GLYPHS 5500 /* should agree with value in controlify.c */
+#define NUM_OCCIDENTAL_VECTOR_GLYPHS 4400 /*should agree with val in g_cntrlify.c */
+#define NUM_ORIENTAL_VECTOR_GLYPHS 5500 /* should agree with value in g_cntrlify.c */
 
-const char *_occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
+const char * const _occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
 {
 /******** Hershey Glyphs 0 to 99 ********/
   "", "MWRMNV RRMVV RPSTS", "MWOMOV ROMSMUNUPSQ ROQSQURUUSVOV", "MXVNTMRMPNOPOSPURVTVVU", "MWOMOV ROMRMTNUPUSTURVOV", "MWOMOV ROMUM ROQSQ ROVUV", "MVOMOV ROMUM ROQSQ", "MXVNTMRMPNOPOSPURVTVVUVR RSRVR", "MWOMOV RUMUV ROQUQ", "PTRMRV", "NUSMSTRVPVOTOS", "MWOMOV RUMOS RQQUV", "MVOMOV ROVUV", "LXNMNV RNMRV RVMRV RVMVV", "MWOMOV ROMUV RUMUV", "MXRMPNOPOSPURVSVUUVSVPUNSMRM", "MWOMOV ROMSMUNUQSROR", "MXRMPNOPOSPURVSVUUVSVPUNSMRM RSTVW", "MWOMOV ROMSMUNUQSROR RRRUV", "MWUNSMQMONOOPPTRUSUUSVQVOU", "MWRMRV RNMVM", "MXOMOSPURVSVUUVSVM", "MWNMRV RVMRV", "LXNMPV RRMPV RRMTV RVMTV", "MWOMUV RUMOV", "MWNMRQRV RVMRQ", "MWUMOV ROMUM ROVUV", "MWRMNV RRMVV RPSTS", "MWOMOV ROMSMUNUPSQ ROQSQURUUSVOV", "MVOMOV ROMUM", "MWRMNV RRMVV RNVVV", "MWOMOV ROMUM ROQSQ ROVUV", "MWUMOV ROMUM ROVUV", "MWOMOV RUMUV ROQUQ", "MXRMPNOPOSPURVSVUUVSVPUNSMRM RQQTR RTQQR", "PTRMRV", "MWOMOV RUMOS RQQUV", "MWRMNV RRMVV", "LXNMNV RNMRV RVMRV RVMVV", "MWOMOV ROMUV RUMUV", "MWOMUM RPQTR RTQPR ROVUV", "MXRMPNOPOSPURVSVUUVSVPUNSMRM", "MWOMOV RUMUV ROMUM", "MWOMOV ROMSMUNUQSROR", "MWOMRQOV ROMUM ROVUV", "MWRMRV RNMVM", "MWNONNOMPMQNRPRV RVOVNUMTMSNRP", "LXRMRV RPONPNSPTTTVSVPTOPO", "MWOMUV RUMOV", "LXRMRV RNOOPOSQTSTUSUPVO", "MXOVQVOROPPNRMSMUNVPVRTVVV", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 
@@ -220,7 +222,7 @@ const char *_occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
   /* BEGINNING OF NON-HERSHEY GLYPHS */
 
   /* UGS characters designed by Bob Beach at SLAC.  Used in ISO-Latin-1,
-     Symbol fonts (plus over/underbar). */
+     HersheySymbol fonts (plus over/underbar). */
   
   /* arrowboth, prob. less good than Wolff [4001] */
   "CaKPHRKT RNMIRNW RIR[R RVM[RVW RYP\\RYT",
@@ -265,6 +267,7 @@ const char *_occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
   /* lambdabar [4022] */
   "H\\KFMFOGPHQJWXXZY[ RMFOHPJVXWZY[Z[ RRMJ[ RRMK[ RUGKP",
   /* undefined [4023] */
+  /* NOTE: position of this glyph is #defined as `UNDE' in extern.h */
   "F^J[Z[ RZWJW RJSZS RZOJO RJKZK RZGJG RJCZC",
   
   /* 16 UNUSED SLOTS [4024--4039] */
@@ -278,7 +281,7 @@ const char *_occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
   " \204.l'm*n.l/i/a-c*[+L-G.H0H-E)K(\\*f-k.l RKgMiPiRh RR[TWNW R\\MaTaZ]` Refdead]e\\i`lckefddabT]NWOUYL\\MeKmKpJxJ}H\200D\177B RvBvDzE\177C\177BvBmCVCQB8D,J+L+[/a7eIgOgRhVi`l", " \2048v7}6z8v;uCuAwIzXy]w\\v\\t_wY{H|>z9w8v R=Y;W;T<R RIRMPMV RWHPCJCDG R>??@@C?G;H8D9A>?@@BCGPMVOUXKWHY?Y7Z4Z,\\'`$b% Rb.`._*a%b%b.a7aNbS`lZxXyIyCu?m=[=U<R;N8D", " \204?f@eCdGeHiDlAk?f@dCbP]VWUUKLHM?K7K4J,J'H$D%B R.B.D*E%C%B.B7CNCSBlDxJyLy[uame[gUgRhNiDl RG`CZCTHM RR[PWVW RYgWiTiRh Rvl}mznvluiuawcz[yLwGvHtHwE{K|\\zfwkvl", " \2048`;V<R=O=I?7C/I+X+Z,`8bQaVambvb\177a\177_z`vbv Rb\177`\200\\}ZxZpYmYeW\\XYOOMNGTBa@d>e9c8`;\\?]@a?d>e RD]JaPaW\\ RIRMTMN R=K;M;P<R R8.7'6*8.;/C/A-I*X+]-\\.\\0_-Y)H(>*9-8.",
 
   /* Wolff symbol glyphs (freeware, designed by Thomas Wolff
-     <wolff@inf.fu-berlin.de>), used to fill holes in HersheySymbol font */
+     <wolff@inf.fu-berlin.de>), used in HersheySymbol fonts */
   
   /* arrowvertex [4044] */
   "JZR3Rk",
@@ -513,7 +516,7 @@ const char *_occidental_vector_glyphs[NUM_OCCIDENTAL_VECTOR_GLYPHS] =
 };
 
 #ifndef NO_KANJI
-const char *_oriental_vector_glyphs[NUM_ORIENTAL_VECTOR_GLYPHS] =
+const char * const _oriental_vector_glyphs[NUM_ORIENTAL_VECTOR_GLYPHS] =
 {
 /******** Oriental Hershey Glyphs 0 to 99 ********/
   "", "D_GQ]QZOXQ RXQ[P", "", "", "", "", "", "D_GG]G[EYG RYG\\F RQGPNORNTLWJYG[ RRGQNPRNVLXIZG[ RQMYM RXMYL[MYP RYMXTWXVYTZQY RWYVZUZ RZMYTXXWZV[U[TZ", "D_II[IYGWI RWIZH RKQYQWOUQ RUQXP RGZ]Z[XYZ RYZ\\Y", "D_GG]G[EYG RYG\\F RQGQ[ RRGR[ RTMVNXQYSZSZRYPWNTMRM", "", "", "", "", "", "D_IHZHXFVH RVHYG RQHNZ RRHOZ RIPVP RUPVOXPWR RVPUZ RWPWRVZ RGZ]Z[XYZ RYZ\\Y", "D_GG]G[EYG RYG\\F RQGQLPQNULXJZG\\ RRGRMQROVLYI[G\\ RSOTRVVXY[\\][ RYY[[ RSOUSXWZY][ RIN[NYLWN RWNZM", "D_GG]G[EYG RYG\\F RTJVITHRLOPKTGW RUITKQOMSIVGW RQOQ\\ RRMR\\ RWPYR[U\\U\\TZRWPUO", "", "", "", "", "", "", "D_GG]G[EYG RYG\\F RYGYXXZW[ RYYYZX[ RZGZZY\\X\\W[UZ RKLKV RKLLMLV RLMSM RSMSU RRMSLTMTU RLTST", "", "D_IG[GYEWG RWGZF RQGQ] RRGR] RKKLMMPNPNOMMJJ RXJUP RXJYKUP RGR]R[PYR RYR\\Q", "D_HG\\GZEXG RXG[F RRGR[ RSGS[ RMPNOLNL[ RMOM[ RSP[PYNWP RWPZO RG[][[YY[ RY[\\Z", "", "", "", "", "", "D_GG]G[EYG RYG\\F RRGOM RRGSHOM RLMJLJ[ RKMK[ RKMXM RWMXLZMYO RXMX[ RYMY[ RKSXS RKYXY", "D_GG]G[EYG RYG\\F RQGQV RRGRV RKLIKI\\ RJLJ\\ RJLYL RXLYK[LZN RYLYXXZW[ RYYYZX[ RZLZZY\\X\\W[UZ RMOMW RMONONW RNVUV RUOUW RUOVOVW", "D_GG]G[EYG RYG\\F RQGQU RRGRU RLKJJJ\\ RKKK\\ RKKXK RWKXJZKYM RXKXXWZV[ RXYXZW[ RYKYZX\\W\\V[TZ RKPXP RGU]U[TZU", "", "", "", "", "", "", "", "D_NGN[ ROGO[ RTGT[ RUGU[ RGG]G[EYG\\F RKMILIU RJMJU RJMYM RXMYL[MZO RYMYU RZMZU RJTYT RG[][[YY[\\Z", "", "", "", "", "", "D_GG]G[EYG RYG\\F ROGMM RPGNM RMMRM RRMRWQX RQMRLSMSWRYQXOW RLOMPNROROQNPLO RWNSR RWNXOSR RKURS RKULVRS RTSUTWWXWXVWUTS RHMH\\ RHMIMI\\ RI[Z[ RZMZ\\ RZM[M[\\", "D_GG]G[EYG RYG\\F RQGQV RRGRV RLKLW RLKMLMW RMLVL RVLVW RULVKWLWW RMQVQ RMVVV RHKH\\ RHKIKI\\ RI[Z[ RZKZ\\ RZK[K[\\", "", "", "D_LGJFJOITHV RKGKOJSIUGW RKGXG RWGXFZGYI RXGXM RYGYM RKLXL RULVNXQ[S]R RVNXPZQ]R RMPMX RMPNQNX RNQUQ RUQUX RTQUPVQVX RNTUT RNWUW RH[\\[ZZY[", "D_GG]G[EYG RYG\\F RTGPJKMGO RVGPKLMGO RQJQP RRIRP RVKXLZN[N[MYLVK RGR]R[PYR RYR\\Q RQRQ[ RRRR[ RMVNULUL[ RMVM[ RRVZVXUWV RG[][[YY[ RY[\\Z", "", "", "", "D_GG]G[EYG RYG\\F RQGPJ RRGQI RSGQJ RMJKIKS RLJLS RLJWJ RVJWIYJXL RWJWS RXJXS RLMWM RLPWP RKSXS RNTKWGZ RNTOUKXGZ RNVXV RWUUWQZO[L\\H] RWUXVTYP[M\\H] RNVQYT[W\\[]]\\ ROWRYTZW[]\\", "", "", "", "D_GG]G[EYG RYG\\F ROGOS RPGPS RTGTS RUGUS RIJIO RIJJKJO RJKZK RZKZO RYKZJ[K[O RIO[O RGS]S[QYS RYS\\R RMVM[N\\V\\W[VZ RMVNVNZO[U[VZVX RQURXSXSWQU RJWIYHZH[I[JYJW RYW[Y\\[][]Z\\YYW", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "D_RHSGQFQ] RRGR] RJLHKHV RILIV RILZL RYLZK\\L[N RZLZV R[L[V RIUZU", "D_RHSGQFQLPPORMTJV RRGRMQPPRNTJV RRNSQTSVUWTUSSQ RJKHJH\\ RIKI\\ RIKZK RYKZJ\\K[M RZKZXYZX[ RZYZZY[ R[K[ZZ\\Y\\X[UZ", "", "", "", "", "", "", "", "", "", "D_KGIFIV RJGJV RJGYG RXGYF[GZI RYGYV RZGZV RQGQ\\ RRGR\\ RJNYN RJUYU", "", "", "", "D_RHSGQFQ\\ RRGR\\ RGL]L[JYL RYL\\K RPLMRJVGY RQMOQMTKVGY RSMTPURXV[Y]X RYV[X RSMTOWSZV]X RMWVWUVTW", "D_QFQ[ RQFRFR[ RJHJP RJHKHKP RKOXO RXHXP RXHYHYP RHSH\\ RHSISI\\ RI[Z[ RZSZ\\ RZS[S[\\", "", "", 
@@ -627,5 +630,5 @@ const char *_oriental_vector_glyphs[NUM_ORIENTAL_VECTOR_GLYPHS] =
   "", "", "", "D_QGQV RRGRV RLGJFJP RKGKP RKGXG RWGXFZGYI RXGXP RYGYP RKKXK RKOXO RISZSYRXS RGV]V[UZV RIXHZG[G\\H\\IZIX RMXN\\O\\O[MX RSXT\\U\\U[SX RXXZZ[\\\\\\\\[ZYXX", "D_QFQR RRFRR RJEJL RJEKFKL RKFXF RXFXL RWFXEYFYL RKIXI RJLYL RIOZOYNXO RGR]R[QZR RITGUGVHVIT RMTNVOVOUMT RTTUVVVVUTT RZT[V\\V\\UZT RQVQ[ RQVRVR[ RJXZXYWXX RG[][[ZZ[", "", "", "", "", "", "", "", "", "", "", "D_MGNFLFLM RMGMM RGISIQHPI RHMRMQLPM RIOIT RIOJPJT RJPOP ROPOT RNPOOPPPT RITPT RIUJXKXKWIU ROUNX ROUPVNX RGZRX RGZH[RX RWGXFVFVQ RWGWQ RRK]K[JZK RRQZQ RZQYTWWUYR[ RYQZP[QZTXWVYR[O\\ RSRTUVXYZ\\[]Z RTUVWYY]Z", "", "", "", "", "", "D_SEQEPG RSEPG RKFKM RKFLGLM RLGWG RWGWM RVGWFXGXM RLIWI RLKWK RKMXM RQOQU RRORU RJOJU RKOKU RJOYO RXOXU RYOYU RKRXR RJUYU RNUNZM\\L] ROUOZN\\L]J] RTUT] RUUU] RGX]X[WZX", "", "", "", "", "", "", "D_RFSEQEQK RRFRK RLHMGKGKK RLHLK RRHXHWGVH RGK]K[JZK RRNSMQMQY RRNRY RLMMNNPOPOONNLM RVMTQ RVMWNTQ RJRYRXQWR RPRMVKX RQSOUKX RSTTUVXWXWWVVST RHMH\\ RHMIMI\\ RI[Z[ RZMZ\\ RZM[M[\\", "", "", "", "", "", "", "", "", "", "", "", "D_RHRGSFQFQH RHH\\HZGYH RLHNLOLOKLH RVHTL RVHWITL RGL]L[KZL RLOJNJX RKOKX RKOXO RWOXNZOYQ RXOXX RYOYX RKSXS RKWXW RQOQ[R\\\\\\][\\Y R[[\\[\\Z RRORZS[Z[\\Y]V", "", "", "", "", "D_NELEJHGL RNEGL RMFSF RRFSEUGRH RSFRH RTFRHQI RJHJO RJHKIKO RKIXI RXIXO RWIXHYIYO RKLXL RJOYO RQIQ[R\\\\\\][\\Z RRIRZS[[[\\Z]X RIQIY RIQJRJY RJRYR RYRYY RXRYQZRZY RJUYU RJXYX", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "D_", 
 };
 #else  /* NO_KANJI */
-const char *_oriental_vector_glyphs[NUM_ORIENTAL_VECTOR_GLYPHS] = { };
+const char * const _oriental_vector_glyphs[NUM_ORIENTAL_VECTOR_GLYPHS] = { };
 #endif /* KANJI */

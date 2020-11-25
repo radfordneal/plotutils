@@ -338,6 +338,11 @@ main (argc, argv)
       return 0;
     }
 
+  parampl ("USE_DOUBLE_BUFFERING", "no");
+  if (bg_color)
+    /* select user-specified background color */
+    parampl ("BG_COLOR", bg_color);
+
   if ((handle = newpl (display_type, NULL, stdout, stderr)) < 0)
     {
       fprintf (stderr, "%s: error: could not open plot device\n", progname);
@@ -1305,10 +1310,14 @@ begin_page ()
   plotter_opened = true;
 
   /* set background color, set affine map from user frame to device frame */
-  if (bg_color)
-    bgcolorname (bg_color);
   erase();
   space (0, 0, TEK_WIDTH - 1, TEK_WIDTH - 1);
+
+  /* improve smoothness of plotted curves */
+  joinmod ("round");
+  /* may be necessary if zero-length lines are to display as points */
+  capmod ("round");
+
   /* optionally initialize pen color, font, fontsize, line width */
   if (pen_color)
     pencolorname (pen_color);

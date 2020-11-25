@@ -13,8 +13,8 @@ START-INFO-DIR-ENTRY
 * Appendices: (plotutils)Appendices.    More info on the plotting utilities
 END-INFO-DIR-ENTRY
 
-   This file documents version 2.1 of the GNU plotting utilities
-package.
+   This file documents version 2.1.1 of the GNU plotting utilities
+package, including GNU libplot 1.1.
 
    Copyright (C) 1989-1998 Free Software Foundation, Inc.
 
@@ -35,9 +35,9 @@ translation approved by the Foundation.
 
 File: plotutils.info,  Node: Top,  Next: Plotutils Intro,  Prev: (dir),  Up: (dir)
 
-   This is the documentation for version 2.1 of the GNU plotting
-utilities package.  The package consists of programs and functions for
-data plotting and vector graphics.
+   This is the documentation for version 2.1.1 of the GNU plotting
+utilities package, including GNU libplot 1.1.  The package consists of
+programs and functions for data plotting and vector graphics.
 
 * Menu:
 
@@ -59,8 +59,8 @@ The GNU Plotting Utilities
    The GNU plotting utilities currently consist of six user-level
 programs: `graph', `plot', `tek2plot', `spline', `ode', and `double'.
 Distributed along with them is GNU `libplot', a function library for
-device-independent two-dimensional vector graphics.  This section gives
-an overview of the plotting utilities and `libplot'.
+device-independent two-dimensional vector graphics, including vector
+graphics animations under the X Window System.
 
    `graph' is a program for plotting two-dimensional scientific data.
 It reads one or more data files containing datasets, and outputs a plot.
@@ -138,8 +138,9 @@ streams.  It is still under development and is not yet documented.
    Distributed along with the plotting utilities is GNU `libplot', the
 function library for device-independent two-dimensional vector graphics
 on which `graph', `plot', and `tek2plot' are based.  `libplot' can draw
-graphics on X Window System displays, and can generate graphical output
-in any of five additional formats.  This includes (1) output in
+graphics on X Window System displays, and perform smooth,
+double-buffered animation.  It can also generate graphical output in
+any of five additional formats.  This includes (1) output in
 encapsulated Postscript format that may be included in another
 document, edited with the `idraw' drawing editor, or sent directly to a
 printer, (2) output that may be displayed and edited with the `xfig'
@@ -148,16 +149,15 @@ to a Hewlett-Packard LaserJet printer or plotter, (4) output that may
 be displayed on a Tektronix 4014 terminal or emulator, and (5) output
 in the device-independent GNU graphics metafile format.
 
-   `libplot' provides the ability to draw such objects as lines, open
-and closed polylines, arcs (both circular and elliptic), circles and
-ellipses, points, markers, and text strings.  The filling of objects
-other than points, markers, and text strings is supported (fill color,
-as well as pen color, may be set arbitrarily).  A wide variety of line
-types and marker symbols is supported.  The support for drawing text
+   `libplot' can draw such objects as lines, open and closed polylines,
+arcs (both circular and elliptic), circles and ellipses, points, marker
+symbols, and text strings.  The filling of objects other than points,
+marker symbols, and text strings is supported (fill color, as well as
+pen color, may be set arbitrarily).  The support for drawing text
 strings is extensive.  The X Window System, Postscript, and `xfig'
 drivers support the 35 standard Postscript fonts, and the HP-GL/2
 driver supports the 45 standard PCL 5 fonts.  All drivers, including
-the Tektronix and metafile drivers, support a set of 16 Hershey vector
+the Tektronix and metafile drivers, support a set of 17 Hershey vector
 fonts, including HersheyCyrillic.  Text strings may include subscripts
 and superscripts, and may include characters chosen from more than one
 font in a typeface.  They may include many non-alphanumeric characters.
@@ -166,7 +166,7 @@ Allen V. Hershey at the U.S. Naval Surface Weapons Center, which
 includes many curious symbols, is built into `libplot'.  Japanese text
 strings in the so-called EUC (Extended Unix Code) format may be also be
 drawn.  Such strings may include both syllabic characters (Hiragana and
-Katakana) and ideographic characters (Kanji).  A library of 603
+Katakana) and ideographic characters (Kanji).  A library of over 600
 Japanese Kanji digitized by Dr. Hershey is built into `libplot'.
 
    The drawing editors `idraw' and `xfig' are not distributed along
@@ -434,7 +434,7 @@ the default font (which is Helvetica, unless `-T hpgl' or `-T tek' is
 specified).  Font names are case-insensitive, so `-F times-roman' will
 work equally well.  The available fonts include 35 Postscript fonts
 (for all variants of `graph' other than `graph -T hpgl' and `graph -T
-tek'), 45 PCL 5 fonts (for `graph -T hpgl'), and 16 Hershey fonts.  The
+tek'), 45 PCL 5 fonts (for `graph -T hpgl'), and 17 Hershey fonts.  The
 Hershey fonts include HersheyCyrillic, for Russian, and HersheyEUC, for
 Japanese.  For a discussion of the available fonts, see *Note Text
 Fonts::.
@@ -812,9 +812,10 @@ after each `--reposition X Y' option.
 
 `-g GRID_STYLE'
 `--grid-style GRID_STYLE'
-     (Integer, default 2.)  Set the grid style for the plot to be
-     GRID_STYLE.  Grid styles 0 through 3 are progressively more fancy,
-     but style 4 is a somewhat different style.
+     (Integer in the range 0...4, default 2.)  Set the grid style for
+     the plot to be GRID_STYLE.  Grid styles 0 through 3 are
+     progressively more fancy, but style 4 is a somewhat different
+     style.
 
        0. no axes, tick marks or labels.
 
@@ -965,9 +966,11 @@ after each `--reposition X Y' option.
 
 `--bg-color NAME'
      (String, default "white".)  Set the color used for the plot
-     background to be NAME.  This is relevant only to `graph -T X'.
-     An unrecognized name sets the color to the default.  For
+     background to be NAME.  This is currently relevant only to `graph
+     -T X'.  An unrecognized name sets the color to the default.  For
      information on what names are recognized, see *Note Color Names::.
+     The environment variable `BG_COLOR' may equally well be used to
+     specify the background color.
 
 `--bitmap-size BITMAP_SIZE'
      (String, default "570x570".)  Set the size of the graphics
@@ -1013,8 +1016,8 @@ after each `--reposition X Y' option.
      devices (e.g., old Postscript printers and HP-GL plotters) have
      limited buffer sizes.  The environment variable `MAX_LINE_LENGTH'
      may also be used to specify the maximum line length.  This option
-     has no effect in `graph -T tek' or raw `graph', since they draw
-     polylines in real time.
+     has no effect on `graph -T tek' or raw `graph', since they draw
+     polylines in real time and have no buffer limitations.
 
 `--page-size PAGESIZE'
      (String, default "letter".)  Set the size of the page on which the
@@ -1121,25 +1124,18 @@ from files.
 
     `g'
           The ASCII `table' format produced by the `gnuplot' plotting
-          program.
-
-    `f'
-          Single precision binary format.  Each input file is a
-          sequence of single precision floating point numbers,
+          program.  Single precision binary format.  Each input file is
+          a sequence of single precision floating point numbers,
           interpreted as forming pairs (x,y).  Successive datasets are
           separated by a single occurrence of the quantity `MAXFLOAT',
           which is the largest possible single precision floating point
           number.  On most machines this is approximately 3.4x10^38.
-
-    `d'
           Double precision binary format.  Each input file is a
           sequence of double precision floating point numbers,
           interpreted as forming pairs (x,y).  Successive datasets are
           separated by a single occurrence of the quantity `MAXDOUBLE',
           which is the largest possible double precision floating point
           number.  On most machines this is approximately 1.8x10^308.
-
-    `i'
           Integer binary format.  Each input file is a sequence of
           integers, interpreted as forming pairs (x,y).  Successive
           datasets are separated by a single occurrence of the quantity
@@ -1174,11 +1170,10 @@ color/monochrome) that each dataset has.
 `-m LINE_MODE'
 `--line-mode LINE_MODE'
      (Integer, default 1.) LINE_MODE specifies the mode (i.e., style)
-     of the lines drawn between successive points in a dataset.  If the
-     dataset is being rendered in monochrome, the interpretation of
-     LINE_MODE is as follows.
-
-       0. no line at all (points are disconnected)
+     of the lines drawn between successive points in a dataset.  By
+     convention, linemode #0 means no line at all (points are
+     disconnected).  If the dataset is being rendered in monochrome, the
+     interpretation of LINE_MODE is as follows.
 
        1. solid
 
@@ -1194,9 +1189,7 @@ color/monochrome) that each dataset has.
      five linemodes repeats.  So besides linemode #0, there are a total
      of five distinct monochrome linemodes.  If the dataset is being
      rendered in color (as may be requested with the `-C' option), the
-     interpretation of linemodes #0 through #5 is instead
-
-       0. no line at all (points are disconnected)
+     interpretation of linemodes #1 through #5 is instead
 
        1. red, solid
 
@@ -1226,9 +1219,8 @@ color/monochrome) that each dataset has.
      is being drawn to connect the data points.  You may request that
      symbols be drawn without any line connecting them by using the
      `-m' option to specify a negative linemode (see above).  The
-     following table lists the first few marker symbols.
-
-       0. no symbol at all
+     following table lists the first few marker symbols (by convention,
+     symbol #0 means no symbol at all).
 
        1. dot
 
@@ -1303,11 +1295,11 @@ Multiplot options
 plots on a display, or a page, at once).
 
 `--reposition X Y SIZE'
-     (Floats, defaults 0.0, 0.0, 1.0.)  Set the `virtual display' within
-     which the next plot will be drawn to be a square of size SIZE,
-     with lower left corner (X,Y).  This is in the coordinate frame in
-     which the physical display is a unit square with lower left corner
-     (0,0).
+     (Floats, defaults 0.0, 0.0, 1.0) Set the `virtual display' within
+     which the next plot will be drawn to be a square of size SIZE, with
+     lower left corner (X,Y).  Normalized coordinates are used: (0,0)
+     means the lower left corner of the physical display and (1,1)
+     means the upper right corner of the physical display.
 
 `--blankout BLANKOUT_FRACTION'
      (Float, default 1.3.)  When drawing each additional plot of a
@@ -1355,7 +1347,7 @@ Informational options
      `graph -T X', `graph -T ps', and `graph -T fig' each support the
      35 standard Postscript fonts.  `graph -T hpgl' supports the 45
      standard PCL 5 fonts.  All four, together with `graph -T tek',
-     support a set of 16 Hershey vector fonts.  Raw `graph' in
+     support a set of 17 Hershey vector fonts.  Raw `graph' in
      principle supports any font, since its output must be translated to
      other formats with `plot'.
 
@@ -1371,11 +1363,11 @@ Environment variables
 
    The behavior of `graph' is affected by several environment
 variables.  We have already mentioned the environment variables
-`BITMAPSIZE', `PAGESIZE', `MAX_LINE_LENGTH', and `ROTATE'.  They simply
-serve as backups for the options `--bitmap-size', `--page-size',
-`--max-line-length', and `--rotate'.  The remaining environment
-variables are specific to individual display devices.  They control
-device driver parameters.
+`BITMAPSIZE', `PAGESIZE', `BG_COLOR', `MAX_LINE_LENGTH', and `ROTATE'.
+They simply serve as backups for the options `--bitmap-size',
+`--page-size', `--bg-color', `--max-line-length', and `--rotate'.  The
+remaining environment variables are specific to individual display
+devices.  They control device driver parameters.
 
    `graph -T X', which pops up a window on an X Window System display
 and draws graphics in it, checks the `DISPLAY' environment variable.
@@ -1507,12 +1499,12 @@ editor, you would do
 
    `plot' may behave differently depending on the environment in which
 it is invoked.  In particular, `plot -T ps', `plot -T fig', and `plot
--T hpgl' are affected by the environment variable `PAGESIZE'.  `plot -T
-X' is affected by the environment variables `DISPLAY' and `BITMAPSIZE',
-and `plot -T tek' is affected by the environment variable `TERM'.
-There are also several environment variables that affect the operation
-of `plot -T hpgl'.  For a complete discussion of the effects of the
-environment on `plot', see *Note plot Environment::.
+-T hpgl' are affected by the environment variable `PAGESIZE'.  `plot
+-T X' is affected by the environment variables `DISPLAY' and
+`BITMAPSIZE', and `plot -T tek' is affected by the environment variable
+`TERM'.  There are also several environment variables that affect the
+operation of `plot -T hpgl'.  For a complete discussion of the effects
+of the environment on `plot', see *Note plot Environment::.
 
 
 File: plotutils.info,  Node: plot Invocation,  Next: plot Environment,  Prev: plot Examples,  Up: plot
@@ -1584,8 +1576,8 @@ specified, the standard input is read.
      devices (e.g., old Postscript printers and HP-GL plotters) have
      limited buffer sizes.  The environment variable `MAX_LINE_LENGTH'
      may also be used to specify the maximum line length.  This option
-     has no effect in `plot -T tek' or raw `plot', since they draw
-     polylines in real time.
+     has no effect on `plot -T tek' or raw `plot', since they draw
+     polylines in real time and have no buffer limitations.
 
 `--page-size PAGESIZE'
      (String, default "letter".) Set the size of the page on which the
@@ -1623,9 +1615,11 @@ such directives.
 
 `--bg-color NAME'
      (String, default "white".)  Set the color used for the drawing
-     background to be NAME.  This is relevant only to `plot -T X'.
-     An unrecognized name sets the color to the default.  For
+     background to be NAME.  This is currently relevant only to `plot
+     -T X'.  An unrecognized name sets the color to the default.  For
      information on what names are recognized, see *Note Color Names::.
+     The environment variable `BG_COLOR' may equally well be used to
+     specify the background color.
 
 `-f FONT_SIZE'
 `--font-size FONT_SIZE'
@@ -1715,7 +1709,7 @@ in plot(5) format includes only one page of graphics.
      `plot -T X', `plot -T ps', and `plot -T fig' each support the 35
      standard Postscript fonts.  `plot -T hpgl' supports the 45 standard
      PCL 5 fonts.  All four, together with `plot -T hpgl' and `plot -T
-     tek', support a set of 16 Hershey vector fonts.  Raw `plot' in
+     tek', support a set of 17 Hershey vector fonts.  Raw `plot' in
      principle supports any font, since its output must be translated
      to other formats by a later invocation of `plot'.
 
@@ -1731,11 +1725,11 @@ Environment variables
 
    The behavior of `plot' is affected by several environment variables.
 We have already mentioned the environment variables `BITMAPSIZE',
-`PAGESIZE', `MAX_LINE_LENGTH', and `ROTATE'.  They simply serve as
-backups for the options `--bitmap-size', `--page-size',
-`--max-line-length', and `--rotate'.  The remaining environment
-variables are specific to individual display devices.  They control
-device driver parameters.
+`PAGESIZE', `BG_COLOR', `MAX_LINE_LENGTH', and `ROTATE'.  They simply
+serve as backups for the options `--bitmap-size', `--page-size',
+`--bg-color', `--max-line-length', and `--rotate'.  The remaining
+environment variables are specific to individual display devices.  They
+control device driver parameters.
 
    `plot -T X', which pops up a window on an X Window System display
 and draws graphics in it, checks the `DISPLAY' environment variable.
@@ -1919,9 +1913,11 @@ specified, the standard input is read.
 
 `--bg-color NAME'
      (String, default "white".)  Set the color used for the background
-     to be NAME.  This is relevant only to `tek2plot -T X'.
+     to be NAME.  This is currently relevant only to `tek2plot -T X'.
      An unrecognized name sets the color to the default.  For
      information on what names are recognized, see *Note Color Names::.
+     The environment variable `BG_COLOR' may equally well be used to
+     specify the background color.
 
 `--bitmap-size BITMAP_SIZE'
      (String, default "570x570".)  Set the size of the graphics
@@ -1944,7 +1940,8 @@ specified, the standard input is read.
      devices (e.g., old Postscript printers and HP-GL plotters) have
      limited buffer sizes.  The environment variable `MAX_LINE_LENGTH'
      may also be used to specify the maximum line length.  This option
-     has no effect in raw `tek2plot', which has no buffer limitations.
+     has no effect on raw `tek2plot', since it draws polylines in real
+     time and has no buffer limitations.
 
 `--page-size PAGESIZE'
      (String, default "letter".) Set the size of the page on which the
@@ -1992,16 +1989,16 @@ specified, the standard input is read.
 
 `--use-tek-fonts'
      Use the bitmap fonts that were used on the original Tektronix
-     4010/4014 terminal.  This option is relevant only to `tek2plot -T
-     X'.  The four relevant bitmap fonts are distributed as part of the
-     plotting utilities package under the names `tekfont0'...`tekfont3'.
-     They may readily be installed on any modern X Windows server.  For
-     this option to work properly, you must also select a window size of
-     1024x1024 pixels, either by using the `--bitmap-size 1024x1024'
-     option or by setting the value of the `Xplot.geometry' resource.
-     The reason for this restriction is that bitmap fonts, unlike the
-     scalable fonts that the plotting utilities normally use, may not be
-     rescaled.
+     4010/4014 terminal.  This option is relevant only to `tek2plot
+     -T X'.  The four relevant bitmap fonts are distributed as part of
+     the plotting utilities package under the names
+     `tekfont0'...`tekfont3'.  They may readily be installed on any
+     modern X Windows server.  For this option to work properly, you
+     must also select a window size of 1024x1024 pixels, either by
+     using the `--bitmap-size 1024x1024' option or by setting the value
+     of the `Xplot.geometry' resource.  The reason for this restriction
+     is that bitmap fonts, unlike the scalable fonts that the plotting
+     utilities normally use, may not be rescaled.
 
      This option is useful only if you have a file in Tektronix format
      that draws text using native Tektronix fonts.  Tektronix files
@@ -2028,7 +2025,7 @@ In this case `tek2plot' outputs a graphics metafile.
      `tek2plot -T X', `tek2plot -T ps', and `tek2plot -T fig' each
      support the 35 standard Postscript fonts.  `tek2plot -T hpgl'
      supports the 45 standard PCL 5 fonts.  All four, together with
-     `tek2plot -T hpgl', support a set of 16 Hershey vector fonts.  Raw
+     `tek2plot -T hpgl', support a set of 17 Hershey vector fonts.  Raw
      `tek2plot' in principle supports any font, since its output must be
      translated to other formats with `plot'.
 
@@ -2047,11 +2044,11 @@ variables, which are the same as those that affect `graph' and `plot'.
 For convenience, we list them here.
 
    We have already mentioned the environment variables `BITMAPSIZE',
-`PAGESIZE', `MAX_LINE_LENGTH', and `ROTATE'.  They simply serve as
-backups for the options `--bitmap-size', `--page-size',
-`--max-line-length', and `--rotate'.  The remaining environment
-variables are specific to individual display devices.  They control
-device driver parameters.
+`PAGESIZE', `BG_COLOR', `MAX_LINE_LENGTH', and `ROTATE'.  They simply
+serve as backups for the options `--bitmap-size', `--page-size',
+`--bg-color', `--max-line-length', and `--rotate'.  The remaining
+environment variables are specific to individual display devices.  They
+control device driver parameters.
 
    `tek2plot -T X', which pops up a window on an X Window System
 display and draws graphics in it, checks the `DISPLAY' environment
@@ -2068,7 +2065,7 @@ output should be modern HP-GL/2.  By default, `tek2plot -T hpgl' will
 draw with a fixed set of pens.  Which pens are present may be specified
 by setting the `HPGL_PENS' environment variable.  If `HPGL_VERSION' is
 "1" or "1.5", the default value of `HPGL_PENS' is "1=black"; if
-`HPGL_VERSION' is "2", the default value of `HPGL_PENS' is
+`HPGL_VERSION' is "2", the default value is
 "1=black:2=red:3=green:4=yellow:5=blue:6=magenta:7=cyan".  The format
 should be self-explanatory.  `HPGL_PENS' may specify a color for any
 pen in the range #1...#31.  For information on what color names are
@@ -2469,36 +2466,28 @@ output file.
           points need not appear on different lines.  But if a blank
           line occurs (i.e., two newlines in succession are seen), it is
           interpreted as the end of a dataset, and the beginning of the
-          next.
-
-    `f'
-          Single precision binary format.  Each file is a sequence of
-          floating point numbers, interpreted as the t and y coordinates
-          of the successive data points in a dataset.  If y is
-          d-dimensional, there will be d+1 numbers for each point.
-          Successive datasets are separated by a single occurrence of
-          the quantity `MAXFLOAT', which is the largest possible single
-          precision floating point number.  On most machines this is
-          approximately 3.4x10^38.
-
-    `d'
-          Double precision binary format.  Each file is a sequence of
-          double precision floating point numbers, interpreted as the t
+          next.  Single precision binary format.  Each file is a
+          sequence of floating point numbers, interpreted as the t
           and y coordinates of the successive data points in a dataset.
           If y is d-dimensional, there will be d+1 numbers for each
           point.  Successive datasets are separated by a single
-          occurrence of the quantity `MAXDOUBLE', which is the largest
-          possible double precision floating point number.  On most
-          machines this is approximately 1.8x10^308.
-
-    `i'
-          Integer binary format.  Each file is a sequence of integers,
-          interpreted as the t and y coordinates of the successive data
-          points in a dataset.  If y is d-dimensional, there will be
-          d+1 numbers for each point.  Successive datasets are
-          separated by a single occurrence of the quantity `MAXINT',
-          which is the largest possible integer.  On most machines this
-          is 2^31-1.
+          occurrence of the quantity `MAXFLOAT', which is the largest
+          possible single precision floating point number.  On most
+          machines this is approximately 3.4x10^38.  Double precision
+          binary format.  Each file is a sequence of double precision
+          floating point numbers, interpreted as the t and y
+          coordinates of the successive data points in a dataset.  If y
+          is d-dimensional, there will be d+1 numbers for each point.
+          Successive datasets are separated by a single occurrence of
+          the quantity `MAXDOUBLE', which is the largest possible double
+          precision floating point number.  On most machines this is
+          approximately 1.8x10^308.  Integer binary format.  Each file
+          is a sequence of integers, interpreted as the t and y
+          coordinates of the successive data points in a dataset.  If y
+          is d-dimensional, there will be d+1 numbers for each point.
+          Successive datasets are separated by a single occurrence of
+          the quantity `MAXINT', which is the largest possible integer.
+          On most machines this is 2^31-1.
 
 `-a [STEP_SIZE [LOWER_LIMIT]]'
 `--auto-abscissa [STEP_SIZE [LOWER_LIMIT]]'
@@ -2836,10 +2825,10 @@ Then the sine curve will be traced out in three stages.  Since the
 output from each `step' statement ends with a blank line, `graph -T X'
 will treat each section of the sine curve as a different dataset.  If
 you are using a color display, each of the three sections will be
-plotted in a different color.  This is a feature provided by `graph -T
-X', which normally changes its linemode after each dataset it reads.
-If you do not like this feature, you may turn it off by using `graph -T
-X -B' instead of `graph -T X'.
+plotted in a different color.  This is a feature provided by `graph
+-T X', which normally changes its linemode after each dataset it reads.
+If you do not like this feature, you may turn it off by using `graph
+-T X -B' instead of `graph -T X'.
 
    In the above examples, you could use any of the other variants of
 `graph' instead of `graph -T X'.  For example, you could use `graph -T
@@ -3788,9 +3777,25 @@ File: plotutils.info,  Node: libplot,  Next: Appendices,  Prev: ode,  Up: Top
 `libplot', a Function Library
 *****************************
 
-   `libplot' is a library of functions for device-independent
-two-dimensional vector graphics.  This chapter documents version 1.0 of
-`libplot'.
+* Menu:
+
+* libplot Overview::	Programming with libplot: An overview
+* C Programming::	C programming with libplot
+* Functions::		A list of functions contained in libplot
+* Driver Parameters::	Device driver parameters
+
+
+File: plotutils.info,  Node: libplot Overview,  Next: C Programming,  Prev: libplot,  Up: libplot
+
+Programming with `libplot': An overview
+=======================================
+
+   GNU `libplot' is a library of functions for drawing two-dimensional
+vector graphics.  It can produce smooth, double-buffered animations for
+the X Window System, and graphical output in many different file
+formats.  It is `device-independent' in the sense that its API
+(application programming interface) is to a large extent independent of
+the choice of output device, or output format.
 
    The graphical objects which `libplot' can draw include paths,
 circles and ellipses, points, markers, and `adjusted labels' (justified
@@ -3807,16 +3812,16 @@ name, font size, and text angle.
    The fundamental abstraction provided by `libplot' is that of a
 *Plotter*.  A Plotter is an object with an interface for the drawing of
 vector graphics which is similar to the interface provided by a
-traditional pen plotter.  There are several types of Plotter, which
-differ in the display device they produce output for.  Any number of
-Plotters, of the same or different types, may exist simultaneously in an
+traditional pen plotter.  There are many types of Plotter, which differ
+in the display device they produce output for.  Any number of Plotters,
+of the same or different types, may exist simultaneously in an
 application.
 
    The drawing operations supported by Plotters of different types are
 identical, in agreement with the principle of device independence.  So a
 graphics application that is linked with `libplot' may easily be
-written so as to produce output for any or all of the supported display
-devices.
+written so as to produce output for any or all of the supported output
+formats.
 
    The following are the currently supported types of Plotter.
 
@@ -3868,8 +3873,8 @@ devices.
 
    A distinction among these types of Plotter is that all except X and
 X Drawable Plotters write graphics to a file or other output stream.  An
-X Plotter pops up its own windows, and an X Drawable Plotter
-manipulates one or two X drawables.
+X Plotter pops up its own windows, and an X Drawable Plotter draws
+graphics in one or two X drawables.
 
    Another distinction is that X, X Drawable, Tektronix and Metafile
 Plotters are real-time.  This means that they draw graphics or write to
@@ -3883,7 +3888,7 @@ definitions must be placed at the head of the output file.
    The most important operations supported by any Plotter are `openpl'
 and `closepl', which open and close it.  Graphics may be drawn, and
 drawing attributes set, only within an `openpl'...`closepl' pair.  The
-graphics produced by each `openpl'...`closepl' sequence constitute a
+graphics produced within each `openpl'...`closepl' pair constitute a
 `page'.  In principle, any Plotter may be opened and closed arbitrarily
 many times.  An X Plotter displays each page in a separate X window,
 and an HP-GL Plotter renders each page as a separate physical page.
@@ -3897,7 +3902,8 @@ graphics to the output stream.  Successive pages will, in effect, be
 concatenated.  In consequence, a multipage output file in Postscript
 format will not obey the so-called Document Structuring Conventions for
 Postscript files, and a multipage file in Fig format will not be a
-legitimate Fig file at all.
+legitimate Fig file at all (a Fig file may contain only one page of
+graphics).
 
    On account of this potential problem with Postscript and Fig
 Plotters, all Plotters support an additional operation: `outfile'.  The
@@ -3911,58 +3917,90 @@ use of `outfile' in other contexts is deprecated.
    There are several other basic operations which any Plotter supports.
 The `graphics display' drawn in by a Plotter is a square or rectangular
 region on a display device.  But when using any Plotter to draw
-graphics, an application must specify the coordinates of graphical
-objects in a device-independent `user frame', rather than in device
-coordinates.  A Plotter relates the user frame to the device frame by
-performing a user-specified affine coordinate transformation.
+graphics, a user will specify the coordinates of graphical objects in
+device-independent `user coordinates', rather than in device
+coordinates.  A Plotter relates the user coordinate system to the
+device coordinate system by performing an affine transformation, which
+must be specified by the user.
 
    Immediately after invoking `openpl' to open a Plotter, an
 application should invoke the `space' operation to initialize this
-affine transformation from the user frame to the device frame.  This
-invocation determines the rectangular region (in user coordinates) that
-will be mapped by the Plotter to the graphics display.  The affine
-transformation may be updated at any later time, if desired, by invoking
-`fconcat'.  The `fconcat' operation will `concatenate' (i.e., compose)
-the current affine transformation transformation with any specified
-affine map.  This sort of concatenation is a capability familiar from,
-e.g., Postscript.
+affine transformation.  This invocation specifies the rectangular region
+(in user coordinates) that will be mapped by the Plotter to the graphics
+display.  The affine transformation may be updated at any later time by
+invoking `space' again, or by invoking `fconcat'.  The `fconcat'
+operation will `concatenate' (i.e., compose) the current affine
+transformation transformation with any specified affine map.  This sort
+of concatenation is a capability familiar from, e.g., Postscript.
 
-   Any Plotter maintains a Postscript-style stack of graphics contexts.
-A graphics context includes such modal drawing attributes as graphics
+   Each Plotter maintains a Postscript-style stack of graphics contexts.
+This makes possible the rapid, efficient drawing of complicated pages of
+graphics.  A graphics context includes the current affine
+transformation from the user coordinate system to the device coordinate
+system.  It also includes such modal drawing attributes as graphics
 cursor position, line mode, line width, pen and fill colors, and the
-font used for drawing text.  It also includes the current affine map
-from the user frame to the device frame.  The state of any uncompleted
-path (if any) is included as well, since paths may be drawn
-incrementally, one segment (line segment or arc) at a time.  The
-current graphics context may be pushed onto the stack of graphics
-contexts by calling `savestate', and popped off by calling
-`restorestate'.
+font used for drawing text.  The state of any uncompleted path (if any)
+is included as well, since paths may be drawn incrementally, one
+portion (line segment or arc) at a time.  The current graphics context
+is pushed onto the stack by calling `savestate', and popped off by
+calling `restorestate'.
 
-* Menu:
+   To permit vector graphics animation, any page of graphics may be
+split into `frames'.  A frame is ended, and a new frame is begun, by
+invoking the `erase' operation.  On a Plotter that does real-time
+plotting (i.e., an X, X Drawable, Tektronix, or Metafile Plotter), this
+erases all plotted objects from the graphics display, allowing a new
+frame to be drawn.  Displaying a sequence of frames in succession
+creates the illusion of smooth animation.
 
-* C Programming::	C Programming with libplot: An overview
-* Functions::		A list of functions contained in libplot
-* Driver Parameters::	Device driver parameters
+   On a Plotter that does not do real-time plotting (i.e., a
+Postscript, Fig or HP-GL Plotter), invoking `erase' deletes all plotted
+objects from an internal buffer.  For this reason, Plotters that do not
+do real-time plotting will display only the last frame of any
+multiframe page.
 
 
-File: plotutils.info,  Node: C Programming,  Next: Functions,  Prev: libplot,  Up: libplot
+File: plotutils.info,  Node: C Programming,  Next: Functions,  Prev: libplot Overview,  Up: libplot
 
 C Programming with `libplot'
 ============================
 
+* Menu:
+
+* The C API::	        	The C application programming interface
+* C Compiling and Linking::	C compiling and linking
+* Sample C Drawing::		A sample drawing in C
+* Sample C Animation::		A sample animation in C
+
+
+File: plotutils.info,  Node: The C API,  Next: C Compiling and Linking,  Prev: C Programming,  Up: C Programming
+
+The C application programming interface
+---------------------------------------
+
+   `libplot' has bindings for several programming languages.
+Regardless of which language binding is used, the concepts behind
+`libplot' (Plotters, and a fixed set of operations that may be applied
+to any Plotter) remain the same.  However, the ways in which Plotters
+are manipulated (created, selected for use, and deleted) may differ
+between bindings.
+
    If you are writing an application in C that will use `libplot' to
-draw graphics, you need to know how to create and select Plotters.
+draw vector graphics, the first thing you need to know is how, in the
+C binding, Plotters are manipulated.  There are four functions for
+this: `newpl', `selectpl', `deletepl', and the parameter-setting
+function `parampl'.
 
    The `newpl' function will create a Plotter of specified type.  Its
 first argument may be "X", "Xdrawable", "ps", "fig", "hpgl", "tek", or
 "meta".  It returns an integer (a "handle") that may be used to refer
 to the Plotter.  Before using a Plotter that you have created (i.e.,
 before invoking any of the `libplot' operations on it), you must select
-the Plotter by calling `selectpl'.  Only one Plotter may be selected at
-a time, but by calling `selectpl' you may switch from Plotter to
-Plotter at any time, even when the selected Plotter is open.  A Plotter
-that is not currently selected may be deleted, and its storage freed,
-by calling `deletepl'.
+the Plotter for use by calling `selectpl'.  Only one Plotter may be
+selected at a time, but by calling `selectpl' you may switch from
+Plotter to Plotter at any time, even when the selected Plotter is open.
+A Plotter that is not currently selected may be deleted, and its
+storage freed, by calling `deletepl'.
 
    *Warning:* Though at present the use of `deletepl' is optional, that
 will change in future releases.  At present, Plotters that do not do
@@ -3981,8 +4019,78 @@ this default Plotter is for compatibility with pre-GNU versions of
 `libplot'.  Of course, you may not wish to obtain output in metafile
 format, and you may not wish to write to standard output.
 
+   The following table summarizes the action of the four functions in
+the C binding that are used for Plotter manipulation.
+
+int newpl (const char *TYPE, FILE *IN, FILE *OUT, FILE *ERR);
+     newpl creates a Plotter of type TYPE, where TYPE may be "X",
+     "Xdrawable", "ps", "fig", "hpgl", "tek", or "meta".  The Plotter
+     will have input stream IN, output stream OUT, and error stream
+     ERR.  Currently, all Plotters are write-only and IN is ignored.
+     X Plotters and X Drawable Plotters write graphics to an X Window
+     System display rather than to an output stream, so if TYPE is "X"
+     or "Xdrawable" then OUT is ignored as well.  Error messages
+     (if any) are written to the stream ERR, unless ERR is NULL.  The
+     return value from newpl is a `handle': a nonnegative integer by
+     which the newly created Plotter is referred to.  A negative return
+     value indicates the Plotter could not be created.
+
+int selectpl (int HANDLE);
+     selectpl selects a Plotter, referred to by its handle, for use.  If
+     any of the basic `libplot' operations is subsequently invoked, it
+     will be applied to the selected Plotter.  Only one Plotter may be
+     selected at a time.  A negative return value indicates the Plotter
+     could not be selected.
+
+     At startup, a single Metafile Plotter that writes to standard
+     output (with handle `0') is automatically created and selected.
+
+int deletepl (int HANDLE);
+     deletepl deletes a Plotter, referred to by its handle.  The Plotter
+     must not be selected at the time it is deleted.  A negative return
+     value indicates the Plotter could not be deleted.
+
+int parampl (const char *PARAMETER, void *VALUE);
+     parampl sets the value of the device driver parameter PARAMETER to
+     VALUE.  Device driver parameters are used for setting Plotter
+     options.  The parameter values in effect at the time any Plotter
+     is created are copied into it.  For most parameters, VALUE should
+     be a `char *', i.e., a string.  Unrecognized parameters are
+     ignored.  For a list of the recognized parameters and their
+     meaning, see *Note Driver Parameters::.
+
+   Up to now we have not discussed the fourth function, `parampl'.  The
+reasons it exists are the following.  In designing `libplot', every
+effort was made to make the Plotter interface independent of the type
+of Plotter, i.e., independent of the type of display device that the
+Plotter drives.  To the extent that device dependence exists, it is
+captured by a manageable number of *device driver parameters*.  A value
+for any parameter may be specified by calling the `parampl' function.
+The `parampl' function does not operate on any particular Plotter:
+it belongs to the C binding as a whole.  The parameter values used by
+any Plotter are constant over the lifetime of the Plotter, and are
+those that were in effect when the Plotter was created.
+
+   Actually, a slightly more sophisticated rule applies.  If at Plotter
+creation time a parameter is set, the value specified by the most recent
+call to `parampl' will be the value used by the Plotter.  If at Plotter
+creation time a parameter is *not* set, its default value will be used,
+unless there is an environment variable of the same name, in which case
+the value of that environment variable will be used.  This rule
+increases run-time flexibility: an application programmer may allow
+non-critical driver parameters to be specified by the user via
+environment variables.  Once set, a parameter may be unset by the
+programmer by calling `parampl' with a value argument of NULL.  This
+further increases flexibility.
+
+
+File: plotutils.info,  Node: C Compiling and Linking,  Next: Sample C Drawing,  Prev: The C API,  Up: C Programming
+
+C compiling and linking
+-----------------------
+
    The source code for a graphics application written in C, if it is to
-use `libplot', should contain the lines
+use `libplot', must contain the lines
 
      #include <stdio.h>
      #include <plot.h>
@@ -4017,22 +4125,28 @@ directories which will be searched for DLL's at run time.  For your
 application to be executable, this environment variable should include
 the directory in which `libplot' is stored.
 
-   The following is a sample application that uses `libplot'.  It draws
-an intricate and beautiful path (Bill Gosper's "C" curve, discussed as
-Item #135 in `HAKMEM', MIT Artificial Intelligence Laboratory Memo
-#239, 1972).  As the numeric constant `MAXORDER' (here equal to 10) is
-increased, the path will take on the shape of a curly letter "C", which
-is the envelope of a myriad of epicyclic octagons.
+
+File: plotutils.info,  Node: Sample C Drawing,  Next: Sample C Animation,  Prev: C Compiling and Linking,  Up: C Programming
+
+A sample drawing in C
+---------------------
+
+   The following is a sample application, written in C, that invokes
+`libplot' operations to draw vector graphics.  It draws an intricate
+and beautiful path (Bill Gosper's "C" curve, discussed as Item #135 in
+`HAKMEM', MIT Artificial Intelligence Laboratory Memo #239, 1972).
+As the numeric constant `MAXORDER' (here equal to 12) is increased, the
+path will take on the shape of a curly letter "C", which is the
+envelope of a myriad of epicyclic octagons.
 
      #include <stdio.h>
      #include <plot.h>
      
-     #define MAXORDER 10
+     #define MAXORDER 12
      void draw_c_curve (double dx, double dy, int order)
      {
        if (order >= MAXORDER)
          fcontrel (dx, dy);        /* continue path along (dx, dy) */
-     
        else
          {
            draw_c_curve (0.5 * (dx - dy), 0.5 * (dx + dy), order + 1);
@@ -4044,77 +4158,186 @@ is the envelope of a myriad of epicyclic octagons.
      {
        int handle;
      
+       /* set a Plotter parameter */
+       parampl ("PAGESIZE", "letter");
+     
        /* create a Postscript Plotter that writes to standard output */
-       handle = newpl ("ps", stdin, stdout, stderr);
-       selectpl (handle);          /* select the Plotter */
+       if ((handle = newpl ("ps", stdin, stdout, stderr)) < 0)
+         {
+           fprintf (stderr, "Couldn't create Plotter\n");
+           return 1;
+         }
+       selectpl (handle);          /* select the Plotter for use */
      
        if (openpl () < 0)          /* open Plotter */
          {
            fprintf (stderr, "Couldn't open Plotter\n");
            return 1;
          }
-       fspace (0.0, 0.0, 1000.0, 1000.0);  /* choose coors for user frame */
-       flinewidth (0.25);          /* width of lines in user frame */
+       fspace (0.0, 0.0, 1000.0, 1000.0); /* specify user coordinate system*/
+       flinewidth (0.25);          /* width of lines in user coordinates */
        pencolorname ("red");       /* path will be drawn in red */
-     
        erase ();                   /* erase Plotter's graphics display */
        fmove (600.0, 300.0);       /* position the graphics cursor */
        draw_c_curve (0.0, 400.0, 0);
-     
-       /* close plotter, i.e., write output */
-       if (closepl () < 0)
+       if (closepl () < 0)         /* close Plotter */
          {
            fprintf (stderr, "Couldn't close Plotter\n");
            return 1;
          }
+     
        selectpl (0);               /* select default Plotter */
        deletepl (handle);          /* clean up by deleting Plotter we used */
        return 0;
      }
 
-As you can see, this application begins by calling the `newpl' function
-to create a Postscript Plotter.  The three arguments `stdin', `stdout',
-`stderr' require a bit of explanation.  Currently, Plotters are
-write-only: they are not interactive, so they do not read from an input
-stream.  So the second argument to `newpl' is a dummy.  The third and
-fourth arguments, if non-NULL, must be an output stream and an error
-stream, both of which are opened for writing.  The graphical objects
-that are drawn between any `openpl'...`closepl' pair will be written to
-the output stream, and error messages (if any) will be written to the
-error stream, provided that it is non-NULL.  This is the case for
-Plotters other than X Plotters and X Drawable Plotters, at least.  All
-plotters other than X Plotters and X Drawable Plotters use an output
-stream to draw graphics.
+   As you can see, this application begins by calling the `newpl'
+function to create a Postscript Plotter.  The Postscript Plotter will
+produce output for a US letter-sized page, though any other standard
+page size, e.g., "a4", could be substituted.  This would be arranged by
+altering the call to `parampl'.  The `PAGESIZE' parameter is one of
+several Plotter parameters that an application programmer may set by
+calling `parampl'.  For a complete list, see *Note Driver Parameters::.
 
-   The application draws the "C" curve recursively, and (since a
-Postscript Plotter is selected) writes a Postscript file to standard
-output when `closepl' is called.  The drawing of the curve is
-accomplished by invoking `fmove' on the Plotter to position the
-graphics cursor, and then repeatedly invoking `fcontrel'.  The
-`fcontrel' operation continues a path by adding a line segment to it.
-The endpoint of each line segment is specified in relative coordinates,
-as an offset in the user frame.
+   After the Plotter is created, the application selects it for use,
+opens it, draws the "C" curve recursively, and writes a Postscript file
+to standard output when `closepl' is called.  The drawing of the curve
+is accomplished by invoking `fmove' on the Plotter to position the
+graphics cursor, and then calling `draw_c_curve'.  This subroutine
+repeatedly invokes `fcontrel'.  The `fcontrel' operation continues a
+path by adding a line segment to it.  The endpoint of each line segment
+is specified in relative coordinates, i.e., as an offset from the
+previous point.
 
    Specifying "fig", "hpgl", "tek", or "meta" as the first argument in
-the call to `newpl', instead of "ps", will cause output to be written
+the call to `newpl', instead of "ps", would cause output to be written
 to the output stream in the specified format, instead of Postscript.
-If "X" is specified as the first argument of `newpl', the curve will be
-drawn in a popped-up X window, and the output stream argument will be
-ignored.  Which X Window System display the window pops up on is
-determined by the DISPLAY driver parameter (*Note Driver Parameters::),
-or if that parameter has not been set, by the DISPLAY environment
-variable.
+The `PAGESIZE' parameter is relevant to the first two of these output
+formats, but is ignored for the latter two.  Specifying "meta" as the
+Plotter type may be useful if you wish to avoid recompilation for
+different output devices.  Metafile output may be piped to the `plot'
+utility and converted to any other supported output format, or
+displayed in an X window.  *Note plot::.
 
-   Specifying "meta" as the Plotter type may be useful if you wish to
-avoid recompilation for different output devices.  Metafile output may
-be piped to the `plot' utility and converted to any other supported
-output format, or displayed in an X window.  *Note plot::.
+   If "X" were specified as the first argument of `newpl', the curve
+would be drawn in a popped-up X window, and the output stream argument
+would be ignored.  Which X Window System display the window would
+pop up on would be determined by the `DISPLAY' parameter, or if that
+parameter were not set, by the `DISPLAY' environment variable.  The
+size of the X window would be determined by the `BITMAPSIZE' parameter,
+or if that parameter were not set, by the `BITMAPSIZE' environment
+variable.  The default value is "570x570".
 
-   If you specify "Xdrawable" as the Plotter type, you will need to
-create at least one X drawable (i.e., window or a pixmap), and by
-invoking the `parampl' function before `newpl' is called, pass it to
-`libplot' as a driver parameter.  For a list of supported driver
-parameters, *Note Driver Parameters::.
+   You could also specify "Xdrawable" as the Plotter type.  For this to
+work, you would need to create at least one X drawable (i.e., window or
+a pixmap), and by invoking the `parampl' function before `newpl' is
+called, set it as the value of the parameter `XDRAWABLE_DRAWABLE1' or
+`XDRAWABLE_DRAWABLE2'.  For other parameters that affect X Drawable
+Plotters, see *Note Driver Parameters::.
+
+
+File: plotutils.info,  Node: Sample C Animation,  Prev: Sample C Drawing,  Up: C Programming
+
+A sample animation in C
+-----------------------
+
+   You may use `libplot' to produce vector graphics animations on any
+Plotter that does real-time plotting (i.e., an X, X Drawable,
+Tektronix, or Metafile Plotter).  By definition, the `frames' in any
+page of graphics are separated by invocations of `erase'.  So the
+graphics display will be cleared after each frame.  If successive
+frames differ only slightly, a smooth animation will result.
+
+   The following is a sample application, written in C, that produces
+an animation for the X Window System.  It displays a `drifting eye'.
+As the eye drifts across a popped-up window from left to right, it
+slowly rotates.  After the eye has drifted across twice, the window
+will vanish.
+
+     #include <stdio.h>
+     #include <plot.h>
+     
+     int main ()
+     {
+       int handle, i = 0, j;
+     
+       /* set Plotter parameters */
+       parampl ("BITMAPSIZE", "300x150");
+       parampl ("VANISH_ON_DELETE", "yes");
+       parampl ("USE_DOUBLE_BUFFERING", "yes");
+     
+       /* create an X Plotter with the specified parameters */
+       if ((handle = newpl ("X", stdin, stdout, stderr)) < 0)
+         {
+           fprintf (stderr, "Couldn't create Plotter\n");
+           return 1;
+         }
+       selectpl (handle);          /* select the Plotter for use */
+     
+       if (openpl () < 0)          /* open Plotter */
+         {
+           fprintf (stderr, "Couldn't open Plotter\n");
+           return 1;
+         }
+       space (0, 0, 299, 149);     /* specify user coordinate system */
+       linewidth (8);              /* width of lines in user coordinates */
+       filltype (1);               /* objects will be filled */
+       bgcolorname ("saddle brown");  /* background color for the window */
+       for (j = 0; j < 300; j++)
+         {
+           erase ();               /* erase window */
+           pencolorname ("red");   /* choose red pen, with cyan filling */
+           fillcolorname ("cyan");
+           ellipse (i, 75, 35, 50, i);  /* draw an ellipse */
+           colorname ("black");    /* choose black pen, with black filling */
+           circle (i, 75, 12);     /* draw a circle [a pupil] */
+           i = (i + 2) % 300;      /* shift rightwards */
+         }
+       if (closepl () < 0)         /* close Plotter */
+         {
+           fprintf (stderr, "Couldn't close Plotter\n");
+           return 1;
+         }
+     
+       selectpl (0);               /* select default Plotter */
+       deletepl (handle);          /* delete the Plotter we used */
+       return 0;
+     }
+
+   As you can see, this application begins by calling `parampl' several
+times to set device driver parameters, and then calls `newpl' to create
+an X Plotter.  The X Plotter window will have size 300x150 pixels.
+This window will vanish when the Plotter is deleted.  If the
+`VANISH_ON_DELETE' parameter were not set to "yes", it would remain on
+the screen until it is removed by the user (by typing `q' in it, or by
+clicking with a mouse).
+
+   Setting the parameter `USE_DOUBLE_BUFFERING' to "yes" is very
+important if you wish to produce a smooth animation.  Normally, an
+X Plotter draws graphics into a window in real time, and erases the
+window when `erase' is called.  But if `double buffering' is used,
+graphics are written into an off-screen buffer, and copied into the
+window, pixel by pixel, when `erase' is called or the Plotter is
+closed.  This is a bit counterintuitive, but is exactly what is needed
+to increase smoothness.  If you turn off double buffering, you will
+find that the animation becomes painfully jerky.
+
+   After the Plotter is created, it is selected for use and opened.
+When `openpl' is called, the window pops up, and the animation begins.
+In the body of the for loop there is a call to `erase', and also a
+sequence of `libplot' operations that draws the eye.  The pen color and
+fill color need to be changed twice with every passage through the
+loop.  You may wish to experiment with the animation parameters to
+produce the best effects on your video hardware.
+
+   The locations of the objects that are plotted in the animation are
+expressed in terms of user coordinates, not pixel coordinates.  But the
+call to `space' defines user and pixel coordinates to be effectively
+the same.  User coordinates are chosen so that the lower left corner is
+(0,0) and the upper right corner is (299,149).  Since this agrees with
+the window size, individual pixels may be addressed in terms of integer
+user coordinates.  For example, `point(299,149)' would set the pixel in
+the upper right hand corner of the window to the current pen color.
 
 
 File: plotutils.info,  Node: Functions,  Next: Driver Parameters,  Prev: C Programming,  Up: libplot
@@ -4122,15 +4345,16 @@ File: plotutils.info,  Node: Functions,  Next: Driver Parameters,  Prev: C Progr
 The functions in `libplot': A detailed listing
 ==============================================
 
-   The functions in GNU `libplot' include the three Plotter
-manipulation functions discussed in the previous section (`newpl',
-`selectpl', and `deletepl'), which are specific to the C binding.  They
-also include 82 basic functions: `parampl', a function that sets
-low-level options for subsequently created Plotters (*Note Driver
-Parameters::), and 81 functions that operate on the currently selected
-Plotter.
+   In the current release of GNU `libplot', any Plotter supports 81
+distinct operations.  A language binding for `libplot' necessarily
+includes 81 functions that correspond to these operations.  A language
+binding may also include functions for creating, selecting, and
+deleting Plotters.  For example, the C binding includes the four
+additional functions `newpl', `selectpl', `deletepl', and `parampl'.
+*Note The C API::.
 
-   These 82 functions are divided into the four sets tabulated below.
+   The 81 functions that operate on a specified Plotter are divided into
+the four sets tabulated below.
 
    Many functions come in two versions: integer and double precision
 floating point.  Internally, `libplot' uses double precision floating
@@ -4140,13 +4364,15 @@ version begins with the letter `f'.
 
    Many functions come in both absolute and relative versions, also.
 The latter use relative coordinates (i.e., coordinates relative to the
-current position of the graphics cursor), and their names end in `rel'.
+current position of the graphics cursor), and in the C binding their
+names end in `rel'.
 
-   Currently, only a few functions have meaningful return values.
+   Currently, only a few of the 81 functions have meaningful return
+values.
 
 * Menu:
 
-* Setup Functions::	Functions that initialize or close a Plotter
+* Setup Functions::	Functions that open, initialize or close a Plotter
 * Drawing Functions::	Functions that draw objects
 * Attribute Functions::	Functions that affect drawing attributes
 * Mapping Functions::	Functions affecting the user -> device coordinate map
@@ -4157,21 +4383,10 @@ File: plotutils.info,  Node: Setup Functions,  Next: Drawing Functions,  Prev: F
 Setup functions
 ---------------
 
-   The following are `libplot''s "setup functions," which initialize,
-open, or close a Plotter.  They are listed in the approximate order in
-which they would be called.
-
-int parampl (const char *PARAMETER, void *VALUE);
-     parampl sets the value of the `libplot' parameter PARAMETER to
-     VALUE.  Parameters are used for setting low-level device driver
-     options.  The parameter values in effect at the time any Plotter
-     is created are copied into it.  The most important parameters are
-     `DISPLAY', which specifies the X Window System display that an
-     X Plotter will use, and `PAGESIZE', which affects Postscript, Fig,
-     and HP-GL Plotters.
-
-     For most parameters, the value should be a `char *', i.e., a
-     string.  *Note Driver Parameters::.
+   The following are the "setup functions" in the C binding for
+`libplot'.  These include the functions that open, initialize, and
+close an already-created Plotter.  They are listed in the approximate
+order in which they would be called.
 
 int openpl ();
      openpl opens a Plotter, i.e., begins a page of graphics.  Depending
@@ -4183,17 +4398,6 @@ int openpl ();
      X Window System display instead.  Currently, a new window is
      popped up for each page of graphics, i.e., with each invocation of
      `openpl'.  Future releases may support window re-use.
-
-int erase ();
-     erase clears all previously plotted objects from the graphics
-     display, and fills it with the background color (if any).  This is
-     useful for Plotters that are persistent, in the sense that objects
-     drawn within an `openpl'...`closepl' pair are still visible and
-     are liable to be overwritten when `openpl' is next invoked, and a
-     new page is begun.  For such Plotters, you may wish to invoke erase
-     immediately after openpl.  Currently, only X Drawable Plotters and
-     Tektronix Plotters are persistent.  Future releases may support
-     persistence for X Plotters also.
 
 int bgcolor (int RED, int GREEN, int BLUE);
      bgcolor sets the background color for the graphics display, using a
@@ -4218,6 +4422,28 @@ int bgcolorname (const char *NAME);
      Plotters.  Its effect is simple: the next time the erase operation
      is invoked on such a Plotter, its display will be filled with the
      specified color.
+
+int erase ();
+     erase begins the next frame of a multiframe page, by clearing all
+     previously plotted objects from the graphics display, and filling
+     it with the background color (if any).
+
+     It is frequently useful to invoke erase immediately after invoking
+     openpl.  Some Plotters are persistent, in the sense that objects
+     drawn within an `openpl'...`closepl' pair are still visible and
+     are liable to be overwritten when `openpl' is next invoked, and a
+     new page is begun.  Currently, only X Drawable Plotters and
+     Tektronix Plotters are persistent.  Future releases may support
+     optional persistence for X Plotters also.
+
+     On X Plotters the effects of invoking erase will be quite different
+     if the device driver parameter `USE_DOUBLE_BUFFERING' is set to
+     "yes".  In this case, objects will be written to an off-screen
+     buffer rather than to the popped-up window, and invoking erase will
+     (1) copy the contents of this buffer into the window, and
+     (2) erase the buffer by filling it with the background color.
+     This feature facilitates smooth animation.  *Note Driver
+     Parameters::.
 
 int space (int X0, int Y0, int X1, int Y1);
 int fspace (double X0, double Y0, double X1, double Y1);
@@ -4270,9 +4496,9 @@ FILE *outfile (FILE *FP);
      The previous output stream is returned.
 
      This operation is useful on Plotters that are designed to be
-     opened only once, i.e., Postscript and Fig Plotters.  On other
-     Plotters, its use is deprecated.  On Plotters that do not have an
-     output stream in the conventional sense, i.e., X Plotters and
+     opened only once; in particular, on Fig Plotters.  On other
+     Plotters its use is deprecated.  On Plotters that do not have an
+     output stream in the conventional sense, i.e., on X Plotters and
      X Drawable Plotters, it has no effect.
 
 
@@ -4281,11 +4507,12 @@ File: plotutils.info,  Node: Drawing Functions,  Next: Attribute Functions,  Pre
 Object-drawing functions
 ------------------------
 
-   The following are the `libplot' functions which, when invoked on a
-Plotter, cause it to draw objects (paths, circles, ellipses, points,
-markers, and text strings) on the associated graphics display.
-A *path* is a sequence of line segments and arcs (either circular or
-elliptic).
+   The following are the "drawing functions" in the C binding for
+`libplot'.  These are the functions which, when invoked on a Plotter,
+cause it to draw objects (paths, circles, ellipses, points, markers,
+and text strings) on the associated graphics display.  A *path* is a
+sequence of line segments and arcs (either circular or elliptic).
+Paths may be drawn incrementally, one line segment or arc at a time.
 
 int alabel (int HORIZ_JUSTIFY, int VERT_JUSTIFY, const char *S);
      alabel takes three arguments HORIZ_JUSTIFY, VERT_JUSTIFY, and S,
@@ -4394,11 +4621,11 @@ int fellipserel (double XC, double YC, double RX, double RY, double ANGLE);
      ellipse and fellipse take five arguments specifying the center
      (XC, YC) of an ellipse, the lengths of its semiaxes (RX and RY),
      and the inclination of the first semiaxis in the counterclockwise
-     direction from the x axis in the user frame.  The path under
-     construction (if any) is ended, and the ellipse is drawn.  The
-     graphics cursor is moved to (XC, YC).  ellipserel and fellipserel
-     are similar to ellipse and fellipse, but use cursor-relative
-     coordinates.
+     direction from the x axis in the user coordinate system.  The path
+     under construction (if any) is ended, and the ellipse is drawn.
+     The graphics cursor is moved to (XC, YC).  ellipserel and
+     fellipserel are similar to ellipse and fellipse, but use
+     cursor-relative coordinates.
 
 int endpath ();
      endpath terminates the path under construction, if any.  Paths,
@@ -4420,8 +4647,8 @@ int label (const char *S);
 int labelwidth (const char *S);
 double flabelwidth (const char *S);
      labelwidth and flabelwidth compute and return the width of a
-     string in the current font, in the user frame.  The string is not
-     plotted.
+     string in the current font, in the user coordinate system.  The
+     string is not plotted.
 
 int line (int X1, int Y1, int X2, int Y2);
 int fline (double X1, double y1, double X2, double Y2);
@@ -4481,8 +4708,9 @@ File: plotutils.info,  Node: Attribute Functions,  Next: Mapping Functions,  Pre
 Attribute-setting functions
 ---------------------------
 
-   The following are the `libplot' functions which, when invoked on a
-Plotter, set its drawing attributes, or save them or restore them.
+   The following are the "attribute functions" in the C binding for
+`libplot'.  These are the functions which, when invoked on a Plotter,
+set its drawing attributes, or save them or restore them.
 
    Note that setting any path-related drawing attribute automatically
 terminates the path under construction (if any), as if the `endpath'
@@ -4573,12 +4801,12 @@ double ffontname (const char *FONT_NAME);
 int fontsize (int SIZE);
 double ffontsize (double SIZE);
      fontsize and ffontsize take a single argument, interpreted as the
-     size, in the user frame, of the font to be used for all text
-     strings subsequently drawn on the graphics display.  (The font for
-     plotting strings is fully specified by calling fontname, fontsize,
-     and textangle.)  The size of the font in user coordinates is
-     returned.  A negative value for SIZE sets the size to a default
-     value, which depends on the type of Plotter.
+     size, in the user coordinate system, of the font to be used for all
+     text strings subsequently drawn on the graphics display.  (The
+     font for plotting strings is fully specified by calling fontname,
+     fontsize, and textangle.)  The size of the font in user
+     coordinates is returned.  A negative value for SIZE sets the size
+     to a default value, which depends on the type of Plotter.
 
 int joinmod (const char *S);
      joinmod sets the join mode (i.e., join style) for all paths
@@ -4606,13 +4834,13 @@ int linemod (const char *S);
 
 int linewidth (int SIZE);
 int flinewidth (double SIZE);
-     linewidth and flinewidth set the width, in the user frame, of all
-     paths, circles, and ellipses subsequently drawn on the graphics
-     display.  A negative value means that a default width should be
-     used.  This default width depends on the type of Plotter.  The
-     interpretation of zero line width does also (for some types of
-     Plotter, a zero-width line is the thinnest line that can be drawn;
-     for others, a zero-width line is invisible).
+     linewidth and flinewidth set the width, in the user coordinate
+     system, of all paths, circles, and ellipses subsequently drawn on
+     the graphics display.  A negative value means that a default width
+     should be used.  This default width depends on the type of
+     Plotter.  The interpretation of zero line width does also (for
+     some types of Plotter, a zero-width line is the thinnest line that
+     can be drawn; for others, a zero-width line is invisible).
 
      Tektronix Plotters do not support drawing with other than a default
      width, and HP-GL Plotters do not support doing so if the parameter
@@ -4661,19 +4889,18 @@ int savestate ();
      `libplot''s drawing parameters, which are set by the attribute
      functions documented in this section.  A path under construction,
      if any, is regarded as part of the drawing state.  That is because
-     paths may be drawn incrementally, one segment (line segment,
-     circular arc segment, or elliptic arc segment) at a time.  When a
-     graphics context is returned to, the path under construction may
-     be continued.
+     paths may be drawn incrementally, one line segment or arc at a
+     time.  When a graphics context is returned to, the path under
+     construction may be continued.
 
 int textangle (int ANGLE);
 double ftextangle (double ANGLE);
      textangle and ftextangle take one argument, which specifies the
      angle in degrees counterclockwise from the x (horizontal) axis in
-     the user frame, for text strings subsequently drawn on the graphics
-     display.  The default angle is zero.  (The font for plotting
-     strings is fully specified by calling fontname, fontsize, and
-     textangle.)  The size of the font for plotting strings, in user
+     the user coordinate system, for text strings subsequently drawn on
+     the graphics display.  The default angle is zero.  (The font for
+     plotting strings is fully specified by calling fontname, fontsize,
+     and textangle.)  The size of the font for plotting strings, in user
      coordinates, is returned.
 
 
@@ -4682,13 +4909,15 @@ File: plotutils.info,  Node: Mapping Functions,  Prev: Attribute Functions,  Up:
 Mapping functions
 -----------------
 
-   The following four `libplot' functions, when invoked on a Plotter,
+   The following are the "mapping functions" in the C binding for
+`libplot'.  These are the functions which, when invoked on a Plotter,
 affect the affine transformation it employs for mapping from the user
-frame to the device frame.  They may be viewed as performing
-transformations of the user frame.  Their names resemble those of the
-corresponding functions in the Postscript language.  For information on
-how to use them to draw graphics efficiently, consult any good book on
-Postscript programming, or the `Postscript Language Reference Manual'.
+coordinate system to the device coordinate system.  They may be viewed
+as performing transformations of the user coordinate system.  Their
+names resemble those of the corresponding functions in the Postscript
+language.  For information on how to use them to draw graphics
+efficiently, consult any good book on Postscript programming, or the
+`Postscript Language Reference Manual'.
 
 int fconcat (double M0, double M1, double M2, double M3, double TX, double TY);
      Apply a Postscript-style transformation matrix, i.e., affine map,
@@ -4724,39 +4953,36 @@ File: plotutils.info,  Node: Driver Parameters,  Prev: Functions,  Up: libplot
 Device driver parameters
 ========================
 
-   In designing the `libplot' library, every effort has been made to
-make the Plotter interface independent of the type of Plotter, i.e.,
-independent of the type of display device that the Plotter drives.
-Device-dependence has been kept to a minimum, and is captured by a small
+   In designing the `libplot' library, every effort was made to make
+the Plotter interface independent of the type of Plotter.  To the
+extent that device dependence exists, it is captured by a manageable
 number of *device driver parameters*.
 
-   Each driver parameter has a value that is allowed to be a generic
-pointer (a `void *').  For most parameters, this value should be a
-string (a `char *').  A value for any parameter may be specified by
-calling the `parampl' function.  This function may be called any number
-of times.  Calling `parampl' on a parameter is said to `set' the
-parameter.  A parameter may be unset by calling `parampl' with a value
+   In the C binding, a value for any parameter may be specified by
+calling the `parampl' function.  The `parampl' function does not
+operate on any particular Plotter: it belongs to the C binding as a
+whole.  The parameter values used by any Plotter are constant over the
+lifetime of the Plotter, and are those that were in effect when the
+Plotter was created.  Each driver parameter has a value that is allowed
+to be a generic pointer (a `void *').  For most parameters, this value
+should be a string (a `char *').  `parampl' may be called any number of
+times.  A parameter may be unset by calling `parampl' with a value
 argument of NULL.
 
-   The `parampl' function does not operate on any particular Plotter:
-it belongs to `libplot' as a whole.  The parameter values used by any
-Plotter are constant over the lifetime of the Plotter, and are
-essentially those that were in effect when the Plotter was created.  The
-following rule applies.  If at Plotter creation time a parameter is set,
-the value specified by the most recent call to `parampl' will be the
-value used by the Plotter.  If at Plotter creation time a parameter is
-*not* set, its default value will be used, unless there is an
-environment variable of the same name, in which case the value of that
-environment variable will be used.  This rule increases run-time
-flexibility: an application programmer may allow non-critical driver
-parameters to be specified by the user, via environment variables.
+   If at Plotter creation time a parameter is *not* set, its default
+value will be used, unless there is an environment variable of the same
+name, in which case the value of that environment variable will be used.
+This rule increases run-time flexibility: an application programmer may
+allow non-critical driver parameters to be specified by the user via
+environment variables.
 
-   The following are the currently recognized parameters.  The most
-important parameters are `DISPLAY' and `BITMAPSIZE', which affect
-X Plotters, and `PAGESIZE', which affects Postscript, Fig, and HP-GL
-Plotters.  These three parameters are listed first and the others
-alphabetically.  Many of the parameters, such as the several whose
-names begin with "HPGL", affect only a single type of Plotter.
+   The following are the currently recognized parameters (unrecognized
+ones are ignored).  The most important ones are `DISPLAY' and
+`BITMAPSIZE', which affect X Plotters, and `PAGESIZE', which affects
+Postscript, Fig, and HP-GL Plotters.  These three parameters are listed
+first and the others alphabetically.  Many of the parameters, such as
+the several whose names begin with "HPGL", affect only a single type of
+Plotter.
 
 `DISPLAY'
      (Default NULL.)  The X Window System display on which the graphics
@@ -4786,6 +5012,14 @@ names begin with "HPGL", affect only a single type of Plotter.
      Plotters, fine control over the positioning of the graphics
      display on the page may be accomplished by setting the
      `HPGL_XOFFSET' and `HPGL_YOFFSET' parameters.
+
+`BG_COLOR'
+     (Default "white".)  The initial background color of the graphics
+     display.  Currently relevant only to X Plotters.  The background
+     color may be changed at any later time by invoking the bgcolor (or
+     bgcolorname) and erase operations.  An unrecognized color name
+     sets the background color to the default.  For information on what
+     names are recognized, see *Note Color Names::.
 
 `HPGL_ASSIGN_COLORS'
      (Default "no".)  Relevant only to HP-GL Plotters, and only if the
@@ -4843,10 +5077,11 @@ names begin with "HPGL", affect only a single type of Plotter.
      Splitting will not be performed if the path is filled.
 
      This parameter is relevant to X, X Drawable, Postscript, Fig, and
-     HP-GL Plotters.  It is not relevant to Tektronix or Metafile
-     Plotters, since they draw paths in real time.  The reason for
-     splitting long paths is that some display devices (e.g., old
-     Postscript printers and HP-GL plotters) have limited buffer sizes.
+     HP-GL Plotters.  The reason for splitting long paths is that some
+     display devices (e.g., old Postscript printers and HP-GL plotters)
+     have limited buffer sizes.  It is not relevant to Tektronix or
+     Metafile Plotters, since they draw paths in real time and have no
+     buffer limitations.
 
 `META_PORTABLE'
      (Default "no".)  Relevant only to Metafile Plotters.  "yes" means
@@ -4890,12 +5125,29 @@ names begin with "HPGL", affect only a single type of Plotter.
      the emulator to VT100 mode.  The key sequence `ALT minus' may be
      employed manually within `kermit' to switch between the two modes.
 
+`USE_DOUBLE_BUFFERING'
+     (Default "no".)  Relevant only to X Plotters and X Drawable
+     Plotters.  If the value is "yes", each frame of graphics, within a
+     openpl...closepl pair, is written to an off-screen buffer rather
+     than to the Plotter's display.  When erase is invoked to end a
+     frame, or when closepl is invoked, the contents of the off-screen
+     buffer are copied to the Plotter's display, pixel by pixel.  This
+     `double buffering' scheme is useful in creating the illusion of
+     smooth animation.
+
 `VANISH_ON_DELETE'
      (Default "no".)  Relevant only to X Plotters.  If the value is
      "yes", when a Plotter is deleted, the window or windows that it
      has popped up will vanish.  Otherwise, each such window will
      remain on the screen until it is removed by the user (by typing
      `q' in it, or by clicking with a mouse).
+
+`XDRAWABLE_COLORMAP'
+     (Default NULL.)  Relevant only to X Drawable Plotters.  If the
+     value is non-NULL, it should be a `Colormap *', a pointer to a
+     colormap from which colors should be allocated.  NULL signifies
+     that the colormap to be used is the default colormap of the
+     display with which the drawable(s) to be drawn in are associated.
 
 `XDRAWABLE_DISPLAY'
      (Default NULL.)  Relevant only to X Drawable Plotters.  The value
@@ -4956,8 +5208,8 @@ Available text fonts
 ====================
 
    The `libplot' library and applications linked with it, such as
-`graph' and `plot', can use many fonts.  These include 16 Hershey
-fonts, 35 Postscript fonts, and 45 PCL 5 fonts.  We call these 96 fonts
+`graph' and `plot', can use many fonts.  These include 17 Hershey
+fonts, 35 Postscript fonts, and 45 PCL 5 fonts.  We call these 97 fonts
 the `built-in' fonts.  The Hershey fonts are so-called vector fonts,
 constructed from stroked characters digitized c. 1967 by Dr. Allen V.
 Hershey at the U.S. Naval Surface Weapons Center in Dahlgren, VA.  The
@@ -4975,7 +5227,7 @@ Hershey fonts, and all variants of `graph' except `graph -T hpgl' and
 used only by HP-GL Plotters and `graph -T hpgl'.
 
    For the purpose of plotting text strings (*note Text String
-Format::.), the built-in fonts are divided into typefaces.  The 16
+Format::.), the built-in fonts are divided into typefaces.  The 17
 Hershey fonts are divided into typefaces as follows.
 
    * HersheySerif
@@ -5303,7 +5555,7 @@ drawn as an `undefined character' glyph (several horizontal lines).
 
    To what extent do the fonts supported by `libplot' contain
 ligatures?  The 35 Postscript fonts and 45 PCL 5 fonts, as implemented
-in `libplot', do not contain ligatures.  However, four of the 16
+in `libplot', do not contain ligatures.  However, four of the 17
 Hershey fonts contain ligatures.  The character combinations "fi",
 "ff", "fl", "ffi", and "ffl" are automatically drawn as ligatures in
 HersheySerif and HersheySerif-Italic.  (Also in HersheyCyrillic and
@@ -5315,7 +5567,7 @@ regarded as a ligature in any font.  To obtain an eszet, you must
 either request one with the control sequence "\ss" (*note Text String
 Format::.), or, if you have an 8-bit keyboard, type an eszet explicitly.
 
-   The preceding discussions dealt with the built-in fonts: the 16
+   The preceding discussions dealt with the built-in fonts: the 17
 Hershey fonts, the 35 Postscript fonts, and the 45 PCL 5 fonts.
 In fact, the X Plotters supported by `libplot', and `graph -T X' (which
 is built on top of `libplot') are not restricted to the built-in fonts.
@@ -6319,11 +6571,11 @@ escape sequences, they apply only if the current font is a Hershey font.
 
    The preceding miscellaneous and astronomical symbols are not the only
 special non-font symbols that may be used if the current font is a
-Hershey font.  The entire library of glyphs digitized by Allen V.
-Hershey is built into GNU `libplot'.  So text strings may include any
-Hershey glyph.  Each of the 1641 available Hershey glyphs is identified
-by a four-digit number.  Standard Hershey glyph #1 would be specified
-as "\#H0001".  The standard Hershey glyphs range from "\#H0001" to
+Hershey font.  The entire library of glyphs digitized by Allen Hershey
+is built into GNU `libplot'.  So text strings may include any Hershey
+glyph.  Each of the 1641 available Hershey glyphs is identified by a
+four-digit number.  Standard Hershey glyph #1 would be specified as
+"\#H0001".  The standard Hershey glyphs range from "\#H0001" to
 "\#H3999", with a number of gaps.  Some additional glyphs designed by
 others appear in the "\#H4000"..."\#H4194" range.  Syllabic Japanese
 characters (Kana) are located in the "\#H4195"..."\#H4399" range.
@@ -6387,10 +6639,8 @@ Available marker symbols
    The GNU `libplot' library supports a standard set of marker symbols,
 numbered 0 through 31.  These are the symbols that the `graph' program
 will plot at each point of a dataset, if the `-S' option is used.  The
-list is as follows (by convention, marker symbol #0 means no symbol at
-all).
-
-  0. no symbol at all
+list is as follows (by convention, marker symbol #0 means no symbol
+at all).
 
   1. dot
 
@@ -6455,7 +6705,7 @@ all).
  31. filled octagon
 
 The interpretation of marker symbols 1 through 5 is the same as in the
-GKS (Graphics Kernel System).
+well known GKS (Graphical Kernel System).
 
    Symbols 32 and up are interpreted as characters in a certain text
 font.  For `libplot', it is the current font.  For `graph', it is the
@@ -6670,7 +6920,7 @@ Tektronix storage scopes, 200dpi electrostatic printer/plotters from
 Versatec and Varian, pen plotters from Hewlett-Packard, and early
 graphics terminals.
 
-   In 1989, Rich Murphey <rich@lamprey.utmb.edu> wrote the first GNU
+   In 1989, Rich Murphey <rich@freebsd.org> wrote the first GNU
 versions of `graph', `plot', and `spline', and the earliest
 documentation.  Richard Stallman further directed development of the
 programs and provided editorial support for the documentation.
@@ -6695,22 +6945,21 @@ supported by `gnuplot', and extended the exception handling.
    Many other people aided the development of the plotting utilities
 package along the way.  The Hershey vector fonts now in `libplot' are
 of course based on the characters digitized in the mid to late 1960's
-by Allen V. Hershey.  Additional characters and/or marker symbols were
-taken from the SLAC Unified Graphics System developed by Robert C.
-Beach in the mid-1970's, and from the fonts designed by
-Thomas Wolff <wolff@inf.fu-berlin.de> for Ghostscript.  The
-interpolation algorithms used in `spline' are based on the algorithms
-of Alan K. Cline <cline@cs.utexas.edu>, as described in his papers in
-the Apr. 1974 issue of `Communications of the ACM'.  The table-driven
-parser used in `tek2plot' was written at Berkeley in the mid-1980's by
-Edward Moy <moy@parc.xerox.com>.  The `sagitta' algorithm used in an
-extended form in `libplot' for drawing circular and elliptic arcs was
-developed by Peter Karnow of URW and Ken Turkowski <turk@apple.com> of
-Apple.  Ray Toy <toy@rtp.ericsson.se> helped with the tick mark spacing
-code in `graph' and was the first to incorporate GNU `getopt'.  Arthur
-Smith, formerly of LASSP at Cornell, provided code for his `xplot'
-utility.  Nelson Beebe <beebe@math.utah.edu> exhaustively tested the
-package installation process.
+by Allen V. Hershey, who deserves a vote of thanks.  Additional
+characters and/or marker symbols were taken from the SLAC Unified
+Graphics System developed by Robert C. Beach in the mid-1970's, and
+from the fonts designed by Thomas Wolff <wolff@inf.fu-berlin.de> for
+Ghostscript.  The interpolation algorithms used in `spline' are based
+on the algorithms of Alan K. Cline <cline@cs.utexas.edu>, as described
+in his papers in the Apr. 1974 issue of `Communications of the ACM'.
+The table-driven parser used in `tek2plot' was written at Berkeley in
+the mid-1980's by Edward Moy <moy@parc.xerox.com>.  The `sagitta'
+algorithm used in an extended form in `libplot' for drawing circular
+and elliptic arcs was developed by Peter Karnow of URW and
+Ken Turkowski <turk@apple.com> of Apple.  Ray Toy <toy@rtp.ericsson.se>
+helped with the tick mark spacing code in `graph' and was the first to
+incorporate GNU `getopt'.  Arthur Smith, formerly of LASSP at Cornell,
+provided code for his `xplot' utility.  Nelson Beebe <beebe@math.utah.edu> exhaustively tested the package installation process.
 
    Robert Maier wrote the documentation, which now incorporates Nick
 Tufillaro's `ode' manual.  Julie Sussmann checked over the
@@ -6719,61 +6968,66 @@ documentation for style and clarity.
 
 
 Tag Table:
-Node: Top1571
-Node: Plotutils Intro2294
-Node: graph9563
-Node: Simple Examples10342
-Node: Non-Square Plots22685
-Node: Multiple Datasets25400
-Node: Multiplotting31017
-Node: Data Formats33839
-Node: graph Invocation36571
-Node: Plot Options37430
-Node: Dataset Options52755
-Node: Multiplot Options61568
-Node: Raw graph Options62884
-Node: Info Options63514
-Node: graph Environment64428
-Node: plot68889
-Node: plot Examples69146
-Node: plot Invocation71320
-Node: plot Environment80954
-Node: tek2plot85393
-Node: tek2plot Examples85682
-Node: tek2plot Invocation86821
-Node: tek2plot Environment96113
-Node: spline99275
-Node: spline Examples99553
-Node: Advanced Use of spline106676
-Node: spline Invocation111242
-Node: ode120382
-Node: Basic Math121617
-Node: Simple ode Examples124489
-Node: Additional ode Examples133498
-Node: ode Invocation140501
-Node: Diagnostics144552
-Node: Numerical Error148677
-Node: Running Time160438
-Node: Input Language161767
-Node: ODE Bibliography170126
-Node: libplot171050
-Node: C Programming179616
-Node: Functions187533
-Node: Setup Functions189078
-Node: Drawing Functions195229
-Node: Attribute Functions205868
-Node: Mapping Functions216418
-Node: Driver Parameters218474
-Node: Appendices228741
-Node: Text and Markers229184
-Node: Text Fonts229892
-Node: Text String Format241277
-Node: Marker Symbols259353
-Node: Color Names261387
-Node: Metafiles262733
-Node: Auxiliary Software266232
-Node: idraw266507
-Node: xfig267709
-Node: Acknowledgements268469
+Node: Top1600
+Node: Plotutils Intro2352
+Node: graph9600
+Node: Simple Examples10379
+Node: Non-Square Plots22722
+Node: Multiple Datasets25437
+Node: Multiplotting31054
+Node: Data Formats33876
+Node: graph Invocation36608
+Node: Plot Options37467
+Node: Dataset Options52962
+Node: Multiplot Options61743
+Node: Raw graph Options63103
+Node: Info Options63733
+Node: graph Environment64647
+Node: plot69133
+Node: plot Examples69390
+Node: plot Invocation71565
+Node: plot Environment81345
+Node: tek2plot85810
+Node: tek2plot Examples86099
+Node: tek2plot Invocation87238
+Node: tek2plot Environment96687
+Node: spline99860
+Node: spline Examples100138
+Node: Advanced Use of spline107261
+Node: spline Invocation111827
+Node: ode120921
+Node: Basic Math122156
+Node: Simple ode Examples125028
+Node: Additional ode Examples134037
+Node: ode Invocation141040
+Node: Diagnostics145091
+Node: Numerical Error149216
+Node: Running Time160977
+Node: Input Language162306
+Node: ODE Bibliography170665
+Node: libplot171589
+Node: libplot Overview171948
+Node: C Programming181522
+Node: The C API181901
+Node: C Compiling and Linking187984
+Node: Sample C Drawing189679
+Node: Sample C Animation194631
+Node: Functions199345
+Node: Setup Functions200970
+Node: Drawing Functions207129
+Node: Attribute Functions217918
+Node: Mapping Functions228508
+Node: Driver Parameters230666
+Node: Appendices241997
+Node: Text and Markers242440
+Node: Text Fonts243148
+Node: Text String Format254533
+Node: Marker Symbols272606
+Node: Color Names274629
+Node: Metafiles275975
+Node: Auxiliary Software279474
+Node: idraw279749
+Node: xfig280951
+Node: Acknowledgements281711
 
 End Tag Table

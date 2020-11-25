@@ -34,7 +34,7 @@ _g_ffontsize (size)
     }
 
   if (size < 0.0)		/* reset to default */
-    size = _plotter->default_drawstate->font_size;
+    size = _plotter->drawstate->default_font_size;
 
   /* set the new nominal size in the drawing state */
   _plotter->drawstate->font_size = size;

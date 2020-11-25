@@ -89,8 +89,7 @@ TEXINFO_TEX = $(srcdir)/texinfo.tex
 INFO_DEPS = plotutils.info
 DVIS = plotutils.dvi
 TEXINFOS = plotutils.texi
-DIST_COMMON =  Makefile.am Makefile.in mdate-sh stamp-vti texinfo.tex \
-version.texi
+DIST_COMMON =  Makefile.am Makefile.in mdate-sh texinfo.tex
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -109,31 +108,8 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-version.texi: stamp-vti
-	cp $(srcdir)/stamp-vti $(srcdir)/version.texi
-
-stamp-vti: plotutils.texi $(top_srcdir)/configure.in
-	@echo "@set UPDATED `cd $(srcdir) \
-	  && $(SHELL) ./mdate-sh plotutils.texi`" > vti.tmp
-	@echo "@set EDITION $(VERSION)" >> vti.tmp
-	@echo "@set VERSION $(VERSION)" >> vti.tmp
-	@cmp -s vti.tmp $(srcdir)/stamp-vti \
-	  || (echo "Updating $(srcdir)/stamp-vti"; \
-	      cp vti.tmp $(srcdir)/stamp-vti)
-	-@rm -f vti.tmp
-
-mostlyclean-vti:
-	-rm -f vti.tmp
-
-clean-vti:
-
-distclean-vti:
-
-maintainer-clean-vti:
-	-rm -f stamp-vti version.texi
-
-plotutils.info: plotutils.texi version.texi
-plotutils.dvi: plotutils.texi version.texi
+plotutils.info: plotutils.texi
+plotutils.dvi: plotutils.texi
 
 
 DVIPS = dvips
@@ -296,24 +272,23 @@ distclean-generic:
 maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-mostlyclean:  mostlyclean-vti mostlyclean-aminfo mostlyclean-generic
+mostlyclean:  mostlyclean-aminfo mostlyclean-generic
 
-clean:  clean-vti clean-aminfo clean-generic mostlyclean
+clean:  clean-aminfo clean-generic mostlyclean
 
-distclean:  distclean-vti distclean-aminfo distclean-generic clean
+distclean:  distclean-aminfo distclean-generic clean
 	-rm -f config.status
 	-rm -f libtool
 
-maintainer-clean:  maintainer-clean-vti maintainer-clean-aminfo \
-		maintainer-clean-generic distclean
+maintainer-clean:  maintainer-clean-aminfo maintainer-clean-generic \
+		distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
-.PHONY: mostlyclean-vti distclean-vti clean-vti maintainer-clean-vti \
-install-info-am uninstall-info mostlyclean-aminfo distclean-aminfo \
-clean-aminfo maintainer-clean-aminfo tags distdir info dvi installcheck \
-install-exec install-data install uninstall all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
+.PHONY: install-info-am uninstall-info mostlyclean-aminfo \
+distclean-aminfo clean-aminfo maintainer-clean-aminfo tags distdir info \
+dvi installcheck install-exec install-data install uninstall all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 

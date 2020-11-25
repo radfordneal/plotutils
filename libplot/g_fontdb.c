@@ -3,7 +3,7 @@
    the PS and PCL fonts, the most important information is the width
    tables.  For the Hershey fonts, it is the mapping from character
    position in the font, to position of the corresponding glyph, in the
-   glyph array in g_her_glyphs.c.  Accented characters are formed as
+   glyph array in g_her_glyph.c.  Accented characters are formed as
    composites. */
 
 /* The 35 standard PS fonts, with ISO8859-1 encoding where that is
@@ -1318,8 +1318,8 @@ const struct typeface_info_struct _ps_typeface_info[] =
   { 2, { 34, 33, 999, 999, 999, 999, 999, 999, 999, 999 } },
 };
 
-/* The vector fonts we support.  Each character in a vector font is an
-   index into the glyph array in hershey_glyphs.h.  Each
+/* The Hershey vector fonts we support.  Each character in a Hershey font
+   is an index into the glyph array in g_her_glyphs.h.  Each
    vector_font_info_struct includes these elements:
 
    (1) PS-style name for the font
@@ -1332,9 +1332,9 @@ const struct typeface_info_struct _ps_typeface_info[] =
    (8) a `visible' flag (false for Kana fonts, that are only used internally)
 */
 
-/* Each Hershey font below can contain up to 256 Hershey glyphs, each of
+/* Each Hershey font below may contain up to 256 Hershey glyphs, each of
    which is specified by a number that indexes into the array in
-   her_glyphs.c.  Only the ranges 0x20..0x7e and 0xa0..0xff are directly
+   g_her_glyph.c.  Only the ranges 0x20..0x7e and 0xa0..0xff are directly
    accessible to the user.
 
    There are several sorts of hole in the Hershey fonts, i.e., entries in
@@ -1350,12 +1350,12 @@ const struct typeface_info_struct _ps_typeface_info[] =
    ordfeminine.  These are written as 0, which means an empty glyph.  That
    is because they not implemented as conventional glyphs at all: the
    corresponding entries in this table are never accessed.  In the file
-   controlify.c these characters are mapped to sequences of control
+   g_cntrlify.c these characters are mapped to sequences of control
    sequences, which implement them as superscripts.
    
    2. the characters ae, AE, and germandbls (i.e. eszet), which (except in
    Gothic-German) are also written as 0.  That is because they are
-   `deligatured' in controlify.c, via a translation table in control.h.
+   `deligatured' in g_cntrlify.c, via a translation table in g_cntrlify.h.
    Deligaturization maps them to the two-characters sequences "ae", "AE",
    and "ss".  The corresponding entries in this table are never accessed.
 
@@ -1367,13 +1367,12 @@ const struct typeface_info_struct _ps_typeface_info[] =
    units (for capitals), and that it should be raised by 7 units and also
    displaced rightward by 2 units (for italic capitals).
    
-   4. the small syllabic characters in the HersheyKatakana font.  These are
-   written as KS (i.e. Katakana small) + true glyph number.  This means
-   that they should be isotropically compressed, with the baseline
-   preserved.
+   4. the small Katakana in the HersheyEUC font.  These are written as KS
+   (i.e. Katakana small) + true glyph number.  This means that they should
+   be isotropically compressed, with the baseline preserved.
 
 
-   Note that in many Hershey fonts, the `nonprintable' range 0x80--0x9f is
+   Note that in many Hershey fonts, the `nonprintable' range 0x80..0x9f is
    nonprintable only in the sense that it is not directly accessible to the
    user; it may contain ligatures, macros, and variant characters.  In fact
    the just-mentioned accents, used in the construction of accented
@@ -1398,11 +1397,7 @@ const struct typeface_info_struct _ps_typeface_info[] =
    0231: dotless i
 */
 
-
-/* UGS `undefined character' symbol (several horizontal strokes) */
-#define UNDE 4023
-
-#define CEDILLA UNDE		/* to be fixed */
+#define CEDILLA UNDE		/* to be fixed someday */
 
 const struct vector_font_info_struct _vector_font_info[] = 
 {
@@ -2143,7 +2138,7 @@ const struct vector_font_info_struct _vector_font_info[] =
 	 misc. non-font characters (e.g., Hershey astronomical symbols) in
 	 this range. */
          0,    0,    0,    0, 4019, 4020, 4021, 4022,
-      4023, 2281, 2282, 2283, 2284, 2285, 2286, 2287,
+      UNDE, 2281, 2282, 2283, 2284, 2285, 2286, 2287,
       2288, 2289, 2290, 2291, 2292, 2293, 2294, 2295,
       2187, 2277, 2278, 2269, 2234, 2230, 4008, 4012, 
       /* symbol encoding resumes... */
@@ -2187,7 +2182,7 @@ const struct vector_font_info_struct _vector_font_info[] =
 	 misc. non-font characters (e.g., Hershey astronomical symbols) in
 	 this range. */
          0,    0,    0,    0, 4019, 4020, 4021, 4022,
-      4023, 2281, 2282, 2283, 2284, 2285, 2286, 2287,
+      UNDE, 2281, 2282, 2283, 2284, 2285, 2286, 2287,
       2288, 2289, 2290, 2291, 2292, 2293, 2294, 2295,
        687, 2277, 2278, 2269, 2234, 2230, 4008, 4012, 
       /* symbol encoding resumes... */
@@ -2246,7 +2241,7 @@ const struct vector_font_info_struct _vector_font_info[] =
    This table maps each accented character to a base character and an
    accent.
 
-   The indices of the accent glyphs, in the glyph table in her_glyphs.c,
+   The indices of the accent glyphs, in the glyph table in g_her_glyph.c,
    are stored in the inaccessible 0x80--0x9f region (i.e., \0200--\0237
    region) of each font. */
 

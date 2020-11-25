@@ -236,19 +236,18 @@ _set_initial_font_size (x0, y0, x1, y1, x2, y2)
      space().  So when the user calls space() [or space2() or fspace() or
      fspace2()], we set the line width and font size to something reasonable.
 
-     We also set the default line width and font size, as stored in the
-     _plotter->default_drawstate structure, to something reasonable.  The
-     default values stored there are used if the user calls linewidth()
-     or fontsize() with out-of-bound arguments. */
+     We also set the default line width and font size to something
+     reasonable.  The default values stored there are used if the user
+     calls linewidth() or fontsize() with out-of-bound arguments. */
 
-  _plotter->default_drawstate->font_size
+  _plotter->drawstate->default_font_size
     = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_WIDTH / norm;
   _plotter->drawstate->font_size
     = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_WIDTH / norm;
   _plotter->drawstate->true_font_size
     = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_WIDTH / norm;
 
-  _plotter->default_drawstate->line_width 
+  _plotter->drawstate->default_line_width 
     = DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_WIDTH / norm;
   _plotter->drawstate->line_width 
     = DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_WIDTH / norm;

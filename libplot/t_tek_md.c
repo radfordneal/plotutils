@@ -51,11 +51,11 @@
 
    The user can also control the trichotomy normal z-axis (i.e. focused
    beam) / defocused z-axis (i.e. defocused beam) / write-thru mode (see
-   tek2.c for the control codes used for this).  Write-thru simply means
-   that written data, whether alpha characters or vectors, are written to
-   screen but are not refreshed.  So they appear briefly and then vanish
-   (unless they are refreshed under user control, by drawing them
-   repeatedly).
+   tek2plot.c for the control codes used for this).  Write-thru simply
+   means that written data, whether alpha characters or vectors, are
+   written to screen but are not refreshed.  So they appear briefly and
+   then vanish (unless they are refreshed under user control, by drawing
+   them repeatedly).
 
    WARNING: it is a peculiarity of the 4014 that in the following list,
    one can mode-switch only _downward_, not upward!  The exception is

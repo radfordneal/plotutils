@@ -1,7 +1,7 @@
-This is release 2.1 of the GNU plotutils (plotting utilities) package,
-including GNU libplot: a function library for 2-D device-independent vector
-graphics.  The package now has its own Web page:
-http://www.gnu.org/software/plotutils/plotutils.html .
+This is release 2.1.1 of the GNU plotutils (plotting utilities) package,
+including release 1.1 of GNU libplot: a function library for
+two-dimensional device-independent vector graphics.  The package now has
+its own Web page: http://www.gnu.org/software/plotutils/plotutils.html .
 
 In this directory, the file INSTALL contains generic instructions dealing
 with installation of a GNU package, and the file INSTALL.pkg contains
@@ -12,9 +12,62 @@ Please send bug reports to <bug-gnu-utils@gnu.org>, and suggestions for
 longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
 author and current maintainer, Robert Maier <rsm@math.arizona.edu>.
 
+----------------------------------------------------------------------
+
 The contents of the plotutils package are:
 
-	graph.  A full-featured 2-D plotting program, which plots a stream of
+1. libplot.     This is the function library for device-independent
+		two-dimensional vector graphics that the programs `graph',
+		`plot', and `tek2plot' (see below) are based on.  On
+		systems that support DLL's (dynamically linked libraries),
+		it is installed as a DLL.
+
+		If you are a programmer, you may use this library yourself,
+		to create vector graphics in many output formats.  You may
+		also use it to create vector graphics animations under the
+		X Window System.
+		
+		libplot includes functions to draw objects of many types:
+		lines and polylines, circles and ellipses, circular and
+		elliptic arcs, and marker symbols.  Postscript-style
+		`paths' may be drawn.  There is support for color (both pen
+		color and fill color for objects).
+
+		Output formats include X11, Postscript (editable with
+		the idraw drawing editor), Fig (editable with the xfig
+		drawing editor), HP-GL and HP-GL/2, Tektronix, and GNU
+		metafile format.  GNU metafile format may be translated
+		into any of the other formats with the `plot' utility
+		(see below).
+
+		libplot includes extensive support for accurate sizing and
+		positioning of text.  This includes the placement of
+		subscripts and superscripts.  Its X11, Postscript, and Fig
+		drivers all support the 35 standard Postscript fonts, and
+		its HP-GL/2 driver supports the 45 standard PCL 5 fonts.
+		In addition, all four, together with its Tektronix driver,
+		support a set of 17 Hershey vector fonts.  All supported
+		fonts may be arbitrarily rotated and scaled.  All fonts,
+		except for symbol and dingbat fonts, use the ISO-Latin-1
+		encoding (a superset of ascii; the ISO-Latin-1 support in
+		the Hershey fonts is extensive but not quite complete).
+		
+		(Clones of the 35 standard Postscript fonts, in Type 1
+		format, have been contributed by URW GmbH and are
+		distributed under the GNU General Public License as part of
+		this package.  See the file ./INSTALL.fonts .)
+
+		Similarly to Postscript, libplot has the nice feature that
+		user coordinates (in terms of which you express the
+		location of graphical objects) may be transformed to device
+		coordinates by an arbitrary affine transformation.  A stack
+		of drawing states (i.e., graphics contexts) is supported
+		too.
+
+2. Programs, including the following.		
+
+	graph.  A full-featured scientific plotting program for plotting XY
+		(i.e. 2-dimensional) data.  It plots a stream of
 		datapoints, in real time if possible.  There is a
 		well-chosen set of command-line options for adjusting the
 		visual appearance of the plot, labelling axes (with
@@ -40,12 +93,7 @@ The contents of the plotutils package are:
 				is most useful on modern (X11R6+) displays,
 				which can rotate and scale text
 				arbitrarily.  It uses the 35 standard
-				Postscript fonts.  (Clones of the 35
-				standard fonts, in Type 1 format, have been
-				contributed by URW GmbH, and are
-				distributed under the GNU General Public
-				License as part of this package.  See the
-				file ./INSTALL.fonts .)
+				Postscript fonts.
 
 		graph -T ps	A variant that produces EPS (encapsulated
 				Postscript) output, which can be printed,
@@ -145,45 +193,13 @@ The contents of the plotutils package are:
 		programs that produce output in the traditional plot(5)
 		graphics format.
 
-	libplot.  This is the function library for device-independent 2-D
-		vector graphics that the utilities `graph', `plot', and
-		`tek2plot' (see below) are based on.  On systems that
-		support DLL's (dynamically linked libraries), it is
-		installed as a DLL.
-		
-		The current release of libplot (version 0.0) is a merger of
-		what were originally six separate function libraries, one
-		for each supported output device.  These function libraries
-		(libplotX, libplotps, libplotfig, libplothpgl, libplottek,
-		and raw libplot) include functions to draw lines and
-		polylines, circles and ellipses, circular and elliptic
-		arcs, text (``labels''), and marker symbols.  Arbitrary
-		affine coordinate transformations from user coordinates to
-		normalized device coordinates are supported, as is the
-		notion of a stack of drawing states (i.e., a stack of
-		graphics contexts).  There is support for color (both pen
-		color and fill color for objects).
-		
-		libplot includes extensive support for accurate sizing and
-		positioning of text.  This includes the placement of
-		subscripts and superscripts.  For fonts, libplotX,
-		libplotps, and libplotfig all support the 35 standard
-		Postscript fonts, and libplothpgl supports the 45 standard
-		PCL 5 fonts.  In addition, all four, together with
-		libplottek, support a full set of traditional Hershey
-		vector fonts.  All supported fonts may be arbitrarily
-		rotated and scaled.  All fonts, except for symbol and
-		dingbat fonts, use the ISO-Latin-1 encoding (a superset of
-		ascii; the ISO-Latin-1 support in the Hershey fonts is
-		extensive but not quite complete).
-
-	spline. This program does spline interpolation of input data.
-		That is, it takes a file of datapoints, and interpolates
-		between them to produce an interpolated segment of the
-		input data.  It acts as a filter, though usually not as a
-		real-time one (in the most common mode of operation, the
-		entire input must be read before any data points are
-		output).
+	spline. This program does spline interpolation of input data, which
+		may be of arbitrary dimensionality.  That is, it takes a
+		file of datapoints, and interpolates between them to
+		produce an interpolated segment of the input data.  It acts
+		as a filter, though usually not as a real-time one (in the
+		most common mode of operation, the entire input must be
+		read before any data points are output).
 
 		The output spline is normally a cubic spline, but if a
 		`tension' parameter is set to a nonzero value, the output

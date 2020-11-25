@@ -1047,14 +1047,16 @@ open_plotter()
 {
   int handle;
 
+  if (plotter.bg_color)
+    /* select user-specified background color */
+    parampl ("BG_COLOR", plotter.bg_color);
+  parampl ("USE_DOUBLE_BUFFERING", "no");
   if ((handle = newpl (plotter.display_type, NULL, stdout, stderr)) < 0)
     return -1;
   else
     selectpl (handle);
   if (openpl () < 0)
     return -1;
-  if (plotter.bg_color)
-    bgcolorname (plotter.bg_color);
   if (!plotter.save_screen || plotter.bg_color)
     erase ();
   fspace (0.0, 0.0, (double)PLOT_SIZE, (double)PLOT_SIZE);

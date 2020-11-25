@@ -21,6 +21,8 @@ _m_textangle (angle)
      int angle;
 #endif
 {
+  double retval;
+
   if (!_plotter->open)
     {
       _plotter->error ("textangle: invalid operation");
@@ -40,7 +42,9 @@ _m_textangle (angle)
     }
 
   /* invoke generic method */
-  return _g_textangle (angle);
+  retval = _g_ftextangle ((double)angle);
+
+  return IROUND(retval);
 }
 
 double

@@ -40,6 +40,9 @@ libplot.
 		 GNU metafile format.  This program illustrates how to 
 		 write a C program that invokes GNU libplot functions.
 
+    ./hershey-fonts: Excerpts from Allen Hershey's `Calligraphy for
+		 Computers', explaining the origin of the Hershey fonts.
+
 When specifying to the plotting utilities that a Hershey font should be
 used, you would usually specify it by name, e.g., `graph --font-name
 HersheyGothic-English'.  However, the Hershey fonts are assembled from a

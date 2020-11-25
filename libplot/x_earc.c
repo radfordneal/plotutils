@@ -139,35 +139,55 @@ _x_fellarc (xc, yc, x0, y0, x1, y1)
       /* should check for width, height being 0 here, and treat this
 	 special case appropriately: FIXME */
 
-      /* place current line attributes in the X GC */
+      /* place current line attributes in GC's used for drawing and filling */
       _plotter->set_attributes();  
 
       if (_plotter->drawstate->fill_level)	/* not transparent */
 	{
-	  /* select fill color as X foreground color */
+	  /* select fill color as foreground color in GC used for filling */
 	  _plotter->set_fill_color();
 
+	  if (_plotter->double_buffering)
+	    XFillArc(_plotter->dpy, _plotter->drawable3, 
+		     _plotter->drawstate->gc_fill, 
+		     xorigin, yorigin, squaresize_x, squaresize_y,
+		     64 * startangle, 64 * range);
+	  else
+	    {
+	      if (_plotter->drawable1)
+		XFillArc(_plotter->dpy, _plotter->drawable1, 
+			 _plotter->drawstate->gc_fill, 
+			 xorigin, yorigin, squaresize_x, squaresize_y,
+			 64 * startangle, 64 * range);
+	      if (_plotter->drawable2)
+		XFillArc(_plotter->dpy, _plotter->drawable2, 
+			 _plotter->drawstate->gc_fill, 
+			 xorigin, yorigin, squaresize_x, squaresize_y,
+			 64 * startangle, 64 * range);
+	    }
+	}
+      
+      /* select pen color as foreground color in GC used for drawing */
+      _plotter->set_pen_color();
+
+      if (_plotter->double_buffering)
+	XDrawArc(_plotter->dpy, _plotter->drawable3, 
+		 _plotter->drawstate->gc_fg, 
+		 xorigin, yorigin, squaresize_x, squaresize_y,
+		 64 * startangle, 64 * range);
+      else
+	{
 	  if (_plotter->drawable1)
-	    XFillArc(_plotter->dpy, _plotter->drawable1, _plotter->drawstate->gc, 
+	    XDrawArc(_plotter->dpy, _plotter->drawable1, 
+		     _plotter->drawstate->gc_fg, 
 		     xorigin, yorigin, squaresize_x, squaresize_y,
 		     64 * startangle, 64 * range);
 	  if (_plotter->drawable2)
-	    XFillArc(_plotter->dpy, _plotter->drawable2, _plotter->drawstate->gc, 
+	    XDrawArc(_plotter->dpy, _plotter->drawable2, 
+		     _plotter->drawstate->gc_fg, 
 		     xorigin, yorigin, squaresize_x, squaresize_y,
 		     64 * startangle, 64 * range);
 	}
-      
-      /* select pen color as X foreground color */
-      _plotter->set_pen_color();
-
-      if (_plotter->drawable1)
-	XDrawArc(_plotter->dpy, _plotter->drawable1, _plotter->drawstate->gc, 
-		 xorigin, yorigin, squaresize_x, squaresize_y,
-		 64 * startangle, 64 * range);
-      if (_plotter->drawable2)
-	XDrawArc(_plotter->dpy, _plotter->drawable2, _plotter->drawstate->gc, 
-		 xorigin, yorigin, squaresize_x, squaresize_y,
-		 64 * startangle, 64 * range);
     }
 
   _plotter->drawstate->pos = p1; /* move to p1 (a libplot convention) */

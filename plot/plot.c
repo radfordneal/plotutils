@@ -276,6 +276,10 @@ main (argc, argv)
       return 0;
     }
 
+  if (bg_color)
+    /* select user-specified background color */
+    parampl ("BG_COLOR", bg_color);
+
   if ((handle = newpl (display_type, NULL, stdout, stderr)) < 0)
     {
       fprintf (stderr, "%s: error: could not open plot device\n", progname);
@@ -837,11 +841,6 @@ read_plot (in_stream)
 	    /* insert these after the call to space(), if user insists on
 	       including them (should estimate sizes better) */
 	    {
-	      if (bg_color)
-		{
-		  bgcolorname (bg_color);
-		  erase ();
-		}
 	      if (pen_color)
 		pencolorname (pen_color);
 	      if (font_name)

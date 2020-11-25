@@ -17,7 +17,7 @@
 #define MULTIPLY 040
 #define DIVIDES 040
 
-const unsigned char _iso_to_roman8 [128] =
+static const unsigned char _iso_to_roman8 [128] =
 {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,

@@ -8,7 +8,7 @@
 #include "extern.h"
 
 /* initialization for _plotter */
-Plotter _meta_default_plotter = 
+const Plotter _meta_default_plotter = 
 {
   /* methods */
   _m_alabel, _m_arc, _m_arcrel, _m_bgcolor, _g_bgcolorname, _m_box, _m_boxrel, _m_capmod, _m_circle, _m_circlerel, _m_closepl, _g_color, _g_colorname, _m_cont, _m_contrel, _m_ellarc, _m_ellarcrel, _m_ellipse, _m_ellipserel, _m_endpath, _m_erase, _m_farc, _m_farcrel, _m_fbox, _m_fboxrel, _m_fcircle, _m_fcirclerel, _m_fconcat, _m_fcont, _m_fcontrel, _m_fellarc, _m_fellarcrel, _m_fellipse, _m_fellipserel, _m_ffontname, _m_ffontsize, _m_fillcolor, _g_fillcolorname, _m_filltype, _g_flabelwidth, _m_fline, _m_flinerel, _m_flinewidth, _g_flushpl, _m_fmarker, _m_fmarkerrel, _m_fmove, _m_fmoverel, _m_fontname, _m_fontsize, _m_fpoint, _m_fpointrel, _m_frotate, _m_fscale, _m_fspace, _m_fspace2, _m_ftextangle, _m_ftranslate, _g_havecap, _m_joinmod, _m_label, _g_labelwidth, _m_line, _m_linemod, _m_linerel, _m_linewidth, _m_marker, _m_markerrel, _m_move, _m_moverel, _m_openpl, _g_outfile, _m_pencolor, _g_pencolorname, _m_point, _m_pointrel, _m_restorestate, _m_savestate, _m_space, _m_space2, _m_textangle,
@@ -22,6 +22,7 @@ Plotter _meta_default_plotter =
   /* private low-level `sync line attributes' method */
   NULL,
   /* private low-level `sync color' methods */
+  NULL,
   NULL,
   NULL,
   /* private low-level `sync position' method */
@@ -113,13 +114,18 @@ Plotter _meta_default_plotter =
   /* elements specific to the X11 and X11 Drawable device drivers */
   (Drawable)NULL,		/* an X drawable (e.g. a window) */
   (Drawable)NULL,		/* an X drawable (e.g. a pixmap) */
+  (Pixmap)NULL,			/* used if double buffering */
   (Fontrecord *)NULL,		/* head of list of retrieved X fonts */
+  (Colorrecord *)NULL,		/* head of list of retrieved color cells */
   (Display *)NULL,		/* display */
   (Colormap)NULL,		/* colormap */
+  false,			/* speed up animation by double buffering? */
+  0,				/* number of frame in page */
   /* elements specific to the X11 device driver */
   (XtAppContext)NULL,		/* application context */
   (Widget)NULL,			/* toplevel widget */
   (Widget)NULL,			/* Label widget */
+  false,			/* using private colormap? */
   false,			/* window(s) disappear on Plotter deletion? */
 #endif /* X_DISPLAY_MISSING */
 

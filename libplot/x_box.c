@@ -62,35 +62,49 @@ _x_fbox (x0, y0, x1, y1)
      We don't bother incrementing the args of XFillRectangle, because we
      follow our XFillRectangle() by an XDrawRectangle(). */
 
-  /* place current line attributes in the X GC */
+  /* place current line attributes in X GC's used for drawing and filling */
   _plotter->set_attributes();  
 
   if (_plotter->drawstate->fill_level)	/* not transparent */
     {
-      /* select fill color as X foreground color */
+      /* select fill color as foreground color in GC used for filling */
       _plotter->set_fill_color();
 
-      if (_plotter->drawable1)
-	XFillRectangle (_plotter->dpy, _plotter->drawable1, 
-			_plotter->drawstate->gc, 
+      if (_plotter->double_buffering)
+	XFillRectangle (_plotter->dpy, _plotter->drawable3,
+			_plotter->drawstate->gc_fill, 
 			xdmin, ydmin, width, height);
-      if (_plotter->drawable2)
-	XFillRectangle (_plotter->dpy, _plotter->drawable2, 
-			_plotter->drawstate->gc, 
-			xdmin, ydmin, width, height);
+      else
+	{
+	  if (_plotter->drawable1)
+	    XFillRectangle (_plotter->dpy, _plotter->drawable1, 
+			    _plotter->drawstate->gc_fill, 
+			    xdmin, ydmin, width, height);
+	  if (_plotter->drawable2)
+	    XFillRectangle (_plotter->dpy, _plotter->drawable2, 
+			    _plotter->drawstate->gc_fill, 
+			    xdmin, ydmin, width, height);
+	}
     }
 
-  /* select pen color as X foreground color */
+  /* select pen color as foreground color in GC used for drawing */
   _plotter->set_pen_color();
 
-  if (_plotter->drawable1)
-    XDrawRectangle (_plotter->dpy, _plotter->drawable1, 
-		    _plotter->drawstate->gc, 
+  if (_plotter->double_buffering)
+    XDrawRectangle (_plotter->dpy, _plotter->drawable3,
+		    _plotter->drawstate->gc_fg, 
 		    xdmin, ydmin, width, height);
-  if (_plotter->drawable2)
-    XDrawRectangle (_plotter->dpy, _plotter->drawable2, 
-		    _plotter->drawstate->gc, 
-		    xdmin, ydmin, width, height);
+  else
+    {
+      if (_plotter->drawable1)
+	XDrawRectangle (_plotter->dpy, _plotter->drawable1, 
+			_plotter->drawstate->gc_fg, 
+			xdmin, ydmin, width, height);
+      if (_plotter->drawable2)
+	XDrawRectangle (_plotter->dpy, _plotter->drawable2, 
+			_plotter->drawstate->gc_fg, 
+			xdmin, ydmin, width, height);
+    }
 
   /* move to center (libplot convention) */
   xnew = 0.5 * (x0 + x1);

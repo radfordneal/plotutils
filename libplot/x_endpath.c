@@ -7,6 +7,9 @@
    If endpath() is invoked when no polyline is under construction, it has
    no effect. */
 
+/* Note: should insert some X protocol out-of-bounds checks into this file
+   via the XOOB_INT and XOOB_UNSIGNED macros.  FIXME. */
+
 #include "sys-defines.h"
 #include "plot.h"
 #include "extern.h"
@@ -22,7 +25,12 @@ _x_endpath ()
   bool closed;
   XPoint *xarray;
   int polyline_len;
-    
+  /* The next few quantities are used only when drawing a filled circle,
+     in the special subcase when our entire sequence of path vertices is
+     mapped to a single X pixel.  That's the best we can do. */
+  int sp_offset, xloc = 0, yloc = 0;
+  unsigned int sp_size = 1;
+      
   if (!_plotter->open)
     {
       _plotter->error ("endpath: invalid operation");
@@ -82,7 +90,9 @@ _x_endpath ()
       device_y = IROUND(YD(_plotter->drawstate->datapoints[i].x, 
 			   _plotter->drawstate->datapoints[i].y));
 
-      if ((polyline_len == 0) || (device_x != xarray[polyline_len-1].x) || (device_y != xarray[polyline_len-1].y))
+      if ((polyline_len == 0) 
+	  || (device_x != xarray[polyline_len-1].x) 
+	  || (device_y != xarray[polyline_len-1].y))
 	{
 	  xarray[polyline_len].x = device_x;
 	  xarray[polyline_len].y = device_y;
@@ -90,59 +100,171 @@ _x_endpath ()
 	}
     }
 
-  /* place current line attributes in the X GC */
+  /* compute the square size, and offset of upper left vertex from center
+     of square, that we'll use when handling the notorious `special
+     subcase' (see above and below) */
+
+  if (_plotter->drawstate->PointsInLine > 1 && polyline_len == 1)
+    {
+      sp_size = (unsigned int)_plotter->drawstate->quantized_device_line_width; 
+      if (sp_size == 0) 
+	sp_size = 1;
+      sp_offset = (_plotter->drawstate->quantized_device_line_width + 1) / 2;
+      xloc = xarray[0].x - sp_offset;
+      yloc = xarray[0].y - sp_offset;
+    }
+      
+  /* place current line attributes in GC's used for drawing and filling */
   _plotter->set_attributes();  
 
   if (_plotter->drawstate->points_are_connected)
-    {
     /* general case: points are vertices of a polyline */
-
-      if (_plotter->drawstate->fill_level)	/* not transparent */
+    {
+      if (_plotter->drawstate->fill_level) /* not transparent, must fill */
 	{
-	  /* select fill color as X foreground color */
-	  _plotter->set_fill_color();
+	  if (_plotter->double_buffering)
+	    {
+	      if (!(_plotter->drawstate->PointsInLine > 1 && polyline_len == 1))
+		/* general subcase, not the abovementioned special subcase */
+		{
+		  /* select fill color as foreground color in GC used for filling */
+		  _plotter->set_fill_color();
+		  
+		  XFillPolygon (_plotter->dpy, _plotter->drawable3,
+				_plotter->drawstate->gc_fill,
+				xarray, polyline_len,
+				Complex, CoordModeOrigin);
+		}
+	    }
+	  else
+	    {
+	      if (!(_plotter->drawstate->PointsInLine > 1 && polyline_len == 1))
+		/* general subcase */
+		{
+		  /* select fill color as foreground color in GC used for filling */
+		  _plotter->set_fill_color();
 
-	  if (_plotter->drawable1)
-	    XFillPolygon (_plotter->dpy, _plotter->drawable1, 
-			  _plotter->drawstate->gc, 
-			  xarray, polyline_len,
-			  Complex, CoordModeOrigin);
-	  if (_plotter->drawable2)
-	    XFillPolygon (_plotter->dpy, _plotter->drawable2, 
-			  _plotter->drawstate->gc, 
-			  xarray, polyline_len,
-			  Complex, CoordModeOrigin);
+		  if (_plotter->drawable1)
+		    XFillPolygon (_plotter->dpy, _plotter->drawable1, 
+				  _plotter->drawstate->gc_fill,
+				  xarray, polyline_len,
+				  Complex, CoordModeOrigin);
+		  if (_plotter->drawable2)
+		    XFillPolygon (_plotter->dpy, _plotter->drawable2, 
+				  _plotter->drawstate->gc_fill,
+				  xarray, polyline_len,
+				  Complex, CoordModeOrigin);
+		}
+	    }	  
 	}
 
-      /* select pen color as X foreground color */
+      /* select pen color as foreground color in GC used for drawing */
       _plotter->set_pen_color();
-
-      if (_plotter->drawable1)
-	XDrawLines (_plotter->dpy, _plotter->drawable1, 
-		    _plotter->drawstate->gc, 
-		    xarray, polyline_len,
-		    CoordModeOrigin);
-      if (_plotter->drawable2)
-	XDrawLines (_plotter->dpy, _plotter->drawable2, 
-		    _plotter->drawstate->gc, 
-		    xarray, polyline_len,
-		    CoordModeOrigin);
+	      
+      /* We always check first for the special subcase: more than one point
+	 in the filled polyline, but they were all mapped to a single X
+	 pixel.  In that case we draw the path as a filled circle, of
+	 diameter equal to the line width.  Provided that the cap mode
+	 isn't "butt", that is; if it is, we don't draw anything. */
+      
+      if (_plotter->double_buffering)
+	{
+	  if (_plotter->drawstate->PointsInLine > 1 && polyline_len == 1)
+	    /* special subcase */
+	    {
+	      if (_plotter->drawstate->cap_type != CAP_BUTT)
+		{
+		  if (sp_size == 1) /* why why oh why? */
+		    XDrawPoint (_plotter->dpy, _plotter->drawable3, 
+				_plotter->drawstate->gc_fg, 
+				xarray[0].x, xarray[0].y);
+		  else
+		    XFillArc(_plotter->dpy, _plotter->drawable3,
+			     _plotter->drawstate->gc_fg, 
+			     xloc, yloc, sp_size, sp_size,
+			     0, 64 * 360);
+		}
+	    }
+	  else
+	    /* general subcase */
+	    XDrawLines (_plotter->dpy, _plotter->drawable3, 
+			_plotter->drawstate->gc_fg, 
+			xarray, polyline_len,
+			CoordModeOrigin);
+	}
+      else
+	/* not double buffering */
+	{
+	  if (_plotter->drawstate->PointsInLine > 1 && polyline_len == 1)
+	    /* special subcase */
+	    {
+	      if (_plotter->drawstate->cap_type != CAP_BUTT)
+		{
+		  if (sp_size == 1) /* why why oh why? */
+		    {
+		      XDrawPoint (_plotter->dpy, _plotter->drawable1,
+				  _plotter->drawstate->gc_fg, 
+				  xarray[0].x, xarray[0].y);
+		      XDrawPoint (_plotter->dpy, _plotter->drawable2,
+				  _plotter->drawstate->gc_fg, 
+				  xarray[0].x, xarray[0].y);
+		    }
+		  else
+		    {
+		      if (_plotter->drawable1)
+			XFillArc(_plotter->dpy, _plotter->drawable1,
+				 _plotter->drawstate->gc_fg, 
+				 xloc, yloc, sp_size, sp_size,
+				 0, 64 * 360);
+		      if (_plotter->drawable2)
+			XFillArc(_plotter->dpy, _plotter->drawable2,
+				 _plotter->drawstate->gc_fg, 
+				 xloc, yloc, sp_size, sp_size,
+				 0, 64 * 360);
+		    }
+		}
+	    }
+	  else
+	    /* general subcase */
+	    {
+	      if (_plotter->drawable1)
+		XDrawLines (_plotter->dpy, _plotter->drawable1, 
+			    _plotter->drawstate->gc_fg, 
+			    xarray, polyline_len,
+			    CoordModeOrigin);
+	      if (_plotter->drawable2)
+		XDrawLines (_plotter->dpy, _plotter->drawable2, 
+			    _plotter->drawstate->gc_fg, 
+			    xarray, polyline_len,
+			    CoordModeOrigin);
+	    }
+	}
     }
   else
     {
       /* special case: disconnected points, no real polyline */
 
-      /* select pen color as X foreground color */
+      /* select pen color as foreground color in GC used for drawing */
       _plotter->set_pen_color();
 
-      if (_plotter->drawable1)
-	XDrawPoints (_plotter->dpy, _plotter->drawable1, _plotter->drawstate->gc, 
+      if (_plotter->double_buffering)
+	XDrawPoints (_plotter->dpy, _plotter->drawable3, 
+		     _plotter->drawstate->gc_fg, 
 		     xarray, polyline_len,
 		     CoordModeOrigin);
-      if (_plotter->drawable2)
-	XDrawPoints (_plotter->dpy, _plotter->drawable2, _plotter->drawstate->gc, 
-		     xarray, polyline_len,
-		     CoordModeOrigin);
+      else
+	{
+	  if (_plotter->drawable1)
+	    XDrawPoints (_plotter->dpy, _plotter->drawable1, 
+			 _plotter->drawstate->gc_fg, 
+			 xarray, polyline_len,
+			 CoordModeOrigin);
+	  if (_plotter->drawable2)
+	    XDrawPoints (_plotter->dpy, _plotter->drawable2, 
+			 _plotter->drawstate->gc_fg, 
+			 xarray, polyline_len,
+			 CoordModeOrigin);
+	}
     }
   
   /* reset polyline storage buffer */

@@ -29,8 +29,8 @@ used in libplot.  Almost identical to the above (none of the 43 new Wolcott
 glyphs), but included three additional glyphs: 997, 998, 999, respectively
 "MWMXWX", "JZJZZZ", and "JZJ]Z]".  These were merely horizontal strokes.
 
-#3. The glyph database incorporated in the PGPLOT utility of Tim Pearson
-<tjp@astro.caltech.edu>, still available by ftp and http from
+#3. The glyph database incorporated in the PGPLOT subroutine library of
+Tim Pearson <tjp@astro.caltech.edu>, still available by ftp and http from
 astro.caltech.edu.  This was probably based, c. 1980, on a distribution
 obtained either from Nelson Beebe (see #4 below) or directly from
 Dr. Hershey.  It included data for the 43 new Wolcott glyphs, and 10

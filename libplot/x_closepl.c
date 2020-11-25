@@ -5,10 +5,6 @@
 #include "plot.h"
 #include "extern.h"
 
-/* external functions in api.c, at least for the C binding */
-extern void _close_other_plotter_fds __P((Plotter *plotter));
-extern void _flush_plotter_outstreams __P ((void));
-
 int
 #ifdef _HAVE_PROTOS
 _x_closepl (void)
@@ -16,6 +12,8 @@ _x_closepl (void)
 _x_closepl ()
 #endif
 {
+  Colorrecord *cptr;
+  Fontrecord *fptr;
   pid_t forkval;
 
   if (!_plotter->open)
@@ -26,7 +24,19 @@ _x_closepl ()
 
   _plotter->endpath (); /* flush polyline if any */
 
-  _handle_x_events();
+  if (_plotter->double_buffering)
+    /* copy final frame of buffered graphics from pixmap to window */
+    {
+      /* compute rectangle size; note flipped-y convention */
+      int window_width = (_plotter->imax - _plotter->imin) + 1;
+      int window_height = (_plotter->jmin - _plotter->jmax) + 1;
+      
+      XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable2,
+		 _plotter->drawstate->gc_bg,		   
+		 0, 0,
+		 (unsigned int)window_width, (unsigned int)window_height,
+		 0, 0);
+    }
 
   /* pop drawing states in progress, if any, off the stack */
   if (_plotter->drawstate->previous != NULL)
@@ -35,6 +45,41 @@ _x_closepl ()
 	_plotter->restorestate();
     }
   
+  /* following two deallocations (of font records and color cell records)
+     arrange things so that when drawing the next page of graphics, which
+     will require another connection to the X server, the Plotter will
+     start with a clean slate */
+
+  /* Free cached font records from Plotter's cache list.  Also deallocate
+     the font structure contained in each record. */
+  fptr = _plotter->x_fontlist;
+  _plotter->x_fontlist = NULL;
+  while (fptr)
+    {
+      Fontrecord *fptrnext;
+
+      fptrnext = fptr->next;
+      XFreeFont (_plotter->dpy, fptr->x_font_struct);
+      free (fptr); 
+      fptr = fptrnext;
+    }
+
+  /* Free cached color cells from Plotter's cache list.  Do _not_ ask the
+     server to deallocate the cells themselves; just free local storage. */
+  cptr = _plotter->x_colorlist;
+  _plotter->x_colorlist = NULL;
+  while (cptr)
+    {
+      Colorrecord *cptrnext;
+
+      cptrnext = cptr->next;
+      free (cptr); 
+      cptr = cptrnext;
+    }
+
+  /* handle any final X events */
+  _handle_x_events();
+
   /* flush output streams for all Plotters before forking */
   _flush_plotter_outstreams();
   
@@ -68,11 +113,15 @@ _x_closepl ()
       free (_plotter->drawstate->join_mode);
       free (_plotter->drawstate->cap_mode);
       free (_plotter->drawstate->font_name);
-      /* free graphics context, if we have one -- and to have one (see
-	 x_savestate.c), must have at least one drawable */
-      if (_plotter->drawable1 || _plotter->drawable2)
-	XFreeGC (_plotter->dpy, _plotter->drawstate->gc);
-      
+  /* free graphics contexts, if we have them -- and to have them, must have
+     at least one drawable (see x_savestate.c) */
+  if (_plotter->drawable1 || _plotter->drawable2)
+    {
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fg);
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fill);
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_bg);
+    }
+
       free (_plotter->drawstate);
       _plotter->drawstate = (State *)NULL;
       
@@ -82,6 +131,8 @@ _x_closepl ()
     }
   else if ((int)forkval == 0)	/* child */
     {
+      Drawable pixmap;
+
       /* close all connections to X display other than the one associated
 	 with the window that we (the child) will manage */
       _close_other_plotter_fds (_plotter);
@@ -91,10 +142,15 @@ _x_closepl ()
 	 into the two of them simultaneously, but the window could have
 	 been damaged at some point in the openpl..closepl, or the X server
 	 could have refused to provide backing store.)  By convention (see
-	 x_openpl.c), drawable1 is the pixmap and drawable2 the window. */
+	 x_openpl.c), drawable1 is the pixmap and drawable2 the window.
+	 Unless we've been double buffering, in which case there is no
+	 drawable1, and drawable3 is the pixmap. */
+
+      pixmap = _plotter->double_buffering ?
+	_plotter->drawable3 : _plotter->drawable1;
       XCopyArea (_plotter->dpy, 
-		 _plotter->drawable1, _plotter->drawable2,
-		 _plotter->drawstate->gc, 
+		 pixmap, _plotter->drawable2,
+		 _plotter->drawstate->gc_fg, 
 		 0, 0, 
 		 (unsigned int)((_plotter->imax - _plotter->imin) + 1),
 		 /* flipped y convention */

@@ -17,7 +17,7 @@ const long _ps_line_type_bit_vector[] =
 { 0xffff, 0x8888, 0xc3f0, 0xf0f0, 0xffc0 };
 
 /* corresponding dash arrays for PS (cylically used, on/off/on/off... */
-const char *_ps_line_type_setdash[] =
+const char * const _ps_line_type_setdash[] =
 /* these on/off bit patterns are those used by our X11 driver, and also by
    the xterm Tektronix emulator, except that the emulator seems incorrectly
    to have on and off interchanged */

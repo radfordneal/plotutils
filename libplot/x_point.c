@@ -21,15 +21,24 @@ _x_fpoint (x, y)
 
   _plotter->endpath(); /* flush polyline if any */
   
-  /* select pen color as X foreground color */
+  /* select pen color as foreground color in GC used for drawing */
   _plotter->set_pen_color();
 
-  if (_plotter->drawable1)
-    XDrawPoint (_plotter->dpy, _plotter->drawable1, _plotter->drawstate->gc, 
-		IROUND(XD(x,y)), IROUND(YD(x,y)));
-  if (_plotter->drawable1)
-    XDrawPoint (_plotter->dpy, _plotter->drawable2, _plotter->drawstate->gc, 
-		IROUND(XD(x,y)), IROUND(YD(x,y)));
+  if (_plotter->double_buffering)
+	XDrawPoint (_plotter->dpy, _plotter->drawable3, 
+		    _plotter->drawstate->gc_fg, 
+		    IROUND(XD(x,y)), IROUND(YD(x,y)));
+  else
+    {
+      if (_plotter->drawable1)
+	XDrawPoint (_plotter->dpy, _plotter->drawable1, 
+		    _plotter->drawstate->gc_fg, 
+		    IROUND(XD(x,y)), IROUND(YD(x,y)));
+      if (_plotter->drawable2)
+	XDrawPoint (_plotter->dpy, _plotter->drawable2, 
+		    _plotter->drawstate->gc_fg, 
+		    IROUND(XD(x,y)), IROUND(YD(x,y)));
+    }
 				
   _plotter->drawstate->pos.x = x; /* move to the point */
   _plotter->drawstate->pos.y = y;

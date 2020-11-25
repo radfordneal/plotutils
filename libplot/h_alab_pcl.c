@@ -3,7 +3,6 @@
 #include "extern.h"
 #include "h_stick.h"
 
-#define GOOD_PRINTABLE_ASCII(c) ((c >= 0x20) && (c <= 0x7E))
 #define MIN_TERMINATOR 0x21
 #define MAX_TERMINATOR 0xfe
 

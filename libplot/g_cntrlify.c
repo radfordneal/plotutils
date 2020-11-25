@@ -5,8 +5,8 @@
    This conversion is to facilitate rendering.  _controlify() is called by
    alabel(), and the converted label is rendered by _alabel_standard(),
    _alabel_stroke(), or _alabel_device(), depending on what sort of font is
-   currently selected.  See alabel.c, and also labelwidth.c (_controlify()
-   is called by labelwidth() too).
+   currently selected.  See g_alabel.c (_controlify() is called by
+   labelwidth() too).
 
    If the currently selected font is a font with ISO-Latin-1 encoding, the
    valid escape sequences include escape sequences for the non-ASCII
@@ -54,12 +54,9 @@
 #include "g_cntrlify.h"
 #include "g_jis.h"
 
-#define NUM_OCCIDENTAL_VECTOR_GLYPHS 4400 /*should agree with val in her_glyphs.c */
-#define NUM_ORIENTAL_VECTOR_GLYPHS 5500	/*should agree with value in her_glyphs.c */
-
-/* UGS `undefined character' symbol (several horizontal strokes), i.e.
-   location in extended occidental Hershey glyph array */
-#define UNDE 4023
+/* these two array lengths must agree with values in file g_her_glyph.c */
+#define NUM_OCCIDENTAL_VECTOR_GLYPHS 4400
+#define NUM_ORIENTAL_VECTOR_GLYPHS 5500
 
 unsigned short *
 #ifdef _HAVE_PROTOS
@@ -82,7 +79,7 @@ _controlify (src)
   dest = (unsigned short *)_plot_xmalloc ((6 * strlen ((char *)src) + 1) * sizeof(unsigned short));
   
   /* Determine initial number of font, as index into low-level table in
-     fontdb.c, and the initial value for the shifted `font word' which
+     g_fontdb.c, and the initial value for the shifted `font word' which
      we'll OR with each character; also same, for associated symbol font.
      Can be updated by \f0, \f1, etc. */
   switch (_plotter->drawstate->font_type)
@@ -115,7 +112,7 @@ _controlify (src)
     {
       /* If EUC, check first for high bit and process two-byte characters
 	 separately.  This approach is awkward (we duplicate a lot of code
-	 here, which appears elsewhere below).  FIXME. */
+	 here, which appears elsewhere below). */
 
       if ((raw_fontnum == HERSHEY_EUC_FONT) 
 	  && (*src & 0x80) && (*(src + 1) & 0x80))
@@ -176,7 +173,7 @@ _controlify (src)
 		  if (matched)
 		    /* the entry in the character table maps the JIS
 		       character to a character (in 0..255 range) in
-		       one of the fonts in the master table in fontdb.c */
+		       one of the fonts in the master table in g_fontdb.c */
 		    {
 		      int fontnum = char_mapping->font;
 		      unsigned short charnum = char_mapping->charnum;
@@ -185,7 +182,7 @@ _controlify (src)
 			/* a raw Hershey glyph, not in any font */
 			dest[j++] = RAW_HERSHEY_GLYPH | charnum;
 		      else
-			/* a character in one of the fonts in fontdb.c */
+			/* a character in one of the fonts in g_fontdb.c */
 			dest[j++] = (((unsigned short)fontnum) << FONT_SHIFT) | charnum;
 		      src += 2;
 		      continue; /* back to top of while loop */
@@ -460,7 +457,7 @@ _controlify (src)
 		      if (matched)
 			/* the entry in the character table maps the JIS
 			   character to a character (in 0..255 range) in
-			   one of the fonts in the master table in fontdb.c */
+			   one of the fonts in the master table in g_fontdb.c*/
 			{
 			  int fontnum = char_mapping->font;
 			  unsigned short charnum = char_mapping->charnum;
@@ -469,7 +466,7 @@ _controlify (src)
 			    /* a raw Hershey glyph, not in any font */
 			    dest[j++] = RAW_HERSHEY_GLYPH | charnum;
 			  else
-			    /* a character in one of the fonts in fontdb.c */
+			    /* a character in one of the fonts in g_fontdb.c */
 			    dest[j++] = (((unsigned short)fontnum) << FONT_SHIFT) | charnum;
 			  src += 4;
 			  continue; /* back to top of while loop */

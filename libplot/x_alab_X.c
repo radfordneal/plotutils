@@ -53,7 +53,7 @@ _x_falabel_other (s, h_just)
       return 0.0;
     }
 
-  /* select our pen color as foreground color */
+  /* select our pen color as foreground color in X GC used for drawing */
   _plotter->set_pen_color();
   
   /* compute position in device coordinates */
@@ -73,14 +73,21 @@ _x_falabel_other (s, h_just)
       if (XOOB_INT(ix) || XOOB_INT(iy))
 	return 0.0;
 
-      if (_plotter->drawable1)
-	XDrawString (_plotter->dpy, _plotter->drawable1, 
-		     _plotter->drawstate->gc, 
+      if (_plotter->double_buffering)
+	XDrawString (_plotter->dpy, _plotter->drawable3, 
+		     _plotter->drawstate->gc_fg, 
 		     ix, iy, (char *)s, label_len);
-      if (_plotter->drawable2)
-	XDrawString (_plotter->dpy, _plotter->drawable2, 
-		     _plotter->drawstate->gc, 
-		     ix, iy, (char *)s, label_len);
+      else
+	{
+	  if (_plotter->drawable1)
+	    XDrawString (_plotter->dpy, _plotter->drawable1, 
+			 _plotter->drawstate->gc_fg, 
+			 ix, iy, (char *)s, label_len);
+	  if (_plotter->drawable2)
+	    XDrawString (_plotter->dpy, _plotter->drawable2, 
+			 _plotter->drawstate->gc_fg, 
+			 ix, iy, (char *)s, label_len);
+	}
     }  
   else 
     {
@@ -108,14 +115,21 @@ _x_falabel_other (s, h_just)
 	  if (XOOB_INT(ix) || XOOB_INT(iy))
 	    return 0.0;
 
-	  if (_plotter->drawable1)
-	    XDrawString (_plotter->dpy, _plotter->drawable1,
-			 _plotter->drawstate->gc, 
+	  if (_plotter->double_buffering)
+	    XDrawString (_plotter->dpy, _plotter->drawable3,
+			 _plotter->drawstate->gc_fg, 
 			 ix, iy, (char *)stringptr, 1);
-	  if (_plotter->drawable2)
-	    XDrawString (_plotter->dpy, _plotter->drawable2,
-			 _plotter->drawstate->gc, 
-			 ix, iy, (char *)stringptr, 1);
+	  else
+	    {
+	      if (_plotter->drawable1)
+		XDrawString (_plotter->dpy, _plotter->drawable1,
+			     _plotter->drawstate->gc_fg, 
+			     ix, iy, (char *)stringptr, 1);
+	      if (_plotter->drawable2)
+		XDrawString (_plotter->dpy, _plotter->drawable2,
+			     _plotter->drawstate->gc_fg, 
+			     ix, iy, (char *)stringptr, 1);
+	    }
 	  
 	  stringptr++;
 	  offset += (double)(_plotter->drawstate->x_font_struct->per_char ?

@@ -14,6 +14,8 @@ _m_linewidth (new_line_width)
      int new_line_width;
 #endif
 {
+  double retval;
+
   if (!_plotter->open)
     {
       _plotter->error ("linewidth: invalid operation");
@@ -33,7 +35,9 @@ _m_linewidth (new_line_width)
     }
   
   /* invoke generic method */
-  return _g_linewidth (new_line_width);
+  retval = _g_flinewidth ((double)new_line_width);
+
+  return IROUND(retval);
 }
 
 int

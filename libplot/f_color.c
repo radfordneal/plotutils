@@ -25,7 +25,7 @@ int _libplotfig_use_pseudocolor = 0;
    If the external variable use_pseudocolor is nonzero, we don't actually
    maintain a database of user-defined colors.  Instead we just quantize to
    one of xfig's native 32 colors.  (They provide a [rather strange]
-   partition of the color cube; see colordb.h.) */
+   partition of the color cube; see f_color2.c.) */
 
 /* forward references */
 static int _fig_color __P((int red, int green, int blue));
@@ -79,7 +79,7 @@ _fig_color(red, green, blue)
       return -1;
     }
   
-  /* create new user-defined color, will emit it in closepl.c */
+  /* create new user-defined color, will emit it in f_closepl.c */
   _plotter->fig_usercolors[_plotter->fig_num_usercolors] = fig_fgcolor_rgb;
   _plotter->fig_num_usercolors++;
   return FIG_USER_COLOR_MIN + _plotter->fig_num_usercolors - 1;

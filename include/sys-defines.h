@@ -12,6 +12,13 @@ typedef char *Voidptr;
 #define NO_CONST_SUPPORT
 #endif
 
+#ifdef __cplusplus
+#ifdef RETSIGTYPE
+#undef RETSIGTYPE		/* `configure' may get this wrong in C++ */
+#endif
+#define RETSIGTYPE void
+#endif
+
 /* __P is a macro used to wrap function prototypes, so that compilers that
    don't understand ANSI C prototypes still work, and ANSI C compilers can
    issue warnings about type mismatches. */
@@ -141,7 +148,7 @@ typedef int bool;
    neither.  Also at least one vendor's gamma() is buggy, so we allow the
    installer to do -DNO_SYSTEM_GAMMA to prevent the use of vendor code. */
 #ifdef _AIX
-#define NO_SYSTEM_GAMMA	/* AIX gamma support in libm.a is buggy */
+#define NO_SYSTEM_GAMMA		/* AIX gamma support in libm.a is buggy */
 #endif
 #ifdef NO_SYSTEM_GAMMA
 #define F_LGAMMA f_lgamma	/* our own version, see ode/specfun.c */
@@ -157,6 +164,15 @@ typedef int bool;
 #endif
 #endif
 #endif /* NO_SYSTEM_GAMMA */
+
+/* IBM's definition of MAXINT is bizarre, in AIX 4.1 at least, and using
+   IROUND() below will yield a warning message unless we repair it */
+#ifdef _AIX
+#ifdef __GNUC__
+#undef MAXINT
+#define MAXINT ((int)(~(1U << (8 * (int)sizeof(int) - 1))))
+#endif
+#endif
 
 #ifdef __GNUC__
 #define IMAX(a,b) ({int _a = (a), _b = (b); _a > _b ? _a : _b; })

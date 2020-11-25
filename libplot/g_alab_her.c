@@ -43,10 +43,6 @@
 #define OCCIDENTAL 0
 #define ORIENTAL 1
 
-/* Position of `undefined' glyph in occidental array */
-
-#define UNDE 4023
-
 /* forward references */
 static double _label_width_stroke __P((const unsigned short *label));
 static void _draw_hershey_glyph __P((int num, double charsize, int type, bool oblique));
@@ -390,7 +386,7 @@ _label_width_stroke (label)
 	{
 	  int raw_fontnum;
 	  
-	  /* compute index of font, in table in fontdb.c */
+	  /* compute index of font, in table in g_fontdb.c */
 	  raw_fontnum = (c >> FONT_SHIFT) & ONE_BYTE;
 	  
 	  c &= ~FONT_SPEC;	/* extract character proper */
@@ -645,7 +641,7 @@ _draw_hershey_string (string)
 	      unsigned char composite, character, accent;
 	      bool oblique, small_kana = false;
 	      
-	      /* compute index of font, in table in fontdb.c */
+	      /* compute index of font, in table in g_fontdb.c */
 	      raw_fontnum = (c >> FONT_SHIFT) & ONE_BYTE;
 	      /* shear font?  (for HersheySans-Oblique, etc.) */
 	      oblique = _vector_font_info[raw_fontnum].obliquing;
@@ -662,7 +658,7 @@ _draw_hershey_string (string)
 	      switch (glyphnum)
 		{
 		  /* special case: this is a composite (accented)
-                     character; search table in fontdb.c for it */
+                     character; search table in g_fontdb.c for it */
 		case ACC0:
 		case ACC1:
 		case ACC2:
@@ -773,7 +769,7 @@ _draw_hershey_string (string)
 }
 
 /* retrieve the two elements of a composite character from the table in
-   fontdb.c */
+   g_fontdb.c */
 static bool
 #ifdef _HAVE_PROTOS
 _composite_char (unsigned char *composite, unsigned char *character, unsigned char *accent)

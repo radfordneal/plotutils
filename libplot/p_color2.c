@@ -28,7 +28,7 @@ const Color _idraw_stdcolors[IDRAW_NUM_STD_COLORS] =
   {0x80e8, 0x80e8, 0x80e8},	/* DkGray */	  
 };
 
-const char *_idraw_stdcolornames[IDRAW_NUM_STD_COLORS] = 
+const char * const _idraw_stdcolornames[IDRAW_NUM_STD_COLORS] = 
 {
   "Black", "Brown", "Red", "Orange", "Yellow", "Green",
   "Blue", "Indigo", "Violet", "White", "LtGray", "DkGray",

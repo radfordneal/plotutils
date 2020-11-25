@@ -32,7 +32,7 @@ _g_flinewidth(new_line_width)
     _plotter->endpath(); /* flush polyline if any */
 
   if (new_line_width < 0.0)	/* reset to default */
-    new_line_width = _plotter->default_drawstate->line_width;
+    new_line_width = _plotter->drawstate->default_line_width;
 
   /* set the new linewidth in the drawing state */
   _plotter->drawstate->line_width = new_line_width;

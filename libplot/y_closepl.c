@@ -22,6 +22,28 @@ _y_closepl ()
 
   _plotter->endpath (); /* flush polyline if any */
 
+  if (_plotter->double_buffering)
+    /* copy final frame of buffered graphics from pixmap serving as
+       graphics buffer, to window */
+    {
+      /* compute rectangle size; note flipped-y convention */
+      int window_width = (_plotter->imax - _plotter->imin) + 1;
+      int window_height = (_plotter->jmin - _plotter->jmax) + 1;
+      
+      if (_plotter->drawable1)
+	XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable1,
+		   _plotter->drawstate->gc_bg,		   
+		   0, 0,
+		   (unsigned int)window_width, (unsigned int)window_height,
+		   0, 0);
+      if (_plotter->drawable2)
+	XCopyArea (_plotter->dpy, _plotter->drawable3, _plotter->drawable2,
+		   _plotter->drawstate->gc_bg,		   
+		   0, 0,
+		   (unsigned int)window_width, (unsigned int)window_height,
+		   0, 0);
+    }
+
   /* pop drawing states in progress, if any, off the stack */
   if (_plotter->drawstate->previous != NULL)
     {
@@ -36,10 +58,14 @@ _y_closepl ()
   free (_plotter->drawstate->join_mode);
   free (_plotter->drawstate->cap_mode);
   free (_plotter->drawstate->font_name);
-  /* free graphics context, if we have one -- and to have one (see
-     x_savestate.c), must have at least one drawable */
+  /* free graphics contexts, if we have them -- and to have them, must have
+     at least one drawable (see x_savestate.c) */
   if (_plotter->drawable1 || _plotter->drawable2)
-    XFreeGC (_plotter->dpy, _plotter->drawstate->gc);
+    {
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fg);
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_fill);
+      XFreeGC (_plotter->dpy, _plotter->drawstate->gc_bg);
+    }
   
   free (_plotter->drawstate);
   _plotter->drawstate = (State *)NULL;

@@ -35,7 +35,7 @@ const Color _kermit_stdcolors[KERMIT_NUM_STD_COLORS] =
 /* Ordering of these two lists of ANSI escape sequences must match the
    above. */
 
-const char *_kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS] = 
+const char * const _kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS] = 
 {
   "\033[0;30m",		/* black */
   "\033[0;31m",		/* red4 */
@@ -55,7 +55,7 @@ const char *_kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS] =
   "\033[1;37m"		/* white */
 };
 
-const char *_kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS] = 
+const char * const _kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS] = 
 {
   "\033[0;40m",		/* black */
   "\033[0;41m",		/* red4 */

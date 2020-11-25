@@ -17,7 +17,7 @@
 #include "plot.h"
 #include "extern.h"
 
-State _tek_default_drawstate = {
+const State _tek_default_drawstate = {
 /* affine transformation from user coordinates to device coordinates */
   {
     {1.0, 0.0, 0.0, 1.0, 0.0, 0.0}, /* PS-style transformation matrix */
@@ -62,6 +62,11 @@ State _tek_default_drawstate = {
   1.0,				/* line width in device coordinates */
   1,				/* line width, quantized to integer */
   true,				/* suppress endpath() while drawing a path? */
+/* default values for certain modal attributes, used when an out-of-range
+   value is requested (these two are special because unlike all others,
+   they're set by space()) */
+  0.0,				/* line width in user coors */
+  0.0,				/* font size in user coordinates */
 /* elements specific to the HP-GL drawing state */
   0.001,			/* pen width (frac of diag dist betw P1,P2) */
 /* elements specific to the fig drawing state */
@@ -80,14 +85,23 @@ State _tek_default_drawstate = {
   9,				/* idraw bg color (0=black, 9=white) */
   0,				/* shading (0=fg, 4=bg), if not transparent */
 #ifndef X_DISPLAY_MISSING
-/* elements specific to the X11 drawing state */
+/* elements specific to the X11 and X11 Drawable drawing state */
   {14.0, 0.0, 0.0, 14.0},	/* pixel matrix, parsed from font name */
   true,				/* if set, can use XDrawString() etc. */
   (GC)NULL,			/* graphics context, for drawing */
-  (XFontStruct *)NULL,		/* font structure (used in alabel.c) */
-  (unsigned long)0,		/* background pixel [dummy, set in openpl.c] */
-  (unsigned long)0,		/* foreground pixel [dummy, set in openpl.c] */
-  (unsigned long)0,		/* fill pixel [dummy, set elsewhere] */
+  (GC)NULL,			/* graphics context, for filling */
+  (GC)NULL,			/* graphics context, for erasing */
+  (XFontStruct *)NULL,		/* font structure (used in x_alab_X.c) */
+  {0, 0, 0},			/* color of pixel for drawing (= black) */
+  {0, 0, 0},			/* color of pixel for filling (= black) */
+  {65535, 65535, 65535},	/* color of pixel for erasing (= white) */
+  0,				/* fill level (0 = transparent) */
+  (unsigned long)0,		/* drawing pixel [dummy] */
+  (unsigned long)0,		/* filling pixel [dummy] */
+  (unsigned long)0,		/* erasing pixel [dummy] */
+  false,			/* drawing pixel is genuine? */
+  false,			/* filling pixel is genuine? */
+  false,			/* erasing pixel is genuine? */
 #endif /* X_DISPLAY_MISSING */
 /* pointer to previous drawing state */
   (State *)NULL			/* pointer to previous state [must be null] */

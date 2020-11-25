@@ -1,6 +1,6 @@
 /* Information on characters in the JIS X 0208 two-byte encoding
    (containing Kanji, Kana, Roman letters, Greek letters, Cyrillic letters,
-   etc).  This file is #included by controlify.c. */
+   etc).  This file is #included by g_cntrlify.c. */
 
 /* Whether a JIS index (two bytes) defines a JIS character, irrespective of
    whether we have a glyph for it.  (If it isn't a character, it ideally
@@ -23,7 +23,7 @@ struct kanjipair
 
 /* The 603 Kanji that we have glyphs for.  1st field is JIS index number;
    2nd is Nelson index number, which we use internally (it indexes into the
-   Hershey oriental glyph array in her_glyphs.c).  For info on
+   Hershey oriental glyph array in g_her_glyph.c).  For info on
    correspondence, see kanji.doc. */
 
 const struct kanjipair _builtin_kanji_glyphs[] =
@@ -636,7 +636,7 @@ const struct kanjipair _builtin_kanji_glyphs[] =
 
 /* Non-Kanji characters in the JIS character set.  We map nearly all of
    these into characters (in the 0..255 range) in our existing fonts, which
-   are laid out in fontdb.c.  The RAW_HERSHEY_GLYPH bit is set, if the
+   are laid out in g_fontdb.c.  The RAW_HERSHEY_GLYPH bit is set, if the
    character is to be mapped directly to a Hershey glyph (presumably one
    that appears in no font). */
 
@@ -1059,7 +1059,7 @@ const struct jis_entry _builtin_jis_chars[] =
   {0x2657, 17, 'y'},    
   {0x2658, 17, 'w'},    
 /* Row 7 [Cyrillic characters], taken from HersheyCyrillic (font #13).
-   The strange order is because we are mapping to the KOI-8R encoding. */
+   The strange order is because we are mapping to the KOI8-R encoding. */
   {0x2721, 13, 0x80 + 'a'},
   {0x2722, 13, 0x80 + 'b'}, 
   {0x2723, 13, 0x80 + 'w'},

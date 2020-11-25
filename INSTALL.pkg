@@ -5,15 +5,15 @@ longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
 author and current maintainer, Robert Maier <rsm@math.arizona.edu>.
 
 These are package-specific installation instructions: please read them.
-Before doing so, glance through the generic installation instructions in
-the file INSTALL.  The instructions in that file may be summed up as
-follows.  You build a GNU package by typing `./configure' and then `make'.
-After building, you may run validation tests on the package by typing `make
-check'.  To install the package, you type `make install'.  A documentation
-file, in `info' format, is installed as part of this process.  You may
-produce a copy of the documentation for the package, in dvi format, by
-typing `make dvi'.  This assumes that you have the TeX document formatter
-installed.
+Before reading the below, you should glance through the generic
+installation instructions in the file INSTALL.  The instructions in that
+file may be summed up as follows.  You build a GNU package by typing
+`./configure' and then `make'.  After building, you may run validation
+tests on the package by typing `make check'.  To install the package, you
+type `make install'.  A documentation file, in `info' format, is installed
+as part of this process.  You may produce a copy of the documentation for
+the package, in dvi format, by typing `make dvi'.  This assumes that you
+have the TeX document formatter installed.
 
 ----------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ the GNU `makeinfo' program.  That should fix the problem.
 "Segmentation Fault printf: line too long" or "Segmentation Fault" during
 the installation process.  This is due to a bug in Sun's `printf' command.
 The fix is to obtain and install the GNU shellutils package, which includes
-a working version of `printf'.
+a working version of `printf'.  [This is may no longer be a problem.]
 
 4. On DEC Alphas running OSF 3.2 (though apparently not OSF 4.x), the same
 `printf segmentation fault problem' mentioned in (3) occurs.  The same fix
@@ -57,9 +57,25 @@ and it should be changed to read
 This line is approximately line #125 in the libtool file.  If this line is
 not modified, when linking the programs `graph', `plot', and `tek2plot',
 you may get error messages like "ld: Undefined symbol", followed by a long
-list of undefined symbols.
+list of undefined symbols.  [This may no longer be a problem.]
 
-6. On Silicon Graphics systems running Irix 6.x, you may get error messages
+6. On Suns running Solaris (2.6, at least), at some point in the
+installation you may get the error message ".libs/libplot.a: No such file".
+This is an indication that the unshared version of the GNU libplot library
+has not been created as it should be, and is presumably due a bug in the
+libtool script.  However, it is possible to work around this problem by
+doing `touch libplot/.libs/libplot.a', and then typing `make' again.  That
+is because the shared version of libplot is nonetheless created (as it
+should be).
+
+7. On DEC Alphas running OSF/1, a problem similar to the ones mentioned in
+(5) and (6) has been reported to occur: the libplot library libplot.la or
+libplot.a being missing or not containing any files.  It is due to a bug in
+the version of /bin/sh that comes with OSF/1.  The problem apparently does
+not occur under Digital Unix 4.0.  A workaround for OSF/1 is to obtain and
+install GNU bash as a replacement for /bin/sh.
+
+8. On Silicon Graphics systems running Irix 6.x, you may get error messages
 about `GP overflow'.  If so, you should do `make distclean' and start over,
 this time doing two things differently.  (1) After running `./configure',
 modify, by hand, the file `./libtool'.  In that file, change the line
@@ -67,23 +83,23 @@ modify, by hand, the file `./libtool'.  In that file, change the line
 the options `-multigot -shared', rather than just `-shared'.
 (2) Do `make CFLAGS="-O -multigot"' instead of just `make'.
 
-7. On old NeXT machines, one or more of the validation tests performed by
+9. On old NeXT machines, one or more of the validation tests performed by
 doing `make check' may fail on account of incorrect formatting of
 floating-point numbers.  This is more or less harmless.  But if any of the
 validation tests should fail on any other system, please report it to
 <bug-gnu-utils@gnu.org>.
 
-8. On some IBM systems, e.g. systems running AIX 4.1, if you are using
+10. On some IBM systems, e.g. systems running AIX 4.1, if you are using
 `gcc' as your compiler you may get numerous warning messages during
 compilation of the form "decimal constant is so large that it is unsigned".
-You may safely ignore them.  (If you are interested, they are due to the
-quantity MAXINT being defined by IBM in the system file <values.h> in a
+You may safely ignore them.  (In case you are interested, they are due to
+the quantity MAXINT being defined by IBM in the system file <values.h> in a
 bizarre way.)
 
-9. On many systems, there are potential problems having to do with the
+11. On many systems, there are potential problems having to do with the
 installation of GNU libplot, which the utilities `graph', `plot', and
-`tek2plot' are linked with.  On systems that support DLL's (dynamically
-linked libraries), this library is installed as a DLL.  By default, it is
+`tek2plot' are linked with.  On systems that support DLL's (shared
+libraries), this library is installed as a DLL.  By default, it is
 installed in /usr/local/lib.  On some systems you may need to run a command
 (perhaps `ldconfig') to let your system know that a new DLL has been
 installed.  On some systems you may need to add /usr/local/lib to your
@@ -91,7 +107,15 @@ LD_LIBRARY_PATH environment variable in order to use `graph', `plot', and
 `tek2plot' after they have been installed.  You will be cautioned about
 problems of this sort, if any, at installation time.
 
-10. As part of the installation process, the header file ./include/plot.h is
+12. On some HP-UX systems, the sed(1) program is broken.  It is possible
+that this may cause unusual problems for `libtool', the script in this
+distribution that prepares the shared version of the GNU libplot library.
+If mysterious problems occur during the compilation and linking of libplot
+on an HP-UX system, you should install a working version of sed(1), such as
+GNU sed, and try again.  There are also problems related to X Windows on
+HP-UX systems (see below).
+
+13. As part of the installation process, the header file ./include/plot.h is
 installed in a place on your system where the gcc C compiler will find it.
 If you wish to use cc as well as (or instead of) gcc, you should copy
 plot.h manually to the directory /usr/include, where cc will find it.

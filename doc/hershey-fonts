@@ -1,0 +1,43 @@
+The following are excerpts from Allen Hershey's 1967 technical report,
+`Calligraphy for Computers'.  They explain the origin of many of the
+Hershey fonts now supported by GNU libplot.  The names of the fonts have
+been modernized.
+
+"[The two HersheySans fonts] are adaptations of the alphabets on Le Roy
+lettering sets.  [The four HersheySerif fonts, the Greek characters in the
+Hershey symbol fonts, and the Cyrillic characters in HersheyCyrillic] are
+adaptations of the alphabets to be observed in newspapers, text books, and
+dictionaries. (1,2)"
+
+"[The two HersheyScript fonts] been adapted from a Headliner Typemaster of
+the Varityper Corporation.  [HersheyGothic-English] has been adapted from a
+Le Roy lettering set for Old English...  [HersheyGothic-Italian] represents
+a large family of alphabets for which there does not seem to be a
+consistent nomenclature.  Some writers refer to it as Gothic uncial while
+others call it Lombardic Gothic.  It seems to have been developed in
+Lombardy while the best examples (3,4) come from Spain.  The present
+version is an adaptation of a font [the `Missal Initials' font] of the
+American Type Founders Company (5)...  [HersheyGothic-German] is an
+adaptation of Fraktur (6)."
+
+Notes:
+
+(1) Webster's [New] International Dictionary [of the English Language].  
+    Second Edition.  (G. and C. Merriam Company, Springfield, Mass., 1959)  
+    p. 75, p. 2750, p. 3001.
+
+(2) Specimens of Type Faces.  (U. S. Government Printing Office,
+    Washington, D. C.)
+
+(3) Alphabets, Ancient and Modern.  J. B. Russell (Padell Book Co.,
+    New York, 1945)
+
+(4) Lettering from A to Z.  C. P. Hornung (Wm. Penn Publishing Corporation,
+    New York, 1954)
+
+(5) Specimen Book and Catalog.  (American Type Founders Company,
+    Jersey City, N. J. 1923) p. 785
+
+(6) Treasury of Alphabets and Lettering.  J. Tschichold (Reinhold 
+    Publishing Corporation, New York, 1966)
+
