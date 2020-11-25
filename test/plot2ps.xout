@@ -1,7 +1,7 @@
 %!PS-Adobe-3.0 EPSF-3.0
-%%Creator: GNU libplot drawing library 2.0
+%%Creator: GNU libplot drawing library 3.0
 %%Title: PostScript plot
-%%CreationDate: Sun Jan 31 21:34:56 1999
+%%CreationDate: Mon Sep 20 06:45:31 1999
 %%DocumentData: Clean7Bit
 %%LanguageLevel: 1
 %%Pages: 1
@@ -519,9 +519,9 @@ none SetP
 %I t
 [0.05 0 0 0.05 18 108 ] concat
 %I 4
-8640 2880
-8640 8640
 2880 8640
+8640 8640
+8640 2880
 2880 2880
 4 Poly
 End

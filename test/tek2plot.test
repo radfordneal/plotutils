@@ -3,10 +3,7 @@
 ../tek2plot/tek2plot -O <$SRCDIR/../tek2plot/teksamples/ocpred.tek \
 	>tek2plot.out
 
-# work around line end problems in installations with DJGPP under DOS
-tr -d '\015' < tek2plot.out > tek2plot.dos
-
-if cmp -s $SRCDIR/tek2plot.xout tek2plot.dos
+if cmp -s $SRCDIR/tek2plot.xout tek2plot.out
 	then retval=0;
 	else retval=1;
 	fi;

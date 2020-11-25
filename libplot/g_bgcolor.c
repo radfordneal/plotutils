@@ -9,15 +9,17 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_bgcolor (int red, int green, int blue)
+_g_bgcolor (R___(Plotter *_plotter) int red, int green, int blue)
 #else
-_g_bgcolor (red, green, blue)
+_g_bgcolor (R___(_plotter) red, green, blue)
+     S___(Plotter *_plotter;) 
      int red, green, blue;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("bgcolor: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "bgcolor: invalid operation");
       return -1;
     }
 

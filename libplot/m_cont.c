@@ -9,8 +9,8 @@
 
      (1) explicitly invokes the endpath() method, or 
      (2) changes the value of one of the relevant drawing attributes, 
-          by invoking move(), linemod(), linewidth(), color(), fillcolor(),
-          or filltype(), or 
+          e.g. by invoking move(), linemod(), linewidth(), pencolor(), 
+	  fillcolor(), or filltype(), or 
      (3) draws some non-path object, by invoking box(), 
            circle(), point(), label(), alabel(), etc., or 
      (4) invokes restorestate() to restore an earlier drawing state. */
@@ -20,44 +20,49 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_cont (int x, int y)
+_m_cont (R___(Plotter *_plotter) int x, int y)
 #else
-_m_cont (x, y)
+_m_cont (R___(_plotter) x, y)
+     S___(Plotter *_plotter;) 
      int x, y;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("cont: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "cont: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_CONT);
-  _meta_emit_integer (x);
-  _meta_emit_integer (y);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_CONT);
+  _meta_emit_integer (R___(_plotter) x);
+  _meta_emit_integer (R___(_plotter) y);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_fcont (double x, double y)
+_m_fcont (R___(Plotter *_plotter) double x, double y)
 #else
-_m_fcont (x, y)
+_m_fcont (R___(_plotter) x, y)
+     S___(Plotter *_plotter;) 
      double x, y;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fcont: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fcont: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_CONT : (int)O_FCONT);
-  _meta_emit_float (x);
-  _meta_emit_float (y);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) 
+		   _plotter->meta_portable_output ? (int)O_CONT : (int)O_FCONT);
+  _meta_emit_float (R___(_plotter) x);
+  _meta_emit_float (R___(_plotter) y);
+  _meta_emit_terminator (S___(_plotter));
       
   return 0;
 }

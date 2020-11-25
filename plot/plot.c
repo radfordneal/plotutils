@@ -2,11 +2,10 @@
    includes code to read a stream of commands, in GNU metafile format, and
    call libplot functions to draw the graphics.
 
-   Copyright (C) 1989-1998 Free Software Foundation, Inc. */
+   Copyright (C) 1989-1999 Free Software Foundation, Inc. */
 
 #include "sys-defines.h"
 #include "plot.h"
-#include "plotcompat.h"
 #include "getopt.h"
 
 /* Obsolete op codes (no longer listed in plot.h) */
@@ -100,6 +99,7 @@ struct option long_options[] =
   { "page-number",	ARG_REQUIRED,	NULL, 'p' },
   { "page-size",	ARG_REQUIRED,	NULL, 'P' << 8 },
   { "pen-color",	ARG_REQUIRED,	NULL, 'C' << 8 },
+  { "rotation",		ARG_REQUIRED,	NULL, 'r' << 8},
   /* Options relevant only to raw plot (refers to metafile output) */
   { "portable-output",	ARG_NONE,	NULL, 'O' },
   /* Old input formats, for backward compatibility */
@@ -121,12 +121,12 @@ int hidden_options[] = { (int)'I', 0 };
 
 
 /* forward references */
-bool read_plot ____P((FILE *in_stream));
+bool read_plot ____P((plPlotter *plotter, FILE *in_stream));
 char *read_string ____P((FILE *input, bool *badstatus));
 double read_float ____P((FILE *input, bool *badstatus));
 double read_int ____P((FILE *input, bool *badstatus));
-int maybe_closepl ____P((void));
-int maybe_openpl ____P((void));
+int maybe_closepl ____P((plPlotter *plotter));
+int maybe_openpl ____P((plPlotter *plotter));
 int read_true_int ____P((FILE *input, bool *badstatus));
 unsigned char read_byte_as_unsigned_char ____P((FILE *input, bool *badstatus));
 unsigned int read_byte_as_unsigned_int ____P((FILE *input, bool *badstatus));
@@ -135,9 +135,9 @@ extern int display_fonts ____P((const char *display_type, const char *progname))
 extern int list_fonts ____P((const char *display_type, const char *progname));
 extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 extern void display_version ____P((const char *progname)); 
-extern Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
-extern Voidptr xmalloc ____P ((unsigned int size));
-extern Voidptr xrealloc ____P ((Voidptr p, unsigned int length));
+extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
+extern voidptr_t xmalloc ____P ((size_t size));
+extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
 extern char *xstrdup ____P ((const char *s));
 
 
@@ -150,18 +150,20 @@ main (argc, argv)
      char *argv[];
 #endif
 {
+  plPlotter *plotter;
+  plPlotterParams *plotter_params;
   bool do_list_fonts = false;	/* show a list of fonts? */
   bool show_fonts = false;	/* supply help on fonts? */
   bool show_usage = false;	/* show usage message? */
   bool show_version = false;	/* show version message? */
-  char *display_type = "meta";	/* default libplot output format */
+  char *display_type = (char *)"meta"; /* default libplot output format */
   int errcnt = 0;		/* errors encountered */
-  int handle;			/* libplot handle for Plotter object */
   int local_page_number;	/* temporary storage */
   int opt_index;		/* long option index */
   int option;			/* option character */
   int retval;			/* return value */
 
+  plotter_params = pl_newplparams ();
   while ((option = getopt_long (argc, argv, "shlAIOp:F:f:W:T:", long_options, &opt_index)) != EOF)
     {
       if (option == 0)
@@ -174,7 +176,7 @@ main (argc, argv)
 	  strcpy (display_type, optarg);
 	  break;
 	case 'O':		/* Ascii output */
-	  parampl ("META_PORTABLE", "yes");
+	  pl_setplparam (plotter_params, "META_PORTABLE", (voidptr_t)"yes");
 	  break;
 	case 'F':		/* set the initial font */
 	  font_name = (char *)xmalloc (strlen (optarg) + 1);
@@ -189,10 +191,10 @@ main (argc, argv)
 	  strcpy (bg_color, optarg);
 	  break;
 	case 'B' << 8:		/* Bitmap size */
-	  parampl ("BITMAPSIZE", optarg);
+	  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)optarg);
 	  break;
 	case 'P' << 8:		/* Page size */
-	  parampl ("PAGESIZE", optarg);
+	  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)optarg);
 	  break;
 	case 'f':		/* set the initial fontsize */
 	  {
@@ -263,11 +265,11 @@ main (argc, argv)
 	case 'I':
 	  user_specified_input_format = GNU_OLD_PORTABLE;
 	  break;
-	case 'Q' << 8:		/* Plot rotation angle, ARG REQUIRED	*/
-	  parampl ("ROTATE", optarg);
+	case 'r' << 8:		/* Plot rotation angle, ARG REQUIRED	*/
+	  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)optarg);
 	  break;
 	case 'M' << 8:		/* Max line length */
-	  parampl ("MAX_LINE_LENGTH", optarg);
+	  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (voidptr_t)optarg);
 	  break;
 	case 's':		/* Merge pages */
 	  merge_pages = true;
@@ -330,19 +332,18 @@ main (argc, argv)
 
   if (bg_color)
     /* select user-specified background color */
-    parampl ("BG_COLOR", bg_color);
+    pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)bg_color);
 
-  if ((handle = newpl (display_type, NULL, stdout, stderr)) < 0)
+  if ((plotter = pl_newpl_r (display_type, NULL, stdout, stderr,
+			     plotter_params)) == NULL)
     {
-      fprintf (stderr, "%s: error: could not open plot device\n", progname);
+      fprintf (stderr, "%s: error: could not create plot device\n", progname);
       return EXIT_FAILURE;
     }
-  else
-    selectpl (handle);
 
   if (merge_pages)
     /* we do just one openpl..closepl, wrapped around everything */
-    if (openpl () < 0)
+    if (pl_openpl_r (plotter) < 0)
       {
 	fprintf (stderr, "%s: error: could not open plot device\n",
 		 progname);
@@ -371,7 +372,7 @@ main (argc, argv)
 		  continue;	/* back to top of for loop */
 		}
 	    }
-	  if (read_plot (data_file) == false)
+	  if (read_plot (plotter, data_file) == false)
 	    {
 		  fprintf (stderr, "%s: could not parse input file `%s'\n",
 			   progname, argv[optind]);
@@ -393,7 +394,7 @@ main (argc, argv)
   else
     /* no files/streams spec'd on the command line, just read stdin */
     {
-      if (read_plot (stdin) == false)
+      if (read_plot (plotter, stdin) == false)
 	{
 	  fprintf (stderr, "%s: could not parse input\n", progname);
 	  retval = EXIT_FAILURE;
@@ -402,19 +403,19 @@ main (argc, argv)
 
   if (merge_pages)
     /* we do just one openpl..closepl, wrapped around everything */
-    if (closepl () < 0)
+    if (pl_closepl_r (plotter) < 0)
       {
 	fprintf (stderr, "%s: error: could not close plot device\n",
 		 progname);
 	return EXIT_FAILURE;
       }
 
-  selectpl (0);
-  if (deletepl (handle) < 0)
+  if (pl_deletepl_r (plotter) < 0)
     {
-      fprintf (stderr, "%s: could not close plot device\n", progname);
+      fprintf (stderr, "%s: error: could not delete plot device\n", progname);
       retval = EXIT_FAILURE;
     }
+  pl_deleteplparams (plotter_params);
 
   return retval;
 }
@@ -426,9 +427,10 @@ main (argc, argv)
    successfully. */
 bool
 #ifdef _HAVE_PROTOS
-read_plot (FILE *in_stream)
+read_plot (plPlotter *plotter, FILE *in_stream)
 #else
-read_plot (in_stream)
+read_plot (plotter, in_stream)
+     plPlotter *plotter;
      FILE *in_stream;
 #endif
 {
@@ -470,7 +472,7 @@ read_plot (in_stream)
 	if ((!single_page_is_requested || current_page == requested_page)
 	    && instruction != (int)O_COMMENT && display_open == false)
 	  {
-	    if (maybe_openpl() < 0)
+	    if (maybe_openpl (plotter) < 0)
 	      {
 		fprintf (stderr, "%s: error: could not open plot device\n", 
 			 progname);
@@ -492,7 +494,7 @@ read_plot (in_stream)
 	    if (!argerr)
 	      {
 		if (!single_page_is_requested || current_page == requested_page)
-		  alabel (x_adjust, y_adjust, s);
+		  pl_alabel_r (plotter, x_adjust, y_adjust, s);
 		free (s);
 	      }
 	  }
@@ -506,7 +508,7 @@ read_plot (in_stream)
 	  y2 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      farc (x0, y0, x1, y1, x2, y2);
+	      pl_farc_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_ARCREL:
 	  x0 = read_int (in_stream, &argerr);
@@ -517,7 +519,7 @@ read_plot (in_stream)
 	  y2 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      farcrel (x0, y0, x1, y1, x2, y2);
+	      pl_farcrel_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_BEZIER2:
 	  x0 = read_int (in_stream, &argerr);
@@ -528,7 +530,7 @@ read_plot (in_stream)
 	  y2 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbezier2 (x0, y0, x1, y1, x2, y2);
+	      pl_fbezier2_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_BEZIER2REL:
 	  x0 = read_int (in_stream, &argerr);
@@ -539,7 +541,7 @@ read_plot (in_stream)
 	  y2 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbezier2rel (x0, y0, x1, y1, x2, y2);
+	      pl_fbezier2rel_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_BEZIER3:
 	  x0 = read_int (in_stream, &argerr);
@@ -552,7 +554,7 @@ read_plot (in_stream)
 	  y3 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3);
+	      pl_fbezier3_r (plotter, x0, y0, x1, y1, x2, y2, x3, y3);
 	  break;
 	case (int)O_BEZIER3REL:
 	  x0 = read_int (in_stream, &argerr);
@@ -565,7 +567,7 @@ read_plot (in_stream)
 	  y3 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3);
+	      pl_fbezier3rel_r (plotter, x0, y0, x1, y1, x2, y2, x3, y3);
 	  break;
 	case (int)O_BGCOLOR:
 	  /* parse args as unsigned ints rather than ints */
@@ -574,7 +576,7 @@ read_plot (in_stream)
 	  i2 = read_true_int (in_stream, &argerr)&0xFFFF;
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      bgcolor (i0, i1, i2);
+	      pl_bgcolor_r (plotter, i0, i1, i2);
 	  break;
 	case (int)O_BOX:
 	  	  x0 = read_int (in_stream, &argerr);
@@ -583,7 +585,7 @@ read_plot (in_stream)
 	  y1 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbox (x0, y0, x1, y1);
+	      pl_fbox_r (plotter, x0, y0, x1, y1);
 	  break;
 	case (int)O_BOXREL:
 	  x0 = read_int (in_stream, &argerr);
@@ -592,14 +594,14 @@ read_plot (in_stream)
 	  y1 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fboxrel (x0, y0, x1, y1);
+	      pl_fboxrel_r (plotter, x0, y0, x1, y1);
 	  break;
 	case (int)O_CAPMOD:
 	  s = read_string (in_stream, &argerr);
 	  if (!argerr)
 	    {
 	      if (!single_page_is_requested || current_page == requested_page)
-		capmod (s);
+		pl_capmod_r (plotter, s);
 	      free (s);
 	    }
 	  break;
@@ -609,7 +611,7 @@ read_plot (in_stream)
 	  x1 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fcircle (x0, y0, x1);
+	      pl_fcircle_r (plotter, x0, y0, x1);
 	  break;
 	case (int)O_CIRCLEREL:
 	  x0 = read_int (in_stream, &argerr);
@@ -617,7 +619,7 @@ read_plot (in_stream)
 	  x1 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fcirclerel (x0, y0, x1);
+	      pl_fcirclerel_r (plotter, x0, y0, x1);
 	  break;
 	case (int)O_COLOR:	/* obsolete op code, to be removed */
 	  i0 = read_true_int (in_stream, &argerr)&0xFFFF;
@@ -625,13 +627,13 @@ read_plot (in_stream)
 	  i2 = read_true_int (in_stream, &argerr)&0xFFFF;
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      color (i0, i1, i2);
+	      pl_color_r (plotter, i0, i1, i2);
 	  break;
 	case (int)O_CLOSEPL:
 	  if (input_format != GNU_BINARY && input_format != GNU_PORTABLE)
 	    /* shouldn't be seeing a CLOSEPL */
 	    {
-	      if (display_open && maybe_closepl () < 0)
+	      if (display_open && maybe_closepl (plotter) < 0)
 		{
 		  fprintf (stderr, "%s: error: could not close plot device\n",
 			   progname);
@@ -655,7 +657,7 @@ read_plot (in_stream)
 		  if (!single_page_is_requested 
 		      || current_page == requested_page)
 		    {
-		      if (maybe_closepl() < 0)
+		      if (maybe_closepl (plotter) < 0)
 			{
 			  fprintf (stderr, 
 				   "%s: error: could not close plot device\n", 
@@ -702,14 +704,14 @@ read_plot (in_stream)
 	  y0 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fcont (x0, y0);
+	      pl_fcont_r (plotter, x0, y0);
 	  break;
 	case (int)O_CONTREL:
 	  x0 = read_int (in_stream, &argerr);
 	  y0 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fcontrel (x0, y0);
+	      pl_fcontrel_r (plotter, x0, y0);
 	  break;
 	case (int)O_ELLARC:
 	  x0 = read_int (in_stream, &argerr);
@@ -720,7 +722,7 @@ read_plot (in_stream)
 	  y2 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fellarc (x0, y0, x1, y1, x2, y2);	  
+	      pl_fellarc_r (plotter, x0, y0, x1, y1, x2, y2);	  
 	  break;
 	case (int)O_ELLARCREL:
 	  x0 = read_int (in_stream, &argerr);
@@ -731,7 +733,7 @@ read_plot (in_stream)
 	  y2 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fellarcrel (x0, y0, x1, y1, x2, y2);	  
+	      pl_fellarcrel_r (plotter, x0, y0, x1, y1, x2, y2);	  
 	  break;
 	case (int)O_ELLIPSE:
 	  x0 = read_int (in_stream, &argerr);
@@ -741,7 +743,7 @@ read_plot (in_stream)
 	  x2 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fellipse (x0, y0, x1, y1, x2);
+	      pl_fellipse_r (plotter, x0, y0, x1, y1, x2);
 	  break;
 	case (int)O_ELLIPSEREL:
 	  x0 = read_int (in_stream, &argerr);
@@ -751,16 +753,20 @@ read_plot (in_stream)
 	  x2 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fellipserel (x0, y0, x1, y1, x2);
+	      pl_fellipserel_r (plotter, x0, y0, x1, y1, x2);
 	  break;
 	case (int)O_ENDPATH:
 	  if (!single_page_is_requested || current_page == requested_page)
-	    endpath ();
+	    pl_endpath_r (plotter);
+	  break;
+	case (int)O_ENDSUBPATH:
+	  if (!single_page_is_requested || current_page == requested_page)
+	    pl_endsubpath_r (plotter);
 	  break;
 	case (int)O_ERASE:
 	  if (!single_page_is_requested || current_page == requested_page)
 	    if (merge_pages == false) /* i.e. not merging frames */
-	      erase ();
+	      pl_erase_r (plotter);
 	  break;
 	case (int)O_FILLCOLOR:
 	  /* parse args as unsigned ints rather than ints */
@@ -769,14 +775,14 @@ read_plot (in_stream)
 	  i2 = read_true_int (in_stream, &argerr)&0xFFFF;
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fillcolor (i0, i1, i2);
+	      pl_fillcolor_r (plotter, i0, i1, i2);
 	  break;
 	case (int)O_FILLMOD:
 	  s = read_string (in_stream, &argerr);
 	  if (!argerr)
 	    {
 	      if (!single_page_is_requested || current_page == requested_page)
-		fillmod (s);
+		pl_fillmod_r (plotter, s);
 	      free (s);
 	    }
 	  break;
@@ -785,14 +791,14 @@ read_plot (in_stream)
 	  i0 = read_true_int (in_stream, &argerr)&0xFFFF;
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      filltype (i0);
+	      pl_filltype_r (plotter, i0);
 	  break;
 	case (int)O_FONTNAME:
 	  s = read_string (in_stream, &argerr);
 	  if (!argerr)
 	    {
 	      if (!single_page_is_requested || current_page == requested_page)
-		fontname (s);
+		pl_fontname_r (plotter, s);
 	      free (s);
 	    }
 	  break;
@@ -802,7 +808,7 @@ read_plot (in_stream)
 	    {
 	      if (!argerr)
 		if (!single_page_is_requested || current_page == requested_page)
-		  ffontsize (x0);
+		  pl_ffontsize_r (plotter, x0);
 	    }
 	  break;
 	case (int)O_JOINMOD:
@@ -810,7 +816,7 @@ read_plot (in_stream)
 	  if (!argerr)
 	    {
 	      if (!single_page_is_requested || current_page == requested_page)
-		joinmod (s);
+		pl_joinmod_r (plotter, s);
 	      free (s);
 	    }
 	  break;
@@ -819,7 +825,7 @@ read_plot (in_stream)
 	  if (!argerr)
 	    {
 	      if (!single_page_is_requested || current_page == requested_page)
-		label (s);
+		pl_label_r (plotter, s);
 	      free (s);
 	    }
 	  break;
@@ -830,7 +836,7 @@ read_plot (in_stream)
 	  y1 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fline (x0, y0, x1, y1);
+	      pl_fline_r (plotter, x0, y0, x1, y1);
 	  break;
 	case (int)O_LINEDASH:
 	  {
@@ -847,7 +853,7 @@ read_plot (in_stream)
 	    phase = read_int (in_stream, &argerr);
 	    if (!argerr)
 	      if (!single_page_is_requested || current_page == requested_page)
-		flinedash (n, dash_array, phase);
+		pl_flinedash_r (plotter, n, dash_array, phase);
 	    free (dash_array);
 	    break;
 	  }
@@ -858,14 +864,14 @@ read_plot (in_stream)
 	  y1 = read_int (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      flinerel (x0, y0, x1, y1);
+	      pl_flinerel_r (plotter, x0, y0, x1, y1);
 	  break;
 	case (int)O_LINEMOD:
 	  s = read_string (in_stream, &argerr);
 	  if (!argerr)
 	    {
 	      if (!single_page_is_requested || current_page == requested_page)
-		linemod (s);
+		pl_linemod_r (plotter, s);
 	      free (s);
 	    }
 	  break;
@@ -873,7 +879,7 @@ read_plot (in_stream)
 	  x0 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      flinewidth (x0);
+	      pl_flinewidth_r (plotter, x0);
 	  break;
 	case (int)O_MARKER:
 	  x0 = read_int (in_stream, &argerr);
@@ -882,7 +888,7 @@ read_plot (in_stream)
 	  y1 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmarker (x0, y0, i0, y1);
+	      pl_fmarker_r (plotter, x0, y0, i0, y1);
 	  break;
 	case (int)O_MARKERREL:
 	  x0 = read_int (in_stream, &argerr);
@@ -891,27 +897,27 @@ read_plot (in_stream)
 	  y1 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmarkerrel (x0, y0, i0, y1);
+	      pl_fmarkerrel_r (plotter, x0, y0, i0, y1);
 	  break;
 	case (int)O_MOVE:
 	  x0 = read_int (in_stream, &argerr);
 	  y0 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmove (x0, y0);
+	      pl_fmove_r (plotter, x0, y0);
 	  break;
 	case (int)O_MOVEREL:
 	  x0 = read_int (in_stream, &argerr);
 	  y0 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmoverel (x0, y0);
+	      pl_fmoverel_r (plotter, x0, y0);
 	  break;
 	case (int)O_OPENPL:
 	  if (input_format != GNU_BINARY && input_format != GNU_PORTABLE)
 	    /* shouldn't be seeing an OPENPL */
 	    {
-	      if (display_open && maybe_closepl () < 0)
+	      if (display_open && maybe_closepl (plotter) < 0)
 		{
 		  fprintf (stderr, "%s: error: could not close plot device\n",
 			   progname);
@@ -926,7 +932,7 @@ read_plot (in_stream)
 	      if (in_page)
 		/* shouldn't be seeing another OPENPL */
 		{
-		  if (display_open && maybe_closepl () < 0)
+		  if (display_open && maybe_closepl (plotter) < 0)
 		    {
 		      fprintf (stderr, 
 			       "%s: error: could not close plot device\n",
@@ -940,7 +946,7 @@ read_plot (in_stream)
 	      /* this OPENPL is legitimate */
 	      if (!single_page_is_requested || current_page == requested_page)
 		{
-		  if (maybe_openpl() < 0)
+		  if (maybe_openpl (plotter) < 0)
 		    {
 		      fprintf (stderr, "%s: error: could not open plot device\n", 
 			       progname);
@@ -953,6 +959,12 @@ read_plot (in_stream)
 	      in_page = true;
 	    }
 	  break;
+	case (int)O_ORIENTATION:
+	  i0 = read_true_int (in_stream, &argerr);
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      pl_orientation_r (plotter, i0);
+	  break;
 	case (int)O_PENCOLOR:
 	  /* parse args as unsigned ints rather than ints */
 	  i0 = read_true_int (in_stream, &argerr)&0xFFFF;
@@ -960,29 +972,36 @@ read_plot (in_stream)
 	  i2 = read_true_int (in_stream, &argerr)&0xFFFF;
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      pencolor (i0, i1, i2);
+	      pl_pencolor_r (plotter, i0, i1, i2);
+	  break;
+	case (int)O_PENTYPE:
+	  /* parse args as unsigned ints rather than ints */
+	  i0 = read_true_int (in_stream, &argerr)&0xFFFF;
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      pl_pentype_r (plotter, i0);
 	  break;
 	case (int)O_POINT:
 	  x0 = read_int (in_stream, &argerr);
 	  y0 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fpoint (x0, y0);
+	      pl_fpoint_r (plotter, x0, y0);
 	  break;
 	case (int)O_POINTREL:
 	  x0 = read_int (in_stream, &argerr);
 	  y0 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fpointrel (x0, y0);
+	      pl_fpointrel_r (plotter, x0, y0);
 	  break;
 	case (int)O_RESTORESTATE:
 	  if (!single_page_is_requested || current_page == requested_page)
-	    restorestate ();
+	    pl_restorestate_r (plotter);
 	  break;
 	case (int)O_SAVESTATE:
 	  if (!single_page_is_requested || current_page == requested_page)
-	    savestate ();
+	    pl_savestate_r (plotter);
 	  break;
 	case (int)O_SPACE:
 	  x0 = read_int (in_stream, &argerr);
@@ -992,7 +1011,7 @@ read_plot (in_stream)
 	  if (argerr)
 	    break;
 	  if (!single_page_is_requested || current_page == requested_page)
-	    fspace (x0, y0, x1, y1);
+	    pl_fspace_r (plotter, x0, y0, x1, y1);
 	  if (parameters_initted == false && 
 	      ((!single_page_is_requested && current_page == 1)
 	      || (single_page_is_requested && current_page == requested_page)))
@@ -1000,13 +1019,13 @@ read_plot (in_stream)
 	       including them (should estimate sizes better) */
 	    {
 	      if (pen_color)
-		pencolorname (pen_color);
+		pl_pencolorname_r (plotter, pen_color);
 	      if (font_name)
-		fontname (font_name);
+		pl_fontname_r (plotter, font_name);
 	      if (font_size >= 0.0)
-		ffontsize (font_size * fabs (x1 - x0));
+		pl_ffontsize_r (plotter, font_size * fabs (x1 - x0));
 	      if (line_width >= 0.0)
-		flinewidth (line_width * fabs (x1 - x0));
+		pl_flinewidth_r (plotter, line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
 	  space_seen = true;
@@ -1021,7 +1040,7 @@ read_plot (in_stream)
 	  if (argerr)
 	    break;
 	  if (!single_page_is_requested || current_page == requested_page)
-	    fspace2 (x0, y0, x1, y1, x2, y2);
+	    pl_fspace2_r (plotter, x0, y0, x1, y1, x2, y2);
 	  if (parameters_initted == false && 
 	      ((!single_page_is_requested && current_page == 1)
 	      || (single_page_is_requested && current_page == requested_page)))
@@ -1030,17 +1049,17 @@ read_plot (in_stream)
 	    {
 	      if (bg_color)
 		{
-		  bgcolorname (bg_color);
-		  erase ();
+		  pl_bgcolorname_r (plotter, bg_color);
+		  pl_erase_r (plotter);
 		}
 	      if (pen_color)
-		pencolorname (pen_color);
+		pl_pencolorname_r (plotter, pen_color);
 	      if (font_name)
-		fontname (font_name);
+		pl_fontname_r (plotter, font_name);
 	      if (font_size >= 0.0)
-		ffontsize (font_size * fabs (x1 - x0));
+		pl_ffontsize_r (plotter, font_size * fabs (x1 - x0));
 	      if (line_width >= 0.0)
-		flinewidth (line_width * fabs (x1 - x0));
+		pl_flinewidth_r (plotter, line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
 	  space_seen = true;
@@ -1049,7 +1068,7 @@ read_plot (in_stream)
 	  x0 = read_int (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      ftextangle (x0);
+	      pl_ftextangle_r (plotter, x0);
 	  break;
 
         /* floating point counterparts to some of the above */
@@ -1062,7 +1081,7 @@ read_plot (in_stream)
 	  y2 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      farc (x0, y0, x1, y1, x2, y2);
+	      pl_farc_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_FARCREL:
 	  x0 = read_float (in_stream, &argerr);
@@ -1073,7 +1092,7 @@ read_plot (in_stream)
 	  y2 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      farcrel (x0, y0, x1, y1, x2, y2);
+	      pl_farcrel_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_FBEZIER2:
 	  x0 = read_float (in_stream, &argerr);
@@ -1084,7 +1103,7 @@ read_plot (in_stream)
 	  y2 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbezier2 (x0, y0, x1, y1, x2, y2);
+	      pl_fbezier2_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_FBEZIER2REL:
 	  x0 = read_float (in_stream, &argerr);
@@ -1095,7 +1114,7 @@ read_plot (in_stream)
 	  y2 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbezier2rel (x0, y0, x1, y1, x2, y2);
+	      pl_fbezier2rel_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_FBEZIER3:
 	  x0 = read_float (in_stream, &argerr);
@@ -1108,7 +1127,7 @@ read_plot (in_stream)
 	  y3 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3);
+	      pl_fbezier3_r (plotter, x0, y0, x1, y1, x2, y2, x3, y3);
 	  break;
 	case (int)O_FBEZIER3REL:
 	  x0 = read_float (in_stream, &argerr);
@@ -1121,7 +1140,7 @@ read_plot (in_stream)
 	  y3 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3);
+	      pl_fbezier3rel_r (plotter, x0, y0, x1, y1, x2, y2, x3, y3);
 	  break;
 	case (int)O_FBOX:
 	  x0 = read_float (in_stream, &argerr);
@@ -1130,7 +1149,7 @@ read_plot (in_stream)
 	  y1 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fbox (x0, y0, x1, y1);
+	      pl_fbox_r (plotter, x0, y0, x1, y1);
 	  break;
 	case (int)O_FBOXREL:
 	  x0 = read_float (in_stream, &argerr);
@@ -1139,7 +1158,7 @@ read_plot (in_stream)
 	  y1 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fboxrel (x0, y0, x1, y1);
+	      pl_fboxrel_r (plotter, x0, y0, x1, y1);
 	  break;
 	case (int)O_FCIRCLE:
 	  x0 = read_float (in_stream, &argerr);
@@ -1147,7 +1166,7 @@ read_plot (in_stream)
 	  x1 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fcircle (x0, y0, x1);
+	      pl_fcircle_r (plotter, x0, y0, x1);
 	  break;
 	case (int)O_FCIRCLEREL:
 	  x0 = read_float (in_stream, &argerr);
@@ -1155,21 +1174,21 @@ read_plot (in_stream)
 	  x1 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fcirclerel (x0, y0, x1);
+	      pl_fcirclerel_r (plotter, x0, y0, x1);
 	  break;
 	case (int)O_FCONT:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fcont (x0, y0);
+	      pl_fcont_r (plotter, x0, y0);
 	  break;
 	case (int)O_FCONTREL:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fcontrel (x0, y0);
+	      pl_fcontrel_r (plotter, x0, y0);
 	  break;
 	case (int)O_FELLARC:
 	  x0 = read_float (in_stream, &argerr);
@@ -1180,7 +1199,7 @@ read_plot (in_stream)
 	  y2 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fellarc (x0, y0, x1, y1, x2, y2);
+	      pl_fellarc_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_FELLARCREL:
 	  x0 = read_float (in_stream, &argerr);
@@ -1191,7 +1210,7 @@ read_plot (in_stream)
 	  y2 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fellarcrel (x0, y0, x1, y1, x2, y2);
+	      pl_fellarcrel_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_FELLIPSE:
 	  x0 = read_float (in_stream, &argerr);
@@ -1201,7 +1220,7 @@ read_plot (in_stream)
 	  x2 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fellipse (x0, y0, x1, y1, x2);
+	      pl_fellipse_r (plotter, x0, y0, x1, y1, x2);
 	  break;
 	case (int)O_FELLIPSEREL:
 	  x0 = read_float (in_stream, &argerr);
@@ -1211,7 +1230,7 @@ read_plot (in_stream)
 	  x2 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fellipserel (x0, y0, x1, y1, x2);
+	      pl_fellipserel_r (plotter, x0, y0, x1, y1, x2);
 	  break;
 	case (int)O_FFONTSIZE:
 	  x0 = read_float (in_stream, &argerr);
@@ -1219,7 +1238,7 @@ read_plot (in_stream)
 	    {
 	      if (!argerr)
 		if (!single_page_is_requested || current_page == requested_page)
-		  ffontsize (x0);
+		  pl_ffontsize_r (plotter, x0);
 	    }
 	  break;
 	case (int)O_FLINE:
@@ -1229,7 +1248,7 @@ read_plot (in_stream)
 	  y1 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fline (x0, y0, x1, y1);
+	      pl_fline_r (plotter, x0, y0, x1, y1);
 	  break;
 	case (int)O_FLINEDASH:
 	  {
@@ -1246,7 +1265,7 @@ read_plot (in_stream)
 	    phase = read_float (in_stream, &argerr);
 	    if (!argerr)
 	      if (!single_page_is_requested || current_page == requested_page)
-		flinedash (n, dash_array, phase);
+		pl_flinedash_r (plotter, n, dash_array, phase);
 	    free (dash_array);
 	    break;
 	  }
@@ -1257,13 +1276,13 @@ read_plot (in_stream)
 	  y1 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      flinerel (x0, y0, x1, y1);
+	      pl_flinerel_r (plotter, x0, y0, x1, y1);
 	  break;
 	case (int)O_FLINEWIDTH:
 	  x0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      flinewidth (x0);
+	      pl_flinewidth_r (plotter, x0);
 	  break;
 	case (int)O_FMARKER:
 	  x0 = read_float (in_stream, &argerr);
@@ -1272,7 +1291,7 @@ read_plot (in_stream)
 	  y1 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmarker (x0, y0, i0, y1);
+	      pl_fmarker_r (plotter, x0, y0, i0, y1);
 	  break;
 	case (int)O_FMARKERREL:
 	  x0 = read_float (in_stream, &argerr);
@@ -1281,34 +1300,34 @@ read_plot (in_stream)
 	  y1 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmarkerrel (x0, y0, i0, y1);
+	      pl_fmarkerrel_r (plotter, x0, y0, i0, y1);
 	  break;
 	case (int)O_FMOVE:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmove (x0, y0);
+	      pl_fmove_r (plotter, x0, y0);
 	  break;
 	case (int)O_FMOVEREL:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmoverel (x0, y0);
+	      pl_fmoverel_r (plotter, x0, y0);
 	  break;
 	case (int)O_FPOINT:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fpoint (x0, y0);
+	      pl_fpoint_r (plotter, x0, y0);
 	  break;
 	case (int)O_FPOINTREL:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
 	  if (!single_page_is_requested || current_page == requested_page)
-	    fpointrel (x0, y0);
+	    pl_fpointrel_r (plotter, x0, y0);
 	  break;
 	case (int)O_FSPACE:
 	  x0 = read_float (in_stream, &argerr);
@@ -1318,7 +1337,7 @@ read_plot (in_stream)
 	  if (argerr)
 	    break;
 	  if (!single_page_is_requested || current_page == requested_page)
-	    fspace (x0, y0, x1, y1);
+	    pl_fspace_r (plotter, x0, y0, x1, y1);
 	  if (parameters_initted == false && 
 	      ((!single_page_is_requested && current_page == 1)
 	      || (single_page_is_requested && current_page == requested_page)))
@@ -1327,17 +1346,17 @@ read_plot (in_stream)
 	    {
 	      if (bg_color)
 		{
-		  bgcolorname (bg_color);
-		  erase ();
+		  pl_bgcolorname_r (plotter, bg_color);
+		  pl_erase_r (plotter);
 		}
 	      if (pen_color)
-		pencolorname (pen_color);
+		pl_pencolorname_r (plotter, pen_color);
 	      if (font_name)
-		fontname (font_name);
+		pl_fontname_r (plotter, font_name);
 	      if (font_size >= 0.0)
-		ffontsize (font_size * fabs (x1 - x0));
+		pl_ffontsize_r (plotter, font_size * fabs (x1 - x0));
 	      if (line_width >= 0.0)
-		flinewidth (line_width * fabs (x1 - x0));
+		pl_flinewidth_r (plotter, line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
 	  space_seen = true;
@@ -1352,7 +1371,7 @@ read_plot (in_stream)
 	  if (argerr)
 	    break;
 	  if (!single_page_is_requested || current_page == requested_page)
-		fspace2 (x0, y0, x1, y1, x2, y2);
+		pl_fspace2_r (plotter, x0, y0, x1, y1, x2, y2);
 	  if (parameters_initted == false && 
 	      ((!single_page_is_requested && current_page == 1)
 	      || (single_page_is_requested && current_page == requested_page)))
@@ -1361,17 +1380,17 @@ read_plot (in_stream)
 	    {
 	      if (bg_color)
 		{
-		  bgcolorname (bg_color);
-		  erase ();
+		  pl_bgcolorname_r (plotter, bg_color);
+		  pl_erase_r (plotter);
 		}
 	      if (pen_color)
-		pencolorname (pen_color);
+		pl_pencolorname_r (plotter, pen_color);
 	      if (font_name)
-		fontname (font_name);
+		pl_fontname_r (plotter, font_name);
 	      if (font_size >= 0.0)
-		ffontsize (font_size * fabs (x1 - x0));
+		pl_ffontsize_r (plotter, font_size * fabs (x1 - x0));
 	      if (line_width >= 0.0)
-		flinewidth (line_width * fabs (x1 - x0));
+		pl_flinewidth_r (plotter, line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
 	  space_seen = true;
@@ -1380,7 +1399,7 @@ read_plot (in_stream)
 	  x0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      ftextangle (x0);
+	      pl_ftextangle_r (plotter, x0);
 	  break;
 
         /* floating point routine with no integer counterpart */
@@ -1393,33 +1412,33 @@ read_plot (in_stream)
 	  y2 = read_float (in_stream, &argerr); 
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fconcat (x0, y0, x1, y1, x2, y2);
+	      pl_fconcat_r (plotter, x0, y0, x1, y1, x2, y2);
 	  break;
 	case (int)O_FMITERLIMIT:
 	  x0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fmiterlimit (x0);
+	      pl_fmiterlimit_r (plotter, x0);
 	  break;
 	case (int)O_FROTATE:	/* obsolete op code, to be removed */
 	  x0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      frotate (x0);
+	      pl_frotate_r (plotter, x0);
 	  break;
 	case (int)O_FSCALE:	/* obsolete op code, to be removed */
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      fscale (x0, y0);
+	      pl_fscale_r (plotter, x0, y0);
 	  break;
 	case (int)O_FTRANSLATE:	/* obsolete op code, to be removed */
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
-	      ftranslate (x0, y0);
+	      pl_ftranslate_r (plotter, x0, y0);
 	  break;
 	case ' ':
         case '\n':
@@ -1467,7 +1486,7 @@ read_plot (in_stream)
     /* if a premodern format, this file contains only one page */
     {
       /* close display device at EOF, if it was ever opened */
-      if (display_open && maybe_closepl () < 0)
+      if (display_open && maybe_closepl (plotter) < 0)
 	{
 	  fprintf (stderr, "%s: error: could not close plot device\n",
 		   progname);
@@ -1482,7 +1501,7 @@ read_plot (in_stream)
       if (in_page)
 	/* shouldn't be the case; parse error */
 	{
-	  if (display_open && maybe_closepl () < 0)
+	  if (display_open && maybe_closepl (plotter) < 0)
 	    {
 	      fprintf (stderr, "%s: error: could not close plot device\n",
 		       progname);
@@ -1498,28 +1517,30 @@ read_plot (in_stream)
 
 int
 #ifdef _HAVE_PROTOS
-maybe_openpl (void)
+maybe_openpl (plPlotter *plotter)
 #else
-maybe_openpl ()
+maybe_openpl (plotter)
+     plPlotter *plotter;
 #endif
 {
   if (merge_pages)
     return 0;
   else
-    return (openpl ());
+    return (pl_openpl_r (plotter));
 }
 
 int
 #ifdef _HAVE_PROTOS
-maybe_closepl (void)
+maybe_closepl (plPlotter *plotter)
 #else
-maybe_closepl ()
+maybe_closepl (plotter)
+     plPlotter *plotter;
 #endif
 {
   if (merge_pages)
     return 0;
   else
-    return (closepl ());
+    return (pl_closepl_r (plotter));
 }
 
 
@@ -1789,7 +1810,7 @@ read_string (input, badstatus)
   if (*badstatus == true)
     return 0;
 
-  buffer = (char *)xmalloc ((unsigned int)buffer_length);
+  buffer = (char *)xmalloc (buffer_length * sizeof(char));
   for ( ; ; )
     {
       if (length >= buffer_length)

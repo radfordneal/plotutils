@@ -9,26 +9,27 @@
 
 int
 #ifdef _HAVE_PROTOS
-_t_openpl (void)
+_t_openpl (S___(Plotter *_plotter))
 #else
-_t_openpl ()
+_t_openpl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) "openpl: invalid operation");
       return -1;
     }
 
   /* invoke generic method, to e.g. create drawing state */
-  _g_openpl ();
+  _g_openpl (S___(_plotter));
 
   /* send graphics initialization commands to output stream if necessary */
 
   if (_plotter->tek_display_type == D_XTERM 
       || _plotter->tek_display_type == D_KERMIT)
     /* VT340 command, put xterm / kermit into Tek mode.*/
-    _plotter->write_string ("\033[?38h");
+    _plotter->write_string (R___(_plotter) "\033[?38h");
 
   if (_plotter->tek_display_type == D_KERMIT)
     {
@@ -36,9 +37,10 @@ _t_openpl ()
 
       /* if there's a user-specified background color, set it; it will take
 	 effect only when erase() is invoked */
-      bg_color_name_s = (const char *)_get_plot_param ("BG_COLOR");
+      bg_color_name_s = 
+	(const char *)_get_plot_param (R___(_plotter) "BG_COLOR");
       if (bg_color_name_s)
-	_plotter->bgcolorname (bg_color_name_s);
+	_plotter->bgcolorname (R___(_plotter) bg_color_name_s);
     }
 
   return 0;

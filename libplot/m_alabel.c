@@ -15,23 +15,43 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_alabel (int x_justify, int y_justify, const char *s)
+_m_alabel (R___(Plotter *_plotter) int x_justify, int y_justify, const char *s)
 #else
-_m_alabel (x_justify, y_justify, s)
+_m_alabel (R___(_plotter) x_justify, y_justify, s)
+     S___(Plotter *_plotter;) 
      int x_justify, y_justify;
      const char *s;
 #endif
 {
+  char *t;
+
   if (!_plotter->open)
     {
-      _plotter->error ("alabel: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "alabel: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_ALABEL);
-  _meta_emit_byte (x_justify);
-  _meta_emit_byte (y_justify);
-  _meta_emit_string (s);
+  /* copy because we may alter the string */
+  t = (char *)_plot_xmalloc (strlen (s) + 1);
+  strcpy (t, s);
+
+  /* allow only character set in ISO encoding */
+  {
+    bool was_clean;
+    
+    was_clean = _clean_iso_string ((unsigned char *)t);
+    if (!was_clean)
+      _plotter->warning (R___(_plotter) 
+			 "ignoring control character (e.g. CR or LF) in label");
+  }
   
+  _meta_emit_byte (R___(_plotter) (int)O_ALABEL);
+  _meta_emit_byte (R___(_plotter) x_justify);
+  _meta_emit_byte (R___(_plotter) y_justify);
+  _meta_emit_string (R___(_plotter) t);
+  
+  free (t);
+
   return 0;
 }

@@ -1,46 +1,59 @@
-/* This file contains a function called by PNM and GIF Plotters, to fill in
-   many of the fields in the graphics context used by the MI scan
-   conversion routines, just before drawing. */
-
-/* This calls malloc to allocate storage for the dash array in the graphics
-   context, so free() will need to be invoked later 
-   (on ((miGC*)ptr)->dash). */
+/* This file contains a function called by bitmap Plotters such as PNM and
+   GIF Plotters, just before drawing.  It sets the attributes in the
+   graphics context (of type `miGC') used by the libxmi scan conversion
+   routines. */
 
 #include "sys-defines.h"
 #include "extern.h"
-#include "g_mi.h"		/* use MI scan conversion module */
+#include "xmi.h"		/* use libxmi scan conversion module */
 
-/* MI join styles, indexed by internal number (miter/rd./bevel/triangular) */
+/* libxmi joinstyles, indexed by internal number (miter/rd./bevel/triangular)*/
 static const int _mi_join_style[] =
-{ miJoinMiter, miJoinRound, miJoinBevel, miJoinTriangular };
+{ MI_JOIN_MITER, MI_JOIN_ROUND, MI_JOIN_BEVEL, MI_JOIN_TRIANGULAR };
 
-/* MI cap styles, indexed by internal number (butt/rd./project/triangular) */
+/* libxmi capstyles, indexed by internal number (butt/rd./project/triangular)*/
 static const int _mi_cap_style[] =
-{ miCapButt, miCapRound, miCapProjecting, miCapTriangular };
+{ MI_CAP_BUTT, MI_CAP_ROUND, MI_CAP_PROJECTING, MI_CAP_TRIANGULAR };
 
 void
 #ifdef _HAVE_PROTOS
-_set_common_mi_attributes (Voidptr ptr)
+_set_common_mi_attributes (R___(Plotter *_plotter) voidptr_t ptr)
 #else
-_set_common_mi_attributes (ptr)
-     Voidptr ptr;
+_set_common_mi_attributes (R___(_plotter) ptr)
+     S___(Plotter *_plotter;) 
+     voidptr_t ptr;		/* really an (miGC *) */
 #endif
 {
   int line_style, num_dashes, offset;
   unsigned int *dashbuf;
-  miGC *miDataPtr;
+  miGC *pGC;
+  bool dash_array_allocated = false;
+  miGCAttribute attributes[5];
+  int values [5];
+  unsigned int local_dashbuf[MAX_DASH_ARRAY_LEN];
 
-  miDataPtr = (miGC *)ptr;
+  pGC = (miGC *)ptr;		/* convert to (miGC *) */
 
-  miDataPtr->fillStyle = miFillSolid;
-  miDataPtr->fillRule = 
-    (_plotter->drawstate->fill_rule_type == FILL_NONZERO_WINDING ? 
-     miWindingRule : miEvenOddRule);
-  miDataPtr->joinStyle = _mi_join_style[_plotter->drawstate->join_type];
-  miDataPtr->capStyle = _mi_cap_style[_plotter->drawstate->cap_type];
-  miDataPtr->lineWidth = _plotter->drawstate->quantized_device_line_width;
-  miDataPtr->miterLimit = _plotter->drawstate->miter_limit;
-  miDataPtr->arcMode = miArcChord;	/* libplot convention */
+  /* set all miGC attributes that are not dash related */
+
+  /* set five integer-valued miGC attributes */
+  attributes[0] = MI_GC_FILL_RULE;
+  values[0] = (_plotter->drawstate->fill_rule_type == FILL_NONZERO_WINDING ? 
+	       MI_WINDING_RULE : MI_EVEN_ODD_RULE);
+  attributes[1] = MI_GC_JOIN_STYLE;
+  values[1] = _mi_join_style[_plotter->drawstate->join_type];
+  attributes[2] = MI_GC_CAP_STYLE;
+  values[2] = _mi_cap_style[_plotter->drawstate->cap_type];
+  attributes[3] = MI_GC_ARC_MODE;
+  values[3] = MI_ARC_CHORD;	/* libplot convention */
+  attributes[4] = MI_GC_LINE_WIDTH;
+  values[4] = _plotter->drawstate->quantized_device_line_width;
+  miSetGCAttribs (pGC, 5, attributes, values);
+
+  /* set a double-valued miGC attribute */
+  miSetGCMiterLimit (pGC, _plotter->drawstate->miter_limit);
+
+  /* now determine and set dashing-related attributes */
 
   if (_plotter->drawstate->dash_array_in_effect)
     /* have user-specified dash array */
@@ -61,9 +74,20 @@ _set_common_mi_attributes (ptr)
 	  _matrix_sing_vals (_plotter->drawstate->transform.m, 
 			     &min_sing_val, &max_sing_val);
 	  
-	  line_style = miLineOnOffDash;
+	  line_style = MI_LINE_ON_OFF_DASH;
 	  odd_length = (num_dashes & 1 ? true : false);
-	  dashbuf = (unsigned int *)_plot_xmalloc ((odd_length ? 2 : 1) * num_dashes * sizeof(unsigned int));
+	  {
+	    int array_len;
+	    
+	    array_len = (odd_length ? 2 : 1) * num_dashes;
+	    if (array_len <= MAX_DASH_ARRAY_LEN)
+	      dashbuf = local_dashbuf; /* use dash buffer on stack */
+	    else
+	      {
+		dashbuf = (unsigned int *)_plot_xmalloc (array_len * sizeof(unsigned int));
+		dash_array_allocated = true;
+	      }
+	  }
 	  dash_cycle_length = 0;
 	  for (i = 0; i < num_dashes; i++)
 	    {
@@ -99,7 +123,7 @@ _set_common_mi_attributes (ptr)
       else
 	/* zero-length dash array, i.e. solid line type */
 	{
-	  line_style = miLineSolid;
+	  line_style = MI_LINE_SOLID;
 	  dashbuf = NULL;
 	  offset = 0;
 	}
@@ -109,7 +133,7 @@ _set_common_mi_attributes (ptr)
     {
       if (_plotter->drawstate->line_type == L_SOLID)
 	{
-	  line_style = miLineSolid;
+	  line_style = MI_LINE_SOLID;
 	  num_dashes = 0;
 	  dashbuf = NULL;
 	  offset = 0;
@@ -119,11 +143,11 @@ _set_common_mi_attributes (ptr)
 	  const int *dash_array;
 	  int scale, i;
 	  
-	  line_style = miLineOnOffDash;
+	  line_style = MI_LINE_ON_OFF_DASH;
 	  num_dashes =
 	    _line_styles[_plotter->drawstate->line_type].dash_array_len;
 	  dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
-	  dashbuf = (unsigned int *)_plot_xmalloc (MAX_DASH_ARRAY_LEN * sizeof(unsigned int));
+	  dashbuf = local_dashbuf; /* it is large enough */
 	  offset = 0;
 
 	  /* scale by line width in terms of pixels, if nonzero */
@@ -137,14 +161,16 @@ _set_common_mi_attributes (ptr)
 	      
 	      dashlen = scale * dash_array[i];
 	      dashlen = IMAX(dashlen, 1);
-	      dashbuf[i] = (unsigned int)dashlen; /* int->unsigned char */
+	      dashbuf[i] = (unsigned int)dashlen;
 	    }
 	}
     }
 
-  /* set dash-related fields in MI graphics context */
-  miDataPtr->lineStyle = line_style;
-  miDataPtr->numInDashList = num_dashes;
-  miDataPtr->dash = dashbuf;
-  miDataPtr->dashOffset = offset;
+  /* set dash-related attributes in libxmi's graphics context */
+  miSetGCAttrib (pGC, MI_GC_LINE_STYLE, line_style);
+  if (line_style != (int)MI_LINE_SOLID)
+    miSetGCDashes (pGC, num_dashes, dashbuf, offset);
+
+  if (dash_array_allocated)
+    free (dashbuf);
 }

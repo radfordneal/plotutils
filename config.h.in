@@ -64,6 +64,12 @@
 /* Define to signal that Motif should be used, if X11 is used */
 #undef USE_MOTIF
 
+/* Define to signal support in libc for the pthread threads library */
+#undef PTHREAD_SUPPORT
+
+/* Define to signal support in libXt/libX11 for multithreading */
+#undef X_THREAD_SUPPORT
+
 /* Define to signal support in -lXext for the DBE X11 protocol extension */
 #undef HAVE_DBE_SUPPORT
 
@@ -79,6 +85,9 @@
 /* Define to enable support for the 35 PS fonts in PCL output */
 #undef USE_PS_FONTS_IN_PCL
 
+/* Define if you have the ctime_r function.  */
+#undef HAVE_CTIME_R
+
 /* Define if you have the erf function.  */
 #undef HAVE_ERF
 
@@ -90,6 +99,9 @@
 
 /* Define if you have the lgamma function.  */
 #undef HAVE_LGAMMA
+
+/* Define if you have the localtime_r function.  */
+#undef HAVE_LOCALTIME_R
 
 /* Define if you have the matherr function.  */
 #undef HAVE_MATHERR
@@ -109,6 +121,9 @@
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
 
+/* Define if you have the waitpid function.  */
+#undef HAVE_WAITPID
+
 /* Define if you have the <X11/extensions/Xdbe.h> header file.  */
 #undef HAVE_X11_EXTENSIONS_XDBE_H
 
@@ -124,6 +139,9 @@
 /* Define if you have the <malloc.h> header file.  */
 #undef HAVE_MALLOC_H
 
+/* Define if you have the <pthread.h> header file.  */
+#undef HAVE_PTHREAD_H
+
 /* Define if you have the <string.h> header file.  */
 #undef HAVE_STRING_H
 
@@ -133,11 +151,17 @@
 /* Define if you have the <sys/select.h> header file.  */
 #undef HAVE_SYS_SELECT_H
 
+/* Define if you have the <sys/stdtypes.h> header file.  */
+#undef HAVE_SYS_STDTYPES_H
+
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
 
 /* Define if you have the <sys/types.h> header file.  */
 #undef HAVE_SYS_TYPES_H
+
+/* Define if you have the <sys/wait.h> header file.  */
+#undef HAVE_SYS_WAIT_H
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H

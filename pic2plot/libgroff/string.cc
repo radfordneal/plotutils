@@ -6,6 +6,8 @@
 #include "stringclass.h"
 #include "lib.h"
 
+#define INT_DIGITS 10
+
 static char *salloc(int len, int *sizep);
 static void sfree(char *ptr, int size);
 static char *sfree_alloc(char *ptr, int size, int len, int *sizep);

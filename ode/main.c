@@ -49,7 +49,7 @@ display_version (progname)
 {
   fprintf (stderr, "%s (GNU plotutils) %s\n", progname, VERSION);
   fprintf (stderr, 
-	   "Copyright (C) 1982-98 Free Software Foundation, Inc.,\nand Nicholas B. Tufillaro.\n");
+	   "Copyright (C) 1982-99 Free Software Foundation, Inc.,\nand Nicholas B. Tufillaro.\n");
   fprintf (stderr, 
 	   "The GNU plotutils come with NO WARRANTY, to the extent permitted by law.\n");
   fprintf (stderr, "You may redistribute copies of the GNU plotutils\n");

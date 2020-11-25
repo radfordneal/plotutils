@@ -11,16 +11,7 @@ const char *progname = "plotfont"; /* name of this program */
 
 const char *usage_appendage = " FONT...\n";
 
-/* possible rotation angles for plot within graphics display */
-enum rotation { ROT_0, ROT_90, ROT_180, ROT_270 };
-
 enum radix { DECIMAL, OCTAL, HEXADECIMAL };
-
-char *bg_color = NULL;		/* initial bg color, can be spec'd by user */
-char *font_name = NULL;		/* initial font name, can be spec'd by user */
-char *pen_color = NULL;		/* initial pen color, can be spec'd by user */
-char *title_font_name = NULL;	/* title font name, NULL -> current font */
-char *numbering_font_name = NULL; /* numbering font name, NULL -> default */
 
 /* Long options we recognize */
 
@@ -63,7 +54,7 @@ struct option long_options[] =
 int hidden_options[] = { (int)'J', (int)'F', 0 };
 
 /* forward references */
-bool do_font ____P((const char *name, bool upper_half, char *pen_color_name, char *numbering_font_name, char *title_font_name, bool bearings, enum radix base, enum rotation rotation_angle, int jis_page, bool do_jis_page));
+bool do_font ____P((plPlotter *plotter, const char *name, bool upper_half, char *pen_color_name, char *numbering_font_name, char *title_font_name, bool bearings, enum radix base, int jis_page, bool do_jis_page));
 void write_three_bytes ____P((int charnum, char *numbuf, int radix));
 void write_two_bytes ____P((int charnum, char *numbuf, int radix));
 
@@ -72,9 +63,9 @@ extern int display_fonts ____P((const char *display_type, const char *progname))
 extern int list_fonts ____P((const char *display_type, const char *progname));
 extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 extern void display_version ____P((const char *progname)); 
-extern Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
-extern Voidptr xmalloc ____P ((unsigned int size));
-extern Voidptr xrealloc ____P ((Voidptr p, unsigned int length));
+extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
+extern voidptr_t xmalloc ____P ((size_t size));
+extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
 extern char *xstrdup ____P ((const char *s));
 
 
@@ -87,6 +78,8 @@ main (argc, argv)
      char *argv[];
 #endif
 {
+  plPlotter *plotter;
+  plPlotterParams *plotter_params;
   bool bearings = false;	/* show sidebearings on characters? */
   bool do_jis_page = false;	/* show page of HersheyEUC in JIS encoding? */
   bool do_list_fonts = false;	/* show a list of fonts? */
@@ -94,16 +87,19 @@ main (argc, argv)
   bool show_usage = false;	/* show usage message? */
   bool show_version = false;	/* show version message? */
   bool upper_half = false;	/* upper half of font, not lower? */
-  char *display_type = "meta";	/* default libplot output format */
+  char *display_type = (char *)"meta"; /* default libplot output format */
+  char *numbering_font_name = NULL; /* numbering font name, NULL -> default */
   char *option_font_name = NULL; /* allows user to use -F */
+  char *pen_color = NULL;	/* initial pen color, can be spec'd by user */
+  char *title_font_name = NULL;	/* title font name, NULL -> current font */
   enum radix base = DECIMAL;
-  enum rotation rotation_angle = ROT_0;
   int errcnt = 0;		/* errors encountered */
-  int handle;			/* libplot handle for Plotter object */
   int jis_page = 33;		/* page of HersheyEUC in JIS encoding */
   int opt_index;		/* long option index */
   int option;			/* option character */
+  int retval;			/* return value */
 
+  plotter_params = pl_newplparams ();
   while ((option = getopt_long (argc, argv, "12oxOj:J:F:T:", long_options, &opt_index)) != EOF)
     {
       if (option == 0)
@@ -116,7 +112,7 @@ main (argc, argv)
 	  strcpy (display_type, optarg);
 	  break;
 	case 'O':		/* Ascii output */
-	  pl_parampl ("META_PORTABLE", "yes");
+	  pl_setplparam (plotter_params, "META_PORTABLE", (char *)"yes");
 	  break;
 	case '1':		/* Lower half */
 	  upper_half = false;
@@ -145,23 +141,16 @@ main (argc, argv)
 	  strcpy (pen_color, optarg);
 	  break;
 	case 'q' << 8:		/* set the initial background color */
-	  bg_color = (char *)xmalloc (strlen (optarg) + 1);
-	  strcpy (bg_color, optarg);
+	  pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)optarg);
 	  break;
 	case 'B' << 8:		/* Bitmap size */
-	  pl_parampl ("BITMAPSIZE", optarg);
+	  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)optarg);
 	  break;
 	case 'P' << 8:		/* Page size */
-	  pl_parampl ("PAGESIZE", optarg);
+	  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)optarg);
 	  break;
 	case 'r' << 8:		/* Rotation angle */
-	  if (strcmp (optarg, "90") == 0)
-	    rotation_angle = ROT_90;
-	  else if (strcmp (optarg, "180") == 0)
-	    rotation_angle = ROT_180;
-	  else if (strcmp (optarg, "270") == 0)
-	    rotation_angle = ROT_270;
-	  else rotation_angle = ROT_0;
+	  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)optarg);
 	  break;
 	case 'b' << 8:		/* Bearings requested */
 	  bearings = true;
@@ -266,22 +255,17 @@ main (argc, argv)
 	}	  
     }
 
-  if (bg_color)
-    /* select user-specified background color */
-    pl_parampl ("BG_COLOR", bg_color);
-
-  if ((handle = pl_newpl (display_type, NULL, stdout, stderr)) < 0)
+  if ((plotter = pl_newpl_r (display_type, NULL, stdout, stderr, 
+			     plotter_params)) == NULL)
     {
-      fprintf (stderr, "%s: error: could not open plot device\n", progname);
+      fprintf (stderr, "%s: error: could not create plot device\n", progname);
       return EXIT_FAILURE;
     }
-  else
-    pl_selectpl (handle);
 
   if (option_font_name)
     /* user specifed a font with -F */
     {
-      if (do_font (option_font_name, upper_half, pen_color, numbering_font_name, title_font_name, bearings, base, rotation_angle, jis_page, do_jis_page) == false)
+      if (do_font (plotter, option_font_name, upper_half, pen_color, numbering_font_name, title_font_name, bearings, base, jis_page, do_jis_page) == false)
 	return EXIT_FAILURE;
     }
   
@@ -293,18 +277,21 @@ main (argc, argv)
 	  char *font_name;
 
 	  font_name = argv[optind];
-	  if (do_font (font_name, upper_half, pen_color, numbering_font_name, title_font_name, bearings, base, rotation_angle, jis_page, do_jis_page) == false)
+	  if (do_font (plotter, font_name, upper_half, pen_color, numbering_font_name, title_font_name, bearings, base, jis_page, do_jis_page) == false)
 	    return EXIT_FAILURE;
 	}
     }
 
-  pl_selectpl (0);
-  if (pl_deletepl (handle) < 0)
+  /* clean up */
+  retval = EXIT_SUCCESS;
+  if (pl_deletepl_r (plotter) < 0)
     {
-      fprintf (stderr, "%s: could not close plot device\n", progname);
-      return EXIT_FAILURE;
+      fprintf (stderr, "%s: error: could not delete plot device\n", progname);
+      retval = EXIT_FAILURE;
     }
-  return EXIT_SUCCESS;
+  pl_deleteplparams (plotter_params);
+
+  return retval;
 }
 
 #define NUM_ROWS 12
@@ -335,9 +322,10 @@ main (argc, argv)
 
 bool
 #ifdef _HAVE_PROTOS
-do_font (const char *name, bool upper_half, char *pen_color_name, char *numbering_font_name, char *title_font_name, bool bearings, enum radix base, enum rotation rotation_angle, int jis_page, bool do_jis_page)
+do_font (plPlotter *plotter, const char *name, bool upper_half, char *pen_color_name, char *numbering_font_name, char *title_font_name, bool bearings, enum radix base, int jis_page, bool do_jis_page)
 #else
-do_font (name, upper_half, pen_color_name, numbering_font_name, title_font_name, bearings, base, rotation_angle, jis_page, do_jis_page)
+do_font (plotter, name, upper_half, pen_color_name, numbering_font_name, title_font_name, bearings, base, jis_page, do_jis_page)
+     plPlotter *plotter;
      const unsigned char *name;
      bool upper_half;
      char *pen_color_name;
@@ -345,7 +333,6 @@ do_font (name, upper_half, pen_color_name, numbering_font_name, title_font_name,
      char *title_font_name;
      bool bearings;
      enum radix base;
-     enum rotation rotation_angle;
      int jis_page;
      bool do_jis_page;
 #endif
@@ -354,7 +341,7 @@ do_font (name, upper_half, pen_color_name, numbering_font_name, title_font_name,
   char numbuf[16];
   char suffixbuf[16];
   char *titlebuf;
-  char *suffix;
+  const char *suffix;
   double title_width;
   int i, j, bottom_octet, top_octet;
 
@@ -381,52 +368,32 @@ do_font (name, upper_half, pen_color_name, numbering_font_name, title_font_name,
   strcpy (titlebuf, name);
   strcat (titlebuf, suffix);
 
-  if (pl_openpl () < 0)
+  if (pl_openpl_r (plotter) < 0)
     {
       fprintf (stderr, "%s: error: could not open plot device\n", progname);
       return false;
     }
 
-  switch ((int)(rotation_angle))
-    {
-    case (int)ROT_0:
-    default:
-      pl_fspace (0.0, 0.0, (double)SIZE, (double)SIZE);
-      break;
-    case (int)ROT_90:
-      pl_fspace2 (0.0, (double)SIZE,
-		  0.0, 0.0,
-		  (double)SIZE, (double)SIZE);
-      break;
-    case (int)ROT_180:
-      pl_fspace2 ((double)SIZE, (double)SIZE,
-		  0.0, (double)SIZE,
-		  (double)SIZE, 0.0);
-      break;
-    case (int)ROT_270:
-      pl_fspace2 ((double)SIZE, 0.0,
-		  (double)SIZE, (double)SIZE,
-		  0.0, 0.0);
-      break;
-    }
-  pl_erase();
+  pl_fspace_r (plotter, 0.0, 0.0, (double)SIZE, (double)SIZE);
+  pl_erase_r (plotter);
   if (pen_color_name)
-    pl_pencolorname (pen_color_name);
+    pl_pencolorname_r (plotter, pen_color_name);
   
-  pl_fmove (0.5 * SIZE, 0.5 * (SIZE + TOP));
+  pl_fmove_r (plotter, 0.5 * SIZE, 0.5 * (SIZE + TOP));
   if (title_font_name)
-    pl_fontname (title_font_name);
+    pl_fontname_r (plotter, title_font_name);
   else
-    pl_fontname (name);
-  pl_ffontsize ((double)(TITLE_FONT_SIZE));
+    pl_fontname_r (plotter, name);
+  pl_ffontsize_r (plotter, (double)(TITLE_FONT_SIZE));
 
-  title_width = pl_flabelwidth (titlebuf);
+  title_width = pl_flabelwidth_r (plotter, titlebuf);
   if (title_width > MAX_TITLE_LENGTH)
     /* squeeze title to fit */
-    pl_ffontsize ((double)(TITLE_FONT_SIZE) * (MAX_TITLE_LENGTH / title_width));
+    pl_ffontsize_r (plotter, 
+		    (double)(TITLE_FONT_SIZE) * (MAX_TITLE_LENGTH / title_width));
 
   /* print title */
-  pl_alabel ('c', 'c', titlebuf);
+  pl_alabel_r (plotter, 'c', 'c', titlebuf);
 
   if (do_jis_page)
     bottom_octet = 4;
@@ -441,38 +408,42 @@ do_font (name, upper_half, pen_color_name, numbering_font_name, title_font_name,
 
   /* draw grid */
 
-  pl_linemod ("solid");
-  pl_fbox (LEFT, BOTTOM, RIGHT, TOP);
+  pl_linemod_r (plotter, "solid");
+  pl_fbox_r (plotter, LEFT, BOTTOM, RIGHT, TOP);
   for (i = 1; i <= 7; i++)
     /* boustrophedon */
     {
       if (i % 2)
-	pl_fline (LINE_HOFFSET + i * HSPACING, BOTTOM, 
-		  LINE_HOFFSET + i * HSPACING, TOP);
+	pl_fline_r (plotter, 
+		    LINE_HOFFSET + i * HSPACING, BOTTOM, 
+		    LINE_HOFFSET + i * HSPACING, TOP);
       else
-	pl_fline (LINE_HOFFSET + i * HSPACING, TOP,
-		  LINE_HOFFSET + i * HSPACING, BOTTOM);
+	pl_fline_r (plotter, 
+		    LINE_HOFFSET + i * HSPACING, TOP,
+		    LINE_HOFFSET + i * HSPACING, BOTTOM);
     }      
   for (j = 1; j <= 11; j++)
     /* boustrophedon */
     {
       if (j % 2)
-	pl_fline (RIGHT, TOP - j * VSPACING,
-		  LEFT, TOP - j * VSPACING);
+	pl_fline_r (plotter, 
+		    RIGHT, TOP - j * VSPACING,
+		    LEFT, TOP - j * VSPACING);
       else
-	pl_fline (LEFT, TOP - j * VSPACING,
-		  RIGHT, TOP - j * VSPACING);
+	pl_fline_r (plotter,  
+		    LEFT, TOP - j * VSPACING,
+		    RIGHT, TOP - j * VSPACING);
     }
 
   /* number grid cells */
 
   if (numbering_font_name)
-    pl_fontname (numbering_font_name);
+    pl_fontname_r (plotter, numbering_font_name);
   else				/* select default font */
-    pl_fontname ("");
-  pl_ffontsize ((double)(NUMBERING_FONT_SIZE));
+    pl_fontname_r (plotter, "");
+  pl_ffontsize_r (plotter, (double)(NUMBERING_FONT_SIZE));
   if (bearings)
-    pl_linemod ("dotted");
+    pl_linemod_r (plotter, "dotted");
   for (i = bottom_octet; i <= top_octet; i++)
     for (j = 0; j < 8; j++)
       {
@@ -501,15 +472,16 @@ do_font (name, upper_half, pen_color_name, numbering_font_name, title_font_name,
 	    break;
 	  }
 	
-	pl_fmove ((double)(LINE_HOFFSET + HSPACING * (column + 1 - N_X_SHIFT)),
-		  (double)(SIZE - (LINE_VOFFSET + VSPACING * (row + 1 - N_Y_SHIFT))));
-	pl_alabel ('r', 'x', numbuf);
+	pl_fmove_r (plotter,
+		    (double)(LINE_HOFFSET + HSPACING * (column + 1 - N_X_SHIFT)),
+		    (double)(SIZE - (LINE_VOFFSET + VSPACING * (row + 1 - N_Y_SHIFT))));
+	pl_alabel_r (plotter, 'r', 'x', numbuf);
       }
 
   /* fill grid cells with characters */
 
-  pl_fontname (name);
-  pl_ffontsize ((double)(FONT_SIZE));
+  pl_fontname_r (plotter, name);
+  pl_ffontsize_r (plotter, (double)(FONT_SIZE));
   for (i = bottom_octet; i <= top_octet; i++)
     for (j = 0; j < 8; j++)
       {
@@ -537,38 +509,42 @@ do_font (name, upper_half, pen_color_name, numbering_font_name, title_font_name,
 	    buf[2] = '\0';
 	  }
 
-	pl_fmove ((double)(LINE_HOFFSET + HSPACING * (column + 0.5)),
-		  (double)(SIZE - (LINE_VOFFSET + VSPACING * (row + 0.5))));
+	pl_fmove_r (plotter, 
+		    (double)(LINE_HOFFSET + HSPACING * (column + 0.5)),
+		    (double)(SIZE - (LINE_VOFFSET + VSPACING * (row + 0.5))));
 	/* place glyph on page */
-	pl_alabel ('c', 'c', (char *)buf);
+	pl_alabel_r (plotter, 'c', 'c', (char *)buf);
 	if (bearings)
 	  {
 	    double halfwidth;
 
 	    /* compute glyph width */
-	    halfwidth = 0.5 * pl_flabelwidth ((char *)buf);
+	    halfwidth = 0.5 * pl_flabelwidth_r (plotter, (char *)buf);
 	    if (halfwidth == 0.0)
 	      /* empty glyph, draw only one vertical dotted line */
-	      pl_fline ((double)(CHAR_HOFFSET + HSPACING * column),
-			(double)(SIZE - (CHAR_VOFFSET + VSPACING * (row - 0.5))),
-			(double)(CHAR_HOFFSET + HSPACING * column),
-			(double)(SIZE - (CHAR_VOFFSET + VSPACING * (row + 0.5))));
+	      pl_fline_r (plotter,
+			  (double)(CHAR_HOFFSET + HSPACING * column),
+			  (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row - 0.5))),
+			  (double)(CHAR_HOFFSET + HSPACING * column),
+			  (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row + 0.5))));
 	    else
 	      /* draw vertical dotted lines to either side of glyph */
 	      {
-		pl_fline ((double)(CHAR_HOFFSET + HSPACING * column - halfwidth),
-			  (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row - 0.5))),
-			  (double)(CHAR_HOFFSET + HSPACING * column - halfwidth),
-			  (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row + 0.5))));
-		pl_fline ((double)(CHAR_HOFFSET + HSPACING * column + halfwidth),
-			  (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row - 0.5))),
-			  (double)(CHAR_HOFFSET + HSPACING * column + halfwidth),
-			  (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row + 0.5))));
+		pl_fline_r (plotter, 
+			    (double)(CHAR_HOFFSET + HSPACING * column - halfwidth),
+			    (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row - 0.5))),
+			    (double)(CHAR_HOFFSET + HSPACING * column - halfwidth),
+			    (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row + 0.5))));
+		pl_fline_r (plotter, 
+			    (double)(CHAR_HOFFSET + HSPACING * column + halfwidth),
+			    (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row - 0.5))),
+			    (double)(CHAR_HOFFSET + HSPACING * column + halfwidth),
+			    (double)(SIZE - (CHAR_VOFFSET + VSPACING * (row + 0.5))));
 	      }
 	  }
       }
   
-  if (pl_closepl () < 0)
+  if (pl_closepl_r (plotter) < 0)
     {
       fprintf (stderr, "%s: error: could not close plot device\n", progname);
       return false;

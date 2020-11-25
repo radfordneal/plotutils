@@ -19,6 +19,14 @@
 
 #define GOOD_PRINTABLE_ASCII(c) ((c >= 0x20) && (c <= 0x7E))
 
+/* Fig horizontal alignment styles, indexed by internal number
+   (left/center/right) */
+#define FIG_ALIGN_LEFT 0
+#define FIG_ALIGN_CENTER 1
+#define FIG_ALIGN_RIGHT 2
+static const int _fig_horizontal_alignment_style[] =
+{ FIG_ALIGN_LEFT, FIG_ALIGN_CENTER, FIG_ALIGN_RIGHT };
+
 /* This prints a single-font, single-font-size label, and repositions to
    the end after printing.  When this is called, the current point is on
    the intended baseline of the label.  */
@@ -29,11 +37,13 @@
 
 double
 #ifdef _HAVE_PROTOS
-_f_falabel_ps (const unsigned char *s, int h_just)
+_f_falabel_ps (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_f_falabel_ps (s, h_just)
+_f_falabel_ps (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
   int len, master_font_index;
@@ -48,6 +58,10 @@ _f_falabel_ps (s, h_just)
   double horizontal_fig_y, vertical_fig_y;
   double angle_device;
   
+  /* sanity check; this routine supports only baseline positioning */
+  if (v_just != JUST_BASE)
+    return 0.0;
+
   if (*s == (unsigned char)'\0')
     return 0.0;
 
@@ -61,7 +75,7 @@ _f_falabel_ps (s, h_just)
     (_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
 
   /* compute label height and width, in user units */
-  label_width = _plotter->flabelwidth_ps (s);
+  label_width = _plotter->flabelwidth_ps (R___(_plotter) s);
   label_ascent  = _plotter->drawstate->true_font_size * (_ps_font_info[master_font_index]).font_ascent / 1000.0;
   
   /* vector along which we'll move when we print the label (user frame) */
@@ -123,11 +137,11 @@ _f_falabel_ps (s, h_just)
   initial_y = YD((_plotter->drawstate->pos).x, (_plotter->drawstate->pos).y);
 
   /* evaluate fig colors lazily, i.e. only when needed */
-  _plotter->set_pen_color();
+  _plotter->set_pen_color (S___(_plotter));
   
   /* escape all backslashes in the text string, before output */
   len = strlen ((char *)s);
-  ptr = (unsigned char *)_plot_xmalloc ((unsigned int)(4 * len + 1));
+  ptr = (unsigned char *)_plot_xmalloc ((4 * len + 1) * sizeof(char));
   t = ptr;
   while (*s)
     {
@@ -159,7 +173,7 @@ _f_falabel_ps (s, h_just)
 	  "#TEXT\n%d %d %d %d %d %d %.3f %.3f %d %.3f %.3f %d %d %s\\001\n",
 	  4,			/* text object */
 	  /* xfig supports 3 justification types: left, center, or right. */
-	  h_just,		/* horizontal justification type */
+	  _fig_horizontal_alignment_style[h_just],/* horizontal just. type */
 	  _plotter->drawstate->fig_fgcolor, /* pen color */
 	  _plotter->fig_drawing_depth, /* depth */
 	  0,			/* pen style, ignored */

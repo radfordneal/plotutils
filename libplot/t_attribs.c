@@ -13,9 +13,10 @@
 
 void
 #ifdef _HAVE_PROTOS
-_t_set_attributes (void)
+_t_set_attributes (S___(Plotter *_plotter))
 #else
-_t_set_attributes ()
+_t_set_attributes (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if ((!(_plotter->tek_line_type_is_unknown))
@@ -26,39 +27,49 @@ _t_set_attributes ()
     {
     default:
     case L_SOLID:
-      _plotter->write_string ("\033`");	/* ASCII ESC `, i.e. ^[` */
+      /* ASCII ESC `, i.e. ^[` */
+      _plotter->write_string (R___(_plotter) "\033`");
       break;
     case L_DOTTED:
-      _plotter->write_string ("\033a");	/* ASCII ESC a, i.e. ^[a */
+      /* ASCII ESC a, i.e. ^[a */
+      _plotter->write_string (R___(_plotter) "\033a");	
       break;
       /* following two are interchanged in kermit emulator */
     case L_DOTDASHED:
       if (_plotter->tek_display_type == D_KERMIT)
-	_plotter->write_string ("\033c"); /* ASCII ESC c, i.e. ^[c */
+	/* ASCII ESC c, i.e. ^[c */
+	_plotter->write_string (R___(_plotter) "\033c"); 
       else
-	_plotter->write_string ("\033b"); /* ASCII ESC b, i.e. ^[b */
+	/* ASCII ESC b, i.e. ^[b */
+	_plotter->write_string (R___(_plotter) "\033b"); 
       break;
     case L_SHORTDASHED:
       if (_plotter->tek_display_type == D_KERMIT)
-	_plotter->write_string ("\033b"); /* ASCII ESC b, i.e. ^[b */
+	/* ASCII ESC b, i.e. ^[b */
+	_plotter->write_string (R___(_plotter) "\033b"); 
       else
-	_plotter->write_string ("\033c"); /* ASCII ESC c, i.e. ^[c */
+	/* ASCII ESC c, i.e. ^[c */
+	_plotter->write_string (R___(_plotter) "\033c"); 
       break;
     case L_LONGDASHED:
       /* in kermit emulator, the following switches to "dotlongdashed"
 	 rather than "longdashed", but we can live with that */
-      _plotter->write_string ("\033d");	/* ASCII ESC d, i.e. ^[d */
+      /* ASCII ESC d, i.e. ^[d */
+      _plotter->write_string (R___(_plotter) "\033d");	
       break;
     case L_DOTDOTDASHED:
       if (_plotter->tek_display_type == D_KERMIT)
-	_plotter->write_string ("\033e"); /* ASCII ESC e, i.e. ^[e */
+	/* ASCII ESC e, i.e. ^[e */
+	_plotter->write_string (R___(_plotter) "\033e"); 
       else
 	/* not supported on a genuine Tektronix, so punt */
-	_plotter->write_string ("\033b"); /* ASCII ESC b, i.e. ^[b */
+	/* ASCII ESC b, i.e. ^[b */
+	_plotter->write_string (R___(_plotter) "\033b"); 
       break;
     case L_DOTDOTDOTDASHED:
       /* not supported, so punt */
-      _plotter->write_string ("\033b");/* ASCII ESC b, i.e. ^[b */
+      /* ASCII ESC b, i.e. ^[b */
+      _plotter->write_string (R___(_plotter) "\033b");
       break;
     }
 

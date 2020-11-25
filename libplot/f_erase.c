@@ -1,3 +1,4 @@
+
 /* This file contains the erase method, which is a standard part of
    libplot.  It erases all objects on the graphics device display.
 
@@ -9,18 +10,19 @@
 
 int
 #ifdef _HAVE_PROTOS
-_f_erase (void)
+_f_erase (S___(Plotter *_plotter))
 #else
-_f_erase ()
+_f_erase (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("erase: invalid operation");
+      _plotter->error (R___(_plotter) "erase: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   _reset_outbuf (_plotter->page);
 

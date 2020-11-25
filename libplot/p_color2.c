@@ -11,7 +11,7 @@
    and Cyan).  Also included are four points in the interior of the cube:
    Light Gray, Dark Gray, Violet, and Brown. */
 
-const Color _idraw_stdcolors[IDRAW_NUM_STD_COLORS] =
+const plColor _idraw_stdcolors[IDRAW_NUM_STD_COLORS] =
 {
   {0x0000, 0x0000, 0x0000},	/* Black */
   {0xa500, 0x2a00, 0x2a00},	/* Brown */
@@ -24,13 +24,13 @@ const Color _idraw_stdcolors[IDRAW_NUM_STD_COLORS] =
   {0x4f00, 0x2f00, 0x4f00},	/* Violet */
   {0xffff, 0xffff, 0xffff},	/* White */
   {0xc350, 0xc350, 0xc350},	/* LtGray */	  
-  {0x80e8, 0x80e8, 0x80e8},	/* DkGray */	  
+  {0x80e8, 0x80e8, 0x80e8}	/* DkGray */	  
 };
 
 const char * const _idraw_stdcolornames[IDRAW_NUM_STD_COLORS] = 
 {
   "Black", "Brown", "Red", "Orange", "Yellow", "Green",
-  "Blue", "Indigo", "Violet", "White", "LtGray", "DkGray",
+  "Blue", "Indigo", "Violet", "White", "LtGray", "DkGray"
 };
 
 /* Idraw allows a fill color to be an interpolation of a pen color
@@ -42,5 +42,5 @@ const char * const _idraw_stdcolornames[IDRAW_NUM_STD_COLORS] =
 
 const double _idraw_stdshadings[IDRAW_NUM_STD_SHADINGS] =
 {
-  0.0, 0.25, 0.5, 0.75, 1.0,
+  0.0, 0.25, 0.5, 0.75, 1.0
 };

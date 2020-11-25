@@ -2,7 +2,7 @@
    cutting data sets that are in the format accepted by the `spline' and
    `graph' utilities.  The data sets may be in binary (either double or
    single precision floating point format, or integer format), or in ascii.
-   Copyright (C) 1989-1998 Free Software Foundation, Inc.
+   Copyright (C) 1989-1999 Free Software Foundation, Inc.
 
    The `I', `O', and `q' options (i.e. `--input-type', `--output-type', and
    `--precision') are similar to those accepted by `spline' and `graph'.
@@ -109,9 +109,9 @@ void set_format_type ____P ((char *s, data_type *typep));
 /* from libcommon */
 extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 extern void display_version ____P((const char *progname)); 
-extern Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
-extern Voidptr xmalloc ____P ((unsigned int length));
-extern Voidptr xrealloc ____P ((Voidptr p, unsigned int length));
+extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
+extern voidptr_t xmalloc ____P ((size_t length));
+extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
 extern char *xstrdup ____P ((const char *s));
 
 
@@ -448,14 +448,14 @@ read_float (input, dptr)
       num_read = fscanf (input, "%lf", &dval);
       break;
     case T_SINGLE:
-      num_read = fread ((Voidptr) &fval, sizeof (fval), 1, input);
+      num_read = fread ((voidptr_t) &fval, sizeof (fval), 1, input);
       dval = fval;
       break;
     case T_DOUBLE:
-      num_read = fread ((Voidptr) &dval, sizeof (dval), 1, input);
+      num_read = fread ((voidptr_t) &dval, sizeof (dval), 1, input);
       break;
     case T_INTEGER:
-      num_read = fread ((Voidptr) &ival, sizeof (ival), 1, input);
+      num_read = fread ((voidptr_t) &ival, sizeof (ival), 1, input);
       dval = ival;
       break;
     }
@@ -585,10 +585,10 @@ write_float (x, precision)
 	  if (fx == FLT_MAX)
 	    fx *= 0.99999;	/* kludge */
 	}
-      num_written = fwrite ((Voidptr) &fx, sizeof (fx), 1, stdout);
+      num_written = fwrite ((voidptr_t) &fx, sizeof (fx), 1, stdout);
       break;
     case T_DOUBLE:
-      num_written = fwrite ((Voidptr) &x, sizeof (x), 1, stdout);
+      num_written = fwrite ((voidptr_t) &x, sizeof (x), 1, stdout);
       break;
     case T_INTEGER:
       ix = IROUND(x);
@@ -598,7 +598,7 @@ write_float (x, precision)
 	  if (ix == INT_MAX)
 	    ix--;
 	}
-      num_written = fwrite ((Voidptr) &ix, sizeof (ix), 1, stdout);
+      num_written = fwrite ((voidptr_t) &ix, sizeof (ix), 1, stdout);
       break;
     }
   if (num_written < 0)
@@ -829,15 +829,15 @@ output_dataset_separator()
       break;
     case T_DOUBLE:
       ddummy = DBL_MAX;
-      fwrite ((Voidptr) &ddummy, sizeof(ddummy), 1, stdout);
+      fwrite ((voidptr_t) &ddummy, sizeof(ddummy), 1, stdout);
       break;
     case T_SINGLE:
       fdummy = FLT_MAX;
-      fwrite ((Voidptr) &fdummy, sizeof(fdummy), 1, stdout);
+      fwrite ((voidptr_t) &fdummy, sizeof(fdummy), 1, stdout);
       break;
     case T_INTEGER:
       idummy = INT_MAX;
-      fwrite ((Voidptr) &idummy, sizeof(idummy), 1, stdout);
+      fwrite ((voidptr_t) &idummy, sizeof(idummy), 1, stdout);
       break;
     }
 }

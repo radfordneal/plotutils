@@ -17,9 +17,10 @@ const int _ai_fill_rule[] = { AI_FILL_ODD_WINDING, AI_FILL_NONZERO_WINDING };
 
 void
 #ifdef _HAVE_PROTOS
-_a_set_attributes (void)
+_a_set_attributes (S___(Plotter *_plotter))
 #else
-_a_set_attributes ()
+_a_set_attributes (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   bool changed_width = false;
@@ -31,10 +32,9 @@ _a_set_attributes ()
   int desired_ai_line_type = _plotter->drawstate->line_type;  
   int i;
   double display_size_in_points, min_dash_unit;
-  Displaycoors info;
 
   if (_plotter->ai_version >= AI_VERSION_5
-      && _plotter->drawstate->fill_level > 0
+      && _plotter->drawstate->fill_type > 0
       && _plotter->ai_fill_rule_type != desired_fill_rule)
     {
       sprintf (_plotter->page->point, "%d XR\n", desired_fill_rule);
@@ -143,10 +143,8 @@ _a_set_attributes ()
 	      dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
 	      /* scale the array of integers by line width (actually by
 		 floored line width; see comments at head of file) */
-	      info = _plotter->display_coors;
-	      display_size_in_points = (_plotter->device_units_per_inch
-					* DMIN(info.right - info.left, 
-					       info.top - info.bottom));
+	      display_size_in_points = DMIN(_plotter->xmax - _plotter->xmin, 
+					    _plotter->ymax - _plotter->ymin);
 	      min_dash_unit = (MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
 			       * display_size_in_points);
 	      scale = DMAX(min_dash_unit,

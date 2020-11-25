@@ -3,17 +3,18 @@
 // include system headers: stdio, string, math (+ M_PI, M_SQRT2), stdlib, errno
 #include "sys-defines.h"
 
-// include libgroff headers
-#include "assert.h"
+// include all libgroff headers in ./include.
 #include "cset.h"
-#include "lib.h"
-#include "stringclass.h"
 #include "errarg.h"
 #include "error.h"
+#include "lib.h"
 #include "position.h"
+#include "ptable.h"
+#include "stringclass.h"
 #include "text.h"
-#include "output.h"
 
+
+// declare input and file_input classes
 class input 
 {
 public:
@@ -50,6 +51,8 @@ private:
   int read_line (void);
 };
 
+// External functions
+
 // interface to lexer in lex.cc
 extern int yylex (void);
 extern void copy_file_thru (const char *filename, const char *body, const char *until);
@@ -70,7 +73,7 @@ extern void parse_init (void);
 extern void parse_cleanup (void);
 extern int delim_flag;		// read-only variable
 
-// command-line flags in main.cc, used by lexer, parser, or driver
+// Command-line flags in main.cc, used by lexer, parser, or driver
 extern int command_char;
 extern int compatible_flag;
 extern int safer_flag;

@@ -2,6 +2,7 @@
 
 // The common_output class: subclassed from the output class, 
 // providing support for dotting/dashing and for rounded boxes.
+// The output class is defined in output.h.
 
 class common_output : public output 
 {

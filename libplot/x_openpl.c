@@ -17,9 +17,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_x_openpl (void)
+_x_openpl (S___(Plotter *_plotter))
 #else
-_x_openpl ()
+_x_openpl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   Window root1, root2;
@@ -32,14 +33,14 @@ _x_openpl ()
 
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) "openpl: invalid operation");
       return -1;
     }
 
   if (_plotter->x_dpy == (Display *)NULL)
     /* pathological: user didn't set XDRAWABLE_DISPLAY parameter */
     {
-      _plotter->error ("can't open Plotter, XDRAWABLE_DISPLAY parameter is null");
+      _plotter->error (R___(_plotter) "can't open Plotter, XDRAWABLE_DISPLAY parameter is null");
       return -1;
     }
 
@@ -61,7 +62,7 @@ _x_openpl ()
       if (width1 != width2 || height1 != height2 
 	  || depth1 != depth2 || root1 != root2)
 	{
-	  _plotter->error("can't open Plotter, X drawables have unequal parameters");
+	  _plotter->error(R___(_plotter) "can't open Plotter, X drawables have unequal parameters");
 	  return -1;
 	}
     }
@@ -105,14 +106,14 @@ _x_openpl ()
   {
     int saved_frame_number = _plotter->frame_number;
 
-    _g_openpl ();
+    _g_openpl (S___(_plotter));
     _plotter->frame_number = saved_frame_number + 1;
   }
 
   /* set background color (possibly user-specified) in drawing state */
-  bg_color_name_s = (const char *)_get_plot_param ("BG_COLOR");
+  bg_color_name_s = (const char *)_get_plot_param (R___(_plotter) "BG_COLOR");
   if (bg_color_name_s)
-    _plotter->bgcolorname (bg_color_name_s);
+    _plotter->bgcolorname (R___(_plotter) bg_color_name_s);
   
   /* At this point, we don't clear the drawable(s) by filling them with the
      background color, which is what we would do here for an X Plotter (see
@@ -122,7 +123,8 @@ _x_openpl ()
 
   if (_plotter->x_drawable1 || _plotter->x_drawable2)
     {
-      double_buffer_s = (const char *)_get_plot_param ("USE_DOUBLE_BUFFERING");
+      double_buffer_s = 
+	(const char *)_get_plot_param (R___(_plotter) "USE_DOUBLE_BUFFERING");
       if (strcmp (double_buffer_s, "yes") == 0
 	  || strcmp (double_buffer_s, "fast") == 0)
 	/* user requested double buffering, so do so `by hand': allocate
@@ -156,9 +158,10 @@ _x_openpl ()
    by a version that actually does something. */
 void
 #ifdef _HAVE_PROTOS
-_x_maybe_get_new_colormap (void)
+_x_maybe_get_new_colormap (S___(Plotter *_plotter))
 #else
-_x_maybe_get_new_colormap ()
+_x_maybe_get_new_colormap (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   return;
@@ -170,9 +173,10 @@ _x_maybe_get_new_colormap ()
    that actually does something. */
 void
 #ifdef _HAVE_PROTOS
-_x_maybe_handle_x_events(void)
+_x_maybe_handle_x_events(S___(Plotter *_plotter))
 #else
-_x_maybe_handle_x_events()
+_x_maybe_handle_x_events(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   return;

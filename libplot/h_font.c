@@ -16,9 +16,10 @@
 
 void
 #ifdef _HAVE_PROTOS
-_h_set_font (void)
+_h_set_font (S___(Plotter *_plotter))
 #else
-_h_set_font ()
+_h_set_font (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   bool font_changed = false;
@@ -78,22 +79,22 @@ _h_set_font ()
        there's really no point in printing the label) */
     {
       /* update device-frame label rotation angle if needed */
-      if (_plotter->relative_label_run != new_relative_label_run
-	  || _plotter->relative_label_rise != new_relative_label_rise)
+      if (_plotter->hpgl_rel_label_run != new_relative_label_run
+	  || _plotter->hpgl_rel_label_rise != new_relative_label_rise)
 	{    
 	  sprintf (_plotter->page->point, "DR%.3f,%.3f;",
 		   new_relative_label_run, new_relative_label_rise);
 	  _update_buffer (_plotter->page);
-	  _plotter->relative_label_run = new_relative_label_run;
-	  _plotter->relative_label_rise = new_relative_label_rise;
+	  _plotter->hpgl_rel_label_run = new_relative_label_run;
+	  _plotter->hpgl_rel_label_rise = new_relative_label_rise;
 	}
     }
 
   /* emit command to change font, if needed */
   if (_plotter->hpgl_version == 2)
-    font_changed = _hpgl2_maybe_update_font();
+    font_changed = _hpgl2_maybe_update_font (S___(_plotter));
   else				/* 1, i.e. "1.5", i.e. HP7550A */
-    font_changed = _hpgl_maybe_update_font();
+    font_changed = _hpgl_maybe_update_font (S___(_plotter));
 
   /* compute character slant (device frame) */
   if (len == 0.0 || perplen == 0.0) /* a bad situation */
@@ -144,23 +145,23 @@ _h_set_font ()
     /* emit SR instruction only if font was changed or if current
        size was wrong */
     if (font_changed || 
-	(new_relative_char_width != _plotter->relative_char_width
-	 || new_relative_char_height != _plotter->relative_char_height))
+	(new_relative_char_width != _plotter->hpgl_rel_char_width
+	 || new_relative_char_height != _plotter->hpgl_rel_char_height))
       {
 	sprintf (_plotter->page->point, "SR%.3f,%.3f;", 
 		 new_relative_char_width, new_relative_char_height);
 	_update_buffer (_plotter->page);
-	_plotter->relative_char_width = new_relative_char_width;
-	_plotter->relative_char_height = new_relative_char_height;
+	_plotter->hpgl_rel_char_width = new_relative_char_width;
+	_plotter->hpgl_rel_char_height = new_relative_char_height;
       }
   }
 
   /* update slant angle if necessary */
-  if (tan_slant != _plotter->char_slant_tangent)
+  if (tan_slant != _plotter->hpgl_tan_char_slant)
     {
       sprintf (_plotter->page->point, "SL%.3f;", tan_slant);
       _update_buffer (_plotter->page);
-      _plotter->char_slant_tangent = tan_slant;
+      _plotter->hpgl_tan_char_slant = tan_slant;
     }
 }
 
@@ -169,9 +170,10 @@ _h_set_font ()
 
 bool
 #ifdef _HAVE_PROTOS
-_hpgl2_maybe_update_font (void)
+_hpgl2_maybe_update_font (S___(Plotter *_plotter))
 #else
-_hpgl2_maybe_update_font ()
+_hpgl2_maybe_update_font (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   bool font_change = false;
@@ -317,9 +319,10 @@ _hpgl2_maybe_update_font ()
 
 bool
 #ifdef _HAVE_PROTOS
-_hpgl_maybe_update_font (void)
+_hpgl_maybe_update_font (S___(Plotter *_plotter))
 #else
-_hpgl_maybe_update_font ()
+_hpgl_maybe_update_font (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   bool font_change = false;

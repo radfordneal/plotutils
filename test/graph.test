@@ -10,10 +10,7 @@
 	--portable-output \
 	<$SRCDIR/spline.xout >graph.out
 
-# work around line end problems in installations with DJGPP under DOS
-tr -d '\015' < graph.out > graph.dos
-
-if cmp -s $SRCDIR/graph.xout graph.dos
+if cmp -s $SRCDIR/graph.xout graph.out
 	then retval=0;
 	else retval=1;
 	fi;

@@ -8,9 +8,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_fpoint (double x, double y)
+_g_fpoint (R___(Plotter *_plotter) double x, double y)
 #else
-_g_fpoint (x, y)
+_g_fpoint (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {

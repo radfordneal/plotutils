@@ -1,0 +1,3 @@
+Libxmi has its own versioning scheme.  The version of libxmi in this
+directory is 1.0, age=1.  (Age=1 means that its interfaces are backward
+compatible with libxmi 0.x also.)

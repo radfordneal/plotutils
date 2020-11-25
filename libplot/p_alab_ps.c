@@ -1,6 +1,6 @@
 /* This file contains the PS-driver-specific version of the low-level
    falabel_ps() method, which is called to plot a label in the current font
-   (eithr PS or PCL), at the current fontsize and textangle.  The label is
+   (either PS or PCL), at the current fontsize and textangle.  The label is
    just a string: no control codes (font switching or sub/superscripts).
 
    The width of the string in user units is returned.  On exit, the
@@ -21,11 +21,13 @@
 
 double
 #ifdef _HAVE_PROTOS
-_p_falabel_ps (const unsigned char *s, int h_just)
+_p_falabel_ps (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_p_falabel_ps (s, h_just)
+_p_falabel_ps (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
   int i, master_font_index;
@@ -42,15 +44,20 @@ _p_falabel_ps (s, h_just)
   double text_transformation_matrix[6];
   bool pcl_font;
   
-  if (*s == (unsigned char)'\0')
+  /* sanity check; this routine supports only baseline positioning */
+  if (v_just != JUST_BASE)
     return 0.0;
 
+  /* similarly for horizontal justification */
   if (h_just != JUST_LEFT)
     /* shouldn't happen */
     {
-      _plotter->warning ("ignoring request to use non-default justification for a label");
+      _plotter->warning (R___(_plotter) "ignoring request to use non-default justification for a label");
       return 0.0;
     }
+
+  if (*s == (unsigned char)'\0')
+    return 0.0;
 
   /* sanity check */
 #ifndef USE_LJ_FONTS_IN_PS
@@ -107,7 +114,7 @@ _p_falabel_ps (s, h_just)
   _plotter->drawstate->pos.x += crockshift_x;
   _plotter->drawstate->pos.y -= crockshift_y;
 
-  /* this transformation matrix rotates, and translates; it maps (0,0) to
+  /* this transformation matrix rotates, and translates: it maps (0,0) to
      the origin of the string, in user coordinates */
   user_text_transformation_matrix[0] = costheta;
   user_text_transformation_matrix[1] = sintheta;
@@ -161,7 +168,7 @@ _p_falabel_ps (s, h_just)
   _update_buffer (_plotter->page);
 
   /* idraw directive, plus prologue instruction: set foreground color */
-  _plotter->set_pen_color();	/* invoked lazily, i.e. when needed */
+  _plotter->set_pen_color (S___(_plotter));	/* invoked lazily, i.e. when needed */
   sprintf (_plotter->page->point, "%%I cfg %s\n%g %g %g SetCFg\n",
 	   _idraw_stdcolornames[_plotter->drawstate->ps_idraw_fgcolor],
 	   _plotter->drawstate->ps_fgcolor_red,
@@ -229,9 +236,9 @@ _p_falabel_ps (s, h_just)
   /* width of the substring in user units (used below in constructing a
      bounding box, and in performing repositioning at end) */
   if (pcl_font)
-    width = _plotter->flabelwidth_pcl (s);
+    width = _plotter->flabelwidth_pcl (R___(_plotter) s);
   else
-    width = _plotter->flabelwidth_ps (s);
+    width = _plotter->flabelwidth_ps (R___(_plotter) s);
 
   /* to compute an EPS-style bounding box, first compute offsets to the
      four vertices of the smallest rectangle containing the string */
@@ -321,12 +328,14 @@ End\n\
    it simply invokes the preceding, which contains PCL font support. */
 double
 #ifdef _HAVE_PROTOS
-_p_falabel_pcl (const unsigned char *s, int h_just)
+_p_falabel_pcl (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_p_falabel_pcl (s, h_just)
+_p_falabel_pcl (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
-  return _p_falabel_ps (s, h_just);
+  return _p_falabel_ps (R___(_plotter) s, h_just, v_just);
 }

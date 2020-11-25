@@ -12,9 +12,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_f_fbox (double x0, double y0, double x1, double y1)
+_f_fbox (R___(Plotter *_plotter) double x0, double y0, double x1, double y1)
 #else
-_f_fbox (x0, y0, x1, y1)
+_f_fbox (R___(_plotter) x0, y0, x1, y1)
+     S___(Plotter *_plotter;)
      double x0, y0, x1, y1;
 #endif
 {
@@ -25,7 +26,7 @@ _f_fbox (x0, y0, x1, y1)
 
   if (!_plotter->open)
     {
-      _plotter->error ("fbox: invalid operation");
+      _plotter->error (R___(_plotter) "fbox: invalid operation");
       return -1;
     }
 
@@ -33,19 +34,19 @@ _f_fbox (x0, y0, x1, y1)
      directions, use generic method to draw a closed polyline */
 
   if (!_plotter->drawstate->transform.axes_preserved)
-    return _g_fbox (x0, y0, x1, y1);
+    return _g_fbox (R___(_plotter) x0, y0, x1, y1);
 
   /* otherwise use xfig's box-drawing facility (which aligns boxes with the
      axes) */
 
-  _plotter->endpath(); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
   
   /* evaluate fig colors lazily, i.e. only when needed */
-  _plotter->set_pen_color();
-  _plotter->set_fill_color();
+  _plotter->set_pen_color (S___(_plotter));
+  _plotter->set_fill_color (S___(_plotter));
   
   /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
-  _f_compute_line_style (&line_style, &nominal_spacing);
+  _f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
 
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
@@ -57,7 +58,8 @@ _f_fbox (x0, y0, x1, y1)
 	  P_BOX,		/* polyline subtype */
 	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
-	  _plotter->drawstate->quantized_device_line_width, 
+	  (_plotter->drawstate->pen_type == 0 ? 0 :
+	   _plotter->drawstate->quantized_device_line_width), 
 	  _plotter->drawstate->fig_fgcolor,	/* pen color */
 	  _plotter->drawstate->fig_fillcolor, /* fill color */
 	  _plotter->fig_drawing_depth, /* depth */

@@ -1,9 +1,10 @@
 This is a list of minor problems with the GNU plotting utilities `graph',
-`plot', `tek2plot', and `plotfont', and with GNU libplot, the library which
-they are built on.  We classify them as problems rather than bugs.
+`plot', `tek2plot', `plotfont', and `pic2plot', and with GNU libplot, the
+library that they are built on.  We classify them as problems rather than
+bugs.
 
 Most of them are due to idiosyncrasies of (or bugs in) the display devices
-and applications that libplot must produce output for.
+and application software that libplot must produce output for.
 
 ======================================================================
 
@@ -54,7 +55,7 @@ it with industry-standard X11; in particular, X11R6.
 
 1. There are a lot of buggy Postscript interpreters out there.  If you
 switch fonts in the middle of drawing a label with `graph -T ps', or when
-drawing a multi-font string with libplot's PS driver, and the sub-labels
+drawing a multi-font string with libplot's PS driver, and the sub-strings
 don't match up properly when you view the result, it may very well be the
 fault of your interpreter.  Even for the 35 standard Postscript fonts, some
 vendors don't agree with Adobe as to the width of the printable `8-bit'
@@ -112,12 +113,75 @@ Wingdings internally as `Tidbits'.)
 
 ----------------------------------------------------------------------
 
+`graph -T cgm' and libplot's CGM driver
+----------------------------------------
+
+1. There are many older CGM viewers and interpreters, such as the free but
+currently unsupported RALCGM and GPLOT viewers, and the CGM import filter
+used by Microsoft Office, that can only handle version 1 CGM files.  To
+produce output for such CGM viewers and interpreters, you should set the
+environment variable (i.e., libplot parameter) CGM_MAX_VERSION to "1".  The
+default is to use version 3 (versions are more or less upward compatible,
+so any version-1 CGM file is effectively also a version-3 file, but not
+vice versa).
+
+You should be aware that version 1 was much less powerful than later
+versions, such as version 3.  In particular, font handling was not good.
+Any text string in a CGM file produced by libplot is accompanied by an
+`extent box' which the string is automatically adjusted to fit, by any CGM
+viewer or interpreter.  That is the case for all versions of the CGM
+format, including version 1.  Unfortunately, in version 1, what it meant
+for the string to `fit' was not properly specified.  Another problem with
+version 1 format was that there was no way of specifying font properties,
+such as oblique-vs.-upright, boldface-vs.-regular, etc.  So when a font is
+unavailable, the substituted font is often inappropriate.
+
+When producing a version-1 CGM file with the plotting utilities or libplot,
+Hershey fonts may be the best fonts to use.  Any text string in a Hershey
+font is drawn into a CGM output file not as a CGM text string, but as a
+collection of polygonal lines, which should be rendered acceptably.  To use
+a Hershey font, you could specify the `-F HersheySerif' option, for
+example, when you run `graph -T cgm'.
+
+2. If a binary-encoded CGM output file produced by libplot's CGM driver
+contains any single text string that is longer than about 2000 characters,
+the RALCGM viewer will not be able to parse the CGM file correctly.  In
+fact, RALCGM may crash.  The problem is in RALCGM, not in libplot.  This
+bug is not a major problem, since such extraordinarily long text strings
+almost never occur.
+
+3. There are some commercial viewers and interpreters which are advertised
+as able to handle version-3 CGM files, but which in fact cannot do so.  The
+CGM import filter used by Adobe Illustrator (as of version 7.0, at least)
+is in this category.  It does not recognize the so-called custom line
+styles (i.e., dashing patterns) that version-3 CGM files may include.  In
+fact, if it sees a definition of a custom line style in a CGM file that it
+is importing, it may stop functioning or crash!  Fortunately, CGM files
+produced by `graph -T cgm' use only CGM's default line styles; not custom
+ones.  `pic2plot -T cgm' and the libplot functions `linedash()' and
+`flinedash()' do generate custom line styles.
+
+Actually, even if CGM_MAX_VERSION is set equal to "1", so that custom CGM
+line styles are not used, there is still a problem with importing CGM files
+into Illustrator.  When it imports a CGM file, of whatever version,
+Illustrator-7.0 maps all default CGM line styles to "solid".  That is,
+dotted lines, dashed lines, etc., all appear as solid lines.  So the output
+of `graph -T cgm -m 0', `graph -T cgm -m 1', `graph -T cgm -m 2', etc.,
+will look alike.  There seems to be no way around this.
+
+Since Illustrator's CGM import filter is so buggy, it is recommended that
+when generating a graphics file for import into Illustrator, rather than
+generating a CGM file, you use the `-T ai' option to generate Illustrator's
+native format.
+
+----------------------------------------------------------------------
+
 `graph -T fig' and libplot's xfig driver
 ----------------------------------------
 
-1. At least as of xfig release 3.2, the `fig2dev' program that xfig uses to
-export figures in Postscript format has a bug.  It incorrectly transforms
-minus signs to hyphens, and hyphens to en-dashes.
+1. At least as of xfig release 3.2, the `fig2dev' program that `xfig' uses
+to export figures in Postscript format has a bug.  It incorrectly
+transforms minus signs to hyphens, and hyphens to en-dashes.
 
 For example, if you do `plotfont -Tfig --box Helvetica' and 
 `plotfont -Tfig --box -2 Helvetica' to produce character maps of the two
@@ -127,7 +191,7 @@ character maps, the minus sign and hyphen do not fit properly within their
 boxes.  That is because they have been replaced by a hyphen and an en-dash,
 respectively.
 
-This is a problem with fig2dev, not libplot.  If you encounter this
+This is a problem with `fig2dev', not libplot.  If you encounter this
 problem, a possible workaround is to change, with a text editor, the string
 "8#255 /endash" in the exported PS file to "8#255 /hyphen 8#055 /minus".
 The problem has been reported to the xfig maintainer.
@@ -148,15 +212,41 @@ be anamorphically transformed.
 
 ----------------------------------------------------------------------
 
-`graph -T pcl' and libplot's PCL 5 driver
---------------------------------------------
+`graph -T pcl', `graph -T hpgl' and libplot's PCL 5 and HP-GL/2 drivers
+-----------------------------------------------------------------------
 
-1. Internally, the LaserJet 4L and 5L use a different number for the
-Wingdings font than other LaserJets.  (That is because they include an
-Intellifont version of the font, rather than a TrueType version.)  So if
-any PCL 5 output that uses the Wingdings font is sent to a 4L or a 5L from
-`graph -Tpcl' or any other of the plotting utilities, it won't print
-correctly.
+The following remarks apply when producing either PCL 5 or HP-GL/2 output.
+That's because PCL 5 output produced by libplot and the plotting utilities
+is really HP-GL/2 output, preceded by an escape sequence that switches the
+printer into HP-GL/2 mode.  (It's followed by an escape sequence that
+switches the printer back to PCL 5 mode.)
+
+1. The default treatment of colors in PCL 5 and HP-GL/2 output is not
+optimal, because the basic HP-GL/2 drawing model is not very powerful.
+There's a set of seven `logical pens', whose colors are black, red, green,
+yellow, blue, magenta, and cyan.  Any line or curve can be drawn by any of
+the pens, and any region bounded by a curve can be filled, to any specified
+intensity (quantized in units of 10% or so) by any pen color.  And that's
+just about it: in the basic drawing model, those are the only pen colors
+and fill colors that can be produced.
+
+The situation is even worse than it sounds, because when PCL 5 or HP-GL/2
+output is directed to a monochrome display device such as an HP LaserJet,
+every pen (even the yellow pen) is drawn as black!
+
+Fortunately, color PCL 5 and HP-GL/2 devices, such as color LaserJets and
+DesignJet plotters, support an enhanced drawing model.  They can assign
+arbitrary colors to the logical pens.  When producing PCL 5 or HP-GL/2
+output for such devices, you should set the environment variable
+PCL_ASSIGN_COLORS (or HPGL_ASSIGN_COLORS, as the case may be) to "yes".
+That will significantly improve the rendering of colored plots.
+
+2. Internally, the LaserJet 4L and 5L use a number for the Wingdings font
+that is different from the number used by other LaserJets.  (That's because
+they use an Intellifont version of the font, rather than a TrueType
+version.)  So if any PCL 5 output that uses the Wingdings font is sent to a
+4L or a 5L from `graph -T pcl' or any other of the plotting utilities, it
+won't print correctly.
 
 If you need to work around this problem, you can search for the number
 `31402' in the file libplot/g_fontd2.c, change it to `6826', and recompile.
@@ -167,11 +257,14 @@ A less drastic remedy is to do a search-and-replace on the PCL 5 output
 with a text editor, replacing each occurrence of the string "31402" by
 "6826".
 
-2. There are some small errors in the positioning of text strings when
-producing PCL 5 output that uses the Symbol font.  For example, if you do
-`plotfont -Tpcl --box Symbol > symbol.pcl' to get a PCL 5 file that is
-a character map of the Symbol font, you will notice that in the character
-map, some of the characters do not quite line up with their boxes.
+The above advice probably applies to the LaserJet 6L as well as the 4L and
+5L, but that hasn't been checked.
+
+3. There are some small errors in the positioning of text strings when
+producing PCL 5 or HP-GL/2 output that uses the Symbol font.  For example,
+if you do `plotfont -Tpcl --box Symbol > symbol.pcl' to get a PCL 5 file
+that is a character map of the Symbol font, you will notice that in the
+character map, some of the characters do not quite line up with their boxes.
 
 This problem is due to problems in HP's documentation.  HP has released
 useful information on its 45 LaserJet fonts.  (This includes font metrics,
@@ -179,19 +272,6 @@ etc.; see ./INSTALL.fonts.)  However, their information on the Symbol font
 appears to be incorrect.  As a consequence, horizontal positioning of text
 strings in the Symbol font is slightly in error.  This problem does not
 affect the 44 other LaserJet fonts.
-
-----------------------------------------------------------------------
-
-`graph -T hpgl' and libplot's HP-GL/2 driver
---------------------------------------------
-
-The same two problems mentioned above, for `graph -T pcl' and libplot's 
-PCL 5 driver, occur when producing HP-GL/2 output.  That is because PCL 5
-output produced by libplot and the plotting utilities is really HP-GL/2
-output, preceded by an escape sequence that switches the printer into
-HP-GL/2 mode.  (It is followed by an escape sequence that switches it back
-to PCL 5 mode.)
-
 
 ----------------------------------------------------------------------
 
@@ -210,7 +290,7 @@ accurately it does not select them from the font (ZapfDingbats) that one
 would expect.
 
 Filling of regions is not supported because Tektronix storage tubes did not
-support filling, for obvious reasons.  The Tektronix emulator in the DOS
+support filling, for obvious reasons.  The Tektronix emulator in the MS-DOS
 version of kermit apparently supports a restricted sort of region filling,
 but there are currently no plans to extend libplot to use it.
 
@@ -251,7 +331,7 @@ drawing editors, or the HP-GL and HP-GL/2 languages.  However, Postscript
 does supports them.
 
 As a consequence, libplot's PS driver is currently the only one of its
-drivers which displays sheared thick lines correctly.  The problem is
+drivers that displays sheared thick lines correctly.  The problem is
 evident only for unusually thick lines, of course.
 
 A related problem is that a constant-width polyline (polygonal line) drawn

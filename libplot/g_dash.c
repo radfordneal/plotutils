@@ -7,24 +7,27 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_flinedash (int n, const double *dashes, double offset)
+_g_flinedash (R___(Plotter *_plotter) int n, const double *dashes, double offset)
 #else
-_g_flinedash (n, dashes, offset)
+_g_flinedash (R___(_plotter) n, dashes, offset)
+     S___(Plotter *_plotter;) 
      int n;
      const double *dashes;
      double offset;
 #endif
 {
+  double *dash_array;
   int i;
 
   if (!_plotter->open)
     {
-      _plotter->error ("flinedash: invalid operation");
+      _plotter->error (R___(_plotter)
+		       "flinedash: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* sanity checks */
   if (n < 0 || (n > 0 && dashes == NULL))
@@ -34,15 +37,16 @@ _g_flinedash (n, dashes, offset)
       return -1;
 
   if (_plotter->drawstate->dash_array_len > 0)
-    free (_plotter->drawstate->dash_array);
+    free ((double *)_plotter->drawstate->dash_array);
   if (n > 0)
-    _plotter->drawstate->dash_array = (double *)_plot_xmalloc (n * sizeof(double));
+    dash_array = (double *)_plot_xmalloc (n * sizeof(double));
   else
-    _plotter->drawstate->dash_array = NULL;
+    dash_array = NULL;
 
   _plotter->drawstate->dash_array_len = n;
   for (i = 0; i < n; i++)
-    _plotter->drawstate->dash_array[i] = dashes[i];
+    dash_array[i] = dashes[i];
+  _plotter->drawstate->dash_array = dash_array;
   _plotter->drawstate->dash_offset = offset;
 
   /* for future paths, use dash array rather than line mode */

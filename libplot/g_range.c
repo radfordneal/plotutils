@@ -2,12 +2,12 @@
    for a page whenever a new object (ellipse, line segment, or Bezier
    segment) is plotted.  Updating takes the line width into account, more
    or less.  The bounding box information is stored in terms of device
-   units, in the page's Outbuf structure. */
+   units, in the page's plOutbuf structure. */
 
 /* These functions need to be (non-public) members of the Plotter class,
    since macros such as XD() and YD(), which they use to convert user units
    to device units, access data members of the class.  They are still
-   written as if they aren't class members, though. */
+   mostly written as if they aren't class members, though. */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -25,10 +25,11 @@
    large. */
 void
 #ifdef _HAVE_PROTOS
-_set_ellipse_bbox (Outbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth)
+_set_ellipse_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth)
 #else
-_set_ellipse_bbox (bufp, x, y, rx, ry, costheta, sintheta, linewidth)
-     Outbuf *bufp;
+_set_ellipse_bbox (R___(_plotter) bufp, x, y, rx, ry, costheta, sintheta, linewidth)
+     S___(Plotter *_plotter;) 
+     plOutbuf *bufp;
      double x, y;
      double rx, ry;
      double costheta, sintheta;
@@ -97,15 +98,16 @@ _set_ellipse_bbox (bufp, x, y, rx, ry, costheta, sintheta, linewidth)
 /* update bounding box due to drawing of a line end (args are in user coors) */
 void
 #ifdef _HAVE_PROTOS
-_set_line_end_bbox (Outbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle)
+_set_line_end_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle)
 #else
-_set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle)
-     Outbuf *bufp;
+_set_line_end_bbox (R___(_plotter) bufp, x, y, xother, yother, linewidth, capstyle)
+     S___(Plotter *_plotter;)
+     plOutbuf *bufp;
      double x, y, xother, yother, linewidth;
      int capstyle;
 #endif
 {
-  Vector v, vrot;
+  plVector v, vrot;
   double xs, ys;
   double halfwidth = 0.5 * linewidth;
 
@@ -138,7 +140,8 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle)
       _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
       break;
     case CAP_ROUND:
-      _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
+      _set_ellipse_bbox (R___(_plotter) 
+			 bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
       break;
     case CAP_TRIANGULAR:
       /* add projecting vertex */
@@ -165,16 +168,17 @@ _set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle)
 /* update bounding box due to drawing of a line join (args are in user coors)*/
 void
 #ifdef _HAVE_PROTOS
-_set_line_join_bbox (Outbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit)
+_set_line_join_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit)
 #else
-_set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinstyle, miterlimit)
-     Outbuf *bufp;
+_set_line_join_bbox (R___(_plotter) bufp, xleft, yleft, x, y, xright, yright, linewidth, joinstyle, miterlimit)
+     S___(Plotter *_plotter;)
+     plOutbuf *bufp;
      double xleft, yleft, x, y, xright, yright, linewidth;
      int joinstyle;
      double miterlimit;
 #endif
 {
-  Vector v1, v2, vsum;
+  plVector v1, v2, vsum;
   double v1len, v2len;
   double halfwidth;
   double mitrelen;
@@ -204,8 +208,10 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 	      || (cosphi > (1.0 - 2.0 / (miterlimit * miterlimit))))
 	    /* bevel rather than miter */
 	    {
-	      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, CAP_BUTT);
-	      _set_line_end_bbox (bufp,x, y, xright, yright, linewidth, CAP_BUTT);
+	      _set_line_end_bbox (R___(_plotter) 
+				  bufp, x, y, xleft, yleft, linewidth, CAP_BUTT);
+	      _set_line_end_bbox (R___(_plotter) 
+				  bufp,x, y, xright, yright, linewidth, CAP_BUTT);
 	    }
 	  else
 	    {
@@ -229,12 +235,15 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
       _update_bbox (bufp, XD(x,y), YD(x,y));
       /* fall through */
     case JOIN_BEVEL:
-      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, CAP_BUTT);
-      _set_line_end_bbox (bufp, x, y, xright, yright, linewidth, CAP_BUTT);
+      _set_line_end_bbox (R___(_plotter) 
+			  bufp, x, y, xleft, yleft, linewidth, CAP_BUTT);
+      _set_line_end_bbox (R___(_plotter) 
+			  bufp, x, y, xright, yright, linewidth, CAP_BUTT);
       break;
     case JOIN_ROUND:
       halfwidth = 0.5 * linewidth;
-      _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
+      _set_ellipse_bbox (R___(_plotter) 
+			 bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
       break;
     }
 }
@@ -251,10 +260,11 @@ _set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinst
 
 void
 #ifdef _HAVE_PROTOS
-_set_bezier2_bbox (Outbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2)
+_set_bezier2_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2)
 #else
-_set_bezier2_bbox (bufp, x0, y0, x1, y1, x2, y2)
-     Outbuf *bufp;
+_set_bezier2_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2)
+     S___(Plotter *_plotter;) 
+     plOutbuf *bufp;
      double x0, y0, x1, y1, x2, y2;
 #endif
 {
@@ -308,10 +318,11 @@ _set_bezier2_bbox (bufp, x0, y0, x1, y1, x2, y2)
 
 void
 #ifdef _HAVE_PROTOS
-_set_bezier3_bbox (Outbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
+_set_bezier3_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
 #else
-_set_bezier3_bbox (bufp, x0, y0, x1, y1, x2, y2, x3, y3)
-     Outbuf *bufp;
+_set_bezier3_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2, x3, y3)
+     S___(Plotter *_plotter;) 
+     plOutbuf *bufp;
      double x0, y0, x1, y1, x2, y2, x3, y3;
 #endif
 {

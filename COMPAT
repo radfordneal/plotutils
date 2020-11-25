@@ -1,13 +1,67 @@
 These are some notes on backward compatibility of the plotutils package, on
 both the user and programmer levels.
 
+Release 2.3
+-----------
+
+CGM output is now supported.  By default, a CGM Plotter emits
+binary-encoded version-3 CGM format, conforming to the WebCGM profile.
+(For information on WebCGM, see http://www.cgmopen.org .)  The CGM format
+version number may be reduced by setting the libplot parameter (or
+environment variable) CGM_MAX_VERSION.  Irrespective of version, a
+human-readable CGM file, i.e., one encoded as clear text, may be produced
+by setting CGM_ENCODING to "clear_text".  Clear text CGM files are valid
+CGM files, though technically they don't conform to the WebCGM profile
+(a WebCGM file is meant to be binary).
+
+The package is now based on libplot version 3.0, which has new thread-safe
+C and C++ APIs, i.e. APIs which (1) maintain no global state, and (2) are
+pthread-aware.  The names of all new thread-safe libplot functions end in
+"_r", for `reentrant' or `revised'.  Each of them takes a pointer to an
+opaque plPlotter object as its first argument.
+
+There are new functions in both libplot and libplotter for creating and
+manipulating PlotterParams objects, which store Plotter parameters.
+Parameters are copied from such an object when the Plotter class is
+instantiated.
+
+The old C and C++ API's are still supported, though deprecated.  So you can
+still use pl_newpl() and pl_openpl(), etc., instead of pl_newpl_r() and
+pl_openpl_r(), etc.
+
+A new API function, pl_pentype_r(), has been added.  If its argument is 0,
+stroking of paths, as opposed to filling, will be turned off.  So `edgeless
+polygons' can now be drawn.
+
+Fig and PCL Plotters now position their viewports (i.e. "graphics displays")
+in the center of their pages, like PS Plotters.  So the PCL_XOFFSET and
+PCL_YOFFSET parameters have been removed, and PCL_ROTATE too.  Similarly,
+HPGL_XOFFSET and HPGL_YOFFSET parameters have been removed, even though tbe
+viewport position for HP-GL Plotters has not changed.
+
+Shifting of the viewport on the page, for PCL, HP-GL, Fig, and PS Plotters,
+is now accomplished through the PAGESIZE parameter.  E.g., its value could
+be "letter,xoffset=1in,yoffset=-2cm" or "a4,yoffset=12mm".
+
+A new parameter, ROTATION, has been introduced; it applies to PCL, HP-GL,
+Fig, and PS Plotters.  It defines rotation of the viewport on the page,
+which is not the same as what the HPGL_ROTATE parameter, previously
+introduced for HPGL Plotters, defines.  Values of ROTATION can be "no",
+"yes", "0", "90", "180", "270".
+
+A new scan-conversion library, called libxmi, is optionally built and
+installed, together with documentation.  It contains the scan-conversion
+code that is used by libplot's GIF and PNM drivers, which is based on the
+X11 sample server code.  libxmi is also distributed independently.  The
+libxmi version number is 1.1.
+
 Release 2.2
 -----------
 
 Massive expansion of the C API, with new drivers, and introduction of
 libplotter (C++ class library).  Backward compatibility of the C API
 maintained, except that all functions now begin with "pl_".  Header file
-"plcompat.h", if needed, will redefine old function names as new function
+"plotcompat.h", if needed, will redefine old function names as new function
 names.  Libplot version number is now 2.0.
 
 outfile() function, always more or less deprecated, now declared

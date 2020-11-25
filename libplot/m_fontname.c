@@ -18,9 +18,10 @@
 
 double
 #ifdef _HAVE_PROTOS
-_m_ffontname (const char *s)
+_m_ffontname (R___(Plotter *_plotter) const char *s)
 #else
-_m_ffontname (s)
+_m_ffontname (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
@@ -28,28 +29,30 @@ _m_ffontname (s)
 
   if (!_plotter->open)
     {
-      _plotter->error ("ffontname: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "ffontname: invalid operation");
       return -1;
     }
 
   /* invoke generic method to retrieve font into the drawing state */
-  size = _g_ffontname (s);
+  size = _g_ffontname (R___(_plotter) s);
 
-  _meta_emit_byte ((int)O_FONTNAME);
-  _meta_emit_string (_plotter->drawstate->font_name);
+  _meta_emit_byte (R___(_plotter) (int)O_FONTNAME);
+  _meta_emit_string (R___(_plotter) _plotter->drawstate->font_name);
 
   return size;
 }
 
 int 
 #ifdef _HAVE_PROTOS
-_m_fontname (const char *s)
+_m_fontname (R___(Plotter *_plotter) const char *s)
 #else
-_m_fontname (s)
+_m_fontname (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
-  double new_size = _plotter->ffontname (s);
+  double new_size = _plotter->ffontname (R___(_plotter) s);
   
   return IROUND(new_size);
 }

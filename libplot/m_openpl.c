@@ -6,16 +6,18 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_openpl (void)
+_m_openpl (S___(Plotter *_plotter))
 #else
-_m_openpl ()
+_m_openpl (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   bool not_previously_opened;
 
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "openpl: invalid operation");
       return -1;
     }
 
@@ -31,21 +33,21 @@ _m_openpl ()
   if (not_previously_opened)
     /* emit metafile header, i.e. magic string */
     {
-      _plotter->write_string (PLOT_MAGIC);
+      _plotter->write_string (R___(_plotter) PLOT_MAGIC);
 
       /* format type 1 = GNU binary, type 2 = GNU portable */
       if (_plotter->meta_portable_output)
-	_plotter->write_string (" 2\n");
+	_plotter->write_string (R___(_plotter) " 2\n");
       else
-	_plotter->write_string (" 1\n");
+	_plotter->write_string (R___(_plotter) " 1\n");
     }
 
-  _meta_emit_byte ((int)O_OPENPL);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_OPENPL);
+  _meta_emit_terminator (S___(_plotter));
   
   /* create drawing state, add it as the first member of the linked list;
      use generic method because we don't want to emit an op code */
-  _g_savestate();			
+  _g_savestate (S___(_plotter));
 
   /* frames in page are numbered starting with zero */
   _plotter->frame_number = 0;

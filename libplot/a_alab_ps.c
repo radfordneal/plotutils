@@ -17,11 +17,13 @@
 
 double
 #ifdef _HAVE_PROTOS
-_a_falabel_ps (const unsigned char *s, int h_just)
+_a_falabel_ps (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_a_falabel_ps (s, h_just)
+_a_falabel_ps (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
   int i, master_font_index;
@@ -38,8 +40,12 @@ _a_falabel_ps (s, h_just)
   double text_transformation_matrix[6];
   double lshift;
   bool pcl_font;
-  Color old_fillcolor;
+  plColor old_fillcolor;
   
+  /* sanity check; this routine supports only baseline positioning */
+  if (v_just != JUST_BASE)
+    return 0.0;
+
   if (*s == (unsigned char)'\0')
     return 0.0;
 
@@ -49,7 +55,8 @@ _a_falabel_ps (s, h_just)
     return 0.0;
   pcl_font = (_plotter->drawstate->font_type == F_PCL ? true : false);
 
-  /* compute index of font in master table of PS [or PCL] fonts, in g_fontdb.c */
+  /* compute index of font in master table of PS [or PCL] fonts, in
+     g_fontdb.c */
   if (pcl_font)			/* one of the 45 standard PCL fonts */
     master_font_index =
       (_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
@@ -140,14 +147,14 @@ _a_falabel_ps (s, h_just)
      pen color (since letters in label will be drawn as filled outlines) */
   old_fillcolor = _plotter->drawstate->fillcolor;
   _plotter->drawstate->fillcolor = _plotter->drawstate->fgcolor;
-  _plotter->set_fill_color();	/* emit AI directive */
+  _plotter->set_fill_color (S___(_plotter)); /* emit AI directive */
   _plotter->drawstate->fillcolor = old_fillcolor;
 
   /* set AI's pen color also, in particular set it to be the same as
      libplot's notion of pen color (even though we'll be filling, not
      stroking); this is a convenience for AI users who may wish e.g. to
      switch from filling letter outlines to stroking them */
-  _plotter->set_pen_color();	/* emit AI directive */
+  _plotter->set_pen_color (S___(_plotter)); /* emit AI directive */
 
   /* AI directive: set font name and size */
   {
@@ -216,9 +223,9 @@ _a_falabel_ps (s, h_just)
   /* compute width of the substring in user units (used below in
      constructing a bounding box, and in performing repositioning at end) */
   if (pcl_font)
-    width = _plotter->flabelwidth_pcl (s);
+    width = _plotter->flabelwidth_pcl (R___(_plotter) s);
   else
-    width = _plotter->flabelwidth_ps (s);
+    width = _plotter->flabelwidth_ps (R___(_plotter) s);
 
   /* for computing bounding box, compute justification-dependent leftward
      shift, as fraction of label width */
@@ -316,12 +323,14 @@ _a_falabel_ps (s, h_just)
    it simply invokes the preceding, which contains PCL font support. */
 double
 #ifdef _HAVE_PROTOS
-_a_falabel_pcl (const unsigned char *s, int h_just)
+_a_falabel_pcl (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_a_falabel_pcl (s, h_just)
+_a_falabel_pcl (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
-  return _a_falabel_ps (s, h_just);
+  return _a_falabel_ps (R___(_plotter) s, h_just, v_just);
 }

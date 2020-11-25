@@ -1,7 +1,7 @@
 This directory contains supplementary documentation on GNU pic2plot.
 `pic2plot' is a translator from the pic language to numerous graphics
 formats such as X11, PS/EPS, PCL 5, PNM, GIF, Tektronix, and to editable
-formats such as idraw, xfig, and Illustrator.
+formats such as idraw, xfig, Illustrator, and CGM.
 
 The pic language makes it easy to create and modify box-and-arrow diagrams
 of the kind frequently found in technical papers and textbooks.  It was
@@ -22,9 +22,10 @@ technical report on the pic language.  The file pic1.ps is Eric Raymond's
 report "Making Pictures with GNU pic", which contains additional details.
 Neither of these mentions `pic2plot', however.
 
-The documentation file picmacros.ps was contributed by W. Richard Stevens
-<rstevens@kohala.com>; see http://www.kohala.com/~rstevens .  The file
-shows how pic macros may be used to draw diagrams.  The diagrams are taken
-from his books on programming and network programming, such as `TCP/IP
-Illustrated' (Addison-Wesley, 1994).  The macros themselves, which are
-"work in progress", are defined in the file macros.pic.
+The documentation file picmacros.ps was kindly contributed by the late
+W. Richard Stevens, who died on Sept. 1, 1999.  Rich Stevens wrote many
+fine books on programming and network programming, including `TCP/IP
+Illustrated' (Addison-Wesley, 1994).  picmacros.ps shows how pic macros may
+be used to draw diagrams (the diagrams are taken from his books).  The
+macros themselves are given in the file macros.pic.  Rich asked me to
+describe them as "work in progress".

@@ -7,21 +7,23 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_linemod (const char *s)
+_m_linemod (R___(Plotter *_plotter) const char *s)
 #else
-_m_linemod (s)
+_m_linemod (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("linemod: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "linemod: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_LINEMOD);
-  _meta_emit_string (s);
+  _meta_emit_byte (R___(_plotter) (int)O_LINEMOD);
+  _meta_emit_string (R___(_plotter) s);
   
   /* invoke generic method */
-  return _g_linemod (s);
+  return _g_linemod (R___(_plotter) s);
 }

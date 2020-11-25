@@ -14,23 +14,24 @@
 
 int
 #ifdef _HAVE_PROTOS
-_f_fpoint (double x, double y)
+_f_fpoint (R___(Plotter *_plotter) double x, double y)
 #else
-_f_fpoint (x, y)
+_f_fpoint (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fpoint: invalid operation");
+      _plotter->error (R___(_plotter) "fpoint: invalid operation");
       return -1;
     }
 
-  _plotter->endpath(); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* evaluate fig colors lazily, i.e. only when needed */
-  _plotter->set_pen_color();
-  _plotter->set_fill_color();
+  _plotter->set_pen_color (S___(_plotter));
+  _plotter->set_fill_color (S___(_plotter));
   
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)

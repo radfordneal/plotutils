@@ -8,11 +8,11 @@
 
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
-   the FigPlotter struct. */
+   a FigPlotter struct. */
 const Plotter _f_default_plotter = 
 {
   /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _f_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _f_endpath, _f_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _f_fbox, _g_fboxrel, _f_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _f_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _f_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _f_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _f_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
+  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _f_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _f_endpath, _g_endsubpath, _f_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _f_fbox, _g_fboxrel, _f_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _f_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _f_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _f_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _f_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _f_initialize, _f_terminate,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
@@ -43,23 +43,26 @@ const Plotter _f_default_plotter =
 /* The private `initialize' method, which is invoked when a Plotter is
    created.  It is used for such things as initializing capability flags
    from the values of class variables, allocating storage, etc.  When this
-   is invoked, _plotter points (temporarily) to the Plotter that has just
-   been created. */
+   is invoked, _plotter points to the Plotter that has just been
+   created. */
 
-/* For FigPlotter objects, we determine the page size and the location on
-   the page of the graphics display, so that we'll be able to work out the
-   map from user coordinates to device coordinates in space.c. */
+/* For FigPlotter objects, we determine the page size and the location of
+   the viewport on the page, so that we'll be able to work out the map from
+   user coordinates to device coordinates in space.c. */
 
 void
 #ifdef _HAVE_PROTOS
-_f_initialize (void)
+_f_initialize (S___(Plotter *_plotter))
 #else
-_f_initialize ()
+_f_initialize (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
+  double xoffset, yoffset;
+
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize ();
+  _g_initialize (S___(_plotter));
 #endif
 
   /* override superclass initializations, as necessary */
@@ -82,15 +85,19 @@ _f_initialize ()
   _plotter->have_stick_fonts = 0;
   _plotter->have_extra_stick_fonts = 0;
 
-  /* text and font-related parameters (internal, not queryable by user) */
+  /* text and font-related parameters (internal, not queryable by user);
+     note that we don't set kern_stick_fonts, because it was set by the
+     superclass initialization (and it's irrelevant for this Plotter type,
+     anyway) */
   _plotter->default_font_type = F_POSTSCRIPT;
   _plotter->pcl_before_ps = false;
-  _plotter->have_justification = true;
-  _plotter->kern_stick_fonts = false;
+  _plotter->have_horizontal_justification = true;
+  _plotter->have_vertical_justification = false;
   _plotter->issue_font_warning = true;
 
-  /* path and polyline-related parameters (also internal) */
-  _plotter->max_unfilled_polyline_length = MAX_UNFILLED_POLYLINE_LENGTH;
+  /* path and polyline-related parameters (also internal); note that we
+     don't set max_unfilled_polyline_length, because it was set by the
+     superclass initialization */
   _plotter->have_mixed_paths = false;
   _plotter->allowed_arc_scaling = AS_UNIFORM;
   _plotter->allowed_ellarc_scaling = AS_NONE;  
@@ -100,21 +107,18 @@ _f_initialize ()
   _plotter->hard_polyline_length_limit = INT_MAX;
 
   /* dimensions */
-  _plotter->display_type = DISP_PHYSICAL;
-  _plotter->integer_device_coors = false;
+  _plotter->display_model_type = (int)DISP_MODEL_PHYSICAL;
+  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI;
+  _plotter->flipped_y = true;
   _plotter->imin = 0;
   _plotter->imax = 0;  
   _plotter->jmin = 0;
   _plotter->jmax = 0;  
-  _plotter->display_coors.left = 0.25;
-  _plotter->display_coors.right = 8.25;
-  _plotter->display_coors.bottom = 8.25;
-  _plotter->display_coors.top = 0.25;
-  _plotter->display_coors.extra = 0.0;  
-  _plotter->page_type = NULL;
-  _plotter->device_units_per_inch = (double)FIG_UNITS_PER_INCH;
-  _plotter->use_metric = false;
-  _plotter->flipped_y = true;
+  _plotter->xmin = 0.0;
+  _plotter->xmax = 0.0;  
+  _plotter->ymin = 0.0;
+  _plotter->ymax = 0.0;  
+  _plotter->page_data = (plPageData *)NULL;
 
   /* initialize data members specific to this derived class */
   /* dynamic variables */
@@ -124,42 +128,43 @@ _f_initialize ()
 
   /* initialize certain data members from device driver parameters */
 
-  /* determine page type i.e. determine the range of device coordinates
-     over which the graphics display will extend (and hence the
-     transformation from user to device coordinates). */
+  /* determine page type, and user-specified viewport offset if any */
+  _set_page_type (R___(_plotter) &xoffset, &yoffset);
+  
+  /* Determine range of device coordinates over which the viewport will
+     extend (and hence the transformation from user to device coordinates;
+     see g_space.c). */
   {
-    const char *pagesize;
-    const Pagedata *pagedata;
+    double xmid, ymid, viewport_size;
+    
+    viewport_size = _plotter->page_data->viewport_size;
+    xmid = 0.5 * _plotter->page_data->xsize + xoffset;
+    ymid = 0.5 * _plotter->page_data->ysize - yoffset; /* flipped y */
 
-    pagesize = (const char *)_get_plot_param ("PAGESIZE");
-    pagedata = _pagetype(pagesize);
-    if (pagedata == NULL)
-      {
-	pagesize = (const char *)_get_default_plot_param ("PAGESIZE");
-	pagedata = _pagetype(pagesize);
-      }
-    _plotter->display_coors = pagedata->fig;
-    _plotter->use_metric = pagedata->metric;
-    _plotter->page_type = pagedata->name;
+    _plotter->xmin = FIG_UNITS_PER_INCH * (xmid - 0.5 * viewport_size);
+    _plotter->xmax = FIG_UNITS_PER_INCH * (xmid + 0.5 * viewport_size);    
+    /* flipped y, so ymin > ymax; interchange */
+    _plotter->ymin = FIG_UNITS_PER_INCH * (ymid + 0.5 * viewport_size);
+    _plotter->ymax = FIG_UNITS_PER_INCH * (ymid - 0.5 * viewport_size);    
   }
 }
 
 /* The private `terminate' method, which is invoked when a Plotter is
    deleted.  It may do such things as write to an output stream from
    internal storage, deallocate storage, etc.  When this is invoked,
-   _plotter points (temporarily) to the Plotter that is about to be
-   deleted. */
+   _plotter points to the Plotter that is about to be deleted. */
 
 void
 #ifdef _HAVE_PROTOS
-_f_terminate (void)
+_f_terminate (S___(Plotter *_plotter))
 #else
-_f_terminate ()
+_f_terminate (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate ();
+  _g_terminate (S___(_plotter));
 #endif
 }
 
@@ -189,6 +194,36 @@ FigPlotter::FigPlotter (ostream& out)
 }
 
 FigPlotter::FigPlotter ()
+{
+  _f_initialize ();
+}
+
+FigPlotter::FigPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
+	:Plotter (infile, outfile, errfile, parameters)
+{
+  _f_initialize ();
+}
+
+FigPlotter::FigPlotter (FILE *outfile, PlotterParams &parameters)
+	:Plotter (outfile, parameters)
+{
+  _f_initialize ();
+}
+
+FigPlotter::FigPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
+	: Plotter (in, out, err, parameters)
+{
+  _f_initialize ();
+}
+
+FigPlotter::FigPlotter (ostream& out, PlotterParams &parameters)
+	: Plotter (out, parameters)
+{
+  _f_initialize ();
+}
+
+FigPlotter::FigPlotter (PlotterParams &parameters)
+	: Plotter (parameters)
 {
   _f_initialize ();
 }

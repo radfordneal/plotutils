@@ -71,9 +71,9 @@ LN_S = @LN_S@
 LTALLOCA = @LTALLOCA@
 MAKEINFO = @MAKEINFO@
 NM = @NM@
+OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
-USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
 X_BASIC_LIBS = @X_BASIC_LIBS@
 X_CFLAGS = @X_CFLAGS@
@@ -86,14 +86,16 @@ ps_fonts_in_pcl = @ps_fonts_in_pcl@
 
 bin_PROGRAMS = pic2plot
 
-pic2plot_SOURCES = common.cc lex.cc main.cc object.cc plot.cc gram.yy
-pic2plot_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ./libgroff/libgroff.a ../libplot/libplot.la
+pic2plot_SOURCES = common.cc lex.cc main.cc object.cc plot.cc gram.yy fontlist.c
+pic2plot_LDADD = ../lib/libcommon.a ./libgroff/libgroff.a ../libplot/libplot.la
 
 noinst_HEADERS = common.h object.h output.h pic.h
 
 YFLAGS = -d
 
 INCLUDES = -I$(srcdir)/../include -I$(srcdir)/include
+
+CLEANFILES = fontlist.c
 
 EXTRA_DIST = gram.h
 
@@ -109,15 +111,21 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-pic2plot_OBJECTS =  common.o lex.o main.o object.o plot.o gram.o
-pic2plot_DEPENDENCIES =  ../lib/libcommon.a ../lib/libfontlist.a \
-./libgroff/libgroff.a ../libplot/libplot.la
+pic2plot_OBJECTS =  common.o lex.o main.o object.o plot.o gram.o \
+fontlist.o
+pic2plot_DEPENDENCIES =  ../lib/libcommon.a ./libgroff/libgroff.a \
+../libplot/libplot.la
 pic2plot_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 HEADERS =  $(noinst_HEADERS)
 
 DIST_COMMON =  README Makefile.am Makefile.in gram.cc
@@ -334,29 +342,31 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 common.o: common.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/lib.h include/stringclass.h \
-	include/errarg.h include/error.h include/position.h \
+	include/cset.h include/errarg.h include/error.h include/lib.h \
+	include/position.h include/ptable.h include/stringclass.h \
 	include/text.h output.h common.h
+fontlist.o: fontlist.c ../include/sys-defines.h ../config.h \
+	../include/plot.h
 gram.o: gram.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/lib.h include/stringclass.h \
-	include/errarg.h include/error.h include/position.h \
-	include/text.h output.h include/ptable.h object.h
+	include/cset.h include/errarg.h include/error.h include/lib.h \
+	include/position.h include/ptable.h include/stringclass.h \
+	include/text.h object.h
 lex.o: lex.cc pic.h ../include/sys-defines.h ../config.h include/cset.h \
-	include/lib.h include/stringclass.h include/errarg.h \
-	include/error.h include/position.h include/text.h output.h \
-	include/ptable.h object.h gram.h
+	include/errarg.h include/error.h include/lib.h \
+	include/position.h include/ptable.h include/stringclass.h \
+	include/text.h object.h gram.h
 main.o: main.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/lib.h include/stringclass.h \
-	include/errarg.h include/error.h include/position.h \
-	include/text.h output.h ../include/plot.h ../include/getopt.h
+	include/cset.h include/errarg.h include/error.h include/lib.h \
+	include/position.h include/ptable.h include/stringclass.h \
+	include/text.h output.h ../include/getopt.h ../include/plot.h
 object.o: object.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/lib.h include/stringclass.h \
-	include/errarg.h include/error.h include/position.h \
-	include/text.h output.h include/ptable.h object.h
+	include/cset.h include/errarg.h include/error.h include/lib.h \
+	include/position.h include/ptable.h include/stringclass.h \
+	include/text.h object.h output.h
 plot.o: plot.cc pic.h ../include/sys-defines.h ../config.h \
-	include/cset.h include/lib.h include/stringclass.h \
-	include/errarg.h include/error.h include/position.h \
-	include/text.h output.h ../include/plot.h common.h
+	include/cset.h include/errarg.h include/error.h include/lib.h \
+	include/position.h include/ptable.h include/stringclass.h \
+	include/text.h output.h common.h ../include/plot.h
 
 info-am:
 info: info-recursive
@@ -389,6 +399,7 @@ installdirs-am:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
@@ -439,6 +450,9 @@ uninstall-am uninstall all-redirect all-am all installdirs-am \
 installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+fontlist.c: $(top_srcdir)/lib/fontlist.c
+	@rm -f fontlist.c ; if $(LN_S) $(top_srcdir)/lib/fontlist.c fontlist.c ; then true ; else cp -p $(top_srcdir)/lib/fontlist.c fontlist.c ; fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

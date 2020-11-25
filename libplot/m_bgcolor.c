@@ -9,24 +9,26 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_bgcolor (int red, int green, int blue)
+_m_bgcolor (R___(Plotter *_plotter) int red, int green, int blue)
 #else
-_m_bgcolor (red, green, blue)
+_m_bgcolor (R___(_plotter) red, green, blue)
+     S___(Plotter *_plotter;) 
      int red, green, blue;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("bgcolor: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "bgcolor: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_BGCOLOR);
-  _meta_emit_integer (red);
-  _meta_emit_integer (green);
-  _meta_emit_integer (blue);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_BGCOLOR);
+  _meta_emit_integer (R___(_plotter) red);
+  _meta_emit_integer (R___(_plotter) green);
+  _meta_emit_integer (R___(_plotter) blue);
+  _meta_emit_terminator (S___(_plotter));
   
   /* invoke generic method */
-  return _g_bgcolor (red, green, blue);
+  return _g_bgcolor (R___(_plotter) red, green, blue);
 }

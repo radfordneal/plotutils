@@ -3,6 +3,7 @@
 // rounded boxes (possible dotted/dashed).
 
 #include "pic.h"
+#include "output.h"
 #include "common.h"
 
 // output a dashed circle as a series of arcs

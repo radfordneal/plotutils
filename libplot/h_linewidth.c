@@ -7,9 +7,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_h_flinewidth(double new_line_width)
+_h_flinewidth(R___(Plotter *_plotter) double new_line_width)
 #else
-_h_flinewidth(new_line_width)
+_h_flinewidth(R___(_plotter) new_line_width)
+     S___(Plotter *_plotter;)
      double new_line_width;
 #endif
 {
@@ -17,12 +18,12 @@ _h_flinewidth(new_line_width)
 
   if (!_plotter->open)
     {
-      _plotter->error ("flinewidth: invalid operation");
+      _plotter->error (R___(_plotter) "flinewidth: invalid operation");
       return -1;
     }
 
   /* invoke generic method */
-  _g_flinewidth(new_line_width);
+  _g_flinewidth (R___(_plotter) new_line_width);
 
   /* set linewidth in scaled HP-GL coors also (i.e. as fraction of diagonal
      distance between P1,P2) */

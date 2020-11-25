@@ -16,25 +16,24 @@
 
 int
 #ifdef _HAVE_PROTOS
-_x_fpoint (double x, double y)
+_x_fpoint (R___(Plotter *_plotter) double x, double y)
 #else
-_x_fpoint (x, y)
+_x_fpoint (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
-  static int point_count = 0;
-
   int ix, iy;
-  Color oldcolor, newcolor;
+  plColor oldcolor, newcolor;
 
   if (!_plotter->open)
     {
-      _plotter->error ("fpoint: invalid operation");
+      _plotter->error (R___(_plotter) "fpoint: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
   
   /* set pen color as foreground color in GC used for drawing (but first,
      check whether we can avoid a function call) */
@@ -43,8 +42,8 @@ _x_fpoint (x, y)
   if (newcolor.red != oldcolor.red 
       || newcolor.green != oldcolor.green 
       || newcolor.blue != oldcolor.blue
-      || ! _plotter->drawstate->x_fgcolor_status)
-  _plotter->set_pen_color();
+      || ! _plotter->drawstate->x_gc_fgcolor_status)
+  _plotter->set_pen_color (S___(_plotter));
 
   ix = IROUND(XD(x,y));
   iy = IROUND(YD(x,y));  
@@ -71,9 +70,9 @@ _x_fpoint (x, y)
 
   /* maybe flush X output buffer and handle X events (a no-op for
      XDrawablePlotters, which is overridden for XPlotters) */
-  if (point_count % X_POINT_FLUSH_PERIOD == 0)
-    _maybe_handle_x_events();
-  point_count++;
+  if (_plotter->x_paint_pixel_count % X_POINT_FLUSH_PERIOD == 0)
+    _maybe_handle_x_events (S___(_plotter));
+  _plotter->x_paint_pixel_count++;
 
   return 0;
 }

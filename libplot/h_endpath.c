@@ -24,28 +24,28 @@ typedef struct
   int xd, yd;			/* second control point (S_CUBIC only) */
   double angle;			/* subtended angle (S_ARC only) */
   int type;			/* S_LINE or S_ARC or S_CUBIC */
-} GeneralizedIntPoint;
+} plGeneralizedIntPoint;
 
 int
 #ifdef _HAVE_PROTOS
-_h_endpath (void)
+_h_endpath (S___(Plotter *_plotter))
 #else
-_h_endpath ()
+_h_endpath (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  GeneralizedIntPoint *xarray;
-  Point saved_pos, p0, pp1, pc;
+  plGeneralizedIntPoint *xarray;
+  plPoint p0, pp1, pc;
   bool closed, use_polygon_buffer;
   double degrees;
   double last_x, last_y;
   int i, polyline_len;
   int int_degrees;
-
-  saved_pos = _plotter->drawstate->pos; /* current graphics cursor position */
+  bool identical_user_coordinates = true;
 
   if (!_plotter->open)
     {
-      _plotter->error ("endpath: invalid operation");
+      _plotter->error (R___(_plotter) "endpath: invalid operation");
       return -1;
     }
 
@@ -74,28 +74,34 @@ _h_endpath ()
      real databuffer up. */
   if (!_plotter->drawstate->points_are_connected)
     {
-      GeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
+      plPoint saved_pos;
+      plGeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
       int saved_points_in_path = _plotter->drawstate->points_in_path;
       double radius = 0.5 * _plotter->drawstate->line_width;
-      
+
+      saved_pos = _plotter->drawstate->pos; /* current cursor position */
+
       _plotter->drawstate->datapoints = NULL;
       _plotter->drawstate->datapoints_len = 0;
       _plotter->drawstate->points_in_path = 0;
 
-      _plotter->savestate();
-      _plotter->fillcolor (_plotter->drawstate->fgcolor.red, 
+      _plotter->savestate (S___(_plotter));
+      _plotter->pentype (R___(_plotter) 1);
+      _plotter->fillcolor (R___(_plotter)
+			   _plotter->drawstate->fgcolor.red, 
 			   _plotter->drawstate->fgcolor.green, 
 			   _plotter->drawstate->fgcolor.blue);
-      _plotter->filltype (1);
-      _plotter->linewidth (0);
+      _plotter->filltype (R___(_plotter) 1);
+      _plotter->linewidth (R___(_plotter) 0);
 
       _plotter->drawstate->points_are_connected = true;
       for (i = 0; i < saved_points_in_path - (closed ? 1 : 0); i++)
 	/* draw each point as a filled circle, diameter = line width */
-	_plotter->fcircle (saved_datapoints[i].x, saved_datapoints[i].y, 
+	_plotter->fcircle (R___(_plotter)
+			   saved_datapoints[i].x, saved_datapoints[i].y, 
 			   radius);
       _plotter->drawstate->points_are_connected = false;
-      _plotter->restorestate();
+      _plotter->restorestate (S___(_plotter));
 
       free (saved_datapoints);
       if (closed)
@@ -108,10 +114,21 @@ _h_endpath ()
      the elements of the polyline may be circular arcs as well as line
      segments. */
   
+  if (_plotter->drawstate->pen_type == 0
+      && _plotter->drawstate->fill_type == 0)
+    /* nothing to draw */
+    {
+      /* reset path storage buffer and return */
+      free (_plotter->drawstate->datapoints);
+      _plotter->drawstate->datapoints_len = 0;
+      _plotter->drawstate->points_in_path = 0;
+      return 0;
+    }
+
   /* convert vertices to integer device coordinates, removing runs */
 
   /* array for points, with positions expressed in integer device coors */
-  xarray = (GeneralizedIntPoint *)_plot_xmalloc (_plotter->drawstate->points_in_path * sizeof(GeneralizedIntPoint));
+  xarray = (plGeneralizedIntPoint *)_plot_xmalloc (_plotter->drawstate->points_in_path * sizeof(plGeneralizedIntPoint));
 
   /* add first point of path to xarray[] (type field is meaningless) */
   xarray[0].x = IROUND(XD(_plotter->drawstate->datapoints[0].x, 
@@ -125,13 +142,17 @@ _h_endpath ()
 
   for (i = 1; i < _plotter->drawstate->points_in_path; i++)
     {
-      GeneralizedPoint datapoint;
+      plGeneralizedPoint datapoint;
       double xuser, yuser, xdev, ydev;
       int device_x, device_y;
 	  
       datapoint = _plotter->drawstate->datapoints[i];
       xuser = datapoint.x;
       yuser = datapoint.y;
+      if (xuser != last_x || yuser != last_y)
+	/* in user space, not all points are the same */
+	identical_user_coordinates = false;	
+
       xdev = XD(xuser, yuser);
       ydev = YD(xuser, yuser);
       device_x = IROUND(xdev);
@@ -162,7 +183,8 @@ _h_endpath ()
 	      pp1.y = datapoint.y; 
 	      pc.x = datapoint.xc; 
 	      pc.y = datapoint.yc; 
-	      xarray[polyline_len].angle = _angle_of_arc(p0, pp1, pc);
+	      xarray[polyline_len].angle = 
+		_angle_of_arc (R___(_plotter) p0, pp1, pc);
 	    }
 	  else if (element_type == S_CUBIC)
 	    /* a cubic Bezier element, so compute control points too */
@@ -184,42 +206,90 @@ _h_endpath ()
 	}
     }
 
-  /* Check for special subcase: more than one defining point, but they were
-     all mapped to a single integer HP-GL pseudo-pixel.  If so, we draw the
-     path as a single dot, unless the cap mode is "butt", in which case we
-     don't draw anything. */
+  /* Check first for special subcase: all user-space juncture points in the
+     polyline were mapped to a single integer HP-GL pseudo-pixel.  If (1)
+     they weren't all the same to begin with, or (2) they were all the same
+     to begin with and the cap mode is "round", then draw as a filled
+     circle, of diameter equal to the line width; otherwise draw
+     nothing. */
 
   if (_plotter->drawstate->points_in_path > 1 && polyline_len == 1)
-    /* all points mapped to a single pixel */
+    /* all points mapped to a single integer pseudo-pixel */
     {
-      double xx, yy;
-      
-      xx = _plotter->drawstate->datapoints[0].x;
-      yy = _plotter->drawstate->datapoints[0].y;
+      if (identical_user_coordinates == false
+	  || _plotter->drawstate->cap_type == CAP_ROUND)
+	{
+	  double xx = _plotter->drawstate->datapoints[0].x;
+	  double yy = _plotter->drawstate->datapoints[0].y;
+	  double r = 0.5 * _plotter->drawstate->line_width;
+	  double device_frame_radius;
 
+	  /* save current drawing state (since we'll alter pen type, fill
+	     color, fill type) */
+	  _plotter->savestate (S___(_plotter));
+	  _plotter->fillcolor (R___(_plotter)
+			       _plotter->drawstate->fgcolor.red, 
+			       _plotter->drawstate->fgcolor.green, 
+			       _plotter->drawstate->fgcolor.blue);
+	  _plotter->filltype (R___(_plotter) 1);
+	  
+	  /* draw single filled circle, using HP-GL's native circle-drawing
+	     facility */
+
+	  /* sync attributes, incl. pen width; move to center of circle */
+	  _plotter->set_attributes (S___(_plotter));
+	  _plotter->drawstate->pos.x = xx;
+	  _plotter->drawstate->pos.y = yy;
+	  _plotter->set_position (S___(_plotter));
+
+	  /* compute radius in device frame */
+	  device_frame_radius = sqrt(XDV(r,0)*XDV(r,0)+YDV(r,0)*YDV(r,0));
+  
+	  /* Sync fill color.  This may set the _plotter->hpgl_bad_pen flag
+	     (e.g. if optimal pen is #0 [white] and we're not allowed to
+	     use pen #0 to draw with).  So we test _plotter->hpgl_bad_pen
+	     before using the pen. */
+	  _plotter->set_fill_color (S___(_plotter));
+	  if (_plotter->hpgl_bad_pen == false)
+	    /* fill the circle (360 degree wedge) */
+	    {
+	      sprintf (_plotter->page->point, "WG%d,0,360;", 
+		       IROUND(device_frame_radius));
+	      _update_buffer (_plotter->page);
+	    }
+
+	  /* restore drawing state attributes */
+	  _plotter->restorestate (S___(_plotter));
+	}
+
+      /* free everything */
       free (xarray);
       free (_plotter->drawstate->datapoints);
       _plotter->drawstate->datapoints_len = 0;
       _plotter->drawstate->points_in_path = 0;
 
-      if (_plotter->drawstate->cap_type != CAP_BUTT)
-	/* draw single dot */
-	_plotter->fpoint (xx, yy);
-
+      /* move to end of polyline */
+      _plotter->drawstate->pos.x
+	= _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].x;
+      _plotter->drawstate->pos.y
+	= _plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].y;
       return 0;
     }
+
+  /* At this point, we know we have a nondegenerate polyline in integer
+     device space. */
 
   /* will draw vectors (or arcs) into polygon buffer if appropriate */
   use_polygon_buffer = (_plotter->hpgl_version == 2
 			|| (_plotter->hpgl_version == 1 /* i.e. "1.5" */
 			    && (polyline_len > 2
-				|| _plotter->drawstate->fill_level)) ? true : false);
+				|| _plotter->drawstate->fill_type)) ? true : false);
   
   /* Sync pen color.  This is needed here only if HPGL_VERSION is 1, but we
      always do it here so that HP-GL/2 output that draws a polyline, if
      sent erroneously to a generic HP-GL device, will yield a polyline in
      the correct color, so long as the color isn't white. */
-  _plotter->set_pen_color ();
+  _plotter->set_pen_color (S___(_plotter));
 
   /* set_pen_color() sets the advisory bad_pen flag if white pen (pen #0)
      would have been selected, and we can't use pen #0 to draw with.  Such
@@ -227,7 +297,7 @@ _h_endpath ()
      be filling the polyline with a nonwhite color, as well as using a
      white pen to draw it.  But if HPGL_VERSION is "1", we don't fill
      polylines, so we might as well punt right now. */
-  if (_plotter->bad_pen && _plotter->hpgl_version == 1)
+  if (_plotter->hpgl_bad_pen && _plotter->hpgl_version == 1)
     {
       /* free integer storage buffer */
       free (xarray);
@@ -247,10 +317,10 @@ _h_endpath ()
     }
 
   /* sync attributes, incl. pen width if possible; move pen to p0 */
-  _plotter->set_attributes();
+  _plotter->set_attributes (S___(_plotter));
   _plotter->drawstate->pos.x = _plotter->drawstate->datapoints[0].x;
   _plotter->drawstate->pos.y = _plotter->drawstate->datapoints[0].y;
-  _plotter->set_position();
+  _plotter->set_position (S___(_plotter));
 
   if (use_polygon_buffer)
     /* have a polygon buffer, and can use it to fill polyline */
@@ -260,90 +330,98 @@ _h_endpath ()
       _update_buffer (_plotter->page);
     }
 
-  /* ensure that pen is down for drawing */
-  if (_plotter->pendown == false)
+  if (use_polygon_buffer || _plotter->drawstate->pen_type)
+    /* either (1) we'll be drawing into a polygon buffer, and will be using
+       it for at least one of (a) filling and (b) edging, or (2) we won't
+       be drawing into a polygon buffer, so we won't be filling, but we'll
+       be edging (because pen_type isn't zero) */
     {
-      strcpy (_plotter->page->point, "PD;");
-      _update_buffer (_plotter->page);
-      _plotter->pendown = true;
-    }
-  
-  /* loop through points in xarray[], emitting HP-GL instructions */
-  i = 1;
-  while (i < polyline_len)
-    {
-      switch (xarray[i].type)
+      /* ensure that pen is down for drawing */
+      if (_plotter->hpgl_pendown == false)
 	{
-	case S_LINE:
-	  /* emit one or more pen advances */
-	  strcpy (_plotter->page->point, "PA");
+	  strcpy (_plotter->page->point, "PD;");
 	  _update_buffer (_plotter->page);
-	  sprintf (_plotter->page->point, "%d,%d", xarray[i].x, xarray[i].y);
-	  _update_buffer (_plotter->page);
-	  i++;
-	  while (i < polyline_len && xarray[i].type == S_LINE)
+	  _plotter->hpgl_pendown = true;
+	}
+
+      /* loop through points in xarray[], emitting HP-GL instructions */
+      i = 1;
+      while (i < polyline_len)
+	{
+	  switch (xarray[i].type)
 	    {
-	      sprintf (_plotter->page->point, 
-		       ",%d,%d", xarray[i].x, xarray[i].y);
+	    case S_LINE:
+	      /* emit one or more pen advances */
+	      strcpy (_plotter->page->point, "PA");
+	      _update_buffer (_plotter->page);
+	      sprintf (_plotter->page->point, "%d,%d", xarray[i].x, xarray[i].y);
 	      _update_buffer (_plotter->page);
 	      i++;
-	    }
-	  sprintf (_plotter->page->point, ";");
-	  _update_buffer (_plotter->page);	  
-	  break;
-
-	case S_CUBIC:
-	  /* emit one or more cubic Bezier segments */
-	  strcpy (_plotter->page->point, "BZ");
-	  _update_buffer (_plotter->page);
-	  sprintf (_plotter->page->point, "%d,%d,%d,%d,%d,%d",
-		   xarray[i].xc, xarray[i].yc,
-		   xarray[i].xd, xarray[i].yd,
-		   xarray[i].x, xarray[i].y);
-	  _update_buffer (_plotter->page);
-	  i++;
-	  while (i < polyline_len && xarray[i].type == S_CUBIC)
-	    {
-	      sprintf (_plotter->page->point, ",%d,%d,%d,%d,%d,%d",
+	      while (i < polyline_len && xarray[i].type == S_LINE)
+		{
+		  sprintf (_plotter->page->point, 
+			   ",%d,%d", xarray[i].x, xarray[i].y);
+		  _update_buffer (_plotter->page);
+		  i++;
+		}
+	      sprintf (_plotter->page->point, ";");
+	      _update_buffer (_plotter->page);	  
+	      break;
+	      
+	    case S_CUBIC:
+	      /* emit one or more cubic Bezier segments */
+	      strcpy (_plotter->page->point, "BZ");
+	      _update_buffer (_plotter->page);
+	      sprintf (_plotter->page->point, "%d,%d,%d,%d,%d,%d",
 		       xarray[i].xc, xarray[i].yc,
 		       xarray[i].xd, xarray[i].yd,
 		       xarray[i].x, xarray[i].y);
 	      _update_buffer (_plotter->page);
 	      i++;
-	    }
-	  sprintf (_plotter->page->point, ";");
-	  _update_buffer (_plotter->page);	  
-	  break;
-
-	case S_ARC:
-	  /* emit an arc, using integer sweep angle if possible */
-	  degrees = 180.0 * xarray[i].angle / M_PI;
-	  int_degrees = IROUND (degrees);
-	  if (_plotter->hpgl_version > 0) 
-	    /* HPGL_VERSION = 1.5 or 2 */
-	    {
-	      if (degrees == (double)int_degrees)
+	      while (i < polyline_len && xarray[i].type == S_CUBIC)
+		{
+		  sprintf (_plotter->page->point, ",%d,%d,%d,%d,%d,%d",
+			   xarray[i].xc, xarray[i].yc,
+			   xarray[i].xd, xarray[i].yd,
+			   xarray[i].x, xarray[i].y);
+		  _update_buffer (_plotter->page);
+		  i++;
+		}
+	      sprintf (_plotter->page->point, ";");
+	      _update_buffer (_plotter->page);	  
+	      break;
+	      
+	    case S_ARC:
+	      /* emit an arc, using integer sweep angle if possible */
+	      degrees = 180.0 * xarray[i].angle / M_PI;
+	      int_degrees = IROUND (degrees);
+	      if (_plotter->hpgl_version > 0) 
+		/* HPGL_VERSION = 1.5 or 2 */
+		{
+		  if (degrees == (double)int_degrees)
+		    sprintf (_plotter->page->point, "AA%d,%d,%d;",
+			     xarray[i].xc, xarray[i].yc,
+			     int_degrees);
+		  else
+		    sprintf (_plotter->page->point, "AA%d,%d,%.3f;",
+			     xarray[i].xc, xarray[i].yc,
+			     degrees);
+		}
+	      else
+		/* HPGL_VERSION = 1, i.e. generic HP-GL */
+		/* note: generic HP-GL can only handle integer sweep angles */
 		sprintf (_plotter->page->point, "AA%d,%d,%d;",
 			 xarray[i].xc, xarray[i].yc,
 			 int_degrees);
-	      else
-		sprintf (_plotter->page->point, "AA%d,%d,%.3f;",
-			 xarray[i].xc, xarray[i].yc,
-			 degrees);
+	      _update_buffer (_plotter->page);
+	      i++;
+	      break;
+	      
+	    default:
+	      /* shouldn't happen: unknown type for path segment, ignore */
+	      i++;
+	      break;
 	    }
-	  else
-	    /* HPGL_VERSION = 1, i.e. generic HP-GL */
-	    /* note: generic HP-GL can only handle integer sweep angles */
-	    sprintf (_plotter->page->point, "AA%d,%d,%d;",
-		     xarray[i].xc, xarray[i].yc,
-		     int_degrees);
-	  _update_buffer (_plotter->page);
-	  i++;
-	  break;
-
-	default:
-	  /* print error message, exit */
-	  break;
 	}
     }
 
@@ -356,7 +434,7 @@ _h_endpath ()
 	{
 	  strcpy (_plotter->page->point, "PU;");
 	  _update_buffer (_plotter->page);
-	  _plotter->pendown = false;
+	  _plotter->hpgl_pendown = false;
 	  strcpy (_plotter->page->point, "PM2;");
 	  _update_buffer (_plotter->page);
 	}
@@ -367,18 +445,18 @@ _h_endpath ()
 	  _update_buffer (_plotter->page);
 	  strcpy (_plotter->page->point, "PU;");
 	  _update_buffer (_plotter->page);
-	  _plotter->pendown = false;
+	  _plotter->hpgl_pendown = false;
 	}
 
-      if (_plotter->drawstate->fill_level)
-	/* ideally, polyline should be filled */
+      if (_plotter->drawstate->fill_type)
+	/* polyline should be filled */
 	{
-	  /* Sync fill color.  This may set the _plotter->bad_pen flag (if
-	     optimal pen is #0 [white] and we're not allowed to use pen #0
-	     to draw with).  So we test _plotter->bad_pen before using the
-	     pen to fill with. */
-	  _plotter->set_fill_color ();
-	  if (_plotter->bad_pen == false)
+	  /* Sync fill color.  This may set the _plotter->hpgl_bad_pen flag
+	     (if optimal pen is #0 [white] and we're not allowed to use pen
+	     #0 to draw with).  So we test _plotter->hpgl_bad_pen before
+	     using the pen to fill with. */
+	  _plotter->set_fill_color (S___(_plotter));
+	  if (_plotter->hpgl_bad_pen == false)
 	    /* fill polyline, specifying nonzero winding rule if necessary */
 	    {
 	      switch (_plotter->drawstate->fill_rule_type)
@@ -398,16 +476,21 @@ _h_endpath ()
 	    }
 	}
 
-      /* Sync pen color.  This may set the _plotter->bad_pen flag (if
-	 optimal pen is #0 and we're not allowed to use pen #0 to draw
-	 with).  So we test _plotter->bad_pen before using the pen. */
-      _plotter->set_pen_color ();
-      if (_plotter->bad_pen == false)
-	/* select appropriate pen for edging, and edge the polyline */
+      if (_plotter->drawstate->pen_type)
+	/* polyline should be edged */
 	{
-	  _plotter->set_pen_color ();
-	  strcpy (_plotter->page->point, "EP;");
-	  _update_buffer (_plotter->page);
+	  /* Sync pen color.  This may set the _plotter->hpgl_bad_pen flag
+	     (if optimal pen is #0 and we're not allowed to use pen #0 to
+	     draw with).  So we test _plotter->hpgl_bad_pen before using
+	     the pen. */
+	  _plotter->set_pen_color (S___(_plotter));
+	  if (_plotter->hpgl_bad_pen == false)
+	    /* select appropriate pen for edging, and edge the polyline */
+	    {
+	      _plotter->set_pen_color (S___(_plotter));
+	      strcpy (_plotter->page->point, "EP;");
+	      _update_buffer (_plotter->page);
+	    }
 	}
     }
   
@@ -438,13 +521,14 @@ _h_endpath ()
 
 double
 #ifdef _HAVE_PROTOS
-_angle_of_arc(Point p0, Point pp1, Point pc)
+_angle_of_arc(R___(Plotter *_plotter) plPoint p0, plPoint pp1, plPoint pc)
 #else
-_angle_of_arc(p0, pp1, pc)
-     Point p0, pp1, pc; 
+_angle_of_arc(R___(_plotter) p0, pp1, pc)
+     S___(Plotter *_plotter;) 
+     plPoint p0, pp1, pc; 
 #endif
 {
-  Vector v0, v1;
+  plVector v0, v1;
   double cross, angle, angle0;
 
   /* vectors from pc to p0, and pc to pp1 */

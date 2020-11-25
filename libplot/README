@@ -2,69 +2,81 @@ This directory holds the source files for a C/C++ 2-D vector graphics
 library: GNU libplot/libplotter.  It is distributed under the GNU GPL
 (see the file ../COPYING).
 
-The library provides a uniform (Plotter) interface to numerous display
-devices and output formats.  The interface presents each output device as a
-virtual pen plotter.  Eleven different sorts of graphic output are
-supported: Metafile, Tektronix, HP-GL/2, PCL 5, xfig, idraw-editable
-Postscript, Adobe Illustrator, GIF, PNM (i.e. PBM/PGM/PPM), X Drawable, and
-X.  The first nine are supported via output streams.  The final two are
-supported directly, by calling X routines.  The X Drawable driver draws
-graphics in one or two `drawables' (windows or pixmaps), which must be
-passed to it via pointers.  The X driver pops up a window (actually, a
-Label widget) on an X display, and draws graphics in it.  Each driver is
-accessed at run time through a `Plotter' object of the corresponding type.
+The library provides a uniform interface to numerous display devices and
+output formats.  The interface presents each output device as a `Plotter'
+object: a virtual pen plotter.  Twelve different sorts of graphic output
+are supported: Metafile, Tektronix, HP-GL/2, PCL 5, xfig, CGM (by default,
+WebCGM), idraw-editable Postscript, Adobe Illustrator, GIF, PNM
+(i.e. PBM/PGM/PPM), X Drawable, and X.  All but the final two write graphic
+output to an output stream.  The final two draw graphics directly, by
+calling X routines.  The X Drawable driver draws graphics in one or two
+`drawables' (windows or pixmaps), which must be passed to it via pointers.
+The X driver pops up a window (actually, a Label widget) on an X display,
+and draws graphics in it.  Each of libplot's output drivers is accessed at
+run time through an opaque Plotter object of the corresponding type.
 
-The names of the source files in this directory include as prefix a letter
-indicating which driver they include code for.  For example, the file
-h_circ.c is part of the HP-GL/2 driver, and contains the source code for
-the method _h_fcircle().  This method is invoked when the user-level
-operation fcircle() is invoked on a HP-GL/2 Plotter.  m=Metafile,
-t=Tektronix, h=HP-GL[/2] and PCL 5, f=Fig, p=Postscript, a=Adobe
-Illustrator, i=GIF, n=PNM, x=XDrawable, and y=X.  (Actually, XPlotters use
-mostly the XDrawablePlotter methods.)  The many files whose names begin
-with `g' (e.g., g_relative.c) include generic code that is used by more
-than one driver.
+The names of the source files include as prefix a letter indicating which
+driver they include code for.  For example, the file h_circ.c is part of
+the HP-GL/2 driver, and contains the source code for the method
+_h_fcircle().  This method is invoked when the user-level operation
+fcircle() is invoked on a HP-GL/2 Plotter.  m=Metafile, t=Tektronix,
+h=HP-GL[/2] and PCL 5, f=Fig, c=CGM, p=Postscript, a=Adobe Illustrator,
+i=GIF, n=PNM, x=XDrawable, and y=X.  (Actually, XPlotters use mostly the
+XDrawablePlotter methods.)  The many files whose names begin with `g'
+(e.g., g_relative.c) include generic code, i.e. code used by the base
+Plotter class, from which the other classes are derived.
 
-(Most Plotter methods are generic; in fact, each type of Plotter, with the
-exception of the type that implements the Metafile device driver, is built
-largely from generic methods.)
+Most types of Plotter, with the exception of the type that implements the
+Metafile device driver, are built largely from generic methods.  That is,
+to derive most Plotter classes from the base Plotter class, only a small
+amount of overriding is needed.
 
-The library comes in two versions: libplot, which provides a C API, and
-libplotter, which is a C++ class library.  They are compiled in separate
+The library comes in two versions: libplot, which provides two C APIs (an
+old non-thread-safe API, and a new thread-safe API), and libplotter, which
+is a full-fledged C++ class library.  They are compiled in separate
 directories (respectively, in this directory and in ../libplotter).
-However, the same source files are used both libraries.  This is a bit
+However, the same source files are used in both libraries.  That is a bit
 remarkable.  It is arranged in the the two key header files
 ../include/plotter.h and ./extern.h.  If LIBPLOTTER is defined and a C++
 compiler is used, a C++ class library results.  Otherwise, a conventional C
 function library results.  There are a lot of conditionalizations in those
 two header files.
 
-In libplot, a Plotter is a C-style struct.  The special file api.c, which
-alone among the source files is included in libplot but not libplotter,
-defines the functions newpl(), selectpl(), and deletepl(), which create and
-maintain an internal sparse array of Plotters.  Each Plotter includes a
-large number of function pointers: one function pointer for each of the
-user-level functions in the libplot API.  Plotters of different types are
-initialized differently, including their function pointers (the
+In libplot, a Plotter is implemented as a C-style struct.  Each such struct
+includes a large number of function pointers: one function pointer for each
+of the user-level functions in the libplot API.  Plotters of different
+types are initialized differently, including their function pointers.  (The
 initialization of the `function pointer part' of each Plotter is contained
 in the corresponding ?_defplot.c file).  It is by dereferencing function
-pointers that polymorphism is implemented.
+pointers that polymorphism is implemented in libplot.
 
-It works this way.  In libplot, exactly one Plotter is selected at any
-specified time; a Plotter in the Plotter array is selected by calling
-selectpl().  Throughout libplot, the pointer `_plotter' points to the
-currently selected Plotter.  It's the function pointers in this Plotter
-which are dereferenced, to implement the user-level operations.  For
-example, in the library code you may see a function invocation like
-`_plotter->filltype()'.  This will (1) dereference the _plotter pointer to
-find the currently selected Plotter, and (2) dereference the function
-pointer in the currently selected Plotter to find the Plotter-specific
-method corresponding to the user-level operation, `filltype()'.
+Here are the details.  In libplot, each Plotter method, whether public or
+internal, takes a pointer to a Plotter struct as its first argument.  In
+the code for each method, this pointer argument is named `_plotter'.  It's
+the function pointers in this Plotter that are dereferenced, to implement
+each user-level operation.  For example, in the libplot code you may see a
+function invocation like `_plotter->filltype()'.  This will (1) dereference
+the _plotter pointer to get a Plotter, and (2) dereference the function
+pointer in the Plotter to find the Plotter-specific method corresponding to
+the user-level operation `filltype()'.
 
-This would yield _m_filltype() if _plotter points to a Metafile Plotter,
+This would be _m_filltype() if _plotter points to a Metafile Plotter,
 _t_filltype() if it is a Tektronix Plotter, _h_filltype() if the format is
 HP-GL/2, _f_filltype() if the format is xfig, _p_filltype() if it is
-Postscript, and _x_filltype() if the Plotter is an XDrawable or X Plotter.
+Postscript, and _x_filltype() if the Plotter is an XDrawable or X Plotter,
+etc.  The setting up of Plotter-specific methods is arranged in the
+initialization of the function-pointer part of the Plotter (see the various
+?_defplot.c files).
+
+The two special files apinewc.c and apioldc.c, which alone among the source
+files are included in libplot but not libplotter, define the C APIs.  Each
+function in the new (thread-safe) API takes as first argument a pointer to
+a Plotter struct to which the Plotter operations should be applied.  It is
+this pointer that is passed down to the libplot code as `_plotter'.  Each
+function in the old (non-thread-safe) API acts on a Plotter which is
+globally selected by calling the function pl_selectpl().  Both old and new
+C APIs include functions like pl_newpl[_r]() and pl_deletepl[_r](), which
+create and destroy Plotters.
 
 The C++ binding, i.e. the libplotter C++ class library, is easier to
 understand.  There is a generic Plotter class and derived classes that are
@@ -72,36 +84,39 @@ declared in ../include/plotter.h.  The function members of these classes
 are exactly the same functions that are used in libplot, e.g. _m_filltype,
 _t_filltype, etc.  This is arranged mostly by a *lot* of conditional
 #defines in ../include/extern.h.  For example, if LIBPLOTTER is defined
-then _m_filltype is #defined to be MetaPlotter::filltype.  Also, if
-LIBPLOTTER is defined then there's no global variable `_plotter'.  Instead,
-_plotter is #defined to be `this', i.e. a pointer to the Plotter whose
-operations are being invoked.  Believe it or not, it works: the same source
-files can be used in the compilation of both libplot and libplotter.
+then _m_filltype is redefined to be MetaPlotter::filltype.  Also, if
+LIBPLOTTER is defined then the Plotter methods don't all have a special
+first argument called `_plotter'.  By the magic of the C/C++ preprocessor,
+the first argument disappears.  And in the code for each method, _plotter
+is redefined to be `this', i.e. a pointer to the Plotter whose operation is
+being invoked.  Believe it or not, it works: the same source files can be
+used in the compilation of both libplot and libplotter.
 
 (The preceding description makes it sound as if in libplotter, only one
 pointer dereferencing is required, unlike the two that are needed in
 libplot.  Sadly, that's not true.  In the base (generic) Plotter class and
 its derived classes, we implement all methods as virtual functions.  So an
-extra pointer dereferencing is needed with each invocation.)
+extra pointer dereferencing is needed for each invocation.)
 
-An implementation note: in libplot, any Plotter struct contains a `tag
-field', identifying its type.  This tag field is used only in api.c, so if
--DLIBPLOTTER is used, it's #ifdef'd out.  See ../include/plotter.h.  Other
-than that, the data members are the same in the libplot Plotter struct as
-they are in the libplotter Plotter class.
+A further implementation note: in libplot, any Plotter contains a `tag
+field', identifying its type (X11, PS, PCL5, etc.).  This tag field is used
+only in libplot, and only by a very few forwarding functions, so if
+-DLIBPLOTTER is used, it's #ifdef'd out.  (See ../include/plotter.h.)
+Other than that, the data members are essentially the same in the libplot
+Plotter struct as they are in the libplotter Plotter class.
 
 Actually, it's a bit more complicated.  In libplot, each Plotter struct, no
-matter what its type, contains exactly the same data members.  But there
-are a lot of data members, some of them which are relevant to all Plotters
-(e.g., `line_type') and some of which are specific to individual types of
-Plotter (e.g., `tek_line_type' and `hpgl_line_type', which keep track of
-the display device's internal state).  This means that there is a lot of
-redundancy (a MetaPlotter, for example, contains all the private data
-members that an HPGLPlotter uses, but never uses them).  In libplotter, the
-design is cleaner: the data members which in libplot are contained in any
-Plotter struct are moved to the appropriate derived class.  So
-`hpgl_line_type' is a data member of the HPGL Plotter class, but not of the
-base (generic) Plotter class.  This is arranged by extensive #ifdef's in
+matter what its type, contains essentially the same data members.  But
+there are a lot of data members, some of them which are relevant to all
+Plotters (e.g., `line_type') and some of which are specific to individual
+types of Plotter (e.g., `hpgl_line_type', which keeps track of an HP-GL
+display device's internal state).  That means there's a lot of redundancy
+(a MetaPlotter struct, for example, contains all the private data members
+that an HPGLPlotter uses, but never uses them).  In libplotter, the design
+is cleaner: each of the many data members which in libplot are contained in
+every Plotter struct is moved to the appropriate derived class.  So
+`hpgl_line_type' is a data member of the HPGLPlotter class, but not of the
+base (generic) Plotter class.  That's arranged by extensive #ifdef's in
 ../include/plotter.h.  It's a bit awkward though: each data member needs to
 be declared twice in that file.
 
@@ -110,29 +125,30 @@ given the object-oriented way that libplot/libplotter is structured, is
 easy.  A new type of Plotter, derived from the base Plotter class, would be
 declared in ../include/plotter.h.  If it needs any private data members,
 which it almost certainly will, they would be declared in two places in
-that file, as noted.  Additionally, conditional #defines for the methods
+that file, as just mentioned.  Also, conditional #defines for the methods
 used by the new Plotter (to distinguish libplot from libplotter) would be
 added at the end of ./extern.h.
 
 A `defplot' file for the new Plotter type would need to be written too.
 Besides internal initialize() and terminate() routines for the new Plotter
-type, it would include, for the benefit of libplot, an initialization for
-the function-pointer part of the Plotter struct.  (See, for example, the
-initialization _g_default_plotter in the file g_defplot.c.)  The new
-Plotter initialization would need to be listed in the _plotter_data[] table
-in api.c, which is specific to libplot.  (No such initialization is
-required in libplotter, since the C++ compiler takes care of initializing
-any instance of the Plotter class.)
+type, it would include, for the benefit of libplot, an initialization
+routine for the function-pointer part of the Plotter struct.  (See, for
+example, the initialization _g_default_plotter in the file g_defplot.c.)
+The new Plotter initialization would need to be listed in the
+_plotter_data[] table in apinewc.c, which is specific to libplot.  No such
+initialization is required in libplotter, since the C++ compiler takes care
+of initializing any instance of the Plotter class.
 
 To see how easy it is to add or remove support for a Plotter type, search
 for the symbol X_DISPLAY_MISSING.  If this is defined, support for X
 Drawable Plotters and X Plotters will be dropped at compile time.  The only
 occurrences in the code of tests like `#ifdef X_DISPLAY_MISSING' are in the
-header files ../include/plotter.h and ./extern.h, in api.c, and in
-g_defstate.c.  And the only reason for their appearance in g_defstate.c is
-that the drawing state structure initialization located in that file
-contains some X-specific fields, which must be omitted if X support is not
-included.  That's because they rely on symbols defined in X header files.
+header files ../include/plotter.h and ./extern.h, in apinewc.c, and in
+g_defstate.c.  And the only reason for the appearance of X_DISPLAY_MISSING
+in g_defstate.c is that the drawing state structure initialization located
+in that file contains some X-specific fields, which need to be omitted if X
+support is dropped.  That's because they rely on symbols defined in X
+header files.
 
 Up to now we haven't mentioned drawing states, but every Plotter includes a
 pointer to a stack of them.  Drawing states, which are structs in both
@@ -140,7 +156,7 @@ libplot and libplotter, contain numerous fields that are specific to
 individual types of Plotter.  The reason device-specific information is
 kept in the drawing state struct is that it's convenient.  For example,
 when the user-frame line width is changed, the device-frame line width
-changes too.  Rather than compute it each time a graphical object is
-output, it's easier to store the device-frame line width in the drawing
-state.  There are many other such examples (see the declaration of the
-drawing state structure in ../include/plotter.h).
+changes too.  Rather than compute the device-frame line width each time a
+graphical object is drawn, it's easier to store it in the drawing state.
+There are many other such examples (see the declaration of the drawing
+state structure in ../include/plotter.h).

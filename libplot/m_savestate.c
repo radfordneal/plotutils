@@ -16,20 +16,22 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_savestate (void)
+_m_savestate (S___(Plotter *_plotter))
 #else
-_m_savestate ()
+_m_savestate (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("savestate: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "savestate: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_SAVESTATE);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_SAVESTATE);
+  _meta_emit_terminator (S___(_plotter));
   
   /* invoke generic method */
-  return _g_savestate ();
+  return _g_savestate (S___(_plotter));
 }

@@ -8,20 +8,22 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_fmove (double x, double y)
+_g_fmove (R___(Plotter *_plotter) double x, double y)
 #else
-_g_fmove (x, y)
+_g_fmove (R___(_plotter) x, y)
+     S___(Plotter *_plotter;) 
      double x, y;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fmove: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fmove: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath ();	/* flush polyline if any */
+    _plotter->endpath (S___(_plotter));	/* flush polyline if any */
 
   _plotter->drawstate->pos.x = x; /* update our notion of position */
   _plotter->drawstate->pos.y = y;

@@ -11,9 +11,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_havecap (const char *s)
+_g_havecap (R___(Plotter *_plotter) const char *s)
 #else
-_g_havecap (s)
+_g_havecap (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {

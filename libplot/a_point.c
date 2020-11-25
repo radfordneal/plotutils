@@ -9,9 +9,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_a_fpoint (double x, double y)
+_a_fpoint (R___(Plotter *_plotter) double x, double y)
 #else
-_a_fpoint (x, y)
+_a_fpoint (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
@@ -19,11 +20,11 @@ _a_fpoint (x, y)
 
   if (!_plotter->open)
     {
-      _plotter->error ("fpoint: invalid operation");
+      _plotter->error (R___(_plotter) "fpoint: invalid operation");
       return -1;
     }
 
-  _plotter->endpath(); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* compute size of a `point' in user coordinates */
   norm = _matrix_norm (_plotter->drawstate->transform.m);
@@ -32,7 +33,8 @@ _a_fpoint (x, y)
       double user_size;
 
       user_size = POINT_AI_SIZE / _matrix_norm (_plotter->drawstate->transform.m);
-      _plotter->fmarker (x, y, (int)M_FILLED_CIRCLE, user_size);
+      _plotter->fmarker (R___(_plotter) 
+			 x, y, (int)M_FILLED_CIRCLE, user_size);
     }
 
   return 0;

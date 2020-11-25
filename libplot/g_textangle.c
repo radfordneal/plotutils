@@ -17,15 +17,17 @@
 
 double
 #ifdef _HAVE_PROTOS
-_g_ftextangle (double angle)
+_g_ftextangle (R___(Plotter *_plotter) double angle)
 #else
-_g_ftextangle (angle)
+_g_ftextangle (R___(_plotter) angle)
+     S___(Plotter *_plotter;)
      double angle;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("ftextangle: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "ftextangle: invalid operation");
       return -1;
     }
 
@@ -33,7 +35,7 @@ _g_ftextangle (angle)
   _plotter->drawstate->text_rotation = angle;
   
   /* compute true size (may be quantized) */
-  _plotter->retrieve_font();
+  _plotter->retrieve_font (S___(_plotter));
   
   /* return quantized user-specified font size */
   return _plotter->drawstate->true_font_size;

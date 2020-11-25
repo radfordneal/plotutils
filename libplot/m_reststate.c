@@ -9,20 +9,22 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_restorestate(void)
+_m_restorestate(S___(Plotter *_plotter))
 #else
-_m_restorestate()
+_m_restorestate(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("restorestate: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "restorestate: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_RESTORESTATE);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_RESTORESTATE);
+  _meta_emit_terminator (S___(_plotter));
 
   /* invoke generic method */
-  return _g_restorestate ();
+  return _g_restorestate (S___(_plotter));
 }

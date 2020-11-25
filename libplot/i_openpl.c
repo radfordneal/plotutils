@@ -3,19 +3,21 @@
 
 #include "sys-defines.h"
 #include "extern.h"
+#include "xmi.h"
 
 int
 #ifdef _HAVE_PROTOS
-_i_openpl (void)
+_i_openpl (S___(Plotter *_plotter))
 #else
-_i_openpl ()
+_i_openpl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   const char *bg_color_name_s;
   
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) "openpl: invalid operation");
       return -1;
     }
 
@@ -24,7 +26,8 @@ _i_openpl ()
      set, are the same as are used in initializing the GIFPlotter (see
      i_defplot.c). */
      
-  _plotter->i_bitmap = (miPixel **)NULL;
+  _plotter->i_painted_set = (voidptr_t)NULL;
+  _plotter->i_canvas = (voidptr_t)NULL;
   _plotter->i_num_color_indices = 0;
   _plotter->i_bit_depth = 0;
   _plotter->i_frame_nonempty = false;
@@ -35,21 +38,21 @@ _i_openpl ()
   _plotter->i_header_written = false;
 
   /* invoke generic method, to e.g. create drawing state */
-  _g_openpl ();
+  _g_openpl (S___(_plotter));
 
   /* if there's a user-specified background color, set it in
      device-independent part of drawing state */
-  bg_color_name_s = (const char *)_get_plot_param ("BG_COLOR");
+  bg_color_name_s = (const char *)_get_plot_param (R___(_plotter) "BG_COLOR");
   if (bg_color_name_s)
-    _plotter->bgcolorname (bg_color_name_s);
+    _plotter->bgcolorname (R___(_plotter) bg_color_name_s);
 
   /* if there's a user-specified transparent color, set it in Plotter */
   {
     const char *transparent_name_s;
-    const Colornameinfo *info;
+    const plColorNameInfo *info;
 
-    transparent_name_s = (const char *)_get_plot_param ("TRANSPARENT_COLOR");
-    if (transparent_name_s && _string_to_color (transparent_name_s, &info))
+    transparent_name_s = (const char *)_get_plot_param (R___(_plotter) "TRANSPARENT_COLOR");
+    if (transparent_name_s && _string_to_color (R___(_plotter) transparent_name_s, &info))
       /* have 24-bit RGB */
       {
 	_plotter->i_transparent = true;
@@ -63,7 +66,7 @@ _i_openpl ()
      background color.  First entries in color table will be (1)
      transparent color [if there is one, and we're animating] and (2)
      background color.  May be the same. */
-  _i_new_image ();
+  _i_new_image (S___(_plotter));
   
   /* frame starts empty */
   _plotter->i_frame_nonempty = false;
@@ -80,23 +83,15 @@ _i_openpl ()
    background color.  Maybe the same. */
 void
 #ifdef _HAVE_PROTOS
-_i_new_image (void)
+_i_new_image (S___(Plotter *_plotter))
 #else
-_i_new_image ()
+_i_new_image (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  int xn, yn, i, j;
-  unsigned char bg_color_index;
+  int i;
+  miPixel pixel;
   
-  xn = _plotter->i_xn;
-  yn = _plotter->i_yn;
-
-  /* create new image, with bitmap of specified size */
-  _plotter->i_bitmap = (miPixel **)_plot_xmalloc (yn * sizeof(miPixel *));
-  for (j = 0; j < yn; j++)	/* each row of pixels is contiguous */
-    _plotter->i_bitmap[j] = 
-      (miPixel *)_plot_xmalloc (xn * sizeof(miPixel));
-
   /* colormap starts empty (unused entries initted to `black'; we may later
      need to output some of the unused entries because GIF colormap lengths
      are always powers of 2) */
@@ -119,19 +114,18 @@ _i_new_image ()
      transparent color as the first color index (#0) in all images. */
   if (_plotter->i_transparent && _plotter->i_animation)
     /* allocate color cell in colormap; see i_color.c */
-    _i_new_color_index (_plotter->i_transparent_color.red,
+    _i_new_color_index (R___(_plotter) 
+			_plotter->i_transparent_color.red,
 			_plotter->i_transparent_color.green,
 			_plotter->i_transparent_color.blue);
 
   /* allocate bg color as next color index in colormap (it could well be
-     the same as the transparent index) */
-  _i_set_bg_color();
-  bg_color_index = _plotter->drawstate->i_bg_color_index;
+     the same as the transparent index); also construct a miPixel for it */
+  _i_set_bg_color (S___(_plotter));
+  pixel.type = MI_PIXEL_INDEX_TYPE;
+  pixel.u.index = _plotter->drawstate->i_bg_color_index;
 
-  /* fill image with background color index */
-  for (j = 0; j < yn; j++)	/* each row of pixels is contiguous */
-    for (i = 0; i < xn; i++)
-      _plotter->i_bitmap[j][i].index = bg_color_index;
+  /* create libxmi miPaintedSet and miCanvas structs */
+  _plotter->i_painted_set = (voidptr_t)miNewPaintedSet ();
+  _plotter->i_canvas = (voidptr_t)miNewCanvas ((unsigned int)_plotter->i_xn, (unsigned int)_plotter->i_yn, pixel);
 }
-
-

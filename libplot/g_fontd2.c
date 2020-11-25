@@ -19,10 +19,10 @@
    fonts were available on the LaserJet III.  The same 45 fonts are
    available on the LaserJet 5 and 6.
    
-   Each pcl_font_info_struct includes these elements:
+   Each plPCLFontInfoStruct includes these elements:
 
-   (1a) PS name.
-   (1b) Substitute PS name to be used when outputing to a PS file, 
+   (1a) PS name, (1b) alternative PS name if any (may be NULL),
+   (1c) Substitute PS name to be used when outputing to a PS file, 
         if non-NULL.  This feature is used only to support the 
 	Tidbits-is-Wingdings botch.
    (1c) X name.
@@ -59,9 +59,10 @@
    order in which they appear in this array, be sure to update, e.g., the
    definitions DEFAULT_PCL_FONT_INDEX, etc. in extern.h. */
 
-const struct pcl_font_info_struct _pcl_font_info[] = {
+const struct plPCLFontInfoStruct _pcl_font_info[] = {
 {
   "Univers",			/* #0 */
+  NULL,
   NULL,
   "univers-medium-r-normal",
   4148, 1, 0, 0, 277,
@@ -131,9 +132,10 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
       0, 1, true,
 },
 {
-  "Univers-Italic",		/* #1 */
+  "Univers-Oblique",		/* #1 */
   NULL,
-  "univers-medium-i-normal",
+  NULL,
+  "univers-medium-o-normal",
   4148, 1, 1, 0, 277,
   989, 250,
   {
@@ -203,6 +205,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "Univers-Bold",		/* #2 */
   NULL,
+  NULL,
   "univers-bold-r-normal",
   4148, 1, 0, 3, 277,
   976, 250,
@@ -271,9 +274,10 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
       0, 3, true,
 },
 {
-  "Univers-BoldItalic",		/* #3 */
+  "Univers-BoldOblique",	/* #3 */
   NULL,
-  "univers-bold-i-normal",
+  NULL,
+  "univers-bold-o-normal",
   4148, 1, 1, 3, 277,
   976, 250,
   {
@@ -343,6 +347,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "UniversCondensed",		/* #4 */
   NULL,
+  NULL,
   "univers-medium-r-condensed",
   4148, 1, 4, 0, 277,
   932, 250,
@@ -411,9 +416,10 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
       1, 1, true,
 },
 {
-  "UniversCondensed-Italic",	/* #5 */
+  "UniversCondensed-Oblique",	/* #5 */
   NULL,
-  "univers-medium-i-condensed",
+  NULL,
+  "univers-medium-o-condensed",
   4148, 1, 5, 0, 277,
   933, 250,
   {
@@ -483,6 +489,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "UniversCondensed-Bold",	/* #6 */
   NULL,
+  NULL,
   "univers-bold-r-condensed",
   4148, 1, 4, 3, 277,
   950, 250,
@@ -551,9 +558,10 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
       1, 3, true,
 },
 {
-  "UniversCondensed-BoldItalic", /* #7 */
+  "UniversCondensed-BoldOblique", /* #7 */
   NULL,
-  "univers-bold-i-condensed",
+  NULL,
+  "univers-bold-o-condensed",
   4148, 1, 5, 3, 277,
   950, 250,
   {
@@ -622,6 +630,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "CGTimes",			/* #8 */
+  NULL,
   NULL,
   "cg times-medium-r-normal",
   4101, 1, 0, 0, 277,
@@ -693,6 +702,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "CGTimes-Italic",		/* #9 */
   NULL,
+  NULL,
   "cg times-medium-i-normal",
   4101, 1, 1, 0, 277,
   910, 250,
@@ -762,6 +772,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "CGTimes-Bold",		/* #10 */
+  NULL,
   NULL,
   "cg times-bold-r-normal",
   4101, 1, 0, 3, 277,
@@ -833,6 +844,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "CGTimes-BoldItalic",		/* #11 */
   NULL,
+  NULL,
   "cg times-bold-i-normal",
   4101, 1, 1, 3, 277,
   944, 250,
@@ -903,36 +915,43 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "AlbertusMedium",		/* #12 */
   NULL,
+  NULL,
   "albertus-semibold-r-normal",
   4362, 1, 0, 1, 277,
   997, 250,
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 278, 278, 355, 556, 556, 889, 667, 222,
-    333, 333, 389, 584, 278, 584, 278, 278, 556, 556,
-    556, 556, 556, 556, 556, 556, 556, 556, 278, 278,
-    584, 584, 584, 556, 1015, 667, 667, 722, 722, 667,
-    611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
-    667, 778, 722, 667, 611, 722, 667, 944, 667, 667,
-    611, 278, 278, 278, 469, 556, 222, 556, 556, 500,
-    556, 556, 278, 556, 556, 222, 222, 500, 222, 833,
-    556, 556, 556, 556, 333, 500, 278, 556, 500, 722,
-    500, 500, 500, 334, 260, 334, 584, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    278, 333, 556, 556, 556, 556, 260, 556, 333, 737,
-    370, 556, 584, 333, 737, 333, 400, 584, 333, 333,
-    333, 556, 537, 278, 333, 333, 365, 556, 834, 834,
-    834, 611, 667, 667, 667, 667, 667, 667, 1000, 722,
-    667, 667, 667, 667, 278, 278, 278, 278, 722, 722,
-    778, 778, 778, 778, 778, 584, 778, 722, 722, 722,
-    722, 667, 667, 611, 556, 556, 556, 556, 556, 556,
-    889, 500, 556, 556, 556, 556, 278, 278, 278, 278,
-    556, 556, 556, 556, 556, 556, 556, 584, 611, 556,
-    556, 556, 556, 500, 556, 500
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    313, 313, 498, 627, 627, 940, 867, 313,
+    406, 406, 627, 940, 313, 940, 313, 442,
+    627, 627, 627, 627, 627, 627, 627, 627,
+    627, 627, 313, 313, 996, 940, 996, 461,
+    940, 793, 572, 682, 701, 553, 517, 774,
+    756, 313, 406, 682, 535, 922, 812, 867,
+    517, 867, 627, 517, 627, 793, 774, 940,
+    682, 646, 608, 424, 442, 424, 498, 498,
+    313, 461, 535, 461, 553, 479, 313, 479,
+    535, 240, 240, 479, 240, 830, 535, 553,
+    553, 535, 369, 351, 332, 535, 479, 701,
+    479, 498, 387, 442, 498, 442, 996, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    313, 313, 627, 627, 627, 627, 498, 627,
+    627, 498, 387, 461, 940, 313, 498, 627,
+    517, 940, 387, 387, 627, 553, 627, 313,
+    627, 387, 387, 461, 940, 940, 940, 461,
+    793, 793, 793, 793, 793, 793, 977, 682,
+    553, 553, 553, 553, 313, 313, 313, 313,
+    756, 812, 867, 867, 867, 867, 867, 940,
+    867, 793, 793, 793, 793, 646, 517, 590,
+    461, 461, 461, 461, 461, 461, 738, 461,
+    479, 479, 479, 479, 240, 240, 240, 240,
+    553, 535, 553, 553, 553, 553, 553, 940,
+    553, 535, 535, 535, 535, 498, 553, 498
   },
   {
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -973,36 +992,43 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "AlbertusExtraBold",		/* #13 */
   NULL,
+  NULL,
   "albertus-extrabold-r-normal",
   4362, 1, 0, 4, 277,
   1017, 260,
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 369, 369, 572, 664, 664, 977, 904, 369,
-    498, 498, 664, 977, 369, 977, 369, 498, 664, 664,
-    664, 664, 664, 664, 664, 664, 664, 664, 369, 369,
-    996, 977, 996, 479, 977, 774, 701, 719, 774, 608,
-    572, 774, 812, 387, 442, 738, 572, 977, 848, 904,
-    646, 904, 701, 535, 627, 812, 756, 977, 756, 664,
-    664, 498, 498, 498, 498, 498, 369, 498, 608, 479,
-    590, 517, 369, 553, 590, 295, 295, 627, 295, 885,
-    590, 608, 590, 590, 424, 424, 406, 590, 553, 793,
-    627, 553, 461, 498, 498, 498, 996, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    369, 369, 664, 664, 664, 664, 498, 664, 664, 498,
-    461, 517, 977, 369, 498, 664, 553, 977, 461, 461,
-    664, 590, 664, 369, 664, 461, 461, 517, 977, 977,
-    977, 479, 774, 774, 774, 774, 774, 774, 1014, 719,
-    608, 608, 608, 608, 387, 387, 387, 387, 812, 848,
-    904, 904, 904, 904, 904, 977, 904, 812, 812, 812,
-    812, 664, 646, 646, 498, 498, 498, 498, 498, 498,
-    756, 479, 517, 517, 517, 517, 295, 295, 295, 295,
-    608, 590, 608, 608, 608, 608, 608, 977, 608, 590,
-    590, 590, 590, 553, 590, 553
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    369, 369, 572, 664, 664, 977, 904, 369,
+    498, 498, 664, 977, 369, 977, 369, 498,
+    664, 664, 664, 664, 664, 664, 664, 664,
+    664, 664, 369, 369, 996, 977, 996, 479,
+    977, 774, 701, 719, 774, 608, 572, 774,
+    812, 387, 442, 738, 572, 977, 848, 904,
+    646, 904, 701, 535, 627, 812, 756, 977,
+    756, 664, 664, 498, 498, 498, 498, 498,
+    369, 498, 608, 479, 590, 517, 369, 553,
+    590, 295, 295, 627, 295, 885, 590, 608,
+    590, 590, 424, 424, 406, 590, 553, 793,
+    627, 553, 461, 498, 498, 498, 996, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    369, 369, 664, 664, 664, 664, 498, 664,
+    664, 498, 461, 517, 977, 369, 498, 664,
+    553, 977, 461, 461, 664, 590, 664, 369,
+    664, 461, 461, 517, 977, 977, 977, 479,
+    774, 774, 774, 774, 774, 774, 1014, 719,
+    608, 608, 608, 608, 387, 387, 387, 387,
+    812, 848, 904, 904, 904, 904, 904, 977,
+    904, 812, 812, 812, 812, 664, 646, 646,
+    498, 498, 498, 498, 498, 498, 756, 479,
+    517, 517, 517, 517, 295, 295, 295, 295,
+    608, 590, 608, 608, 608, 608, 608, 977,
+    608, 590, 590, 590, 590, 553, 590, 553
   },
   {
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -1042,6 +1068,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "AntiqueOlive",		/* #14 */
+  NULL,
   NULL,
   "antique olive-medium-r-normal",
   4168, 1, 0, 0, 277,
@@ -1113,6 +1140,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "AntiqueOlive-Italic",	/* #15 */
   NULL,
+  NULL,
   "antique olive-medium-i-normal",
   4168, 1, 1, 0, 277,
   1035, 250,
@@ -1182,6 +1210,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "AntiqueOlive-Bold",		/* #16 */
+  NULL,
   NULL,
   "antique olive-bold-r-normal",
   4168, 1, 0, 3, 277,
@@ -1253,6 +1282,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "Arial-Roman",		/* #17 */
   NULL,
+  NULL,
   "arial-medium-r-normal",
   16602, 1, 0, 0, 277,
   913, 216,
@@ -1322,6 +1352,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "Arial-Italic",		/* #18 */
+  NULL,
   NULL,
   "arial-medium-i-normal",
   16602, 1, 1, 0, 277,
@@ -1393,6 +1424,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "Arial-Bold",			/* #19 */
   NULL,
+  NULL,
   "arial-bold-r-normal",
   16602, 1, 0, 3, 277,
   924, 211,
@@ -1462,6 +1494,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "Arial-BoldItalic",		/* #20 */
+  NULL,
   NULL,
   "arial-bold-i-normal",
   16602, 1, 1, 3, 277,
@@ -1533,6 +1566,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "ClarendonCondensed",		/* #21 */
   NULL,
+  NULL,
   "clarendon-medium-r-condensed",
   4140, 1, 4, 3, 277,
   970, 261,
@@ -1602,6 +1636,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "Coronet",			/* #22 */
+  NULL,
   NULL,
   "coronet-medium-r-normal",
   4116, 1, 1, 0, 277,
@@ -1673,6 +1708,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "Courier",			/* #23 */
   NULL,
+  NULL,
   "courier-medium-r-normal",
   4099, 0, 0, 0, 277,
   856, 253,
@@ -1742,6 +1778,11 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 { 
   "Courier-Italic",		/* #24 */
+#ifndef USE_PS_FONTS_IN_PCL
+  "Courier-Oblique",		/* treat name of similar PS font as alias */
+#else
+  NULL,
+#endif
   NULL,
   "courier-medium-o-normal",
   4099, 0, 1, 0, 277,
@@ -1813,6 +1854,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "Courier-Bold",		/* #25 */
   NULL,
+  NULL,
   "courier-bold-r-normal",
   4099, 0, 0, 3, 277,
   856, 237,
@@ -1882,6 +1924,11 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "Courier-BoldItalic",		/* #26 */
+#ifndef USE_PS_FONTS_IN_PCL
+  "Courier-BoldOblique",	/* treat name of similar PS font as alias */
+#else
+  NULL,
+#endif
   NULL,
   "courier-bold-o-normal",
   4099, 0, 1, 3, 277,
@@ -1953,6 +2000,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "Garamond",			/* #27 */
   NULL,
+  NULL,
   "garamond-medium-r-normal",
   4197, 1, 0, 0, 277,		/* Garamond Antiqua */
   1023, 260,
@@ -2022,6 +2070,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "Garamond-Italic",		/* #28 */
+  NULL,
   NULL,
   "garamond-medium-i-normal",
   4197, 1, 1, 0, 277,		/* Garamond Kursiv */
@@ -2093,6 +2142,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "Garamond-Bold",		/* #29 */
   NULL,
+  NULL,
   "garamond-bold-r-normal",
   4197, 1, 0, 3, 277,		/* Garamond Halbfett */
   1010, 261,
@@ -2162,6 +2212,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "Garamond-BoldItalic",	/* #30 */
+  NULL,
   NULL,
   "garamond-bold-i-normal",
   4197, 1, 1, 3, 277,		/* Garamond Kursiv Halbfett */
@@ -2233,6 +2284,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "LetterGothic",		/* #31 */
   NULL,
+  NULL,
   "letter gothic-medium-r-normal",
   4102, 0, 0, 0, 277,
   946, 308,
@@ -2302,6 +2354,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "LetterGothic-Italic",	/* #32 */
+  NULL,
   NULL,
   "letter gothic-medium-i-normal",
   4102, 0, 1, 0, 277,
@@ -2373,6 +2426,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "LetterGothic-Bold",		/* #33 */
   NULL,
+  NULL,
   "letter gothic-bold-r-normal",
   4102, 0, 0, 3, 277,
   988, 308,
@@ -2442,6 +2496,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "Marigold",			/* #34 */
+  NULL,
   NULL,
   "marigold-medium-r-normal",
   4297, 1, 0, 0, 277,
@@ -2513,6 +2568,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "CGOmega",			/* #35 */
   NULL,
+  NULL,
   "cg omega-medium-r-normal",
   4113, 1, 0, 0, 277,
   895, 250,
@@ -2582,6 +2638,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "CGOmega-Italic",		/* #36 */
+  NULL,
   NULL,
   "cg omega-medium-i-normal",
   4113, 1, 1, 0, 277,
@@ -2653,6 +2710,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "CGOmega-Bold",		/* #37 */
   NULL,
+  NULL,
   "cg omega-bold-r-normal",
   4113, 1, 0, 3, 277,
   924, 250,
@@ -2722,6 +2780,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "CGOmega-BoldItalic",		/* #38 */
+  NULL,
   NULL,
   "cg omega-bold-i-normal",
   4113, 1, 1, 3, 277,
@@ -2793,6 +2852,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "TimesNewRoman",		/* #39 */
   NULL,
+  NULL,
   "times new roman-medium-r-normal",
   16901, 1, 0, 0, 277,
   913, 219,
@@ -2862,6 +2922,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "TimesNewRoman-Italic",	/* #40 */
+  NULL,
   NULL,
   "times new roman-medium-i-normal",
   16901, 1, 1, 0, 277,
@@ -2933,6 +2994,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "TimesNewRoman-Bold",		/* #41 */
   NULL,
+  NULL,
   "times new roman-bold-r-normal",
   16901, 1, 0, 3, 277,
   913, 226,
@@ -3002,6 +3064,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "TimesNewRoman-BoldItalic",	/* #42 */
+  NULL,
   NULL,
   "times new roman-bold-i-normal",
   16901, 1, 1, 3, 277,
@@ -3074,6 +3137,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 {
   "Wingdings",			/* #43, also called Tidbits */
   "Tidbits",
+  "Tidbits",			/* use "Tidbits" in any output PS file */
   "wingdings-medium-r-normal",
   31402, 1, 0, 0, 18540,	
   895, 210,
@@ -3146,6 +3210,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 },
 {
   "Symbol",			/* #44 */
+  NULL,
   NULL,
   "symbol-medium-r-normal",
   16686, 1, 0, 0, 621,
@@ -3221,6 +3286,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   NULL,				/* DUMMY */
   NULL,
   NULL,
+  NULL,
   0, 0, 0, 0, 0,
   0, 0,
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3279,7 +3345,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
 }
 };
 
-/* Known PCL typefaces.  Each typeface_info_struct contains the following
+/* Known PCL typefaces.  Each plTypefaceInfoStruct contains the following
    information:
    
    (1) number of valid fonts [should be >= 2, since every typeface
@@ -3291,7 +3357,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
    initializers are filled out with dummy fonts to get arrays of length
    FONTS_PER_TYPEFACE. */
 
-const struct typeface_info_struct _pcl_typeface_info[] = 
+const struct plTypefaceInfoStruct _pcl_typeface_info[] = 
 {
   /* Univers, #0 */
   { 5, { 44, 0, 1, 2, 3, 999, 999, 999, 999, 999 } },
@@ -3430,7 +3496,7 @@ const struct typeface_info_struct _pcl_typeface_info[] =
    order in which they appear in this array, be sure to update, e.g., the
    definitions DEFAULT_STICK_FONT_INDEX, etc. in extern.h. */
 
-const struct stick_font_info_struct _stick_font_info[] = {
+const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "Arc",			/* #0 (our numbering) */
   true,				/* basic font */
@@ -4335,7 +4401,7 @@ const struct stick_font_info_struct _stick_font_info[] = {
 }
 };
 
-/* Known HP vector typefaces.  Each typeface_info_struct contains the
+/* Known HP vector typefaces.  Each plTypefaceInfoStruct contains the
    following information:
    
    (1) number of valid fonts [should be >= 2, since every typeface
@@ -4347,7 +4413,7 @@ const struct stick_font_info_struct _stick_font_info[] = {
    initializers are filled out with dummy fonts to get arrays of length
    FONTS_PER_TYPEFACE. */
 
-const struct typeface_info_struct _stick_typeface_info[] = 
+const struct plTypefaceInfoStruct _stick_typeface_info[] = 
 {
   /* Arc, #0 */
   { 5, { 0, 0, 1, 2, 3, 999, 999, 999, 999, 999 } },
@@ -4389,7 +4455,7 @@ const struct typeface_info_struct _stick_typeface_info[] =
 #define SPACING_VARIABLE_WIDTH_KATAKANA 2
 
 /* kerning tables for 128-character font halves */
-const struct stick_kerning_table_struct _stick_kerning_tables[] =
+const struct plStickFontSpacingTableStruct _stick_kerning_tables[] =
 {
   /* kerning table #0, used for lower half of our 4 basic Stick fonts
      (ASCII encoding) */
@@ -4968,7 +5034,7 @@ const short _variable_width_katakana_spacings[] =
 };
 
 /* array we use to access spacing tables by number */
-const struct stick_spacing_table_struct _stick_spacing_tables[] =
+const struct plStickCharSpacingTableStruct _stick_spacing_tables[] =
 {
   /* spacing table #0, SPACING_FIXED */
   {

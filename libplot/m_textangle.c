@@ -14,9 +14,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_textangle (int angle)
+_m_textangle (R___(Plotter *_plotter) int angle)
 #else
-_m_textangle (angle)
+_m_textangle (R___(_plotter) angle)
+     S___(Plotter *_plotter;) 
      int angle;
 #endif
 {
@@ -24,38 +25,41 @@ _m_textangle (angle)
 
   if (!_plotter->open)
     {
-      _plotter->error ("textangle: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "textangle: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_TEXTANGLE);
-  _meta_emit_integer (angle);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_TEXTANGLE);
+  _meta_emit_integer (R___(_plotter) angle);
+  _meta_emit_terminator (S___(_plotter));
 
   /* invoke generic method */
-  retval = _g_ftextangle ((double)angle);
+  retval = _g_ftextangle (R___(_plotter) (double)angle);
 
   return IROUND(retval);
 }
 
 double
 #ifdef _HAVE_PROTOS
-_m_ftextangle (double angle)
+_m_ftextangle (R___(Plotter *_plotter) double angle)
 #else
-_m_ftextangle (angle)
+_m_ftextangle (R___(_plotter) angle)
+     S___(Plotter *_plotter;) 
      double angle;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("ftextangle: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "ftextangle: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_TEXTANGLE : (int)O_FTEXTANGLE);
-  _meta_emit_float (angle);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) _plotter->meta_portable_output ? (int)O_TEXTANGLE : (int)O_FTEXTANGLE);
+  _meta_emit_float (R___(_plotter) angle);
+  _meta_emit_terminator (S___(_plotter));
 
   /* invoke generic method */
-  return _g_ftextangle (angle);
+  return _g_ftextangle (R___(_plotter) angle);
 }

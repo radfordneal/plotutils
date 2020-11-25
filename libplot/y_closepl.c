@@ -3,33 +3,53 @@
 
 /* This version is for XPlotters. */
 
+#ifdef HAVE_WAITPID
+#ifdef HAVE_SYS_WAIT_H
+#define _POSIX_SOURCE		/* for waitpid() */
+#endif
+#endif
+
 #include "sys-defines.h"
 #include "extern.h"
 
 #ifdef HAVE_UNISTD_H
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>		/* always include before unistd.h */
+#endif
 #include <unistd.h>		/* for fork() */
 #endif
 
+/* song and dance to declare waitpid() and define WNOHANG */
+#ifdef HAVE_WAITPID
+#ifdef HAVE_SYS_WAIT_H
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif /* HAVE_SYS_TYPES_H */
+#include <sys/wait.h>		/* for waitpid() */
+#endif /* HAVE_SYS_WAIT_H */
+#endif /* HAVE_WAITPID */
+
 int
 #ifdef _HAVE_PROTOS
-_y_closepl (void)
+_y_closepl (S___(Plotter *_plotter))
 #else
-_y_closepl ()
+_y_closepl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  Colorrecord *cptr;
-  Fontrecord *fptr;
+  plColorRecord *cptr;
+  plFontRecord *fptr;
   Pixmap bg_pixmap = (Pixmap)0;
   int window_width, window_height;
   pid_t forkval;
 
   if (!_plotter->open)
     {
-      _plotter->error ("closepl: invalid operation");
+      _plotter->error (R___(_plotter) "closepl: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* compute rectangle size; note flipped-y convention */
   window_width = (_plotter->imax - _plotter->imin) + 1;
@@ -105,7 +125,7 @@ _y_closepl ()
   if (_plotter->x_double_buffering == DBL_MBX
       || _plotter->x_double_buffering == DBL_DBE)
     {
-      Arg wargs[10];		/* werewolves */
+      Arg wargs[2];		/* werewolves */
 
       /* install pixmap as Label widget's background pixmap */
 #ifdef USE_MOTIF
@@ -146,7 +166,7 @@ _y_closepl ()
   if (_plotter->drawstate->previous != NULL)
     {
       while (_plotter->drawstate->previous)
-	_plotter->restorestate();
+	_plotter->restorestate (S___(_plotter));
     }
   
   /* following two deallocations (of font records and color cell records)
@@ -162,7 +182,7 @@ _y_closepl ()
   _plotter->x_fontlist = NULL;
   while (fptr)
     {
-      Fontrecord *fptrnext;
+      plFontRecord *fptrnext;
 
       fptrnext = fptr->next;
       free (fptr->name);
@@ -173,28 +193,51 @@ _y_closepl ()
     }
 
   /* Free cached color cells from Plotter's cache list.  Do _not_ ask the
-     server to deallocate the cells themselves; just free local storage. */
+     server to deallocate the cells themselves, because the child process
+     will need them; just free local storage. */
   cptr = _plotter->x_colorlist;
   _plotter->x_colorlist = NULL;
   while (cptr)
     {
-      Colorrecord *cptrnext;
+      plColorRecord *cptrnext;
 
       cptrnext = cptr->next;
       free (cptr); 
       cptr = cptrnext;
     }
 
+  /* A bit of last-minute cleanup (could be done elsewhere): call waitpid()
+     to reclaim resources used by zombie child processes resulting from
+     previous closepl()'s, if any.  If this isn't done, the controlling
+     process of any previously popped-up window won't fully exit (e.g. when
+     `q' is typed in the window): it'll remain in the process table as a
+     zombie until the parent process executes. */
+#ifdef HAVE_WAITPID
+#ifdef HAVE_SYS_WAIT_H
+#ifdef WNOHANG
+  {
+    int i;
+    
+    /* iterate over all previously forked-off children (should really keep
+       track of which have exited, since once a child has exited, invoking
+       waitpid() on it is pointless) */
+    for (i = 0; i < _plotter->y_num_pids; i++)
+      waitpid (_plotter->y_pids[i], (int *)NULL, WNOHANG);
+  }
+#endif
+#endif
+#endif
+
   /* maybe flush X output buffer and handle X events (a no-op for
      XDrawablePlotters, which is overridden for XPlotters) */
-  _maybe_handle_x_events();
+  _maybe_handle_x_events (S___(_plotter));
 
   /* flush out the X output buffer; wait till all requests have been
      received and processed by server */
-  _plotter->flushpl ();
+  _plotter->flushpl (S___(_plotter));
 
   /* flush output streams for all Plotters before forking */
-  _flush_plotter_outstreams();
+  _flush_plotter_outstreams (S___(_plotter));
   
   /* DO IT */
   forkval = fork ();
@@ -204,7 +247,7 @@ _y_closepl ()
       int retval = 0;
 
       if ((int)forkval < 0)
-	_plotter->error ("couldn't fork process");	
+	_plotter->error (R___(_plotter) "couldn't fork process");	
 
       /* Close connection to X display associated with window that the
 	 child process should manage, i.e. with the last openpl() invoked
@@ -213,7 +256,7 @@ _y_closepl ()
 	  && errno != EINTR)
 	/* emphatically shouldn't happen */
 	{
-	  _plotter->error ("couldn't close connection to X display");
+	  _plotter->error (R___(_plotter) "couldn't close connection to X display");
 	  retval = -1;
 	}
 
@@ -225,8 +268,8 @@ _y_closepl ()
 	  else
 	    _plotter->y_pids = 
 	      (pid_t *)_plot_xrealloc (_plotter->y_pids,
-				       (unsigned int)((_plotter->y_num_pids +1)
-						      * sizeof (pid_t)));
+				       ((_plotter->y_num_pids + 1)
+					* sizeof (pid_t)));
 	  _plotter->y_pids[_plotter->y_num_pids] = forkval;
 	  _plotter->y_num_pids++;
 	}
@@ -234,10 +277,10 @@ _y_closepl ()
       /* remove zeroth drawing state too, so we can start afresh */
       
       /* elements of state that are strings etc. are freed separately */
-      free (_plotter->drawstate->line_mode);
-      free (_plotter->drawstate->join_mode);
-      free (_plotter->drawstate->cap_mode);
-      free (_plotter->drawstate->font_name);
+      free ((char *)_plotter->drawstate->line_mode);
+      free ((char *)_plotter->drawstate->join_mode);
+      free ((char *)_plotter->drawstate->cap_mode);
+      free ((char *)_plotter->drawstate->font_name);
 
       /* free graphics contexts, if we have them -- and to have them, must
 	 have at least one drawable (see x_savestate.c) */
@@ -249,7 +292,7 @@ _y_closepl ()
 	}
 
       free (_plotter->drawstate);
-      _plotter->drawstate = (pl_DrawState *)NULL;
+      _plotter->drawstate = (plDrawState *)NULL;
       
       _plotter->open = false;	/* flag Plotter as closed */
 
@@ -261,12 +304,23 @@ _y_closepl ()
       bool need_redisplay = false;
       int i;
 
-      /* set the data in y_openpl.c (with file scope) that will be used for
-	 quitting, when `q' is typed (or mouse is clicked) */
-      _y_set_data_for_quitting ();
+      /* Alter canvas widget's translation table, so that exit will occur
+	 when `q' is typed (or mouse is clicked).  See y_openpl.c. */
+      _y_set_data_for_quitting (S___(_plotter));
 
       /* Close all connections to X display other than our own, i.e., close
-	 all connections that other XPlotters may have been using. */
+	 all connections that other XPlotters may have been using.  No need
+	 to lock the global variables _xplotters and _xplotters_len; since
+	 we've forked and we're the child process, we're the only thread
+	 left. :-)
+
+	 We'll never be accessing those variables again (the only way we
+	 could would be if we were to call _maybe_handle_x_events(), and we
+	 aren't going to do that).  So we don't need to worry that they may
+	 actually be locked.  I.e. there was no need for us to register a
+	 handler to unlock them immediately after forking, by invoking
+	 pthread_atfork().  Which is why we didn't do that. */
+
       for (i = 0; i < _xplotters_len; i++)
 	if (_xplotters[i] != NULL
 	    && _xplotters[i] != _plotter
@@ -275,7 +329,8 @@ _y_closepl ()
 	    && close (ConnectionNumber (_xplotters[i]->x_dpy)) < 0
 	    && errno != EINTR)
 	  /* shouldn't happen */
-	  _plotter->error ("couldn't close connection to X display");
+	  _plotter->error (R___(_plotter)
+			   "couldn't close connection to X display");
 
       /* Repaint by sending an expose event to ourselves, copying the Label
 	 widget's background pixmap into its window.  This is a good idea

@@ -7,9 +7,10 @@
 
 void
 #ifdef _HAVE_PROTOS
-_g_write_byte (unsigned char c)
+_g_write_byte (R___(Plotter *_plotter) unsigned char c)
 #else
-_g_write_byte (c)
+_g_write_byte (R___(_plotter) c)
+     S___(Plotter *_plotter;)
      unsigned char c;
 #endif
 {
@@ -23,9 +24,10 @@ _g_write_byte (c)
 
 void
 #ifdef _HAVE_PROTOS
-_g_write_bytes (int n, const unsigned char *c)
+_g_write_bytes (R___(Plotter *_plotter) int n, const unsigned char *c)
 #else
-_g_write_bytes (n, c)
+_g_write_bytes (R___(_plotter) n, c)
+     S___(Plotter *_plotter;) 
      int n;
      const unsigned char *c;
 #endif
@@ -45,9 +47,10 @@ _g_write_bytes (n, c)
 
 void
 #ifdef _HAVE_PROTOS
-_g_write_string (const char *s)
+_g_write_string (R___(Plotter *_plotter) const char *s)
 #else
-_g_write_string (s)
+_g_write_string (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {

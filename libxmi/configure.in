@@ -1,0 +1,67 @@
+dnl Configure template for GNU libxmi.
+dnl This is hugely cut down from the template for the GNU plotutils package.
+dnl Copyright (C) 1989-99 Free Software Foundation, Inc.
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(xmi.h)
+AM_INIT_AUTOMAKE(libxmi, 1.1)
+AM_CONFIG_HEADER(config.h)
+
+dnl We now use libtool to make and installed a shared library.  This should
+dnl invoke the tests AC_PROG_CC, AC_OBJEXT, AC_PROG_INSTALL, and
+dnl AC_PROG_MAKE_SET, or equivalents, so we don't perform them explicitly.
+AM_PROG_LIBTOOL
+
+dnl Determine extension (e.g. ".exe") on executables, if any.
+AC_EXEEXT
+
+dnl Compiler characteristics and typedefs.
+AC_MSG_CHECKING(for void)
+AC_TRY_COMPILE(, [void *foo = 0;], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_VOID)], [AC_MSG_RESULT(no)])
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+dnl Checks for header files: ANSI C, POSIX, and nonstandard Unix headers.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(string.h limits.h float.h)
+AC_CHECK_HEADERS(malloc.h strings.h values.h)
+AC_CHECK_HEADERS(sys/stdtypes.h)
+
+dnl Other library functions.
+AC_CHECK_FUNCS(memmove)
+
+dnl This may do some good.
+LIBS="$LIBS -lm"
+
+dnl Override default "-g -O2" or "-g".
+if test "x$GCC" = "xyes"; then
+  CFLAGS="-O2"
+else
+  CFLAGS="-O"
+fi
+
+dnl Check for gcc strength-reduce bug (taken from WINE config).  Could do
+dnl the same for g++, but we'll assume anyone doing any C++ compiling has
+dnl installed a modern compiler.
+if test "x${GCC}" = "xyes"; then
+  AC_CACHE_CHECK("for gcc strength-reduce bug", ac_cv_c_gcc_strength_bug,
+                 AC_TRY_RUN([
+int main()
+{
+  static int Array[[3]];
+  unsigned int B = 3;
+  int i;
+  for (i=0; i < B; i++)
+    Array[[i]] = i - 3;
+  exit (Array[[1]] != -2);
+}],
+    ac_cv_c_gcc_strength_bug="no",
+    ac_cv_c_gcc_strength_bug="yes",
+    ac_cv_c_gcc_strength_bug="yes") )
+  if test "$ac_cv_c_gcc_strength_bug" = "yes"
+  then
+    CFLAGS="$CFLAGS -fno-strength-reduce"
+  fi
+fi
+
+AC_OUTPUT(Makefile info/Makefile)

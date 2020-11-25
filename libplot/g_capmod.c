@@ -10,30 +10,35 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_capmod (const char *s)
+_g_capmod (R___(Plotter *_plotter) const char *s)
 #else
-_g_capmod (s)
+_g_capmod (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
+  char *cap_mode;
+
   if (!_plotter->open)
     {
-      _plotter->error ("capmod: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "capmod: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* null pointer resets to default */
   if ((!s) || !strcmp(s, "(null)"))
     s = _default_drawstate.cap_mode;
 
-  free (_plotter->drawstate->cap_mode);
-  _plotter->drawstate->cap_mode = (char *)_plot_xmalloc (strlen (s) + 1);
-  strcpy (_plotter->drawstate->cap_mode, s);
+  free ((char *)_plotter->drawstate->cap_mode);
+  cap_mode = (char *)_plot_xmalloc (strlen (s) + 1);
+  strcpy (cap_mode, s);
+  _plotter->drawstate->cap_mode = cap_mode;
 
-  /* The following three cap types are now standard. */
+  /* The following four cap types are now standard. */
 
   if (strcmp( s, "butt") == 0)
     _plotter->drawstate->cap_type = CAP_BUTT;
@@ -45,7 +50,7 @@ _g_capmod (s)
     _plotter->drawstate->cap_type = CAP_TRIANGULAR;
   else
     /* don't recognize, silently switch to default mode */
-    return _g_capmod (_default_drawstate.cap_mode);
+    return _g_capmod (R___(_plotter) _default_drawstate.cap_mode);
   
   return 0;
 }

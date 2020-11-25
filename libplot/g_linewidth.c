@@ -11,9 +11,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_flinewidth(double new_line_width)
+_g_flinewidth(R___(Plotter *_plotter) double new_line_width)
 #else
-_g_flinewidth(new_line_width)
+_g_flinewidth(R___(_plotter) new_line_width)
+     S___(Plotter *_plotter;)
      double new_line_width;
 #endif
 {
@@ -22,12 +23,13 @@ _g_flinewidth(new_line_width)
 
   if (!_plotter->open)
     {
-      _plotter->error ("flinewidth: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "flinewidth: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   if (new_line_width < 0.0)	/* reset to default */
     new_line_width = _plotter->drawstate->default_line_width;
@@ -35,14 +37,22 @@ _g_flinewidth(new_line_width)
   /* set the new linewidth in the drawing state */
   _plotter->drawstate->line_width = new_line_width;
   
-  /* also compute and set the device-frame line width */
+  /* Also compute and set the device-frame line width, and a quantized
+     (i.e. integer) version of same, which is used by most Plotters that
+     use integer device coordinates. */
 
   _matrix_sing_vals (_plotter->drawstate->transform.m, 
 		     &min_sing_val, &max_sing_val);
   device_line_width = min_sing_val * new_line_width;
-
-  /* don't use 0-width lines if user specified nonzero width */
   quantized_device_line_width = IROUND(device_line_width);
+
+  /* Don't quantize the device-frame line width to 0 if user specified
+     nonzero width.  If it has a bitmap display (rendered with libxmi),
+     quantizing to 0 might be regarded as OK, since libxmi treats 0-width
+     lines as Bresenham lines rather than invisible.  However, the Hershey
+     fonts don't look good at small sizes if their line segments are
+     rendered as Bresenham lines.  */
+
   if (quantized_device_line_width == 0 && device_line_width > 0.0)
     quantized_device_line_width = 1;
   

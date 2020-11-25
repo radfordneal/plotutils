@@ -1,11 +1,7 @@
 #include "pic.h"
-#if 0
-#include "plotter.h"		// for Plotter::parampl
-#define pl_parampl Plotter::parampl
-#else
-#include "plot.h"
-#endif
+#include "output.h"
 #include "getopt.h"
+#include "plot.h"		// libplot header file
 
 const char *progname = "pic2plot"; // name of this program
 
@@ -14,20 +10,22 @@ const char *usage_appendage = " FILE...\n";
 // A global; we have only one of these.  Its member function are what do
 // the output of objects of various kinds (they're invoked by the
 // objects' `print' operations). 
-output *out; // declared in output.h
+output *out;			// declared in output.h
 
 // `out' is a pointer to an instance of the plot_output class, which
 // is derived from the output class.  Any instance of the plot_output
 // class looks at the following global variables, which the user
 // can set on the command line.
-char *display_type = "meta"; // libplot output format
-char *bg_color = NULL;	     // initial bg color (if set)
-char *font_name = NULL;	     // initial font name (if set)
+char *display_type = (char *)"meta"; // libplot output format
+char *font_name = NULL;	// initial font name (if set)
 char *pen_color_name = NULL; // initial pen color (if set)
 double font_size = 10.0/(8.0*72.); // font size as width of graphics display
 double line_width = -0.5/(8.0*72.); // line width as width of graphics display,
 				// negative means use libplot default
-enum rotation rotation_angle = ROT_0;
+
+// any plot_output instance contains a plPlotter object; the following
+// PlotterParams object contains the parameters used when creating it
+plPlotterParams *plotter_params;
 
 // flags (used by lexer)
 int command_char = '.';		// char that introduces pass-thru lines
@@ -89,9 +87,9 @@ extern "C" int display_fonts (const char *display_type, const char *progname);
 extern "C" int list_fonts (const char *display_type, const char *progname);
 extern "C" void display_usage (const char *progname, const int *omit_vals, const char *appendage, bool fonts);
 extern "C" void display_version (const char *progname); 
-extern "C" Voidptr xcalloc (unsigned int nmemb, unsigned int size);
-extern "C" Voidptr xmalloc (unsigned int size);
-extern "C" Voidptr xrealloc (Voidptr p, unsigned int length);
+extern "C" voidptr_t xcalloc (size_t nmemb, size_t size);
+extern "C" voidptr_t xmalloc (size_t size);
+extern "C" voidptr_t xrealloc (voidptr_t p, size_t length);
 extern "C" char *xstrdup (const char *s);
 
 //////////////////////////////////////////////////////////////////////
@@ -328,6 +326,7 @@ main (int argc, char **argv)
   safer_flag = 1;		// forbid shell escapes
 #endif
 
+  plotter_params = pl_newplparams ();
   while ((option = getopt_long (argc, argv, "T:OndF:f:W:", long_options, &opt_index)) != EOF)
     {
       if (option == 0)
@@ -340,7 +339,7 @@ main (int argc, char **argv)
 	  strcpy (display_type, optarg);
 	  break;
 	case 'O':		/* Ascii output */
-	  pl_parampl ("META_PORTABLE", "yes");
+	  pl_setplparam (plotter_params, "META_PORTABLE", (voidptr_t)"yes");
 	  break;
 	case 'n':		/* No centering */
 	  no_centering_flag = 1;
@@ -412,26 +411,19 @@ main (int argc, char **argv)
 	  strcpy (pen_color_name, optarg);
 	  break;
 	case 'q' << 8:		/* set the initial background color */
-	  bg_color = (char *)xmalloc (strlen (optarg) + 1);
-	  strcpy (bg_color, optarg);
+	  pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)optarg);
 	  break;
 	case 'B' << 8:		/* Bitmap size */
-	  pl_parampl ("BITMAPSIZE", optarg);
+	  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)optarg);
 	  break;
 	case 'M' << 8:		/* Max line length */
-	  pl_parampl ("MAX_LINE_LENGTH", optarg);
+	  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (voidptr_t)optarg);
 	  break;
 	case 'P' << 8:		/* Page size */
-	  pl_parampl ("PAGESIZE", optarg);
+	  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)optarg);
 	  break;
 	case 'r' << 8:		/* Rotation angle */
-	  if (strcmp (optarg, "90") == 0)
-	    rotation_angle = ROT_90;
-	  else if (strcmp (optarg, "180") == 0)
-	    rotation_angle = ROT_180;
-	  else if (strcmp (optarg, "270") == 0)
-	    rotation_angle = ROT_270;
-	  else rotation_angle = ROT_0;
+	  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)optarg);
 	  break;
 	case 'V' << 8:		/* Version */
 	  show_version = true;
@@ -491,30 +483,29 @@ main (int argc, char **argv)
   /* at most, only file names remain, so initialize parser */
   parse_init();
 
-  if (bg_color)
-    /* select user-specified background color */
-    pl_parampl ("BG_COLOR", bg_color);
-
   out = make_plot_output();
   command_char = 014;	// bogus to avoid seeing `commands'
   lf_flag = 0;
 
   /* invoke do_file() on stdin or on each remaining file */
   if (optind >= argc)
-    do_file("-");
+    do_file ("-");
   else
     for (int i = optind; i < argc; i++)
-      do_file(argv[i]);
+      do_file (argv[i]);
 
   delete out;
   if (ferror(stdout) || fflush(stdout) < 0)
-    fatal("output error");
+    fatal ("output error");
+
+  /* clean up */
+  pl_deleteplparams (plotter_params);
 
   return had_parse_error ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 void 
-do_file(const char *filename)
+do_file (const char *filename)
 {
   FILE *fp;
   if (strcmp(filename, "-") == 0)
@@ -524,9 +515,9 @@ do_file(const char *filename)
       errno = 0;
       fp = fopen(filename, "r");
       if (fp == 0)
-	fatal("can't open `%1': %2", filename, strerror(errno));
+	fatal ("can't open `%1': %2", filename, strerror(errno));
     }
-  out->set_location(filename, 1);
+  out->set_location (filename, 1);
   current_filename = filename;
   current_lineno = 1;
   enum { START, MIDDLE, HAD_DOT, HAD_P, HAD_PS, HAD_l, HAD_lf } state = START;
@@ -680,16 +671,16 @@ do_picture(FILE *fp)
 	  const char *old_filename = current_filename;
 	  int old_lineno = current_lineno;
 	  // filenames must be permanent
-	  do_file(strsave(filename.contents())); // recursive call
+	  do_file (strsave(filename.contents())); // recursive call
 	  current_filename = old_filename;
 	  current_lineno = old_lineno;
 	}
-      out->set_location(current_filename, current_lineno);
+      out->set_location (current_filename, current_lineno);
     }
   else 
     /* first nonblank character after .PS is not '<' */
     {
-      out->set_location(current_filename, current_lineno);
+      out->set_location (current_filename, current_lineno);
 
       /* get the starting line */
       string start_line;
@@ -720,8 +711,8 @@ do_picture(FILE *fp)
 	  ht = wid = 0.0;
 	  break;
 	}
-      out->set_desired_width_height(wid, ht);
-      out->set_args(start_line.contents());
+      out->set_desired_width_height (wid, ht);
+      out->set_args (start_line.contents());
 
       // do the parse
       lex_init (new top_input(fp));
@@ -738,6 +729,6 @@ do_picture(FILE *fp)
 	;
       if (c == '\n')
 	current_lineno++;
-      out->set_location(current_filename, current_lineno);
+      out->set_location (current_filename, current_lineno);
     }
 }

@@ -118,7 +118,7 @@ f_gamma (x)
   if (y > 88.0) 
     {
 #ifdef HAVE_MATHERR
-      exc.name = "lgamma";
+      exc.name = (char *)"lgamma";
       exc.arg1 = x;
       exc.retval = HUGE_VAL;
       exc.type = OVERFLOW;

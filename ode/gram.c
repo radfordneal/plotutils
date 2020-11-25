@@ -60,7 +60,7 @@
  * most important thing to be familiar with before
  * toying with the semantics.
  * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
+ * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
  */
 #include "sys-defines.h"
 #include "ode.h"
@@ -579,7 +579,7 @@ static const short yycheck[] = {    48,
     44,    45,    46,    47,    48
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/share/bison.simple"
+#line 3 "/usr/lib/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -772,7 +772,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/share/bison.simple"
+#line 196 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2022,7 +2022,7 @@ case 103:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/share/bison.simple"
+#line 498 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2243,7 +2243,8 @@ void
 concat (struct expr *e0, struct expr *e1)
 #else
 concat (e0, e1)
-     struct expr *e0, *e1;
+     struct expr *e0;
+     struct expr *e1;
 #endif
 {
   int count;
@@ -2264,10 +2265,10 @@ concat (e0, e1)
  */
 void
 #ifdef _HAVE_PROTOS
-prexq (struct expr *ep)
+prexq (const struct expr *ep)
 #else
 prexq (ep)
-     struct expr *ep;
+     const struct expr *ep;
 #endif
 {
   const char *s;

@@ -1,19 +1,25 @@
-/* This file defines libplot's builtin line styles, which may be selected
-   by invoking the linemod() operation.  Five of the styles defined here
-   ("solid" through "longdashed") originated with the Tektronix 4010/4014
-   in the early '70s.  According to the Unix Version 5 manual, they were
-   not present on the Tektronix 611, which was the first display device
-   that Unix libplot supported.  But they were added to Unix libplot later.
-   The final two were recently added, in GNU plotutils-2.2.
+/* This file defines GNU libplot's builtin line styles.  A line style is
+   specified by invoking the linemod() operation.  The supported line
+   styles are a superset of the line styles of traditional (Unix) libplot.
 
-   We define each non-solid style as a dash pattern, with the length of
-   each dash (drawn or not drawn) being an integer multiple of the line
-   width.  This `scaling by line width' applies for sufficiently wide
-   lines, at least.
+   Unix libplot originated at Bell Labs in the early 1970's, and the first
+   supported display device was a Tektronix 611 storage scope.  The libplot
+   API did not originally include linemod(), as the Unix Version 5 manual
+   makes clear.  That is because the Tektronix 611 did not have any
+   predefined set of line styles.  linemod() was added to the API slightly
+   later, when it was extended to support the Tektronix 4010/4014 storage
+   scope.  The 4010/4014 provided hardware support for the five line styles
+   "solid" through "longdashed".
 
-   There is also a special "disconnected" line style (if a path is
-   disconnected, it's drawn as a sequence of filled circles, one at each of
-   the path join points). */
+   GNU libplot supports the traditional five, and also two additional line
+   styles, "dotdotdashed" and "dotdotdotdashed".  Each non-solid style is
+   defined as a dash pattern, with the length of each dash (drawn or not
+   drawn) being an integer multiple of the line width.  This `scaling by
+   line width' applies for sufficiently wide lines, at least.
+
+   GNU libplot also supports a special "disconnected" line style (if a path
+   is disconnected, it's drawn as a sequence of filled circles, one at each
+   of the path join points). */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -24,7 +30,7 @@
    L_{SOLID,DOTTED,DOTDASHED,SHORTDASHED,LONGDASHED,DOTDOTDASHED etc.} in
    extern.h, which are 0,1,2,3,4,5 etc. respectively. */
 
-const LineStyle _line_styles[NUM_LINE_STYLES] =
+const plLineStyle _line_styles[NUM_LINE_STYLES] =
 /* Dash arrays for "dotted" through "longdashed" below are those used by
    the Tektronix emulator in xterm(1), except the emulator seems
    incorrectly to have on and off interchanged. */

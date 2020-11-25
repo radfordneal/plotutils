@@ -18,9 +18,11 @@
 
 /* The 35 standard PS fonts, with ISO8859-1 (ISO-Latin-1) encoding where
    that is appropriate.  (Note that NUM_PS_FONTS is defined to equal 35 in
-   extern.h.)  Each ps_font_info_struct includes these elements:
+   extern.h.)  Each plPSFontInfoStruct includes these elements:
 
-   (1) PS name, (2a) X name, (2b) alternative X name if any (may be NULL)
+   (1) PS name, (1a) alternative PS name if any (may be NULL), 
+   	(1c) 2nd alternative PS name if any (may be NULL),
+   (2a) X name, (2b) alternative X name if any (may be NULL)
    (3) PCL typeface number.
    (4) PCL info: fixedwidth(0) / proportional(1).
    (5) PCL info: upright(0) / italic(1) / condensed(4) / cond. italic(5) /
@@ -33,27 +35,32 @@
 	these numbers are encoded base 32, as a number and a letter.  E.g.,
 	621 is written as 19M since 19*32+13, and 'M' is letter #13.)
    (8) and (9) (normalized) font ascent and descent (from font bounding box),
-   (10a) the font width information (an array, size 256),   
-   (10b) the `left edge of glyph' information (an array, size 256),   
-   (11) a typeface id (an index into the _ps_typeface_info[] array below)
-   (12) a font index (which font within the typeface this is)
-   (13) a Fig font id, for use by FigPlotter methods
-   (14) an `iso8859-1' flag, for the PS driver, which must re-encode
+   (10) the font cap height
+   (11a) the font width information (an array, size 256),   
+   (11b) the `left edge of glyph' information (an array, size 256),   
+   (12) a typeface id (an index into the _ps_typeface_info[] array below)
+   (13) a font index (which font within the typeface this is)
+   (14) a Fig font id, for use by FigPlotter methods
+   (15) an `iso8859-1' flag, for the PS driver, which must re-encode
 */
 
 /* IMPORTANT: The fonts in this array may be referred to elsewhere in the
-   code by number.  If you change the numbering of Postscript fonts, i.e.,
-   the order in which they appear in this array, be sure to update, e.g.,
-   the definitions DEFAULT_POSTSCRIPT_FONT_INDEX, etc. in extern.h. */
+   libplot code by number.  If you change the internal numbering of
+   Postscript fonts, i.e., the order in which they appear in this array, be
+   sure to update the definitions DEFAULT_POSTSCRIPT_FONT_INDEX, etc. in
+   extern.h.  Also update the arrays _ps_font_to_cgm_font_id[] and
+   _cgm_font_id_to_ps_font[], below. */
 
-const struct ps_font_info_struct _ps_font_info[] = {
+const struct plPSFontInfoStruct _ps_font_info[] = {
 {
   "Helvetica",			/* #0 */
+  NULL,
   NULL,
   "helvetica-medium-r-normal",
   NULL,
   24580, 1, 0, 0, 14,
-  994, 220,
+  931, 225,
+  718,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -122,10 +129,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Oblique",		/* #1 */
   NULL,
+  NULL,
   "helvetica-medium-o-normal",
   NULL,
   24580, 1, 1, 0, 14,
   931, 225,
+  718,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -194,10 +203,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Bold",		/* #2 */
   NULL,
+  NULL,
   "helvetica-bold-r-normal",
   NULL,
   24580, 1, 0, 3, 14,
   962, 228,
+  718,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -266,10 +277,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-BoldOblique",	/* #3 */
   NULL,
+  NULL,
   "helvetica-bold-o-normal",
   NULL,
   24580, 1, 1, 3, 14,
   962, 228,
+  718,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -338,10 +351,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Narrow",		/* #4 */
   NULL,
+  NULL,
   "helvetica-medium-r-narrow",
   NULL,
   24580, 1, 4, 0, 14,
-  718, 207,
+  931, 225,
+  718,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -410,10 +425,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Narrow-Oblique",	/* #5 */
   NULL,
+  NULL,
   "helvetica-medium-o-narrow",
   NULL,
   24580, 1, 5, 0, 14,
   931, 225,
+  718,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -482,10 +499,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Narrow-Bold",	/* #6 */
   NULL,
+  NULL,
   "helvetica-bold-r-narrow",
   NULL,
   24580, 1, 4, 3, 14,
   962, 228,
+  718,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -554,10 +573,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Helvetica-Narrow-BoldOblique", /* #7 */
   NULL,
+  NULL,
   "helvetica-bold-o-narrow",
   NULL,
   24580, 1, 5, 3, 14,
   962, 228,
+  718,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -626,10 +647,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Times-Roman",		/* #8 */
   NULL,
+  NULL,
   "times-medium-r-normal",
   NULL,
   25093, 1, 0, 0, 14,
   898, 218,
+  662,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -698,10 +721,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Times-Italic",		/* #9 */
   NULL,
+  NULL,
   "times-medium-i-normal",
   NULL,
   25093, 1, 1, 0, 14,
   883, 217,
+  653,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -770,10 +795,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Times-Bold",			/* #10 */
   NULL,
+  NULL,
   "times-bold-r-normal",
   NULL,
   25093, 1, 0, 3, 14,
   935, 218,
+  676,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -842,10 +869,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Times-BoldItalic",		/* #11 */
   NULL,
+  NULL,
   "times-bold-i-normal",
   NULL,
   25093, 1, 1, 3, 14,
   921, 218,
+  669,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -914,10 +943,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "AvantGarde-Book",		/* #12 */
   NULL,
+  NULL,
   "itc avant garde gothic-book-r-normal", /* as used e.g. by SGI */
   "avantgarde-book-r-normal",	/* as used e.g. by SunOS */
   24607, 1, 0, 0, 14,
-  989, 223,
+  955, 222,
+  740,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -986,10 +1017,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "AvantGarde-BookOblique",	/* #13 */
   NULL,
+  NULL,
   "itc avant garde gothic-book-o-normal",
   "avantgarde-book-o-normal",
   24607, 1, 1, 0, 14,
-  989, 223,
+  955, 222,
+  740,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1058,10 +1091,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "AvantGarde-Demi",		/* #14 */
   NULL,
+  NULL,
   "itc avant garde gothic-demi-r-normal",
   "avantgarde-demi-r-normal",
   24607, 1, 0, 2, 14,
-  1025, 251,
+  1021, 251,
+  740,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1130,10 +1165,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "AvantGarde-DemiOblique",	/* #15 */
   NULL,
+  NULL,
   "itc avant garde gothic-demi-o-normal",
   "avantgarde-demi-o-normal",
   24607, 1, 1, 2, 14,
-  1025, 251,
+  1021, 251,
+  740,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1202,10 +1239,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Bookman-Light",		/* #16 */
   NULL,
+  NULL,
   "itc bookman-light-r-normal",	/* as used e.g. by SGI */
   "bookman-light-r-normal",	/* our former convention, from SunOS */
   24607, 1, 0, -3, 14,
-  928, 251,
+  908, 251,
+  681,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1274,10 +1313,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Bookman-LightItalic",	/* #17 */
   NULL,
+  NULL,
   "itc bookman-light-i-normal",
   "bookman-light-i-normal",
   24607, 1, 1, -3, 14,
-  893, 222,
+  883, 250,
+  681,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1346,10 +1387,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Bookman-Demi",		/* #18 */
   NULL,
+  NULL,
   "itc bookman-demi-r-normal",
   "bookman-demi-r-normal",
   24607, 1, 0, 2, 14,
-  934, 243,
+  934, 250,
+  681,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1418,10 +1461,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Bookman-DemiItalic",		/* #19 */
   NULL,
+  NULL,
   "itc bookman-demi-i-normal",
   "bookman-demi-i-normal",
   24607, 1, 1, 2, 14,
-  941, 220,
+  941, 250,
+  681,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1490,10 +1535,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Courier",			/* #20 */
   "CourierPS",
+  NULL,
   "courier-medium-r-normal",
   NULL,
   24579, 0, 0, 0, 14,
   805, 250,
+  562,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1562,10 +1609,16 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Courier-Oblique",		/* #21 */
   "CourierPS-Oblique",
+#ifndef USE_LJ_FONTS_IN_PS
+  "Courier-Italic",		/* treat name of similar PCL font as alias */
+#else
+  NULL,
+#endif
   "courier-medium-o-normal",
   NULL,
   24579, 0, 1, 0, 14,
   805, 250,
+  562,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1634,11 +1687,13 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Courier-Bold",		/* #22 */
   "CourierPS-Bold",
+  NULL,
   "courier-bold-r-normal",
   NULL,
   24579, 0, 0, 3, 14,
   801, 250,
-{
+  562,
+    {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1706,11 +1761,17 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Courier-BoldOblique",	/* #23 */
   "CourierPS-BoldOblique",
+#ifndef USE_LJ_FONTS_IN_PS
+  "Courier-BoldItalic",		/* treat name of similar PCL font as alias */
+#else
+  NULL,
+#endif
   "courier-bold-o-normal",
   NULL,
   24579, 0, 1, 3, 14,
   801, 250,
-{
+  562,
+  {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1778,10 +1839,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "NewCenturySchlbk-Roman",	/* #24 */
   NULL,
+  NULL,
   "new century schoolbook-medium-r-normal",
   "newcenturyschlbk-medium-r-normal", /* name formerly used by DEC */
   24703, 1, 0, 0, 14,
-  980, 215,
+  965, 250,
+  722,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1850,10 +1913,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "NewCenturySchlbk-Italic",	/* #25 */
   NULL,
+  NULL,
   "new century schoolbook-medium-i-normal",
   "newcenturyschlbk-medium-i-normal",
   24703, 1, 1, 0, 14,
-  968, 227,
+  958, 250,
+  722,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1922,11 +1987,13 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "NewCenturySchlbk-Bold",	/* #26 */
   NULL,
+  NULL,
   "new century schoolbook-bold-r-normal",
   "newcenturyschlbk-bold-r-normal",
   24703, 1, 0, 3, 14,
-  1007, 221,
-{
+  988, 250,
+  722,
+  {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1994,10 +2061,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "NewCenturySchlbk-BoldItalic", /* #27 */
   NULL,
+  NULL,
   "new century schoolbook-bold-i-normal",
   "newcenturyschlbk-bold-i-normal",
   24703, 1, 1, 3, 14,
-  990, 220,
+  991, 250,
+  722,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2066,10 +2135,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Palatino-Roman",		/* #28 */
   NULL,
+  NULL,
   "palatino-medium-r-normal",
   NULL,
   24591, 1, 0, 0, 14,
   927, 283,
+  692,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2138,10 +2209,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Palatino-Italic",		/* #29 */
   NULL,
+  NULL,
   "palatino-medium-i-normal",
   NULL,
   24591, 1, 1, 0, 14,
   918, 276,
+  692,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2210,10 +2283,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Palatino-Bold",		/* #30 */
   NULL,
+  NULL,
   "palatino-bold-r-normal",
   NULL,
   24591, 1, 0, 3, 14,
   924, 266,
+  681,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2282,10 +2357,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Palatino-BoldItalic",	/* #31 */
   NULL,
+  NULL,
   "palatino-bold-i-normal",
   NULL,
   24591, 1, 1, 3, 14,
   926, 271,
+  681,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2354,10 +2431,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "ZapfChancery-MediumItalic",	/* #32 */
   NULL,
+  NULL,
   "itc zapf chancery-medium-i-normal", /* as used e.g. by SGI */
   "zapfchancery-medium-i-normal", /* our former convention, from SunOS */
   45099, 1, 1, 0, 14,
-  811, 257,
+  831, 314,
+  708,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2426,10 +2505,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "ZapfDingbats",		/* #33 */
   NULL,
+  NULL,
   "itc zapf dingbats-medium-r-normal",
   "zapfdingbats-medium-r-normal", /* our former convention, from SunOS etc. */
   45101, 1, 0, 0, 460,
   820, 143,
+  662,	/* cap height not in AFM file; this is Times-Roman value */
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2498,10 +2579,12 @@ const struct ps_font_info_struct _ps_font_info[] = {
 {
   "Symbol",			/* #34 */
   "SymbolPS",
+  NULL,
   "symbol-medium-r-normal",
   NULL,
   45358, 1, 0, 0, 621,
   1010, 293,
+  662,	/* cap height not in AFM file; this is Times-Roman value */
  {
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2572,8 +2655,10 @@ const struct ps_font_info_struct _ps_font_info[] = {
   NULL,
   NULL,
   NULL,
+  NULL,
   0, 0, 0, 0, 0,
   0, 0,
+  0,
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
@@ -2638,7 +2723,135 @@ const struct ps_font_info_struct _ps_font_info[] = {
   false}
 };
 
-/* Known PS typefaces.  Each typeface_info_struct contains the following
+/* The array _ps_font_to_cgm_font_id[] performs a map from internal PS font
+   number, i.e. location in the preceding list of 35 fonts, to CGM font id,
+   as used by CGM Plotters in WebCGM output.  _cgm_font_id_to_ps_font[]
+   performs the inverse map.  
+
+   These maps are permutations of the interval 0..34, and are restricted
+   only by the requirement that the original `Adobe 13' (the PS fonts built
+   into the first Apple LaserWriters) be mapped to 0..12.  We impose that
+   requirement because in WebCGM format, the Adobe 13 are a bit special:
+   they are assumed always to be available.  If any of the other 23 is
+   included, a `FONT PROPERTIES' command needs to be emitted for it. */
+   
+const int _ps_font_to_cgm_font_id[] = 
+{ 0, 1, 2, 3, 13, 14, 15, 16, 4, 5, 6, 7, 17, 18, 19, 20, 21, 22, 23, 24, 8, 9, 10, 11, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 12 };
+
+const int _cgm_font_id_to_ps_font[] = 
+{ 0, 1, 2, 3, 8, 9, 10, 11, 20, 21, 22, 23, 34, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
+
+/* The following are the most important CGM properties of the 35 Postscript
+   fonts, arranged according to the font id we use in CGM files, rather
+   than our internal numbering.  
+
+   The font properties that may be specified in a CGM file are taken from
+   the `Minimum Font Description Subset' of ISO/IEC 9541.  For the 35
+   Postscript fonts, we take the values of the CGM properties from the file
+   `r_ps.fnt' in the RALCGM distribution.  The properties are: posture,
+   weight, proportionate width, `design group', and structure (always 1,
+   signifying a filled [non-outline] font).
+
+   According to the "CGM Handbook", posture 1 means upright, posture 2
+   means oblique, and posture 4 means italic.  I don't understand why the
+   italic fonts are specified as having oblique posture.
+
+   Design group is a hierarchical classification.  Here is a partial list
+   of design groups (for a fuller list, see the file `f_dsn.fnt' in the
+   RALCGM distribution).
+
+	   4         Serif
+	   4.1         Oldstyle
+	   4.1.1         Venetian
+	   4.1.2         Garalde
+	   4.1.3         Dutch / English	[NewCenturySchlbk]
+	   4.2         Transitional
+	   4.2.1         Direct Line
+	   4.2.2         Modified
+	   4.3         Modern
+	   4.3.1         Continental
+	   4.3.2         Fat Face
+	   4.4         Contemporary
+	   4.4.1         Eclectic
+	   4.4.2         Fine Serif		[AvantGarde,Palatino]
+	   4.4.3         Lettering
+	   4.5         Legibility
+	   4.5.1         Rounded (traditional)	[Times]
+	   4.5.2         Elliptical (square)	[Bookman]
+	   4.6         Square Serif
+	   4.6.1         Monotone
+	   4.6.2         Clarendon
+	   4.6.3         French Clarendon
+	   4.6.4         Short (stub)
+	   4.6.5         Typewriter		[Courier]
+	   4.6.6         Dot Matrix
+	   4.7         Latin
+	   4.7.1         Solid
+	   4.7.2         Inline
+	   4.8         Engraving
+	   4.8.1         Barbed Serif
+	   4.8.2         Straight serif (fine)
+	   4.9         Free Form
+	   4.9.1         Solid
+	   4.9.2         Outline
+	   4.10        Computer
+	   4.10.1         OCR
+	   4.10.2         Digital
+	   4.11        Miscellaneous
+	   4.12        Mincho
+	   4.12.1        Old Style
+	   4.12.2        New Style
+	   4.12.3        Miscellaneous
+	   
+	   5         Sans Serif
+	   5.1         Gothic
+	   5.1.1         Grotesque
+	   5.1.2         Neo-grotesque		[Helvetica]
+	   5.1.3         Typewriter
+	   
+	   8 Symbols and Ornaments		[Symbol,ZapfDingbats] 
+
+*/
+
+const plCGMFontProperties _cgm_font_properties[] = {
+  { "Helvetica", "", "", 			1, 5, 5, { 5, 1, 2 }, 1 },
+  { "Helvetica", "", "Oblique",			2, 5, 5, { 5, 1, 2 }, 1 },
+  { "Helvetica", "", "Bold",			1, 7, 5, { 5, 1, 2 }, 1 },
+  { "Helvetica", "", "BoldOblique",		2, 7, 5, { 5, 1, 2 }, 1 },
+  { "Times", "", "Roman", 			1, 5, 5, { 4, 5, 1 }, 1 },
+  { "Times", "", "Italic", 			2, 5, 5, { 4, 5, 1 }, 1 },
+  { "Times", "", "Bold", 			1, 7, 5, { 4, 5, 1 }, 1 },
+  { "Times", "", "BoldItalic", 			2, 7, 5, { 4, 5, 1 }, 1 },
+  { "Courier", "", "", 				1, 5, 5, { 4, 6, 5 }, 1 },
+  { "Courier", "", "Oblique",			2, 5, 5, { 4, 6, 5 }, 1 },
+  { "Courier", "", "Bold",			1, 7, 5, { 4, 6, 5 }, 1 },
+  { "Courier", "", "BoldOblique",		2, 7, 5, { 4, 6, 5 }, 1 },
+  { "Symbol", "", "",				1, 5, 5, { 8, 2, 0 }, 1 },
+  { "Helvetica", "Narrow", "", 			1, 5, 3, { 5, 1, 2 }, 1 },
+  { "Helvetica", "Narrow", "Oblique",		2, 5, 3, { 5, 1, 2 }, 1 },
+  { "Helvetica", "Narrow", "Bold",		1, 7, 3, { 5, 1, 2 }, 1 },
+  { "Helvetica", "Narrow", "BoldOblique",	2, 7, 3, { 5, 1, 2 }, 1 },
+  { "AvantGarde", "", "Book", 			1, 5, 5, { 4, 4, 2 }, 1 },
+  { "AvantGarde", "", "BookOblique",		2, 5, 5, { 4, 4, 2 }, 1 },
+  { "AvantGarde", "", "Demi",			1, 6, 5, { 4, 4, 2 }, 1 },
+  { "AvantGarde", "", "DemiOblique",		2, 6, 5, { 4, 4, 2 }, 1 },
+  { "Bookman", "", "Light",			1, 4, 5, { 4, 5, 2 }, 1 },
+  { "Bookman", "", "LightItalic",		2, 4, 5, { 4, 5, 2 }, 1 },
+  { "Bookman", "", "Demi", 			1, 6, 5, { 4, 5, 2 }, 1 },
+  { "Bookman", "", "DemiItalic",		2, 6, 5, { 4, 5, 2 }, 1 },
+  { "NewCenturySchlbk", "", "Roman",		1, 5, 5, { 4, 1, 3 }, 1 },
+  { "NewCenturySchlbk", "", "Italic", 		2, 5, 5, { 4, 1, 3 }, 1 },
+  { "NewCenturySchlbk", "", "Bold", 		1, 7, 5, { 4, 1, 3 }, 1 },
+  { "NewCenturySchlbk", "", "BoldItalic",	2, 7, 5, { 4, 1, 3 }, 1 },
+  { "Palatino", "", "Roman",			1, 5, 5, { 4, 4, 2 }, 1 },
+  { "Palatino", "", "Italic", 			2, 5, 5, { 4, 4, 2 }, 1 },
+  { "Palatino", "", "Bold", 			1, 7, 5, { 4, 4, 2 }, 1 },
+  { "Palatino", "", "BoldItalic",		2, 7, 5, { 4, 4, 2 }, 1 },
+  { "ZapfChancery", "", "MediumItalic",		2, 5, 5, { 6, 1, 1 }, 1 },
+  { "ZapfDingbats", "", "",			1, 5, 5, { 8, 0, 0 }, 1 }
+};
+
+/* Known PS typefaces.  Each plTypefaceInfoStruct contains the following
    information:
    
    (1) number of valid fonts [should be >= 2, since every typeface
@@ -2650,7 +2863,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
    initializers are filled out with dummy fonts to get arrays of length
    FONTS_PER_TYPEFACE. */
 
-const struct typeface_info_struct _ps_typeface_info[] = 
+const struct plTypefaceInfoStruct _ps_typeface_info[] = 
 {
   /* Helvetica, #0 */
   { 5, { 34, 0, 1, 2, 3, 999, 999, 999, 999, 999 } },
@@ -2677,7 +2890,7 @@ const struct typeface_info_struct _ps_typeface_info[] =
 
 /* The Hershey vector fonts we support.  Each character in a Hershey font
    is an index into the glyph array in g_her_glyphs.c.  Each
-   hershey_font_info_struct includes these elements:
+   plHersheyFontInfoStruct includes these elements:
 
    (1) PS-style name for the font
    (2) an alias for the font (for backward compatibility)
@@ -2688,8 +2901,7 @@ const struct typeface_info_struct _ps_typeface_info[] =
    (7) an `obliquing requested' flag (set if glyphs should be sheared)
    (8) an `iso8859-1' flag
    (9) a `visible' flag (false for the two Kana fonts,
-        which are only used internally)
-*/
+        which are only used internally) */
 
 /* Each Hershey font below may contain up to 256 Hershey glyphs, each of
    which is specified by a number that indexes into the array in
@@ -2768,7 +2980,7 @@ const struct typeface_info_struct _ps_typeface_info[] =
    definitions DEFAULT_HERSHEY_FONT_INDEX, HERSHEY_SERIF, HERSHEY_EUC
    etc. in extern.h. */
 
-const struct hershey_font_info_struct _hershey_font_info[] = 
+const struct plHersheyFontInfoStruct _hershey_font_info[] = 
 {
   {
     "HersheySerif",		/* #0 */
@@ -3875,7 +4087,7 @@ const struct hershey_font_info_struct _hershey_font_info[] =
    are stored in the inaccessible 0x80--0x9f region (i.e., \0200--\0237
    region) of each font. */
 
-const struct accented_char_info_struct _hershey_accented_char_info[] = 
+const struct plHersheyAccentedCharInfoStruct _hershey_accented_char_info[] = 
 {
   /* for HersheyCyrillic[-Oblique] (KOI8-R encoding) accented characters */
   {0243, 0305, 0212},		/* edieresis */
@@ -3937,7 +4149,7 @@ const struct accented_char_info_struct _hershey_accented_char_info[] =
   {0, 0, 0}
 };
 
-/* known Hershey vector font typefaces.  Each typeface_info_struct contains
+/* known Hershey vector font typefaces.  Each plTypefaceInfoStruct contains
    the following information:
    
    (1) number of valid fonts [should be >= 2, since every typeface
@@ -3949,7 +4161,7 @@ const struct accented_char_info_struct _hershey_accented_char_info[] =
    initializers are filled out with dummy fonts to get arrays of length
    FONTS_PER_TYPEFACE. */
 
-const struct typeface_info_struct _hershey_typeface_info[] = 
+const struct plTypefaceInfoStruct _hershey_typeface_info[] = 
 {
   /* Hershey Serif [including Cyrillic, Cyrillic-Obl., and EUC], typeface #0 */
   { 8, { 18, 0, 1, 2, 3, 4, 5, 8, 999, 999 } },

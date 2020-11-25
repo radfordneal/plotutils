@@ -17,26 +17,28 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_filltype (int level)
+_g_filltype (R___(Plotter *_plotter) int level)
 #else
-_g_filltype (level)
+_g_filltype (R___(_plotter) level)
+     S___(Plotter *_plotter;) 
      int level;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("filltype: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "filltype: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   if ((level < 0) || (level > 0xffff))
     /* OOB switches to default */
-    level = _default_drawstate.fill_level;
+    level = _default_drawstate.fill_type;
 
-  _plotter->drawstate->fill_level = level;
+  _plotter->drawstate->fill_type = level;
   
   return 0;
 }

@@ -18,15 +18,19 @@
 
 double
 #ifdef _HAVE_PROTOS
-_g_ffontname (const char *s)
+_g_ffontname (R___(Plotter *_plotter) const char *s)
 #else
-_g_ffontname (s)
+_g_ffontname (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
+  char *font_name;
+
   if (!_plotter->open)
     {
-      _plotter->error ("ffontname: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "ffontname: invalid operation");
       return -1;
     }
 
@@ -51,12 +55,13 @@ _g_ffontname (s)
       }
 
   /* save new font name */
-  free (_plotter->drawstate->font_name);
-  _plotter->drawstate->font_name = (char *)_plot_xmalloc (strlen (s) + 1);
-  strcpy (_plotter->drawstate->font_name, s);
+  free ((char *)_plotter->drawstate->font_name);
+  font_name = (char *)_plot_xmalloc (strlen (s) + 1);
+  strcpy (font_name, s);
+  _plotter->drawstate->font_name = font_name;
 
   /* retrieve font; compute `true' font size (may differ) */
-  _plotter->retrieve_font();
+  _plotter->retrieve_font (S___(_plotter));
 
   /* return value is size in user units */
   return _plotter->drawstate->true_font_size;

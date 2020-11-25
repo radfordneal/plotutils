@@ -17,12 +17,13 @@
 
 void
 #ifdef _HAVE_PROTOS
-_g_retrieve_font(void)
+_g_retrieve_font(S___(Plotter *_plotter))
 #else
-_g_retrieve_font()
+_g_retrieve_font(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  char *old_font_name, *default_font_name;
+  const char *old_font_name, *default_font_name;
   int i;
 
   /* try to match user-specified font name */
@@ -68,17 +69,17 @@ _g_retrieve_font()
   if (_plotter->pcl_before_ps)
     {
       /* search PCL font list first */      
-      if (_plotter->have_pcl_fonts && _match_pcl_font())
+      if (_plotter->have_pcl_fonts && _match_pcl_font (S___(_plotter)))
 	return;
-      if (_plotter->have_ps_fonts && _match_ps_font())
+      if (_plotter->have_ps_fonts && _match_ps_font (S___(_plotter)))
 	return;
     }
   else
     {
       /* search PS font list first */
-      if (_plotter->have_ps_fonts && _match_ps_font())
+      if (_plotter->have_ps_fonts && _match_ps_font (S___(_plotter)))
 	return;
-      if (_plotter->have_pcl_fonts && _match_pcl_font())
+      if (_plotter->have_pcl_fonts && _match_pcl_font (S___(_plotter)))
 	return;
     }
 
@@ -148,7 +149,7 @@ _g_retrieve_font()
       buf = (char *)_plot_xmalloc (strlen (_plotter->drawstate->font_name) + strlen (default_font_name) + 100);
       sprintf (buf, "cannot retrieve font \"%s\", using default \"%s\"", 
 	       _plotter->drawstate->font_name, default_font_name);
-      _plotter->warning (buf);
+      _plotter->warning (R___(_plotter) buf);
       free (buf);
       _plotter->font_warning_issued = true;
     }
@@ -156,7 +157,7 @@ _g_retrieve_font()
   /* do the substitution via a recursive call */
   old_font_name = _plotter->drawstate->font_name;
   _plotter->drawstate->font_name = default_font_name;
-  _g_retrieve_font();
+  _g_retrieve_font (S___(_plotter));
   _plotter->drawstate->font_name = old_font_name;
   
   return;
@@ -164,9 +165,10 @@ _g_retrieve_font()
 
 bool
 #ifdef _HAVE_PROTOS
-_match_pcl_font (void)
+_match_pcl_font (S___(Plotter *_plotter))
 #else
-_match_pcl_font ()
+_match_pcl_font (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   int i = -1;
@@ -175,7 +177,14 @@ _match_pcl_font ()
   while (_pcl_font_info[++i].ps_name)
     {
       if (strcasecmp (_pcl_font_info[i].ps_name, 
-		      _plotter->drawstate->font_name) == 0)
+		      _plotter->drawstate->font_name) == 0
+	  /* try alternative PS font name if any */
+	  || (_pcl_font_info[i].ps_name_alt != NULL
+	      && strcasecmp (_pcl_font_info[i].ps_name_alt, 
+			     _plotter->drawstate->font_name) == 0)
+	  /* try X font name */
+	  || strcasecmp (_pcl_font_info[i].x_name, 
+			 _plotter->drawstate->font_name) == 0)
 	{
 	  _plotter->drawstate->font_type = F_PCL;
 	  _plotter->drawstate->typeface_index = 
@@ -201,9 +210,10 @@ _match_pcl_font ()
 
 bool
 #ifdef _HAVE_PROTOS
-_match_ps_font (void)
+_match_ps_font (S___(Plotter *_plotter))
 #else
-_match_ps_font ()
+_match_ps_font (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   int i = -1;
@@ -217,9 +227,14 @@ _match_ps_font ()
 	  || (_ps_font_info[i].ps_name_alt != NULL
 	      && strcasecmp (_ps_font_info[i].ps_name_alt, 
 			     _plotter->drawstate->font_name) == 0)
+	  /* try 2nd alternative PS font name if any */
+	  || (_ps_font_info[i].ps_name_alt2 != NULL
+	      && strcasecmp (_ps_font_info[i].ps_name_alt2, 
+			     _plotter->drawstate->font_name) == 0)
+	  /* try X font name */
 	  || strcasecmp (_ps_font_info[i].x_name, 
 			 _plotter->drawstate->font_name) == 0
-	  /* try alternative X font name if any */
+	  /* try X font name if any */
 	  || (_ps_font_info[i].x_name_alt != NULL
 	      && strcasecmp (_ps_font_info[i].x_name_alt,
 			     _plotter->drawstate->font_name) == 0))

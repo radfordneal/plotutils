@@ -1,6 +1,5 @@
 // -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com) */
+// Declarations of error-handling functions, defined in libgroff/error.cc.
 
 extern void fatal_with_file_and_line(const char *filename, int lineno, const char *format, const errarg &arg1 = empty_errarg, const errarg &arg2 = empty_errarg, const errarg &arg3 = empty_errarg);
 

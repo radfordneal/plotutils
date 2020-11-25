@@ -62,9 +62,10 @@
 
 unsigned short *
 #ifdef _HAVE_PROTOS
-_controlify (const unsigned char *src)
+_controlify (R___(Plotter *_plotter) const unsigned char *src)
 #else
-_controlify (src)
+_controlify (R___(_plotter) src)
+     S___(Plotter *_plotter;)
      const unsigned char *src;
 #endif
 {     

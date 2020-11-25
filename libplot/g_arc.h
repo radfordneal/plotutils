@@ -40,7 +40,7 @@
    chordal deviation.
 */
 
-double _chord_factor[NUM_ARC_TYPES][TABULATED_ARC_SUBDIVISIONS] =
+static const double _chord_table[NUM_ARC_TYPES][TABULATED_ARC_SUBDIVISIONS] =
 {
   {	/* Quarter Arc */
     0.20710678,			/* for arc subtending 90 degrees */
@@ -74,7 +74,7 @@ double _chord_factor[NUM_ARC_TYPES][TABULATED_ARC_SUBDIVISIONS] =
     0.00019174761,
     9.58738e-05,
     4.79369e-05,
-    2.396845e-05,
+    2.396845e-05
   },
   {	/* Three Quarter Arc */
     1.2071068,			/* for arc subtending 270 degrees */
@@ -91,24 +91,7 @@ double _chord_factor[NUM_ARC_TYPES][TABULATED_ARC_SUBDIVISIONS] =
     0.00028762143,
     0.0001438107,
     7.190535e-05,
-    3.5952675e-05,
-  },
-  {	/* User Defined */
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
+    3.5952675e-05
   }
 };
 

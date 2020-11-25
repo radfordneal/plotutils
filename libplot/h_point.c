@@ -6,14 +6,15 @@
 
 /* size of a `point' as fraction of diagonal distance between scaling
    points P1 and P2, i.e. as fraction of distance between opposite corners
-   of the graphics display */
+   of the viewport */
 #define POINT_HPGL_SIZE 0.0001
 
 int
 #ifdef _HAVE_PROTOS
-_h_fpoint (double x, double y)
+_h_fpoint (R___(Plotter *_plotter) double x, double y)
 #else
-_h_fpoint (x, y)
+_h_fpoint (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
@@ -22,20 +23,22 @@ _h_fpoint (x, y)
 
   if (!_plotter->open)
     {
-      _plotter->error ("fpoint: invalid operation");
+      _plotter->error (R___(_plotter) "fpoint: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  if (_plotter->drawstate->points_in_path > 0)
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* update our notion of position */
   _plotter->drawstate->pos.x = x;
   _plotter->drawstate->pos.y = y;
 
-  /* Sync pen color.  This may set the _plotter->bad_pen flag (if optimal
-     pen is #0 [white] and we're not allowed to use pen #0 to draw with).
-     So we test _plotter->bad_pen before drawing the point (see below). */
-  _plotter->set_pen_color ();
+  /* Sync pen color.  This may set the _plotter->hpgl_bad_pen flag (if
+     optimal pen is #0 [white] and we're not allowed to use pen #0 to draw
+     with).  So we test _plotter->hpgl_bad_pen before drawing the point
+     (see below). */
+  _plotter->set_pen_color (S___(_plotter));
 
   /* temporarily store pen width and line attributes */
   saved_width = _plotter->drawstate->hpgl_pen_width;
@@ -46,15 +49,15 @@ _h_fpoint (x, y)
   _plotter->drawstate->cap_type = CAP_ROUND;  
 
   /* sync line attributes, incl. pen width, and sync pen position */
-  _plotter->set_attributes();
-  _plotter->set_position();
+  _plotter->set_attributes (S___(_plotter));
+  _plotter->set_position (S___(_plotter));
 
-  if (_plotter->pendown == false && _plotter->bad_pen == false)
+  if (_plotter->hpgl_pendown == false && _plotter->hpgl_bad_pen == false)
     /* if pen were down, point would be invisible */
     {
       strcpy (_plotter->page->point, "PD;");
       _update_buffer (_plotter->page);
-      _plotter->pendown = true;
+      _plotter->hpgl_pendown = true;
     }
 
   /* restore line attributes, incl. pen width */

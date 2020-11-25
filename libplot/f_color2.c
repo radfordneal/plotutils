@@ -11,7 +11,7 @@
 #include "sys-defines.h"
 #include "extern.h"
 
-const Color _fig_stdcolors[FIG_NUM_STD_COLORS] = 
+const plColor _fig_stdcolors[FIG_NUM_STD_COLORS] = 
 {
   {0x00, 0x00, 0x00},		/* Black */
   {0x00, 0x00, 0xff},		/* Blue */

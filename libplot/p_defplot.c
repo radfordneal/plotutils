@@ -6,6 +6,18 @@
 #include "sys-defines.h"
 #include "extern.h"
 
+/* ctime_r() is currently not used, because there is apparently _no_
+   universal way of ensuring that it is declared.  On some systems
+   (e.g. Red Hat Linux), `#define _POSIX_SOURCE' will do it.  But on other
+   systems, doing `#define _POSIX_SOURCE' **removes** the declaration! */
+#ifdef HAVE_CTIME_R
+#undef HAVE_CTIME_R
+#endif
+
+#ifdef MSDOS
+#include <unistd.h>		/* for fsync() */
+#endif
+
 /* song and dance to define time_t, and declare both time() and ctime() */
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>		/* for time_t on some pre-ANSI Unix systems */
@@ -25,11 +37,11 @@
 
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
-   the PSPlotter struct. */
+   a PSPlotter struct. */
 const Plotter _p_default_plotter = 
 {
   /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _p_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _p_endpath, _p_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _g_fbox, _g_fboxrel, _p_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _p_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _p_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _p_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
+  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _p_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _p_endpath, _g_endsubpath, _p_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _g_fbox, _g_fboxrel, _p_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _p_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _p_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _p_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _p_initialize, _p_terminate,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
@@ -60,8 +72,8 @@ const Plotter _p_default_plotter =
 /* The private `initialize' method, which is invoked when a Plotter is
    created.  It is used for such things as initializing capability flags
    from the values of class variables, allocating storage, etc.  When this
-   is invoked, _plotter points (temporarily) to the Plotter that has just
-   been created. */
+   is invoked, _plotter points to the Plotter that has just been
+   created. */
 
 /* For PS Plotter objects, we initialize the used-font array(s).  We also
    determine the page size and the location on the page of the graphics
@@ -70,14 +82,17 @@ const Plotter _p_default_plotter =
 
 void
 #ifdef _HAVE_PROTOS
-_p_initialize (void)
+_p_initialize (S___(Plotter *_plotter))
 #else
-_p_initialize ()
+_p_initialize (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
+  double xoffset, yoffset;
+
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize ();
+  _g_initialize (S___(_plotter));
 #endif
 
   /* override generic initializations (which are appropriate to the base
@@ -105,15 +120,19 @@ _p_initialize ()
   _plotter->have_stick_fonts = 0;
   _plotter->have_extra_stick_fonts = 0;
 
-  /* text and font-related parameters (internal, not queryable by user) */
+  /* text and font-related parameters (internal, not queryable by user);
+     note that we don't set kern_stick_fonts, because it was set by the
+     superclass initialization (and it's irrelevant for this Plotter type,
+     anyway) */
   _plotter->default_font_type = F_POSTSCRIPT;
   _plotter->pcl_before_ps = false;
-  _plotter->have_justification = false;
-  _plotter->kern_stick_fonts = false;
+  _plotter->have_horizontal_justification = false;
+  _plotter->have_vertical_justification = false;
   _plotter->issue_font_warning = true;
 
-  /* path and polyline-related parameters (also internal) */
-  _plotter->max_unfilled_polyline_length = MAX_UNFILLED_POLYLINE_LENGTH;
+  /* path and polyline-related parameters (also internal); note that we
+     don't set max_unfilled_polyline_length, because it was set by the
+     superclass initialization */
   _plotter->have_mixed_paths = false;
   _plotter->allowed_arc_scaling = AS_NONE;
   _plotter->allowed_ellarc_scaling = AS_NONE;  
@@ -123,49 +142,45 @@ _p_initialize ()
   _plotter->hard_polyline_length_limit = INT_MAX;
 
   /* dimensions */
-  _plotter->display_type = DISP_PHYSICAL;
-  _plotter->integer_device_coors = false;
+  _plotter->display_model_type = (int)DISP_MODEL_PHYSICAL;
+  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_REAL;
+  _plotter->flipped_y = false;
   _plotter->imin = 0;
   _plotter->imax = 0;  
   _plotter->jmin = 0;
   _plotter->jmax = 0;  
-  _plotter->display_coors.left = 0.25;
-  _plotter->display_coors.right = 8.25;
-  _plotter->display_coors.bottom = 1.5;
-  _plotter->display_coors.top = 9.5;
-  _plotter->display_coors.extra = 0.0;  
-  _plotter->page_type = NULL;
-  _plotter->device_units_per_inch = 72.0;
-  _plotter->use_metric = false;
-  _plotter->flipped_y = false;
+  _plotter->xmin = 0.0;
+  _plotter->xmax = 0.0;  
+  _plotter->ymin = 0.0;
+  _plotter->ymax = 0.0;  
+  _plotter->page_data = (plPageData *)NULL;
 
   /* initialize certain data members from device driver parameters */
       
-  /* determine page type i.e. determine the range of device coordinates
-     over which the graphics display will extend (and hence the
-     transformation from user to device coordinates). */
+  /* determine page type, and user-specified viewport offset if any */
+  _set_page_type (R___(_plotter) &xoffset, &yoffset);
+  
+  /* Determine range of device coordinates over which the viewport will
+     extend (and hence the transformation from user to device coordinates;
+     see g_space.c). */
   {
-    const char *pagesize;
-    const Pagedata *pagedata;
+    double xmid, ymid, viewport_size;
+    
+    viewport_size = _plotter->page_data->viewport_size;
+    xmid = 0.5 * _plotter->page_data->xsize + xoffset;
+    ymid = 0.5 * _plotter->page_data->ysize + yoffset;
 
-    pagesize = (const char *)_get_plot_param ("PAGESIZE");
-    pagedata = _pagetype(pagesize);
-    if (pagedata == NULL)
-      {
-	pagesize = (const char *)_get_default_plot_param ("PAGESIZE");
-	pagedata = _pagetype(pagesize);
-      }
-    _plotter->display_coors = pagedata->ps;
-    _plotter->use_metric = pagedata->metric;
-    _plotter->page_type = pagedata->name;
+    _plotter->xmin = 72 * (xmid - 0.5 * viewport_size);
+    _plotter->xmax = 72 * (xmid + 0.5 * viewport_size);    
+    _plotter->ymin = 72 * (ymid - 0.5 * viewport_size);
+    _plotter->ymax = 72 * (ymid + 0.5 * viewport_size);    
   }
 }
 
 /* The private `terminate' method, which is invoked when a Plotter is
    deleted.  It may do such things as write to an output stream from
    internal storage, deallocate storage, etc.  When this is invoked,
-   _plotter points (temporarily) to the Plotter that is about to be
-   deleted. */
+   _plotter points to the Plotter that is about to be deleted. */
 
 /* This version is for Postscript Plotters.  It writes out the
    idraw-derived PS prologue to the output stream, and copies each stored
@@ -173,32 +188,38 @@ _p_initialize ()
    [Document Structuring Convention] comment lines at the beginning and the
    end of the document, and at the beginning and end of each page.
 
-   (PS Plotters differ from other plotters that do not plot in real time in
-   that they emit output only after all pages have pages have been drawn,
-   rather than at the end of each page.  This is necessary for DSC
+   (PS Plotters differ from most other plotters that do not plot in real
+   time in that they emit output only after all pages have pages have been
+   drawn, rather than at the end of each page.  This is necessary for DSC
    compliance.)
 
    When this is called, the PS code for the body of each page is stored in
-   an Outbuf, and the page Outbufs form a linked list.  In this function we
-   write the document header, the document trailer, and the header/trailer
-   for each page, all to separate Outbufs.  We then copy the Outbufs, one
-   after another, to the output stream. */
+   a plOutbuf, and the page plOutbufs form a linked list.  In this function
+   we write the document header, the document trailer, and the
+   header/trailer for each page, all to separate plOutbufs.  We then copy
+   the plOutbufs, one after another, to the output stream. */
 
 void
 #ifdef _HAVE_PROTOS
-_p_terminate (void)
+_p_terminate (S___(Plotter *_plotter))
 #else
-_p_terminate ()
+_p_terminate (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  double xmin, xmax, ymin, ymax;
+  double x_min, x_max, y_min, y_max;
   int i, n;
   time_t clock;
-  Outbuf *doc_header, *doc_trailer, *current_page;
+  plOutbuf *doc_header, *doc_trailer, *current_page;
   bool ps_font_used_in_doc[NUM_PS_FONTS];
 #ifdef USE_LJ_FONTS_IN_PS
   bool pcl_font_used_in_doc[NUM_PCL_FONTS];	
 #endif
+  char *time_string, time_string_buffer[32];
+
+  /* if specified plotter is open, close it */
+  if (_plotter->open)
+    _plotter->closepl (S___(_plotter));
 
 #ifdef LIBPLOTTER
   if (_plotter->outfp || _plotter->outstream)
@@ -210,7 +231,7 @@ _p_terminate ()
       int num_pages = _plotter->page_number;
 
       /* First, prepare the document header (DSC lines, etc.), and write it
-         to an Outbuf.  The header is very long: most of it is simply the
+         to a plOutbuf.  The header is very long: most of it is simply the
          idraw header (see p_header.h). */
       doc_header = _new_outbuf ();
 
@@ -223,6 +244,25 @@ _p_terminate ()
 %%!PS-Adobe-3.0\n");
       _update_buffer (doc_header);
 
+      /* Compute an ASCII representation of the current time, in a
+	 reentrant way if we're supporting pthreads (i.e. by using ctime_r
+	 if it's available). */
+      time (&clock);
+#ifdef PTHREAD_SUPPORT
+#ifdef HAVE_PTHREAD_H
+#ifdef HAVE_CTIME_R
+      ctime_r (&clock, time_string_buffer);
+      time_string = time_string_buffer;
+#else
+      time_string = ctime (&clock);
+#endif
+#else
+      time_string = ctime (&clock);
+#endif
+#else
+      time_string = ctime (&clock);
+#endif
+
       sprintf (doc_header->point, "\
 %%%%Creator: GNU libplot drawing library %s\n\
 %%%%Title: PostScript plot\n\
@@ -232,20 +272,20 @@ _p_terminate ()
 %%%%Pages: %d\n\
 %%%%PageOrder: Ascend\n\
 %%%%Orientation: Portrait\n",
-	       LIBPLOT_VERSION, (time(&clock), ctime(&clock)), num_pages);
+	       LIBPLOT_VERSION, time_string, num_pages);
       _update_buffer (doc_header);
       
       /* emit the bounding box for the document */
-      _bbox_of_outbufs (_plotter->first_page, &xmin, &xmax, &ymin, &ymax);
-      if (xmin > xmax || ymin > ymax) 
+      _bbox_of_outbufs (_plotter->first_page, &x_min, &x_max, &y_min, &y_max);
+      if (x_min > x_max || y_min > y_max) 
 	/* all pages empty */
 	sprintf (doc_header->point, "\
 %%%%BoundingBox: 0 0 0 0\n");
       else
 	sprintf (doc_header->point, "\
 %%%%BoundingBox: %d %d %d %d\n",
-		 IROUND(xmin - 0.5), IROUND(ymin - 0.5),
-		 IROUND(xmax + 0.5), IROUND(ymax + 0.5));
+		 IROUND(x_min - 0.5), IROUND(y_min - 0.5),
+		 IROUND(x_max + 0.5), IROUND(y_max + 0.5));
       _update_buffer (doc_header);
       
       /* determine fonts needed by document, by examining all pages */
@@ -310,8 +350,9 @@ _p_terminate ()
 		  }
 		strcpy (doc_header->point, "font ");
 		_update_buffer (doc_header);
+		/* use replacement font name if any (this is only to
+                   support the Tidbits-is-Wingdings botch) */
 		if (_pcl_font_info[i].substitute_ps_name)
-		    /* this is to support the Tidbits-is-Wingdings botch */
 		  strcpy (doc_header->point, _pcl_font_info[i].substitute_ps_name);
 		else
 		  strcpy (doc_header->point, _pcl_font_info[i].ps_name);
@@ -380,7 +421,7 @@ _p_terminate ()
 		    strcpy (doc_header->point, "%%+ ");
 		    _update_buffer (doc_header);
 		  }
-		strcpy (doc_header, "font ");
+		strcpy (doc_header->point, "font ");
 		_update_buffer (doc_header);
 		if (_pcl_font_info[i].substitute_ps_name)
 		  /* this is to support the Tidbits-is-Wingdings botch */
@@ -537,7 +578,7 @@ DrawDict begin\n");
 %%EndSetup\n\n");
       _update_buffer (doc_header);
       
-      /* Document header is now prepared, and stored in an Outbuf.
+      /* Document header is now prepared, and stored in a plOutbuf.
 	 Now do the same for the doc trailer (much shorter). */
 
       /* Document Trailer: just pop private dictionary off stack */
@@ -548,8 +589,8 @@ end\n\
 %%EOF\n");
       _update_buffer (doc_trailer);
 
-      /* WRITE DOCUMENT HEADER (and free its Outbuf) */
-      _plotter->write_string (doc_header->base); 
+      /* WRITE DOCUMENT HEADER (and free its plOutbuf) */
+      _plotter->write_string (R___(_plotter) doc_header->base); 
       _delete_outbuf (doc_header);
 
       /* now loop through pages, emitting each in turn */
@@ -559,9 +600,9 @@ end\n\
 	       current_page; 
 	       current_page = current_page->next, n++)
 	    {
-	      Outbuf *page_header, *page_trailer;
+	      plOutbuf *page_header, *page_trailer;
 
-	      /* prepare page header, and store it an Outbuf */
+	      /* prepare page header, and store it in a plOutbuf */
 	      page_header = _new_outbuf ();
 
 	      sprintf (page_header->point, "\
@@ -625,16 +666,16 @@ end\n\
 	      }
 
 	      /* emit the bounding box for the page */
-	      _bbox_of_outbuf (current_page, &xmin, &xmax, &ymin, &ymax);
-	      if (xmin > xmax || ymin > ymax)
+	      _bbox_of_outbuf (current_page, &x_min, &x_max, &y_min, &y_max);
+	      if (x_min > x_max || y_min > y_max)
 		/* empty page */
 		sprintf (page_header->point, "\
 %%%%PageBoundingBox: 0 0 0 0\n");
 	      else
 		sprintf (page_header->point, "\
 %%%%PageBoundingBox: %d %d %d %d\n",
-			 IROUND(xmin - 0.5), IROUND(ymin - 0.5),
-			 IROUND(xmax + 0.5), IROUND(ymax + 0.5));
+			 IROUND(x_min - 0.5), IROUND(y_min - 0.5),
+			 IROUND(x_max + 0.5), IROUND(y_max + 0.5));
 	      _update_buffer (page_header);
 	      /* Page Setup */
 	      strcpy (page_header->point, "\
@@ -660,7 +701,7 @@ Begin\n\
 %%EndPageSetup\n\n");
 	      _update_buffer (page_header);	  
 
-	      /* Page header is now prepared, and stored in an Outbuf.  
+	      /* Page header is now prepared, and stored in a plOutbuf.  
                  Do the same for the page trailer (much shorter). */
 
 	      page_trailer = _new_outbuf ();
@@ -673,27 +714,27 @@ showpage\n\n");
 	      /* Page trailer is now ready */
 
 	      /* WRITE PS CODE FOR THIS PAGE, including header, trailer */
-	      _plotter->write_string (page_header->base); 
+	      _plotter->write_string (R___(_plotter) page_header->base); 
 	      if (current_page->len > 0)
-		_plotter->write_string (current_page->base); 
-	      _plotter->write_string (page_trailer->base); 	  
+		_plotter->write_string (R___(_plotter) current_page->base);
+	      _plotter->write_string (R___(_plotter) page_trailer->base);
 
-	      /* free header, trailer Outbufs */
+	      /* free header, trailer plOutbufs */
 	      _delete_outbuf (page_trailer);
 	      _delete_outbuf (page_header);
 	    }
 	}
       
-      /* WRITE DOCUMENT TRAILER (and free its Outbuf) */
-      _plotter->write_string (doc_trailer->base); 
+      /* WRITE DOCUMENT TRAILER (and free its plOutbuf) */
+      _plotter->write_string (R___(_plotter) doc_trailer->base); 
       _delete_outbuf (doc_trailer);
     }
   
-  /* delete all Outbufs in which document pages are stored */
+  /* delete all plOutbufs in which document pages are stored */
   current_page = _plotter->first_page;
   while (current_page)
     {
-      Outbuf *next_page;
+      plOutbuf *next_page;
 	  
       next_page = current_page->next;
       _delete_outbuf (current_page);
@@ -701,20 +742,28 @@ showpage\n\n");
     }
   
   /* flush output stream if any */
-  if (_plotter->outfp && fflush(_plotter->outfp) < 0)
-    _plotter->error ("output stream jammed");
+  if (_plotter->outfp)
+    {
+      if (fflush(_plotter->outfp) < 0
+#ifdef MSDOS
+	  /* data can be caught in DOS buffers, so do an fsync() too */
+	  || fsync (_plotter->outfp) < 0
+#endif
+	  )
+	_plotter->error (R___(_plotter) "output stream jammed");
+    }
 #ifdef LIBPLOTTER
   else if (_plotter->outstream)
     {
       _plotter->outstream->flush ();
       if (!(*(_plotter->outstream)))
-	_plotter->error ("output stream jammed");
+	_plotter->error (R___(_plotter) "output stream jammed");
     }
 #endif
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate ();
+  _g_terminate (S___(_plotter));
 #endif
 }
 
@@ -744,6 +793,36 @@ PSPlotter::PSPlotter (ostream& out)
 }
 
 PSPlotter::PSPlotter ()
+{
+  _p_initialize ();
+}
+
+PSPlotter::PSPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
+	:Plotter (infile, outfile, errfile, parameters)
+{
+  _p_initialize ();
+}
+
+PSPlotter::PSPlotter (FILE *outfile, PlotterParams &parameters)
+	:Plotter (outfile, parameters)
+{
+  _p_initialize ();
+}
+
+PSPlotter::PSPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
+	: Plotter (in, out, err, parameters)
+{
+  _p_initialize ();
+}
+
+PSPlotter::PSPlotter (ostream& out, PlotterParams &parameters)
+	: Plotter (out, parameters)
+{
+  _p_initialize ();
+}
+
+PSPlotter::PSPlotter (PlotterParams &parameters)
+	: Plotter (parameters)
 {
   _p_initialize ();
 }

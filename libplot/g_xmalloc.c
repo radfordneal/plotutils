@@ -1,25 +1,25 @@
 /* Wrappers for standard storage allocation functions, for
-   libplot/libplotter with the exception of the MI scan conversion module,
-   which has its own more complicated versions (see g_mialloc.c). */
+   libplot/libplotter with the exception of the libxmi scan conversion
+   module, which has its own more complicated versions (see mi_alloc.c). */
 
 #include "sys-defines.h"
 #include "extern.h"
 
 /* wrapper for malloc() */
-Voidptr 
+voidptr_t 
 #ifdef _HAVE_PROTOS
-_plot_xmalloc (unsigned int size)
+_plot_xmalloc (size_t size)
 #else
 _plot_xmalloc (size)
-     unsigned int size;
+     size_t size;
 #endif
 {
-  Voidptr p;
+  voidptr_t p;
 
-  p = (Voidptr) malloc (size);
-  if (p == (Voidptr)NULL)
+  p = (voidptr_t) malloc (size);
+  if (p == (voidptr_t)NULL)
     {
-      fprintf (stderr, "libplot: ");
+      fputs ("libplot: ", stderr);
       perror ("out of memory");
       exit (EXIT_FAILURE);
     }
@@ -27,20 +27,20 @@ _plot_xmalloc (size)
 }
 
 /* wrapper for calloc() */
-Voidptr 
+voidptr_t 
 #ifdef _HAVE_PROTOS
-_plot_xcalloc (unsigned int nmemb, unsigned int size)
+_plot_xcalloc (size_t nmemb, size_t size)
 #else
 _plot_xcalloc (nmemb, size)
-     unsigned int nmemb, size;
+     size_t nmemb, size;
 #endif
 {
-  Voidptr p;
+  voidptr_t p;
 
-  p = (Voidptr) calloc (nmemb, size);
-  if (p == (Voidptr)NULL)
+  p = (voidptr_t) calloc (nmemb, size);
+  if (p == (voidptr_t)NULL)
     {
-      fprintf (stderr, "libplot: ");
+      fputs ("libplot: ", stderr);
       perror ("out of memory");
       exit (EXIT_FAILURE);
     }
@@ -48,19 +48,19 @@ _plot_xcalloc (nmemb, size)
 }
 
 /* wrapper for realloc() */
-Voidptr 
+voidptr_t 
 #ifdef _HAVE_PROTOS
-_plot_xrealloc (Voidptr p, unsigned int size)
+_plot_xrealloc (voidptr_t p, size_t size)
 #else
 _plot_xrealloc (p, size)
-     Voidptr p;
-     unsigned int size;
+     voidptr_t p;
+     size_t size;
 #endif
 {
-  p = (Voidptr) realloc (p, size);
-  if (p == (Voidptr)NULL)
+  p = (voidptr_t) realloc (p, size);
+  if (p == (voidptr_t)NULL)
     {
-      fprintf (stderr, "libplot: ");
+      fputs ("libplot: ", stderr);
       perror ("out of memory");
       exit (EXIT_FAILURE);
     }

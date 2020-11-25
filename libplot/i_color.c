@@ -13,9 +13,10 @@ static int _bit_depth ____P((int colors));
    lazily, i.e. only when needed (just before a drawing operation) */
 void
 #ifdef _HAVE_PROTOS
-_i_set_pen_color(void)
+_i_set_pen_color(S___(Plotter *_plotter))
 #else
-_i_set_pen_color()
+_i_set_pen_color(S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   int red_long, green_long, blue_long;
@@ -39,7 +40,7 @@ _i_set_pen_color()
     {
       unsigned char index;
       
-      index = _i_new_color_index (red, green, blue);
+      index = _i_new_color_index (R___(_plotter) red, green, blue);
 
       /* set new 24-bit RGB and color index in the drawing state */
       _plotter->drawstate->i_pen_color.red = red;
@@ -56,9 +57,10 @@ _i_set_pen_color()
    lazily, i.e. only when needed (just before a filling operation) */
 void
 #ifdef _HAVE_PROTOS
-_i_set_fill_color(void)
+_i_set_fill_color(S___(Plotter *_plotter))
 #else
-_i_set_fill_color()
+_i_set_fill_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   int red_long, green_long, blue_long;
@@ -66,7 +68,7 @@ _i_set_fill_color()
   double red_d, green_d, blue_d;
   double desaturate;
 
-  if (_plotter->drawstate->fill_level == 0)
+  if (_plotter->drawstate->fill_type == 0)
     /* don't do anything, fill color will be ignored when writing objects*/
     return;
 
@@ -75,10 +77,10 @@ _i_set_fill_color()
   green_d = ((double)((_plotter->drawstate->fillcolor).green))/0xFFFF;
   blue_d = ((double)((_plotter->drawstate->fillcolor).blue))/0xFFFF;
 
-  /* fill_level, if nonzero, specifies the extent to which the nominal fill
+  /* fill_type, if nonzero, specifies the extent to which the nominal fill
      color should be desaturated.  1 means no desaturation, 0xffff means
      complete desaturation (white). */
-  desaturate = ((double)_plotter->drawstate->fill_level - 1.)/0xFFFE;
+  desaturate = ((double)_plotter->drawstate->fill_type - 1.)/0xFFFE;
   red_d = red_d + desaturate * (1.0 - red_d);
   green_d = green_d + desaturate * (1.0 - green_d);
   blue_d = blue_d + desaturate * (1.0 - blue_d);
@@ -101,7 +103,7 @@ _i_set_fill_color()
     {
       unsigned char index;
       
-      index = _i_new_color_index (red, green, blue);
+      index = _i_new_color_index (R___(_plotter) red, green, blue);
 
       /* set new 24-bit RGB and color index in the drawing state */
       _plotter->drawstate->i_fill_color.red = red;
@@ -115,9 +117,10 @@ _i_set_fill_color()
    _plotter->drawstate->i_bg_color_index, e.g. in _i_new_image */
 void
 #ifdef _HAVE_PROTOS
-_i_set_bg_color(void)
+_i_set_bg_color(S___(Plotter *_plotter))
 #else
-_i_set_bg_color()
+_i_set_bg_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   int red_long, green_long, blue_long;
@@ -141,7 +144,7 @@ _i_set_bg_color()
     {
       unsigned char index;
       
-      index = _i_new_color_index (red, green, blue);
+      index = _i_new_color_index (R___(_plotter) red, green, blue);
 
       /* set new 24-bit RGB and color index in the drawing state */
       _plotter->drawstate->i_bg_color.red = red;
@@ -161,9 +164,10 @@ _i_set_bg_color()
 
 unsigned char 
 #ifdef _HAVE_PROTOS
-_i_new_color_index (int red, int green, int blue)
+_i_new_color_index (R___(Plotter *_plotter) int red, int green, int blue)
 #else
-_i_new_color_index (red, green, blue)
+_i_new_color_index (R___(_plotter) red, green, blue)
+     S___(Plotter *_plotter;)
      int red, green, blue;
 #endif
 {

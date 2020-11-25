@@ -11,7 +11,7 @@
 #include "sys-defines.h"
 #include "extern.h"
 
-const Color _kermit_stdcolors[KERMIT_NUM_STD_COLORS] = 
+const plColor _kermit_stdcolors[KERMIT_NUM_STD_COLORS] = 
 {
   {0x00, 0x00, 0x00},		/* black */
   {0x8b, 0x00, 0x00},		/* red4 */

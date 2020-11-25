@@ -42,9 +42,10 @@
 
 void
 #ifdef _HAVE_PROTOS
-_tek_vector (int xx, int yy)
+_tek_vector (R___(Plotter *_plotter) int xx, int yy)
 #else
-_tek_vector (xx, yy)
+_tek_vector (R___(_plotter) xx, yy)
+     S___(Plotter *_plotter;)
      int xx, yy;
 #endif
 {
@@ -84,7 +85,7 @@ _tek_vector (xx, yy)
   byte_buf[num_bytes++] = xx_low  | 0x40;  /* bits 0 through 4 of xx */
 
   /* invoke low-level output routine */
-  _plotter->write_bytes (num_bytes, byte_buf);
+  _plotter->write_bytes (R___(_plotter) num_bytes, byte_buf);
 
   return;
 }
@@ -102,9 +103,10 @@ _tek_vector (xx, yy)
 
 void
 #ifdef _HAVE_PROTOS
-_tek_vector_compressed (int xx, int yy, int oldxx, int oldyy, bool force)
+_tek_vector_compressed (R___(Plotter *_plotter) int xx, int yy, int oldxx, int oldyy, bool force)
 #else
-_tek_vector_compressed (xx, yy, oldxx, oldyy, force)
+_tek_vector_compressed (R___(_plotter) xx, yy, oldxx, oldyy, force)
+     S___(Plotter *_plotter;) 
      int xx, yy, oldxx, oldyy;
      bool force;
 #endif
@@ -159,7 +161,7 @@ _tek_vector_compressed (xx, yy, oldxx, oldyy, force)
   byte_buf[num_bytes++] = xx_low    | 0x40; /* bits 6 through 2 of xx: Lo_X */
 
   /* invoke low-level output routine */
-  _plotter->write_bytes (num_bytes, byte_buf);
+  _plotter->write_bytes (R___(_plotter) num_bytes, byte_buf);
 
   return;
 }

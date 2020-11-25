@@ -10,19 +10,24 @@
    drawn, we simply deallocate the storage devoted to the path.  I.e. we
    don't emit any graphics code. */
 
+/* This file also contains the endsubpath() method, which is a placeholder.
+   For now, it simply invokes endpath(). */
+
 #include "sys-defines.h"
 #include "extern.h"
 
 int
 #ifdef _HAVE_PROTOS
-_g_endpath (void)
+_g_endpath (S___(Plotter *_plotter))
 #else
-_g_endpath ()
+_g_endpath (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("endpath: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "endpath: invalid operation");
       return -1;
     }
 
@@ -35,3 +40,22 @@ _g_endpath ()
     }
   return 0;
 }
+
+int
+#ifdef _HAVE_PROTOS
+_g_endsubpath (S___(Plotter *_plotter))
+#else
+_g_endsubpath (S___(_plotter))
+     S___(Plotter *_plotter;) 
+#endif
+{
+  if (!_plotter->open)
+    {
+      _plotter->error (R___(_plotter) 
+		       "endsubpath: invalid operation");
+      return -1;
+    }
+
+  return _plotter->endpath (S___(_plotter));
+}
+

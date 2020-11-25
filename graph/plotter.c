@@ -1,14 +1,19 @@
 /* This file contains the point plotter half of GNU graph.  The point
-   plotter could also be linked with other software.  It translates a
+   plotter could easily be linked with other software.  It translates a
    sequence of points, regarded as defining a polyline or a sequence of
-   polylines, to a sequence of libplot calls.
+   polylines, to a sequence of libplot calls.  There is support for
+   multigraphing, i.e. producing a plot consisting of more than a single
+   graph.  Each graph may be drawn from more than one file, i.e., input
+   stream, and each input stream may provide more than a single polyline.
    
    A `point' is a structure.  Each point structure contains the following
    fields:
 
       x and y coordinates of the point
-      xmin and xmax (meaningful only if have_x_errorbar is set, see below)
-      ymin and ymax (meaningful only if have_y_errorbar is set, see below)
+      a `have_x_errorbar' flag (true or false)
+      a `have_y_errorbar' flag (true or false)
+      xmin and xmax (meaningful only if have_x_errorbar is set)
+      ymin and ymax (meaningful only if have_y_errorbar is set)
       a `pendown' flag
 
       a symbol type (a small integer, interpreted as a marker type)
@@ -18,15 +23,14 @@
       a linewidth (a fraction of the size of the display device)
       a polyline fill-fraction (in the interval [0,1], <0 means no fill)
       a use_color flag (true or false)
-      a `have_x_errorbar' flag (true or false)
-      a `have_y_errorbar' flag (true or false)
 
    The point plotter constructs a polyline from each successive run of
-   points that have the pendown flag set.  The final nine fields are
-   assumed to be the same for each point in such a run.  At each point on
-   the polyline, the appropriate marker symbol, if any, will be plotted.
-   Symbol types greater than or equal to 32 are interpreted as single
-   characters to be plotted, rather than symbols.
+   points that have the pendown flag set.  It assumes that the final seven
+   fields are assumed to be the same for each point in such a run, i.e., it
+   takes their values from the first point of the run.  At the location of
+   each point on the polyline, the appropriate marker symbol, if any, will
+   be plotted.  Symbol types greater than or equal to 32 are interpreted as
+   single characters to be plotted, rather than symbols.
 
    Points without the pendown flag set cause the polyline to be broken, and
    a new one to begin, before the symbol (if any) is plotted.  
@@ -64,22 +68,35 @@
 
    The point plotter is invoked by calling the following, in order.
 
-   initialize_plotter() initializes global structures used by 
-   	the plot_frame() and plot_point() routines.  These include
+   new_multigrapher() creates a new point plotter.
+   begin_graph()
+   set_graph_parameters() initializes global structures used by 
+   	the draw_frame_of_graph() and plot_point() routines.  These include
 	the structures that specify the linear transformation from user
 	coordinates to the coordinates used by libplot, and structures
 	that specify the style of the plot frame.  
-   open_plotter() opens the output device, by calling libplot routines.
-   plot_frame() plots the plot frame, using libplot routines.  [Optional.]
+   draw_frame_of_graph() plots the graph frame.  [Optional.]
    plot_point() uses libplot routines to plot a single point, together 
    	with (possibly)	a line extending to it from the last point, and 
 	a symbol. [Alternatively, plot_point_array() can be used, to plot 
 	an array of points.]
-   close_plotter() closes the plotter. */
+   end_graph()
+   ..
+   [The begin_graph()..end_graph() block can be repeated indefinitely
+    if desired, to create a multigraph.  set_graph_parameters() allows
+    for repositioning of later graphs.]
+   ..
+   delete_multigrapher() deletes the point plotter.
+
+   There is also a function end_polyline_and_flush(), which is useful for
+   real-time display. */
 
 #include "sys-defines.h"
 #include "plot.h"
 #include "extern.h"
+
+/* we use floating point libplot coordinates in the range [0,PLOT_SIZE] */
+#define PLOT_SIZE 4096.0
 
 #define FUZZ 0.000001		/* bd. on floating pt. roundoff error */
 
@@ -102,13 +119,14 @@ enum { ACCEPTED = 0x1, CLIPPED_FIRST = 0x2, CLIPPED_SECOND = 0x4 };
 #define S_TWO_FIVE 3	/* we don't use this one, but user may request it */
 #define S_UNKNOWN -2
 
-/* valid axis layout types; A_LOG2, anyone? */
+/* valid graph axis layout types; A_LOG2, anyone? */
 #define A_LINEAR 0
 #define A_LOG10 1
 
-/* The x_trans and y_trans structures specify the linear transformation
-from user coordinates to device coordinates.  They are used both in the
-plotting of the graph frame, and in the plotting of data points. */
+/* The x_trans and y_trans elements of a Multigrapher specify the current
+   linear transformation from user coordinates to device coordinates.  They
+   are used both in the plotting of a graph frame, and in the plotting of
+   data points within a graph. */
 
 typedef struct
 {
@@ -131,22 +149,19 @@ typedef struct
   double output_range;		/* max - min */
 } Transform;
 
-static Transform x_trans, y_trans; /* transformations applied to user coors
-				      to turn them into device coordinates */
-
 /* Affine transformation macros */
 
 /* X Scale: convert from user x value to normalized x coordinate (floating
    point, 0.0 to 1.0). */
-#define XS(x) (((x) - x_trans.input_min)/x_trans.input_range)
+#define XS(x) (((x) - multigrapher->x_trans.input_min)/multigrapher->x_trans.input_range)
 /* X Reflect: map [0,1] to [1,0], if that's called for */
-#define XR(x) (x_trans.reverse ? 1.0 - (x) : (x))
+#define XR(x) (multigrapher->x_trans.reverse ? 1.0 - (x) : (x))
 /* X Squeeze: map [0,1] range for normalized x coordinate into a smaller
    interval, the x range for the plotting area within the graphics display */
-#define XSQ(x) (x_trans.squeezed_min + (x) * x_trans.squeezed_range)
+#define XSQ(x) (multigrapher->x_trans.squeezed_min + (x) * multigrapher->x_trans.squeezed_range)
 /* X Plot: convert from normalized x coordinate to floating point libplot
    coordinate. */
-#define XP(x) (x_trans.output_min + (x) * x_trans.output_range)
+#define XP(x) (multigrapher->x_trans.output_min + (x) * multigrapher->x_trans.output_range)
 /* X Value: convert from user x value (floating point) to floating point
    libplot coordinate. */
 #define XV(x) XP(XSQ(XR(XS(x))))
@@ -156,15 +171,15 @@ static Transform x_trans, y_trans; /* transformations applied to user coors
 
 /* Y Scale: convert from user y value to normalized y coordinate (floating
    point, 0.0 to 1.0). */
-#define YS(y) (((y) - y_trans.input_min)/y_trans.input_range)
+#define YS(y) (((y) - multigrapher->y_trans.input_min)/multigrapher->y_trans.input_range)
 /* Y Reflect: map [0,1] to [1,0], if that's called for */
-#define YR(y) (y_trans.reverse ? 1.0 - (y) : (y))
+#define YR(y) (multigrapher->y_trans.reverse ? 1.0 - (y) : (y))
 /* Y Squeeze: map [0,1] range for normalized y coordinate into a smaller
    interval, the y range for the plotting area within the graphics display */
-#define YSQ(y) (y_trans.squeezed_min + (y) * y_trans.squeezed_range)
+#define YSQ(y) (multigrapher->y_trans.squeezed_min + (y) * multigrapher->y_trans.squeezed_range)
 /* Y Plot: convert from normalized y coordinate to floating point libplot
    coordinate. */
-#define YP(y) (y_trans.output_min + (y) * y_trans.output_range)
+#define YP(y) (multigrapher->y_trans.output_min + (y) * multigrapher->y_trans.output_range)
 /* Y Value: convert from user y value (floating point) to floating point
    libplot coordinate.  (We use this for plotting of points.) */
 #define YV(y) YP(YSQ(YR(YS(y))))
@@ -176,25 +191,26 @@ static Transform x_trans, y_trans; /* transformations applied to user coors
    libplot coordinates.  (Used for tick, symbol, and font sizes.)  The min
    should really be precomputed. */
 #define SS(x) \
-(DMIN(x_trans.output_range * x_trans.squeezed_range, \
-	     y_trans.output_range * y_trans.squeezed_range) * (x))
+(DMIN(multigrapher->x_trans.output_range * multigrapher->x_trans.squeezed_range, \
+multigrapher->y_trans.output_range * multigrapher->y_trans.squeezed_range) * (x))
 
-/* The `x_axis' and `y_axis' structs specify layout of the two axes, for
-   the construction of the plot frame.  All structure elements that are
-   doubles are expressed in user coordinates (unless the axis is
-   logarithmic, in which case logs are taken before this structure is
-   filled in). */
+/* The `x_axis' and `y_axis' elements of a Multigrapher, which are of type
+   `Axis', specify the layout of the two axes of a graph.  They are used in
+   the drawing of a graph frame.  All elements that are doubles are
+   expressed in user coordinates (unless the axis is logarithmic, in which
+   case logs are taken before this structure is filled in). */
 
-/* These structs are filled in by calls to prepare_axis(), when
-   initialize_plotter() is called.  The only exceptions to this are the
-   elements `max_width' and `non_user_ticks', which are filled in by
-   plot_frame(), as the frame for the plot is being drawn. */
+/* The `x_axis' and `y_axis' elements are filled in by calls to
+   prepare_axis() when set_graph_parameters() is called.  The only
+   exceptions to this are the elements `max_width' and `non_user_ticks',
+   which are filled in by draw_frame_of_graph(), as the frame for a graph
+   is being drawn. */
 
 typedef struct 
 {
-  char *font_name;		/* fontname for axis label and tick labels */
+  const char *font_name;	/* fontname for axis label and tick labels */
   double font_size;		/* font size for axis label and tick labels */
-  char *label;			/* axis label (a string) */
+  const char *label;		/* axis label (a string) */
   int type;			/* axis layout type (A_LINEAR or A_LOG10) */
   double tick_spacing;		/* distance between ticks */
   int min_tick_count, max_tick_count; /* tick location = count * spacing */
@@ -206,7 +222,7 @@ typedef struct
   double subsubtick_spacing;	/* spacing for user-specified ones */
   double other_axis_loc;	/* location of intersection w/ other axis */
   double alt_other_axis_loc;	/* alternative loc. (e.g. right end vs. left)*/
-  bool switch_axis_end;	/* other axis at right/top, not left/bottom? */
+  bool switch_axis_end;		/* other axis at right/top, not left/bottom? */
   bool omit_ticks;		/* just plain omit them (and their labels) ? */
   double max_label_width;	/* max width of labels placed on axis, in
 				   libplot coors (we update this during
@@ -218,62 +234,51 @@ typedef struct
 				   spacing by hand if labelled_ticks <= 2) */
 } Axis;
 
-static Axis x_axis, y_axis;
+   	
+/* The Multigrapher structure.  A pointer to one of these is passed as the
+   first argument to each Multigrapher method (e.g., plot_point()). */
 
-/* This structure contains plotter attributes which are not axis-specific
-   and hence are not part of the above structures.  The final elements are
-   updated during plotter operation. */
-
-typedef struct
+struct MultigrapherStruct
 {
-  /* following elements are parameters (not updated during plotter operation)*/
-  int handle;			/* Plotter handle from libplot */
-  char *display_type;		/* mnemonic: type of libplot device driver */
-  int rotation_angle;		/* one of ROT_{0,90,180,270} */
+  /* multigrapher parameters (not updated over a multigrapher's lifetime) */
+  plPlotter *plotter;		/* GNU libplot Plotter handle */
+  const char *display_type;	/* type of libplot device driver [unused] */
+  const char *bg_color;		/* color of background, if non-NULL */
   bool save_screen;		/* erase display when opening plotter? */
-  char *bg_color;		/* color of background, if non-NULL */
+  /* graph parameters (constant over any single graph) */
+  Transform x_trans, y_trans;   /* user->device coor transformations */
+  Axis x_axis, y_axis;		/* information on each axis */
   grid_type grid_spec;		/* frame specification */
-  double blankout_fraction;	/* 1.0 means blank whole box before plot */
+  double blankout_fraction;	/* 1.0 means blank whole box before drawing */
   bool no_rotate_y_label;	/* useful for pre-X11R6 X servers */
   double tick_size;		/* fractional tick size */
   double subtick_size;		/* fractional subtick size (for linear axes) */
   double frame_line_width;	/* fractional width of lines in the frame */
   double half_line_width;	/* approx. half of this, in libplot coors */
-  char *frame_color;		/* color for frame (and plot, if no -C) */
-  char *title;			/* plot title */
-  char *title_font_name;	/* font for plot title */
-  double title_font_size;	/* fractional height of plot title */
+  const char *frame_color;	/* color for frame (and graph, if no -C) */
+  const char *title;		/* graph title */
+  const char *title_font_name;	/* font for graph title */
+  double title_font_size;	/* fractional height of graph title */
   int clip_mode;		/* 0, 1, or 2 (cf. clipping in gnuplot) */
-  /* following elements are updated during plotter operation; they're the
-     repository for plotter state */
-  bool first_point_of_plot;	/* true only at beginning of each plot */
-  bool need_break;		/* break polyline before next point? */
+  /* following elements are updated during plotting of points; they're the
+     chief repository for internal state */
+  bool first_point_of_polyline;	/* true only at beginning of each polyline */
   double oldpoint_x, oldpoint_y; /* last-plotted point */
   int symbol;			/* symbol being plotted at each point */
   int linemode;			/* linemode used for polyline */
-} Plotter;
+};
   
-static Plotter plotter;
-
 /* forward references */
-static int clip_line ____P((double *x0_p, double *y0_p, double *x1_p, double *y1_p));
+static int clip_line ____P((Multigrapher *multigrapher, double *x0_p, double *y0_p, double *x1_p, double *y1_p));
 static int spacing_type ____P((double spacing));
-static outcode compute_outcode ____P((double x, double y, bool tolerant));
-static void plot_errorbar ____P((const Point *p));
-static void prepare_axis ____P((Axis *axisp, Transform *trans, 
-		       double min, double max, double spacing, 
-		       char *font_name, double font_size, char *label, 
-		       double subsubtick_spacing, 
-		       bool user_specified_subsubticks, 
-		       bool round_to_next_tick, bool log_axis,
-		       bool reverse_axis, bool switch_axis_end, 
-		       bool omit_ticks));
-static void plot_abscissa_log_subsubtick ____P((double xval));
-static void plot_ordinate_log_subsubtick ____P((double xval));
-static void print_tick_label ____P((char *labelbuf, Axis axis, Transform transform, double val));
-static void scale1 ____P((double min, double max, 
-		 double *tick_spacing, int *tick_spacing_type));
-static void set_line_style ____P((int style, bool use_color));
+static outcode compute_outcode ____P((Multigrapher *multigrapher, double x, double y, bool tolerant));
+static void plot_abscissa_log_subsubtick ____P((Multigrapher *multigrapher, double xval));
+static void plot_errorbar ____P((Multigrapher *multigrapher, const Point *p));
+static void plot_ordinate_log_subsubtick ____P((Multigrapher *multigrapher, double xval));
+static void prepare_axis ____P((Axis *axisp, Transform *trans, double min, double max, double spacing, const char *font_name, double font_size, const char *label, double subsubtick_spacing, bool user_specified_subsubticks, bool round_to_next_tick, bool log_axis, bool reverse_axis, bool switch_axis_end,  bool omit_ticks));
+static void print_tick_label ____P((char *labelbuf, const Axis *axis, const Transform *transform, double val));
+static void scale1 ____P((double min, double max, double *tick_spacing, int *tick_spacing_type));
+static void set_line_style ____P((Multigrapher *multigrapher, int style, bool use_color));
 static void transpose_portmanteau ____P((int *val));
 
 
@@ -284,12 +289,12 @@ static void transpose_portmanteau ____P((int *val));
 
 static void
 #ifdef _HAVE_PROTOS
-print_tick_label (char *labelbuf, Axis axis, Transform transform, double val)
+print_tick_label (char *labelbuf, const Axis *axis, const Transform *transform, double val)
 #else
 print_tick_label (labelbuf, axis, transform, val)
      char *labelbuf;
-     Axis axis;
-     Transform transform;
+     const Axis *axis;
+     const Transform *transform;
      double val;
 #endif
 {
@@ -302,10 +307,10 @@ print_tick_label (labelbuf, axis, transform, val)
 
   /* two possibilities: large/small exponent magnitudes */
 
-  min = (axis.type == A_LOG10 
-	 ? pow (10.0, transform.input_min) : transform.input_min);
-  max = (axis.type == A_LOG10 
-	 ? pow (10.0, transform.input_max) : transform.input_max);
+  min = (axis->type == A_LOG10 
+	 ? pow (10.0, transform->input_min) : transform->input_min);
+  max = (axis->type == A_LOG10 
+	 ? pow (10.0, transform->input_max) : transform->input_max);
 	  
   big_exponents = (((min != 0.0 && fabs (log10 (fabs (min))) >= 4.0)
 		    || (max != 0.0 && fabs (log10 (fabs (max))) >= 4.0))
@@ -324,7 +329,7 @@ print_tick_label (labelbuf, axis, transform, val)
       if ((eloc = strchr (labelbuf_tmp, (int)'e')) == NULL)
 	return;
 
-      if (axis.type == A_LOG10 && !axis.user_specified_subsubticks)
+      if (axis->type == A_LOG10 && !axis->user_specified_subsubticks)
 	/* a hack: this must be a power of 10, so just print "10^bar" */
 	{
 	  sscanf (++eloc, "%d", &exponent);	      
@@ -346,9 +351,9 @@ print_tick_label (labelbuf, axis, transform, val)
       sscanf (floatbuf, "%lf", &prefactor); /* get foo */
       sscanf (++src, "%d", &exponent); /* get bar */
       
-      spacing = (axis.type == A_LINEAR
-		 ? axis.tick_spacing
-		 : axis.subsubtick_spacing); /* user-specified, for log axis */
+      spacing = (axis->type == A_LINEAR
+		 ? axis->tick_spacing
+		 : axis->subsubtick_spacing); /* user-specified, for log axis*/
       sprintf (incrbuf, "%f", 
 	       spacing / pow (10.0, (double)exponent));
       ptr = strchr (incrbuf, (int)'.');
@@ -366,9 +371,8 @@ print_tick_label (labelbuf, axis, transform, val)
 	}
       
       /* \sp ... \ep is start_superscript ... end_superscript, and \r6 is
-	 right-shift by 1/6 em.  \mu is the `times' character.  The \r8\l8
-	 foolishness is to work around a bug in xfig 3.1. */
-      sprintf (dst, "%.*f\\r6\\mu\\r8\\l810\\sp%d\\ep", 
+	 right-shift by 1/6 em.  \mu is the `times' character. */
+      sprintf (dst, "%.*f\\r6\\mu10\\sp%d\\ep", 
 	       prec, prefactor, exponent);
 
       return;
@@ -376,7 +380,7 @@ print_tick_label (labelbuf, axis, transform, val)
 
   else	/* small-size exponent magnitudes */
     {
-      if (axis.type == A_LOG10 && !axis.user_specified_subsubticks)
+      if (axis->type == A_LOG10 && !axis->user_specified_subsubticks)
 	/* a hack: this must be a (small) power of 10, so we'll just use
 	   %g format (same as %f, no trailing zeroes) */
 	{
@@ -385,9 +389,9 @@ print_tick_label (labelbuf, axis, transform, val)
 	}
       
       /* always use no. of digits of precision present in increment */
-      spacing = (axis.type == A_LINEAR
-		 ? axis.tick_spacing
-		 : axis.subsubtick_spacing); /* user-specified, for log axis */
+      spacing = (axis->type == A_LINEAR
+		 ? axis->tick_spacing
+		 : axis->subsubtick_spacing); /* user-specified, for log axis*/
       sprintf (incrbuf, "%.9f", spacing);
       ptr = strchr (incrbuf, (int)'.');
       prec = 0;
@@ -444,12 +448,13 @@ scale1 (min, max, tick_spacing, tick_spacing_type)
       1.0, 2.0, 5.0, 10.0
     };
   
-  /* Corresponding breakpoints.  Can choose geometric means, i.e. sqrt(2),
-     sqrt(10), sqrt(50), but using sqrt(10)=3.16...  will (if nticks=5, as
-     we choose it to be) cause intervals of length 1.5 to yield an
-     inter-tick distance of 0.2 rather than 0.5.  So we could reduce it to
-     2.95.  Similarly we could reduce sqrt(50) to 6.95 so that intervals of
-     length 3.5 will yield an inter-tick distance of 1.0 rather than 0.5. */
+  /* Corresponding breakpoints.  The published algorithm uses geometric
+     means, i.e. sqrt(2), sqrt(10), sqrt(50), but using sqrt(10)=3.16...
+     will (if nticks=5, as we choose it to be) cause intervals of length
+     1.5 to yield an inter-tick distance of 0.2 rather than 0.5.  So we
+     could reduce it to 2.95.  Similarly we could reduce sqrt(50) to 6.95
+     so that intervals of length 3.5 will yield an inter-tick distance of
+     1.0 rather than 0.5. */
   static const double sqr[] =
     {
       M_SQRT2, 3.16228, 7.07107
@@ -528,27 +533,15 @@ spacing_type (incr)
 
 static void 
 #ifdef _HAVE_PROTOS
-prepare_axis (Axis *axisp, Transform *trans, double min, double max, 
-	      double spacing, char *font_name, double font_size, char *label,
-	      double subsubtick_spacing, 
-	      bool user_specified_subsubticks, bool round_to_next_tick,
-	      bool log_axis, bool reverse_axis, 
-	      bool switch_axis_end, bool omit_ticks)
+prepare_axis (Axis *axisp, Transform *trans, double min, double max, double spacing, const char *font_name, double font_size, const char *label, double subsubtick_spacing, bool user_specified_subsubticks, bool round_to_next_tick, bool log_axis, bool reverse_axis, bool switch_axis_end, bool omit_ticks)
 #else
-prepare_axis (axisp, trans, 
-	      min, max, spacing, 
-	      font_name, font_size, label,
-	      subsubtick_spacing, 
-	      user_specified_subsubticks, 
-	      round_to_next_tick, log_axis,
-	      reverse_axis, switch_axis_end,
-	      omit_ticks)
+prepare_axis (axisp, trans, min, max, spacing, font_name, font_size, label, subsubtick_spacing, user_specified_subsubticks, round_to_next_tick, log_axis, reverse_axis, switch_axis_end, omit_ticks)
      Axis *axisp;
      Transform *trans;
      double min, max, spacing;
-     char *font_name;
+     const char *font_name;
      double font_size;
-     char *label;
+     const char *label;
      double subsubtick_spacing;
      bool user_specified_subsubticks; /* i.e. linear ticks on a log axis */
      bool round_to_next_tick; /* round limits to the next tick mark */
@@ -627,7 +620,7 @@ prepare_axis (axisp, trans,
 	  range = max - min;
 	  min_tick_count = max_tick_count = 0; /* keep gcc happy */
 	}
-      else
+      else	/* normal `expand limits to next tick' case */
 	{
 	  min_tick_count = (int)(floor((min + FUZZ * range)/ tick_spacing));
 	  max_tick_count = (int)(ceil((max - FUZZ * range)/ tick_spacing));
@@ -672,7 +665,8 @@ prepare_axis (axisp, trans,
 	    lin_subtick_spacing = tick_spacing / 2;
 	}
       break;
-    default:	/* in default case, i.e. S_UNKNOWN, we won't plot linear subticks */
+    default:
+      /* in default case, i.e. S_UNKNOWN, we won't plot linear subticks */
       lin_subtick_spacing = tick_spacing; /* not actually needed, since not plotted */
       break;
     }
@@ -728,53 +722,114 @@ prepare_axis (axisp, trans,
     axisp->have_normal_subsubticks = false;
 }
 
-/* The following routines [initialize_plotter(), open_plotter(),
- * plot_frame(), plot_point(), close_plotter()] are the basic routines of
- * the point-plotter.  See descriptions at the head of this file.
- */
+/* The following routines [new_multigrapher(), begin_graph(),
+ * set_graph_parameters(), draw_frame_of_graph(), plot_point(),
+ * end_graph(), delete_multigrapher()] are the basic routines of the
+ * point-plotter .  See descriptions at the head of this file.  */
 
+/* Create a new Multigrapher.  The arguments, after the first, are the
+   libplot Plotter parameters that the `graph' user can set on the command
+   line. */
+
+Multigrapher *
+#ifdef _HAVE_PROTOS
+new_multigrapher (const char *display_type, const char *bg_color, const char *bitmap_size, const char *max_line_length, const char *meta_portable, const char *page_size, const char *rotation_angle, bool save_screen)
+#else
+new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_portable, page_size, rotation_angle, save_screen)
+     const char *display_type, *bg_color, *bitmap_size, *max_line_length, *meta_portable, *page_size, *rotation_angle;
+     bool save_screen;
+#endif
+{
+  plPlotterParams *plotter_params;
+  plPlotter *plotter;
+  Multigrapher *multigrapher;
+   	
+  multigrapher = (Multigrapher *)xmalloc (sizeof (Multigrapher));
+
+  /* set Plotter parameters */
+  plotter_params = pl_newplparams ();
+  pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)bg_color);
+  pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)bitmap_size);
+  pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (voidptr_t)max_line_length);
+  pl_setplparam (plotter_params, "META_PORTABLE", (voidptr_t)meta_portable);
+  pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)page_size);
+  pl_setplparam (plotter_params, "ROTATION", (voidptr_t)rotation_angle);
+
+  /* create Plotter and open it */
+  plotter = pl_newpl_r (display_type, NULL, stdout, stderr, plotter_params);
+  if (plotter == (plPlotter *)NULL)
+    return (Multigrapher *)NULL;
+  pl_deleteplparams (plotter_params);
+  multigrapher->plotter = plotter;
+  if (pl_openpl_r (plotter) < 0)
+    return (Multigrapher *)NULL;
+  multigrapher->bg_color = bg_color;
+
+  /* if called for, erase it; set up the user->device coor map */
+  if (!save_screen || bg_color)
+    pl_erase_r (plotter);
+  pl_fspace_r (plotter, 0.0, 0.0, (double)PLOT_SIZE, (double)PLOT_SIZE);
+
+  return multigrapher;
+}
+
+int
+#ifdef _HAVE_PROTOS
+delete_multigrapher (Multigrapher *multigrapher)
+#else
+delete_multigrapher (multigrapher)
+     Multigrapher *multigrapher;
+#endif
+{
+  int retval;
+
+  retval = pl_closepl_r (multigrapher->plotter);
+  if (retval >= 0)
+    retval = pl_deletepl_r (multigrapher->plotter);
+
+  free (multigrapher);
+  return retval;
+}
+
+
+void
+#ifdef _HAVE_PROTOS
+begin_graph (Multigrapher *multigrapher, double scale, double trans_x, double trans_y)
+#else
+begin_graph (multigrapher, scale, trans_x, trans_y)
+     Multigrapher *multigrapher;
+     double scale, trans_x, trans_y;
+#endif
+{
+  pl_savestate_r (multigrapher->plotter);
+  pl_fconcat_r (multigrapher->plotter,
+		scale, 0.0, 0.0, scale,
+		trans_x * PLOT_SIZE, trans_y * PLOT_SIZE);
+}
+
+void
+#ifdef _HAVE_PROTOS
+end_graph (Multigrapher *multigrapher)
+#else
+end_graph (multigrapher)
+     Multigrapher *multigrapher;
+#endif
+{
+  pl_restorestate_r (multigrapher->plotter);
+}
+
+
 void 
 #ifdef _HAVE_PROTOS
-initialize_plotter(char *display_type, int rotation_angle, 
-		   bool save_screen, char *bg_color,
-		   double frame_line_width, char *frame_color, char *title, 
-		   char *title_font_name, double title_font_size, 
-		   double tick_size, grid_type grid_spec, double x_min, 
-		   double x_max, double x_spacing, double y_min, double y_max,
-		   double y_spacing, bool spec_x_spacing, 
-		   bool spec_y_spacing, double width, double height, 
-		   double up, double right, char *x_font_name, 
-		   double x_font_size, char *x_label, char *y_font_name, 
-		   double y_font_size, char *y_label, 
-		   bool no_rotate_y_label, int log_axis,
-		   int round_to_next_tick, int switch_axis_end, 
-		   int omit_ticks, int clip_mode, double blankout_fraction,
-		   bool transpose_axes)
+set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const char *frame_color, const char *title, const char *title_font_name, double title_font_size, double tick_size, grid_type grid_spec, double x_min, double x_max, double x_spacing, double y_min, double y_max, double y_spacing, bool spec_x_spacing, bool spec_y_spacing, double width, double height, double up, double right, const char *x_font_name, double x_font_size, const char *x_label, const char *y_font_name, double y_font_size, const char *y_label, bool no_rotate_y_label, int log_axis, int round_to_next_tick, int switch_axis_end, int omit_ticks, int clip_mode, double blankout_fraction, bool transpose_axes)
 #else
-initialize_plotter(display_type, rotation_angle, save_screen, bg_color,
-		   frame_line_width, frame_color,
-		   title, title_font_name, title_font_size,
-		   tick_size, grid_spec, 
-		   x_min, x_max, x_spacing, y_min, y_max, y_spacing, 
-		   spec_x_spacing, 
-		   spec_y_spacing, 
-		   width,
-		   height, up, right, x_font_name, x_font_size, x_label,
-		   y_font_name, y_font_size, y_label, no_rotate_y_label,
-		   log_axis,
-		   round_to_next_tick,
-		   switch_axis_end, omit_ticks, 
-		   clip_mode, blankout_fraction,
-		   transpose_axes)
-     char *display_type;	/* mnemonic: type of libplot display driver */
-     int rotation_angle;	/* ROT_{0, 90, 180, 270} */
-     bool save_screen;		/* whether or not to erase */
-     char *bg_color;		/* color of background, if non-NULL */
+set_graph_parameters (multigrapher, frame_line_width, frame_color, title, title_font_name, title_font_size, tick_size, grid_spec, x_min, x_max, x_spacing, y_min, y_max, y_spacing, spec_x_spacing, spec_y_spacing, width, height, up, right, x_font_name, x_font_size, x_label, y_font_name, y_font_size, y_label, no_rotate_y_label, log_axis, round_to_next_tick, switch_axis_end, omit_ticks, clip_mode, blankout_fraction, transpose_axes)
+     Multigrapher *multigrapher;
      double frame_line_width;	/* fractional width of lines in the frame */
-     char *frame_color;		/* color for frame (and plot if no -C option)*/
-     char *title;		/* plot title */
-     char *title_font_name;	/* font for plot title (string) */
-     double title_font_size;	/* font size for plot title  */
+     const char *frame_color;	/* color for frame (and plot if no -C option)*/
+     const char *title;		/* graph title */
+     const char *title_font_name; /* font for graph title (string) */
+     double title_font_size;	/* font size for graph title  */
      double tick_size;		/* fractional size of ticks */
      grid_type grid_spec;	/* gridstyle (and tickstyle) spec */
      double x_min, x_max, x_spacing;
@@ -782,12 +837,12 @@ initialize_plotter(display_type, rotation_angle, save_screen, bg_color,
      bool spec_x_spacing;
      bool spec_y_spacing;
      double width, height, up, right;
-     char *x_font_name;
+     const char *x_font_name;
      double x_font_size;
-     char *x_label;
-     char *y_font_name; 
+     const char *x_label;
+     const char *y_font_name; 
      double y_font_size;
-     char *y_label;
+     const char *y_label;
      bool no_rotate_y_label;
      /* portmanteaux */
      int log_axis;		/* whether axes should be logarithmic */
@@ -804,8 +859,6 @@ initialize_plotter(display_type, rotation_angle, save_screen, bg_color,
   /* local portmanteau variables */
   int reverse_axis = 0;		/* min > max on an axis? */
   int user_specified_subsubticks = 0; /* i.e. linear ticks on a log axis? */
-
-  plotter.display_type = xstrdup (display_type);
 
   if (log_axis & X_AXIS)
     {
@@ -904,7 +957,7 @@ initialize_plotter(display_type, rotation_angle, save_screen, bg_color,
      limits etc.) if transpose_axes was set */
   if (transpose_axes)
     {
-      char *temp_string;
+      const char *temp_string;
       double temp_double;
       
       transpose_portmanteau (&log_axis);
@@ -936,78 +989,75 @@ initialize_plotter(display_type, rotation_angle, save_screen, bg_color,
       y_subsubtick_spacing = temp_double;
     }
 	      
-  /* fill in the Plotter struct */
+  /* fill in the Multigrapher struct */
 
-  plotter.save_screen = save_screen;
-  plotter.bg_color = bg_color;
-  plotter.frame_line_width = frame_line_width;
-  plotter.frame_color = frame_color;
-  plotter.no_rotate_y_label = no_rotate_y_label;
-  plotter.blankout_fraction = blankout_fraction;
+  multigrapher->frame_line_width = frame_line_width;
+  multigrapher->frame_color = frame_color;
+  multigrapher->no_rotate_y_label = no_rotate_y_label;
+  multigrapher->blankout_fraction = blankout_fraction;
 
   if (title != NULL)
-    plotter.title = xstrdup (title);
+    multigrapher->title = xstrdup (title);
   else
-    plotter.title = NULL;
+    multigrapher->title = NULL;
   if (title_font_name != NULL)
-      plotter.title_font_name = xstrdup (title_font_name);
+      multigrapher->title_font_name = xstrdup (title_font_name);
   else
-    plotter.title_font_name = NULL;
-  plotter.title_font_size = title_font_size;
-  plotter.tick_size = tick_size;
-  plotter.subtick_size = RELATIVE_SUBTICK_SIZE * tick_size;
-  plotter.grid_spec = grid_spec;
-  plotter.clip_mode = clip_mode;
-  plotter.rotation_angle = rotation_angle;
+    multigrapher->title_font_name = NULL;
+  multigrapher->title_font_size = title_font_size;
+  multigrapher->tick_size = tick_size;
+  multigrapher->subtick_size = RELATIVE_SUBTICK_SIZE * tick_size;
+  multigrapher->grid_spec = grid_spec;
+  multigrapher->clip_mode = clip_mode;
 
-  /* fill in the Transform and Axis structures for each coordinate */
-  prepare_axis(&x_axis, &x_trans,
-	       x_min, x_max, x_spacing,
-	       x_font_name, x_font_size, x_label, 
-	       x_subsubtick_spacing,
-	       (bool)(user_specified_subsubticks & X_AXIS), 
-	       (bool)(round_to_next_tick & X_AXIS),
-	       (bool)(log_axis & X_AXIS), 
-	       (bool)(reverse_axis & X_AXIS),
-	       (bool)(switch_axis_end & X_AXIS),
-	       (bool)(omit_ticks & X_AXIS));
-  prepare_axis(&y_axis, &y_trans,
-	       y_min, y_max, y_spacing,
-	       y_font_name, y_font_size, y_label, 
-	       y_subsubtick_spacing,
-	       (bool)(user_specified_subsubticks & Y_AXIS), 
-	       (bool)(round_to_next_tick & Y_AXIS),
-	       (bool)(log_axis & Y_AXIS), 
-	       (bool)(reverse_axis & Y_AXIS),
-	       (bool)(switch_axis_end & Y_AXIS),
-	       (bool)(omit_ticks & Y_AXIS));
+  /* fill in the Transform and Axis elements for each coordinate */
+  prepare_axis (&multigrapher->x_axis, &multigrapher->x_trans,
+		x_min, x_max, x_spacing,
+		x_font_name, x_font_size, x_label, 
+		x_subsubtick_spacing,
+		(bool)(user_specified_subsubticks & X_AXIS), 
+		(bool)(round_to_next_tick & X_AXIS),
+		(bool)(log_axis & X_AXIS), 
+		(bool)(reverse_axis & X_AXIS),
+		(bool)(switch_axis_end & X_AXIS),
+		(bool)(omit_ticks & X_AXIS));
+  prepare_axis (&multigrapher->y_axis, &multigrapher->y_trans,
+		y_min, y_max, y_spacing,
+		y_font_name, y_font_size, y_label, 
+		y_subsubtick_spacing,
+		(bool)(user_specified_subsubticks & Y_AXIS), 
+		(bool)(round_to_next_tick & Y_AXIS),
+		(bool)(log_axis & Y_AXIS), 
+		(bool)(reverse_axis & Y_AXIS),
+		(bool)(switch_axis_end & Y_AXIS),
+		(bool)(omit_ticks & Y_AXIS));
   
   /* fill in additional parameters in the two Transform structures */
-  x_trans.squeezed_min = right;
-  x_trans.squeezed_max = right + width;
-  x_trans.squeezed_range = width;  
-  y_trans.squeezed_min = up;
-  y_trans.squeezed_max = up + height;
-  y_trans.squeezed_range = height;
+  multigrapher->x_trans.squeezed_min = right;
+  multigrapher->x_trans.squeezed_max = right + width;
+  multigrapher->x_trans.squeezed_range = width;  
+  multigrapher->y_trans.squeezed_min = up;
+  multigrapher->y_trans.squeezed_max = up + height;
+  multigrapher->y_trans.squeezed_range = height;
 
   /* specify interval range for each coordinate, in libplot units */
-  x_trans.output_min = 0.0;
-  x_trans.output_max = (double)PLOT_SIZE;
-  x_trans.output_range = x_trans.output_max - x_trans.output_min;
-  x_trans.output_min = 0.0;
-  y_trans.output_max = (double)PLOT_SIZE;
-  y_trans.output_range = y_trans.output_max - y_trans.output_min;
+  multigrapher->x_trans.output_min = 0.0;
+  multigrapher->x_trans.output_max = (double)PLOT_SIZE;
+  multigrapher->x_trans.output_range = multigrapher->x_trans.output_max - multigrapher->x_trans.output_min;
+  multigrapher->x_trans.output_min = 0.0;
+  multigrapher->y_trans.output_max = (double)PLOT_SIZE;
+  multigrapher->y_trans.output_range = multigrapher->y_trans.output_max - multigrapher->y_trans.output_min;
 
   /* fill in fields in Axis structs dealing with location of other axis */
-  if (plotter.grid_spec != AXES_AT_ORIGIN)
+  if (multigrapher->grid_spec != AXES_AT_ORIGIN)
     /* Normal case */
     {
       /* axes are at left/bottom */
-      x_axis.other_axis_loc = x_trans.input_min;
-      y_axis.other_axis_loc = y_trans.input_min;
+      multigrapher->x_axis.other_axis_loc = multigrapher->x_trans.input_min;
+      multigrapher->y_axis.other_axis_loc = multigrapher->y_trans.input_min;
       /* secondary axes (used only if --switch-axis-end is specified) */
-      x_axis.alt_other_axis_loc = x_trans.input_max;
-      y_axis.alt_other_axis_loc = y_trans.input_max;
+      multigrapher->x_axis.alt_other_axis_loc = multigrapher->x_trans.input_max;
+      multigrapher->y_axis.alt_other_axis_loc = multigrapher->y_trans.input_max;
     }
   else
     /* Special case: grid type #4, AXES_AT_ORIGIN */
@@ -1017,106 +1067,45 @@ initialize_plotter(display_type, rotation_angle, save_screen, bg_color,
          at the value 0 (the origin) if the value 0 is between the limits
          of the opposing axis.  Otherwise, the position is at the end
          closer to the value of 0. */
-      x_axis.other_axis_loc 
-	= (x_trans.input_min * x_trans.input_max <= 0.0) ? 0.0 : 
-	  (x_trans.input_min > 0.0 ? x_trans.input_min : x_trans.input_max);
-      y_axis.other_axis_loc 
-	= (y_trans.input_min * y_trans.input_max <= 0.0) ? 0.0 : 
-	  (y_trans.input_min > 0.0 ? y_trans.input_min : y_trans.input_max);
+      multigrapher->x_axis.other_axis_loc 
+	= (multigrapher->x_trans.input_min * multigrapher->x_trans.input_max <= 0.0) ? 0.0 : 
+	  (multigrapher->x_trans.input_min > 0.0 ? multigrapher->x_trans.input_min : multigrapher->x_trans.input_max);
+      multigrapher->y_axis.other_axis_loc 
+	= (multigrapher->y_trans.input_min * multigrapher->y_trans.input_max <= 0.0) ? 0.0 : 
+	  (multigrapher->y_trans.input_min > 0.0 ? multigrapher->y_trans.input_min : multigrapher->y_trans.input_max);
       /* secondary axes are the same */
-      x_axis.alt_other_axis_loc = x_axis.other_axis_loc;
-      y_axis.alt_other_axis_loc = y_axis.other_axis_loc;
-      x_axis.switch_axis_end = (((x_trans.input_max - x_axis.other_axis_loc)
-				 < (x_axis.other_axis_loc - x_trans.input_min))
+      multigrapher->x_axis.alt_other_axis_loc = multigrapher->x_axis.other_axis_loc;
+      multigrapher->y_axis.alt_other_axis_loc = multigrapher->y_axis.other_axis_loc;
+      multigrapher->x_axis.switch_axis_end = (((multigrapher->x_trans.input_max - multigrapher->x_axis.other_axis_loc)
+				 < (multigrapher->x_axis.other_axis_loc - multigrapher->x_trans.input_min))
 				? true : false);
-      y_axis.switch_axis_end = (((y_trans.input_max - y_axis.other_axis_loc)
-				 < (y_axis.other_axis_loc - y_trans.input_min))
+      multigrapher->y_axis.switch_axis_end = (((multigrapher->y_trans.input_max - multigrapher->y_axis.other_axis_loc)
+				 < (multigrapher->y_axis.other_axis_loc - multigrapher->y_trans.input_min))
 				? true : false);
     }
 
-  /* The following is a version of (plotter.frame_line_width)/2 (expressed
-     in terms of libplot coordinates) which the plotter uses as an offset,
-     to get highly accurate positioning of ticks and labels. */
-  if (frame_line_width < 0.0 || pl_havecap ("WIDE_LINES") == 0)
-    plotter.half_line_width = 0.0;/* N.B. <0.0 -> default width, pres. small */
+  /* The following is a version of (multigrapher->frame_line_width)/2
+     (expressed in terms of libplot coordinates) which the plotter uses as
+     an offset, to get highly accurate positioning of ticks and labels. */
+  if (frame_line_width < 0.0 
+      || pl_havecap_r (multigrapher->plotter, "WIDE_LINES") == 0)
+    multigrapher->half_line_width = 0.0;/* N.B. <0.0 -> default width, pres. small */
   else
-    plotter.half_line_width = 0.5 * frame_line_width * x_trans.output_range;
+    multigrapher->half_line_width = 0.5 * frame_line_width * multigrapher->x_trans.output_range;
 
   /* initialize the plotter state variables */
-  plotter.first_point_of_plot = true;
-  plotter.oldpoint_x = 0.0; 
-  plotter.oldpoint_y = 0.0;
+  multigrapher->first_point_of_polyline = true;
+  multigrapher->oldpoint_x = 0.0; 
+  multigrapher->oldpoint_y = 0.0;
 }
 
-int
-#ifdef _HAVE_PROTOS
-open_plotter(void)
-#else
-open_plotter()
-#endif
-{
-  if (plotter.bg_color)
-    /* select user-specified background color */
-    pl_parampl ("BG_COLOR", plotter.bg_color);
-  if ((plotter.handle = pl_newpl (plotter.display_type, NULL, stdout, stderr)) < 0)
-    return -1;
-  else
-    pl_selectpl (plotter.handle);
-  if (pl_openpl () < 0)
-    return -1;
-  if (!plotter.save_screen || plotter.bg_color)
-    pl_erase ();
-  switch ((int)(plotter.rotation_angle))
-    {
-    case (int)ROT_0:
-    default:
-      pl_fspace (0.0, 0.0, (double)PLOT_SIZE, (double)PLOT_SIZE);
-      break;
-    case (int)ROT_90:
-      pl_fspace2 (0.0, (double)PLOT_SIZE,
-		  0.0, 0.0,
-		  (double)PLOT_SIZE, (double)PLOT_SIZE);
-      break;
-    case (int)ROT_180:
-      pl_fspace2 ((double)PLOT_SIZE, (double)PLOT_SIZE,
-		  0.0, (double)PLOT_SIZE,
-		  (double)PLOT_SIZE, 0.0);
-      break;
-    case (int)ROT_270:
-      pl_fspace2 ((double)PLOT_SIZE, 0.0,
-		  (double)PLOT_SIZE, (double)PLOT_SIZE,
-		  0.0, 0.0);
-      break;
-    }
+   	
+/* draw_frame_of_graph() plots the graph frame (grid plus axis labels and
+   title), using the multigrapher's variables (the multigrapher->x_axis,
+   multigrapher->y_axis, multigrapher->x_trans, multigrapher->y_trans
+   structures).  It comprises several almost-independent tasks:
 
-  return 0;
-}
-
-int
-#ifdef _HAVE_PROTOS
-close_plotter(void)
-#else
-close_plotter()
-#endif
-{
-  int retval;
-
-  retval = pl_closepl ();
-  if (retval < 0)
-    return -1;
-  else
-    {
-      pl_selectpl (0);
-      return pl_deletepl (plotter.handle);
-    }
-}
-
-
-/* plot_frame() plots the graph frame (grid plus axis labels and title),
-   using the plotter's global variables (the x_axis, y_axis, x_trans,
-   y_trans structures).  It comprises several almost-independent tasks:
-
-   0. draw opaque white rectangle (``canvas'') for the plot
+   0. draw opaque white rectangle (``canvas''), if requested
    1. draw title, if any, above drawing box
    2. draw axes, and a full drawing box if requested
    3. draw ticks, grid lines, and tick labels on abscissa;
@@ -1130,9 +1119,9 @@ close_plotter()
    7. draw axis label on abscissa
    8. draw axis label on ordinate (normally rotated 90 degrees)
 
-   A savestate()--restorestate() pair is wrapped around nine tasks.  They
-   are not quite independent because in (4) and (6) we keep track of the
-   maximum width of the tick labels on the ordinate, to position the
+   A savestate()--restorestate() pair is wrapped around these nine tasks.
+   They are not quite independent because in (4) and (6) we keep track of
+   the maximum width of the tick labels on the ordinate, to position the
    rotated ordinate label properly in (8).
 
    At the conclusion of the eight tasks, we warn the user if (i) he/she
@@ -1142,119 +1131,134 @@ close_plotter()
 
    Task #0 (drawing a white canvas) isn't always performed; only if the
    argument draw_canvas is set.  It isn't set when we call this function
-   for the first time; see graph.c.
-*/
+   for the first time; see graph.c.  */
 
 void
 #ifdef _HAVE_PROTOS
-plot_frame (bool draw_canvas)
+draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 #else
-plot_frame (draw_canvas)
+draw_frame_of_graph (multigrapher, draw_canvas)
+     Multigrapher *multigrapher;
      bool draw_canvas;
 #endif
 {
-  static bool tick_warning_printed = false; /*when too few labelled ticks*/
+  static bool tick_warning_printed = false; /* when too few labelled ticks */
 
-  pl_savestate();   /* wrap savestate()--restorestate() around all 9 tasks */
+  /* wrap savestate()--restorestate() around all 9 tasks */
+  pl_savestate_r (multigrapher->plotter); 
 
-  /* set color for plot frame (and for plot also, if a monochrome one) */
-  if (plotter.frame_color)
-    pl_pencolorname (plotter.frame_color);
+  /* set color for graph frame */
+  if (multigrapher->frame_color)
+    pl_pencolorname_r (multigrapher->plotter, multigrapher->frame_color);
 
   /* set line width as a fraction of size of display, <0.0 means default */
-  pl_flinewidth (plotter.frame_line_width * (double)PLOT_SIZE);
-  pl_linemod ("solid");		/* axes and plotting box will be solid */
+  pl_flinewidth_r (multigrapher->plotter, 
+		   multigrapher->frame_line_width * (double)PLOT_SIZE);
+  
+  /* axes (or box) will be drawn in solid line style */
+  pl_linemod_r (multigrapher->plotter, "solid");
+
+  /* turn off filling */
+  pl_filltype_r (multigrapher->plotter, 0);
 
   /* 0.  DRAW AN OPAQUE WHITE BOX */
 
   if (draw_canvas)
     {
-      pl_savestate();
+      pl_savestate_r (multigrapher->plotter);
       /* use user-specified background color (if any) instead of white */
-      if (pl_havecap ("SETTABLE_BACKGROUND") != 0 && plotter.bg_color)
-	pl_colorname (plotter.bg_color);
+      if (pl_havecap_r (multigrapher->plotter, "SETTABLE_BACKGROUND") != 0 
+	  && multigrapher->bg_color)
+	pl_colorname_r (multigrapher->plotter, multigrapher->bg_color);
       else
-	pl_colorname ("white");
-      pl_filltype (1);		/* turn on filling */
-      pl_fbox (XP(XSQ(0.5 - 0.5 * plotter.blankout_fraction)), 
-	       YP(YSQ(0.5 - 0.5 * plotter.blankout_fraction)),
-	       XP(XSQ(0.5 + 0.5 * plotter.blankout_fraction)),
-	       YP(YSQ(0.5 + 0.5 * plotter.blankout_fraction)));
-      pl_restorestate();
+	pl_colorname_r (multigrapher->plotter, "white");
+
+      pl_filltype_r (multigrapher->plotter, 1);	/* turn on filling */
+      pl_fbox_r (multigrapher->plotter, 
+		 XP(XSQ(0.5 - 0.5 * multigrapher->blankout_fraction)), 
+		 YP(YSQ(0.5 - 0.5 * multigrapher->blankout_fraction)),
+		 XP(XSQ(0.5 + 0.5 * multigrapher->blankout_fraction)),
+		 YP(YSQ(0.5 + 0.5 * multigrapher->blankout_fraction)));
+      pl_restorestate_r (multigrapher->plotter);
     }
 
   /* 1.  DRAW THE TITLE, I.E. THE TOP LABEL */
 
-  if (plotter.grid_spec != NO_AXES 
-      && !y_axis.switch_axis_end /* no title if x axis is at top of plot */
-      && plotter.title != NULL && *plotter.title != '\0')
+  if (multigrapher->grid_spec != NO_AXES 
+      && !multigrapher->y_axis.switch_axis_end /* no title if x axis is at top of plot */
+      && multigrapher->title != NULL && *multigrapher->title != '\0')
     {
       double title_font_size;
 
       /* switch to our font for drawing title */
-      pl_fontname (plotter.title_font_name);
-      title_font_size = pl_ffontsize (SS(plotter.title_font_size));
+      pl_fontname_r (multigrapher->plotter, multigrapher->title_font_name);
+      title_font_size = pl_ffontsize_r (multigrapher->plotter, 
+					SS(multigrapher->title_font_size));
 
-      pl_fmove (XP(XSQ(0.5)), 
-		YP(YSQ(1.0 
-		       + (((plotter.grid_spec == AXES_AND_BOX 
-			    || plotter.grid_spec == AXES)
-			   && (plotter.tick_size <= 0.0) ? 1.0 : 0.5)
-			  * fabs(plotter.tick_size))))
-		+ 0.65 * title_font_size
-		+ plotter.half_line_width);
-      pl_alabel ('c', 'b', plotter.title); /* title centered, bottom spec'd */
+      pl_fmove_r (multigrapher->plotter, 
+		  XP(XSQ(0.5)), 
+		  YP(YSQ(1.0 
+			 + (((multigrapher->grid_spec == AXES_AND_BOX 
+			      || multigrapher->grid_spec == AXES)
+			     && (multigrapher->tick_size <= 0.0) ? 1.0 : 0.5)
+			    * fabs(multigrapher->tick_size))))
+		  + 0.65 * title_font_size
+		  + multigrapher->half_line_width);
+      /* title centered, bottom spec'd */
+      pl_alabel_r (multigrapher->plotter, 'c', 'b', multigrapher->title); 
     }
 
   /* 2.  DRAW AXES FOR THE PLOT */
 
-  switch (plotter.grid_spec)
+  switch (multigrapher->grid_spec)
     {
     case AXES_AND_BOX_AND_GRID:
     case AXES_AND_BOX:
       /* draw a box, not just a pair of axes */
-      pl_fbox (XP(XSQ(0.0)), YP(YSQ(0.0)),
-	       XP(XSQ(1.0)), YP(YSQ(1.0)));
+      pl_fbox_r (multigrapher->plotter, 
+		 XP(XSQ(0.0)), YP(YSQ(0.0)), XP(XSQ(1.0)), YP(YSQ(1.0)));
       break;
     case AXES:
       {
 	double xstart, ystart, xmid, ymid, xend, yend;
 	
-	xstart = (x_axis.switch_axis_end 
-		  ? XN(x_axis.other_axis_loc) - plotter.half_line_width
-		  : XN(x_axis.alt_other_axis_loc) + plotter.half_line_width);
-	ystart = (y_axis.switch_axis_end 
-		  ? YN(y_axis.alt_other_axis_loc)
-		  : YN(y_axis.other_axis_loc));
-	xmid = (x_axis.switch_axis_end 
-		? XN(x_axis.alt_other_axis_loc)
-		: XN(x_axis.other_axis_loc));
+	xstart = (multigrapher->x_axis.switch_axis_end 
+		  ? XN(multigrapher->x_axis.other_axis_loc) - multigrapher->half_line_width
+		  : XN(multigrapher->x_axis.alt_other_axis_loc) + multigrapher->half_line_width);
+	ystart = (multigrapher->y_axis.switch_axis_end 
+		  ? YN(multigrapher->y_axis.alt_other_axis_loc)
+		  : YN(multigrapher->y_axis.other_axis_loc));
+	xmid = (multigrapher->x_axis.switch_axis_end 
+		? XN(multigrapher->x_axis.alt_other_axis_loc)
+		: XN(multigrapher->x_axis.other_axis_loc));
 	ymid = ystart;
 	xend = xmid;
-	yend = (y_axis.switch_axis_end 
-		? YN(y_axis.other_axis_loc) - plotter.half_line_width
-		: YN(y_axis.alt_other_axis_loc) + plotter.half_line_width);
+	yend = (multigrapher->y_axis.switch_axis_end 
+		? YN(multigrapher->y_axis.other_axis_loc) - multigrapher->half_line_width
+		: YN(multigrapher->y_axis.alt_other_axis_loc) + multigrapher->half_line_width);
 	
-	pl_fmove (xstart, ystart);
-	pl_fcont (xmid, ymid);
-	pl_fcont (xend, yend);
+	pl_fmove_r (multigrapher->plotter, xstart, ystart);
+	pl_fcont_r (multigrapher->plotter, xmid, ymid);
+	pl_fcont_r (multigrapher->plotter, xend, yend);
       }
       break;
     case AXES_AT_ORIGIN:
       {
 	double xpos, ypos;
 	
-	xpos = (x_axis.switch_axis_end 
-		? XN(x_axis.other_axis_loc)
-		: XN(x_axis.alt_other_axis_loc));
-	ypos = (y_axis.switch_axis_end 
-		? YN(y_axis.alt_other_axis_loc)
-		: YN(y_axis.other_axis_loc));
+	xpos = (multigrapher->x_axis.switch_axis_end 
+		? XN(multigrapher->x_axis.other_axis_loc)
+		: XN(multigrapher->x_axis.alt_other_axis_loc));
+	ypos = (multigrapher->y_axis.switch_axis_end 
+		? YN(multigrapher->y_axis.alt_other_axis_loc)
+		: YN(multigrapher->y_axis.other_axis_loc));
 	
-	pl_fline (xpos, YP(YSQ(0.0)) - plotter.half_line_width,
-		  xpos, YP(YSQ(1.0)) + plotter.half_line_width);
-	pl_fline (XP(XSQ(0.0)) - plotter.half_line_width, ypos, 
-		  XP(XSQ(1.0)) + plotter.half_line_width, ypos);	
+	pl_fline_r (multigrapher->plotter, 
+		    xpos, YP(YSQ(0.0)) - multigrapher->half_line_width,
+		    xpos, YP(YSQ(1.0)) + multigrapher->half_line_width);
+	pl_fline_r (multigrapher->plotter, 
+		    XP(XSQ(0.0)) - multigrapher->half_line_width, ypos, 
+		    XP(XSQ(1.0)) + multigrapher->half_line_width, ypos);
       }
       break;
     case NO_AXES:
@@ -1264,119 +1268,131 @@ plot_frame (draw_canvas)
 
   /* 3.  PLOT TICK MARKS, GRID LINES, AND TICK LABELS ON ABSCISSA */
 
-  if (plotter.grid_spec != NO_AXES && !x_axis.omit_ticks
-      && !x_axis.user_specified_subsubticks)
+  if (multigrapher->grid_spec != NO_AXES && !multigrapher->x_axis.omit_ticks
+      && !multigrapher->x_axis.user_specified_subsubticks)
     {
       int i;
-      double xval, xrange = x_trans.input_max - x_trans.input_min;
+      double xval, xrange = multigrapher->x_trans.input_max - multigrapher->x_trans.input_min;
       /* there is no way you could use longer labels on tick marks! */
       char labelbuf[2048];
 
       /* switch to our font for drawing x axis label and tick labels */
-      pl_fontname (x_axis.font_name);
-      pl_ffontsize (SS(x_axis.font_size));
+      pl_fontname_r (multigrapher->plotter, multigrapher->x_axis.font_name);
+      pl_ffontsize_r (multigrapher->plotter, SS(multigrapher->x_axis.font_size));
       
-      for (i = x_axis.min_tick_count; i <= x_axis.max_tick_count; i++) 
+      for (i = multigrapher->x_axis.min_tick_count; i <= multigrapher->x_axis.max_tick_count; i++) 
 	/* tick range can be empty */
 	{
-	  xval = i * x_axis.tick_spacing;
+	  xval = i * multigrapher->x_axis.tick_spacing;
 	  	  
 	  /* discard tick locations outside plotting area */
-	  if (xval < x_trans.input_min - FUZZ * xrange 
-	      || xval > x_trans.input_max + FUZZ * xrange)
+	  if (xval < multigrapher->x_trans.input_min - FUZZ * xrange 
+	      || xval > multigrapher->x_trans.input_max + FUZZ * xrange)
 	    continue;
 
 	  /* Plot the abscissa tick labels. */
-	  if (!y_axis.switch_axis_end
-	      && !(plotter.grid_spec == AXES_AT_ORIGIN
+	  if (!multigrapher->y_axis.switch_axis_end
+	      && !(multigrapher->grid_spec == AXES_AT_ORIGIN
 		   /* don't plot label if it could run into an axis */
-		   && NEAR_EQUALITY (xval, x_axis.other_axis_loc, 
-				     x_trans.input_range)
-		   && (y_axis.other_axis_loc != y_trans.input_min)
-		   && (y_axis.other_axis_loc != y_trans.input_max)))
+		   && NEAR_EQUALITY (xval, multigrapher->x_axis.other_axis_loc, 
+				     multigrapher->x_trans.input_range)
+		   && (multigrapher->y_axis.other_axis_loc != multigrapher->y_trans.input_min)
+		   && (multigrapher->y_axis.other_axis_loc != multigrapher->y_trans.input_max)))
 	    /* print labels below bottom boundary */
 	    {
-	      pl_fmove (XV (xval),
-			YN (y_axis.other_axis_loc)
-			- (SS ((plotter.tick_size >= 0.0 ? 0.75 : 1.75) * fabs(plotter.tick_size))
-			   + plotter.half_line_width));
-	      print_tick_label (labelbuf, x_axis, x_trans,
-				(x_axis.type == A_LOG10) ? pow (10.0, xval) : xval);
-	      pl_alabel('c', 't', labelbuf);
-	      x_axis.labelled_ticks++;
+	      pl_fmove_r (multigrapher->plotter, 
+			  XV (xval),
+			  YN (multigrapher->y_axis.other_axis_loc)
+			  - (SS ((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) * fabs(multigrapher->tick_size))
+			     + multigrapher->half_line_width));
+	      print_tick_label (labelbuf, 
+				&multigrapher->x_axis, &multigrapher->x_trans,
+				(multigrapher->x_axis.type == A_LOG10) ? pow (10.0, xval) : xval);
+	      pl_alabel_r (multigrapher->plotter, 'c', 't', labelbuf);
+	      multigrapher->x_axis.labelled_ticks++;
 	    }
 	  else
 	    /* print labels above top boundary */
-	    if (y_axis.switch_axis_end
-	      && !(plotter.grid_spec == AXES_AT_ORIGIN
+	    if (multigrapher->y_axis.switch_axis_end
+	      && !(multigrapher->grid_spec == AXES_AT_ORIGIN
 		   /* don't plot label if it could run into an axis */
-		   && NEAR_EQUALITY (xval, x_axis.other_axis_loc, 
-				     x_trans.input_range)
-		   && (y_axis.other_axis_loc != y_trans.input_min)
-		   && (y_axis.other_axis_loc != y_trans.input_max)))
+		   && NEAR_EQUALITY (xval, multigrapher->x_axis.other_axis_loc, 
+				     multigrapher->x_trans.input_range)
+		   && (multigrapher->y_axis.other_axis_loc != multigrapher->y_trans.input_min)
+		   && (multigrapher->y_axis.other_axis_loc != multigrapher->y_trans.input_max)))
 	      {
-		pl_fmove (XV (xval),
-			  YN (y_axis.alt_other_axis_loc)
-			  + (SS ((plotter.tick_size >= 0.0 ? 0.75 : 1.75) * fabs(plotter.tick_size))
-			     + plotter.half_line_width));
-		print_tick_label (labelbuf, x_axis, x_trans,
-				  (x_axis.type == A_LOG10) ? pow (10.0, xval) : xval);
-		pl_alabel('c', 'b', labelbuf);
-		x_axis.labelled_ticks++;
+		pl_fmove_r (multigrapher->plotter, 
+			    XV (xval),
+			    YN (multigrapher->y_axis.alt_other_axis_loc)
+			    + (SS ((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) * fabs(multigrapher->tick_size))
+			     + multigrapher->half_line_width));
+		print_tick_label (labelbuf, 
+				  &multigrapher->x_axis, &multigrapher->x_trans,
+				  (multigrapher->x_axis.type == A_LOG10) ? pow (10.0, xval) : xval);
+		pl_alabel_r (multigrapher->plotter, 'c', 'b', labelbuf);
+		multigrapher->x_axis.labelled_ticks++;
 	      }
 	  
 	  /* Plot the abscissa tick marks, and vertical grid lines. */
-	  switch (plotter.grid_spec)
+	  switch (multigrapher->grid_spec)
 	    {
 	    case AXES_AND_BOX_AND_GRID:
-	      pl_linemod ("dotted");
-	      pl_fmove (XV(xval), YP(YSQ(0.0)));
-	      pl_fcont (XV(xval), YP(YSQ(1.0)));
-	      pl_linemod ("solid");
+	      pl_linemod_r (multigrapher->plotter, "dotted");
+	      pl_fmove_r (multigrapher->plotter, XV(xval), YP(YSQ(0.0)));
+	      pl_fcont_r (multigrapher->plotter, XV(xval), YP(YSQ(1.0)));
+	      pl_linemod_r (multigrapher->plotter, "solid");
 	      /* fall through */
 	    case AXES_AND_BOX:
-	      if (!y_axis.switch_axis_end)
+	      if (!multigrapher->y_axis.switch_axis_end)
 		{
-		  pl_fmove (XV (xval), 
-			 YN (y_axis.alt_other_axis_loc));
-		  pl_fcont (XV (xval), 
-			 YN (y_axis.alt_other_axis_loc)
-			 - (SS (plotter.tick_size)
-			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
-			       : -plotter.half_line_width)));
+		  pl_fmove_r (multigrapher->plotter, 
+			      XV (xval), 
+			      YN (multigrapher->y_axis.alt_other_axis_loc));
+		  pl_fcont_r (multigrapher->plotter, 
+			      XV (xval), 
+			      YN (multigrapher->y_axis.alt_other_axis_loc)
+			      - (SS (multigrapher->tick_size)
+				 + (multigrapher->tick_size > 0.0 ? multigrapher->half_line_width
+				    : -multigrapher->half_line_width)));
 		}
 	      else
 		{
-		  pl_fmove (XV (xval), 
-			 YN (y_axis.other_axis_loc));
-		  pl_fcont (XV (xval), 
-			 YN (y_axis.other_axis_loc)
-			 + (SS (plotter.tick_size)
-			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
-			       : -plotter.half_line_width)));
+		  pl_fmove_r (multigrapher->plotter, 
+			      XV (xval), 
+			      YN (multigrapher->y_axis.other_axis_loc));
+		  pl_fcont_r (multigrapher->plotter, 
+			      XV (xval), 
+			      YN (multigrapher->y_axis.other_axis_loc)
+			      + (SS (multigrapher->tick_size)
+				 + (multigrapher->tick_size > 0.0 ? multigrapher->half_line_width
+				    : -multigrapher->half_line_width)));
 		}
 	      /* fall through */
 	    case AXES:
 	    case AXES_AT_ORIGIN:
-	      if (!y_axis.switch_axis_end)
+	      if (!multigrapher->y_axis.switch_axis_end)
 		{
-		  pl_fmove (XV (xval), 
-			 YN (y_axis.other_axis_loc));
-		  pl_fcont (XV (xval), 
-			 YN (y_axis.other_axis_loc)
-			 + (SS (plotter.tick_size)
-			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
-			       : -plotter.half_line_width)));
+		  pl_fmove_r (multigrapher->plotter, 
+			      XV (xval), 
+			      YN (multigrapher->y_axis.other_axis_loc));
+		  pl_fcont_r (multigrapher->plotter, 
+			      XV (xval), 
+			      YN (multigrapher->y_axis.other_axis_loc)
+			      + (SS (multigrapher->tick_size)
+				 + (multigrapher->tick_size > 0.0 ? multigrapher->half_line_width
+				    : -multigrapher->half_line_width)));
 		}
 	      else
 		{
-		  pl_fmove (XV (xval), 
-			 YN (y_axis.alt_other_axis_loc));
-		  pl_fcont (XV (xval), 
-			 YN (y_axis.alt_other_axis_loc)
-			 - (SS (plotter.tick_size)
-			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
-			       : -plotter.half_line_width)));
+		  pl_fmove_r (multigrapher->plotter, 
+			      XV (xval), 
+			      YN (multigrapher->y_axis.alt_other_axis_loc));
+		  pl_fcont_r (multigrapher->plotter, 
+			      XV (xval), 
+			      YN (multigrapher->y_axis.alt_other_axis_loc)
+			      - (SS (multigrapher->tick_size)
+				 + (multigrapher->tick_size > 0.0 ? multigrapher->half_line_width
+				    : -multigrapher->half_line_width)));
 		}
 	      break;
 	    default:		/* shouldn't happen */
@@ -1384,73 +1400,81 @@ plot_frame (draw_canvas)
 	    }
 	}
       
-      if (x_axis.have_lin_subticks)
+      if (multigrapher->x_axis.have_lin_subticks)
 	{
 	  double subtick_size;	/* libplot coordinates */
 	  
 	  /* linearly spaced subticks on log axes are as long as reg. ticks */
-	  subtick_size = (x_axis.type == A_LOG10 
-			  ? SS(plotter.tick_size) : SS(plotter.subtick_size));
+	  subtick_size = (multigrapher->x_axis.type == A_LOG10 
+			  ? SS(multigrapher->tick_size) : SS(multigrapher->subtick_size));
 
 	  /* Plot the linearly spaced subtick marks on the abscissa */
-	  for (i = x_axis.min_lin_subtick_count; i <= x_axis.max_lin_subtick_count; i++) 
+	  for (i = multigrapher->x_axis.min_lin_subtick_count; i <= multigrapher->x_axis.max_lin_subtick_count; i++) 
 	    /* tick range can be empty */
 	    {
-	      xval = i * x_axis.lin_subtick_spacing;
+	      xval = i * multigrapher->x_axis.lin_subtick_spacing;
 	  	  
 	      /* discard subtick locations outside plotting area */
-	      if (xval < x_trans.input_min - FUZZ * xrange 
-		  || xval > x_trans.input_max + FUZZ * xrange)
+	      if (xval < multigrapher->x_trans.input_min - FUZZ * xrange 
+		  || xval > multigrapher->x_trans.input_max + FUZZ * xrange)
 		continue;
 
-	      switch (plotter.grid_spec)
+	      switch (multigrapher->grid_spec)
 		{
 		case AXES_AND_BOX_AND_GRID:
 		case AXES_AND_BOX:
 		  /* draw on both sides */
-		  if (!y_axis.switch_axis_end)
+		  if (!multigrapher->y_axis.switch_axis_end)
 		    {
-		      pl_fmove (XV (xval), 
-			     YN (y_axis.alt_other_axis_loc));
-		      pl_fcont (XV (xval), 
-			     YN (y_axis.alt_other_axis_loc)
-			     - (subtick_size
-				+ (subtick_size > 0.0 ? plotter.half_line_width
-				   : -plotter.half_line_width)));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XV (xval),
+				  YN (multigrapher->y_axis.alt_other_axis_loc));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XV (xval), 
+				  YN (multigrapher->y_axis.alt_other_axis_loc)
+				  - (subtick_size
+				     + (subtick_size > 0.0 ? multigrapher->half_line_width
+					: -multigrapher->half_line_width)));
 		    }
 		  else
 		    {
-		      pl_fmove (XV (xval), 
-			     YN (y_axis.other_axis_loc));
-		      pl_fcont (XV (xval), 
-			     YN (y_axis.other_axis_loc)
-			     + (subtick_size
-				+ (subtick_size > 0.0 ? plotter.half_line_width
-				   : -plotter.half_line_width)));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XV (xval), 
+				  YN (multigrapher->y_axis.other_axis_loc));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XV (xval), 
+				  YN (multigrapher->y_axis.other_axis_loc)
+				  + (subtick_size
+				     + (subtick_size > 0.0 ? multigrapher->half_line_width
+					: -multigrapher->half_line_width)));
 		    }
 		  /* fall through */
 		case AXES:
 		case AXES_AT_ORIGIN:
-		  if (!y_axis.switch_axis_end)
+		  if (!multigrapher->y_axis.switch_axis_end)
 		    /* draw on only one side */
 		    {
-		      pl_fmove (XV (xval), 
-			     YN (y_axis.other_axis_loc));
-		      pl_fcont (XV (xval), 
-			     YN (y_axis.other_axis_loc)
-			     + (subtick_size
-				+ (subtick_size > 0.0 ? plotter.half_line_width
-				   : -plotter.half_line_width)));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XV (xval), 
+				  YN (multigrapher->y_axis.other_axis_loc));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XV (xval), 
+				  YN (multigrapher->y_axis.other_axis_loc)
+				  + (subtick_size
+				     + (subtick_size > 0.0 ? multigrapher->half_line_width
+					: -multigrapher->half_line_width)));
 		    }
 		  else
 		    {
-		      pl_fmove (XV (xval), 
-			     YN (y_axis.alt_other_axis_loc));
-		      pl_fcont (XV (xval), 
-			     YN (y_axis.alt_other_axis_loc)
-			     - (subtick_size
-				+ (subtick_size > 0.0 ? plotter.half_line_width
-				   : -plotter.half_line_width)));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XV (xval), 
+				  YN (multigrapher->y_axis.alt_other_axis_loc));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XV (xval), 
+				  YN (multigrapher->y_axis.alt_other_axis_loc)
+				  - (subtick_size
+				     + (subtick_size > 0.0 ? multigrapher->half_line_width
+					: -multigrapher->half_line_width)));
 		    }
 		  break;
 		default:		/* shouldn't happen */
@@ -1460,142 +1484,154 @@ plot_frame (draw_canvas)
 	}
 
       /* plot a vertical dotted line at x = 0 */
-      if (plotter.grid_spec != AXES_AT_ORIGIN 
-	  && x_axis.type == A_LINEAR
-	  && x_trans.input_min * x_trans.input_max < 0.0)
+      if (multigrapher->grid_spec != AXES_AT_ORIGIN 
+	  && multigrapher->x_axis.type == A_LINEAR
+	  && multigrapher->x_trans.input_min * multigrapher->x_trans.input_max < 0.0)
 	{
-	  pl_linemod ("dotted");
-	  pl_fline (XV(0.0), YP(YSQ(0.0)),
-		 XV(0.0), YP(YSQ(1.0)));
-	  pl_linemod ("solid");	  
+	  pl_linemod_r (multigrapher->plotter, "dotted");
+	  pl_fline_r (multigrapher->plotter, 
+		      XV(0.0), YP(YSQ(0.0)), XV(0.0), YP(YSQ(1.0)));
+	  pl_linemod_r (multigrapher->plotter, "solid");	  
 	}
     }
   
   /* 4.  PLOT TICK MARKS, GRID LINES, AND TICK LABELS ON ORDINATE */
 
-  if (plotter.grid_spec != NO_AXES && !y_axis.omit_ticks
-      && !y_axis.user_specified_subsubticks)
+  if (multigrapher->grid_spec != NO_AXES && !multigrapher->y_axis.omit_ticks
+      && !multigrapher->y_axis.user_specified_subsubticks)
     {
       int i;
-      double yval, yrange = y_trans.input_max - y_trans.input_min;
+      double yval, yrange = multigrapher->y_trans.input_max - multigrapher->y_trans.input_min;
       /* there is no way you could use longer labels on tick marks! */
       char labelbuf[2048];
 
       /* switch to our font for drawing y axis label and tick labels */
-      pl_fontname (y_axis.font_name);
-      pl_ffontsize (SS(y_axis.font_size));
+      pl_fontname_r (multigrapher->plotter, multigrapher->y_axis.font_name);
+      pl_ffontsize_r (multigrapher->plotter, SS(multigrapher->y_axis.font_size));
       
-      for (i = y_axis.min_tick_count; i <= y_axis.max_tick_count; i++) 
+      for (i = multigrapher->y_axis.min_tick_count; i <= multigrapher->y_axis.max_tick_count; i++) 
 	/* range can be empty */
 	{
-	  yval = i * y_axis.tick_spacing;
+	  yval = i * multigrapher->y_axis.tick_spacing;
 	  
 	  /* discard tick locations outside plotting area */
-	  if (yval < y_trans.input_min - FUZZ * yrange 
-	      || yval > y_trans.input_max + FUZZ * yrange)
+	  if (yval < multigrapher->y_trans.input_min - FUZZ * yrange 
+	      || yval > multigrapher->y_trans.input_max + FUZZ * yrange)
 	    continue;
 
 	  /* Plot the ordinate tick labels. */
-	  if (!x_axis.switch_axis_end
-	      && !(plotter.grid_spec == AXES_AT_ORIGIN
+	  if (!multigrapher->x_axis.switch_axis_end
+	      && !(multigrapher->grid_spec == AXES_AT_ORIGIN
 		   /* don't plot label if it could run into an axis */
-		   && NEAR_EQUALITY (yval, y_axis.other_axis_loc, 
-				     y_trans.input_range)
-		   && (x_axis.other_axis_loc != x_trans.input_min)
-		   && (x_axis.other_axis_loc != x_trans.input_max)))
+		   && NEAR_EQUALITY (yval, multigrapher->y_axis.other_axis_loc, 
+				     multigrapher->y_trans.input_range)
+		   && (multigrapher->x_axis.other_axis_loc != multigrapher->x_trans.input_min)
+		   && (multigrapher->x_axis.other_axis_loc != multigrapher->x_trans.input_max)))
 	    /* print labels to left of left boundary */
 	    {
 	      double new_width;
 
-	      pl_fmove (XN (x_axis.other_axis_loc)
-		     - (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
-			   * fabs(plotter.tick_size))
-			+ plotter.half_line_width),
-		     YV (yval));
-	      print_tick_label (labelbuf, y_axis, y_trans,
-				(y_axis.type == A_LOG10) ? pow (10.0, yval) : yval);
-	      new_width = pl_flabelwidth (labelbuf);
-	      pl_alabel ('r', 'c', labelbuf);
-	      y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
-	      y_axis.labelled_ticks++;
+	      pl_fmove_r (multigrapher->plotter, 
+			  XN (multigrapher->x_axis.other_axis_loc)
+			  - (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+				* fabs(multigrapher->tick_size))
+			     + multigrapher->half_line_width),
+			  YV (yval));
+	      print_tick_label (labelbuf, 
+				&multigrapher->y_axis, &multigrapher->y_trans,
+				(multigrapher->y_axis.type == A_LOG10) ? pow (10.0, yval) : yval);
+	      new_width = pl_flabelwidth_r (multigrapher->plotter, labelbuf);
+	      pl_alabel_r (multigrapher->plotter, 'r', 'c', labelbuf);
+	      multigrapher->y_axis.max_label_width = DMAX(multigrapher->y_axis.max_label_width, new_width);
+	      multigrapher->y_axis.labelled_ticks++;
 	    }
 	  else
 	    /* print labels to right of right boundary */
-	    if (x_axis.switch_axis_end
-		&& !(plotter.grid_spec == AXES_AT_ORIGIN
+	    if (multigrapher->x_axis.switch_axis_end
+		&& !(multigrapher->grid_spec == AXES_AT_ORIGIN
 		     /* don't plot label if it could run into an axis */
-		     && NEAR_EQUALITY (yval, y_axis.other_axis_loc, 
-				       y_trans.input_range)
-		     && (x_axis.other_axis_loc != x_trans.input_min)
-		     && (x_axis.other_axis_loc != x_trans.input_max)))
+		     && NEAR_EQUALITY (yval, multigrapher->y_axis.other_axis_loc, 
+				       multigrapher->y_trans.input_range)
+		     && (multigrapher->x_axis.other_axis_loc != multigrapher->x_trans.input_min)
+		     && (multigrapher->x_axis.other_axis_loc != multigrapher->x_trans.input_max)))
 	    {
 	      double new_width;
 
-	      pl_fmove (XN (x_axis.alt_other_axis_loc)
-		    + (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
-			  * fabs(plotter.tick_size))
-		       + plotter.half_line_width),
-		     YV (yval));
-	      print_tick_label (labelbuf, y_axis, y_trans,
-				(y_axis.type == A_LOG10) ? pow (10.0, yval) : yval);
-	      new_width = pl_flabelwidth (labelbuf);
-	      pl_alabel ('l', 'c', labelbuf);
-	      y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
-	      y_axis.labelled_ticks++;
+	      pl_fmove_r (multigrapher->plotter, 
+			  XN (multigrapher->x_axis.alt_other_axis_loc)
+			  + (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+				* fabs(multigrapher->tick_size))
+			     + multigrapher->half_line_width),
+			  YV (yval));
+	      print_tick_label (labelbuf, 
+				&multigrapher->y_axis, &multigrapher->y_trans,
+				(multigrapher->y_axis.type == A_LOG10) ? pow (10.0, yval) : yval);
+	      new_width = pl_flabelwidth_r (multigrapher->plotter, labelbuf);
+	      pl_alabel_r (multigrapher->plotter, 'l', 'c', labelbuf);
+	      multigrapher->y_axis.max_label_width = DMAX(multigrapher->y_axis.max_label_width, new_width);
+	      multigrapher->y_axis.labelled_ticks++;
 	    }
 	  
 	  /* Plot the tick marks on the y-axis, and horizontal grid lines. */
-	  switch (plotter.grid_spec)
+	  switch (multigrapher->grid_spec)
 	    {
 	    case AXES_AND_BOX_AND_GRID:
-	      pl_linemod ("dotted");
-	      pl_fmove (XP(XSQ(0.0)), YV (yval));
-	      pl_fcont (XP(XSQ(1.0)), YV (yval));
-	      pl_linemod ("solid");
+	      pl_linemod_r (multigrapher->plotter, "dotted");
+	      pl_fmove_r (multigrapher->plotter, XP(XSQ(0.0)), YV (yval));
+	      pl_fcont_r (multigrapher->plotter, XP(XSQ(1.0)), YV (yval));
+	      pl_linemod_r (multigrapher->plotter, "solid");
 	      /* fall through */
 	    case AXES_AND_BOX:
-	      if (!x_axis.switch_axis_end)
+	      if (!multigrapher->x_axis.switch_axis_end)
 		{
-		  pl_fmove (XN (x_axis.alt_other_axis_loc),
-			 YV (yval));
-		  pl_fcont (XN (x_axis.alt_other_axis_loc)
-			 - (SS (plotter.tick_size) 
-			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
-			       : -plotter.half_line_width)),
-			 YV (yval));
+		  pl_fmove_r (multigrapher->plotter, 
+			      XN (multigrapher->x_axis.alt_other_axis_loc),
+			      YV (yval));
+		  pl_fcont_r (multigrapher->plotter, 
+			      XN (multigrapher->x_axis.alt_other_axis_loc)
+			      - (SS (multigrapher->tick_size) 
+				 + (multigrapher->tick_size > 0.0 ? multigrapher->half_line_width
+				    : -multigrapher->half_line_width)),
+			      YV (yval));
 		}
 	      else
 		{
-		  pl_fmove (XN (x_axis.other_axis_loc),
-			 YV (yval));
-		  pl_fcont (XN (x_axis.other_axis_loc)
-			 + (SS (plotter.tick_size) 
-			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
-			       : -plotter.half_line_width)),
-			 YV (yval));
+		  pl_fmove_r (multigrapher->plotter, 
+			      XN (multigrapher->x_axis.other_axis_loc),
+			      YV (yval));
+		  pl_fcont_r (multigrapher->plotter, 
+			      XN (multigrapher->x_axis.other_axis_loc)
+			      + (SS (multigrapher->tick_size) 
+				 + (multigrapher->tick_size > 0.0 ? multigrapher->half_line_width
+				    : -multigrapher->half_line_width)),
+			      YV (yval));
 		}
 	      /* fall through */
 	    case AXES:
 	    case AXES_AT_ORIGIN:
-	      if (!x_axis.switch_axis_end)
+	      if (!multigrapher->x_axis.switch_axis_end)
 		{
-		  pl_fmove (XN (x_axis.other_axis_loc),
-			 YV (yval));
-		  pl_fcont (XN (x_axis.other_axis_loc)
-			 + (SS (plotter.tick_size) 
-			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
-			       : -plotter.half_line_width)),
-			 YV (yval));
+		  pl_fmove_r (multigrapher->plotter, 
+			      XN (multigrapher->x_axis.other_axis_loc),
+			      YV (yval));
+		  pl_fcont_r (multigrapher->plotter, 
+			      XN (multigrapher->x_axis.other_axis_loc)
+			      + (SS (multigrapher->tick_size) 
+				 + (multigrapher->tick_size > 0.0 ? multigrapher->half_line_width
+				    : -multigrapher->half_line_width)),
+			      YV (yval));
 		}
 	      else
 		{
-		  pl_fmove (XN (x_axis.alt_other_axis_loc),
-			 YV (yval));
-		  pl_fcont (XN (x_axis.alt_other_axis_loc)
-			 - (SS (plotter.tick_size) 
-			    + (plotter.tick_size > 0.0 ? plotter.half_line_width
-			       : -plotter.half_line_width)),
-			 YV (yval));
+		  pl_fmove_r (multigrapher->plotter, 
+			      XN (multigrapher->x_axis.alt_other_axis_loc),
+			      YV (yval));
+		  pl_fcont_r (multigrapher->plotter, 
+			      XN (multigrapher->x_axis.alt_other_axis_loc)
+			      - (SS (multigrapher->tick_size) 
+				 + (multigrapher->tick_size > 0.0 ? multigrapher->half_line_width
+				    : -multigrapher->half_line_width)),
+			      YV (yval));
 		}
 	      break;
 	    default:		/* shouldn't happen */
@@ -1603,72 +1639,80 @@ plot_frame (draw_canvas)
 	    }
 	}
 
-      if (y_axis.have_lin_subticks)
+      if (multigrapher->y_axis.have_lin_subticks)
 	{
 	  double subtick_size;	/* libplot coordinates */
 
 	  /* linearly spaced subticks on a log axis are as long as regular ticks */
-	  subtick_size = (y_axis.type == A_LOG10 
-			  ? SS(plotter.tick_size) : SS(plotter.subtick_size));
+	  subtick_size = (multigrapher->y_axis.type == A_LOG10 
+			  ? SS(multigrapher->tick_size) : SS(multigrapher->subtick_size));
 
 	  /* Plot the linearly spaced subtick marks on the ordinate */
-	  for (i = y_axis.min_lin_subtick_count; i <= y_axis.max_lin_subtick_count; i++) 
+	  for (i = multigrapher->y_axis.min_lin_subtick_count; i <= multigrapher->y_axis.max_lin_subtick_count; i++) 
 	    /* range can be empty */
 	    {
-	      yval = i * y_axis.lin_subtick_spacing;
+	      yval = i * multigrapher->y_axis.lin_subtick_spacing;
 	      
 	      /* discard subtick locations outside plotting area */
-	      if (yval < y_trans.input_min - FUZZ * yrange 
-		  || yval > y_trans.input_max + FUZZ * yrange)
+	      if (yval < multigrapher->y_trans.input_min - FUZZ * yrange 
+		  || yval > multigrapher->y_trans.input_max + FUZZ * yrange)
 		continue;
 
 	      /* Plot the tick marks on the y-axis, and horizontal grid lines. */
-	      switch (plotter.grid_spec)
+	      switch (multigrapher->grid_spec)
 		{
 		case AXES_AND_BOX_AND_GRID:
 		case AXES_AND_BOX:
-		  if (!x_axis.switch_axis_end)
+		  if (!multigrapher->x_axis.switch_axis_end)
 		    {
-		      pl_fmove (XN (x_axis.alt_other_axis_loc),
-			     YV (yval));
-		      pl_fcont (XN (x_axis.alt_other_axis_loc)
-			     - (subtick_size
-				+ (subtick_size > 0.0 ? plotter.half_line_width
-				   : -plotter.half_line_width)),
-			     YV (yval));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XN (multigrapher->x_axis.alt_other_axis_loc),
+				  YV (yval));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XN (multigrapher->x_axis.alt_other_axis_loc)
+				  - (subtick_size
+				     + (subtick_size > 0.0 ? multigrapher->half_line_width
+					: -multigrapher->half_line_width)),
+				  YV (yval));
 		    }
 		  else
 		    {
-		      pl_fmove (XN (x_axis.other_axis_loc),
-			     YV (yval));
-		      pl_fcont (XN (x_axis.other_axis_loc)
-			     + (subtick_size
-				+ (subtick_size > 0.0 ? plotter.half_line_width
-				   : -plotter.half_line_width)),
-			     YV (yval));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XN (multigrapher->x_axis.other_axis_loc),
+				  YV (yval));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XN (multigrapher->x_axis.other_axis_loc)
+				  + (subtick_size
+				     + (subtick_size > 0.0 ? multigrapher->half_line_width
+					: -multigrapher->half_line_width)),
+				  YV (yval));
 		    }
 		  /* fall through */
 		case AXES:
 		case AXES_AT_ORIGIN:
-		  if (!x_axis.switch_axis_end)
+		  if (!multigrapher->x_axis.switch_axis_end)
 		    {
-		      pl_fmove (XN (x_axis.other_axis_loc),
-			     YV (yval));
-		      pl_fcont (XN (x_axis.other_axis_loc)
-			     + (subtick_size
-				+ (subtick_size > 0.0 ? plotter.half_line_width
-				   : -plotter.half_line_width)),
-			     YV (yval));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XN (multigrapher->x_axis.other_axis_loc),
+				  YV (yval));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XN (multigrapher->x_axis.other_axis_loc)
+				  + (subtick_size
+				     + (subtick_size > 0.0 ? multigrapher->half_line_width
+					: -multigrapher->half_line_width)),
+				  YV (yval));
 		    }
 		  else
 		    {
-		      pl_fmove (XN (x_axis.alt_other_axis_loc),
-			     YV (yval));
-		      pl_fcont (XN (x_axis.alt_other_axis_loc)
-			     - (subtick_size
-			       + (subtick_size > 0.0 ? plotter.half_line_width
-				  : -plotter.half_line_width)),
-			     YV (yval));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XN (multigrapher->x_axis.alt_other_axis_loc),
+				  YV (yval));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XN (multigrapher->x_axis.alt_other_axis_loc)
+				  - (subtick_size
+				     + (subtick_size > 0.0 ? multigrapher->half_line_width
+					: -multigrapher->half_line_width)),
+				  YV (yval));
 		    }
 		  break;
 		default:		/* shouldn't happen */
@@ -1678,30 +1722,30 @@ plot_frame (draw_canvas)
 	}
 	  
       /* plot a horizontal dotted line at y = 0 */
-      if (plotter.grid_spec != AXES_AT_ORIGIN 
-	  && y_axis.type == A_LINEAR
-	  && y_trans.input_min * y_trans.input_max < 0.0)
+      if (multigrapher->grid_spec != AXES_AT_ORIGIN 
+	  && multigrapher->y_axis.type == A_LINEAR
+	  && multigrapher->y_trans.input_min * multigrapher->y_trans.input_max < 0.0)
 	{
-	  pl_linemod ("dotted");
-	  pl_fline (XP(XSQ(0.0)), YV(0.0),
-		 XP(XSQ(1.0)), YV(0.0));
-	  pl_linemod ("solid");	  
+	  pl_linemod_r (multigrapher->plotter, "dotted");
+	  pl_fline_r (multigrapher->plotter, 
+		      XP(XSQ(0.0)), YV(0.0), XP(XSQ(1.0)), YV(0.0));
+	  pl_linemod_r (multigrapher->plotter, "solid");	  
 	}
     }
 
   /* 5.  DRAW LOGARITHMIC SUBSUBTICKS AND THEIR LABELS ON ABSCISSA */
 
   /* first, draw normal logarithmic subsubticks if any */
-  if (plotter.grid_spec != NO_AXES && x_axis.have_normal_subsubticks
-      && !x_axis.user_specified_subsubticks && !x_axis.omit_ticks)
+  if (multigrapher->grid_spec != NO_AXES && multigrapher->x_axis.have_normal_subsubticks
+      && !multigrapher->x_axis.user_specified_subsubticks && !multigrapher->x_axis.omit_ticks)
     {
       int i, m, imin, imax;
-      double xval, xrange = x_trans.input_max - x_trans.input_min;
+      double xval, xrange = multigrapher->x_trans.input_max - multigrapher->x_trans.input_min;
 
       /* compute an integer range (of powers of 10) large enough to include
 	 the entire desired axis */
-      imin = (int)(floor (x_trans.input_min - FUZZ * xrange));
-      imax = (int)(ceil (x_trans.input_max + FUZZ * xrange));
+      imin = (int)(floor (multigrapher->x_trans.input_min - FUZZ * xrange));
+      imax = (int)(ceil (multigrapher->x_trans.input_max + FUZZ * xrange));
 
       for (i = imin; i < imax; i++)
 	{
@@ -1711,49 +1755,49 @@ plot_frame (draw_canvas)
 
 	      /* Plot subsubtick and label, if desired. */
 	      /* N.B. if tick is outside axis range, nothing will be printed */
-	      plot_abscissa_log_subsubtick (xval);
+	      plot_abscissa_log_subsubtick (multigrapher, xval);
 	    }
 	}
     }
 
   /* second, draw user-specified logarithmic subsubticks instead, if any */
-  if (plotter.grid_spec != NO_AXES && x_axis.user_specified_subsubticks
-      && !x_axis.omit_ticks)
+  if (multigrapher->grid_spec != NO_AXES && multigrapher->x_axis.user_specified_subsubticks
+      && !multigrapher->x_axis.omit_ticks)
     {
       int i, imin, imax;
-      double xval, xrange = x_trans.input_max - x_trans.input_min;
+      double xval, xrange = multigrapher->x_trans.input_max - multigrapher->x_trans.input_min;
       
       /* compute an integer range large enough to include the entire
 	 desired axis */
-      imin = (int)(floor (pow (10.0, x_trans.input_min - FUZZ * xrange) 
-			  / x_axis.subsubtick_spacing));
-      imax = (int)(ceil (pow (10.0, x_trans.input_max + FUZZ * xrange) 
-			 / x_axis.subsubtick_spacing));
+      imin = (int)(floor (pow (10.0, multigrapher->x_trans.input_min - FUZZ * xrange) 
+			  / multigrapher->x_axis.subsubtick_spacing));
+      imax = (int)(ceil (pow (10.0, multigrapher->x_trans.input_max + FUZZ * xrange) 
+			 / multigrapher->x_axis.subsubtick_spacing));
       
       /* draw user-specified subsubticks */
       for (i = imin; i <= imax; i++)
 	{
-	  xval = log10 (i * x_axis.subsubtick_spacing);
+	  xval = log10 (i * multigrapher->x_axis.subsubtick_spacing);
 
 	  /* Plot subsubtick and label, if desired. */
 	  /* N.B. if tick is outside axis range, nothing will be printed */
-	  plot_abscissa_log_subsubtick (xval);
+	  plot_abscissa_log_subsubtick (multigrapher, xval);
 	}
     }
 
   /* 6.  DRAW LOGARITHMIC SUBSUBTICKS AND THEIR LABELS ON ORDINATE */
   
   /* first, draw normal logarithmic subsubticks if any */
-  if (plotter.grid_spec != NO_AXES && y_axis.have_normal_subsubticks
-      && !y_axis.user_specified_subsubticks && !y_axis.omit_ticks)
+  if (multigrapher->grid_spec != NO_AXES && multigrapher->y_axis.have_normal_subsubticks
+      && !multigrapher->y_axis.user_specified_subsubticks && !multigrapher->y_axis.omit_ticks)
     {
       int i, m, imin, imax;
-      double yval, yrange = y_trans.input_max - y_trans.input_min;
+      double yval, yrange = multigrapher->y_trans.input_max - multigrapher->y_trans.input_min;
 
       /* compute an integer range (of powers of 10) large enough to include
 	 the entire desired axis */
-      imin = (int)(floor (y_trans.input_min - FUZZ * yrange));
-      imax = (int)(ceil (y_trans.input_max + FUZZ * yrange));
+      imin = (int)(floor (multigrapher->y_trans.input_min - FUZZ * yrange));
+      imax = (int)(ceil (multigrapher->y_trans.input_max + FUZZ * yrange));
 
       /* draw normal subticks */
       for (i = imin; i < imax; i++)
@@ -1764,184 +1808,196 @@ plot_frame (draw_canvas)
 
 	      /* Plot subsubtick and label, if desired. */
 	      /* N.B. if tick is outside axis range, nothing will be printed */
-	      plot_ordinate_log_subsubtick (yval);
+	      plot_ordinate_log_subsubtick (multigrapher, yval);
 	    }
 	}
     }
 
   /* second, draw user-specified logarithmic subsubticks instead, if any */
-  if (plotter.grid_spec != NO_AXES && y_axis.user_specified_subsubticks
-      && !y_axis.omit_ticks)
+  if (multigrapher->grid_spec != NO_AXES && multigrapher->y_axis.user_specified_subsubticks
+      && !multigrapher->y_axis.omit_ticks)
     {
       int i, imin, imax;
-      double yval, yrange = y_trans.input_max - y_trans.input_min;
+      double yval, yrange = multigrapher->y_trans.input_max - multigrapher->y_trans.input_min;
       
       /* compute an integer range large enough to include the entire
 	 desired axis */
-      imin = (int)(floor (pow (10.0, y_trans.input_min - FUZZ * yrange) 
-			  / y_axis.subsubtick_spacing));
-      imax = (int)(ceil (pow (10.0, y_trans.input_max + FUZZ * yrange) 
-			 / y_axis.subsubtick_spacing));
+      imin = (int)(floor (pow (10.0, multigrapher->y_trans.input_min - FUZZ * yrange) 
+			  / multigrapher->y_axis.subsubtick_spacing));
+      imax = (int)(ceil (pow (10.0, multigrapher->y_trans.input_max + FUZZ * yrange) 
+			 / multigrapher->y_axis.subsubtick_spacing));
       
       /* draw user-specified subsubticks */
       for (i = imin; i <= imax; i++)
 	{
-	  yval = log10 (i * y_axis.subsubtick_spacing);
+	  yval = log10 (i * multigrapher->y_axis.subsubtick_spacing);
 
 	  /* Plot subsubtick and label, if desired. */
 	  /* N.B. if tick is outside axis range, nothing will be printed */
-	  plot_ordinate_log_subsubtick (yval);
+	  plot_ordinate_log_subsubtick (multigrapher, yval);
 	}
     }
 
   /* 7.  DRAW THE ABSCISSA LABEL */
 
-      if ((plotter.grid_spec != NO_AXES)
-      && x_axis.label != NULL && x_axis.label != '\0')
+      if ((multigrapher->grid_spec != NO_AXES)
+      && multigrapher->x_axis.label != NULL && multigrapher->x_axis.label != '\0')
     {
       double x_axis_font_size;
       double xloc;
 
       /* switch to our font for drawing x axis label and tick labels */
-      pl_fontname (x_axis.font_name);
-      x_axis_font_size = pl_ffontsize (SS(x_axis.font_size));
+      pl_fontname_r (multigrapher->plotter, multigrapher->x_axis.font_name);
+      x_axis_font_size = pl_ffontsize_r (multigrapher->plotter, 
+					 SS(multigrapher->x_axis.font_size));
 
-      if (plotter.grid_spec != AXES_AT_ORIGIN)
+      if (multigrapher->grid_spec != AXES_AT_ORIGIN)
 	/* center the label on the axis */
-	xloc = 0.5 * (x_trans.input_max + x_trans.input_min);
+	xloc = 0.5 * (multigrapher->x_trans.input_max + multigrapher->x_trans.input_min);
       else
 	{
-	  if ((y_axis.other_axis_loc == y_trans.input_min)
-	      || (y_axis.other_axis_loc == y_trans.input_max))
+	  if ((multigrapher->y_axis.other_axis_loc == multigrapher->y_trans.input_min)
+	      || (multigrapher->y_axis.other_axis_loc == multigrapher->y_trans.input_max))
 
-	    xloc = 0.5 * (x_trans.input_max + x_trans.input_min);
+	    xloc = 0.5 * (multigrapher->x_trans.input_max + multigrapher->x_trans.input_min);
 	  else
 	    /* center label in the larger of the two halves */
 	    xloc = 
-	      x_trans.input_max-x_axis.other_axis_loc >= x_axis.other_axis_loc-x_trans.input_min ?
-		0.5 * (x_trans.input_max + x_axis.other_axis_loc) :
-		  0.5 * (x_axis.other_axis_loc + x_trans.input_min);
+	      multigrapher->x_trans.input_max-multigrapher->x_axis.other_axis_loc >= multigrapher->x_axis.other_axis_loc-multigrapher->x_trans.input_min ?
+		0.5 * (multigrapher->x_trans.input_max + multigrapher->x_axis.other_axis_loc) :
+		  0.5 * (multigrapher->x_axis.other_axis_loc + multigrapher->x_trans.input_min);
 	}
       
-      if (!y_axis.switch_axis_end) /* axis on bottom, label below it */
+      if (!multigrapher->y_axis.switch_axis_end) /* axis on bottom, label below it */
 	{
-	  pl_fmove (XV (xloc), 
-		 YN (y_axis.other_axis_loc)
-		 - (SS ((plotter.tick_size >= 0.0 ? 0.875 : 2.125) 
-			* fabs(plotter.tick_size))
-		    + (6*x_axis_font_size)/5
-		    + plotter.half_line_width));
-	  pl_alabel ('c', 't', x_axis.label);
+	  pl_fmove_r (multigrapher->plotter, 
+		      XV (xloc), 
+		      YN (multigrapher->y_axis.other_axis_loc)
+		      - (SS ((multigrapher->tick_size >= 0.0 ? 0.875 : 2.125) 
+			     * fabs(multigrapher->tick_size))
+			 + (6 * x_axis_font_size)/5
+			 + multigrapher->half_line_width));
+	  pl_alabel_r (multigrapher->plotter, 
+		       'c', 't', multigrapher->x_axis.label);
 	}
       else			/* axis on top, label above it */
 	{
-	  pl_fmove (XV (xloc), 
-		 YN (y_axis.alt_other_axis_loc)
-		 + (SS ((plotter.tick_size >= 0.0 ? 0.875 : 2.125) 
-			* fabs(plotter.tick_size))
-		    + (6*x_axis_font_size)/5
-		    + plotter.half_line_width));
-	  pl_alabel ('c', 'b', x_axis.label);
+	  pl_fmove_r (multigrapher->plotter, 
+		      XV (xloc), 
+		      YN (multigrapher->y_axis.alt_other_axis_loc)
+		      + (SS ((multigrapher->tick_size >= 0.0 ? 0.875 : 2.125) 
+			     * fabs(multigrapher->tick_size))
+			 + (6 * x_axis_font_size)/5
+			 + multigrapher->half_line_width));
+	  pl_alabel_r (multigrapher->plotter, 
+		       'c', 'b', multigrapher->x_axis.label);
 	}
     }
 
   /* 8.  DRAW THE ORDINATE LABEL */
 
-  if ((plotter.grid_spec != NO_AXES)
-      && (y_axis.label != NULL && *(y_axis.label) != '\0'))
+  if ((multigrapher->grid_spec != NO_AXES)
+      && (multigrapher->y_axis.label != NULL && *(multigrapher->y_axis.label) != '\0'))
     {
       double y_axis_font_size;
       double yloc;
 
       /* switch to our font for drawing y axis label and tick labels */
-      pl_fontname (y_axis.font_name);
-      y_axis_font_size = pl_ffontsize (SS(y_axis.font_size));
+      pl_fontname_r (multigrapher->plotter, multigrapher->y_axis.font_name);
+      y_axis_font_size = pl_ffontsize_r (multigrapher->plotter, 
+					 SS(multigrapher->y_axis.font_size));
 
-      if (plotter.grid_spec != AXES_AT_ORIGIN)
+      if (multigrapher->grid_spec != AXES_AT_ORIGIN)
 	/* center the label on the axis */
-	yloc = 0.5 * (y_trans.input_min + y_trans.input_max);
+	yloc = 0.5 * (multigrapher->y_trans.input_min + multigrapher->y_trans.input_max);
       else
 	{
-	  if ((x_axis.other_axis_loc == x_trans.input_min)
-	      || (x_axis.other_axis_loc == x_trans.input_max))
-	    yloc = 0.5 * (y_trans.input_min + y_trans.input_max);
+	  if ((multigrapher->x_axis.other_axis_loc == multigrapher->x_trans.input_min)
+	      || (multigrapher->x_axis.other_axis_loc == multigrapher->x_trans.input_max))
+	    yloc = 0.5 * (multigrapher->y_trans.input_min + multigrapher->y_trans.input_max);
 	  else
 	    /* center label in the larger of the two halves */
 	    yloc = 
-	      y_trans.input_max-y_axis.other_axis_loc >= y_axis.other_axis_loc-y_trans.input_min ?
-		0.5 * (y_trans.input_max + y_axis.other_axis_loc) :
-		  0.5 * (y_axis.other_axis_loc + y_trans.input_min);
+	      multigrapher->y_trans.input_max-multigrapher->y_axis.other_axis_loc >= multigrapher->y_axis.other_axis_loc-multigrapher->y_trans.input_min ?
+		0.5 * (multigrapher->y_trans.input_max + multigrapher->y_axis.other_axis_loc) :
+		  0.5 * (multigrapher->y_axis.other_axis_loc + multigrapher->y_trans.input_min);
 	}
       
 /* a relic of temps perdus */
 #define libplot_has_font_metrics 1
 
-      if (!x_axis.switch_axis_end)
+      if (!multigrapher->x_axis.switch_axis_end)
 	{
-	  pl_fmove (XN (x_axis.other_axis_loc)
-		 - (libplot_has_font_metrics ?
-		    (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
-			* fabs(plotter.tick_size)) 
-		     + 1.15 * y_axis.max_label_width
-		     + 0.5 * y_axis_font_size
-		     + plotter.half_line_width)
-		    : (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
-			  * fabs(plotter.tick_size)) /* backup */
-		       + 1.0 * y_axis_font_size
-		       + plotter.half_line_width)),
-		 YV(yloc));
+	  pl_fmove_r (multigrapher->plotter,
+		      XN (multigrapher->x_axis.other_axis_loc)
+		      - (libplot_has_font_metrics ?
+			 (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			     * fabs(multigrapher->tick_size)) 
+			  + 1.15 * multigrapher->y_axis.max_label_width
+			  + 0.5 * y_axis_font_size
+			  + multigrapher->half_line_width)
+			 : (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			       * fabs(multigrapher->tick_size)) /* backup */
+			    + 1.0 * y_axis_font_size
+			    + multigrapher->half_line_width)),
+		      YV(yloc));
 	  
 	  if (libplot_has_font_metrics
-	      && !plotter.no_rotate_y_label) /* can rotate label */
+	      && !multigrapher->no_rotate_y_label) /* can rotate label */
 	    {
-	      pl_textangle (90);
-	      pl_alabel ('c', 'x', y_axis.label);
-	      pl_textangle (0);
+	      pl_textangle_r (multigrapher->plotter, 90);
+	      pl_alabel_r (multigrapher->plotter, 
+			   'c', 'x', multigrapher->y_axis.label);
+	      pl_textangle_r (multigrapher->plotter, 0);
 	    }
 	  else
 	    /* non-rotated axis label, right justified */
-	    pl_alabel ('r', 'c', y_axis.label);
+	    pl_alabel_r (multigrapher->plotter, 
+			 'r', 'c', multigrapher->y_axis.label);
 	}
       else
 	{
-	  pl_fmove (XN (x_axis.alt_other_axis_loc)
-		 + (libplot_has_font_metrics ?
-		    (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
-			* fabs(plotter.tick_size)) 
-		     + 1.15 * y_axis.max_label_width 
-		     + 0.5 * y_axis_font_size
-		     + plotter.half_line_width)
-		    : (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
-			  * fabs(plotter.tick_size)) /* backup */
-		       + 1.0 * y_axis_font_size
-		       + plotter.half_line_width)), 
-		 YV(yloc));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.alt_other_axis_loc)
+		      + (libplot_has_font_metrics ?
+			 (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			     * fabs(multigrapher->tick_size)) 
+			  + 1.15 * multigrapher->y_axis.max_label_width 
+			  + 0.5 * y_axis_font_size
+			  + multigrapher->half_line_width)
+			 : (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			       * fabs(multigrapher->tick_size)) /* backup */
+			    + 1.0 * y_axis_font_size
+			    + multigrapher->half_line_width)), 
+		      YV(yloc));
 	  
 	  if (libplot_has_font_metrics
-	      && !plotter.no_rotate_y_label) /* can rotate label */
+	      && !multigrapher->no_rotate_y_label) /* can rotate label */
 	    {
-	      pl_textangle (90);
-	      pl_alabel ('c', 't', y_axis.label);
-	      pl_textangle (0);
+	      pl_textangle_r (multigrapher->plotter, 90);
+	      pl_alabel_r (multigrapher->plotter, 
+			   'c', 't', multigrapher->y_axis.label);
+	      pl_textangle_r (multigrapher->plotter, 0);
 	    }
 	  else
 	    /* non-rotated axis label, left justified */
-	    pl_alabel ('l', 'c', y_axis.label);
+	    pl_alabel_r (multigrapher->plotter, 
+			 'l', 'c', multigrapher->y_axis.label);
 	}
     }
 
   /* END OF TASKS */
 
   /* flush frame to device */
-  pl_flushpl();
+  pl_flushpl_r (multigrapher->plotter);
 
-  pl_restorestate();
+  pl_restorestate_r (multigrapher->plotter);
 
-  if (plotter.grid_spec != NO_AXES)
+  if (multigrapher->grid_spec != NO_AXES)
     {
       if (!tick_warning_printed && 
-	  ((!x_axis.omit_ticks && x_axis.labelled_ticks <= 2)
-	   || (!y_axis.omit_ticks && y_axis.labelled_ticks <= 2)))
+	  ((!multigrapher->x_axis.omit_ticks && multigrapher->x_axis.labelled_ticks <= 2)
+	   || (!multigrapher->y_axis.omit_ticks && multigrapher->y_axis.labelled_ticks <= 2)))
 	{
 	  fprintf (stderr,
 		   "%s: too few labelled axis ticks, adjust tick spacing manually\n",
@@ -1959,110 +2015,122 @@ plot_frame (draw_canvas)
 
 static void
 #ifdef _HAVE_PROTOS
-plot_abscissa_log_subsubtick (double xval)
+plot_abscissa_log_subsubtick (Multigrapher *multigrapher, double xval)
 #else
-plot_abscissa_log_subsubtick (xval)
-	double xval;		/* log of location */
+plot_abscissa_log_subsubtick (multigrapher, xval)
+     Multigrapher *multigrapher;
+     double xval;		/* log of location */
 #endif
 {
-  double xrange = x_trans.input_max - x_trans.input_min;
+  double xrange = multigrapher->x_trans.input_max - multigrapher->x_trans.input_min;
   /* there is no way you could use longer labels on tick marks! */
   char labelbuf[2048];
-  double tick_size = SS(plotter.tick_size); /* for positioning labels */
-  double subsubtick_size = SS(plotter.subtick_size);
+  double tick_size = SS(multigrapher->tick_size); /* for positioning labels */
+  double subsubtick_size = SS(multigrapher->subtick_size);
       
   /* switch to our font for drawing x axis label and tick labels */
-  pl_fontname (x_axis.font_name);
-  pl_ffontsize (SS(x_axis.font_size));
+  pl_fontname_r (multigrapher->plotter, multigrapher->x_axis.font_name);
+  pl_ffontsize_r (multigrapher->plotter, SS(multigrapher->x_axis.font_size));
   
   /* discard subsubtick locations outside plotting area */
-  if (xval < x_trans.input_min - FUZZ * xrange
-      || xval > x_trans.input_max + FUZZ * xrange)
+  if (xval < multigrapher->x_trans.input_min - FUZZ * xrange
+      || xval > multigrapher->x_trans.input_max + FUZZ * xrange)
     return;
   
   /* label subsubtick if it seems appropriate */
-  if (x_axis.user_specified_subsubticks)
+  if (multigrapher->x_axis.user_specified_subsubticks)
     {
-      print_tick_label (labelbuf, x_axis, x_trans, 
+      print_tick_label (labelbuf, 
+			&multigrapher->x_axis, &multigrapher->x_trans, 
 			pow (10.0, xval));
-      if (!y_axis.switch_axis_end)
+      if (!multigrapher->y_axis.switch_axis_end)
 	{
-	  pl_fmove (XV (xval),
-		 YN (y_axis.other_axis_loc)
-		 - ((tick_size >= 0 ? 0.75 : 1.75)
-		    * fabs((double)tick_size)
-		    + plotter.half_line_width));
-	  pl_alabel('c', 't', labelbuf);
-	  x_axis.labelled_ticks++;
+	  pl_fmove_r (multigrapher->plotter, 
+		      XV (xval),
+		      YN (multigrapher->y_axis.other_axis_loc)
+		      - ((tick_size >= 0 ? 0.75 : 1.75)
+			 * fabs((double)tick_size)
+			 + multigrapher->half_line_width));
+	  pl_alabel_r (multigrapher->plotter, 'c', 't', labelbuf);
+	  multigrapher->x_axis.labelled_ticks++;
 	}
       else
 	{
-	  pl_fmove (XV (xval),
-		 YN (y_axis.alt_other_axis_loc)
-		 + ((tick_size >= 0 ? 0.75 : 1.75) 
-		    * fabs((double)tick_size)
-		    + plotter.half_line_width));
-	  pl_alabel('c', 'b', labelbuf);
-	  x_axis.labelled_ticks++;
+	  pl_fmove_r (multigrapher->plotter, 
+		      XV (xval),
+		      YN (multigrapher->y_axis.alt_other_axis_loc)
+		      + ((tick_size >= 0 ? 0.75 : 1.75) 
+			 * fabs((double)tick_size)
+			 + multigrapher->half_line_width));
+	  pl_alabel_r (multigrapher->plotter, 'c', 'b', labelbuf);
+	  multigrapher->x_axis.labelled_ticks++;
 	}
     }
   
   /* draw subsubtick */
-  switch (plotter.grid_spec)
+  switch (multigrapher->grid_spec)
     {
     case AXES_AND_BOX_AND_GRID:
-      pl_linemod ("dotted");
-      pl_fmove (XV (xval), YP(YSQ(0.0)));
-      pl_fcont (XV (xval), YP(YSQ(1.0)));
-      pl_linemod ("solid");
+      pl_linemod_r (multigrapher->plotter, "dotted");
+      pl_fmove_r (multigrapher->plotter, XV (xval), YP(YSQ(0.0)));
+      pl_fcont_r (multigrapher->plotter, XV (xval), YP(YSQ(1.0)));
+      pl_linemod_r (multigrapher->plotter, "solid");
       /* fall through */
     case AXES_AND_BOX:
-      if (!y_axis.switch_axis_end)
+      if (!multigrapher->y_axis.switch_axis_end)
 	{
-	  pl_fmove (XV (xval), 
-		 YN (y_axis.alt_other_axis_loc));
-	  pl_fcont (XV (xval),
-		 YN (y_axis.alt_other_axis_loc)
-		 - (subsubtick_size
-		    + (subsubtick_size > 0.0
-		       ? plotter.half_line_width
-		       : -plotter.half_line_width)));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XV (xval), 
+		      YN (multigrapher->y_axis.alt_other_axis_loc));
+	  pl_fcont_r (multigrapher->plotter, 
+		      XV (xval),
+		      YN (multigrapher->y_axis.alt_other_axis_loc)
+		      - (subsubtick_size
+			 + (subsubtick_size > 0.0
+			    ? multigrapher->half_line_width
+			    : -multigrapher->half_line_width)));
 	}
       else
 	{
-	  pl_fmove (XV (xval), 
-		 YN (y_axis.other_axis_loc));
-	  pl_fcont (XV (xval),
-		 YN (y_axis.other_axis_loc)
-		 + (subsubtick_size
-		    + (subsubtick_size > 0.0
-		       ? plotter.half_line_width
-		       : -plotter.half_line_width)));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XV (xval), 
+		      YN (multigrapher->y_axis.other_axis_loc));
+	  pl_fcont_r (multigrapher->plotter, 
+		      XV (xval),
+		      YN (multigrapher->y_axis.other_axis_loc)
+		      + (subsubtick_size
+			 + (subsubtick_size > 0.0
+			    ? multigrapher->half_line_width
+			    : -multigrapher->half_line_width)));
 	}
       /* fall through */
     case AXES:
     case AXES_AT_ORIGIN:
-      if (!y_axis.switch_axis_end)
+      if (!multigrapher->y_axis.switch_axis_end)
 	{
-	  pl_fmove (XV (xval), 
-		 YN (y_axis.other_axis_loc));
-	  pl_fcont (XV (xval), 
-		 YN (y_axis.other_axis_loc)
-		 + (subsubtick_size
-		    + (subsubtick_size > 0.0 
-		       ? plotter.half_line_width
-		       : -plotter.half_line_width)));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XV (xval), 
+		      YN (multigrapher->y_axis.other_axis_loc));
+	  pl_fcont_r (multigrapher->plotter, 
+		      XV (xval), 
+		      YN (multigrapher->y_axis.other_axis_loc)
+		      + (subsubtick_size
+			 + (subsubtick_size > 0.0 
+			    ? multigrapher->half_line_width
+			    : -multigrapher->half_line_width)));
 	}
       else
 	{
-	  pl_fmove (XV (xval), 
-		 YN (y_axis.alt_other_axis_loc));
-	  pl_fcont (XV (xval), 
-		 YN (y_axis.alt_other_axis_loc)
-		 - (subsubtick_size
-		    + (subsubtick_size > 0.0 
-		       ? plotter.half_line_width
-		       : -plotter.half_line_width)));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XV (xval), 
+		      YN (multigrapher->y_axis.alt_other_axis_loc));
+	  pl_fcont_r (multigrapher->plotter, 
+		      XV (xval), 
+		      YN (multigrapher->y_axis.alt_other_axis_loc)
+		      - (subsubtick_size
+			 + (subsubtick_size > 0.0 
+			    ? multigrapher->half_line_width
+			    : -multigrapher->half_line_width)));
 	}
       break;
     default:			/* shouldn't happen */
@@ -2072,116 +2140,128 @@ plot_abscissa_log_subsubtick (xval)
 
 static void
 #ifdef _HAVE_PROTOS
-plot_ordinate_log_subsubtick (double yval)
+plot_ordinate_log_subsubtick (Multigrapher *multigrapher, double yval)
 #else
-plot_ordinate_log_subsubtick (yval)
+plot_ordinate_log_subsubtick (multigrapher, yval)
+     Multigrapher *multigrapher;
      double yval;		/* log of location */
 #endif
 {
-  double yrange = y_trans.input_max - y_trans.input_min;
+  double yrange = multigrapher->y_trans.input_max - multigrapher->y_trans.input_min;
   /* there is no way you could use longer labels on tick marks! */
   char labelbuf[2048];
-  double tick_size = SS(plotter.tick_size); /* for positioning labels */
-  double subsubtick_size = SS(plotter.subtick_size);
+  double tick_size = SS(multigrapher->tick_size); /* for positioning labels */
+  double subsubtick_size = SS(multigrapher->subtick_size);
     
   /* switch to our font for drawing y axis label and tick labels */
-  pl_fontname (y_axis.font_name);
-  pl_ffontsize (SS(y_axis.font_size));
+  pl_fontname_r (multigrapher->plotter, multigrapher->y_axis.font_name);
+  pl_ffontsize_r (multigrapher->plotter, SS(multigrapher->y_axis.font_size));
   
   /* discard subsubtick locations outside plotting area */
-  if (yval < y_trans.input_min - FUZZ * yrange
-      || yval > y_trans.input_max + FUZZ * yrange)
+  if (yval < multigrapher->y_trans.input_min - FUZZ * yrange
+      || yval > multigrapher->y_trans.input_max + FUZZ * yrange)
     return;
   
   /* label subsubtick if it seems appropriate */
-  if (y_axis.user_specified_subsubticks)		 
+  if (multigrapher->y_axis.user_specified_subsubticks)		 
     {
       double new_width;
       
-      print_tick_label (labelbuf, y_axis, y_trans, 
+      print_tick_label (labelbuf, 
+			&multigrapher->y_axis, &multigrapher->y_trans, 
 			pow (10.0, yval));
-      if (!x_axis.switch_axis_end)
+      if (!multigrapher->x_axis.switch_axis_end)
 	{
-	  pl_fmove (XN(x_axis.other_axis_loc)
-		 - ((tick_size >= 0 ? 0.75 : 1.75) 
-		    * fabs((double)tick_size)
-		    + plotter.half_line_width),
-		 YV (yval));
-	  new_width = pl_flabelwidth (labelbuf);
-	  pl_alabel ('r', 'c', labelbuf);
-	  y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
-	  y_axis.labelled_ticks++;
+	  pl_fmove_r (multigrapher->plotter, 
+		      XN(multigrapher->x_axis.other_axis_loc)
+		      - ((tick_size >= 0 ? 0.75 : 1.75) 
+			 * fabs((double)tick_size)
+			 + multigrapher->half_line_width),
+		      YV (yval));
+	  new_width = pl_flabelwidth_r (multigrapher->plotter, labelbuf);
+	  pl_alabel_r (multigrapher->plotter, 'r', 'c', labelbuf);
+	  multigrapher->y_axis.max_label_width = DMAX(multigrapher->y_axis.max_label_width, new_width);
+	  multigrapher->y_axis.labelled_ticks++;
 	}
       else
 	{
-	  pl_fmove (XN(x_axis.alt_other_axis_loc)
-		 + ((tick_size >= 0 ? 0.75 : 1.75) 
-		    * fabs((double)tick_size)
-		    + plotter.half_line_width),
-		YV (yval));
-	  new_width = pl_flabelwidth (labelbuf);
-	  pl_alabel ('l', 'c', labelbuf);
-	  y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
-	  y_axis.labelled_ticks++;
+	  pl_fmove_r (multigrapher->plotter, 
+		      XN(multigrapher->x_axis.alt_other_axis_loc)
+		      + ((tick_size >= 0 ? 0.75 : 1.75) 
+			 * fabs((double)tick_size)
+			 + multigrapher->half_line_width),
+		      YV (yval));
+	  new_width = pl_flabelwidth_r (multigrapher->plotter, labelbuf);
+	  pl_alabel_r (multigrapher->plotter, 'l', 'c', labelbuf);
+	  multigrapher->y_axis.max_label_width = DMAX(multigrapher->y_axis.max_label_width, new_width);
+	  multigrapher->y_axis.labelled_ticks++;
 	}
     }
   
   /* draw subsubtick */
-  switch (plotter.grid_spec)
+  switch (multigrapher->grid_spec)
     {
     case AXES_AND_BOX_AND_GRID:
-      pl_linemod ("dotted");
-      pl_fmove (XP(XSQ(0.0)), YV (yval));
-      pl_fcont (XP(XSQ(1.0)), YV (yval));
-      pl_linemod ("solid");
+      pl_linemod_r (multigrapher->plotter, "dotted");
+      pl_fmove_r (multigrapher->plotter, XP(XSQ(0.0)), YV (yval));
+      pl_fcont_r (multigrapher->plotter, XP(XSQ(1.0)), YV (yval));
+      pl_linemod_r (multigrapher->plotter, "solid");
       /* fall through */
     case AXES_AND_BOX:
-      if (!x_axis.switch_axis_end)		      
+      if (!multigrapher->x_axis.switch_axis_end)		      
 	{
-	  pl_fmove (XN (x_axis.alt_other_axis_loc),
-		 YV (yval));
-	  pl_fcont (XN (x_axis.alt_other_axis_loc)
-		 - (subsubtick_size
-		    + (subsubtick_size > 0.0 
-		       ? plotter.half_line_width
-		       : -plotter.half_line_width)),
-		 YV (yval));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.alt_other_axis_loc),
+		      YV (yval));
+	  pl_fcont_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.alt_other_axis_loc)
+		      - (subsubtick_size
+			 + (subsubtick_size > 0.0 
+			    ? multigrapher->half_line_width
+			    : -multigrapher->half_line_width)),
+		      YV (yval));
 	}
       else
 	{
-	  pl_fmove (XN (x_axis.other_axis_loc),
-		 YV (yval));
-	  pl_fcont (XN (x_axis.other_axis_loc)
-		 + (subsubtick_size
-		    + (subsubtick_size > 0.0 
-		       ? plotter.half_line_width
-		       : -plotter.half_line_width)),
-		 YV (yval));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.other_axis_loc),
+		      YV (yval));
+	  pl_fcont_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.other_axis_loc)
+		      + (subsubtick_size
+			 + (subsubtick_size > 0.0 
+			    ? multigrapher->half_line_width
+			    : -multigrapher->half_line_width)),
+		      YV (yval));
 	}
       /* fall through */
     case AXES:
     case AXES_AT_ORIGIN:
-      if (!x_axis.switch_axis_end)
+      if (!multigrapher->x_axis.switch_axis_end)
 	{
-	  pl_fmove (XN (x_axis.other_axis_loc),
-		 YV (yval));
-	  pl_fcont (XN (x_axis.other_axis_loc)
-		 + (subsubtick_size
-		    + (subsubtick_size > 0.0 
-		       ? plotter.half_line_width
-		       : -plotter.half_line_width)),
-		 YV (yval));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.other_axis_loc),
+		      YV (yval));
+	  pl_fcont_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.other_axis_loc)
+		      + (subsubtick_size
+			 + (subsubtick_size > 0.0 
+			    ? multigrapher->half_line_width
+			    : -multigrapher->half_line_width)),
+		      YV (yval));
 	}
       else
 	{
-	  pl_fmove (XN (x_axis.alt_other_axis_loc),
-		 YV (yval));
-	  pl_fcont (XN (x_axis.alt_other_axis_loc)
-		 - (subsubtick_size
-		   + (plotter.tick_size > 0.0 
-		      ? plotter.half_line_width
-		      : -plotter.half_line_width)),
-		 YV (yval));
+	  pl_fmove_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.alt_other_axis_loc),
+		      YV (yval));
+	  pl_fcont_r (multigrapher->plotter, 
+		      XN (multigrapher->x_axis.alt_other_axis_loc)
+		      - (subsubtick_size
+			 + (multigrapher->tick_size > 0.0 
+			    ? multigrapher->half_line_width
+			    : -multigrapher->half_line_width)),
+		      YV (yval));
 	}
       break;
     default:	/* shouldn't happen */
@@ -2190,14 +2270,15 @@ plot_ordinate_log_subsubtick (yval)
 }
 
 
-/* set_line_style() maps from pl_linemodes to physical pl_linemodes.  See
+/* set_line_style() maps from line modes to physical line modes.  See
  * explanation at head of file. */
 
 static void
 #ifdef _HAVE_PROTOS
-set_line_style (int style, bool use_color)
+set_line_style (Multigrapher *multigrapher, int style, bool use_color)
 #else
-set_line_style (style, use_color)
+set_line_style (multigrapher, style, use_color)
+     Multigrapher *multigrapher;
      int style;
      bool use_color;
 #endif
@@ -2205,16 +2286,17 @@ set_line_style (style, use_color)
   if (!use_color)		/* monochrome */
     {
       if (style > 0)
-	/* don't issue pl_linemod if style<=0, since no polyline will be drawn */
+	/* don't issue pl_linemod_r() if style<=0, since no polyline will
+           be drawn */
 	{
 	  int i;
 
 	  i = (style - 1) % NO_OF_LINEMODES;
-	  pl_linemod (linemodes[i]);      
+	  pl_linemod_r (multigrapher->plotter, linemodes[i]);      
 	}
       
       /* use same color as used for plot frame */
-      pl_colorname (plotter.frame_color);
+      pl_colorname_r (multigrapher->plotter, multigrapher->frame_color);
     }
   else				/* color */
     {
@@ -2224,17 +2306,17 @@ set_line_style (style, use_color)
 	{
 	  i = ((style - 1) / NO_OF_LINEMODES) % NO_OF_LINEMODES;
 	  j = (style - 1) % NO_OF_LINEMODES;
-	  pl_linemod (linemodes[i]);            
+	  pl_linemod_r (multigrapher->plotter, linemodes[i]);            
 	}
 
       else if (style == 0)	/* use first color, as if -m 1 was spec'd */
 				/* (no line will be drawn) */
 	j = 0;
 
-      else			/* neg. pl_linemode (no line will be drawn) */
+      else			/* neg. pl_linemode_r (no line will be drawn)*/
 	j = (-style - 1) % (NO_OF_LINEMODES - 1);
 
-      pl_colorname (colorstyle[j]);
+      pl_colorname_r (multigrapher->plotter, colorstyle[j]);
     }
 }
 
@@ -2245,9 +2327,10 @@ set_line_style (style, use_color)
 
 void
 #ifdef _HAVE_PROTOS
-plot_point_array (const Point *p, int length)
+plot_point_array (Multigrapher *multigrapher, const Point *p, int length)
 #else
-plot_point_array (p, length)
+plot_point_array (multigrapher, p, length)
+     Multigrapher *multigrapher;
      const Point *p;
      int length;
 #endif
@@ -2255,23 +2338,25 @@ plot_point_array (p, length)
   int index;
 
   for (index = 0; index < length; index++)
-    plot_point (&(p[index]));
+    plot_point (multigrapher, &(p[index]));
 }
 
 /* plot_point() plots a single point, including the appropriate symbol and
- * errorbar(s) if any.  It may call either pl_fcont() or pl_fmove(), depending on
- * whether the pendown flag is set or not.  Gnuplot-style clipping (clip
- * mode = 0,1,2) is supported.  Of the plotter's global variables, it makes
- * heavy use of the x_trans and y_trans structures, which specify the
- * linear transformation from user coordinates to device coordinates.  It
- * also updates the plotter's internal state variables.
- */
+ * errorbar(s) if any.  It may call either pl_fcont_r() or pl_fmove_r(),
+ * depending on whether the pendown flag is set or not.  Gnuplot-style
+ * clipping (clip mode = 0,1,2) is supported.
+ *
+ * plot_point() makes heavy use of the multigrapher->x_trans and
+ * multigrapher->y_trans structures, which specify the linear
+ * transformation from user coordinates to device coordinates.  It also
+ * updates the multigrapher's internal state variables.  */
 
 void
 #ifdef _HAVE_PROTOS
-plot_point (const Point *point)
+plot_point (Multigrapher *multigrapher, const Point *point)
 #else
-plot_point (point)
+plot_point (multigrapher, point)
+     Multigrapher *multigrapher;
      const Point *point;
 #endif
 {
@@ -2283,125 +2368,145 @@ plot_point (point)
      point of the polyline.  We assume all such attribute fields are the
      same for all points in the polyline (our point reader arranges this
      for us). */
-  if (!(point->pendown) || plotter.first_point_of_plot)
+  if (!(point->pendown) || multigrapher->first_point_of_polyline)
     {
       int intfill;
       
-      set_line_style (point->linemode, point->use_color);
+      set_line_style (multigrapher, point->linemode, point->use_color);
 
       /* N.B. linewidth < 0.0 means use libplot default */
-      pl_flinewidth (point->line_width * (double)PLOT_SIZE);
+      pl_flinewidth_r (multigrapher->plotter, 
+		       point->line_width * (double)PLOT_SIZE);
       
       if (point->fill_fraction < 0.0)
 	intfill = 0;		/* transparent */
       else			/* guaranteed to be <= 1.0 */
 	intfill = 1 + IROUND((1.0 - point->fill_fraction) * 0xfffe);
-      pl_filltype (intfill);
+      pl_filltype_r (multigrapher->plotter, intfill);
     }
 
-  /* have endpoints of new line segment */
-  local_x0 = plotter.oldpoint_x;
-  local_y0 = plotter.oldpoint_y;
+  /* determine endpoints of new line segment (for the first point of a
+     polyline, use a zero-length line segment) */
+  if (multigrapher->first_point_of_polyline)
+    {
+      local_x0 = point->x;
+      local_y0 = point->y;
+    }
+  else
+    {
+      local_x0 = multigrapher->oldpoint_x;
+      local_y0 = multigrapher->oldpoint_y;
+    }
   local_x1 = point->x;
   local_y1 = point->y;
 
   /* save current point for use as endpoint of next line segment */
-  plotter.oldpoint_x = point->x;
-  plotter.oldpoint_y = point->y;
+  multigrapher->oldpoint_x = point->x;
+  multigrapher->oldpoint_y = point->y;
 
   /* apply Cohen-Sutherland clipper to new line segment */
-  clipval = clip_line (&local_x0, &local_y0, &local_x1, &local_y1);
+  clipval = clip_line (multigrapher, 
+		       &local_x0, &local_y0, &local_x1, &local_y1);
 
   if (!(clipval & ACCEPTED))	/* rejected in toto */
     {
-      pl_fmove (XV (point->x), YV (point->y)); /* move with pen up */      
+      pl_fmove_r (multigrapher->plotter, 
+		  XV (point->x), YV (point->y)); /* move with pen up */      
+      multigrapher->first_point_of_polyline = false;
       return;
     }
 
   /* not rejected, ideally move with pen down */
   if (point->pendown && (point->linemode > 0))
     {
-      switch (plotter.clip_mode) /* do gnuplot style clipping (0, 1, or 2) */
+      switch (multigrapher->clip_mode) /* gnuplot style clipping (0,1, or 2) */
 	{
 	case 0:
 	  if ((clipval & CLIPPED_FIRST) || (clipval & CLIPPED_SECOND))
 	    /* clipped on at least one end, so move with pen up */
-	    pl_fmove (XV (point->x), YV (point->y));
+	    pl_fmove_r (multigrapher->plotter, XV (point->x), YV (point->y));
 	  else
 	    /* line segment within box, so move with pen down */
 	    {
-	      if (!plotter.first_point_of_plot)
-		pl_fcont (XV (point->x), YV (point->y));
+	      if (!multigrapher->first_point_of_polyline)
+		pl_fcont_r (multigrapher->plotter, 
+			    XV (point->x), YV (point->y));
 	      else
-		pl_fmove (XV (point->x), YV (point->y));
+		pl_fmove_r (multigrapher->plotter, 
+			    XV (point->x), YV (point->y));
 	    }
 	  break;
 	case 1:
 	default:
 	  if ((clipval & CLIPPED_FIRST) && (clipval & CLIPPED_SECOND))
 	    /* both OOB, so move with pen up */
-	    pl_fmove (XV (point->x), YV (point->y));
+	    pl_fmove_r (multigrapher->plotter, XV (point->x), YV (point->y));
 	  else			
 	    /* at most one point is OOB */
 	    {
 	      if (clipval & CLIPPED_FIRST) /*current pt. OOB, new pt. not OOB*/
 		{
-		  if (!plotter.first_point_of_plot)
+		  if (!multigrapher->first_point_of_polyline)
 		    {
 		      /* move to clipped current point, draw line segment */
-		      pl_fmove (XV (local_x0), YV (local_y0));
-		      pl_fcont (XV (point->x), YV (point->y));
+		      pl_fmove_r (multigrapher->plotter, 
+				  XV (local_x0), YV (local_y0));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XV (point->x), YV (point->y));
 		    }
 		  else
-		    pl_fmove (XV (point->x), YV (point->y));
+		    pl_fmove_r (multigrapher->plotter, 
+				XV (point->x), YV (point->y));
 		}
 	      else		/* current point not OOB, new point OOB */
 		{
-		  if (!plotter.first_point_of_plot)
+		  if (!multigrapher->first_point_of_polyline)
 		    {
 		      /* draw line segment to clipped new point */
-		      pl_fcont (XV (local_x1), YV (local_y1));
+		      pl_fcont_r (multigrapher->plotter, 
+				  XV (local_x1), YV (local_y1));
 		      /* N.B. lib's notion of position now differs from ours */
 		    }
 		  else
-		    pl_fmove (XV (point->x), YV (point->y));
+		    pl_fmove_r (multigrapher->plotter, 
+				XV (point->x), YV (point->y));
 		}
 	    }
 	  break;
 	case 2:
-	  if ((clipval & CLIPPED_FIRST) || plotter.first_point_of_plot)
+	  if ((clipval & CLIPPED_FIRST) || multigrapher->first_point_of_polyline)
 	    /* move to clipped current point if necc. */
-	    pl_fmove (XV (local_x0), YV (local_y0));
+	    pl_fmove_r (multigrapher->plotter, XV (local_x0), YV (local_y0));
 	  
 	  /* draw line segment to clipped new point */
-	  pl_fcont (XV (local_x1), YV (local_y1));
+	  pl_fcont_r (multigrapher->plotter, XV (local_x1), YV (local_y1));
 	  
 	  if (clipval & CLIPPED_SECOND)
 	    /* new point OOB, so move to new point, breaking polyline */
-	    pl_fmove (XV (point->x), YV (point->y)); 
+	    pl_fmove_r (multigrapher->plotter, XV (point->x), YV (point->y)); 
 	  break;
 	}
     }
-  else				/* move with pen up */
-    pl_fmove (XV (point->x), YV (point->y)); 
+  else				/* linemode=0 or pen up; so move with pen up */
+    pl_fmove_r (multigrapher->plotter, XV (point->x), YV (point->y)); 
 
-  plotter.first_point_of_plot = false;
+  multigrapher->first_point_of_polyline = false;
   
   /* if target point is OOB, return without plotting symbol or errorbar */
   if (clipval & CLIPPED_SECOND)
     return;
 
-  /* plot symbol and errorbar, doing a pl_savestate()--pl_restorestate() to keep
-     from breaking the polyline under construction (if any) */
+  /* plot symbol and errorbar, doing a pl_savestate_r()--pl_restorestate()
+     to keep from breaking the polyline under construction (if any) */
   if (point->symbol >= 32)	/* yow, a character */
     {
       /* will do a font change, so save & restore state */
-      pl_savestate();
-      plot_errorbar (point);
-      pl_fontname (point->symbol_font_name);
-      pl_fmarker (XV(point->x), YV(point->y), 
-	       point->symbol, SS(point->symbol_size));
-      pl_restorestate();
+      pl_savestate_r (multigrapher->plotter);
+      plot_errorbar (multigrapher, point);
+      pl_fontname_r (multigrapher->plotter, point->symbol_font_name);
+      pl_fmarker_r (multigrapher->plotter, XV(point->x), YV(point->y), 
+		    point->symbol, SS(point->symbol_size));
+      pl_restorestate_r (multigrapher->plotter);
     }
 
   else if (point->symbol > 0)	/* a marker symbol */
@@ -2409,41 +2514,31 @@ plot_point (point)
       if (point->linemode > 0)
 	/* drawing a line, so (to keep from breaking it) save & restore state*/
 	{
-	  pl_savestate();
-	  plot_errorbar (point); /* may or may not have an errorbar */
-	  pl_fmarker (XV(point->x), YV(point->y), 
-		  point->symbol, SS(point->symbol_size));
-	  pl_restorestate();
+	  pl_savestate_r (multigrapher->plotter);
+	  plot_errorbar (multigrapher, point); /* may or may not have one */
+	  pl_fmarker_r (multigrapher->plotter, XV(point->x), YV(point->y), 
+			point->symbol, SS(point->symbol_size));
+	  pl_restorestate_r (multigrapher->plotter);
 	}
       else
 	/* not drawing a line, so just place the marker */
 	{
-	  plot_errorbar (point);
-	  pl_fmarker (XV(point->x), YV(point->y), 
-		   point->symbol, SS(point->symbol_size));
+	  plot_errorbar (multigrapher, point);
+	  pl_fmarker_r (multigrapher->plotter, XV(point->x), YV(point->y), 
+			point->symbol, SS(point->symbol_size));
 	}
     }
   
   else if (point->symbol == 0 && point->linemode == 0)
     /* backward compatibility: -m 0 (even with -S 0) plots a dot */
     {
-      plot_errorbar (point);
-      pl_fmarker (XV(point->x), YV(point->y), M_DOT, SS(point->symbol_size));
+      plot_errorbar (multigrapher, point);
+      pl_fmarker_r (multigrapher->plotter, 
+		    XV(point->x), YV(point->y), M_DOT, SS(point->symbol_size));
     }
 
-  else				/* no symbol */
-    {
-      if (point->linemode > 0)
-	/* drawing a line, so (to keep from breaking it) save & restore state*/
-	{
-	  pl_savestate ();
-	  plot_errorbar (point);      
-	  pl_restorestate ();
-	}
-      else
-	/* no polyline, no symbol either; just draw errorbar */
-	plot_errorbar(point);
-    }
+  else				/* no symbol, but may be an errorbar */
+    plot_errorbar (multigrapher, point);
 
   return;
 }
@@ -2457,9 +2552,10 @@ plot_point (point)
 
 static int
 #ifdef _HAVE_PROTOS
-clip_line (double *x0_p, double *y0_p, double *x1_p, double *y1_p)
+clip_line (Multigrapher *multigrapher, double *x0_p, double *y0_p, double *x1_p, double *y1_p)
 #else
-clip_line (x0_p, y0_p, x1_p, y1_p)
+clip_line (multigrapher, x0_p, y0_p, x1_p, y1_p)
+     Multigrapher *multigrapher;
      double *x0_p, *y0_p, *x1_p, *y1_p;
 #endif
 {
@@ -2467,8 +2563,8 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
   double y0 = *y0_p;
   double x1 = *x1_p;
   double y1 = *y1_p;
-  outcode outcode0 = compute_outcode (x0, y0, true);
-  outcode outcode1 = compute_outcode (x1, y1, true);  
+  outcode outcode0 = compute_outcode (multigrapher, x0, y0, true);
+  outcode outcode1 = compute_outcode (multigrapher, x1, y1, true);  
   bool accepted;
   int clipval = 0;
   
@@ -2492,36 +2588,36 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
 	  
 	  if (outcode_out & RIGHT)	  
 	    {
-	      x = x_trans.input_max;
-	      y = y0 + (y1 - y0) * (x_trans.input_max - x0) / (x1 - x0);
+	      x = multigrapher->x_trans.input_max;
+	      y = y0 + (y1 - y0) * (multigrapher->x_trans.input_max - x0) / (x1 - x0);
 	    }
 	  else if (outcode_out & LEFT)
 	    {
-	      x = x_trans.input_min;
-	      y = y0 + (y1 - y0) * (x_trans.input_min - x0) / (x1 - x0);
+	      x = multigrapher->x_trans.input_min;
+	      y = y0 + (y1 - y0) * (multigrapher->x_trans.input_min - x0) / (x1 - x0);
 	    }
 	  else if (outcode_out & TOP)
 	    {
-	      x = x0 + (x1 - x0) * (y_trans.input_max - y0) / (y1 - y0);
-	      y = y_trans.input_max;
+	      x = x0 + (x1 - x0) * (multigrapher->y_trans.input_max - y0) / (y1 - y0);
+	      y = multigrapher->y_trans.input_max;
 	    }
 	  else
 	    {
-	      x = x0 + (x1 - x0) * (y_trans.input_min - y0) / (y1 - y0);
-	      y = y_trans.input_min;
+	      x = x0 + (x1 - x0) * (multigrapher->y_trans.input_min - y0) / (y1 - y0);
+	      y = multigrapher->y_trans.input_min;
 	    }
 	  
 	  if (outcode_out == outcode0)
 	    {
 	      x0 = x;
 	      y0 = y;
-	      outcode0 = compute_outcode (x0, y0, true);
+	      outcode0 = compute_outcode (multigrapher, x0, y0, true);
 	    }
 	  else
 	    {
 	      x1 = x; 
 	      y1 = y;
-	      outcode1 = compute_outcode (x1, y1, true);
+	      outcode1 = compute_outcode (multigrapher, x1, y1, true);
 	    }
 	}
     }
@@ -2548,25 +2644,26 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
    The `tolerant' flag specifies how we handle points on the boundary. */
 static outcode
 #ifdef _HAVE_PROTOS
-compute_outcode (double x, double y, bool tolerant)
+compute_outcode (Multigrapher *multigrapher, double x, double y, bool tolerant)
 #else
-compute_outcode (x, y, tolerant)
+compute_outcode (multigrapher, x, y, tolerant)
+     Multigrapher *multigrapher;
      double x, y;
      bool tolerant;
 #endif
 {
   outcode code = 0;
-  double xfuzz = FUZZ * x_trans.input_range;
-  double yfuzz = FUZZ * y_trans.input_range;  
+  double xfuzz = FUZZ * multigrapher->x_trans.input_range;
+  double yfuzz = FUZZ * multigrapher->y_trans.input_range;  
   int sign = (tolerant == true ? 1 : -1);
   
-  if (x > x_trans.input_max + sign * xfuzz)
+  if (x > multigrapher->x_trans.input_max + sign * xfuzz)
     code |= RIGHT;
-  else if (x < x_trans.input_min - sign * xfuzz)
+  else if (x < multigrapher->x_trans.input_min - sign * xfuzz)
     code |= LEFT;
-  if (y > y_trans.input_max + sign * yfuzz)
+  if (y > multigrapher->y_trans.input_max + sign * yfuzz)
     code |= TOP;
-  else if (y < y_trans.input_min - sign * yfuzz)
+  else if (y < multigrapher->y_trans.input_min - sign * yfuzz)
     code |= BOTTOM;
   
   return code;
@@ -2592,35 +2689,61 @@ transpose_portmanteau (val)
 
 static void 
 #ifdef _HAVE_PROTOS
-plot_errorbar (const Point *p)
+plot_errorbar (Multigrapher *multigrapher, const Point *p)
 #else
-plot_errorbar (p)
+plot_errorbar (multigrapher, p)
+     Multigrapher *multigrapher;
      const Point *p;
 #endif
 {
   if (p->have_x_errorbar || p->have_y_errorbar)
-    /* save & restore state, since error bars are solid */
+    /* save & restore state, since we invoke pl_linemod_r() */
     {
-      pl_savestate();
-      pl_linemod ("solid");
+      pl_savestate_r (multigrapher->plotter);
+      pl_linemod_r (multigrapher->plotter, "solid");
 	
       if (p->have_x_errorbar)
 	{
-	  pl_fline (XV(p->xmin), YV(p->y) - 0.5 * SS(p->symbol_size),
-		 XV(p->xmin), YV(p->y) + 0.5 * SS(p->symbol_size));
-	  pl_fline (XV(p->xmin), YV(p->y), XV(p->xmax), YV(p->y));
-	  pl_fline (XV(p->xmax), YV(p->y) - 0.5 * SS(p->symbol_size),
-		 XV(p->xmax), YV(p->y) + 0.5 * SS(p->symbol_size));
+	  pl_fline_r (multigrapher->plotter, 
+		      XV(p->xmin), YV(p->y) - 0.5 * SS(p->symbol_size),
+		      XV(p->xmin), YV(p->y) + 0.5 * SS(p->symbol_size));
+	  pl_fline_r (multigrapher->plotter, 
+		      XV(p->xmin), YV(p->y), XV(p->xmax), YV(p->y));
+	  pl_fline_r (multigrapher->plotter, 
+		      XV(p->xmax), YV(p->y) - 0.5 * SS(p->symbol_size),
+		      XV(p->xmax), YV(p->y) + 0.5 * SS(p->symbol_size));
 	}
       if (p->have_y_errorbar)
 	{
-	  pl_fline (XV(p->x) - 0.5 * SS(p->symbol_size), YV(p->ymin),
-		 XV(p->x) + 0.5 * SS(p->symbol_size), YV(p->ymin));
-	  pl_fline (XV(p->x), YV(p->ymin), XV(p->x), YV(p->ymax));
-	  pl_fline (XV(p->x) - 0.5 * SS(p->symbol_size), YV(p->ymax),
-		 XV(p->x) + 0.5 * SS(p->symbol_size), YV(p->ymax));
+	  pl_fline_r (multigrapher->plotter, 
+		      XV(p->x) - 0.5 * SS(p->symbol_size), YV(p->ymin),
+		      XV(p->x) + 0.5 * SS(p->symbol_size), YV(p->ymin));
+	  pl_fline_r (multigrapher->plotter, 
+		      XV(p->x), YV(p->ymin), XV(p->x), YV(p->ymax));
+	  pl_fline_r (multigrapher->plotter, 
+		      XV(p->x) - 0.5 * SS(p->symbol_size), YV(p->ymax),
+		      XV(p->x) + 0.5 * SS(p->symbol_size), YV(p->ymax));
 	}
 
-      pl_restorestate();
+      pl_restorestate_r (multigrapher->plotter);
     }
+}
+
+/* An alternative means of ending a polyline in progress.  Rather than
+   ending it by passing plot_point() a point with the `pendown' flag not
+   set, one may call this function.  This yields faster response in
+   real-time work; e.g. in reader.c it is called by read_and_plot_file()
+   after all dataset(s) have been read from the file and plotted. */
+
+void
+#ifdef _HAVE_PROTOS
+end_polyline_and_flush (Multigrapher *multigrapher)
+#else
+end_polyline_and_flush (multigrapher)
+     Multigrapher *multigrapher;
+#endif
+{
+  pl_endpath_r (multigrapher->plotter);
+  pl_flushpl_r (multigrapher->plotter);
+  multigrapher->first_point_of_polyline = true;
 }

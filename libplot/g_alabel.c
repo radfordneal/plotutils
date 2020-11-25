@@ -47,9 +47,10 @@ static bool _simple_string ____P((const unsigned short *codestring));
 
 int
 #ifdef _HAVE_PROTOS
-_g_alabel (int x_justify, int y_justify, const char *s)
+_g_alabel (R___(Plotter *_plotter) int x_justify, int y_justify, const char *s)
 #else
-_g_alabel (x_justify, y_justify, s)
+_g_alabel (R___(_plotter) x_justify, y_justify, s)
+     S___(Plotter *_plotter;)
      int x_justify, y_justify;
      const char *s;
 #endif
@@ -58,12 +59,12 @@ _g_alabel (x_justify, y_justify, s)
 
   if (!_plotter->open)
     {
-      _plotter->error ("alabel: invalid operation");
+      _plotter->error (R___(_plotter) "alabel: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   if (s == NULL)
     return 0;			/* avoid core dumps */
@@ -78,21 +79,24 @@ _g_alabel (x_justify, y_justify, s)
     
     was_clean = _clean_iso_string ((unsigned char *)t);
     if (!was_clean)
-      _plotter->warning ("ignoring control character (e.g. CR or LF) in label");
+      _plotter->warning (R___(_plotter)
+			 "ignoring control character (e.g. CR or LF) in label");
   }
   
   /* Be sure user-specified font has been retrieved.  Font is changed by
      fontname/fontsize/textangle, all of which perform the retrieve_font
      operation, and by space/space2/concat, which may not. */
-  _plotter->retrieve_font();
+  _plotter->retrieve_font (S___(_plotter));
 
   if (_plotter->drawstate->font_type == F_HERSHEY)
     /* call Hershey-specific routine, since controlification acts
        differently (there are more control codes for Hershey strings) */
-    _plotter->falabel_hershey ((unsigned char *)t, x_justify, y_justify);
+    _plotter->falabel_hershey (R___(_plotter)
+			       (unsigned char *)t, x_justify, y_justify);
   else
     /* invoke routine below */
-    _render_non_hershey_string (t, true, x_justify, y_justify);
+    _render_non_hershey_string (R___(_plotter)
+				t, true, x_justify, y_justify);
   free (t);
 
   return 0;
@@ -100,9 +104,10 @@ _g_alabel (x_justify, y_justify, s)
 
 double
 #ifdef _HAVE_PROTOS
-_g_flabelwidth (const char *s)
+_g_flabelwidth (R___(Plotter *_plotter) const char *s)
 #else
-_g_flabelwidth (s)
+_g_flabelwidth (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const char *s;
 #endif
 {
@@ -111,7 +116,8 @@ _g_flabelwidth (s)
 
   if (!_plotter->open)
     {
-      _plotter->error ("flabelwidth: invalid operation");
+      _plotter->error (R___(_plotter)
+		       "flabelwidth: invalid operation");
       return -1;
     }
 
@@ -128,21 +134,24 @@ _g_flabelwidth (s)
     
     was_clean = _clean_iso_string ((unsigned char *)t);
     if (!was_clean)
-      _plotter->warning ("ignoring control character (e.g. CR or LF) in label");
+      _plotter->warning (R___(_plotter) 
+			 "ignoring control character (e.g. CR or LF) in label");
   }
   
   /* Be sure user-specified font has been retrieved.  Font is changed by
      fontname/fontsize/textangle, all of which perform the retrieve_font
      operation, and by space/space2/concat, which may not. */
-  _plotter->retrieve_font();
+  _plotter->retrieve_font (S___(_plotter));
 
   if (_plotter->drawstate->font_type == F_HERSHEY)
     /* call Hershey-specific routine, since controlification acts
        differently (there are more control codes for Hershey strings) */
-    width = _plotter->flabelwidth_hershey ((unsigned char *)t);
+    width = _plotter->flabelwidth_hershey (R___(_plotter)
+					   (unsigned char *)t);
   else
     /* invoke routine below; final two args are irrelevant */
-    width = _render_non_hershey_string (t, false, 'c', 'c');
+    width = _render_non_hershey_string (R___(_plotter)
+					t, false, 'c', 'c');
   free (t);
 
   return width;
@@ -171,15 +180,17 @@ _g_flabelwidth (s)
 
 double
 #ifdef _HAVE_PROTOS
-_render_non_hershey_string (const char *s, bool do_render, int x_justify, int y_justify)
+_render_non_hershey_string (R___(Plotter *_plotter) const char *s, bool do_render, int x_justify, int y_justify)
 #else
-_render_non_hershey_string (s, do_render, x_justify, y_justify)
+_render_non_hershey_string (R___(_plotter) s, do_render, x_justify, y_justify)
+     S___(Plotter *_plotter;)
      const char *s;
      bool do_render;		/* whether to draw the string */
      int x_justify, y_justify;
 #endif
 {
   int h_just = JUST_LEFT;	/* all devices can handle left justification */
+  int v_just = JUST_BASE;
   unsigned short *codestring;
   unsigned short *cptr;
   double width = 0.0;
@@ -187,7 +198,7 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
   int current_font_index;
   /* initial values of these attributes (will be restored at end) */
   double initial_font_size;
-  char *initial_font_name;
+  const char *initial_font_name;
   int initial_font_type;
   /* initial and saved locations */
   double initial_position_x = _plotter->drawstate->pos.x;
@@ -202,14 +213,15 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
   double userdx, userdy, theta, sintheta = 0.0, costheta = 1.0;
   
   /* convert string to a codestring, including annotations */
-  codestring = _controlify ((const unsigned char *)s);
+  codestring = _controlify (R___(_plotter) (const unsigned char *)s);
 
   if (do_render)		/* perform needed computations; reposition */
     {
       /* compute label width in user units via a recursive call; final two
 	 args here are ignored */
 
-      overall_width = _render_non_hershey_string (s, false, 'c', 'c');
+      overall_width = _render_non_hershey_string (R___(_plotter)
+						  s, false, 'c', 'c');
       
       /* compute initial offsets that must be performed due to
        justification; also displacements that must be performed after
@@ -250,37 +262,52 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
 					   to y coordinate */
 	{
 	case 'b':			/* current point is at bottom */
+	  v_just = JUST_BOTTOM;
 	  y_offset = descent;
 	  break;
 	  
 	case 'x':			/* current point is on baseline */
 	default:
+	  v_just = JUST_BASE;
 	  y_offset = 0.0;
 	  break;
 	  
 	case 'c':			/* current point is midway between bottom, top */
+	  v_just = JUST_HALF;
 	  y_offset = 0.5 * (descent - ascent);
 	  break;
 	  
 	case 't':			/* current point is at top */
+	  v_just = JUST_TOP;
 	  y_offset = - ascent;
 	  break;
 	}
 
       /* If codestring is a string in a single font, with no control codes,
 	 we'll render it using native device justification, rather than
-	 positioning a left-justified string by hand.  In other words if
-	 right or centered justification was specified when alabel() was
-	 called by the user, the string as drawn on the device will have
-	 the same justification.  This is particularly important for the
-	 Fig driver.  Anything else would exasperate the user, even if the
-	 positioning is correct. */
+	 positioning a left-justified string by hand.  So e.g., if right or
+	 centered justification was specified when alabel() was called by
+	 the user, the string as drawn on the device will have the same
+	 justification.  This is particularly important for the Fig driver.
+	 Anything else would exasperate the user, even if the positioning
+	 is correct. */
 
-      if (_plotter->have_justification && _simple_string (codestring))
+      if (_plotter->have_horizontal_justification 
+	  && _simple_string (codestring))
 	/* don't perform manual horizontal justification */
 	x_offset = 0.0;
       else
 	h_just = JUST_LEFT;	/* use x_offset to position by hand */
+	  
+      /* Similarly, in simple csaes use native vertical justification if
+         it's available (very few types of Plotter support it). */
+
+      if (_plotter->have_vertical_justification 
+	  && _simple_string (codestring))
+	/* don't perform manual vertical justification */
+	y_offset = 0.0;
+      else
+	v_just = JUST_BASE;	/* use y_offset to position by hand */
 	  
       /* justification-related offsets we'll carry out */
       userdx = x_offset * overall_width;
@@ -298,10 +325,14 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
     }
 
   /* save font name (will be restored at end) */
-  initial_font_name = _plotter->drawstate->font_name;
-  _plotter->drawstate->font_name = 
-    (char *)_plot_xmalloc (1 + strlen (initial_font_name));
-  strcpy (_plotter->drawstate->font_name, initial_font_name);
+  {
+    char *font_name;
+    
+    initial_font_name = _plotter->drawstate->font_name;
+    font_name = (char *)_plot_xmalloc (1 + strlen (initial_font_name));
+    strcpy (font_name, initial_font_name);
+    _plotter->drawstate->font_name = font_name;
+  }
 
   /* save font size too */
   initial_font_size = _plotter->drawstate->font_size;
@@ -358,7 +389,7 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
 		      * _plotter->drawstate->true_font_size;
 		}
 	      _plotter->drawstate->font_size *= SCRIPTSIZE;
-	      _plotter->retrieve_font();
+	      _plotter->retrieve_font (S___(_plotter));
 	      break;
 
 	    case C_BEGIN_SUPERSCRIPT :
@@ -373,13 +404,13 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
 		      * _plotter->drawstate->true_font_size;
 		}
 	      _plotter->drawstate->font_size *= SCRIPTSIZE;
-	      _plotter->retrieve_font();
+	      _plotter->retrieve_font (S___(_plotter));
 	      break;
 
 	    case C_END_SUBSCRIPT:
 	      width -= SUBSCRIPT_DX * _plotter->drawstate->true_font_size;
 	      _plotter->drawstate->font_size /= SCRIPTSIZE;
-	      _plotter->retrieve_font();
+	      _plotter->retrieve_font (S___(_plotter));
 	      if (do_render)
 		{
 		  (_plotter->drawstate->pos).x -= (costheta * SUBSCRIPT_DX 
@@ -392,7 +423,7 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
 	    case C_END_SUPERSCRIPT:
 	      width -= SUPERSCRIPT_DX * _plotter->drawstate->true_font_size;
 	      _plotter->drawstate->font_size /= SCRIPTSIZE;
-	      _plotter->retrieve_font();
+	      _plotter->retrieve_font (S___(_plotter));
 	      if (do_render)
 		{
 		  (_plotter->drawstate->pos).x -= (costheta * SUPERSCRIPT_DX 
@@ -615,57 +646,83 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
 	      switch (initial_font_type)
 		{
 		case F_HERSHEY:
-		  free (_plotter->drawstate->font_name);
-		  _plotter->drawstate->font_name =
-		    (char *)_plot_xmalloc(1 + strlen (_hershey_font_info[new_font_index].name));
-		  strcpy (_plotter->drawstate->font_name, _hershey_font_info[new_font_index].name);
+		  free ((char *)_plotter->drawstate->font_name);
+		  {
+		    char *font_name;
+		    
+		    font_name =
+		      (char *)_plot_xmalloc(1 + strlen (_hershey_font_info[new_font_index].name));
+		    strcpy (font_name, _hershey_font_info[new_font_index].name);
+		    _plotter->drawstate->font_name = font_name;
+		  }
 		  break;
 		case F_POSTSCRIPT:
-		  free (_plotter->drawstate->font_name);
-		  _plotter->drawstate->font_name =
-		    (char *)_plot_xmalloc(1 + strlen (_ps_font_info[new_font_index].ps_name));
-		  strcpy (_plotter->drawstate->font_name, _ps_font_info[new_font_index].ps_name);
+		  free ((char *)_plotter->drawstate->font_name);
+		  {
+		    char *font_name;
+		    
+		    font_name =
+		      (char *)_plot_xmalloc(1 + strlen (_ps_font_info[new_font_index].ps_name));
+		    strcpy (font_name, _ps_font_info[new_font_index].ps_name);
+		    _plotter->drawstate->font_name = font_name;
+		  }
 		  break;
 		case F_PCL:
-		  free (_plotter->drawstate->font_name);
-		  _plotter->drawstate->font_name =
-		    (char *)_plot_xmalloc(1 + strlen (_pcl_font_info[new_font_index].ps_name));
-		  strcpy (_plotter->drawstate->font_name, _pcl_font_info[new_font_index].ps_name);
+		  free ((char *)_plotter->drawstate->font_name);
+		  {
+		    char *font_name;
+
+		    font_name =
+		      (char *)_plot_xmalloc(1 + strlen (_pcl_font_info[new_font_index].ps_name));
+		    strcpy (font_name, _pcl_font_info[new_font_index].ps_name);
+		    _plotter->drawstate->font_name = font_name;
+		  }
 		  break;
 		case F_STICK:
-		  free (_plotter->drawstate->font_name);
-		  _plotter->drawstate->font_name =
-		    (char *)_plot_xmalloc(1 + strlen (_stick_font_info[new_font_index].ps_name));
-		  strcpy (_plotter->drawstate->font_name, _stick_font_info[new_font_index].ps_name);
+		  free ((char *)_plotter->drawstate->font_name);
+		  {
+		    char *font_name;
+
+		    font_name =
+		      (char *)_plot_xmalloc(1 + strlen (_stick_font_info[new_font_index].ps_name));
+		    strcpy (font_name, _stick_font_info[new_font_index].ps_name);
+		    _plotter->drawstate->font_name = font_name;
+		  }
 		  break;
 		case F_OTHER:
-		  free (_plotter->drawstate->font_name);
-		  if (new_font_index == 0) /* symbol font */
-		    {
-		      _plotter->drawstate->font_name =
-			(char *)_plot_xmalloc(1 + strlen (SYMBOL_FONT));
-		      strcpy (_plotter->drawstate->font_name, SYMBOL_FONT);
-		    }
-		  else
-		    /* Currently, only alternative to zero (symbol font) is
-                       1, i.e. restore font we started out with. */
-		    {
-		      _plotter->drawstate->font_name =
-			(char *)_plot_xmalloc(1 + strlen (initial_font_name));
-		      strcpy (_plotter->drawstate->font_name, initial_font_name);
-		    }
+		  free ((char *)_plotter->drawstate->font_name);
+		  {
+		    char *font_name;
+
+		    if (new_font_index == 0) /* symbol font */
+		      {
+			font_name =
+			  (char *)_plot_xmalloc(1 + strlen (SYMBOL_FONT));
+			strcpy (font_name, SYMBOL_FONT);
+		      }
+		    else
+		      /* Currently, only alternative to zero (symbol font) is
+			 1, i.e. restore font we started out with. */
+		      {
+			font_name =
+			  (char *)_plot_xmalloc(1 + strlen (initial_font_name));
+			strcpy (font_name, initial_font_name);
+		      }
+
+		    _plotter->drawstate->font_name = font_name;
+		  }
 		  break;
 		default:	/* unsupported font type, shouldn't happen */
 		  break;
 		}
 
-	      _plotter->retrieve_font();
+	      _plotter->retrieve_font (S___(_plotter));
 	      current_font_index = new_font_index;
 	    }
 	  
 	  /* extract substring consisting of characters in the same font */
 	  sptr = s 
-	    = (unsigned char *)_plot_xmalloc ((unsigned int) (4 * _codestring_len (cptr) + 1));
+	    = (unsigned char *)_plot_xmalloc ((4 * _codestring_len (cptr) + 1) * sizeof(char));
 	  while (*cptr 
 		 && (*cptr & CONTROL_CODE) == 0 
 		 && ((*cptr >> FONT_SHIFT) & ONE_BYTE) == current_font_index)
@@ -674,7 +731,9 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
 
 	  /* Compute width of single-font substring in user units, add it.
 	     Either render or not, as requested. */
-	  width += _render_simple_non_hershey_string (s, do_render, h_just);
+	  width += _render_simple_non_hershey_string (R___(_plotter)
+						      s, do_render, 
+						      h_just, v_just);
 	  free (s);
 	}
     }
@@ -683,10 +742,10 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
   free (codestring);
 
   /* restore initial font */
-  free (_plotter->drawstate->font_name);
+  free ((char *)_plotter->drawstate->font_name);
   _plotter->drawstate->font_name = initial_font_name;
   _plotter->drawstate->font_size = initial_font_size;
-  _plotter->retrieve_font();
+  _plotter->retrieve_font (S___(_plotter));
   
   if (do_render)
     {
@@ -702,21 +761,24 @@ _render_non_hershey_string (s, do_render, x_justify, y_justify)
 }
 
 /* Compute the width of a single-font string (escape sequences not
-   recognized), and render it, if requested.  The method that is invoked
-   may depend on the Plotter object type (i.e. type of display device), as
-   well as on the font type.  The PS, PCL, and Stick methods appear below.
+   recognized), and also render it, if requested.  The method that is
+   invoked may depend on the Plotter object type (i.e. type of display
+   device), as well as on the font type.  The PS, PCL, and Stick methods
+   appear below.
 
    The rendering only takes place if the do_render flag is set.  If it is
    not, the width is returned only (the h_just argument being ignored). */
 
 double 
 #ifdef _HAVE_PROTOS
-_render_simple_non_hershey_string (const unsigned char *s, bool do_render, int h_just)
+_render_simple_non_hershey_string (R___(Plotter *_plotter) const unsigned char *s, bool do_render, int h_just, int v_just)
 #else
-_render_simple_non_hershey_string (s, do_render, h_just)
+_render_simple_non_hershey_string (R___(_plotter) s, do_render, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      bool do_render;
-     int h_just;		/* horiz. justification: JUST_LEFT, etc. */
+     int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
   switch (_plotter->drawstate->font_type)
@@ -731,28 +793,28 @@ _render_simple_non_hershey_string (s, do_render, h_just)
 	
 	t = _esc_esc_string (s);
 	width = (do_render ? 
-		 _plotter->falabel_hershey (t, 'l', 'x') : 
-		 _plotter->flabelwidth_hershey (t));
+		 _plotter->falabel_hershey (R___(_plotter) t, 'l', 'x') : 
+		 _plotter->flabelwidth_hershey (R___(_plotter) t));
 	free (t);
 	return width;
       }
       
     case F_POSTSCRIPT:
 	return (do_render ? 
-		_plotter->falabel_ps (s, h_just) : 
-		_plotter->flabelwidth_ps (s));
+		_plotter->falabel_ps (R___(_plotter) s, h_just, v_just) : 
+		_plotter->flabelwidth_ps (R___(_plotter) s));
     case F_PCL:
       return (do_render ? 
-	      _plotter->falabel_pcl (s, h_just) : 
-	      _plotter->flabelwidth_pcl (s));
+	      _plotter->falabel_pcl (R___(_plotter) s, h_just, v_just) : 
+	      _plotter->flabelwidth_pcl (R___(_plotter) s));
     case F_STICK:
       return (do_render ? 
-	      _plotter->falabel_stick (s, h_just) : 
-	      _plotter->flabelwidth_stick (s));
+	      _plotter->falabel_stick (R___(_plotter) s, h_just, v_just) : 
+	      _plotter->flabelwidth_stick (R___(_plotter) s));
     case F_OTHER:
       return (do_render ? 
-	      _plotter->falabel_other (s, h_just) : 
-	      _plotter->flabelwidth_other (s));
+	      _plotter->falabel_other (R___(_plotter) s, h_just, v_just) : 
+	      _plotter->flabelwidth_other (R___(_plotter) s));
     default:			/* unsupported font type */
       return 0.0;
     }
@@ -765,9 +827,10 @@ _render_simple_non_hershey_string (s, do_render, h_just)
 
 double
 #ifdef _HAVE_PROTOS
-_g_flabelwidth_ps (const unsigned char *s)
+_g_flabelwidth_ps (R___(Plotter *_plotter) const unsigned char *s)
 #else
-_g_flabelwidth_ps (s)
+_g_flabelwidth_ps (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
 #endif
 {
@@ -797,9 +860,10 @@ _g_flabelwidth_ps (s)
 
 double
 #ifdef _HAVE_PROTOS
-_g_flabelwidth_pcl (const unsigned char *s)
+_g_flabelwidth_pcl (R___(Plotter *_plotter) const unsigned char *s)
 #else
-_g_flabelwidth_pcl (s)
+_g_flabelwidth_pcl (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
 #endif
 {
@@ -907,9 +971,10 @@ _g_flabelwidth_pcl (s)
 
 double
 #ifdef _HAVE_PROTOS
-_g_flabelwidth_stick (const unsigned char *s)
+_g_flabelwidth_stick (R___(Plotter *_plotter) const unsigned char *s)
 #else
-_g_flabelwidth_stick (s)
+_g_flabelwidth_stick (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
 #endif
 {
@@ -926,8 +991,8 @@ _g_flabelwidth_stick (s)
        kerning, so we compute inter-character spacing from spacing tables
        in g_fontd2.c, which we know match the device-resident tables */
     {
-      const struct stick_kerning_table_struct *ktable_lower, *ktable_upper;
-      const struct stick_spacing_table_struct *stable_lower, *stable_upper;
+      const struct plStickFontSpacingTableStruct *ktable_lower, *ktable_upper;
+      const struct plStickCharSpacingTableStruct *stable_lower, *stable_upper;
       const short *lower_spacing, *upper_spacing;	/* spacing tables */
       int lower_cols, upper_cols; 			/* table sizes */
       const char *lower_char_to_row, *lower_char_to_col; /* map char to pos */
@@ -1160,9 +1225,10 @@ _g_flabelwidth_stick (s)
 
 double
 #ifdef _HAVE_PROTOS
-_g_flabelwidth_other (const unsigned char *s)
+_g_flabelwidth_other (R___(Plotter *_plotter) const unsigned char *s)
 #else
-_g_flabelwidth_other (s)
+_g_flabelwidth_other (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
 #endif
 {
@@ -1236,11 +1302,13 @@ _esc_esc_string (s)
 
 double
 #ifdef _HAVE_PROTOS
-_g_falabel_ps (const unsigned char *s, int h_just)
+_g_falabel_ps (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_g_falabel_ps (s, h_just)
+_g_falabel_ps (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;
+     int v_just;
 #endif
 {
   return 0.0;
@@ -1248,11 +1316,13 @@ _g_falabel_ps (s, h_just)
 
 double
 #ifdef _HAVE_PROTOS
-_g_falabel_pcl (const unsigned char *s, int h_just)
+_g_falabel_pcl (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_g_falabel_pcl (s, h_just)
+_g_falabel_pcl (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;
+     int v_just;
 #endif
 {
   return 0.0;
@@ -1260,11 +1330,13 @@ _g_falabel_pcl (s, h_just)
 
 double
 #ifdef _HAVE_PROTOS
-_g_falabel_stick (const unsigned char *s, int h_just)
+_g_falabel_stick (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_g_falabel_stick (s, h_just)
+_g_falabel_stick (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;
+     int v_just;
 #endif
 {
   return 0.0;
@@ -1272,11 +1344,13 @@ _g_falabel_stick (s, h_just)
 
 double
 #ifdef _HAVE_PROTOS
-_g_falabel_other (const unsigned char *s, int h_just)
+_g_falabel_other (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_g_falabel_other (s, h_just)
+_g_falabel_other (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;
+     int v_just;
 #endif
 {
   return 0.0;

@@ -38,9 +38,10 @@ static const int _hpgl_cap_style[] =
 
 void
 #ifdef _HAVE_PROTOS
-_h_set_attributes (void)
+_h_set_attributes (S___(Plotter *_plotter))
 #else
-_h_set_attributes ()
+_h_set_attributes (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   /* if plotter's policy on dashing lines needs to be adjusted, do so */
@@ -49,7 +50,7 @@ _h_set_attributes ()
       && (_plotter->drawstate->dash_array_in_effect
 	  || (_plotter->hpgl_line_type != 
 	      _hpgl_line_type[_plotter->drawstate->line_type])
-	  || (_plotter->pen_width != _plotter->drawstate->hpgl_pen_width)))
+	  || (_plotter->hpgl_pen_width != _plotter->drawstate->hpgl_pen_width)))
 
     /* HP-GL/2 case, and we need to emit HP-GL/2 instructions that define a
        new line type.  Why?  Several possibilities: (1) user called
@@ -350,12 +351,12 @@ _h_set_attributes ()
      device-frame version of our line width), update it (HP-GL/2 only) */
   if (_plotter->hpgl_version == 2)
     {
-      if (_plotter->pen_width != _plotter->drawstate->hpgl_pen_width)
+      if (_plotter->hpgl_pen_width != _plotter->drawstate->hpgl_pen_width)
 	{
 	  sprintf (_plotter->page->point, "PW%.4f;", 
 		   100.0 * _plotter->drawstate->hpgl_pen_width);
 	  _update_buffer (_plotter->page);
-	  _plotter->pen_width = _plotter->drawstate->hpgl_pen_width;
+	  _plotter->hpgl_pen_width = _plotter->drawstate->hpgl_pen_width;
 	}
     }
 

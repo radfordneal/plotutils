@@ -10,7 +10,7 @@ double stack[NSTACK];
  * and expression space
  * management routines
  * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
+ * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
  */
 
 double
@@ -194,7 +194,7 @@ ealloc ()
 {
   struct expr *ep;
   
-  ep = (struct expr *)xmalloc ((unsigned int)sizeof(struct expr));
+  ep = (struct expr *)xmalloc (sizeof(struct expr));
   ep->ex_next = NULL;
   ep->ex_sym = NULL;
   ep->ex_oper = O_NOOP;		/* default */
@@ -212,5 +212,5 @@ efree (ep)
   if (ep == NULL || ep == &exprzero || ep == &exprone)
     return;
   efree (ep->ex_next);
-  free ((Voidptr)ep);
+  free ((voidptr_t)ep);
 }

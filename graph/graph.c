@@ -1,10 +1,9 @@
 /* This file contains the main routine, and a few support subroutines, for
    GNU graph.
 
-   Copyright (C) 1989-1998 Free Software Foundation, Inc. */
+   Copyright (C) 1989-1999 Free Software Foundation, Inc. */
 
 #include "sys-defines.h"
-#include "plot.h"
 #include "extern.h"
 #include "getopt.h"
 
@@ -33,6 +32,7 @@ struct option long_options[] =
   {"tick-size",		ARG_REQUIRED,	NULL, 'k'},
   {"toggle-auto-bump",	ARG_NONE,	NULL, 'B'},
   {"toggle-axis-end",	ARG_REQUIRED,	NULL, 'E'},
+  {"toggle-frame-on-top",	ARG_NONE,	NULL, 'H'},
   {"toggle-log-axis",	ARG_REQUIRED,	NULL, 'l'},
   {"toggle-no-ticks",	ARG_REQUIRED,	NULL, 'N'},
   {"toggle-round-to-next-tick",	ARG_REQUIRED,	NULL, 'R'},
@@ -112,13 +112,13 @@ main (argc, argv)
   bool new_plot_line_width = false;
   bool new_fill_fraction = false;
   bool new_use_color = false;
-  bool first_file_of_plot = true;
-  bool first_plot = true;
+  bool first_file_of_graph = true;
+  bool first_graph_of_multigraph = true;
   FILE *data_file = NULL;
-  char *display_type = "meta";	/* default libplot output format */
 
   /* Variables related to the point reader */
 
+  Reader *reader = NULL;
   data_type input_type = T_ASCII; /* by default we read ascii data */
   bool auto_bump = true;	/* auto-bump linemode between polylines? */
   bool auto_abscissa = false;	/* generate abscissa values automatically? */
@@ -136,14 +136,25 @@ main (argc, argv)
 
   bool transpose_axes = false;	/* true means -x applies to y axis, etc. */
 
-  /* Variables related to the point plotter */
+  /* Variables related to the multigrapher, i.e. point plotter */
 
-  grid_type grid_spec = AXES_AND_BOX; /* frame type for the plot */
-  bool no_rotate_y_label = false; /* used for pre-X11R6 servers */
+  Multigrapher *multigrapher = NULL;
+  
+  /* command-line parameters (constant over multigrapher operation) */
+  const char *display_type = "meta";/* libplot output format */
+  const char *bg_color = NULL;	/* color of background, if non-NULL */
+  const char *bitmap_size = NULL;
+  const char *max_line_length = NULL;
+  const char *meta_portable = NULL;
+  const char *page_size = NULL;
+  const char *rotation_angle = NULL;
   bool save_screen = false;	/* save screen, i.e. no erase before plot? */
-  char *bg_color = NULL;	/* color of background, if non-NULL */
-  char *frame_color = "black";	/* color of frame (and plot, if no -C option)*/
-  int rotation_angle = ROT_0;	/* angle of plot within graphics display */
+
+  /* graph-specific parameters (may change from graph to graph) */
+
+  grid_type grid_spec = AXES_AND_BOX; /* frame type for current graph */
+  bool no_rotate_y_label = false; /* used for pre-X11R6 servers */
+  const char *frame_color = "black"; /* color of frame (and graph, if no -C)*/
   int clip_mode = 1;		/* clipping mode (cf. gnuplot) */
   /* following variables are portmanteau: x and y are included as bitfields*/
   int log_axis = 0;		/* log axes or linear axes? */
@@ -151,11 +162,11 @@ main (argc, argv)
   int switch_axis_end = 0;	/* axis at top/right instead of bottom/left? */
   int omit_ticks = 0;		/* omit ticks and tick labels from an axis? */
 
-  /* plotter dimensions, expressed as fractions of the width of the libplot
-     graphics display [by convention square]; <0.0 means use libplot default*/
-  double frame_line_width = -0.001; /* width of lines in the plot frame */
+  /* graph dimensions, expressed as fractions of the width of the libplot
+     graphics display [by convention square]; <0.0 means use libplot default */
+  double frame_line_width = -0.001; /* width of lines in the graph frame */
 
-  /* dimensions of plotting area, expressed as fractions of the width of
+  /* dimensions of graphing area, expressed as fractions of the width of
      the libplot graphics display [by convention square] */
   double margin_below = .2;	/* margin below the plot */
   double margin_left = .2;	/* margin left of the plot */
@@ -170,12 +181,12 @@ main (argc, argv)
 				   is erased before the plot is drawn */
 
   /* text-related */
-  char *font_name = NULL;	/* font name, NULL -> device default */
-  char *title_font_name = NULL;	/* title font name, NULL -> device default */
-  char *symbol_font_name = "ZapfDingbats"; /* symbol font name, NULL -> default */
-  char *x_label = NULL;		/* label for the x axis, NULL -> no label */
-  char *y_label = NULL;		/* label for the y axis, NULL -> no label */
-  char *top_label = NULL;	/* title above the plot, NULL -> no title */
+  const char *font_name = NULL;	/* font name, NULL -> device default */
+  const char *title_font_name = NULL; /* title font name, NULL -> default */
+  const char *symbol_font_name = "ZapfDingbats"; /* symbol font name, NULL -> default */
+  const char *x_label = NULL;	/* label for the x axis, NULL -> no label */
+  const char *y_label = NULL;	/* label for the y axis, NULL -> no label */
+  const char *top_label = NULL;	/* title above the plot, NULL -> no title */
 
   /* user-specified limits on the axes */
   double min_x = 0.0, min_y = 0.0, max_x = 0.0, max_y = 0.0;
@@ -198,9 +209,9 @@ main (argc, argv)
   double local_spacing_x, local_spacing_y;
   double local_fill_fraction;
   
-  /* `finalized' arguments to initialize_plotter() (computed at the time
-     the first file of a plot is seen, and continuing in effect over the
-     duration of the plot) */
+  /* `finalized' arguments to set_graph_parameters() (computed at the time
+     the first file of a graph is seen, and continuing in effect over the
+     duration of the graph) */
   int final_log_axis = 0;
   int final_round_to_next_tick = 0;
   double final_min_x = 0.0, final_max_x = 0.0, final_spacing_x = 0.0;
@@ -212,23 +223,41 @@ main (argc, argv)
 
   /* for storage of data points (if we're not acting as a filter) */
   Point *p;			/* points array */
-  int points_length = 1024;	/* length of the points array */
+  int points_length = 1024;	/* length of the points array, in points */
   int no_of_points = 0;		/* number of points stored in it */
 
-  /* support for multiplotting */
+  /* support for multigraphing */
   double reposition_trans_x = 0.0, reposition_trans_y = 0.0;
   double reposition_scale = 1.0;
   double old_reposition_trans_x, old_reposition_trans_y;
   double old_reposition_scale;
 
-  /* parse argv[] */
+  /* sui generis */
+  bool frame_on_top = false;
+
+  /* The main command-line parsing loop, which uses getopt to scan argv[]
+     without reordering, i.e. to process command-line arguments (options
+     and filenames) sequentially.
+
+     From a logical point of view, a multigraph consists of a sequence of
+     graphs, with a `--reposition' flag serving as a separator between
+     graphs.  A graph is drawn from one or more files.
+
+     So this parsing loop invokes Multigrapher methods (1) when a file name
+     is seen, (2) when a `--reposition' directive is seen, and (3) at the
+     end of the scan over argv[].
+
+     If at the end of the scan no file names have been seen, stdin is used
+     instead as an input stream.  (As a file name, `-' means stdin.) */
+
   while (continue_parse)
     {
       if (using_getopt)
 	/* end of options not reached yet */
 	{
 	  option = getopt_long (argc, argv, 
-				"-BCOVstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::", 
+				/* initial hyphen requests no reordering */
+				"-BCHOVstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::", 
 			    long_options, &opt_index);
 	  if (option == EOF)	/* end of options */
 	    {
@@ -248,7 +277,7 @@ main (argc, argv)
 	{
 	  if (optind >= argc)	/* all files processed */
 	    {
-	      if (first_plot && first_file_of_plot)
+	      if (first_graph_of_multigraph && first_file_of_graph)
 		/* no file appeared on command line, read stdin instead */
 		{
 		  data_file = stdin;
@@ -269,10 +298,11 @@ main (argc, argv)
 	    }
 	}
 
-      /* parse an option flag, which may be an option flag obtained from
-	 getopt, or a fake (a `1', indicating that a file has been seen on
-	 the command line after all genuine options have been processed, or
-	 that stdin should be read because no filenames have been seen) */
+      /* Parse an option flag, which may be a genuine option flag obtained
+	 from getopt, or a fake (a `1', indicating that a filename has been
+	 seen by getopt, or that filename has been seen on the command line
+	 after all genuine options have been processed, or that stdin
+	 should be read because no filenames have been seen). */
 
       switch (option)
 	{
@@ -291,8 +321,11 @@ main (argc, argv)
 	  new_use_color = true;
 	  use_color = (use_color == true ? false : true);
 	  break;
-	case 'O':
-	  pl_parampl ("META_PORTABLE", "yes"); /* portable format, ARG NONE */
+	case 'H':		/* Toggle frame-on-top, ARG NONE */
+	  frame_on_top = (frame_on_top == true ? false : true);
+	  break;
+	case 'O':		/* portable format, ARG NONE */
+	  meta_portable = "yes";
 	  break;
 	case 'V' << 8:		/* Version, ARG NONE		*/
 	  show_version = true;
@@ -545,13 +578,7 @@ main (argc, argv)
 	  font_name = xstrdup (optarg);
 	  break;
 	case 'r' << 8:		/* Rotation angle, ARG REQUIRED      */
-	  if (strcmp (optarg, "90") == 0)
-	    rotation_angle = ROT_90;
-	  else if (strcmp (optarg, "180") == 0)
-	    rotation_angle = ROT_180;
-	  else if (strcmp (optarg, "270") == 0)
-	    rotation_angle = ROT_270;
-	  else rotation_angle = ROT_0;
+	  rotation_angle = xstrdup (optarg);
 	  break;
 	case 'Z' << 8:		/* Title Font name, ARG REQUIRED      */
 	  title_font_name = xstrdup (optarg);
@@ -642,7 +669,7 @@ main (argc, argv)
 	    }
 	  break;
 	case 'B' << 8:		/* Bitmap size, ARG REQUIRED	*/
-	  pl_parampl ("BITMAPSIZE", optarg);
+	  bitmap_size = xstrdup (optarg);
 	  break;
 	case 'F' << 8:		/* Title font size, ARG REQUIRED	*/
 	  if (sscanf (optarg, "%lf", &local_title_font_size) <= 0)
@@ -679,13 +706,10 @@ main (argc, argv)
 	    frame_line_width = local_frame_line_width;
 	  break;
 	case 'M' << 8:		/* Max line length, ARG REQUIRED	*/
-	  pl_parampl ("MAX_LINE_LENGTH", optarg);
+	  max_line_length = xstrdup (optarg);
 	  break;
 	case 'P' << 8:		/* Page size, ARG REQUIRED	*/
-	  pl_parampl ("PAGESIZE", optarg);
-	  break;
-	case 'Q' << 8:		/* Plot rotation angle, ARG REQUIRED	*/
-	  pl_parampl ("ROTATE", optarg);
+	  page_size = xstrdup (optarg);
 	  break;
 	case 'p' << 8:		/* Pen color string, ARG REQUIRED      */
 	  if (parse_pen_string (optarg) == false)
@@ -839,7 +863,7 @@ main (argc, argv)
 
 	case 'S':		/* Symbol, ARG OPTIONAL	[0,1,2]		*/
 	  new_symbol = true;
-	  symbol_index = M_DOT; /* symbol # 1 is switched to by -S alone */
+	  symbol_index = 1;	/* symbol # 1 is switched to by -S alone */
 	  if (optind >= argc)
 	    break;
 	  if (sscanf (argv[optind], "%d", &local_symbol_index) <= 0)
@@ -870,7 +894,7 @@ main (argc, argv)
 
 	  /* ---------- options with one or more arguments ---------- */
 	  
-	case 'R' << 8:		/* End plot and reposition, ARG REQUIRED [3]*/
+	case 'R' << 8:		/* End graph and reposition, ARG REQUIRED [3]*/
 	  old_reposition_trans_x = reposition_trans_x;
 	  old_reposition_trans_y = reposition_trans_y;
 	  old_reposition_scale = reposition_scale;
@@ -919,122 +943,127 @@ main (argc, argv)
 	    }
 	  optind++;		/* tell getopt we recognized trans_x */
 
-	  if (!first_file_of_plot)
-	    /* there is a plot in progress, and it must be ended */
+	  if (!first_file_of_graph)
+	    /* a graph is in progress (at least one file has been read), so
+	       it must be ended before we begin the next one */
 	    {
 	      if (!filter)
-		/* Since we haven't been acting as a real-time filter for
-		   the duration of this plot, the plot isn't already drawn
-		   on the display.  Instead, we have a points array and
+		/* We haven't been acting as a real-time filter for the
+		   duration of this graph, so the graph isn't already drawn
+		   on the display.  Instead, we have a points array and we
 		   need to plot it, after computing bounds. */
 		{
 		  /* fill in any of min_? and max_? that user didn't
 		     specify (the prefix "final_" means these arguments
 		     were finalized at the time the first file of the plot
 		     was processed) */
-		  array_bounds (p, no_of_points, final_transpose_axes,
+		  array_bounds (p, no_of_points, 
+				final_transpose_axes, clip_mode,
 				&final_min_x, &final_min_y, 
 				&final_max_x, &final_max_y,
 				final_spec_min_x, final_spec_min_y, 
 				final_spec_max_x, final_spec_max_y);
 		  
-		  /* font selection, saves typing */
-		  if ((title_font_name == NULL) && (font_name != NULL))
-		    title_font_name = font_name;
-	      
-		  /* initialize plotter, using (in part) finalized arguments */
-		  initialize_plotter(display_type,
-				     rotation_angle,
-				     save_screen, /* for open_plotter() only */
-				     bg_color,
-				     frame_line_width,
-				     frame_color,
-				     top_label,
-				     title_font_name, title_font_size, /* for title */
-				     tick_size, grid_spec,
-				     final_min_x, final_max_x, final_spacing_x,
-				     final_min_y, final_max_y, final_spacing_y,
-				     final_spec_spacing_x,
-				     final_spec_spacing_y,
-				     plot_width, plot_height, margin_below, margin_left,
-				     font_name, font_size, /* for abs. label */
-				     x_label, 
-				     font_name, font_size, /* for ord. label */
-				     y_label,
-				     no_rotate_y_label,
-				     /* these args are portmanteaux */
-				     final_log_axis, 
-				     final_round_to_next_tick,
-				     switch_axis_end, omit_ticks, 
-				     /* more args */
-				     clip_mode,
-				     blankout_fraction,
-				     final_transpose_axes);
-	      
-		  if (first_plot)
-		    /* haven't opened plotter yet, do so now */
+		  if (first_graph_of_multigraph)
+		    /* haven't created multigrapher yet, do so now */
 		    {
-		      if (open_plotter() < 0)
+		      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 			{
 			  fprintf (stderr, 
-				   "%s: error: couldn't open plot device\n", progname);
+				   "%s: error: couldn't open graphing device\n", progname);
 			  return EXIT_FAILURE;
 			}
 		    }
 		  
-		  /* push new libplot drawing state onto stack of states */
-		  pl_savestate();
-
-		  /* concatenate the current transformation matrix with a
-		     matrix formed from the repositioning parameters (this
-		     will be in effect for duration of the plot) */
-		  pl_fconcat (old_reposition_scale, 0.0, 
-			      0.0, old_reposition_scale,
-			      old_reposition_trans_x * PLOT_SIZE, 
-			      old_reposition_trans_y * PLOT_SIZE);
+		  /* begin graph: push new libplot drawing state onto stack
+		     of states; also concatenate the current transformation
+		     matrix with a matrix formed from the repositioning
+		     parameters (this will be in effect for duration of the
+		     graph) */
+		  begin_graph (multigrapher,
+			       old_reposition_scale,
+			       old_reposition_trans_x, old_reposition_trans_y);
 		  
-		  /* draw the plot frame (grid, ticks, etc.); draw a
+		  /* font selection, saves typing */
+		  if ((title_font_name == NULL) && (font_name != NULL))
+		    title_font_name = font_name;
+	      
+		  /* initialize, using (in part) finalized arguments */
+		  set_graph_parameters (multigrapher,
+					frame_line_width,
+					frame_color,
+					top_label,
+					title_font_name, title_font_size, /* for title */
+					tick_size, grid_spec,
+					final_min_x, final_max_x, final_spacing_x,
+					final_min_y, final_max_y, final_spacing_y,
+					final_spec_spacing_x,
+					final_spec_spacing_y,
+					plot_width, plot_height, margin_below, margin_left,
+					font_name, font_size, /* for abs. label */
+					x_label, 
+					font_name, font_size, /* for ord. label */
+					y_label,
+					no_rotate_y_label,
+					/* these args are portmanteaux */
+					final_log_axis, 
+					final_round_to_next_tick,
+					switch_axis_end, omit_ticks, 
+					/* more args */
+					clip_mode,
+					blankout_fraction,
+					final_transpose_axes);
+	      
+		  /* draw the graph frame (grid, ticks, etc.); draw a
 		     `canvas' (a background opaque white rectangle) only if
-		     this isn't the first plot */
-		  plot_frame((first_plot == true ? false : true));
+		     this isn't the first graph */
+		  draw_frame_of_graph (multigrapher,
+				       (first_graph_of_multigraph ? false : true));
 	      
 		  /* plot the laboriously read-in array */
-		  plot_point_array (p, no_of_points);
+		  plot_point_array (multigrapher, p, no_of_points);
 	      
 		  /* free points array */
 		  free (p);
 		  no_of_points = 0;
-		  first_file_of_plot = false;
+		  first_file_of_graph = false;
 	      
 		} /* end of not-filter case */
 	  
-	      /* pop the plot-specific libplot drawing state off the stack
-                 of drawing states */
-	      pl_restorestate();
+	      /* draw graph frame on top of graph, if user requested it */
+	      if (frame_on_top)
+		{
+		  end_polyline_and_flush (multigrapher);
+		  draw_frame_of_graph (multigrapher, false);
+		}
 
-	      /* on to next plot */
-	      first_plot = false;
-	      first_file_of_plot = true;
+	      /* end graph: pop the graph-specific libplot drawing state off
+                 the stack of drawing states */
+	      end_graph (multigrapher);
+
+	      /* on to next graph */
+	      first_graph_of_multigraph = false;
+	      first_file_of_graph = true;
 
 	    } /* end of not first-file-of-plot case */
 	  
-	  break;
+	  break;		/* end of `--reposition' option */
 
 	  /* ---------------- pseudo-options -------------- */
 
 	  /* File specified on command line, returned in order (along with
-	     the true options).  The first time we reach this point, we
-	     perform special initializations and determine whether or not,
-	     for the duration of this plot, we'll be acting as a filter.
-	     We can do so if xmin, xmax, ymin, ymax have all been specified
-	     on the command line.
+	     command-line options).  The first time we reach this point in
+	     any plot, we perform special initializations and in particular
+	     determine whether or not, for the duration of this plot, we'll
+	     be acting as a filter.  We can do so if xmin, xmax, ymin, ymax
+	     have all been specified, by this point, on the command line.
 
 	     A plot may consist of many files.  A plot in progress is
 	     terminated if a --reposition option (which moves us to the
 	     next plot of a multiplot) is seen, or when the last
 	     command-line option is processed. */
 	case 1:
-	  if (first_file_of_plot)
+	  if (first_file_of_graph)
 	    {
 	      /* For plots with a logarithmic axis, compute logs of axis
 		 limits, since coordinates along the axis, as obtained from
@@ -1096,8 +1125,8 @@ main (argc, argv)
 		}
 
 	      /* We now finalize the following parameters (arguments to
-		 initialize_plotter()), even though we won't call
-		 initialize_plotter() for a while yet, if it turns out we
+		 set_graph_parameters()), even though we won't call
+		 set_graph_parameters() for a while yet, if it turns out we
 		 need to act as a real-time filter. */
 
 	      /* portmanteaux */
@@ -1149,104 +1178,101 @@ main (argc, argv)
 	  if (filter)
 	    /* filter flag is set, will call read_and_plot() on this file */
 	    {
-	      if (first_file_of_plot)
+	      if (first_file_of_graph)
 		{
-		  /* font selection, saves typing */
-		  if ((title_font_name == NULL) && (font_name != NULL))
-		    title_font_name = font_name;
-	      
-		  /* following is in effect for the entire plot */
-		  initialize_plotter(display_type,
-				     rotation_angle,
-				     save_screen, /* for open_plotter() only */
-				     bg_color,
-				     frame_line_width, 
-				     frame_color,
-				     top_label,
-				     title_font_name, title_font_size, /* for title */
-				     tick_size, grid_spec,
-				     final_min_x, final_max_x, final_spacing_x,
-				     final_min_y, final_max_y, final_spacing_y,
-				     final_spec_spacing_x,
-				     final_spec_spacing_y,
-				     plot_width, plot_height, 
-				     margin_below, margin_left,
-				     font_name, font_size, /* for abscissa */
-				     x_label, 
-				     font_name, font_size, /* for ordinate */
-				     y_label,
-				     no_rotate_y_label,
-				     /* these args are portmanteaux */
-				     final_log_axis, 
-				     final_round_to_next_tick,
-				     switch_axis_end,
-				     omit_ticks, 
-				     /* more args */
-				     clip_mode,
-				     blankout_fraction,
-				     final_transpose_axes);
-
-		  if (first_plot)
-		    /* need to open the plotter */
+		  if (first_graph_of_multigraph)
+		    /* need to create the multigrapher */
 		    {
-		      if (open_plotter() < 0)
+		      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 			{
 			  fprintf (stderr, 
-				   "%s: error: couldn't open plot device\n", 
+				   "%s: error: couldn't open graphing device\n", 
 				   progname);
 			  return EXIT_FAILURE;
 			}
 		    }
 		  
-		  /* push a plot-specific drawing state onto libplot's
-                     stack of drawing states */
-		  pl_savestate();
-
-		  /* concatenate the current transformation matrix with a
-		     matrix formed from the repositioning parameters (this
-		     will take effect for the duration of the plot) */
-		  pl_fconcat (reposition_scale, 0.0, 
-			      0.0, reposition_scale,
-			      reposition_trans_x * PLOT_SIZE, 
-			      reposition_trans_y * PLOT_SIZE);
+		  /* begin graph: push a graph-specific drawing state onto
+		     libplot's stack of drawing states; also concatenate
+		     the current transformation matrix with a matrix formed
+		     from the repositioning parameters (this will take
+		     effect for the duration of the graph) */
+		  begin_graph (multigrapher,
+			       reposition_scale,
+			       reposition_trans_x, reposition_trans_y);
 	      
-		  /* draw the plot frame (grid, ticks, etc.); draw a
+		  /* font selection, saves typing */
+		  if ((title_font_name == NULL) && (font_name != NULL))
+		    title_font_name = font_name;
+	      
+		  /* following will be in effect for the entire plot */
+		  set_graph_parameters (multigrapher,
+					frame_line_width, 
+					frame_color,
+					top_label,
+					title_font_name, title_font_size, /* for title */
+					tick_size, grid_spec,
+					final_min_x, final_max_x, final_spacing_x,
+					final_min_y, final_max_y, final_spacing_y,
+					final_spec_spacing_x,
+					final_spec_spacing_y,
+					plot_width, plot_height, 
+					margin_below, margin_left,
+					font_name, font_size, /* on abscissa */
+					x_label, 
+					font_name, font_size, /* on ordinate */
+					y_label,
+					no_rotate_y_label,
+					/* these args are portmanteaux */
+					final_log_axis, 
+					final_round_to_next_tick,
+					switch_axis_end,
+					omit_ticks, 
+					/* more args */
+					clip_mode,
+					blankout_fraction,
+					final_transpose_axes);
+
+		  /* draw the graph frame (grid, ticks, etc.); draw a
 		     `canvas' (a background opaque white rectangle) only if
-		     this isn't the first plot */
-		  plot_frame (first_plot ? false : true);
+		     this isn't the first graph */
+		  draw_frame_of_graph (multigrapher,
+				       first_graph_of_multigraph ? false : true);
 		  
-		  initialize_reader (input_type,
-				     auto_abscissa, delta_x, x_start,
-				     /* following three are plot-specific */
-				     final_transpose_axes, 
-				     final_log_axis, auto_bump,
-				     /* following args are file-specific
-					(they set dataset attributes) */
-				     symbol_index, symbol_size,
-				     symbol_font_name,
-				     linemode_index, plot_line_width, 
-				     fill_fraction, use_color);
+		  reader = new_reader (data_file, input_type,
+				       auto_abscissa, delta_x, x_start,
+				       /* following three are graph-specific */
+				       final_transpose_axes, 
+				       final_log_axis, auto_bump,
+				       /* following args are file-specific
+					  (they set dataset attributes) */
+				       symbol_index, symbol_size,
+				       symbol_font_name,
+				       linemode_index, plot_line_width, 
+				       fill_fraction, use_color);
 		  new_symbol = new_symbol_size = new_symbol_font_name = false;
 		  new_linemode = new_plot_line_width = false;
 		  new_fill_fraction = new_use_color = false;
 		}
-	      else	/* not first file of plot, but do some things anyway */
+	      else
+		/* not first file of plot; do some things anyway */
 		{
 		  /* set reader parameters that may change when we move
 		     from file to file within a plot */
-		  set_reader_parameters (input_type,
-					 auto_abscissa, delta_x, x_start,
-					 /* following args set dataset 
-					    attributes */
-					 symbol_index, symbol_size, 
-					 symbol_font_name,
-					 linemode_index, plot_line_width, 
-					 fill_fraction, use_color,
-					 /* following bools make up a mask*/
-					 new_symbol, new_symbol_size,
-					 new_symbol_font_name,
-					 new_linemode, new_plot_line_width, 
-					 new_fill_fraction, new_use_color);
+		  alter_reader_parameters (reader,
+					   data_file, input_type,
+					   auto_abscissa, delta_x, x_start,
+					   /* following args set dataset 
+					      attributes */
+					   symbol_index, symbol_size, 
+					   symbol_font_name,
+					   linemode_index, plot_line_width, 
+					   fill_fraction, use_color,
+					   /* following bools make up a mask*/
+					   new_symbol, new_symbol_size,
+					   new_symbol_font_name,
+					   new_linemode, new_plot_line_width, 
+					   new_fill_fraction, new_use_color);
 
 		  new_symbol = new_symbol_size = new_symbol_font_name = false;
 		  new_linemode = new_plot_line_width = false;
@@ -1255,7 +1281,7 @@ main (argc, argv)
     
 	      /* call read_and_plot_file() on the file; each dataset in the
 		 file yields a polyline */
-	      read_and_plot_file (data_file);
+	      read_and_plot_file (reader, multigrapher);
 
 	    } /* end of filter case */
 	  
@@ -1266,23 +1292,23 @@ main (argc, argv)
 	       filter, so we do things the hard way: we call read_file() on
 	       each file to create a points array, and at the end of the
 	       plot we'll call plot_point_array() on the array.  For now,
-	       we don't even call initialize_plotter(). */
+	       we don't even call set_graph_parameters(). */
 	    {
-	      if (first_file_of_plot)	/* some additional initializations */
+	      if (first_file_of_graph)	/* some additional initializations */
 		{
 		  p = (Point *)xmalloc (points_length * sizeof (Point));
 		  
-		  initialize_reader (input_type, 
-				     auto_abscissa, delta_x, x_start,
-				     /* following three are plot-specific */
-				     final_transpose_axes, 
-				     final_log_axis, auto_bump,
-				     /* following args are file-specific
-					(they set dataset attributes) */
-				     symbol_index, symbol_size,
-				     symbol_font_name,
-				     linemode_index, plot_line_width, 
-				     fill_fraction, use_color);
+		  reader = new_reader (data_file, input_type, 
+				       auto_abscissa, delta_x, x_start,
+				       /* following are graph-specific */
+				       final_transpose_axes, 
+				       final_log_axis, auto_bump,
+				       /* following args are file-specific
+					  (they set dataset attributes) */
+				       symbol_index, symbol_size,
+				       symbol_font_name,
+				       linemode_index, plot_line_width, 
+				       fill_fraction, use_color);
 		  new_symbol = new_symbol_size = new_symbol_font_name = false;
 		  new_linemode = new_plot_line_width = false;
 		  new_fill_fraction = new_use_color = false;
@@ -1291,19 +1317,20 @@ main (argc, argv)
 		{
 		  /* set reader parameters that may change when we move
 		     from file to file within a plot */
-		  set_reader_parameters (input_type, 
-					 auto_abscissa, delta_x, x_start,
-					 /* following args set dataset 
-					    attributes */
-					 symbol_index, symbol_size, 
-					 symbol_font_name,
-					 linemode_index, plot_line_width, 
-					 fill_fraction, use_color,
-					 /* following bools make up a mask*/
-					 new_symbol, new_symbol_size,
-					 new_symbol_font_name,
-					 new_linemode, new_plot_line_width, 
-					 new_fill_fraction, new_use_color);
+		  alter_reader_parameters (reader,
+					   data_file, input_type, 
+					   auto_abscissa, delta_x, x_start,
+					   /* following args set dataset
+					      attributes */
+					   symbol_index, symbol_size, 
+					   symbol_font_name,
+					   linemode_index, plot_line_width, 
+					   fill_fraction, use_color,
+					   /* following bools make up a mask*/
+					   new_symbol, new_symbol_size,
+					   new_symbol_font_name,
+					   new_linemode, new_plot_line_width, 
+					   new_fill_fraction, new_use_color);
 
 		  new_symbol = new_symbol_size = new_symbol_font_name = false;
 		  new_linemode = new_plot_line_width = false;
@@ -1311,7 +1338,7 @@ main (argc, argv)
 		}
 	      
 	      /* add points to points array by calling read_file() on file */
-	      read_file (data_file, &p, &points_length, &no_of_points);
+	      read_file (reader, &p, &points_length, &no_of_points);
 
 	    } /* end of not-filter case */
 
@@ -1319,7 +1346,7 @@ main (argc, argv)
 	  if (data_file != stdin)
 	    close_file (optarg, data_file);
 
-	  first_file_of_plot = false;
+	  first_file_of_graph = false;
 	  break;	/* end of `case 1' in switch() [i.e., filename seen] */
 	  
 	  /*---------------- End of options ----------------*/
@@ -1370,86 +1397,86 @@ main (argc, argv)
       return EXIT_SUCCESS;
     }
 
-  /* At this point, we need to terminate the plot currently in progress, if
-     it's nonempty (zero or more files could have been plotted).  */
+  /* End of command-line parse.  At this point, we need to terminate the
+     graph currently in progress, if it's nonempty (i.e. if one or more
+     files have been read). */
 
-  if (!first_file_of_plot)
+  if (first_file_of_graph == false)
     {
-      /* If we're acting as a real-time filter, then the plot is already
-	 drawn on the display and there's nothing for us to do.  But if
-	 not, the plot is stored internally and we need to draw it. */
+      /* At least one file was read.  If we're acting as a real-time
+	 filter, then the graph is already drawn on the display and there's
+	 nothing for us to do.  Instead, we have a points array and we need
+	 to plot it, after computing bounds. */
       if (!filter)
 	{
 
 	  /* fill in any of min_? and max_? that user didn't specify (the
 	     prefix "final_" means these arguments were finalized at the
 	     time the first file of the plot was processed) */
-	  array_bounds (p, no_of_points, final_transpose_axes,
+	  array_bounds (p, no_of_points,
+			final_transpose_axes, clip_mode,
 			&final_min_x, &final_min_y,
 			&final_max_x, &final_max_y,
 			final_spec_min_x, final_spec_min_y, 
 			final_spec_max_x, final_spec_max_y);
 	  
-	  /* font selection, saves typing */
-	  if ((title_font_name == NULL) && (font_name != NULL))
-	    title_font_name = font_name;
-	      
-	  initialize_plotter(display_type, 
-			     rotation_angle,
-			     save_screen, /* for open_plotter() only */
-			     bg_color,
-			     frame_line_width,
-			     frame_color,
-			     top_label,
-			     title_font_name, title_font_size, /* for title */
-			     tick_size, grid_spec,
-			     final_min_x, final_max_x, final_spacing_x,
-			     final_min_y, final_max_y, final_spacing_y,
-			     final_spec_spacing_x,
-			     final_spec_spacing_y,
-			     plot_width, plot_height, margin_below, margin_left,
-			     font_name, font_size, /* for abscissa label */
-			     x_label, 
-			     font_name, font_size, /* for ordinate label */
-			     y_label,
-			     no_rotate_y_label,
-			     /* these args are portmanteaux */
-			     final_log_axis,
-			     final_round_to_next_tick,
-			     switch_axis_end, omit_ticks, 
-			     /* more args */
-			     clip_mode,
-			     blankout_fraction,
-			     final_transpose_axes);
-	  
-	  if (first_plot)
-	    /* still haven't opened plotter, do so now */
+	  if (first_graph_of_multigraph)
+	    /* still haven't created multigrapher, do so now */
 	    {
-	      if (open_plotter() < 0)
+	      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 		{
 		  fprintf (stderr, 
-			   "%s: error: couldn't open plot device\n", progname);
+			   "%s: error: couldn't open graphing device\n", progname);
 		  return EXIT_FAILURE;
 		}
 	    }
 	  
-	  /* push new libplot drawing state onto stack of states */
-	  pl_savestate();
+	  /* begin graph: push new libplot drawing state onto stack of
+	     states; also concatenate the current transformation matrix
+	     with a matrix formed from the repositioning parameters (this
+	     will take effect for the duration of the graph) */
+	  begin_graph (multigrapher,
+		       reposition_scale, 
+		       reposition_trans_x, reposition_trans_y);
 	  
-	  /* concatenate the current transformation matrix with a
-	     matrix formed from the repositioning parameters */
-	  pl_fconcat (reposition_scale, 0.0, 
-		      0.0, reposition_scale,
-		      reposition_trans_x * PLOT_SIZE, 
-		      reposition_trans_y * PLOT_SIZE);
+	  /* font selection, saves typing */
+	  if ((title_font_name == NULL) && (font_name != NULL))
+	    title_font_name = font_name;
+	      
+	  set_graph_parameters (multigrapher,
+				frame_line_width,
+				frame_color,
+				top_label,
+				title_font_name, title_font_size, /*for title*/
+				tick_size, grid_spec,
+				final_min_x, final_max_x, final_spacing_x,
+				final_min_y, final_max_y, final_spacing_y,
+				final_spec_spacing_x,
+				final_spec_spacing_y,
+				plot_width, plot_height, 
+				margin_below, margin_left,
+				font_name, font_size, /* for abscissa label */
+				x_label, 
+				font_name, font_size, /* for ordinate label */
+				y_label,
+				no_rotate_y_label,
+				/* these args are portmanteaux */
+				final_log_axis,
+				final_round_to_next_tick,
+				switch_axis_end, omit_ticks, 
+				/* more args */
+				clip_mode,
+				blankout_fraction,
+				final_transpose_axes);
 	  
-	  /* draw the plot frame (grid, ticks, etc.); draw a `canvas' (a
+	  /* draw the graph frame (grid, ticks, etc.); draw a `canvas' (a
 	     background opaque white rectangle) only if this isn't the
-	     first plot */
-	  plot_frame((first_plot == true ? false : true));
+	     first graph */
+	  draw_frame_of_graph (multigrapher,
+			       first_graph_of_multigraph ? false : true);
 	  
 	  /* plot the laboriously read-in array */
-	  plot_point_array (p, no_of_points);
+	  plot_point_array (multigrapher, p, no_of_points);
 	  
 	  /* free points array */
 	  free (p);
@@ -1457,14 +1484,23 @@ main (argc, argv)
 
 	} /* end of not-filter case */
 
-      /* pop plot-specific drawing state off the stack of drawing states */
-      pl_restorestate();
+      /* draw graph frame on top of graph, if user requested it */
+      if (frame_on_top)
+	{
+	  end_polyline_and_flush (multigrapher);
+	  draw_frame_of_graph (multigrapher, false);
+	}
 
-    } /* end of nonempty-plot case */
+      /* end graph: pop drawing state off the stack of drawing states */
+      end_graph (multigrapher);
+
+    } /* end of nonempty-graph case */
   
-  if (close_plotter() < 0)
+  /* finish up by deleting our multigrapher (one must have been created,
+     since we always read at least stdin) */
+  if (delete_multigrapher (multigrapher) < 0)
     {
-      fprintf (stderr, "%s: error: could not close plot device\n", 
+      fprintf (stderr, "%s: error: could not close graphing device\n", 
 	       progname);
       return EXIT_FAILURE;
     }
@@ -1554,7 +1590,7 @@ parse_pen_string (pen_s)
 	      charp = tmp + 1;
 	      break;
 	    }
-	  else if (*tmp == '\0') /* end of name string and env var also */
+	  else if (*tmp == '\0') /* end of name string */
 	    {
 	      name[i] = '\0';
 	      charp = tmp;

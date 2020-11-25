@@ -10,24 +10,44 @@
 #include "sys-defines.h"
 #include "extern.h"
 
+#ifdef MSDOS
+#include <unistd.h>		/* for fsync() */
+#endif
+
+/* Mutex for locking _plotters[] and _plotters_len.  Defined in
+   g_defplot.c. */
+#ifdef PTHREAD_SUPPORT
+#ifdef HAVE_PTHREAD_H
+extern pthread_mutex_t _plotters_mutex;
+#endif
+#endif
+
 int
 #ifdef _HAVE_PROTOS
-_g_flushpl (void)
+_g_flushpl (S___(Plotter *_plotter))
 #else
-_g_flushpl ()
+_g_flushpl (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("flushpl: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "flushpl: invalid operation");
       return -1;
     }
 
   if (_plotter->outfp)
     {
-      if (fflush(_plotter->outfp) < 0)
+      if (fflush(_plotter->outfp) < 0
+#ifdef MSDOS
+	  /* data can be caught in DOS buffers, so do an fsync() too */
+	  || fsync (_plotter->outfp) < 0
+#endif
+	  )
 	{
-	  _plotter->error ("output stream jammed");
+	  _plotter->error (R___(_plotter) 
+			   "output stream jammed");
 	  return -1;
 	}
       else
@@ -39,7 +59,7 @@ _g_flushpl ()
 	  _plotter->outstream->flush ();
 	  if (!(*(_plotter->outstream)))
 	    {
-	      _plotter->error ("output stream jammed");
+	      _plotter->error (R___(_plotter) "output stream jammed");
 	      return -1;
 	    }
 	  else
@@ -52,18 +72,30 @@ _g_flushpl ()
 }
 
 /* Flush output streams for all Plotters.  Plotters that fork when the
-   closepl() operation is invoked should call this. */
+   closepl() operation is invoked should call this. 
 
+   This code is messy, because there are four cases to cover, and in the
+   final three, the global variables _plotters[] and _plotters_len need to
+   be locked and unlocked. */
 void
 #ifdef _HAVE_PROTOS
-_flush_plotter_outstreams (void)
+_flush_plotter_outstreams (S___(Plotter *_plotter))
 #else
-_flush_plotter_outstreams ()
+_flush_plotter_outstreams (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
-#ifndef HAVE_NULL_FLUSH
+#ifndef LIBPLOTTER 
+
+#ifdef HAVE_NULL_FLUSH
+  fflush ((FILE *)NULL);
+#else  /* not HAVE_NULL_FLUSH */
   int i;
-  
+#ifdef PTHREAD_SUPPORT
+#ifdef HAVE_PTHREAD_H
+  pthread_mutex_lock (&_plotters_mutex);
+#endif
+#endif
   for (i = 0; i < _plotters_len; i++)
     if (_plotters[i]) 
       {
@@ -71,20 +103,24 @@ _flush_plotter_outstreams ()
 	  fflush (_plotters[i]->outfp);
 	if (_plotters[i]->errfp)
 	  fflush (_plotters[i]->errfp);
-#ifdef LIBPLOTTER
-	if (_plotters[i]->outstream)
-	  _plotters[i]->outstream->flush ();
-	if (_plotters[i]->errstream)
-	  _plotters[i]->errstream->flush ();
-#endif
       }
-  /* maybe should fflush stdout too? */
+#ifdef PTHREAD_SUPPORT
+#ifdef HAVE_PTHREAD_H
+  pthread_mutex_unlock (&_plotters_mutex);
+#endif
+#endif
+#endif /* not HAVE_NULL_FLUSH */
 
-#else  /* HAVE_NULL_FLUSH */
-  /* can do more: fflush _all_ output (FILE *)'s before forking */
+#else  /* LIBPLOTTER */
+  int i;
+#ifdef PTHREAD_SUPPORT
+#ifdef HAVE_PTHREAD_H
+  pthread_mutex_lock (&_plotters_mutex);
+#endif
+#endif
+#ifdef HAVE_NULL_FLUSH
   fflush ((FILE *)NULL);
-#ifdef LIBPLOTTER
-  for (int i = 0; i < _plotters_len; i++)
+  for (i = 0; i < _plotters_len; i++)
     if (_plotters[i]) 
       {
 	if (_plotters[i]->outstream)
@@ -92,6 +128,25 @@ _flush_plotter_outstreams ()
 	if (_plotters[i]->errstream)
 	  _plotters[i]->errstream->flush ();
       }
+#else  /* not HAVE_NULL_FLUSH */
+  for (i = 0; i < _plotters_len; i++)
+    if (_plotters[i]) 
+      {
+	if (_plotters[i]->outfp)
+	  fflush (_plotters[i]->outfp);
+	if (_plotters[i]->errfp)
+	  fflush (_plotters[i]->errfp);
+	if (_plotters[i]->outstream)
+	  _plotters[i]->outstream->flush ();
+	if (_plotters[i]->errstream)
+	  _plotters[i]->errstream->flush ();
+      }
+#endif /* not HAVE_NULL_FLUSH */
+#ifdef PTHREAD_SUPPORT
+#ifdef HAVE_PTHREAD_H
+  pthread_mutex_unlock (&_plotters_mutex);
 #endif
-#endif /* HAVE_NULL_FLUSH */
+#endif
+
+#endif /* LIBPLOTTER */
 }

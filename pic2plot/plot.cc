@@ -13,8 +13,12 @@
 // than directly from `output'.
 
 #include "pic.h"
-#include "plot.h"
+#include "output.h"
 #include "common.h"
+#include "plot.h"		// libplot header file
+
+// Plotter parameter array, set from command line in main.cc
+extern plPlotterParams *plotter_params;
 
 // size of graphics display in `virtual inches'
 #define DISPLAY_SIZE_IN_INCHES 8.0
@@ -64,8 +68,8 @@ public:
   int supports_filled_polygons (void);
 private:
   // parameters
-  int plotter_handle; // libplot Plotter handle
-  double default_plotter_line_thickness; // in virtual points
+  plPlotter *plotter;		// pointer to opaque libplot Plotter object
+  double default_plotter_line_thickness; // line thickness in virtual points
   int pen_red, pen_green, pen_blue;	 // 48-bit pen color
   // dynamic variables, keep track of Plotter drawing state
   int plotter_line_type; // one of line_type::solid etc.
@@ -87,20 +91,18 @@ make_plot_output()
 
 plot_output::plot_output()
 {
-  if ((plotter_handle = pl_newpl (display_type, NULL, stdout, stderr)) < 0)
+  if ((plotter = pl_newpl_r (display_type, NULL, stdout, stderr,
+			     plotter_params)) == NULL)
     {
       fprintf (stderr, "%s: error: could not open plot device\n", 
 	       program_name);
       exit (EXIT_FAILURE);
     }
-  else
-    pl_selectpl (plotter_handle);
 }
 
 plot_output::~plot_output()
 {
-  pl_selectpl (0);
-  pl_deletepl (plotter_handle);
+  pl_deletepl_r (plotter);
 }
 
 void 
@@ -111,7 +113,7 @@ plot_output::start_picture(double sc, const position &ll,
   double scale;
 
   // open Plotter; record Plotter drawing state defaults
-  pl_openpl ();
+  pl_openpl_r (plotter);
   plotter_line_type = line_type::solid;
   plotter_fill_fraction = 0;	// i.e. unfilled
   plotter_path_in_progress = false;
@@ -144,38 +146,23 @@ plot_output::start_picture(double sc, const position &ll,
   xmax = xmin + DISPLAY_SIZE_IN_INCHES * scale;
   ymax = ymin + DISPLAY_SIZE_IN_INCHES * scale;
 
-  switch ((int)(rotation_angle))
-    {
-    case (int)ROT_0:
-    default:
-      pl_fspace (xmin, ymin, xmax, ymax);
-      break;
-    case (int)ROT_90:
-      pl_fspace2 (xmin, ymax, xmin, ymin, xmax, ymax);
-      break;
-    case (int)ROT_180:
-      pl_fspace2 (xmax, ymax, xmin, ymax, xmax, ymin);
-      break;
-    case (int)ROT_270:
-      pl_fspace2 (xmax, ymin, xmax, ymax, xmin, ymin);
-      break;
-    }
+  pl_fspace_r (plotter, xmin, ymin, xmax, ymax);
 
   // clear Plotter of objects; initialize font name
-  pl_erase();
+  pl_erase_r (plotter);
   if (font_name)
-    pl_fontname (font_name);
+    pl_fontname_r (plotter, font_name);
   
   // determine and set color(s)
   if (!precision_dashing)
-    // set pen/fill color (will modify only by invoking pl_filltype)
+    // set pen/fill color (will modify only by invoking pl_filltype_r)
     {
       if (pen_color_name)
-	pl_colorname (pen_color_name);
+	pl_colorname_r (plotter, pen_color_name);
     }
   else
-    // set pen color; will invoke pl_pencolor and pl_fillcolor when drawing
-    // filled objects, to work around the `zero-width edge' problem
+    // set pen color; will invoke pl_pencolor_r and pl_fillcolor_r when
+    // drawing filled objects, to work around the `zero-width edge' problem
     {
       bool pen_color_found = false;
       const Colornameinfo *color_p = _colornames;
@@ -204,7 +191,7 @@ plot_output::start_picture(double sc, const position &ll,
 	// black pen
 	pen_red = pen_green = pen_blue = 0;
 
-      pl_pencolor (pen_red, pen_green, pen_blue);
+      pl_pencolor_r (plotter, pen_red, pen_green, pen_blue);
     }
 
   // initialize font size and line thickness (latter is dynamic, can
@@ -216,13 +203,13 @@ plot_output::start_picture(double sc, const position &ll,
   if (font_size > 0.0)
     // font size is set on command line in terms of width of display,
     // but libplot uses virtual inches
-    pl_ffontsize (DISPLAY_SIZE_IN_INCHES * font_size);
+    pl_ffontsize_r (plotter, DISPLAY_SIZE_IN_INCHES * font_size);
 
   if (line_width >= 0.0)
     {
       // line_width is set on command line in terms of width of display,
       // but libplot uses virtual inches, and pic2plot uses virtual points
-      pl_flinewidth (DISPLAY_SIZE_IN_INCHES * line_width);
+      pl_flinewidth_r (plotter, DISPLAY_SIZE_IN_INCHES * line_width);
       default_plotter_line_thickness 
 	= DISPLAY_SIZE_IN_INCHES * POINTS_PER_INCH * line_width;
     }
@@ -237,7 +224,7 @@ plot_output::start_picture(double sc, const position &ll,
 void 
 plot_output::finish_picture()
 {
-  pl_closepl ();
+  pl_closepl_r (plotter);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -248,7 +235,7 @@ plot_output::finish_picture()
 // i.e. may not break the path in progress, if any).
 
 // Two possibilities: (1) If we're not doing precision dashing, we invoke
-// pl_filltype.  (2) If we're doing precision dashing, we set the fill
+// pl_filltype_r.  (2) If we're doing precision dashing, we set the fill
 // color by computing it as an RGB, and set it as both our fill color and
 // pen color.  This is to avoid the zero edge thickness problem.
 
@@ -272,15 +259,15 @@ plot_output::set_fill (double fill)
     {
       if (!precision_dashing)
 	// manipulate fill color by setting the fill fraction
-	pl_filltype (fill_fraction);
+	pl_filltype_r (plotter, fill_fraction);
       else
 	// doing precision dashing
 	{
 	  if (fill_fraction == 0)
 	    // not filling; reset pen color to default
 	    {
-	      pl_pencolor (pen_red, pen_green, pen_blue);
-	      pl_filltype (0);
+	      pl_pencolor_r (plotter, pen_red, pen_green, pen_blue);
+	      pl_filltype_r (plotter, 0);
 	    }
 	  else
 	    // filling; set fill color, and pen color to be the same
@@ -294,8 +281,8 @@ plot_output::set_fill (double fill)
 	      fill_red = IROUND(d_fill_red);
 	      fill_green = IROUND(d_fill_green);
 	      fill_blue = IROUND(d_fill_blue);
-	      pl_color (fill_red, fill_green, fill_blue);
-	      pl_filltype (1);
+	      pl_color_r (plotter, fill_red, fill_green, fill_blue);
+	      pl_filltype_r (plotter, 1);
 	    }
 	}
       
@@ -316,7 +303,7 @@ plot_output::set_line_type_and_thickness (const line_type &lt)
     default:
       if (plotter_line_type != line_type::solid)
 	{
-	  pl_linemod ("solid");
+	  pl_linemod_r (plotter, "solid");
 	  plotter_line_type = line_type::solid;
 	  plotter_path_in_progress = false;
 	}
@@ -326,10 +313,10 @@ plot_output::set_line_type_and_thickness (const line_type &lt)
 	{
 	  double dashbuf[2];
 
-	  pl_linemod ("dotted");
+	  pl_linemod_r (plotter, "dotted");
 	  dashbuf[0] = 0.25 * lt.dash_width;
 	  dashbuf[1] = 0.75 * lt.dash_width;
-	  pl_flinedash (2, dashbuf, 0.0);
+	  pl_flinedash_r (plotter, 2, dashbuf, 0.0);
 	  plotter_line_type = line_type::dotted;
 	  plotter_path_in_progress = false;
 	}
@@ -339,9 +326,9 @@ plot_output::set_line_type_and_thickness (const line_type &lt)
 	{
 	  double dashbuf[2];
 
-	  pl_linemod ("shortdashed");
+	  pl_linemod_r (plotter, "shortdashed");
 	  dashbuf[0] = dashbuf[1] = lt.dash_width;
-	  pl_flinedash (2, dashbuf, 0.0);
+	  pl_flinedash_r (plotter, 2, dashbuf, 0.0);
 	  plotter_line_type = line_type::dashed;
 	  plotter_path_in_progress = false;
 	}
@@ -351,9 +338,9 @@ plot_output::set_line_type_and_thickness (const line_type &lt)
       && lt.thickness != plotter_line_thickness)
     {
       if (lt.thickness < 0)
-	pl_flinewidth (default_plotter_line_thickness / POINTS_PER_INCH);
+	pl_flinewidth_r (plotter, default_plotter_line_thickness / POINTS_PER_INCH);
       else
-	pl_flinewidth (lt.thickness / POINTS_PER_INCH);
+	pl_flinewidth_r (plotter, lt.thickness / POINTS_PER_INCH);
       plotter_line_thickness = lt.thickness;
       plotter_path_in_progress = false;
     }
@@ -376,15 +363,16 @@ plot_output::text(const position &center, text_piece *v, int n, double angle)
 
   if (n > 0)
     {
-      pl_ftextangle (180 * angle / M_PI);
+      pl_ftextangle_r (plotter, 180 * angle / M_PI);
       plotter_path_in_progress = false;
 
       set_fill (-1.0);		// resets pen color to default
     }
   for (int i = 0; i < n; i++)
     {
-      pl_fmove (center.x - (0.5*(n-1) - i) * line_spacing * sin(angle), 
-		center.y + (0.5*(n-1) - i) * line_spacing * cos(angle));
+      pl_fmove_r (plotter, 
+		  center.x - (0.5*(n-1) - i) * line_spacing * sin(angle), 
+		  center.y + (0.5*(n-1) - i) * line_spacing * cos(angle));
       plotter_path_in_progress = false;
 
       switch ((int)(v[i].adj.h))
@@ -413,7 +401,7 @@ plot_output::text(const position &center, text_piece *v, int n, double angle)
 	  vertical_adj = 't';
 	  break;
 	}
-      pl_alabel (horizontal_adj, vertical_adj, v[i].text);
+      pl_alabel_r (plotter, horizontal_adj, vertical_adj, v[i].text);
       plotter_path_in_progress = false;
     }
 }
@@ -432,7 +420,7 @@ plot_output::line(const position &start, const position *v, int n,
     return;
   if (lt.type == line_type::invisible)
     {
-      pl_fmove (v[n-1].x, v[n-1].y);
+      pl_fmove_r (plotter, v[n-1].x, v[n-1].y);
       plotter_path_in_progress = false;
       return;
     }
@@ -442,9 +430,9 @@ plot_output::line(const position &start, const position *v, int n,
   if (!precision_dashing || lt.type == line_type::solid)
     {
       set_line_type_and_thickness (lt);
-      pl_fline (start.x, start.y, v[0].x, v[0].y);
+      pl_fline_r (plotter, start.x, start.y, v[0].x, v[0].y);
       for (int i = 1; i < n; i++)
-	pl_fcont (v[i].x, v[i].y);
+	pl_fcont_r (plotter, v[i].x, v[i].y);
       plotter_path_in_progress = true;
     }
   else
@@ -463,7 +451,8 @@ plot_output::line(const position &start, const position *v, int n,
 		distance vec(to_point - from_point);
 		double dist = hypot(vec);
 		if (dist <= lt.dash_width*2.0)
-		  pl_fline(from_point.x, from_point.y, to_point.x, to_point.y);
+		  pl_fline_r (plotter, 
+			      from_point.x, from_point.y, to_point.x, to_point.y);
 		else 
 		  {
 		    // round number of dashes to integer, along each segment
@@ -474,13 +463,14 @@ plot_output::line(const position &start, const position *v, int n,
 		    for (int j = 0; j <= ndashes; j++) 
 		      {
 			position s(from_point + dash_gap_vec*j);
-			pl_fline(s.x, s.y, s.x + dash_vec.x, s.y + dash_vec.y);
+			pl_fline_r (plotter, 
+				    s.x, s.y, s.x + dash_vec.x, s.y + dash_vec.y);
 		      }
 		  }
 		from_point = v[i];
 		to_point = v[i+1];
 	      }
-	    pl_endpath ();
+	    pl_endpath_r (plotter);
 	    plotter_path_in_progress = false;
 	  }
 	  break;
@@ -523,7 +513,7 @@ plot_output::spline(const position &start, const position *v, int n,
     return;
   if (lt.type == line_type::invisible)
     {
-      pl_fmove (v[n-1].x, v[n-1].y);
+      pl_fmove_r (plotter, v[n-1].x, v[n-1].y);
       plotter_path_in_progress = false;
       return;
     }
@@ -532,21 +522,25 @@ plot_output::spline(const position &start, const position *v, int n,
   set_line_type_and_thickness (lt);
 
   if (n == 1)
-    pl_fline (start.x, start.y, v[0].x, v[0].y);    
+    pl_fline_r (plotter, start.x, start.y, v[0].x, v[0].y);    
   else if (n == 2)
-    pl_fbezier2 (start.x, start.y, v[0].x, v[0].y, v[1].x, v[1].y);
+    pl_fbezier2_r (plotter, 
+		   start.x, start.y, v[0].x, v[0].y, v[1].x, v[1].y);
   else
     {
-      pl_fbezier2 (start.x, start.y, 
-		   v[0].x, v[0].y,
-		   0.5 * (v[0].x + v[1].x), 0.5 * (v[0].y + v[1].y));
+      pl_fbezier2_r (plotter, 
+		     start.x, start.y, 
+		     v[0].x, v[0].y,
+		     0.5 * (v[0].x + v[1].x), 0.5 * (v[0].y + v[1].y));
       for (int i = 0; i < n - 3; i++)
-	pl_fbezier2 (0.5 * (v[i].x + v[i+1].x), 0.5 * (v[i].y + v[i+1].y),
-		     v[i+1].x, v[i+1].y,
-		     0.5 * (v[i+1].x + v[i+2].x), 0.5 * (v[i+1].y + v[i+2].y));
-      pl_fbezier2 (0.5 * (v[n-3].x + v[n-2].x), 0.5 * (v[n-3].y + v[n-2].y),
-		   v[n-2].x, v[n-2].y,
-		   v[n-1].x, v[n-1].y);
+	pl_fbezier2_r (plotter,
+		       0.5 * (v[i].x + v[i+1].x), 0.5 * (v[i].y + v[i+1].y),
+		       v[i+1].x, v[i+1].y,
+		       0.5 * (v[i+1].x + v[i+2].x), 0.5 * (v[i+1].y + v[i+2].y));
+      pl_fbezier2_r (plotter, 
+		     0.5 * (v[n-3].x + v[n-2].x), 0.5 * (v[n-3].y + v[n-2].y),
+		     v[n-2].x, v[n-2].y,
+		     v[n-1].x, v[n-1].y);
     }
   plotter_path_in_progress = true;
 }
@@ -561,7 +555,7 @@ plot_output::arc (const position &start, const position &cent,
 {
   if (lt.type == line_type::invisible)
     {
-      pl_fmove (end.x, end.y);
+      pl_fmove_r (plotter, end.x, end.y);
       plotter_path_in_progress = false;
       return;
     }
@@ -571,7 +565,7 @@ plot_output::arc (const position &start, const position &cent,
   if (!precision_dashing || lt.type == line_type::solid)
     {
       set_line_type_and_thickness (lt);
-      pl_farc (cent.x, cent.y, start.x, start.y, end.x, end.y);
+      pl_farc_r (plotter, cent.x, cent.y, start.x, start.y, end.x, end.y);
       plotter_path_in_progress = true;
     }
   else
@@ -586,9 +580,9 @@ plot_output::arc (const position &start, const position &cent,
 	case line_type::dashed:
 	  // edge arc, with dashes
 	  if (plotter_path_in_progress)
-	    pl_endpath ();
+	    pl_endpath_r (plotter);
 	  dashed_arc(start, cent, end, lt);
-	  pl_endpath ();
+	  pl_endpath_r (plotter);
 	  plotter_path_in_progress = false;
 	  break;
 	case line_type::dotted:
@@ -614,7 +608,7 @@ plot_output::polygon(const position *v, int n,
 {
   if (lt.type == line_type::invisible)
     {
-      pl_fmove (v[n-1].x, v[n-1].y);
+      pl_fmove_r (plotter, v[n-1].x, v[n-1].y);
       plotter_path_in_progress = false;
       return;
     }
@@ -627,15 +621,15 @@ plot_output::polygon(const position *v, int n,
 	  && v[0].x == v[1].x && v[2].x == v[3].x
 	  && v[0].y == v[3].y && v[1].y == v[2].y)
 	{
-	  pl_fbox (v[3].x, v[3].y, v[1].x, v[1].y);
+	  pl_fbox_r (plotter, v[3].x, v[3].y, v[1].x, v[1].y);
 	  plotter_path_in_progress = false;
 	}
       else
 	{
-	  pl_fmove (v[n-1].x, v[n-1].y);
+	  pl_fmove_r (plotter, v[n-1].x, v[n-1].y);
 	  for (int i = 0; i < n; i++)
-	    pl_fcont (v[i].x, v[i].y);
-	  pl_endpath ();
+	    pl_fcont_r (plotter, v[i].x, v[i].y);
+	  pl_endpath_r (plotter);
 	  plotter_path_in_progress = false;
 	}
     }
@@ -651,10 +645,10 @@ plot_output::polygon(const position *v, int n,
 	  slt.type = line_type::solid;
 	  slt.thickness = 0.0;
 	  set_line_type_and_thickness (slt);
-	  pl_fmove (v[n-1].x, v[n-1].y);
+	  pl_fmove_r (plotter, v[n-1].x, v[n-1].y);
 	  for (int i = 0; i < n; i++)
-	    pl_fcont (v[i].x, v[i].y);
-	  pl_endpath ();
+	    pl_fcont_r (plotter, v[i].x, v[i].y);
+	  pl_endpath_r (plotter);
 	  plotter_path_in_progress = false;
 	}
 
@@ -674,7 +668,8 @@ plot_output::polygon(const position *v, int n,
 		distance vec(to_point - from_point);
 		double dist = hypot(vec);
 		if (dist <= lt.dash_width*2.0)
-		  pl_fline(from_point.x, from_point.y, to_point.x, to_point.y);
+		  pl_fline_r (plotter, 
+			      from_point.x, from_point.y, to_point.x, to_point.y);
 		else 
 		  {
 		    // round number of dashes to integer, along each segment
@@ -685,13 +680,14 @@ plot_output::polygon(const position *v, int n,
 		    for (int j = 0; j <= ndashes; j++) 
 		      {
 			position s(from_point + dash_gap_vec*j);
-			pl_fline(s.x, s.y, s.x + dash_vec.x, s.y + dash_vec.y);
+			pl_fline_r (plotter, 
+				    s.x, s.y, s.x + dash_vec.x, s.y + dash_vec.y);
 		      }
 		  }
 		from_point = v[i];
 		to_point = v[i+1];
 	      }
-	    pl_endpath ();
+	    pl_endpath_r (plotter);
 	    plotter_path_in_progress = false;
 	  }
 	  break;
@@ -731,7 +727,7 @@ plot_output::circle (const position &cent, double rad,
 {
   if (lt.type == line_type::invisible)
     {
-      pl_fmove (cent.x, cent.y);
+      pl_fmove_r (plotter, cent.x, cent.y);
       plotter_path_in_progress = false;
       return;
     }
@@ -740,7 +736,7 @@ plot_output::circle (const position &cent, double rad,
     {
       set_fill (fill);
       set_line_type_and_thickness (lt);
-      pl_fcircle (cent.x, cent.y, rad);
+      pl_fcircle_r (plotter, cent.x, cent.y, rad);
       plotter_path_in_progress = false;
     }
   else
@@ -756,7 +752,7 @@ plot_output::circle (const position &cent, double rad,
 	  slt.type = line_type::solid;
 	  slt.thickness = 0.0;
 	  set_line_type_and_thickness (slt);
-	  pl_fcircle (cent.x, cent.y, rad);
+	  pl_fcircle_r (plotter, cent.x, cent.y, rad);
 	  plotter_path_in_progress = false;
 	}
 
@@ -770,9 +766,9 @@ plot_output::circle (const position &cent, double rad,
 	case line_type::dashed:
 	  // edge circle, with dashes
 	  if (plotter_path_in_progress)
-	    pl_endpath ();
+	    pl_endpath_r (plotter);
 	  dashed_circle(cent, rad, lt);
-	  pl_endpath ();
+	  pl_endpath_r (plotter);
 	  plotter_path_in_progress = false;
 	  break;
 	case line_type::dotted:
@@ -794,14 +790,14 @@ plot_output::rounded_box(const position &cent, const distance &dim, double rad, 
 
   if (lt.type == line_type::invisible)
     {
-      pl_fmove (cent.x, cent.y);      
+      pl_fmove_r (plotter, cent.x, cent.y);      
       plotter_path_in_progress = false;
       return;
     }
 
   if (plotter_path_in_progress)
     {
-      pl_endpath ();
+      pl_endpath_r (plotter);
       plotter_path_in_progress = false;      
     }
 
@@ -814,47 +810,47 @@ plot_output::rounded_box(const position &cent, const distance &dim, double rad, 
       arc_start = tem + position(0.0, rad);
       arc_cent = tem + position(rad, rad);
       arc_end = tem + position(rad, 0.0);
-      pl_farc (arc_cent.x, arc_cent.y, 
-	       arc_start.x, arc_start.y, arc_end.x, arc_end.y);
+      pl_farc_r (plotter, arc_cent.x, arc_cent.y, 
+		 arc_start.x, arc_start.y, arc_end.x, arc_end.y);
 
       line_start = cent + position(-dim.x/2.0 + rad, -dim.y/2.0);
       line_end = cent + position(dim.x/2.0 - rad, -dim.y/2.0);
-      pl_fline (arc_end.x, arc_end.y, line_end.x, line_end.y);
+      pl_fline_r (plotter, arc_end.x, arc_end.y, line_end.x, line_end.y);
 
       tem = cent + position(dim.x/2.0, -dim.y/2.0);
       arc_start = tem + position(-rad, 0.0);
       arc_cent = tem + position(-rad, rad);
       arc_end = tem + position(0.0, rad);
-      pl_farc (arc_cent.x, arc_cent.y, 
-	       line_end.x, line_end.y, arc_end.x, arc_end.y);
+      pl_farc_r (plotter, arc_cent.x, arc_cent.y, 
+		 line_end.x, line_end.y, arc_end.x, arc_end.y);
 
       line_start = cent + position(dim.x/2.0, -dim.y/2.0 + rad);
       line_end = cent + position(dim.x/2.0, dim.y/2.0 - rad);
-      pl_fline (arc_end.x, arc_end.y, line_end.x, line_end.y);
+      pl_fline_r (plotter, arc_end.x, arc_end.y, line_end.x, line_end.y);
 
       tem = cent + dim/2.0;
       arc_start = tem + position(0.0, -rad);
       arc_cent = tem + position(-rad, -rad);
       arc_end = tem + position(-rad, 0.0);
-      pl_farc (arc_cent.x, arc_cent.y, 
-	       line_end.x, line_end.y, arc_end.x, arc_end.y);
+      pl_farc_r (plotter, arc_cent.x, arc_cent.y, 
+		 line_end.x, line_end.y, arc_end.x, arc_end.y);
 
       line_start = cent + position(dim.x/2.0 - rad, dim.y/2.0);
       line_end = cent + position(-dim.x/2.0 + rad, dim.y/2.0);
-      pl_fline (arc_end.x, arc_end.y, line_end.x, line_end.y);
+      pl_fline_r (plotter, arc_end.x, arc_end.y, line_end.x, line_end.y);
 
       tem = cent + position(-dim.x/2.0, dim.y/2.0);
       arc_start  = tem + position(rad, 0.0);
       arc_cent =  tem + position(rad, -rad);
       arc_end =  tem + position(0.0, -rad);
-      pl_farc (arc_cent.x, arc_cent.y, 
-	       line_end.x, line_end.y, arc_end.x, arc_end.y);
+      pl_farc_r (plotter, arc_cent.x, arc_cent.y, 
+		 line_end.x, line_end.y, arc_end.x, arc_end.y);
 
       line_start = cent + position(-dim.x/2.0, dim.y/2.0 - rad);
       line_end = cent + position(-dim.x/2.0, -dim.y/2.0 + rad);
-      pl_fline (arc_end.x, arc_end.y, line_end.x, line_end.y);
+      pl_fline_r (plotter, arc_end.x, arc_end.y, line_end.x, line_end.y);
 
-      pl_endpath ();
+      pl_endpath_r (plotter);
       plotter_path_in_progress = false;
     }
   else
@@ -876,7 +872,7 @@ plot_output::rounded_box(const position &cent, const distance &dim, double rad, 
       common_output::rounded_box(cent, dim, rad, lt, -1.0); //-1 means unfilled
       if (plotter_path_in_progress)
 	{
-	  pl_endpath ();
+	  pl_endpath_r (plotter);
 	  plotter_path_in_progress = false;      
 	}
     }
@@ -889,14 +885,14 @@ plot_output::ellipse(const position &cent, const distance &dim,
 {
   if (lt.type == line_type::invisible)
     {
-      pl_fmove (cent.x, cent.y);
+      pl_fmove_r (plotter, cent.x, cent.y);
       plotter_path_in_progress = false;
       return;
     }
 
   set_fill (fill);
   set_line_type_and_thickness (lt);
-  pl_fellipse (cent.x, cent.y, 0.5 * dim.x, 0.5 * dim.y, 0.0);
+  pl_fellipse_r (plotter, cent.x, cent.y, 0.5 * dim.x, 0.5 * dim.y, 0.0);
   plotter_path_in_progress = false;
 }
 
@@ -916,7 +912,7 @@ plot_output::dot(const position &cent, const line_type &lt)
   slt.type = line_type::solid;
   slt.thickness = 0.0;
   set_line_type_and_thickness (slt);
-  pl_fcircle (cent.x, cent.y, 0.5 * lt.thickness / POINTS_PER_INCH);
+  pl_fcircle_r (plotter, cent.x, cent.y, 0.5 * lt.thickness / POINTS_PER_INCH);
   plotter_path_in_progress = false;
 }
 

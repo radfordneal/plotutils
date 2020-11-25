@@ -1,14 +1,13 @@
 // -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com) */
+// Declarations etc. related to the cset class, defined in libgroff/cset.cc.
 
-#ifdef HAVE_CC_LIMITS_H
+#ifdef HAVE_LIMITS_H
 #include <limits.h>
-#else /* not HAVE_CC_LIMITS_H */
+#else /* not HAVE_LIMITS_H */
 #ifndef UCHAR_MAX
 #define UCHAR_MAX 255
 #endif
-#endif /* not HAVE_CC_LIMITS_H */ 
+#endif /* not HAVE_LIMITS_H */ 
 
 enum cset_builtin { CSET_BUILTIN };
 

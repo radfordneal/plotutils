@@ -13,31 +13,32 @@
 
 int
 #ifdef _HAVE_PROTOS
-_h_closepl (void)
+_h_closepl (S___(Plotter *_plotter))
 #else
-_h_closepl ()
+_h_closepl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   int retval;
 
   if (!_plotter->open)
     {
-      _plotter->error ("closepl: invalid operation");
+      _plotter->error (R___(_plotter) "closepl: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* pop drawing states in progress, if any, off the stack */
   if (_plotter->drawstate->previous != NULL)
     {
       while (_plotter->drawstate->previous)
-	_plotter->restorestate();
+	_plotter->restorestate (S___(_plotter));
     }
   
   /* output HP-GL epilogue */
 
-  if (_plotter->pendown == true)
+  if (_plotter->hpgl_pendown == true)
     /* lift pen */
     {
       sprintf (_plotter->page->point, "PU;");
@@ -66,7 +67,7 @@ _h_closepl ()
   _update_buffer (_plotter->page);
 
   /* if a PCL Plotter, switch back from HP-GL/2 mode to PCL mode */
-  _maybe_switch_from_hpgl ();
+  _maybe_switch_from_hpgl (S___(_plotter));
   
   /* set this, so that no drawing on the next page will take place without
      a pen advance */
@@ -75,7 +76,7 @@ _h_closepl ()
   /* OUTPUT HP-GL or HP-GL/2 FOR THIS PAGE */
   if (_plotter->page->len > 0)
     /* should always be true, since we just wrote some */
-    _plotter->write_string (_plotter->page->base); 
+    _plotter->write_string (R___(_plotter) _plotter->page->base); 
 
   /* Delete the page buffer, since HP-GL Plotters don't maintain a
      linked list of pages. */
@@ -85,18 +86,18 @@ _h_closepl ()
   /* remove the zeroth drawing state too, so we can start afresh */
 
   /* elements of state that are strings are freed separately */
-  free (_plotter->drawstate->line_mode);
-  free (_plotter->drawstate->join_mode);
-  free (_plotter->drawstate->cap_mode);
-  free (_plotter->drawstate->font_name);
+  free ((char *)_plotter->drawstate->line_mode);
+  free ((char *)_plotter->drawstate->join_mode);
+  free ((char *)_plotter->drawstate->cap_mode);
+  free ((char *)_plotter->drawstate->font_name);
 
   free (_plotter->drawstate);
   _plotter->drawstate = NULL;
 
   /* attempt to flush (will test whether stream is jammed) */
-  retval = _plotter->flushpl ();
+  retval = _plotter->flushpl (S___(_plotter));
 
-  _plotter->pendown = false;
+  _plotter->hpgl_pendown = false;
   _plotter->open = false;	/* flag device as closed */
 
   return retval;
@@ -104,18 +105,20 @@ _h_closepl ()
 
 void
 #ifdef _HAVE_PROTOS
-_h_maybe_switch_from_hpgl (void)
+_h_maybe_switch_from_hpgl (S___(Plotter *_plotter))
 #else
-_h_maybe_switch_from_hpgl ()
+_h_maybe_switch_from_hpgl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
 }
 
 void
 #ifdef _HAVE_PROTOS
-_q_maybe_switch_from_hpgl (void)
+_q_maybe_switch_from_hpgl (S___(Plotter *_plotter))
 #else
-_q_maybe_switch_from_hpgl ()
+_q_maybe_switch_from_hpgl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   /* switch back from HP-GL/2 to PCL 5 mode */

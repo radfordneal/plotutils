@@ -10,20 +10,21 @@
 
 int
 #ifdef _HAVE_PROTOS
-_p_erase (void)
+_p_erase (S___(Plotter *_plotter))
 #else
-_p_erase ()
+_p_erase (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   int i;
 
   if (!_plotter->open)
     {
-      _plotter->error ("erase: invalid operation");
+      _plotter->error (R___(_plotter) "erase: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   _reset_outbuf (_plotter->page); /* discard all objects */
 

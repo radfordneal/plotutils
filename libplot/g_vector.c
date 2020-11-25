@@ -6,12 +6,12 @@
 #define VLENGTH(v) sqrt( (v).x * (v).x + (v).y * (v).y )
 
 /* scales an input vector to a new length and returns it */
-Vector *
+plVector *
 #ifdef _HAVE_PROTOS
-_vscale(Vector *v, double newlen) 
+_vscale(plVector *v, double newlen) 
 #else
 _vscale(v, newlen) 
-     Vector *v;
+     plVector *v;
      double newlen;
 #endif
 {
@@ -52,16 +52,16 @@ _xatan2 (y, x)
    not lie on the line that perpendicularly bisects the line segment from
    p0 to p1, it is projected orthogonally onto it.  p0 and p1 are assumed
    not to be coincident. */
-Point
+plPoint
 #ifdef _HAVE_PROTOS
-_truecenter(Point p0, Point p1, Point pc)
+_truecenter(plPoint p0, plPoint p1, plPoint pc)
 #else
 _truecenter(p0, p1, pc)
-     Point p0, p1, pc;
+     plPoint p0, p1, pc;
 #endif
 {
-  Point pm;
-  Vector a, b, c;
+  plPoint pm;
+  plVector a, b, c;
   double scale;
   
   /* midpoint */

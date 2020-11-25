@@ -6,11 +6,7 @@ egrep -v CreationDate $SRCDIR/plot2ps.xout > plot2ps0.out
 egrep -v CreationDate plot2ps.out > plot2ps1.out
 rm plot2ps.out
 
-# work around line end problems in installations with DJGPP under DOS
-tr -d '\015' < plot2ps0.out > plot2ps0.dos
-tr -d '\015' < plot2ps1.out > plot2ps1.dos
-
-if cmp -s plot2ps0.dos plot2ps1.dos
+if cmp -s plot2ps0.out plot2ps1.out
 	then retval=0;
 	else retval=1;
 	fi;

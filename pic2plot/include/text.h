@@ -1,4 +1,5 @@
 // -*- C++ -*-
+// The text-piece class, used by pic2plot.
 
 enum hadjustment 
 {

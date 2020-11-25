@@ -6,15 +6,15 @@
  * symbol table space management
  * routines
  * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
+ * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
  */
 
 struct sym *
 #ifdef _HAVE_PROTOS
-lookup (char *nam)
+lookup (const char *nam)
 #else
 lookup (nam)
-     char *nam;
+     const char *nam;
 #endif
 {
   struct sym *sp;
@@ -55,5 +55,5 @@ sfree (sp)
 #endif
 {
   if (sp != NULL)
-    free ((Voidptr)sp);
+    free ((voidptr_t)sp);
 }

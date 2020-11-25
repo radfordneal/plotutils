@@ -12,15 +12,14 @@
 /* Two other fields (font size and line width in user coordinates) play an
    important role at later times, e.g. a bad font size resets the font size
    to the default.  For that reason, those variables are filled in when
-   space() is called (see g_space.c).  They are computed from the two
+   space() is called (see g_space.c).  They are computed using the two
    quantities DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE and
-   DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (defined in
-   extern.h). */
+   DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (defined in extern.h). */
 
 #include "sys-defines.h"
 #include "extern.h"
 
-const pl_DrawState _default_drawstate = {
+const plDrawState _default_drawstate = {
 
 /***************** DEVICE-INDEPENDENT PART **************************/
 
@@ -35,7 +34,7 @@ const pl_DrawState _default_drawstate = {
 /* graphics cursor position */
   {0.0, 0.0},			/* cursor position, in user coordinates */
 /* the state of any uncompleted path object */
-  (GeneralizedPoint *)NULL,	/* array of accumulated points [here NULL]*/
+  (plGeneralizedPoint *)NULL,	/* array of accumulated points [here NULL]*/
   0,				/* number of accumulated points */
   0,				/* length of point storage buffer (bytes) */
   false,			/* suppress endpath() while drawing a path? */
@@ -59,6 +58,9 @@ const pl_DrawState _default_drawstate = {
   0,				/* length of same */
   0.0,				/* offset distance into dash array (`phase') */
   false,			/* dash array should override line mode? */
+  1,				/* pen type (0 = none, 1 = present) */
+  0,				/* fill type (0 = none, 1 = present,...) */
+  1,				/* orientation of circles etc.(1=c'clockwise)*/
   /* 2. text-related attributes */
   "HersheySerif",		/* font name [dummy, see g_savestate.c] */
   0.0,				/* font size in user coordinates [dummy] */
@@ -74,7 +76,6 @@ const pl_DrawState _default_drawstate = {
   {0, 0, 0},			/* pen color (= black) */
   {0, 0, 0},			/* fill color (= black) */
   {65535, 65535, 65535},	/* background color (= white) */
-  0,				/* fill level (0 = transparent) */
 /* Default values for certain modal attributes, used when an out-of-range
    value is requested. (These two are special because unlike all others,
    they're set by the initial call to space(), which also sets the line
@@ -93,6 +94,8 @@ const pl_DrawState _default_drawstate = {
   -1,				/* fig's fill level (-1 = transparent) */
   C_BLACK,			/* fig's fg color (0=black, see colordb2.c) */
   C_BLACK,			/* fig's fill color (see list in colordb2.c) */
+/* elements specific to the CGM Plotter drawing state */
+  CGM_OBJECT_OTHER,		/* hint to set_attributes() (object to draw) */
 /* elements specific to the PS drawing state [DUMMIES] */
   0.0,				/* RGB for PS fg color (floats) */
   0.0,
@@ -122,18 +125,27 @@ const pl_DrawState _default_drawstate = {
   (GC)NULL,			/* graphics context, for drawing */
   (GC)NULL,			/* graphics context, for filling */
   (GC)NULL,			/* graphics context, for erasing */
-  {0, 0, 0},			/* color of pixel for drawing (= black) */
-  {0, 0, 0},			/* color of pixel for filling (= black) */
-  {65535, 65535, 65535},	/* color of pixel for erasing (= white) */
-  0,				/* fill level (0 = transparent) */
+  X_GC_FOR_DRAWING,		/* hint to set_attributes() (GC to alter) */
+  {0, 0, 0},			/* pen color stored in GC (= black) */
+  {0, 0, 0},			/* fill color stored in GC (= black) */
+  {65535, 65535, 65535},	/* bg color stored in GC (= white) */
+  0,				/* fill level stored in GC (0 = transparent) */
   (unsigned long)0,		/* drawing pixel [dummy] */
   (unsigned long)0,		/* filling pixel [dummy] */
   (unsigned long)0,		/* erasing pixel [dummy] */
   false,			/* drawing pixel is genuine? */
   false,			/* filling pixel is genuine? */
   false,			/* erasing pixel is genuine? */
+  LineSolid,			/* line style stored in drawing GC */
+  CapButt,			/* cap style stored in drawing GC */
+  JoinMiter,			/* join style stored in drawing GC */
+  0,				/* line width stored in drawing GC */
+  (char *)NULL,			/* dash list stored in drawing GC */
+  0,				/* length of dash list stored in drawing GC */
+  0,				/* offset into dash sequence, in drawing GC */
+  EvenOddRule,			/* fill rule stored in filling GC */
 #endif /* X_DISPLAY_MISSING */
 
 /* pointer to previous drawing state */
-  (pl_DrawState *)NULL		/* pointer to previous state [must be null] */
+  (plDrawState *)NULL		/* pointer to previous state [must be null] */
 };

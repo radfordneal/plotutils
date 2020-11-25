@@ -14,22 +14,26 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_restorestate(void)
+_g_restorestate(S___(Plotter *_plotter))
 #else
-_g_restorestate()
+_g_restorestate(S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
-  pl_DrawState *oldstate = _plotter->drawstate->previous;
+  plDrawState *oldstate = _plotter->drawstate->previous;
 
   if (!_plotter->open)
     {
-      _plotter->error ("restorestate: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "restorestate: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->previous == NULL)
+    /* this is an attempt to pop the lowest state off the stack */
     {
-      _plotter->error ("restorestate: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "restorestate: invalid operation");
       return -1;
     }
 
@@ -37,18 +41,18 @@ _g_restorestate()
      construction, because we don't want to emit a useless op code to a
      graphics metafile, if this is invoked on a MetaPlotter object. */
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* elements of current state that are strings are first freed */
-  free (_plotter->drawstate->fill_rule);
-  free (_plotter->drawstate->line_mode);
-  free (_plotter->drawstate->join_mode);
-  free (_plotter->drawstate->cap_mode);
-  free (_plotter->drawstate->font_name);
+  free ((char *)_plotter->drawstate->fill_rule);
+  free ((char *)_plotter->drawstate->line_mode);
+  free ((char *)_plotter->drawstate->join_mode);
+  free ((char *)_plotter->drawstate->cap_mode);
+  free ((char *)_plotter->drawstate->font_name);
   
   /* free dash array too, if nonempty */
   if (_plotter->drawstate->dash_array_len > 0)
-    free (_plotter->drawstate->dash_array);
+    free ((double *)_plotter->drawstate->dash_array);
 
   /* pop current state off the stack */
   free (_plotter->drawstate);

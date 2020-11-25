@@ -10,20 +10,22 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_fellipse (double xc, double yc, double rx, double ry, double angle)
+_g_fellipse (R___(Plotter *_plotter) double xc, double yc, double rx, double ry, double angle)
 #else
-_g_fellipse (xc, yc, rx, ry, angle)
+_g_fellipse (R___(_plotter) xc, yc, rx, ry, angle)
+     S___(Plotter *_plotter;)
      double xc, yc, rx, ry, angle;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fellipse: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fellipse: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* draw only if line type isn't `disconnected' (libplot convention) */
   if (_plotter->drawstate->points_are_connected)
@@ -34,27 +36,34 @@ _g_fellipse (xc, yc, rx, ry, angle)
       costheta = cos (theta);
       sintheta = sin (theta);
 
-      _plotter->fellarc (xc, yc, 
+      /* pass hint to cont() and endpath() */
+      _plotter->drawstate->convex_path = true;
+
+      _plotter->fellarc (R___(_plotter) 
+			 xc, yc, 
 			 xc + rx * costheta, yc + rx * sintheta,
 			 xc - ry * sintheta, yc + ry * costheta);
-      _plotter->fellarc (xc, yc, 
+      _plotter->fellarc (R___(_plotter) 
+			 xc, yc, 
 			 xc - ry * sintheta, yc + ry * costheta,
 			 xc - rx * costheta, yc - rx * sintheta);
-      _plotter->fellarc (xc, yc, 
+      _plotter->fellarc (R___(_plotter) 
+			 xc, yc, 
 			 xc - rx * costheta, yc - rx * sintheta,
 			 xc + ry * sintheta, yc - ry * costheta);
-      _plotter->fellarc (xc, yc, 
+      _plotter->fellarc (R___(_plotter) 
+			 xc, yc, 
 			 xc + ry * sintheta, yc - ry * costheta,
 			 xc + rx * costheta, yc + rx * sintheta);
 
-      _plotter->drawstate->convex_path = true; /* pass hint to endpath() */
       /* move to center (a libplot convention); this calls endpath() to
 	 flush out the polyline */
-      _plotter->fmove (xc, yc);	
+      _plotter->fmove (R___(_plotter) xc, yc);	
+
       _plotter->drawstate->convex_path = false; /* restore hint value */
     }
   else				/* just move to center */
-    _plotter->fmove (xc, yc);	
+    _plotter->fmove (R___(_plotter) xc, yc);	
 
   return 0;
 }

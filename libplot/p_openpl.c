@@ -11,16 +11,18 @@
 
 int
 #ifdef _HAVE_PROTOS
-_p_openpl (void)
+_p_openpl (S___(Plotter *_plotter))
 #else
-_p_openpl ()
+_p_openpl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  Outbuf *new_page;
+  plOutbuf *new_page;
+  int i;
 
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) "openpl: invalid operation");
       return -1;
     }
 
@@ -41,8 +43,16 @@ _p_openpl ()
       _plotter->page = new_page;
     }
 
+  /* initialize `font used' array(s) for this page */
+  for (i = 0; i < NUM_PS_FONTS; i++)
+    _plotter->page->ps_font_used[i] = false;
+#ifdef USE_LJ_FONTS_IN_PS
+  for (i = 0; i < NUM_PCL_FONTS; i++)
+    _plotter->page->pcl_font_used[i] = false;
+#endif
+
   /* invoke generic method, to e.g. create drawing state */
-  _g_openpl ();
+  _g_openpl (S___(_plotter));
 
   return 0;
 }

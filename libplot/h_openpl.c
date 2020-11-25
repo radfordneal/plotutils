@@ -9,16 +9,17 @@
 
 int
 #ifdef _HAVE_PROTOS
-_h_openpl (void)
+_h_openpl (S___(Plotter *_plotter))
 #else
-_h_openpl ()
+_h_openpl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   int i;
 
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) "openpl: invalid operation");
       return -1;
     }
 
@@ -44,33 +45,33 @@ _h_openpl ()
     
     bool undefined_pen_seen = false;
     
-    if (_plotter->palette)	/* can soft-define pen colors */
+    if (_plotter->hpgl_have_palette)	/* can soft-define pen colors */
       for (i = 2; i < HPGL2_MAX_NUM_PENS; i++)
 	{
 	  if (_plotter->pen_defined[i] == 0)
 	    /* at least one pen with number > 1 is not yet defined */
 	    {
 	      /* record which such was encountered first */
-	      _plotter->free_pen = i;
+	      _plotter->hpgl_free_pen = i;
 	      undefined_pen_seen = true;
 	      break;
 	    }
 	}
     if (!undefined_pen_seen)	
       /* too many pens specified, can't soft-define colors */
-      _plotter->palette = false;
+      _plotter->hpgl_have_palette = false;
   }
   
   /* reset additional data members of Plotter */
-  _plotter->bad_pen = false;  
-  _plotter->pendown = false;  
-  _plotter->pen_width = 0.001;  
+  _plotter->hpgl_bad_pen = false;  
+  _plotter->hpgl_pendown = false;  
+  _plotter->hpgl_pen_width = 0.001;  
   _plotter->hpgl_line_type = HPGL_L_SOLID;
   _plotter->hpgl_cap_style = HPGL_CAP_BUTT;
   _plotter->hpgl_join_style = HPGL_JOIN_MITER;
   _plotter->hpgl_miter_limit = 5.0; /* default HP-GL/2 value */
-  _plotter->fill_type = HPGL_FILL_SOLID_BI;
-  _plotter->shading_level = 0.0;
+  _plotter->hpgl_fill_type = HPGL_FILL_SOLID_BI;
+  _plotter->hpgl_shading_level = 0.0;
   _plotter->pcl_symbol_set = PCL_ROMAN_8;  
   _plotter->pcl_spacing = 0;  
   _plotter->pcl_posture = 0;  
@@ -78,25 +79,27 @@ _h_openpl ()
   _plotter->pcl_typeface = STICK_TYPEFACE;  
   _plotter->hpgl_charset_lower = HP_ASCII;
   _plotter->hpgl_charset_upper = HP_ASCII;
-  _plotter->relative_char_height = 0.0;
-  _plotter->relative_char_width = 0.0;  
-  _plotter->relative_label_rise = 0.0;    
-  _plotter->relative_label_run = 0.0;      
-  _plotter->char_slant_tangent = 0.0;      
+  _plotter->hpgl_rel_char_height = 0.0;
+  _plotter->hpgl_rel_char_width = 0.0;  
+  _plotter->hpgl_rel_label_rise = 0.0;    
+  _plotter->hpgl_rel_label_run = 0.0;      
+  _plotter->hpgl_tan_char_slant = 0.0;      
   _plotter->hpgl_position_is_unknown = true;
   _plotter->hpgl_pos.x = 0;
   _plotter->hpgl_pos.y = 0;
 
   /* if a PCL Plotter, switch from PCL mode to HP-GL/2 mode */
-  _maybe_switch_to_hpgl ();
+  _maybe_switch_to_hpgl (S___(_plotter));
 
   /* output HP-GL prologue */
   if (_plotter->hpgl_version == 2)
     {
       sprintf (_plotter->page->point, "BP;IN;");
       _update_buffer (_plotter->page);
+      /* include HP-GL/2 `plot length' directive; important mostly for roll
+	 plotters */
       sprintf (_plotter->page->point, "PS%d;",
-	       IROUND(_plotter->plot_length));
+	       IROUND(_plotter->hpgl_plot_length));
       _update_buffer (_plotter->page);
     }
   else
@@ -105,28 +108,30 @@ _h_openpl ()
       _update_buffer (_plotter->page);
     }
   
-  /* rotate if user requested rotation */
-  if (_plotter->rotation != 0)
+  /* make use of HP-GL's plotting-area rotation capability, if requested by
+     the HPGL_ROTATE parameter (this does not apply to PCL Plotters, for
+     which rotation=0 always) */
+  if (_plotter->hpgl_rotation != 0)
     {
-      sprintf (_plotter->page->point, "RO%d;", _plotter->rotation);
+      sprintf (_plotter->page->point, "RO%d;", _plotter->hpgl_rotation);
       _update_buffer (_plotter->page);
     }
   
-  /* set scaling points P1, P2 at lower left and upper right corners of
-     the region (square) that we call our ``graphics display'' */
+  /* set scaling points P1, P2 at lower left and upper right corners of our
+     square viewport */
   sprintf (_plotter->page->point, "IP%d,%d,%d,%d;",
-	   IROUND(_plotter->p1.x), IROUND(_plotter->p1.y),
-	   IROUND(_plotter->p2.x), IROUND(_plotter->p2.y));
+	   IROUND(_plotter->hpgl_p1.x), IROUND(_plotter->hpgl_p1.y),
+	   IROUND(_plotter->hpgl_p2.x), IROUND(_plotter->hpgl_p2.y));
   _update_buffer (_plotter->page);
   
-  /* Set up `scaled device coordinates' within the graphics display.  All
-     coordinates in our output file will be scaled device coordinates,
-     not physical device coordinates. */
+  /* Set up `scaled device coordinates' within the viewport.  All
+     coordinates in the output file will be scaled device coordinates, not
+     physical device coordinates.  The range of scaled coordinates will be
+     independent of the viewport positioning, page size, etc.; see the
+     definitions of xmin,xmax,ymin,ymax in h_defplot.c. */
   sprintf (_plotter->page->point, "SC%d,%d,%d,%d;",
-	   IROUND (_plotter->display_coors.left), 
-	   IROUND (_plotter->display_coors.right), 
-	   IROUND (_plotter->display_coors.bottom), 
-	   IROUND (_plotter->display_coors.top));
+	   IROUND (_plotter->xmin), IROUND (_plotter->xmax), 
+	   IROUND (_plotter->ymin), IROUND (_plotter->ymax));
   _update_buffer (_plotter->page);
   
   if (_plotter->hpgl_version == 2)
@@ -134,7 +139,7 @@ _h_openpl ()
       /* Begin to define a palette, by specifying a number of logical pens.
 	 (All HP-GL/2 devices should support the `NP' instruction, even
 	 though many support only a default palette.) */
-      if (_plotter->palette)
+      if (_plotter->hpgl_have_palette)
 	{
 	  sprintf (_plotter->page->point, "NP%d;", HPGL2_MAX_NUM_PENS);
 	  _update_buffer (_plotter->page);
@@ -151,8 +156,8 @@ _h_openpl ()
   /* For HP-GL/2 devices, set transparency mode to `opaque', if the user
      allows it.  It should always be opaque to agree with libplot
      conventions, but on some HP-GL/2 devices (mostly pen plotters) the
-     `TR' command does not NOP gracefully. */
-  if (_plotter->hpgl_version == 2 && _plotter->opaque_mode)
+     `TR' command allegedly does not NOP gracefully. */
+  if (_plotter->hpgl_version == 2 && _plotter->hpgl_use_opaque_mode)
     {
       sprintf (_plotter->page->point, "TR0;");
       _update_buffer (_plotter->page);
@@ -164,25 +169,27 @@ _h_openpl ()
   _freeze_outbuf (_plotter->page);
 
   /* invoke generic method, to e.g. create drawing state */
-  _g_openpl ();
+  _g_openpl (S___(_plotter));
 
   return 0;
 }
 
 void
 #ifdef _HAVE_PROTOS
-_h_maybe_switch_to_hpgl (void)
+_h_maybe_switch_to_hpgl (S___(Plotter *_plotter))
 #else
-_h_maybe_switch_to_hpgl ()
+_h_maybe_switch_to_hpgl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
 }
 
 void
 #ifdef _HAVE_PROTOS
-_q_maybe_switch_to_hpgl (void)
+_q_maybe_switch_to_hpgl (S___(Plotter *_plotter))
 #else
-_q_maybe_switch_to_hpgl ()
+_q_maybe_switch_to_hpgl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (_plotter->page_number > 0) /* not first page */

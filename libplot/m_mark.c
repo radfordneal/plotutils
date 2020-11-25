@@ -9,9 +9,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_marker (int x, int y, int type, int size)
+_m_marker (R___(Plotter *_plotter) int x, int y, int type, int size)
 #else
-_m_marker (x, y, type, size)
+_m_marker (R___(_plotter) x, y, type, size)
+     S___(Plotter *_plotter;) 
      int x, y;
      int type;
      int size;
@@ -19,25 +20,27 @@ _m_marker (x, y, type, size)
 {
   if (!_plotter->open)
     {
-      _plotter->error ("marker: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "marker: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_MARKER);
-  _meta_emit_integer (x);
-  _meta_emit_integer (y);
-  _meta_emit_integer (type);
-  _meta_emit_integer (size);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_MARKER);
+  _meta_emit_integer (R___(_plotter) x);
+  _meta_emit_integer (R___(_plotter) y);
+  _meta_emit_integer (R___(_plotter) type);
+  _meta_emit_integer (R___(_plotter) size);
+  _meta_emit_terminator (S___(_plotter));
       
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_fmarker (double x, double y, int type, double size)
+_m_fmarker (R___(Plotter *_plotter) double x, double y, int type, double size)
 #else
-_m_fmarker (x, y, type, size)
+_m_fmarker (R___(_plotter) x, y, type, size)
+     S___(Plotter *_plotter;) 
      double x, y;
      int type;
      double size;
@@ -45,16 +48,17 @@ _m_fmarker (x, y, type, size)
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fmarker: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fmarker: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_MARKER : (int)O_FMARKER);
-  _meta_emit_float (x);
-  _meta_emit_float (y);
-  _meta_emit_integer (type);
-  _meta_emit_float (size);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) _plotter->meta_portable_output ? (int)O_MARKER : (int)O_FMARKER);
+  _meta_emit_float (R___(_plotter) x);
+  _meta_emit_float (R___(_plotter) y);
+  _meta_emit_integer (R___(_plotter) type);
+  _meta_emit_float (R___(_plotter) size);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }

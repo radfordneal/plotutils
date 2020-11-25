@@ -56,23 +56,26 @@ static bool _composite_char ____P((unsigned char *composite, unsigned char *char
 
 void
 #ifdef _HAVE_PROTOS
-_draw_hershey_stroke (bool pendown, double deltax, double deltay)
+_draw_hershey_stroke (R___(Plotter *_plotter) bool pendown, double deltax, double deltay)
 #else
-_draw_hershey_stroke (pendown, deltax, deltay)
+_draw_hershey_stroke (R___(_plotter) pendown, deltax, deltay)
+     S___(Plotter *_plotter;)
      bool pendown;
      double deltax, deltay;
 #endif
 {
-  _draw_stroke (pendown,
+  _draw_stroke (R___(_plotter)
+		pendown,
 		HERSHEY_UNITS_TO_USER_UNITS (deltax),
 		HERSHEY_UNITS_TO_USER_UNITS (deltay));
 }
 
 void
 #ifdef _HAVE_PROTOS
-_draw_stroke (bool pendown, double deltax, double deltay)
+_draw_stroke (R___(Plotter *_plotter) bool pendown, double deltax, double deltay)
 #else
-_draw_stroke (pendown, deltax, deltay)
+_draw_stroke (R___(_plotter) pendown, deltax, deltay)
+     S___(Plotter *_plotter;)
      bool pendown;
      double deltax, deltay;
 #endif
@@ -86,9 +89,9 @@ _draw_stroke (pendown, deltax, deltay)
   dy = sin(theta) * deltax + cos(theta) * deltay;
 
   if (pendown)
-    _plotter->fcontrel (dx, dy);
+    _plotter->fcontrel (R___(_plotter) dx, dy);
   else
-    _plotter->fmoverel (dx, dy);
+    _plotter->fmoverel (R___(_plotter) dx, dy);
 }
 
 /* this is the version of the flabelwidth() method that is specific to the
@@ -96,9 +99,10 @@ _draw_stroke (pendown, deltax, deltay)
    g_flabelwidth () */
 double
 #ifdef _HAVE_PROTOS
-_g_flabelwidth_hershey (const unsigned char *s)
+_g_flabelwidth_hershey (R___(Plotter *_plotter) const unsigned char *s)
 #else
-_g_flabelwidth_hershey (s)
+_g_flabelwidth_hershey (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
 #endif
 {
@@ -106,9 +110,9 @@ _g_flabelwidth_hershey (s)
   unsigned short *codestring;
   
   /* convert string to a codestring, including annotations */
-  codestring = _controlify (s);
+  codestring = _controlify (R___(_plotter) s);
 
-  label_width = _label_width_hershey (codestring);
+  label_width = _label_width_hershey (R___(_plotter) codestring);
   free (codestring);
   
   return label_width;
@@ -118,9 +122,10 @@ _g_flabelwidth_hershey (s)
    to the case when the current Plotter font is a Hershey font */
 double
 #ifdef _HAVE_PROTOS
-_g_falabel_hershey (const unsigned char *s, int x_justify, int y_justify)
+_g_falabel_hershey (R___(Plotter *_plotter) const unsigned char *s, int x_justify, int y_justify)
 #else
-_g_falabel_hershey (s, x_justify, y_justify)
+_g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int x_justify, y_justify;
 #endif
@@ -134,10 +139,10 @@ _g_falabel_hershey (s, x_justify, y_justify)
   double theta;
 
   /* convert string to a codestring, including annotations */
-  codestring = _controlify (s);
+  codestring = _controlify (R___(_plotter) s);
 
   /* dimensions of the string, in user units */
-  label_width = _label_width_hershey (codestring);
+  label_width = _label_width_hershey (R___(_plotter) codestring);
   label_height = HERSHEY_UNITS_TO_USER_UNITS(HERSHEY_HEIGHT);
   
   x_justify_c = (char)x_justify;
@@ -186,7 +191,7 @@ _g_falabel_hershey (s, x_justify, y_justify)
   /* save relevant drawing attributes, and restore them later */
   {
     char *old_line_mode, *old_cap_mode, *old_join_mode;
-    int old_fill_level;
+    int old_fill_type;
     double oldposx, oldposy;
     bool old_dash_array_in_effect;
 
@@ -199,33 +204,34 @@ _g_falabel_hershey (s, x_justify, y_justify)
     strcpy (old_line_mode, _plotter->drawstate->line_mode);
     strcpy (old_cap_mode, _plotter->drawstate->cap_mode);
     strcpy (old_join_mode, _plotter->drawstate->join_mode);
-    old_fill_level = _plotter->drawstate->fill_level;
+    old_fill_type = _plotter->drawstate->fill_type;
     old_dash_array_in_effect = _plotter->drawstate->dash_array_in_effect;
     
     /* Our choices for rendering: solid lines, rounded capitals and joins,
        a line width equal to slightly more than 1 Hershey unit, and
        transparent filling. */
-    _plotter->linemod ("solid");
-    _plotter->capmod ("round");	/* options: butt/round/projecting */
-    _plotter->joinmod ("round"); /* options: miter/round/bevel */
-    _plotter->filltype (0);
+    _plotter->linemod (R___(_plotter) "solid");
+    _plotter->capmod (R___(_plotter) "round");
+    _plotter->joinmod (R___(_plotter) "round");
+    _plotter->filltype (R___(_plotter) 0);
     
     /* move to take horizontal and vertical justification into account;
        arguments here are in user units */
-    _draw_stroke (false, 
-		 x_offset * label_width, y_offset * label_height);
+    _draw_stroke (R___(_plotter) 
+		  false, 
+		  x_offset * label_width, y_offset * label_height);
     
     /* call stroker on the sequence of strokes obtained from each char (the
        stroker may manipulate the line width) */
-    _draw_hershey_string (codestring);
+    _draw_hershey_string (R___(_plotter) codestring);
     
     /* Restore original values of relevant drawing attributes, free
        storage.  endpath() will be invoked in here automatically, flushing
        the created polyline object comprising the stroked text. */
-    _plotter->linemod (old_line_mode);
-    _plotter->capmod (old_cap_mode);
-    _plotter->joinmod (old_join_mode);
-    _plotter->filltype (old_fill_level);
+    _plotter->linemod (R___(_plotter) old_line_mode);
+    _plotter->capmod (R___(_plotter) old_cap_mode);
+    _plotter->joinmod (R___(_plotter) old_join_mode);
+    _plotter->filltype (R___(_plotter) old_fill_type);
     _plotter->drawstate->dash_array_in_effect = old_dash_array_in_effect;
     
     free (old_line_mode);
@@ -233,7 +239,7 @@ _g_falabel_hershey (s, x_justify, y_justify)
     free (old_join_mode);
 
     /* return to original position */
-    _plotter->fmove (oldposx, oldposy);
+    _plotter->fmove (R___(_plotter) oldposx, oldposy);
   }
 
   /* amount by which to shift after printing label (user units) */
@@ -244,7 +250,7 @@ _g_falabel_hershey (s, x_justify, y_justify)
   dy = sin (theta) * postdx
     + cos (theta) * 0;
 
-  _plotter->fmoverel (dx, dy);
+  _plotter->fmoverel (R___(_plotter) dx, dy);
 
   free (codestring);
 
@@ -271,9 +277,10 @@ _g_falabel_hershey (s, x_justify, y_justify)
    units */
 double
 #ifdef _HAVE_PROTOS
-_label_width_hershey (const unsigned short *label) 
+_label_width_hershey (R___(Plotter *_plotter) const unsigned short *label) 
 #else
-_label_width_hershey (label) 
+_label_width_hershey (R___(_plotter) label) 
+     S___(Plotter *_plotter;) 
      const unsigned short *label;
 #endif
 { 
@@ -434,9 +441,10 @@ _label_width_hershey (label)
    composite (accented) characters. */
 void
 #ifdef _HAVE_PROTOS
-_draw_hershey_penup_stroke(double dx, double dy, double charsize, bool oblique)
+_draw_hershey_penup_stroke(R___(Plotter *_plotter) double dx, double dy, double charsize, bool oblique)
 #else
-_draw_hershey_penup_stroke(dx, dy, charsize, oblique)
+_draw_hershey_penup_stroke(R___(_plotter) dx, dy, charsize, oblique)
+     S___(Plotter *_plotter;)
      double dx, dy;
      double charsize;
      bool oblique;
@@ -445,7 +453,8 @@ _draw_hershey_penup_stroke(dx, dy, charsize, oblique)
   double shear;
 
   shear = oblique ? (SHEAR) : 0.0;
-  _draw_hershey_stroke (false,	/* pen up */
+  _draw_hershey_stroke (R___(_plotter)
+			false,	/* pen up */
 			charsize * (dx + shear * dy), 
 			charsize * dy);
 }
@@ -455,9 +464,10 @@ _draw_hershey_penup_stroke(dx, dy, charsize, oblique)
    Size scaling and obliquing (true/false) are specified. */
 void
 #ifdef _HAVE_PROTOS
-_draw_hershey_glyph (int glyphnum, double charsize, int type, bool oblique)
+_draw_hershey_glyph (R___(Plotter *_plotter) int glyphnum, double charsize, int type, bool oblique)
 #else
-_draw_hershey_glyph (glyphnum, charsize, type, oblique)
+_draw_hershey_glyph (R___(_plotter) glyphnum, charsize, type, oblique)
+     S___(Plotter *_plotter;)
      int glyphnum;
      double charsize;
      int type;
@@ -507,7 +517,8 @@ _draw_hershey_glyph (glyphnum, charsize, type, oblique)
 		   - ((int)glyph[1] + (double)HERSHEY_BASELINE));
 	      dx = xnew - xcurr;
 	      dy = ynew - ycurr;
-	      _draw_hershey_stroke (pendown, dx + shear * dy, dy);
+	      _draw_hershey_stroke (R___(_plotter) 
+				    pendown, dx + shear * dy, dy);
 	      xcurr = xnew, ycurr = ynew;
 	      pendown = true;
 	    }
@@ -518,7 +529,7 @@ _draw_hershey_glyph (glyphnum, charsize, type, oblique)
       /* final penup stroke, to end where we should */
       dx = xfinal - xcurr;
       dy = yfinal - ycurr;
-      _draw_hershey_stroke (false, dx + shear * dy, dy);
+      _draw_hershey_stroke (R___(_plotter) false, dx + shear * dy, dy);
     }
 }
 
@@ -527,9 +538,10 @@ _draw_hershey_glyph (glyphnum, charsize, type, oblique)
    and cont(), it invokes linewidth(). */
 void
 #ifdef _HAVE_PROTOS
-_draw_hershey_string (const unsigned short *string)
+_draw_hershey_string (R___(Plotter *_plotter) const unsigned short *string)
 #else
-_draw_hershey_string (string)
+_draw_hershey_string (R___(_plotter) string)
+     S___(Plotter *_plotter;)
      const unsigned short *string;
 #endif
 {
@@ -557,29 +569,32 @@ _draw_hershey_string (string)
 	{
 	  if (line_width_type != 1)
 	    {
-	      _plotter->flinewidth 
-		(HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
+	      _plotter->flinewidth (R___(_plotter)
+				    HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
 	      line_width_type = 1;
 	    }
-	  _draw_hershey_glyph (c & GLYPH_SPEC, charsize, OCCIDENTAL, false);
+	  _draw_hershey_glyph (R___(_plotter)
+			       c & GLYPH_SPEC, charsize, OCCIDENTAL, false);
 	}
 
       else if (c & RAW_ORIENTAL_HERSHEY_GLYPH)
 	{
 	  if (line_width_type != 2)
 	    {
-	      _plotter->flinewidth 
-		(HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
+	      _plotter->flinewidth (R___(_plotter)
+				    HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
 	      line_width_type = 2;
 	    }
-	  _draw_hershey_glyph (c & GLYPH_SPEC, charsize, ORIENTAL, false);
+	  _draw_hershey_glyph (R___(_plotter)
+			       c & GLYPH_SPEC, charsize, ORIENTAL, false);
 	}
 
       else if (c & CONTROL_CODE)	
 	switch (c & ~CONTROL_CODE) /* parse control codes */
 	  {
 	  case C_BEGIN_SUPERSCRIPT :
-	    _draw_hershey_stroke (false, 
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, 
 				  SUPERSCRIPT_DX * charsize * HERSHEY_EM,
 				  SUPERSCRIPT_DY * charsize * HERSHEY_EM);
 	    charsize *= SCRIPTSIZE;
@@ -587,13 +602,15 @@ _draw_hershey_string (string)
 		
 	  case C_END_SUPERSCRIPT:
 	    charsize /= SCRIPTSIZE;
-	    _draw_hershey_stroke (false, 
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, 
 				  - SUPERSCRIPT_DX * charsize * HERSHEY_EM,
 				  - SUPERSCRIPT_DY * charsize * HERSHEY_EM);
 	    break;
 		
 	  case C_BEGIN_SUBSCRIPT:
-	    _draw_hershey_stroke (false, 
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, 
 				  SUBSCRIPT_DX * charsize * HERSHEY_EM,
 				  SUBSCRIPT_DY * charsize * HERSHEY_EM);
 	    charsize *= SCRIPTSIZE;
@@ -601,7 +618,8 @@ _draw_hershey_string (string)
 		
 	  case C_END_SUBSCRIPT:
 	    charsize /= SCRIPTSIZE;
-	    _draw_hershey_stroke (false, 
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, 
 				  - SUBSCRIPT_DX * charsize * HERSHEY_EM,
 				  - SUBSCRIPT_DY * charsize * HERSHEY_EM);
 	    break;
@@ -614,47 +632,58 @@ _draw_hershey_string (string)
 		
 	  case C_POP_LOCATION:
 	    charsize = saved_charsize;
-	    _plotter->fmove (saved_position_x, saved_position_y);
+	    _plotter->fmove (R___(_plotter)
+			     saved_position_x, saved_position_y);
 	    break;
 		
 	  case C_RIGHT_ONE_EM:
-	    _draw_hershey_stroke (false, charsize * HERSHEY_EM, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, charsize * HERSHEY_EM, 0.0);
 	    break;
 		
 	  case C_RIGHT_HALF_EM:
-	    _draw_hershey_stroke (false, charsize * HERSHEY_EM / 2.0, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, charsize * HERSHEY_EM / 2.0, 0.0);
 	    break;
 		
 	  case C_RIGHT_QUARTER_EM:
-	    _draw_hershey_stroke (false, charsize * HERSHEY_EM / 4.0, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, charsize * HERSHEY_EM / 4.0, 0.0);
 	    break;
 		
 	  case C_RIGHT_SIXTH_EM:
-	    _draw_hershey_stroke (false, charsize * HERSHEY_EM / 6.0, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, charsize * HERSHEY_EM / 6.0, 0.0);
 	    break;
 		
 	  case C_RIGHT_EIGHTH_EM:
-	    _draw_hershey_stroke (false, charsize * HERSHEY_EM / 8.0, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, charsize * HERSHEY_EM / 8.0, 0.0);
 	    break;
 		
 	  case C_LEFT_ONE_EM:
-	    _draw_hershey_stroke (false, - charsize * HERSHEY_EM, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, - charsize * HERSHEY_EM, 0.0);
 	    break;
 		
 	  case C_LEFT_HALF_EM:
-	    _draw_hershey_stroke (false, - charsize * HERSHEY_EM / 2.0, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, - charsize * HERSHEY_EM / 2.0, 0.0);
 	    break;
 		
 	  case C_LEFT_QUARTER_EM:
-	    _draw_hershey_stroke (false, - charsize * HERSHEY_EM / 4.0, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, - charsize * HERSHEY_EM / 4.0, 0.0);
 	    break;
 		
 	  case C_LEFT_SIXTH_EM:
-	    _draw_hershey_stroke (false, - charsize * HERSHEY_EM / 6.0, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, - charsize * HERSHEY_EM / 6.0, 0.0);
 	    break;
 		
 	  case C_LEFT_EIGHTH_EM:
-	    _draw_hershey_stroke (false, - charsize * HERSHEY_EM / 8.0, 0.0);
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, - charsize * HERSHEY_EM / 8.0, 0.0);
 	    break;
 		
 	    /* unrecognized control code, punt */
@@ -729,43 +758,51 @@ _draw_hershey_string (string)
 	      /* draw the character */
 	      if (line_width_type != 1)
 		{
-		  _plotter->flinewidth 
-		    (HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
+		  _plotter->flinewidth (R___(_plotter)
+					HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
 		  line_width_type = 1;
 		}
-	      _draw_hershey_glyph (char_glyphnum, charsize, 
+	      _draw_hershey_glyph (R___(_plotter)
+				   char_glyphnum, charsize, 
 				   OCCIDENTAL, oblique);
 	      /* back up to draw accent */
-	      _draw_hershey_penup_stroke (-0.5 * (double)char_width
+	      _draw_hershey_penup_stroke (R___(_plotter)
+					  -0.5 * (double)char_width
 					  -0.5 * (double)accent_width,
 					  0.0, charsize, oblique);
 
 	      /* repositioning for uppercase and uppercase italic */
 	      if (glyphnum == ACC1)
-		_draw_hershey_penup_stroke (0.0, 
+		_draw_hershey_penup_stroke (R___(_plotter)
+					    0.0, 
 					    (double)(ACCENT_UP_SHIFT),
 					    charsize, oblique);
 	      else if (glyphnum == ACC2)
-		_draw_hershey_penup_stroke ((double)(ACCENT_RIGHT_SHIFT),
+		_draw_hershey_penup_stroke (R___(_plotter)
+					    (double)(ACCENT_RIGHT_SHIFT),
 					    (double)(ACCENT_UP_SHIFT),
 					    charsize, oblique);
 
 	      /* draw the accent */
-	      _draw_hershey_glyph (accent_glyphnum, charsize, 
+	      _draw_hershey_glyph (R___(_plotter)
+				   accent_glyphnum, charsize, 
 				   OCCIDENTAL, oblique);
 
 	      /* undo special repositioning if any */
 	      if (glyphnum == ACC1)
-		_draw_hershey_penup_stroke (0.0, 
+		_draw_hershey_penup_stroke (R___(_plotter)
+					    0.0, 
 					    -(double)(ACCENT_UP_SHIFT),
 					    charsize, oblique);
 	      else if (glyphnum == ACC2)
-		_draw_hershey_penup_stroke (-(double)(ACCENT_RIGHT_SHIFT),
+		_draw_hershey_penup_stroke (R___(_plotter)
+					    -(double)(ACCENT_RIGHT_SHIFT),
 					    -(double)(ACCENT_UP_SHIFT),
 					    charsize, oblique);
 
 	      /* move forward, to end composite char where we should */
-	      _draw_hershey_penup_stroke (0.5 * (double)char_width
+	      _draw_hershey_penup_stroke (R___(_plotter)
+					  0.5 * (double)char_width
 					  -0.5 * (double)accent_width,
 					  0.0, charsize, oblique);
 	      break;
@@ -787,18 +824,21 @@ _draw_hershey_string (string)
 		  /* draw small Kana, preceded and followed by a penup
 		     stroke in order to traverse the full width of an
 		     ordinary Kana */
-		  _draw_hershey_penup_stroke (shift * (double)kana_width,
+		  _draw_hershey_penup_stroke (R___(_plotter)
+					      shift * (double)kana_width,
 					      0.0, charsize, oblique);
 		  if (line_width_type != 2)
 		    {
-		      _plotter->flinewidth 
-			(HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
+		      _plotter->flinewidth (R___(_plotter)
+					    HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
 		      line_width_type = 2;
 		    }
-		  _draw_hershey_glyph (glyphnum, 
+		  _draw_hershey_glyph (R___(_plotter)
+				       glyphnum, 
 				       (SMALL_KANA_SIZE) * charsize,
 				       OCCIDENTAL, oblique);
-		  _draw_hershey_penup_stroke (shift * (double)kana_width,
+		  _draw_hershey_penup_stroke (R___(_plotter)
+					      shift * (double)kana_width,
 					      0.0, charsize, oblique);
 		}
 	      else
@@ -810,19 +850,20 @@ _draw_hershey_string (string)
 		    {
 		      if (line_width_type != 2)
 			{
-			  _plotter->flinewidth 
-			    (HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
+			  _plotter->flinewidth (R___(_plotter)  
+						HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
 			  line_width_type = 2;
 			}
 		    }
 		  else
 		      if (line_width_type != 1)
 			{
-			  _plotter->flinewidth 
-			    (HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
+			  _plotter->flinewidth (R___(_plotter)
+						HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
 			  line_width_type = 1;
 			}
-		_draw_hershey_glyph (glyphnum, charsize, 
+		_draw_hershey_glyph (R___(_plotter)
+				     glyphnum, charsize, 
 				     OCCIDENTAL, oblique);
 		}
 	      break;
@@ -834,7 +875,7 @@ _draw_hershey_string (string)
   
   if (line_width_type != 0)
     /* must restore old line width */
-    _plotter->flinewidth (old_line_width);
+    _plotter->flinewidth (R___(_plotter) old_line_width);
   
   return;
 }
@@ -850,7 +891,7 @@ _composite_char (composite, character, accent)
      unsigned char *character, *accent;
 #endif
 {
-  const struct accented_char_info_struct *compchar = _hershey_accented_char_info;
+  const struct plHersheyAccentedCharInfoStruct *compchar = _hershey_accented_char_info;
   bool found = false;
   unsigned char given = *composite;
   

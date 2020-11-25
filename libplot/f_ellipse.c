@@ -17,9 +17,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_f_draw_ellipse_internal (double x, double y, double rx, double ry, double angle, int subtype)
+_f_draw_ellipse_internal (R___(Plotter *_plotter) double x, double y, double rx, double ry, double angle, int subtype)
 #else
-_f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
+_f_draw_ellipse_internal (R___(_plotter) x, y, rx, ry, angle, subtype)
+     S___(Plotter *_plotter;)
      double x, y, rx, ry, angle;
      int subtype;
 #endif
@@ -79,11 +80,11 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
     subtype = SUBTYPE_ELLIPSE;
 
   /* evaluate fig colors lazily, i.e. only when needed */
-  _plotter->set_pen_color();
-  _plotter->set_fill_color();
+  _plotter->set_pen_color (S___(_plotter));
+  _plotter->set_fill_color (S___(_plotter));
   
   /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
-  _f_compute_line_style (&line_style, &nominal_spacing);
+  _f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
 
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
@@ -100,7 +101,8 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
 	  subtype,		/* subtype, see above */
 	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
-	  _plotter->drawstate->quantized_device_line_width, 
+	  (_plotter->drawstate->pen_type == 0 ? 0 :
+	   _plotter->drawstate->quantized_device_line_width), 
 	  _plotter->drawstate->fig_fgcolor,	/* pen color */
 	  _plotter->drawstate->fig_fillcolor, /* fill color */
 	  _plotter->fig_drawing_depth, /* depth */
@@ -130,19 +132,20 @@ _f_draw_ellipse_internal (x, y, rx, ry, angle, subtype)
 
 int
 #ifdef _HAVE_PROTOS
-_f_fellipse (double x, double y, double rx, double ry, double angle)
+_f_fellipse (R___(Plotter *_plotter) double x, double y, double rx, double ry, double angle)
 #else
-_f_fellipse (x, y, rx, ry, angle)
+_f_fellipse (R___(_plotter) x, y, rx, ry, angle)
+     S___(Plotter *_plotter;)
      double x, y, rx, ry, angle;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fellipse: invalid operation");
+      _plotter->error (R___(_plotter) "fellipse: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   if (!_plotter->drawstate->points_are_connected)
     /* `disconnected' line type, so don't draw anything (libplot convention) */
@@ -152,24 +155,26 @@ _f_fellipse (x, y, rx, ry, angle)
       return 0;
     }
   else
-    return _f_draw_ellipse_internal (x, y, rx, ry, angle, SUBTYPE_ELLIPSE);
+    return _f_draw_ellipse_internal (R___(_plotter) 
+				     x, y, rx, ry, angle, SUBTYPE_ELLIPSE);
 }
 
 int
 #ifdef _HAVE_PROTOS
-_f_fcircle (double x, double y, double r)
+_f_fcircle (R___(Plotter *_plotter) double x, double y, double r)
 #else
-_f_fcircle (x, y, r)
+_f_fcircle (R___(_plotter) x, y, r)
+     S___(Plotter *_plotter;)
      double x, y, r;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fcircle: invalid operation");
+      _plotter->error (R___(_plotter) "fcircle: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   if (!_plotter->drawstate->points_are_connected)
     /* `disconnected' line type, so don't draw anything (libplot convention) */
@@ -179,5 +184,6 @@ _f_fcircle (x, y, r)
       return 0;
     }
   else
-    return _f_draw_ellipse_internal (x, y, r, r, 0.0, SUBTYPE_CIRCLE);
+    return _f_draw_ellipse_internal (R___(_plotter) 
+				     x, y, r, r, 0.0, SUBTYPE_CIRCLE);
 }

@@ -21,29 +21,30 @@
 
 int
 #ifdef _HAVE_PROTOS
-_y_erase (void)
+_y_erase (S___(Plotter *_plotter))
 #else
-_y_erase ()
+_y_erase (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   bool head_found;
   int window_width, window_height;
   int i, current_frame;
-  Colorrecord *cptr, **link = NULL;
-  pl_DrawState *stateptr;
+  plColorRecord *cptr, **link = NULL;
+  plDrawState *stateptr;
 
   if (!_plotter->open)
     {
-      _plotter->error ("erase: invalid operation");
+      _plotter->error (R___(_plotter) "erase: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath (); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* set the foreground color in the GC we use for erasing,
      to be the user-specified background color */
-  _plotter->set_bg_color ();
+  _plotter->set_bg_color (S___(_plotter));
 
   /* compute rectangle size; note flipped-y convention */
   window_width = (_plotter->imax - _plotter->imin) + 1;
@@ -160,9 +161,9 @@ _y_erase ()
     Arg wargs[10];		/* werewolves */
 
 #ifdef USE_MOTIF
-    XtSetArg (wargs[0], XmNbackground, _plotter->drawstate->x_bgcolor);
+    XtSetArg (wargs[0], XmNbackground, _plotter->drawstate->x_gc_bgcolor);
 #else
-    XtSetArg (wargs[0], XtNbackground, _plotter->drawstate->x_bgcolor);
+    XtSetArg (wargs[0], XtNbackground, _plotter->drawstate->x_gc_bgcolor);
 #endif
     XtSetValues (_plotter->y_toplevel, wargs, (Cardinal)1);
     XtSetValues (_plotter->y_canvas, wargs, (Cardinal)1);
@@ -194,7 +195,7 @@ _y_erase ()
   current_frame = _plotter->frame_number;
   while (cptr)
     {
-      Colorrecord *cptrnext;
+      plColorRecord *cptrnext;
 
       cptrnext = cptr->next;
       if (cptr->allocated)
@@ -237,14 +238,14 @@ _y_erase ()
      (on account of flushing, may need to be searched for or reallocated) */
   for (stateptr = _plotter->drawstate; stateptr; stateptr = stateptr->previous)
     {
-      stateptr->x_fgcolor_status = false;
-      stateptr->x_fillcolor_status = false;
-      stateptr->x_bgcolor_status = false;
+      stateptr->x_gc_fgcolor_status = false;
+      stateptr->x_gc_fillcolor_status = false;
+      stateptr->x_gc_bgcolor_status = false;
     }
 
   /* maybe flush X output buffer and handle X events (a no-op for
      XDrawablePlotters, which is overridden for XPlotters) */
-  _maybe_handle_x_events();
+  _maybe_handle_x_events (S___(_plotter));
 
   /* on to next frame */
   _plotter->frame_number++;

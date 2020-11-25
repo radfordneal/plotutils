@@ -7,21 +7,23 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_joinmod (const char *s)
+_m_joinmod (R___(Plotter *_plotter) const char *s)
 #else
-_m_joinmod (s)
+_m_joinmod (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("joinmod: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "joinmod: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_JOINMOD);
-  _meta_emit_string (s);
+  _meta_emit_byte (R___(_plotter) (int)O_JOINMOD);
+  _meta_emit_string (R___(_plotter) s);
   
   /* invoke generic method */
-  return _g_joinmod (s);
+  return _g_joinmod (R___(_plotter) s);
 }

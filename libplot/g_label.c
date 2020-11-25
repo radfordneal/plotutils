@@ -8,13 +8,14 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_label (const char *s)
+_g_label (R___(Plotter *_plotter) const char *s)
 #else
-_g_label (s)
-    const char *s;
+_g_label (R___(_plotter) s)
+     S___(Plotter *_plotter;)
+     const char *s;
 #endif
 {
   /* label should have baseline passing through current location, and
      should be left-justified */
-  return _plotter->alabel ('l', 'x', s);
+  return _plotter->alabel (R___(_plotter) 'l', 'x', s);
 }

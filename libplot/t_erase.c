@@ -6,22 +6,23 @@
 
 int
 #ifdef _HAVE_PROTOS
-_t_erase (void)
+_t_erase (S___(Plotter *_plotter))
 #else
-_t_erase ()
+_t_erase (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("erase: invalid operation");
+      _plotter->error (R___(_plotter) "erase: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any (could simply
-			   interrupt it in mid-assemblage) */
+  /* flush polyline if any (could simply interrupt it in mid-assemblage) */
+  _plotter->endpath (S___(_plotter));
 
   /* erase: emit ESC C-l, i.e. ^[^l */
-  _plotter->write_string ("\033\014");
+  _plotter->write_string (R___(_plotter) "\033\014");
   _plotter->tek_mode = MODE_ALPHA; /* erasing enters alpha mode */
 
   /* Note: kermit Tek emulator, on seeing ESC C-l , seems to enter graphics
@@ -31,9 +32,9 @@ _t_erase ()
 
   /* set background color (a no-op unless we're writing to a kermit
      Tektronix emulator, see t_color.c) */
-  _plotter->set_bg_color ();
+  _plotter->set_bg_color (S___(_plotter));
 
-  _plotter->flushpl ();
+  _plotter->flushpl (S___(_plotter));
 #ifdef GENUINE_TEKTRONIX
   if (_plotter->tek_display_type == D_GENERIC)
     sleep(1);			/* give storage tube time to clear */

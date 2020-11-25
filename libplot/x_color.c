@@ -10,18 +10,19 @@
 
 void
 #ifdef _HAVE_PROTOS
-_x_set_pen_color(void)
+_x_set_pen_color(S___(Plotter *_plotter))
 #else
-_x_set_pen_color()
+_x_set_pen_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  Color old, new1;
+  plColor old, new1;
   XColor rgb;
 
   new1 = _plotter->drawstate->fgcolor;
   old = _plotter->drawstate->x_current_fgcolor; /* i.e. as stored in gc */
   if (new1.red == old.red && new1.green == old.green && new1.blue == old.blue
-      && _plotter->drawstate->x_fgcolor_status)
+      && _plotter->drawstate->x_gc_fgcolor_status)
     /* can use current color cell */
     return;
 
@@ -30,17 +31,17 @@ _x_set_pen_color()
   rgb.blue = new1.blue;
 
   /* retrieve matching color cell, if possible */
-  if (_retrieve_X_color (&rgb) == false)
+  if (_retrieve_X_color (R___(_plotter) &rgb) == false)
     return;
 
   /* select pen color as foreground color in GC used for drawing */
   XSetForeground (_plotter->x_dpy, _plotter->drawstate->x_gc_fg, rgb.pixel);
 
   /* save the new pixel value */
-  _plotter->drawstate->x_fgcolor = rgb.pixel;
+  _plotter->drawstate->x_gc_fgcolor = rgb.pixel;
 
   /* flag this as a genuine pixel value */
-  _plotter->drawstate->x_fgcolor_status = true;
+  _plotter->drawstate->x_gc_fgcolor_status = true;
 
   /* update non-opaque representation of stored foreground color */
   _plotter->drawstate->x_current_fgcolor = new1;
@@ -53,28 +54,29 @@ _x_set_pen_color()
 
 void
 #ifdef _HAVE_PROTOS
-_x_set_fill_color(void)
+_x_set_fill_color(S___(Plotter *_plotter))
 #else
-_x_set_fill_color()
+_x_set_fill_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  Color old, new1;
+  plColor old, new1;
   XColor rgb;
   double desaturate;
   double red, green, blue;
   int old_level, new_level;
 
-  new_level = _plotter->drawstate->fill_level;
+  new_level = _plotter->drawstate->fill_type;
   if (new_level == 0) /* transparent */
     /* don't do anything, fill color will be ignored when writing objects*/
     return;
 
-  old_level = _plotter->drawstate->x_current_fill_level; /* as used in GC */
+  old_level = _plotter->drawstate->x_current_fill_type; /* as used in GC */
   new1 = _plotter->drawstate->fillcolor;
   old = _plotter->drawstate->x_current_fillcolor; /* as used in GC */
   if (new1.red == old.red && new1.green == old.green && new1.blue == old.blue
       && new_level == old_level 
-      && _plotter->drawstate->x_fillcolor_status)
+      && _plotter->drawstate->x_gc_fillcolor_status)
     /* can use current color cell */
     return;
 
@@ -82,31 +84,31 @@ _x_set_fill_color()
   green = ((double)(_plotter->drawstate->fillcolor.green))/0xFFFF;
   blue = ((double)(_plotter->drawstate->fillcolor.blue))/0xFFFF;
 
-  /* fill_level, if nonzero, specifies the extent to which the nominal fill
+  /* fill_type, if nonzero, specifies the extent to which the nominal fill
      color should be desaturated.  1 means no desaturation, 0xffff means
      complete desaturation (white). */
-  desaturate = ((double)_plotter->drawstate->fill_level - 1.)/0xFFFE;
+  desaturate = ((double)_plotter->drawstate->fill_type - 1.)/0xFFFE;
 
   rgb.red = (short)IROUND((red + desaturate * (1.0 - red))*(0xFFFF));
   rgb.green = (short)IROUND((green + desaturate * (1.0 - green))*(0xFFFF));
   rgb.blue = (short)IROUND((blue + desaturate * (1.0 - blue))*(0xFFFF));
 
   /* retrieve matching color cell, if possible */
-  if (_retrieve_X_color (&rgb) == false)
+  if (_retrieve_X_color (R___(_plotter) &rgb) == false)
     return;
 
-  /* select pen color as foreground color in GC used for filling */
+  /* select fill color as foreground color in GC used for filling */
   XSetForeground (_plotter->x_dpy, _plotter->drawstate->x_gc_fill, rgb.pixel);
 
   /* save the new pixel value */
-  _plotter->drawstate->x_fillcolor = rgb.pixel;
+  _plotter->drawstate->x_gc_fillcolor = rgb.pixel;
 
   /* flag this as a genuine pixel value */
-  _plotter->drawstate->x_fillcolor_status = true;
+  _plotter->drawstate->x_gc_fillcolor_status = true;
 
   /* update non-opaque representation of stored fill color */
   _plotter->drawstate->x_current_fillcolor = new1;
-  _plotter->drawstate->x_current_fill_level = new_level;
+  _plotter->drawstate->x_current_fill_type = new_level;
 
   return;
 }
@@ -116,18 +118,19 @@ _x_set_fill_color()
 
 void
 #ifdef _HAVE_PROTOS
-_x_set_bg_color(void)
+_x_set_bg_color(S___(Plotter *_plotter))
 #else
-_x_set_bg_color()
+_x_set_bg_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  Color old, new1;
+  plColor old, new1;
   XColor rgb;
 
   new1 = _plotter->drawstate->bgcolor;
   old = _plotter->drawstate->x_current_bgcolor; /* i.e. as stored in gc */
   if (new1.red == old.red && new1.green == old.green && new1.blue == old.blue
-      && _plotter->drawstate->x_bgcolor_status)
+      && _plotter->drawstate->x_gc_bgcolor_status)
     /* can use current color cell */
     return;
 
@@ -136,17 +139,17 @@ _x_set_bg_color()
   rgb.blue = new1.blue;
 
   /* retrieve matching color cell, if possible */
-  if (_retrieve_X_color (&rgb) == false)
+  if (_retrieve_X_color (R___(_plotter) &rgb) == false)
     return;
 
   /* select background color as foreground color in GC used for erasing */
   XSetForeground (_plotter->x_dpy, _plotter->drawstate->x_gc_bg, rgb.pixel);
 
   /* save the new pixel value */
-  _plotter->drawstate->x_bgcolor = rgb.pixel;
+  _plotter->drawstate->x_gc_bgcolor = rgb.pixel;
 
   /* flag this as a genuine pixel value */
-  _plotter->drawstate->x_bgcolor_status = true;
+  _plotter->drawstate->x_gc_bgcolor_status = true;
 
   /* update non-opaque representation of stored background color */
   _plotter->drawstate->x_current_bgcolor = new1;
@@ -162,13 +165,14 @@ _x_set_bg_color()
 
 bool 
 #ifdef _HAVE_PROTOS
-_retrieve_X_color (XColor *rgb_ptr)
+_retrieve_X_color (R___(Plotter *_plotter) XColor *rgb_ptr)
 #else
-_retrieve_X_color (rgb_ptr)
+_retrieve_X_color (R___(_plotter) rgb_ptr)
+     S___(Plotter *_plotter;)
      XColor *rgb_ptr;
 #endif
 {
-  Colorrecord *cptr;
+  plColorRecord *cptr;
   int rgb_red = rgb_ptr->red;
   int rgb_green = rgb_ptr->green;  
   int rgb_blue = rgb_ptr->blue;
@@ -211,7 +215,7 @@ _retrieve_X_color (rgb_ptr)
 	 colormap if we can; otherwise we flag the colormap as bad
 	 (i.e. filled up).  If this is an XDrawable Plotter, this method
 	 doesn't do anything, so colormap just gets flagged as bad. */
-      _maybe_get_new_colormap ();
+      _maybe_get_new_colormap (S___(_plotter));
       if (_plotter->x_cmap_type != CMAP_NEW)
 	_plotter->x_cmap_type = CMAP_BAD;
 
@@ -219,7 +223,7 @@ _retrieve_X_color (rgb_ptr)
 	/* didn't get a new colormap */
 	{
 	  /* add null color cell to head of cache list */
-	  cptr = (Colorrecord *)_plot_xmalloc (sizeof (Colorrecord));
+	  cptr = (plColorRecord *)_plot_xmalloc (sizeof (plColorRecord));
 	  cptr->rgb.red = rgb_red;
 	  cptr->rgb.green = rgb_green;
 	  cptr->rgb.blue = rgb_blue;
@@ -240,12 +244,13 @@ _retrieve_X_color (rgb_ptr)
     {
       if (_plotter->x_color_warning_issued == false)
 	{
-	  _plotter->warning("color supply exhausted, can't create new colors");
+	  _plotter->warning(R___(_plotter) 
+			    "color supply exhausted, can't create new colors");
 	  _plotter->x_color_warning_issued = true;
 	}
 
       /* add null color cell to head of cache list */
-      cptr = (Colorrecord *)_plot_xmalloc (sizeof (Colorrecord));
+      cptr = (plColorRecord *)_plot_xmalloc (sizeof (plColorRecord));
       cptr->rgb.red = rgb_red;
       cptr->rgb.green = rgb_green;
       cptr->rgb.blue = rgb_blue;
@@ -259,7 +264,7 @@ _retrieve_X_color (rgb_ptr)
   else
     /* allocation succeeded, add new color cell to head of cache list */
     {
-      cptr = (Colorrecord *)_plot_xmalloc (sizeof (Colorrecord));
+      cptr = (plColorRecord *)_plot_xmalloc (sizeof (plColorRecord));
       memcpy (&(cptr->rgb), rgb_ptr, sizeof (XColor));
       /* be sure to include unquantized RGB values */
       cptr->rgb.red = rgb_red;

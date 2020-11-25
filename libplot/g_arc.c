@@ -25,15 +25,16 @@
 
 /* In the arc and ellarc methods below, we either add the arc to our path
    buffer as a single element, or we call _fakearc() to add an inscribed
-   polyline to the buffer, by repeatedly invoking fcont(). */
+   polyline to the buffer, by repeatedly invoking fcont().
 
-/* _fakearc(), which draws polygonal approximations to arcs, is our basic
+   _fakearc(), which draws polygonal approximations to arcs, is our basic
    arc-drawing algorithm.  Each polygonal approximation will contain no
    more than 2**MAX_ARC_SUBDIVISIONS line segments, since the subdividing
    stops when MAX_ARC_SUBDIVISIONS have been made.  MAX_ARC_SUBDIVISIONS,
    defined in extern.h, should be no greater than ARC_SUBDIVISIONS, defined
-   in g_arc.h as the size of a lookup table.  On a raster device, we also
-   stop subdividing when the line segments become zero pixels long. */
+   in g_arc.h as the size of the chordal deviation lookup table.  On a
+   raster device, we also stop subdividing when the line segments become
+   zero pixels long. */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -48,21 +49,23 @@
 	  p0.y * p2.x + p1.x * p2.y - p1.y * p2.x) == 0.0)
 
 /* forward references */
-static void _prepare_chord_table ____P ((double sagitta));
+static void _prepare_chord_table ____P ((double sagitta, double custom_chord_table[TABULATED_ARC_SUBDIVISIONS]));
 
 int
 #ifdef _HAVE_PROTOS
-_g_farc (double xc, double yc, double x0, double y0, double x1, double y1)
+_g_farc (R___(Plotter *_plotter) double xc, double yc, double x0, double y0, double x1, double y1)
 #else
-_g_farc (xc, yc, x0, y0, x1, y1)
+_g_farc (R___(_plotter) xc, yc, x0, y0, x1, y1)
+     S___(Plotter *_plotter;)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  Point p0, p1, pc; 
+  plPoint p0, p1, pc; 
 
   if (!_plotter->open)
     {
-      _plotter->error ("farc: invalid operation");
+      _plotter->error (R___(_plotter)
+		       "farc: invalid operation");
       return -1;
     }
 
@@ -70,37 +73,37 @@ _g_farc (xc, yc, x0, y0, x1, y1)
      from (x0,y0) to (x1,y1).  Only the endpoints will appear on the
      display. */
   if (!_plotter->drawstate->points_are_connected)
-    return _plotter->fline (x0, y0, x1, y1);
+    return _plotter->fline (R___(_plotter) x0, y0, x1, y1);
 
   /* Another trivial case: treat a zero-length arc as a line segment */
   if (x0 == x1 && y0 == y1)
-    return _plotter->fline (x0, y0, x1, y1);
+    return _plotter->fline (R___(_plotter) x0, y0, x1, y1);
 
   /* If new arc not contiguous, move to its starting point (thereby ending
      the path under construction, if any, since move() invokes the
      endpath() method). */
   if (x0 != _plotter->drawstate->pos.x 
       || y0 != _plotter->drawstate->pos.y)
-    _plotter->fmove (x0, y0);
+    _plotter->fmove (R___(_plotter) x0, y0);
   
   /* if path buffer exists and is occupied by a single arc, replace arc by
      a polyline if that's called for */
   if (_plotter->have_mixed_paths == false
       && _plotter->drawstate->points_in_path == 2)
-    _maybe_replace_arc();
+    _maybe_replace_arc (S___(_plotter));
 
   /* create or adjust size of path buffer, as needed */
   if (_plotter->drawstate->datapoints_len == 0)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
+	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len = DATAPOINTS_BUFSIZ;
     }
   if (_plotter->drawstate->points_in_path == _plotter->drawstate->datapoints_len)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
 	_plot_xrealloc (_plotter->drawstate->datapoints, 
-			2 * _plotter->drawstate->datapoints_len * sizeof(GeneralizedPoint));
+			2 * _plotter->drawstate->datapoints_len * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len *= 2;
     }
 
@@ -123,7 +126,7 @@ _g_farc (xc, yc, x0, y0, x1, y1)
 	      && _plotter->drawstate->transform.axes_preserved)))
       /* add circular arc as an arc element, since it's allowed */
     {
-      GeneralizedPoint newpoint;
+      plGeneralizedPoint newpoint;
 
       if (_plotter->drawstate->points_in_path == 0)
 	/* no path in progress, so begin one (at start of arc) */
@@ -149,7 +152,7 @@ _g_farc (xc, yc, x0, y0, x1, y1)
   else
     /* add circular arc as a polygonal approximation, by invoking
        _fakearc(), i.e., by invoking fcont() repeatedly */
-    _draw_circular_arc (p0, p1, pc);
+    _draw_circular_arc (R___(_plotter) p0, p1, pc);
 
   /* Provided that the Plotter supports the flushing of too-long polylines,
      if the path is getting too long (and it doesn't have to be filled),
@@ -161,25 +164,27 @@ _g_farc (xc, yc, x0, y0, x1, y1)
       && (_plotter->drawstate->points_in_path 
 	  >= _plotter->max_unfilled_polyline_length)
       && !_plotter->drawstate->suppress_polyline_flushout
-      && (_plotter->drawstate->fill_level == 0))
-    _plotter->endpath();
+      && (_plotter->drawstate->fill_type == 0))
+    _plotter->endpath (S___(_plotter));
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_g_fellarc (double xc, double yc, double x0, double y0, double x1, double y1)
+_g_fellarc (R___(Plotter *_plotter) double xc, double yc, double x0, double y0, double x1, double y1)
 #else
-_g_fellarc (xc, yc, x0, y0, x1, y1)
+_g_fellarc (R___(_plotter) xc, yc, x0, y0, x1, y1)
+     S___(Plotter *_plotter;)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  Point pc, p0, p1;
+  plPoint pc, p0, p1;
 
   if (!_plotter->open)
     {
-      _plotter->error ("fellarc: invalid operation");
+      _plotter->error (R___(_plotter)
+		       "fellarc: invalid operation");
       return -1;
     }
 
@@ -187,44 +192,44 @@ _g_fellarc (xc, yc, x0, y0, x1, y1)
      from (x0,y0) to (x1,y1).  Only the endpoints will appear on the
      display.  */
   if (!_plotter->drawstate->points_are_connected)
-    return _plotter->fline (x0, y0, x1, y1);
+    return _plotter->fline (R___(_plotter) x0, y0, x1, y1);
 
   /* Another trivial case: treat a zero-length arc as a line segment */
   if (x0 == x1 && y0 == y1)
-    return _plotter->fline (x0, y0, x1, y1);
+    return _plotter->fline (R___(_plotter) x0, y0, x1, y1);
 
   p0.x = x0; p0.y = y0;
   p1.x = x1; p1.y = y1;      
   pc.x = xc; pc.y = yc;      
   if (COLLINEAR (p0, p1, pc))
     /* collinear points, simply draw line segment from p0 to p1 */
-    return _plotter->fline (x0, y0, x1, y1);
+    return _plotter->fline (R___(_plotter) x0, y0, x1, y1);
 
   /* If new arc not contiguous, move to its starting point (thereby
      finalizing the path under construction, if any, since the move()
      method invokes the endpath() method). */
   if (x0 != _plotter->drawstate->pos.x
       || y0 != _plotter->drawstate->pos.y)
-    _plotter->fmove (x0, y0);
+    _plotter->fmove (R___(_plotter) x0, y0);
 
   /* if path buffer exists and is occupied by a single arc, replace arc by
      a polyline if that's called for */
   if (_plotter->have_mixed_paths == false
       && _plotter->drawstate->points_in_path == 2)
-    _maybe_replace_arc();
+    _maybe_replace_arc (S___(_plotter));
 
   /* create or adjust size of path buffer, as needed */
   if (_plotter->drawstate->datapoints_len == 0)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
+	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len = DATAPOINTS_BUFSIZ;
     }
   if (_plotter->drawstate->points_in_path == _plotter->drawstate->datapoints_len)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
 	_plot_xrealloc (_plotter->drawstate->datapoints, 
-			2 * _plotter->drawstate->datapoints_len * sizeof(GeneralizedPoint));
+			2 * _plotter->drawstate->datapoints_len * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len *= 2;
     }
 
@@ -243,7 +248,7 @@ _g_fellarc (xc, yc, x0, y0, x1, y1)
        interpret the AS_AXES_PRESERVED constraint to require also that the
        x and y coors for arc endpoints line up) */
     {
-      GeneralizedPoint newpoint;
+      plGeneralizedPoint newpoint;
 
       if (_plotter->drawstate->points_in_path == 0)
 	/* no path in progress, so begin one (at start of arc) */
@@ -269,7 +274,7 @@ _g_fellarc (xc, yc, x0, y0, x1, y1)
   else
     /* add elliptic arc as a polygonal approximation, by invoking
        _fakearc(), i.e., by invoking fcont() repeatedly */
-    _draw_elliptic_arc (p0, p1, pc);
+    _draw_elliptic_arc (R___(_plotter) p0, p1, pc);
 
   /* Provided that the Plotter supports the flushing of too-long polylines,
      if the path is getting too long (and it doesn't have to be filled),
@@ -281,8 +286,8 @@ _g_fellarc (xc, yc, x0, y0, x1, y1)
       && (_plotter->drawstate->points_in_path 
 	  >= _plotter->max_unfilled_polyline_length)
       && !_plotter->drawstate->suppress_polyline_flushout
-      && (_plotter->drawstate->fill_level == 0))
-    _plotter->endpath();
+      && (_plotter->drawstate->fill_type == 0))
+    _plotter->endpath (S___(_plotter));
   
   return 0;
 }
@@ -295,25 +300,28 @@ _g_fellarc (xc, yc, x0, y0, x1, y1)
    at p0. */
 void
 #ifdef _HAVE_PROTOS
-_draw_circular_arc(Point p0, Point p1, Point pc)
+_draw_circular_arc (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
 #else
-_draw_circular_arc(p0, p1, pc)
-     Point p0, p1, pc; 
+_draw_circular_arc (R___(_plotter) p0, p1, pc)
+     S___(Plotter *_plotter;)
+     plPoint p0, p1, pc; 
 #endif
 {
   /* bisection point of arc, and midpoint of chord */
-  Point pb, pm;
+  plPoint pb, pm;
   /* rotation matrix */
   double m[4];
   /* other variables */
-  Vector v, v0, v1;
+  plVector v, v0, v1;
   double radius, sagitta;
   double cross, orientation;
   bool flushoutp;
+  /* handcrafted relative chordal deviation table, for this arc */
+  double custom_chord_table[TABULATED_ARC_SUBDIVISIONS];
   
   if (p0.x == p1.x && p0.y == p1.y)
     /* zero-length arc, draw as zero-length line segment */
-    _plotter->fcont (p0.x, p0.y);
+    _plotter->fcont (R___(_plotter) p0.x, p0.y);
 
   else
     /* genuine polygonal approximation */
@@ -349,14 +357,15 @@ _draw_circular_arc(p0, p1, pc)
       
       sagitta = DIST(pb, pm) / radius;
       
-      /* fill in entries of chord factor table for this user defined
+      /* fill in entries of chordal deviation table for this user-defined
          sagitta */
-      _prepare_chord_table (sagitta);
+      _prepare_chord_table (sagitta, custom_chord_table);
       
       /* call _fakearc(), using for `rotation' matrix m[] a clockwise or
 	 counterclockwise rotation by 90 degrees, depending on orientation */
       m[0] = 0.0, m[1] = orientation, m[2] = -orientation, m[3] = 0.0;
-      _fakearc (p0, p1, USER_DEFINED_ARC, m);
+      _fakearc (R___(_plotter) 
+		p0, p1, USER_DEFINED_ARC, custom_chord_table, m);
 
       /* reset to original value */
       _plotter->drawstate->suppress_polyline_flushout = flushoutp;
@@ -378,13 +387,14 @@ _draw_circular_arc(p0, p1, pc)
    edge from p1 to K. */
 void 
 #ifdef _HAVE_PROTOS
-_draw_elliptic_arc (Point p0, Point p1, Point pc)
+_draw_elliptic_arc (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint pc)
 #else
-_draw_elliptic_arc (p0, p1, pc)
-     Point p0, p1, pc; 
+_draw_elliptic_arc (R___(_plotter) p0, p1, pc)
+     S___(Plotter *_plotter;)
+     plPoint p0, p1, pc; 
 #endif
 { 
-  Vector v0, v1; 
+  plVector v0, v1; 
   double cross;
   double m[4];
   bool flushoutp;
@@ -404,7 +414,7 @@ _draw_elliptic_arc (p0, p1, pc)
   if (cross == 0.0)
     /* collinear points, draw line segment from p0 to p1
        (not quite right, could be bettered) */
-    _plotter->fcont (p1.x, p1.y);
+    _plotter->fcont (R___(_plotter) p1.x, p1.y);
   else
     {
       /* `rotation' matrix (it maps v0 -> -v1 and v1 -> v0) */
@@ -413,8 +423,8 @@ _draw_elliptic_arc (p0, p1, pc)
       m[2] = - (v0.y * v0.y + v1.y * v1.y) / cross;
       m[3] = (v0.x * v0.y + v1.x * v1.y) / cross;
       
-      /* draw inscribed polyline */
-      _fakearc (p0, p1, QUARTER_ARC, m);
+      /* draw polyline inscribed in the quarter-ellipse */
+      _fakearc (R___(_plotter) p0, p1, QUARTER_ARC, (double *)NULL, m);
     }
 
   /* reset to original value */
@@ -423,14 +433,14 @@ _draw_elliptic_arc (p0, p1, pc)
   return;
 }
 
-/* The _fakearc() subroutine below contains our basic subdivision
-   algorithm, a remote descendent of the arc-drawing algorithm of Ken
-   Turkowski <turk@apple.com> described in Graphics Gems V.  His algorithm
-   is a recursive circle subdivision algorithm, which relies on the fact
-   that if s and s' are the (chordal deviation)/radius associated to
-   (respectively) an arc and a half-arc, then s' is approximately equal to
-   s/4.  The exact formula is s' = 1 - sqrt (1 - s/2), which applies for
-   all s in the meaningful range, i.e. 0 <= s <= 2.
+/* The _fakearc() subroutine below contains our arc subdivision algorithm,
+   a remote descendent of the arc-drawing algorithm of Ken Turkowski
+   <turk@apple.com> described in Graphics Gems V.  His algorithm is a
+   recursive circle subdivision algorithm, which relies on the fact that if
+   s and s' are the (chordal deviation)/radius associated to (respectively)
+   an arc and a half-arc, then s' is approximately equal to s/4.  The exact
+   formula is s' = 1 - sqrt (1 - s/2), which applies for all s in the
+   meaningful range, i.e. 0 <= s <= 2.
 
    Ken's algorithm rotates the chord of an arc by 90 degrees and scales it
    to have length s'.  The resulting vector will be the chordal deviation
@@ -470,9 +480,16 @@ _draw_elliptic_arc (p0, p1, pc)
    divisions in the main loop either.  
 
    The implementation below does not use recursion (we use a local array,
-   not the call stack, to store the sequence of generated points). */
+   not the call stack, to store the sequence of generated points). 
 
-#define SAME_POINT(p0, p1) (_plotter->integer_device_coors ? \
+   Note: the argument arc_type of _fakearc() can be set to QUARTER_ARC,
+   HALF_ARC, or THREE_QUARTER_ARC, i.e., 0, 1, or 2.  The chordal deviation
+   table in g_arc.h contains sub-tables for each of these three cases.  If
+   arc_type is USER_DEFINED_ARC, the caller must supply a lookup table. */
+
+/* definition of `same point' in the user frame, that takes into account
+   whether or not the device coordinates we'll use are integer-valued */
+#define SAME_POINT(p0, p1) (_plotter->display_coors_type != (int)DISP_DEVICE_COORS_REAL ? \
 			     ((IROUND(XD((p0).x, (p0).y)) \
 			      == IROUND(XD((p1).x, (p1).y))) \
 			     && (IROUND(YD((p0).x,(p0).y)) \
@@ -481,18 +498,26 @@ _draw_elliptic_arc (p0, p1, pc)
 
 void 
 #ifdef _HAVE_PROTOS
-_fakearc(Point p0, Point p1, int arc_type, const double m[4])
+_fakearc(R___(Plotter *_plotter) plPoint p0, plPoint p1, int arc_type, const double *custom_chord_table, const double m[4])
 #else
-_fakearc(p0, p1, arc_type, m)
-     Point p0, p1;
-     int arc_type;
+_fakearc(R___(_plotter) p0, p1, arc_type, custom_chord_table, m)
+     S___(Plotter *_plotter;)
+     plPoint p0, p1;
+     int arc_type;  /* {QUARTER,HALF,THREE_QUARTER,USER_DEFINED}_ARC */
+     const double *custom_chord_table; /* user-supplied lookup table */
      const double m[4];
 #endif
 {
-  Point p[MAX_ARC_SUBDIVISIONS + 1], q[MAX_ARC_SUBDIVISIONS + 1];
+  plPoint p[MAX_ARC_SUBDIVISIONS + 1], q[MAX_ARC_SUBDIVISIONS + 1];
   int level[MAX_ARC_SUBDIVISIONS + 1];
   int n = 0;	/* index of top of stack, < MAX_ARC_SUBDIVISIONS */
   int segments_drawn = 0;
+  const double *our_chord_table;
+
+  if (arc_type == USER_DEFINED_ARC)
+    our_chord_table = custom_chord_table;
+  else				/* custom_chord_table arg ignored */
+    our_chord_table = _chord_table[arc_type];
 
   p[0] = p0;
   q[0] = p1;
@@ -504,15 +529,15 @@ _fakearc(p0, p1, arc_type, m)
       
       else if (level[n] >= MAX_ARC_SUBDIVISIONS) 
 	{			/* draw line segment */
-	  _plotter->fcont (q[n].x, q[n].y);
+	  _plotter->fcont (R___(_plotter) q[n].x, q[n].y);
 	  segments_drawn++;
 	  n--;
 	}
       
       else			/* bisect line segment */
 	{
-	  Vector v;
-	  Point pm, pb;
+	  plVector v;
+	  plPoint pm, pb;
 	  
 	  v.x = q[n].x - p[n].x; /* chord = line segment from p[n] to q[n] */
 	  v.y = q[n].y - p[n].y;
@@ -525,9 +550,9 @@ _fakearc(p0, p1, arc_type, m)
 	     chordal deviation vector, which is used as an offset. */
 	  
 	  pb.x = pm.x + 
-	    _chord_factor[arc_type][level[n]] * (m[0] * v.x + m[1] * v.y);
+	    our_chord_table[level[n]] * (m[0] * v.x + m[1] * v.y);
 	  pb.y = pm.y + 
-	    _chord_factor[arc_type][level[n]] * (m[2] * v.x + m[3] * v.y);
+	    our_chord_table[level[n]] * (m[2] * v.x + m[3] * v.y);
 	  
 	  /* replace line segment by pair; level[n] >= n is an invariant */
 	  p[n+1] = p[n];
@@ -548,20 +573,21 @@ _fakearc(p0, p1, arc_type, m)
   if (segments_drawn == 0
       || (_plotter->drawstate->pos.x != q[0].x
 	  || _plotter->drawstate->pos.y != q[0].y))
-    _plotter->fcont (q[0].x, q[0].y);
+    _plotter->fcont (R___(_plotter) q[0].x, q[0].y);
 
   return;
 }
 
-/* prepare_chord_table() tabulates the factors _fakearc() needs when it is
-   employed to draw a circular arc of subtended angle other than the
-   default angles it supports */
+/* prepare_chord_table() computes the list of chordal deviation factors
+   that _fakearc() needs when it is employed to draw a circular arc of
+   subtended angle other than the default angles it supports */
 static void
 #ifdef _HAVE_PROTOS
-_prepare_chord_table (double sagitta)
+_prepare_chord_table (double sagitta, double custom_chord_table[TABULATED_ARC_SUBDIVISIONS])
 #else
-_prepare_chord_table (sagitta)
+_prepare_chord_table (sagitta, custom_chord_table)
      double sagitta;
+     double custom_chord_table[TABULATED_ARC_SUBDIVISIONS];
 #endif
 {
   double half_chord_length;
@@ -570,7 +596,7 @@ _prepare_chord_table (sagitta)
   half_chord_length = sqrt ( sagitta * (2.0 - sagitta) );
   for (i = 0; i < TABULATED_ARC_SUBDIVISIONS; i++)
     {
-      _chord_factor[USER_DEFINED_ARC][i] = 0.5 * sagitta / half_chord_length;
+      custom_chord_table[i] = 0.5 * sagitta / half_chord_length;
       sagitta = 1.0 - sqrt (1.0 - 0.5 * sagitta);
       half_chord_length = 0.5 * half_chord_length / (1.0 - sagitta);
     }

@@ -10,42 +10,29 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_fconcat (double m0, double m1, double m2, double m3, double m4, double m5)
+_m_fconcat (R___(Plotter *_plotter) double m0, double m1, double m2, double m3, double m4, double m5)
 #else
-_m_fconcat (m0, m1, m2, m3, m4, m5)
+_m_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5)
+     S___(Plotter *_plotter;) 
      double m0, m1, m2, m3, m4, m5;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fconcat: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fconcat: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_FCONCAT);
-  _meta_emit_float (m0);
-  _meta_emit_float (m1);
-  _meta_emit_float (m2);
-  _meta_emit_float (m3);
-  _meta_emit_float (m4);
-  _meta_emit_float (m5);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_FCONCAT);
+  _meta_emit_float (R___(_plotter) m0);
+  _meta_emit_float (R___(_plotter) m1);
+  _meta_emit_float (R___(_plotter) m2);
+  _meta_emit_float (R___(_plotter) m3);
+  _meta_emit_float (R___(_plotter) m4);
+  _meta_emit_float (R___(_plotter) m5);
+  _meta_emit_terminator (S___(_plotter));
 
   /* invoke generic method to update stored transformation matrix */
-  return _g_fconcat (m0, m1, m2, m3, m4, m5);
-}
-
-/* This function is called in _g_fconcat() to update the device-frame line
-   width when fconcat() is invoked, if the Plotter is a MetaPlotter.  It's
-   little more than a no-op, since MetaPlotters have no real notion of
-   device-frame line width.  See g_concat.c. */
-void
-#ifdef _HAVE_PROTOS
-_m_recompute_device_line_width (void)
-#else
-_m_recompute_device_line_width ()
-#endif
-{
-  /* use generic method, not MetaPlotter-specific linewidth() method */
-  _g_flinewidth (_plotter->drawstate->line_width);
+  return _g_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
 }

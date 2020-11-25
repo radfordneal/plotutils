@@ -71,9 +71,9 @@ LN_S = @LN_S@
 LTALLOCA = @LTALLOCA@
 MAKEINFO = @MAKEINFO@
 NM = @NM@
+OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
-USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
 X_BASIC_LIBS = @X_BASIC_LIBS@
 X_CFLAGS = @X_CFLAGS@
@@ -84,14 +84,14 @@ X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
 ps_fonts_in_pcl = @ps_fonts_in_pcl@
 
-noinst_LIBRARIES = libcommon.a libfontlist.a
+noinst_LIBRARIES = libcommon.a
 INCLUDES = -I$(srcdir)/../include
 
 libcommon_a_SOURCES = compat.c display.c getopt.c getopt1.c xmalloc.c xstrdup.c
 libcommon_a_LIBADD = @ALLOCA@
 libcommon_a_DEPENDENCIES = $(libcommon_a_LIBADD)
 
-libfontlist_a_SOURCES = fontlist.c
+EXTRA_DIST = fontlist.c
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -104,8 +104,6 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libcommon_a_OBJECTS =  compat.o display.o getopt.o getopt1.o xmalloc.o \
 xstrdup.o
-libfontlist_a_LIBADD = 
-libfontlist_a_OBJECTS =  fontlist.o
 AR = ar
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -119,8 +117,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libcommon_a_SOURCES) $(libfontlist_a_SOURCES)
-OBJECTS = $(libcommon_a_OBJECTS) $(libfontlist_a_OBJECTS)
+SOURCES = $(libcommon_a_SOURCES)
+OBJECTS = $(libcommon_a_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -185,11 +183,6 @@ libcommon.a: $(libcommon_a_OBJECTS) $(libcommon_a_DEPENDENCIES)
 	$(AR) cru libcommon.a $(libcommon_a_OBJECTS) $(libcommon_a_LIBADD)
 	$(RANLIB) libcommon.a
 
-libfontlist.a: $(libfontlist_a_OBJECTS) $(libfontlist_a_DEPENDENCIES)
-	-rm -f libfontlist.a
-	$(AR) cru libfontlist.a $(libfontlist_a_OBJECTS) $(libfontlist_a_LIBADD)
-	$(RANLIB) libfontlist.a
-
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP)
@@ -237,8 +230,6 @@ distdir: $(DISTFILES)
 compat.o: compat.c ../include/sys-defines.h ../config.h
 display.o: display.c ../include/sys-defines.h ../config.h \
 	../include/getopt.h
-fontlist.o: fontlist.c ../include/sys-defines.h ../config.h \
-	../include/plot.h ../include/plotcompat.h
 getopt.o: getopt.c ../include/sys-defines.h ../config.h \
 	../include/getopt.h
 getopt1.o: getopt1.c ../config.h ../include/sys-defines.h \

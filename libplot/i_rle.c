@@ -72,7 +72,7 @@ _write_block (rle)
   if (rle->ofile)
     {
       fputc (rle->oblen, rle->ofile);
-      fwrite ((Voidptr) &(rle->oblock[0]), 1, rle->oblen, rle->ofile);
+      fwrite ((voidptr_t) &(rle->oblock[0]), 1, rle->oblen, rle->ofile);
     }
 #ifdef LIBPLOTTER
   else if (rle->outstream)

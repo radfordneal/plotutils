@@ -1,62 +1,62 @@
 #include "sys-defines.h"
 
 /* forward references */
-Voidptr xmalloc ____P((unsigned int length));
-Voidptr xrealloc ____P((Voidptr p, unsigned int length));
-Voidptr xcalloc ____P((unsigned int nmemb, unsigned int size));
+voidptr_t xmalloc ____P((size_t length));
+voidptr_t xrealloc ____P((voidptr_t p, size_t length));
+voidptr_t xcalloc ____P((size_t nmemb, size_t size));
 
-Voidptr 
+voidptr_t 
 #ifdef _HAVE_PROTOS
-xmalloc (unsigned int length)
+xmalloc (size_t length)
 #else
 xmalloc (length)
-     unsigned int length;
+     size_t length;
 #endif
 {
-  Voidptr p;
-  p = (Voidptr) malloc (length);
+  voidptr_t p;
+  p = (voidptr_t) malloc (length);
 
-  if (p == (Voidptr) NULL)
+  if (p == (voidptr_t) NULL)
     {
-      perror ("malloc failed");
+      perror ("out of memory");
       exit (EXIT_FAILURE);
     }
   return p;
 }
 
-Voidptr 
+voidptr_t 
 #ifdef _HAVE_PROTOS
-xrealloc (Voidptr p, unsigned int length)
+xrealloc (voidptr_t p, size_t length)
 #else
 xrealloc (p, length)
-     Voidptr p;
-     unsigned int length;
+     voidptr_t p;
+     size_t length;
 #endif
 {
-  p = (Voidptr) realloc (p, length);
+  p = (voidptr_t) realloc (p, length);
 
-  if (p == (Voidptr) NULL)
+  if (p == (voidptr_t) NULL)
     {
-      perror ("realloc failed");
+      perror ("out of memory");
       exit (EXIT_FAILURE);
     }
   return p;
 }
 
-Voidptr 
+voidptr_t 
 #ifdef _HAVE_PROTOS
-xcalloc (unsigned int nmemb, unsigned int size)
+xcalloc (size_t nmemb, size_t size)
 #else
 xcalloc (nmemb, size)
-     unsigned int nmemb, size;
+     size_t nmemb, size;
 #endif
 {
-  Voidptr p;
-  p = (Voidptr) calloc (nmemb, size);
+  voidptr_t p;
+  p = (voidptr_t) calloc (nmemb, size);
 
-  if (p == (Voidptr) NULL)
+  if (p == (voidptr_t) NULL)
     {
-      perror ("calloc failed");
+      perror ("out of memory");
       exit (EXIT_FAILURE);
     }
   return p;

@@ -20,15 +20,17 @@
 
 double
 #ifdef _HAVE_PROTOS
-_g_ffontsize (double size)
+_g_ffontsize (R___(Plotter *_plotter) double size)
 #else
-_g_ffontsize (size)
+_g_ffontsize (R___(_plotter) size)
+     S___(Plotter *_plotter;) 
      double size;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("ffontsize: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "ffontsize: invalid operation");
       return -1;
     }
 
@@ -39,7 +41,7 @@ _g_ffontsize (size)
   _plotter->drawstate->font_size = size;
 
   /* compute true size (may be quantized) */
-  _plotter->retrieve_font();
+  _plotter->retrieve_font (S___(_plotter));
   
   /* return quantized user-specified font size */
   return _plotter->drawstate->true_font_size;

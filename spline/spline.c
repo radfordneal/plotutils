@@ -3,7 +3,7 @@
    splines.  When acting as a real-time filter, it uses cubic Bessel
    interpolation instead.  Written by Robert S. Maier
    <rsm@math.arizona.edu>, based on earlier work by Rich Murphey.
-   Copyright (C) 1989-1998 Free Software Foundation, Inc.
+   Copyright (C) 1989-1999 Free Software Foundation, Inc.
 
    References:
 
@@ -97,8 +97,12 @@ enum { AUTO_NONE, AUTO_INCREMENT, AUTO_BY_DISTANCE };
 /* Minimum value for magnitude of x, for such functions as x-sinh(x),
    x-tanh(x), x-sin(x), and x-tan(x) to have acceptable accuracy.  If the
    magnitude of x is smaller than this value, these functions of x will be
-   computed via power series. */
+   computed via power series to accuracy O(x**6). */
 #define TRIG_ARG_MIN 0.001
+
+/* Maximum value for magnitude of x, beyond which we approximate
+   x/sinh(x) and x/tanh(x) by |x|exp(-|x|). */
+#define TRIG_ARG_MAX 50.0
 
 struct option long_options[] =
 {
@@ -166,9 +170,9 @@ void set_format_type ____P ((char *s, data_type *typep));
 /* from libcommon */
 extern void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
 extern void display_version ____P((const char *progname)); 
-extern Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
-extern Voidptr xmalloc ____P ((unsigned int size));
-extern Voidptr xrealloc ____P ((Voidptr p, unsigned int length));
+extern voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
+extern voidptr_t xmalloc ____P ((size_t size));
+extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
 extern char *xstrdup ____P ((const char *s));
 
 
@@ -758,19 +762,34 @@ fit (n, t, y, z, k, tension, periodic)
       {
 	for (i = 0; i <= n - 1 ; ++i)
 	  {
-	    if (fabs(tension * h[i]) < TRIG_ARG_MIN)
+	    double x = tension * h[i];
+	    double xabs = (x < 0.0 ? -x : x);
+
+	    if (xabs < TRIG_ARG_MIN)
 	      /* hand-compute (6/x^2)(1-x/sinh(x)) and (3/x^2)(x/tanh(x)-1)
-                 to improve accuracy */
+                 to improve accuracy; here `x' is tension * h[i] */
 	      {
-		alpha[i] = h[i] * sinh_func (tension * h[i]);
-		beta[i] = 2.0 * h[i] * tanh_func (tension * h[i]);
+		alpha[i] = h[i] * sinh_func(x);
+		beta[i] = 2.0 * h[i] * tanh_func(x);
+	      }
+	    else if (xabs > TRIG_ARG_MAX)
+	      /* in (6/x^2)(1-x/sinh(x)) and (3/x^2)(x/tanh(x)-1),
+		 approximate x/sinh(x) and x/tanh(x) by 2|x|exp(-|x|)
+		 and |x|, respectively */
+	      {
+		int sign = (x < 0.0 ? -1 : 1);
+
+		alpha[i] = ((6.0 / (tension * tension))
+			   * ((1.0 / h[i]) - tension * 2 * sign * exp(-xabs)));
+		beta[i] = ((6.0 / (tension * tension))
+			   * (tension - (1.0 / h[i])));
 	      }
 	    else
 	      {
 		alpha[i] = ((6.0 / (tension * tension))
-			   * ((1.0 / h[i]) - tension / sinh (tension * h[i])));
+			    * ((1.0 / h[i]) - tension / sinh(x)));
 		beta[i] = ((6.0 / (tension * tension))
-			   * (tension / tanh (tension * h[i]) - (1.0 / h[i])));
+			   * (tension / tanh(x) - (1.0 / h[i])));
 	      }
 	  }
       }
@@ -779,19 +798,22 @@ fit (n, t, y, z, k, tension, periodic)
       {
 	for (i = 0; i <= n - 1 ; ++i)
 	  {
-	    if (fabs(tension * h[i]) < TRIG_ARG_MIN)
+	    double x = tension * h[i];
+	    double xabs = (x < 0.0 ? -x : x);
+
+	    if (xabs < TRIG_ARG_MIN)
 	      /* hand-compute (6/x^2)(1-x/sin(x)) and (3/x^2)(x/tan(x)-1)
-                 to improve accuracy */
+                 to improve accuracy; here `x' is tension * h[i] */
 	      {
-		alpha[i] = h[i] * sin_func (tension * h[i]);
-		beta[i] = 2.0 * h[i] * tan_func (tension * h[i]);
+		alpha[i] = h[i] * sin_func(x);
+		beta[i] = 2.0 * h[i] * tan_func(x);
 	      }
 	    else
 	      {
 		alpha[i] = ((6.0 / (tension * tension))
-		           * ((1.0 / h[i]) - tension / sin (tension * h[i])));
+		           * ((1.0 / h[i]) - tension / sin(x)));
 		beta[i] = ((6.0 / (tension * tension))
-			   * (tension / tan (tension * h[i]) - (1.0 / h[i])));
+			   * (tension / tan(x) - (1.0 / h[i])));
 	      }
 	  }
       }
@@ -952,6 +974,19 @@ interpolate (n, t, y, z, x, tension, periodic)
 		    * quotient_sinh_func (relupdiff, tension * h))
 		 + ((z[i+1] * h * h / 6.0) 
 		    * quotient_sinh_func (reldiff, tension * h)));
+      else if (fabs(tension * h) > TRIG_ARG_MAX)
+	/* approximate 1/sinh(y) by 2 sgn(y) exp(-|y|) */
+	{
+	  int sign = (h < 0.0 ? -1 : 1);
+
+	  value = (((z[i] * (exp (tension * updiff - sign * tension * h) 
+			     + exp (-tension * updiff - sign * tension * h))
+		     + z[i + 1] * (exp (tension * diff - sign * tension * h) 
+				   + exp (-tension * diff - sign * tension*h)))
+		    * (sign / (tension * tension)))
+		   + (y[i] - z[i] / (tension * tension)) * (updiff / h)
+		   + (y[i + 1] - z[i + 1] / (tension * tension)) * (diff / h));
+	}
       else
 	value = (((z[i] * sinh (tension * updiff) 
 		   + z[i + 1] * sinh (tension * diff))
@@ -1036,14 +1071,14 @@ read_float (input, dptr)
       num_read = fscanf (input, "%lf", &dval);
       break;
     case T_SINGLE:
-      num_read = fread ((Voidptr) &fval, sizeof (fval), 1, input);
+      num_read = fread ((voidptr_t) &fval, sizeof (fval), 1, input);
       dval = fval;
       break;
     case T_DOUBLE:
-      num_read = fread ((Voidptr) &dval, sizeof (dval), 1, input);
+      num_read = fread ((voidptr_t) &dval, sizeof (dval), 1, input);
       break;
     case T_INTEGER:
-      num_read = fread ((Voidptr) &ival, sizeof (ival), 1, input);
+      num_read = fread ((voidptr_t) &ival, sizeof (ival), 1, input);
       dval = ival;
       break;
     }
@@ -1099,7 +1134,7 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
 	      if (ft == FLT_MAX)
 		ft *= 0.99999;	/* kludge */
 	    }
-	  num_written += fwrite ((Voidptr) &ft, sizeof (ft), 1, stdout);
+	  num_written += fwrite ((voidptr_t) &ft, sizeof (ft), 1, stdout);
 	}
       for (i = 0; i < ydimension; i++)
 	{
@@ -1110,14 +1145,14 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
 	      if (fy == FLT_MAX)
 		fy *= 0.99999;	/* kludge */
 	    }
-	  num_written += fwrite ((Voidptr) &fy, sizeof (fy), 1, stdout);
+	  num_written += fwrite ((voidptr_t) &fy, sizeof (fy), 1, stdout);
 	}
       break;
     case T_DOUBLE:
       if (suppress_abscissa == false)
-	num_written += fwrite ((Voidptr) &t, sizeof (t), 1, stdout);
+	num_written += fwrite ((voidptr_t) &t, sizeof (t), 1, stdout);
       for (i = 0; i < ydimension; i++)
-	num_written += fwrite ((Voidptr) &(y[i]), sizeof (double), 1, stdout);
+	num_written += fwrite ((voidptr_t) &(y[i]), sizeof (double), 1, stdout);
       break;
     case T_INTEGER:
       if (suppress_abscissa == false)
@@ -1129,7 +1164,7 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
 	      if (it == INT_MAX)
 		it--;
 	    }
-	  num_written += fwrite ((Voidptr) &it, sizeof (it), 1, stdout);
+	  num_written += fwrite ((voidptr_t) &it, sizeof (it), 1, stdout);
 	}
       for (i = 0; i < ydimension; i++)
 	{
@@ -1140,7 +1175,7 @@ write_point (t, y, ydimension, precision, suppress_abscissa)
 	      if (iy == INT_MAX)
 		iy--;
 	    }
-	  num_written += fwrite ((Voidptr) &iy, sizeof (iy), 1, stdout);
+	  num_written += fwrite ((voidptr_t) &iy, sizeof (iy), 1, stdout);
 	}
       break;
     }
@@ -1854,15 +1889,15 @@ output_dataset_separator ()
       break;
     case T_DOUBLE:
       ddummy = DBL_MAX;
-      fwrite ((Voidptr) &ddummy, sizeof(ddummy), 1, stdout);
+      fwrite ((voidptr_t) &ddummy, sizeof(ddummy), 1, stdout);
       break;
     case T_SINGLE:
       fdummy = FLT_MAX;
-      fwrite ((Voidptr) &fdummy, sizeof(fdummy), 1, stdout);
+      fwrite ((voidptr_t) &fdummy, sizeof(fdummy), 1, stdout);
       break;
     case T_INTEGER:
       idummy = INT_MAX;
-      fwrite ((Voidptr) &idummy, sizeof(idummy), 1, stdout);
+      fwrite ((voidptr_t) &idummy, sizeof(idummy), 1, stdout);
       break;
     }
 }

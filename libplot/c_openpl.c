@@ -1,0 +1,125 @@
+/* This file contains the openpl method, which is a standard part of
+   libplot.  It opens a Plotter object. */
+
+/* This version is for CGM Plotters, which graphics only after all pages of
+   graphics have been drawn, and the Plotter is deleted. */
+
+#include "sys-defines.h"
+#include "extern.h"
+
+int
+#ifdef _HAVE_PROTOS
+_c_openpl (S___(Plotter *_plotter))
+#else
+_c_openpl (S___(_plotter))
+     S___(Plotter *_plotter;)
+#endif
+{
+  plOutbuf *new_page;
+  const char *bg_color_name_s;
+  int i;
+
+  if (_plotter->open)
+    {
+      _plotter->error (R___(_plotter) "openpl: invalid operation");
+      return -1;
+    }
+
+  /* prepare buffer in which we'll cache code for this page */
+  new_page = _new_outbuf ();
+
+  /* CGM Plotters use the `extra' field of the Outbuf (a void pointer; it
+     points to the head of a linked list of user-defined line types for the
+     page) */
+  new_page->extra = (voidptr_t)NULL;
+
+  if (_plotter->opened == false) /* first page */
+    {
+      _plotter->page = new_page;
+      /* Save a pointer to the first page, since we'll be caching
+	 all pages until the Plotter is deleted. */
+      _plotter->first_page = new_page;
+    }
+  else
+    /* add new page to tail of list, update pointer to current page */
+    {
+      _plotter->page->next = new_page;
+      _plotter->page = new_page;
+    }
+
+  /* initialize `font used' array(s) for this page */
+  for (i = 0; i < NUM_PS_FONTS; i++)
+    _plotter->page->ps_font_used[i] = false;
+
+  /* reset page-specific, i.e. picture-specific, dynamic variables */
+  _plotter->cgm_page_version = 1;
+  _plotter->cgm_page_profile = CGM_PROFILE_WEB;
+  _plotter->cgm_page_need_color = false;
+	/* colors */
+  _plotter->cgm_line_color.red = -1;
+  _plotter->cgm_line_color.green = -1;
+  _plotter->cgm_line_color.blue = -1;
+  _plotter->cgm_edge_color.red = -1;
+  _plotter->cgm_edge_color.green = -1;
+  _plotter->cgm_edge_color.blue = -1;
+  _plotter->cgm_fillcolor.red = -1;
+  _plotter->cgm_fillcolor.green = -1;
+  _plotter->cgm_fillcolor.blue = -1;
+  _plotter->cgm_marker_color.red = -1;
+  _plotter->cgm_marker_color.green = -1;
+  _plotter->cgm_marker_color.blue = -1;
+  _plotter->cgm_text_color.red = -1;
+  _plotter->cgm_text_color.green = -1;
+  _plotter->cgm_text_color.blue = -1;
+  _plotter->cgm_bgcolor.red = -1;
+  _plotter->cgm_bgcolor.green = -1;
+  _plotter->cgm_bgcolor.blue = -1;
+	/* other dynamic variables */
+  _plotter->cgm_line_type = CGM_L_SOLID;
+  _plotter->cgm_dash_offset = 0.0;
+  _plotter->cgm_join_style = CGM_JOIN_UNSPEC;
+  _plotter->cgm_cap_style = CGM_CAP_UNSPEC;  
+  _plotter->cgm_dash_cap_style = CGM_CAP_UNSPEC;  
+  	/* CGM's default line width: 1/1000 times the max VDC dimension */
+  _plotter->cgm_line_width = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) / 500;
+  _plotter->cgm_interior_style = CGM_INT_STYLE_HOLLOW;
+  _plotter->cgm_edge_type = CGM_L_SOLID;
+  _plotter->cgm_edge_dash_offset = 0.0;
+  _plotter->cgm_edge_join_style = CGM_JOIN_UNSPEC;
+  _plotter->cgm_edge_cap_style = CGM_CAP_UNSPEC;  
+  _plotter->cgm_edge_dash_cap_style = CGM_CAP_UNSPEC;  
+  	/* CGM's default edge width: 1/1000 times the max VDC dimension */
+  _plotter->cgm_edge_width = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) / 500;
+  _plotter->cgm_edge_is_visible = false;
+  _plotter->cgm_miter_limit = 32767.0;
+  _plotter->cgm_marker_type = CGM_M_ASTERISK;
+  	/* CGM's default marker size: 1/1000 times the max VDC dimension */
+  _plotter->cgm_marker_size = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) /500;
+  	/* label-related variables */
+  _plotter->cgm_char_height = -1; /* impossible (dummy) value */
+  _plotter->cgm_char_base_vector_x = 1;
+  _plotter->cgm_char_base_vector_y = 0;
+  _plotter->cgm_char_up_vector_x = 0;
+  _plotter->cgm_char_up_vector_y = 1;
+  _plotter->cgm_horizontal_text_alignment = CGM_ALIGN_NORMAL_HORIZONTAL;
+  _plotter->cgm_vertical_text_alignment = CGM_ALIGN_NORMAL_VERTICAL;
+  _plotter->cgm_font_id = -1;	/* impossible (dummy) value */
+  _plotter->cgm_charset_lower = 0; /* dummy value (we use values 1..4) */
+  _plotter->cgm_charset_upper = 0; /* dummy value (we use values 1..4) */
+  _plotter->cgm_restricted_text_type = CGM_RESTRICTED_TEXT_TYPE_BASIC;
+
+  /* invoke generic method, to e.g. create drawing state */
+  _g_openpl (S___(_plotter));
+
+  /* if there's a user-specified background color, set it in
+     device-independent part of drawing state */
+  bg_color_name_s = (const char *)_get_plot_param (R___(_plotter) "BG_COLOR");
+  if (bg_color_name_s)
+    _plotter->bgcolorname (R___(_plotter) bg_color_name_s);
+
+  /* copy it, also, to the CGM-specific part of the CGMPlotter; it'll be
+     written to the output file at the head of the picture */
+  _plotter->set_bg_color (S___(_plotter));
+
+  return 0;
+}

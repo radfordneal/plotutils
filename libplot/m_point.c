@@ -6,44 +6,48 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_point (int x, int y)
+_m_point (R___(Plotter *_plotter) int x, int y)
 #else
-_m_point (x, y)
+_m_point (R___(_plotter) x, y)
+     S___(Plotter *_plotter;) 
      int x, y;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("point: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "point: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_POINT);
-  _meta_emit_integer (x);
-  _meta_emit_integer (y);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_POINT);
+  _meta_emit_integer (R___(_plotter) x);
+  _meta_emit_integer (R___(_plotter) y);
+  _meta_emit_terminator (S___(_plotter));
       
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_fpoint (double x, double y)
+_m_fpoint (R___(Plotter *_plotter) double x, double y)
 #else
-_m_fpoint (x, y)
+_m_fpoint (R___(_plotter) x, y)
+     S___(Plotter *_plotter;) 
      double x, y;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fpoint: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fpoint: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_POINT : (int)O_FPOINT);
-  _meta_emit_float (x);
-  _meta_emit_float (y);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) _plotter->meta_portable_output ? (int)O_POINT : (int)O_FPOINT);
+  _meta_emit_float (R___(_plotter) x);
+  _meta_emit_float (R___(_plotter) y);
+  _meta_emit_terminator (S___(_plotter));
       
   return 0;
 }

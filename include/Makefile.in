@@ -71,9 +71,9 @@ LN_S = @LN_S@
 LTALLOCA = @LTALLOCA@
 MAKEINFO = @MAKEINFO@
 NM = @NM@
+OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
-USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
 X_BASIC_LIBS = @X_BASIC_LIBS@
 X_CFLAGS = @X_CFLAGS@
@@ -83,10 +83,11 @@ X_PRE_LIBS = @X_PRE_LIBS@
 X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
 ps_fonts_in_pcl = @ps_fonts_in_pcl@
+@NO_LIBPLOTTER_TRUE@include_HEADERS = plot.h plotcompat.h
+@NO_LIBPLOTTER_FALSE@include_HEADERS = plot.h plotter.h plotcompat.h
 
-include_HEADERS = plot.h plotter.h plotcompat.h
-
-noinst_HEADERS = sys-defines.h getopt.h
+@NO_LIBPLOTTER_TRUE@noinst_HEADERS = plotter.h sys-defines.h getopt.h
+@NO_LIBPLOTTER_FALSE@noinst_HEADERS = sys-defines.h getopt.h
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

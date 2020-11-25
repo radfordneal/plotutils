@@ -9,7 +9,9 @@
 
 /* by setting this undocumented variable, user may request quantization of
    colors (no user-defined colors, only native xfig ones). */
+#ifdef SUPPORT_FIG_COLOR_QUANTIZATION
 int _libplotfig_use_pseudocolor = 0;
+#endif
 
 /* FIG_COLOR returns the index of the Fig color corresponding to specified
    a 48-bit RGB value.  This has (or may have) a side effect.  If the Fig
@@ -28,14 +30,17 @@ int _libplotfig_use_pseudocolor = 0;
    partition of the color cube; see f_color2.c.) */
 
 /* forward references */
+#ifdef SUPPORT_FIG_COLOR_QUANTIZATION
 static int _fig_pseudocolor ____P((int red, int green, int blue));
+#endif
 
 int
 #ifdef _HAVE_PROTOS
-_fig_color(int red, int green, int blue)
+_fig_color(R___(Plotter *_plotter) int red, int green, int blue)
 #else
-_fig_color(red, green, blue)
-  int red, green, blue;
+_fig_color(R___(_plotter) red, green, blue)
+     S___(Plotter *_plotter;)
+     int red, green, blue;
 #endif
 {
   int fig_fgcolor_red, fig_fgcolor_green, fig_fgcolor_blue;
@@ -47,9 +52,11 @@ _fig_color(red, green, blue)
   fig_fgcolor_green = (green >> 8) & ONEBYTE;
   fig_fgcolor_blue = (blue >> 8) & ONEBYTE;
 
+#ifdef SUPPORT_FIG_COLOR_QUANTIZATION
   if (_libplotfig_use_pseudocolor) /* quantize */
     return _fig_pseudocolor (fig_fgcolor_red, fig_fgcolor_green,
 			    fig_fgcolor_blue);
+#endif
 
   for (i=0; i<FIG_NUM_STD_COLORS; i++) /* search list of standard colors */
     {
@@ -74,7 +81,7 @@ _fig_color(red, green, blue)
 
   if (_plotter->fig_num_usercolors == FIG_MAX_NUM_USER_COLORS)
     {
-      _plotter->warning ("supply of user-defined colors is exhausted");
+      _plotter->warning (R___(_plotter) "supply of user-defined colors is exhausted");
       return -1;
     }
   
@@ -86,6 +93,7 @@ _fig_color(red, green, blue)
 
 /* find closest known point within the RGB color cube, using Euclidean
    distance as our metric */
+#ifdef SUPPORT_FIG_COLOR_QUANTIZATION
 static int
 #ifdef _HAVE_PROTOS
 _fig_pseudocolor (int red, int green, int blue)
@@ -136,15 +144,17 @@ _fig_pseudocolor (red, green, blue)
     }
   return FIG_STD_COLOR_MIN + best;
 }
+#endif /* SUPPORT_FIG_COLOR_QUANTIZATION */
 
 /* we call this routine to evaluate _plotter->drawstate->fig_fgcolor
    lazily, i.e. only when needed (just before an object is written to the
    output buffer) */
 void
 #ifdef _HAVE_PROTOS
-_f_set_pen_color(void)
+_f_set_pen_color(S___(Plotter *_plotter))
 #else
-_f_set_pen_color()
+_f_set_pen_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   /* OOB switches to default color */
@@ -154,9 +164,10 @@ _f_set_pen_color()
     _plotter->drawstate->fig_fgcolor = _default_drawstate.fig_fgcolor;
   else
     _plotter->drawstate->fig_fgcolor = 
-      _fig_color ((_plotter->drawstate->fgcolor).red,
-		 (_plotter->drawstate->fgcolor).green, 
-		 (_plotter->drawstate->fgcolor).blue);
+      _fig_color (R___(_plotter) 
+		  (_plotter->drawstate->fgcolor).red,
+		  (_plotter->drawstate->fgcolor).green, 
+		  (_plotter->drawstate->fgcolor).blue);
   return;
 }
 
@@ -164,14 +175,15 @@ _f_set_pen_color()
    _plotter->drawstate->fig_fill_level lazily, i.e. only when needed (just
    before an object is written to the output buffer) */
 
-/* Note that fill_level, if nonzero, specifies the extent to which the
+/* Note that fill_type, if nonzero, specifies the extent to which the
    nominal fill color should be desaturated.  1 means no desaturation,
    0xffff means complete desaturation (white). */
 void
 #ifdef _HAVE_PROTOS
-_f_set_fill_color(void)
+_f_set_fill_color(S___(Plotter *_plotter))
 #else
-_f_set_fill_color()
+_f_set_fill_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   double fill_level;
@@ -183,9 +195,10 @@ _f_set_fill_color()
     _plotter->drawstate->fig_fillcolor = _default_drawstate.fig_fillcolor;
   else
     _plotter->drawstate->fig_fillcolor = 
-      _fig_color ((_plotter->drawstate->fillcolor).red,
-		 (_plotter->drawstate->fillcolor).green, 
-		 (_plotter->drawstate->fillcolor).blue);
+      _fig_color (R___(_plotter)
+		  (_plotter->drawstate->fillcolor).red,
+		  (_plotter->drawstate->fillcolor).green, 
+		  (_plotter->drawstate->fillcolor).blue);
   
   /* Now that we know _drawstate->fig_fillcolor, we can compute the fig
      fill level that will match the user's requested fill level.  Fig fill
@@ -217,11 +230,11 @@ _f_set_fill_color()
 	21->40 are not used when the color is black or default,
 	or white itself.) */
 
-  fill_level = ((double)_plotter->drawstate->fill_level - 1.)/0xFFFE;
+  fill_level = ((double)_plotter->drawstate->fill_type - 1.)/0xFFFE;
 
   /* OOB sets fill level to a non-OOB default value */
   if (fill_level > 1.)
-    fill_level = ((double)_default_drawstate.fill_level - 1.)/0xFFFE;
+    fill_level = ((double)_default_drawstate.fill_type - 1.)/0xFFFE;
 
   /* level = 0 turns off filling (objects will be transparent) */
   else if (fill_level < 0.)

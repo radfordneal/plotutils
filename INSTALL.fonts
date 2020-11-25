@@ -45,10 +45,17 @@ it.  Then, while in that directory, run the `mkfontdir' program.  The
 server will read.  If the X server is currently running, you should also do
 `xset fp rehash' to make the server re-scan the directory.
 
-[On Solaris machines, the preceding installation instructions may or may
-not work.  Some versions of Solaris contain a Sun demo program called
-`fontadmin' that can install Type1 fonts.  If it is available, it is
-located in `/usr/openwin/demos'.]
+NOTE #1: On Solaris machines, the preceding installation instructions may
+or may not work.  Some versions of Solaris contain a Sun demo program
+called `fontadmin' that can install Type1 fonts.  If it is available, it is
+located in `/usr/openwin/demos'.
+
+NOTE #2: On a few systems (e.g., SGI's), following the preceding
+installation instructions may cause problems, because vendor-supplied
+versions of the fonts may already be listed in the fonts.scale file.
+It would be a good idea on any system to check whether any of the fonts
+listed in ./fonts/fonts.append already appear in fonts.scale.  If so, the
+corresponding lines do not need to be added.
 
 Once you have installed the 35 Postscript fonts, if you have a copy of the
 `xfig' drawing editor and are using it, you should recompile it to take
@@ -119,10 +126,10 @@ creates a file called `fonts.dir', which is what the X server will read.
 If the X server is currently running, you should also do `xset fp rehash'
 to make the server re-scan the directory.
 
-[On Solaris machines, the preceding installation instructions may or may
-not work.  Some versions of Solaris contain a Sun demo program called
+NOTE: On Solaris machines, the preceding installation instructions may or
+may not work.  Some versions of Solaris contain a Sun demo program called
 `fontadmin' that can install Type1 fonts.  If it is available, it is
-located in `/usr/openwin/demos'.]
+located in `/usr/openwin/demos'.
 
 C. After steps (A) and (B) are followed, the plotting utilities will be
 able to use the 45 LaserJet fonts when producing X output.  For example,

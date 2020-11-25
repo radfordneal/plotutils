@@ -13,15 +13,17 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_fbezier2 (double x0, double y0, double x1, double y1, double x2, double y2)
+_g_fbezier2 (R___(Plotter *_plotter) double x0, double y0, double x1, double y1, double x2, double y2)
 #else
-_g_fbezier2 (x0, y0, x1, y1, x2, y2)
+_g_fbezier2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
+     S___(Plotter *_plotter;) 
      double x0, y0, x1, y1, x2, y2;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fbezier2: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fbezier2: invalid operation");
       return -1;
     }
 
@@ -29,33 +31,33 @@ _g_fbezier2 (x0, y0, x1, y1, x2, y2)
      from (x0,y0) to (x2,y2).  Only the endpoints will appear on the
      display. */
   if (!_plotter->drawstate->points_are_connected)
-    return _plotter->fline (x0, y0, x2, y2);
+    return _plotter->fline (R___(_plotter) x0, y0, x2, y2);
 
   /* If new segment not contiguous, move to its starting point (thereby
      ending the path under construction, if any, since move() invokes the
      endpath() method). */
   if (x0 != _plotter->drawstate->pos.x 
       || y0 != _plotter->drawstate->pos.y)
-    _plotter->fmove (x0, y0);
+    _plotter->fmove (R___(_plotter) x0, y0);
   
   /* if path buffer exists and is occupied by a single arc, replace arc by
      a polyline if that's called for */
   if (_plotter->have_mixed_paths == false
       && _plotter->drawstate->points_in_path == 2)
-    _maybe_replace_arc();
+    _maybe_replace_arc (S___(_plotter));
 
   /* create or adjust size of path buffer, as needed */
   if (_plotter->drawstate->datapoints_len == 0)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
+	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len = DATAPOINTS_BUFSIZ;
     }
   if (_plotter->drawstate->points_in_path == _plotter->drawstate->datapoints_len)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
 	_plot_xrealloc (_plotter->drawstate->datapoints, 
-			2 * _plotter->drawstate->datapoints_len * sizeof(GeneralizedPoint));
+			2 * _plotter->drawstate->datapoints_len * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len *= 2;
     }
 
@@ -64,7 +66,7 @@ _g_fbezier2 (x0, y0, x1, y1, x2, y2)
   if (_plotter->allowed_quad_scaling == AS_ANY)
     /* add as a primitive element, since it's allowed */
     {
-      GeneralizedPoint newpoint;
+      plGeneralizedPoint newpoint;
 
       if (_plotter->drawstate->points_in_path == 0)
 	/* no path in progress, so begin one (at start of segment) */
@@ -91,7 +93,7 @@ _g_fbezier2 (x0, y0, x1, y1, x2, y2)
   else if (_plotter->allowed_cubic_scaling == AS_ANY)
     /* add quadratic Bezier as a cubic Bezier, since it's allowed */
     {
-      GeneralizedPoint newpoint;
+      plGeneralizedPoint newpoint;
 
       if (_plotter->drawstate->points_in_path == 0)
 	/* no path in progress, so begin one (at start of segment) */
@@ -121,12 +123,12 @@ _g_fbezier2 (x0, y0, x1, y1, x2, y2)
     /* add quadratic Bezier segment as a polygonal approximation, by
        invoking fcont() repeatedly */
     {
-      Point p0, p1, p2; 
+      plPoint p0, p1, p2; 
 
       p0.x = x0; p0.y = y0;
       p1.x = x1; p1.y = y1;      
       p2.x = x2; p2.y = y2;      
-      _draw_bezier2 (p0, p1, p2);
+      _draw_bezier2 (R___(_plotter) p0, p1, p2);
     }
 
   /* Provided that the Plotter supports the flushing of too-long polylines,
@@ -137,23 +139,25 @@ _g_fbezier2 (x0, y0, x1, y1, x2, y2)
       && (_plotter->drawstate->points_in_path 
 	  >= _plotter->max_unfilled_polyline_length)
       && !_plotter->drawstate->suppress_polyline_flushout
-      && (_plotter->drawstate->fill_level == 0))
-    _plotter->endpath();
+      && (_plotter->drawstate->fill_type == 0))
+    _plotter->endpath (S___(_plotter));
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_g_fbezier3 (double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
+_g_fbezier3 (R___(Plotter *_plotter) double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
 #else
-_g_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
+_g_fbezier3 (R___(_plotter) x0, y0, x1, y1, x2, y2, x3, y3)
+     S___(Plotter *_plotter;)
      double x0, y0, x1, y1, x2, y2, x3, y3;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fbezier3: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fbezier3: invalid operation");
       return -1;
     }
 
@@ -161,33 +165,33 @@ _g_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
      from (x0,y0) to (x3,y3).  Only the endpoints will appear on the
      display. */
   if (!_plotter->drawstate->points_are_connected)
-    return _plotter->fline (x0, y0, x3, y3);
+    return _plotter->fline (R___(_plotter) x0, y0, x3, y3);
 
   /* If new segment not contiguous, move to its starting point (thereby
      ending the path under construction, if any, since move() invokes the
      endpath() method). */
   if (x0 != _plotter->drawstate->pos.x 
       || y0 != _plotter->drawstate->pos.y)
-    _plotter->fmove (x0, y0);
+    _plotter->fmove (R___(_plotter) x0, y0);
   
   /* if path buffer exists and is occupied by a single arc, replace arc by
      a polyline if that's called for */
   if (_plotter->have_mixed_paths == false
       && _plotter->drawstate->points_in_path == 2)
-    _maybe_replace_arc();
+    _maybe_replace_arc (S___(_plotter));
 
   /* create or adjust size of path buffer, as needed */
   if (_plotter->drawstate->datapoints_len == 0)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
+	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len = DATAPOINTS_BUFSIZ;
     }
   if (_plotter->drawstate->points_in_path == _plotter->drawstate->datapoints_len)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
 	_plot_xrealloc (_plotter->drawstate->datapoints, 
-			2 * _plotter->drawstate->datapoints_len * sizeof(GeneralizedPoint));
+			2 * _plotter->drawstate->datapoints_len * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len *= 2;
     }
 
@@ -196,7 +200,7 @@ _g_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
   if (_plotter->allowed_cubic_scaling == AS_ANY)
     /* add as a primitive element, since it's allowed */
     {
-      GeneralizedPoint newpoint;
+      plGeneralizedPoint newpoint;
 
       if (_plotter->drawstate->points_in_path == 0)
 	/* no path in progress, so begin one (at start of segment) */
@@ -225,13 +229,13 @@ _g_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
     /* add quadratic Bezier segment as a polygonal approximation, by
        invoking fcont() repeatedly */
     {
-      Point p0, p1, p2, p3;
+      plPoint p0, p1, p2, p3;
 
       p0.x = x0; p0.y = y0;
       p1.x = x1; p1.y = y1;      
       p2.x = x2; p2.y = y2;      
       p3.x = x3; p3.y = y3;      
-      _draw_bezier3 (p0, p1, p2, p3);
+      _draw_bezier3 (R___(_plotter) p0, p1, p2, p3);
     }
 
   /* Provided that the Plotter supports the flushing of too-long polylines,
@@ -242,18 +246,19 @@ _g_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
       && (_plotter->drawstate->points_in_path 
 	  >= _plotter->max_unfilled_polyline_length)
       && !_plotter->drawstate->suppress_polyline_flushout
-      && (_plotter->drawstate->fill_level == 0))
-    _plotter->endpath();
+      && (_plotter->drawstate->fill_type == 0))
+    _plotter->endpath (S___(_plotter));
   
   return 0;
 }
 
 void 
 #ifdef _HAVE_PROTOS
-_draw_bezier2 (Point p0, Point p1, Point p2)
+_draw_bezier2 (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint p2)
 #else
-_draw_bezier2 (p0, p1, p2)
-     Point p0, p1, p2; 
+_draw_bezier2 (R___(_plotter) p0, p1, p2)
+     S___(Plotter *_plotter;) 
+     plPoint p0, p1, p2; 
 #endif
 { 
   bool flushoutp;
@@ -263,7 +268,7 @@ _draw_bezier2 (p0, p1, p2)
   _plotter->drawstate->suppress_polyline_flushout = true;
 
   /* draw inscribed polyline */
-  _fakebezier2 (p0, p1, p2);
+  _fakebezier2 (R___(_plotter) p0, p1, p2);
 
   /* reset to original value */
   _plotter->drawstate->suppress_polyline_flushout = flushoutp;
@@ -271,10 +276,11 @@ _draw_bezier2 (p0, p1, p2)
 
 void 
 #ifdef _HAVE_PROTOS
-_draw_bezier3 (Point p0, Point p1, Point p2, Point p3)
+_draw_bezier3 (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint p2, plPoint p3)
 #else
-_draw_bezier3 (p0, p1, p2, p3)
-     Point p0, p1, p2, p3; 
+_draw_bezier3 (R___(_plotter) p0, p1, p2, p3)
+     S___(Plotter *_plotter;) 
+     plPoint p0, p1, p2, p3; 
 #endif
 { 
   bool flushoutp;
@@ -284,13 +290,15 @@ _draw_bezier3 (p0, p1, p2, p3)
   _plotter->drawstate->suppress_polyline_flushout = true;
 
   /* draw inscribed polyline */
-  _fakebezier3 (p0, p1, p2, p3);
+  _fakebezier3 (R___(_plotter) p0, p1, p2, p3);
 
   /* reset to original value */
   _plotter->drawstate->suppress_polyline_flushout = flushoutp;
 }
 
-#define SAME_POINT(p0, p1) (_plotter->integer_device_coors ? \
+/* definition of `same point' in the user frame, that takes into account
+   whether or not the device coordinates we'll use are integer-valued */
+#define SAME_POINT(p0, p1) (_plotter->display_coors_type != (int)DISP_DEVICE_COORS_REAL ? \
 			     ((IROUND(XD((p0).x, (p0).y)) \
 			      == IROUND(XD((p1).x, (p1).y))) \
 			     && (IROUND(YD((p0).x,(p0).y)) \
@@ -301,13 +309,14 @@ _draw_bezier3 (p0, p1, p2, p3)
 
 void 
 #ifdef _HAVE_PROTOS
-_fakebezier2 (Point p0, Point p1, Point p2)
+_fakebezier2 (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint p2)
 #else
-_fakebezier2 (p0, p1, p2)
-     Point p0, p1, p2; 
+_fakebezier2 (R___(_plotter) p0, p1, p2)
+     S___(Plotter *_plotter;) 
+     plPoint p0, p1, p2; 
 #endif
 { 
-  Point r0[MAX_BEZIER_SUBDIVISIONS + 1], r1[MAX_BEZIER_SUBDIVISIONS + 1], r2[MAX_BEZIER_SUBDIVISIONS + 1];
+  plPoint r0[MAX_BEZIER_SUBDIVISIONS + 1], r1[MAX_BEZIER_SUBDIVISIONS + 1], r2[MAX_BEZIER_SUBDIVISIONS + 1];
   int level[MAX_BEZIER_SUBDIVISIONS + 1];
   int n = 0;	/* index of top of stack, < MAX_BEZIER_SUBDIVISIONS */
   int segments_drawn = 0;
@@ -319,7 +328,7 @@ _fakebezier2 (p0, p1, p2)
   while (n >= 0)		/* i.e. while stack is nonempty */
     {
       int current_level;
-      Point q0, q1, q2;
+      plPoint q0, q1, q2;
 
       current_level = level[n];
       q0 = r0[n];
@@ -331,15 +340,15 @@ _fakebezier2 (p0, p1, p2)
       
       else if (current_level >= MAX_BEZIER_SUBDIVISIONS) 
 	{			/* draw line segment */
-	  _plotter->fcont (q2.x, q2.y);
+	  _plotter->fcont (R___(_plotter) q2.x, q2.y);
 	  segments_drawn++;
 	  n--;
 	}
       
       else			/* bisect the quadratic Bezier */
 	{
-	  Point qq0, qq1;
-	  Point qqq0;
+	  plPoint qq0, qq1;
+	  plPoint qqq0;
 
 	  qq0.x = MIDWAY(q0.x, q1.x);
 	  qq0.y = MIDWAY(q0.y, q1.y);
@@ -372,18 +381,19 @@ _fakebezier2 (p0, p1, p2)
   if (segments_drawn == 0
       || (_plotter->drawstate->pos.x != r2[0].x
 	  || _plotter->drawstate->pos.y != r2[0].y))
-    _plotter->fcont (r2[0].x, r2[0].y);
+    _plotter->fcont (R___(_plotter) r2[0].x, r2[0].y);
 }
 
 void 
 #ifdef _HAVE_PROTOS
-_fakebezier3 (Point p0, Point p1, Point p2, Point p3)
+_fakebezier3 (R___(Plotter *_plotter) plPoint p0, plPoint p1, plPoint p2, plPoint p3)
 #else
-_fakebezier3 (p0, p1, p2, p3)
-     Point p0, p1, p2, p3; 
+_fakebezier3 (R___(_plotter) p0, p1, p2, p3)
+     S___(Plotter *_plotter;)
+     plPoint p0, p1, p2, p3; 
 #endif
 { 
-  Point r0[MAX_BEZIER_SUBDIVISIONS + 1], r1[MAX_BEZIER_SUBDIVISIONS + 1], r2[MAX_BEZIER_SUBDIVISIONS + 1], r3[MAX_BEZIER_SUBDIVISIONS + 1];
+  plPoint r0[MAX_BEZIER_SUBDIVISIONS + 1], r1[MAX_BEZIER_SUBDIVISIONS + 1], r2[MAX_BEZIER_SUBDIVISIONS + 1], r3[MAX_BEZIER_SUBDIVISIONS + 1];
   int level[MAX_BEZIER_SUBDIVISIONS + 1];
   int n = 0;	/* index of top of stack, < MAX_BEZIER_SUBDIVISIONS */
   int segments_drawn = 0;
@@ -397,7 +407,7 @@ _fakebezier3 (p0, p1, p2, p3)
   while (n >= 0)		/* i.e. while stack is nonempty */
     {
       int current_level;
-      Point q0, q1, q2, q3;
+      plPoint q0, q1, q2, q3;
 
       current_level = level[n];
       q0 = r0[n];
@@ -410,16 +420,16 @@ _fakebezier3 (p0, p1, p2, p3)
       
       else if (current_level >= MAX_BEZIER_SUBDIVISIONS) 
 	{			/* draw line segment */
-	  _plotter->fcont (q3.x, q3.y);
+	  _plotter->fcont (R___(_plotter) q3.x, q3.y);
 	  segments_drawn++;
 	  n--;
 	}
       
       else			/* bisect the cubic Bezier */
 	{
-	  Point qq0, qq1, qq2;
-	  Point qqq0, qqq1;
-	  Point qqqq0;
+	  plPoint qq0, qq1, qq2;
+	  plPoint qqq0, qqq1;
+	  plPoint qqqq0;
 
 	  qq0.x = MIDWAY(q0.x, q1.x);
 	  qq0.y = MIDWAY(q0.y, q1.y);
@@ -461,5 +471,5 @@ _fakebezier3 (p0, p1, p2, p3)
   if (segments_drawn == 0
       || (_plotter->drawstate->pos.x != r3[0].x
 	  || _plotter->drawstate->pos.y != r3[0].y))
-    _plotter->fcont (r3[0].x, r3[0].y);
+    _plotter->fcont (R___(_plotter) r3[0].x, r3[0].y);
 }

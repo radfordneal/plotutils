@@ -7,9 +7,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_linedash (int n, const int *dashes, int offset)
+_m_linedash (R___(Plotter *_plotter) int n, const int *dashes, int offset)
 #else
-_m_linedash (n, dashes, offset)
+_m_linedash (R___(_plotter) n, dashes, offset)
+     S___(Plotter *_plotter;) 
      int n;
      const int *dashes;
      int offset;
@@ -19,7 +20,8 @@ _m_linedash (n, dashes, offset)
 
   if (!_plotter->open)
     {
-      _plotter->error ("linedash: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "linedash: invalid operation");
       return -1;
     }
 
@@ -30,22 +32,23 @@ _m_linedash (n, dashes, offset)
     if (dashes[i] < 0.0)
       return -1;
 
-  _meta_emit_byte ((int)O_LINEDASH);
-  _meta_emit_integer (n);
+  _meta_emit_byte (R___(_plotter) (int)O_LINEDASH);
+  _meta_emit_integer (R___(_plotter) n);
   for (i = 0; i < n; i++)
-    _meta_emit_integer (dashes[i]);
-  _meta_emit_integer (offset);
-  _meta_emit_terminator ();
+    _meta_emit_integer (R___(_plotter) dashes[i]);
+  _meta_emit_integer (R___(_plotter) offset);
+  _meta_emit_terminator (S___(_plotter));
   
   /* invoke generic method */
-  return _g_linedash (n, dashes, offset);
+  return _g_linedash (R___(_plotter) n, dashes, offset);
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_flinedash (int n, const double *dashes, double offset)
+_m_flinedash (R___(Plotter *_plotter) int n, const double *dashes, double offset)
 #else
-_m_flinedash (n, dashes, offset)
+_m_flinedash (R___(_plotter) n, dashes, offset)
+     S___(Plotter *_plotter;) 
      int n;
      const double *dashes;
      double offset;
@@ -55,7 +58,8 @@ _m_flinedash (n, dashes, offset)
   
   if (!_plotter->open)
     {
-      _plotter->error ("flinedash: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "flinedash: invalid operation");
       return -1;
     }
 
@@ -66,13 +70,14 @@ _m_flinedash (n, dashes, offset)
     if (dashes[i] < 0.0)
       return -1;
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_LINEDASH : (int)O_LINEDASH);
-  _meta_emit_integer (n);
+  _meta_emit_byte (R___(_plotter) 
+		   _plotter->meta_portable_output ? (int)O_LINEDASH : (int)O_FLINEDASH);
+  _meta_emit_integer (R___(_plotter) n);
   for (i = 0; i < n; i++)
-    _meta_emit_float (dashes[i]);
-  _meta_emit_float (offset);
-  _meta_emit_terminator ();
+    _meta_emit_float (R___(_plotter) dashes[i]);
+  _meta_emit_float (R___(_plotter) offset);
+  _meta_emit_terminator (S___(_plotter));
   
   /* invoke generic method */
-  return _g_flinedash (n, dashes, offset);
+  return _g_flinedash (R___(_plotter) n, dashes, offset);
 }

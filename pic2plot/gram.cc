@@ -119,7 +119,6 @@
 #line 5 "gram.yy"
 
 #include "pic.h"
-#include "ptable.h"
 #include "object.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -179,7 +178,7 @@ static char * format_number(const char *form, double n);
 static char * do_sprintf(const char *form, const double *v, int nv);
 
 
-#line 69 "gram.yy"
+#line 68 "gram.yy"
 typedef union {
 	char *str;
 	int n;
@@ -364,30 +363,30 @@ static const short yyrhs[] = {   137,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   262,   264,   272,   277,   280,   284,   286,   289,   291,   294,
-   300,   313,   315,   317,   319,   321,   326,   331,   337,   340,
-   348,   355,   358,   360,   368,   371,   373,   380,   383,   389,
-   397,   400,   411,   412,   416,   419,   421,   425,   428,   448,
-   456,   458,   466,   470,   473,   476,   480,   483,   487,   494,
-   500,   502,   504,   506,   508,   510,   512,   517,   520,   522,
-   526,   542,   544,   552,   558,   564,   571,   574,   582,   585,
-   589,   594,   598,   602,   607,   614,   621,   628,   635,   640,
-   645,   652,   667,   679,   685,   691,   697,   703,   723,   730,
-   737,   744,   751,   758,   765,   772,   779,   786,   801,   814,
-   820,   827,   840,   846,   852,   858,   864,   869,   875,   894,
-   914,   919,   924,   929,   934,   939,   944,   949,   957,   968,
-   979,   990,  1001,  1007,  1014,  1019,  1029,  1036,  1060,  1063,
-  1071,  1074,  1079,  1084,  1089,  1094,  1101,  1103,  1106,  1109,
-  1113,  1116,  1122,  1128,  1134,  1142,  1154,  1158,  1166,  1169,
-  1176,  1179,  1183,  1201,  1220,  1223,  1225,  1227,  1229,  1231,
-  1233,  1235,  1237,  1241,  1246,  1253,  1261,  1265,  1272,  1277,
-  1283,  1289,  1295,  1301,  1309,  1312,  1314,  1316,  1318,  1320,
-  1322,  1324,  1326,  1328,  1330,  1332,  1334,  1336,  1338,  1340,
-  1342,  1344,  1346,  1348,  1350,  1352,  1354,  1356,  1358,  1360,
-  1362,  1364,  1368,  1378,  1380,  1387,  1394,  1401,  1408,  1415,
-  1417,  1419,  1421,  1430,  1439,  1454,  1456,  1458,  1468,  1478,
-  1493,  1503,  1513,  1523,  1525,  1527,  1529,  1531,  1537,  1539,
-  1541,  1543,  1545,  1547,  1549,  1551,  1553
+   261,   263,   271,   276,   279,   283,   285,   288,   290,   293,
+   299,   312,   314,   316,   318,   320,   325,   330,   336,   339,
+   347,   354,   357,   359,   367,   370,   372,   379,   382,   388,
+   396,   399,   410,   411,   415,   418,   420,   424,   427,   447,
+   455,   457,   465,   469,   472,   475,   479,   482,   486,   493,
+   499,   501,   503,   505,   507,   509,   511,   516,   519,   521,
+   525,   541,   543,   551,   557,   563,   570,   573,   581,   584,
+   588,   593,   597,   601,   606,   613,   620,   627,   634,   639,
+   644,   651,   666,   678,   684,   690,   696,   702,   722,   729,
+   736,   743,   750,   757,   764,   771,   778,   785,   800,   813,
+   819,   826,   839,   845,   851,   857,   863,   868,   874,   893,
+   913,   918,   923,   928,   933,   938,   943,   948,   956,   967,
+   978,   989,  1000,  1006,  1013,  1018,  1028,  1035,  1059,  1062,
+  1070,  1073,  1078,  1083,  1088,  1093,  1100,  1102,  1105,  1108,
+  1112,  1115,  1121,  1127,  1133,  1141,  1153,  1157,  1165,  1168,
+  1175,  1178,  1182,  1200,  1219,  1222,  1224,  1226,  1228,  1230,
+  1232,  1234,  1236,  1240,  1245,  1252,  1260,  1264,  1271,  1276,
+  1282,  1288,  1294,  1300,  1308,  1311,  1313,  1315,  1317,  1319,
+  1321,  1323,  1325,  1327,  1329,  1331,  1333,  1335,  1337,  1339,
+  1341,  1343,  1345,  1347,  1349,  1351,  1353,  1355,  1357,  1359,
+  1361,  1363,  1367,  1377,  1379,  1386,  1393,  1400,  1407,  1414,
+  1416,  1418,  1420,  1429,  1438,  1453,  1455,  1457,  1467,  1477,
+  1492,  1502,  1512,  1522,  1524,  1526,  1528,  1530,  1536,  1538,
+  1540,  1542,  1544,  1546,  1548,  1550,  1552
 };
 #endif
 
@@ -1031,7 +1030,7 @@ static const short yycheck[] = {    23,
    124
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/share/bison.simple"
+#line 3 "/usr/lib/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1224,7 +1223,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/share/bison.simple"
+#line 196 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -1529,33 +1528,33 @@ yyreduce:
   switch (yyn) {
 
 case 2:
-#line 265 "gram.yy"
+#line 264 "gram.yy"
 {
 		  if (olist.head)
 		    print_picture(olist.head);
 		;
     break;}
 case 3:
-#line 274 "gram.yy"
+#line 273 "gram.yy"
 { yyval.pl = yyvsp[-1].pl; ;
     break;}
 case 4:
-#line 279 "gram.yy"
+#line 278 "gram.yy"
 { yyval.pl = yyvsp[0].pl; ;
     break;}
 case 5:
-#line 281 "gram.yy"
+#line 280 "gram.yy"
 { yyval.pl = yyvsp[-2].pl; ;
     break;}
 case 10:
-#line 296 "gram.yy"
+#line 295 "gram.yy"
 {
 		  define_variable(yyvsp[-2].str, yyvsp[0].x);
 		  a_delete yyvsp[-2].str;
 		;
     break;}
 case 11:
-#line 301 "gram.yy"
+#line 300 "gram.yy"
 {
 		  place *p = lookup_label(yyvsp[-3].str);
 		  if (!p) 
@@ -1570,37 +1569,37 @@ case 11:
 		;
     break;}
 case 12:
-#line 314 "gram.yy"
+#line 313 "gram.yy"
 { current_direction = UP_DIRECTION; ;
     break;}
 case 13:
-#line 316 "gram.yy"
+#line 315 "gram.yy"
 { current_direction = DOWN_DIRECTION; ;
     break;}
 case 14:
-#line 318 "gram.yy"
+#line 317 "gram.yy"
 { current_direction = LEFT_DIRECTION; ;
     break;}
 case 15:
-#line 320 "gram.yy"
+#line 319 "gram.yy"
 { current_direction = RIGHT_DIRECTION; ;
     break;}
 case 16:
-#line 322 "gram.yy"
+#line 321 "gram.yy"
 {
 		  olist.append(make_command_object(yyvsp[0].lstr.str, yyvsp[0].lstr.filename,
 						   yyvsp[0].lstr.lineno));
 		;
     break;}
 case 17:
-#line 327 "gram.yy"
+#line 326 "gram.yy"
 {
 		  olist.append(make_command_object(yyvsp[0].lstr.str, yyvsp[0].lstr.filename,
 						   yyvsp[0].lstr.lineno));
 		;
     break;}
 case 18:
-#line 332 "gram.yy"
+#line 331 "gram.yy"
 {
 		  fprintf(stderr, "%s\n", yyvsp[0].lstr.str);
 		  a_delete yyvsp[0].lstr.str;
@@ -1608,11 +1607,11 @@ case 18:
 		;
     break;}
 case 19:
-#line 338 "gram.yy"
+#line 337 "gram.yy"
 { delim_flag = 1; ;
     break;}
 case 20:
-#line 340 "gram.yy"
+#line 339 "gram.yy"
 {
 		  delim_flag = 0;
 		  if (safer_flag)
@@ -1623,7 +1622,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 349 "gram.yy"
+#line 348 "gram.yy"
 {
 		  if (yychar < 0)
 		    do_lookahead();
@@ -1632,15 +1631,15 @@ case 21:
 		;
     break;}
 case 22:
-#line 356 "gram.yy"
+#line 355 "gram.yy"
 { delim_flag = 2; ;
     break;}
 case 23:
-#line 358 "gram.yy"
+#line 357 "gram.yy"
 { delim_flag = 0; ;
     break;}
 case 24:
-#line 360 "gram.yy"
+#line 359 "gram.yy"
 {
 		  if (yychar < 0)
 		    do_lookahead();
@@ -1651,15 +1650,15 @@ case 24:
 		;
     break;}
 case 25:
-#line 369 "gram.yy"
+#line 368 "gram.yy"
 { delim_flag = 2; ;
     break;}
 case 26:
-#line 371 "gram.yy"
+#line 370 "gram.yy"
 { delim_flag = 0; ;
     break;}
 case 27:
-#line 373 "gram.yy"
+#line 372 "gram.yy"
 {
 		  if (yychar < 0)
 		    do_lookahead();
@@ -1669,11 +1668,11 @@ case 27:
 		;
     break;}
 case 28:
-#line 381 "gram.yy"
+#line 380 "gram.yy"
 { delim_flag = 1; ;
     break;}
 case 29:
-#line 383 "gram.yy"
+#line 382 "gram.yy"
 {
 		  delim_flag = 0;
 		  if (yychar < 0)
@@ -1682,7 +1681,7 @@ case 29:
 		;
     break;}
 case 30:
-#line 390 "gram.yy"
+#line 389 "gram.yy"
 {
 		  if (yychar < 0)
 		    do_lookahead();
@@ -1692,11 +1691,11 @@ case 30:
 		;
     break;}
 case 31:
-#line 398 "gram.yy"
+#line 397 "gram.yy"
 { delim_flag = 1; ;
     break;}
 case 32:
-#line 400 "gram.yy"
+#line 399 "gram.yy"
 {
 		  delim_flag = 0;
 		  if (yychar < 0)
@@ -1710,27 +1709,27 @@ case 32:
 		;
     break;}
 case 34:
-#line 413 "gram.yy"
+#line 412 "gram.yy"
 { define_variable("scale", 1.0); ;
     break;}
 case 35:
-#line 418 "gram.yy"
+#line 417 "gram.yy"
 { reset(yyvsp[0].str); a_delete yyvsp[0].str; ;
     break;}
 case 36:
-#line 420 "gram.yy"
+#line 419 "gram.yy"
 { reset(yyvsp[0].str); a_delete yyvsp[0].str; ;
     break;}
 case 37:
-#line 422 "gram.yy"
+#line 421 "gram.yy"
 { reset(yyvsp[0].str); a_delete yyvsp[0].str; ;
     break;}
 case 38:
-#line 427 "gram.yy"
+#line 426 "gram.yy"
 { yyval.lstr = yyvsp[0].lstr; ;
     break;}
 case 39:
-#line 429 "gram.yy"
+#line 428 "gram.yy"
 {
 		  yyval.lstr.str = new char[strlen(yyvsp[-1].lstr.str) + strlen(yyvsp[0].lstr.str) + 1];
 		  strcpy(yyval.lstr.str, yyvsp[-1].lstr.str);
@@ -1750,7 +1749,7 @@ case 39:
 		;
     break;}
 case 40:
-#line 450 "gram.yy"
+#line 449 "gram.yy"
 {
 		  yyval.lstr.str = new char[GDIGITS + 1];
 		  sprintf(yyval.lstr.str, "%g", yyvsp[0].x);
@@ -1759,11 +1758,11 @@ case 40:
 		;
     break;}
 case 41:
-#line 457 "gram.yy"
+#line 456 "gram.yy"
 { yyval.lstr = yyvsp[0].lstr; ;
     break;}
 case 42:
-#line 459 "gram.yy"
+#line 458 "gram.yy"
 {
 		  yyval.lstr.str = new char[GDIGITS + 2 + GDIGITS + 1];
 		  sprintf(yyval.lstr.str, "%g, %g", yyvsp[0].pair.x, yyvsp[0].pair.y);
@@ -1772,31 +1771,31 @@ case 42:
 		;
     break;}
 case 43:
-#line 468 "gram.yy"
+#line 467 "gram.yy"
 { delim_flag = 1; ;
     break;}
 case 44:
-#line 470 "gram.yy"
+#line 469 "gram.yy"
 { delim_flag = 0; yyval.if_data.x = yyvsp[-3].x; yyval.if_data.body = yyvsp[0].str; ;
     break;}
 case 45:
-#line 475 "gram.yy"
+#line 474 "gram.yy"
 { yyval.str = 0; ;
     break;}
 case 46:
-#line 477 "gram.yy"
+#line 476 "gram.yy"
 { yyval.str = yyvsp[0].lstr.str; ;
     break;}
 case 47:
-#line 482 "gram.yy"
+#line 481 "gram.yy"
 { yyval.x = yyvsp[0].x; ;
     break;}
 case 48:
-#line 484 "gram.yy"
+#line 483 "gram.yy"
 { yyval.x = yyvsp[0].x; ;
     break;}
 case 49:
-#line 489 "gram.yy"
+#line 488 "gram.yy"
 {
 		  yyval.x = strcmp(yyvsp[-2].lstr.str, yyvsp[0].lstr.str) == 0;
 		  a_delete yyvsp[-2].lstr.str;
@@ -1804,7 +1803,7 @@ case 49:
 		;
     break;}
 case 50:
-#line 495 "gram.yy"
+#line 494 "gram.yy"
 {
 		  yyval.x = strcmp(yyvsp[-2].lstr.str, yyvsp[0].lstr.str) != 0;
 		  a_delete yyvsp[-2].lstr.str;
@@ -1812,47 +1811,47 @@ case 50:
 		;
     break;}
 case 51:
-#line 501 "gram.yy"
+#line 500 "gram.yy"
 { yyval.x = (yyvsp[-2].x != 0.0 && yyvsp[0].x != 0.0); ;
     break;}
 case 52:
-#line 503 "gram.yy"
+#line 502 "gram.yy"
 { yyval.x = (yyvsp[-2].x != 0.0 && yyvsp[0].x != 0.0); ;
     break;}
 case 53:
-#line 505 "gram.yy"
+#line 504 "gram.yy"
 { yyval.x = (yyvsp[-2].x != 0.0 && yyvsp[0].x != 0.0); ;
     break;}
 case 54:
-#line 507 "gram.yy"
+#line 506 "gram.yy"
 { yyval.x = (yyvsp[-2].x != 0.0 || yyvsp[0].x != 0.0); ;
     break;}
 case 55:
-#line 509 "gram.yy"
+#line 508 "gram.yy"
 { yyval.x = (yyvsp[-2].x != 0.0 || yyvsp[0].x != 0.0); ;
     break;}
 case 56:
-#line 511 "gram.yy"
+#line 510 "gram.yy"
 { yyval.x = (yyvsp[-2].x != 0.0 || yyvsp[0].x != 0.0); ;
     break;}
 case 57:
-#line 513 "gram.yy"
+#line 512 "gram.yy"
 { yyval.x = (yyvsp[0].x == 0.0); ;
     break;}
 case 58:
-#line 519 "gram.yy"
+#line 518 "gram.yy"
 { yyval.by.val = 1.0; yyval.by.is_multiplicative = 0; ;
     break;}
 case 59:
-#line 521 "gram.yy"
+#line 520 "gram.yy"
 { yyval.by.val = yyvsp[0].x; yyval.by.is_multiplicative = 0; ;
     break;}
 case 60:
-#line 523 "gram.yy"
+#line 522 "gram.yy"
 { yyval.by.val = yyvsp[0].x; yyval.by.is_multiplicative = 1; ;
     break;}
 case 61:
-#line 528 "gram.yy"
+#line 527 "gram.yy"
 {
 		  yyval.pl.obj = yyvsp[0].spec->make_object(&current_position,
 					   &current_direction);
@@ -1869,11 +1868,11 @@ case 61:
 		;
     break;}
 case 62:
-#line 543 "gram.yy"
+#line 542 "gram.yy"
 { yyval.pl = yyvsp[0].pl; define_label(yyvsp[-3].str, & yyval.pl); a_delete yyvsp[-3].str; ;
     break;}
 case 63:
-#line 545 "gram.yy"
+#line 544 "gram.yy"
 {
 		  yyval.pl.obj = 0;
 		  yyval.pl.x = yyvsp[0].pair.x;
@@ -1883,7 +1882,7 @@ case 63:
 		;
     break;}
 case 64:
-#line 553 "gram.yy"
+#line 552 "gram.yy"
 {
 		  yyval.pl = yyvsp[0].pl;
 		  define_label(yyvsp[-3].str, & yyval.pl);
@@ -1891,7 +1890,7 @@ case 64:
 		;
     break;}
 case 65:
-#line 559 "gram.yy"
+#line 558 "gram.yy"
 {
 		  yyval.state.x = current_position.x;
 		  yyval.state.y = current_position.y;
@@ -1899,7 +1898,7 @@ case 65:
 		;
     break;}
 case 66:
-#line 565 "gram.yy"
+#line 564 "gram.yy"
 {
 		  current_position.x = yyvsp[-2].state.x;
 		  current_position.y = yyvsp[-2].state.y;
@@ -1907,13 +1906,13 @@ case 66:
 		;
     break;}
 case 67:
-#line 571 "gram.yy"
+#line 570 "gram.yy"
 {
 		  yyval.pl = yyvsp[-3].pl;
 		;
     break;}
 case 68:
-#line 575 "gram.yy"
+#line 574 "gram.yy"
 {
 		  yyval.pl.obj = 0;
 		  yyval.pl.x = current_position.x;
@@ -1921,40 +1920,40 @@ case 68:
 		;
     break;}
 case 69:
-#line 584 "gram.yy"
+#line 583 "gram.yy"
 {;
     break;}
 case 70:
-#line 586 "gram.yy"
+#line 585 "gram.yy"
 {;
     break;}
 case 71:
-#line 591 "gram.yy"
+#line 590 "gram.yy"
 {
 		  yyval.spec = new object_spec(BOX_OBJECT);
 		;
     break;}
 case 72:
-#line 595 "gram.yy"
+#line 594 "gram.yy"
 {
 		  yyval.spec = new object_spec(CIRCLE_OBJECT);
 		;
     break;}
 case 73:
-#line 599 "gram.yy"
+#line 598 "gram.yy"
 {
 		  yyval.spec = new object_spec(ELLIPSE_OBJECT);
 		;
     break;}
 case 74:
-#line 603 "gram.yy"
+#line 602 "gram.yy"
 {
 		  yyval.spec = new object_spec(ARC_OBJECT);
 		  yyval.spec->dir = current_direction;
 		;
     break;}
 case 75:
-#line 608 "gram.yy"
+#line 607 "gram.yy"
 {
 		  yyval.spec = new object_spec(LINE_OBJECT);
 		  lookup_variable("lineht", & yyval.spec->segment_height);
@@ -1963,7 +1962,7 @@ case 75:
 		;
     break;}
 case 76:
-#line 615 "gram.yy"
+#line 614 "gram.yy"
 {
 		  yyval.spec = new object_spec(ARROW_OBJECT);
 		  lookup_variable("lineht", & yyval.spec->segment_height);
@@ -1972,7 +1971,7 @@ case 76:
 		;
     break;}
 case 77:
-#line 622 "gram.yy"
+#line 621 "gram.yy"
 {
 		  yyval.spec = new object_spec(MOVE_OBJECT);
 		  lookup_variable("moveht", & yyval.spec->segment_height);
@@ -1981,7 +1980,7 @@ case 77:
 		;
     break;}
 case 78:
-#line 629 "gram.yy"
+#line 628 "gram.yy"
 {
 		  yyval.spec = new object_spec(SPLINE_OBJECT);
 		  lookup_variable("lineht", & yyval.spec->segment_height);
@@ -1990,21 +1989,21 @@ case 78:
 		;
     break;}
 case 79:
-#line 636 "gram.yy"
+#line 635 "gram.yy"
 {
 		  yyval.spec = new object_spec(TEXT_OBJECT);
 		  yyval.spec->text = new text_item(yyvsp[0].lstr.str, yyvsp[0].lstr.filename, yyvsp[0].lstr.lineno);
 		;
     break;}
 case 80:
-#line 641 "gram.yy"
+#line 640 "gram.yy"
 {
 		  yyval.spec = new object_spec(TEXT_OBJECT);
 		  yyval.spec->text = new text_item(format_number(0, yyvsp[0].x), 0, -1);
 		;
     break;}
 case 81:
-#line 646 "gram.yy"
+#line 645 "gram.yy"
 {
 		  yyval.spec = new object_spec(TEXT_OBJECT);
 		  yyval.spec->text = new text_item(format_number(yyvsp[0].lstr.str, yyvsp[-1].x),
@@ -2013,7 +2012,7 @@ case 81:
 		;
     break;}
 case 82:
-#line 653 "gram.yy"
+#line 652 "gram.yy"
 {
 		  saved_state *p = new saved_state;
 		  yyval.pstate = p;
@@ -2030,7 +2029,7 @@ case 82:
 		;
     break;}
 case 83:
-#line 668 "gram.yy"
+#line 667 "gram.yy"
 {
 		  current_position.x = yyvsp[-2].pstate->x;
 		  current_position.y = yyvsp[-2].pstate->y;
@@ -2044,7 +2043,7 @@ case 83:
 		;
     break;}
 case 84:
-#line 680 "gram.yy"
+#line 679 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->height = yyvsp[0].x;
@@ -2052,7 +2051,7 @@ case 84:
 		;
     break;}
 case 85:
-#line 686 "gram.yy"
+#line 685 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->radius = yyvsp[0].x;
@@ -2060,7 +2059,7 @@ case 85:
 		;
     break;}
 case 86:
-#line 692 "gram.yy"
+#line 691 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->width = yyvsp[0].x;
@@ -2068,7 +2067,7 @@ case 86:
 		;
     break;}
 case 87:
-#line 698 "gram.yy"
+#line 697 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->radius = yyvsp[0].x/2.0;
@@ -2076,7 +2075,7 @@ case 87:
 		;
     break;}
 case 88:
-#line 704 "gram.yy"
+#line 703 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= HAS_SEGMENT;
@@ -2098,7 +2097,7 @@ case 88:
 		;
     break;}
 case 89:
-#line 724 "gram.yy"
+#line 723 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->dir = UP_DIRECTION;
@@ -2107,7 +2106,7 @@ case 89:
 		;
     break;}
 case 90:
-#line 731 "gram.yy"
+#line 730 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->dir = UP_DIRECTION;
@@ -2116,7 +2115,7 @@ case 90:
 		;
     break;}
 case 91:
-#line 738 "gram.yy"
+#line 737 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->dir = DOWN_DIRECTION;
@@ -2125,7 +2124,7 @@ case 91:
 		;
     break;}
 case 92:
-#line 745 "gram.yy"
+#line 744 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->dir = DOWN_DIRECTION;
@@ -2134,7 +2133,7 @@ case 92:
 		;
     break;}
 case 93:
-#line 752 "gram.yy"
+#line 751 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->dir = RIGHT_DIRECTION;
@@ -2143,7 +2142,7 @@ case 93:
 		;
     break;}
 case 94:
-#line 759 "gram.yy"
+#line 758 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->dir = RIGHT_DIRECTION;
@@ -2152,7 +2151,7 @@ case 94:
 		;
     break;}
 case 95:
-#line 766 "gram.yy"
+#line 765 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->dir = LEFT_DIRECTION;
@@ -2161,7 +2160,7 @@ case 95:
 		;
     break;}
 case 96:
-#line 773 "gram.yy"
+#line 772 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->dir = LEFT_DIRECTION;
@@ -2170,7 +2169,7 @@ case 96:
 		;
     break;}
 case 97:
-#line 780 "gram.yy"
+#line 779 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->flags |= HAS_FROM;
@@ -2179,7 +2178,7 @@ case 97:
 		;
     break;}
 case 98:
-#line 787 "gram.yy"
+#line 786 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  if (yyval.spec->flags & HAS_SEGMENT)
@@ -2196,7 +2195,7 @@ case 98:
 		;
     break;}
 case 99:
-#line 802 "gram.yy"
+#line 801 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->flags |= HAS_AT;
@@ -2211,7 +2210,7 @@ case 99:
 		;
     break;}
 case 100:
-#line 815 "gram.yy"
+#line 814 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->flags |= HAS_WITH;
@@ -2219,7 +2218,7 @@ case 100:
 		;
     break;}
 case 101:
-#line 821 "gram.yy"
+#line 820 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->flags |= HAS_SEGMENT;
@@ -2228,7 +2227,7 @@ case 101:
 		;
     break;}
 case 102:
-#line 828 "gram.yy"
+#line 827 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  if (yyval.spec->flags & HAS_SEGMENT) 
@@ -2243,7 +2242,7 @@ case 102:
 		;
     break;}
 case 103:
-#line 841 "gram.yy"
+#line 840 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= IS_DOTTED;
@@ -2251,7 +2250,7 @@ case 103:
 		;
     break;}
 case 104:
-#line 847 "gram.yy"
+#line 846 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->flags |= IS_DOTTED;
@@ -2259,7 +2258,7 @@ case 104:
 		;
     break;}
 case 105:
-#line 853 "gram.yy"
+#line 852 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= IS_DASHED;
@@ -2267,7 +2266,7 @@ case 105:
 		;
     break;}
 case 106:
-#line 859 "gram.yy"
+#line 858 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->flags |= IS_DASHED;
@@ -2275,14 +2274,14 @@ case 106:
 		;
     break;}
 case 107:
-#line 865 "gram.yy"
+#line 864 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= IS_DEFAULT_FILLED;
 		;
     break;}
 case 108:
-#line 870 "gram.yy"
+#line 869 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->flags |= IS_FILLED;
@@ -2290,7 +2289,7 @@ case 108:
 		;
     break;}
 case 109:
-#line 876 "gram.yy"
+#line 875 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  // line chop chop means line chop 0 chop 0
@@ -2311,7 +2310,7 @@ case 109:
 		;
     break;}
 case 110:
-#line 895 "gram.yy"
+#line 894 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  if (yyval.spec->flags & IS_DEFAULT_CHOPPED) 
@@ -2333,56 +2332,56 @@ case 110:
 		;
     break;}
 case 111:
-#line 915 "gram.yy"
+#line 914 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= IS_SAME;
 		;
     break;}
 case 112:
-#line 920 "gram.yy"
+#line 919 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= IS_INVISIBLE;
 		;
     break;}
 case 113:
-#line 925 "gram.yy"
+#line 924 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= HAS_LEFT_ARROW_HEAD;
 		;
     break;}
 case 114:
-#line 930 "gram.yy"
+#line 929 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= HAS_RIGHT_ARROW_HEAD;
 		;
     break;}
 case 115:
-#line 935 "gram.yy"
+#line 934 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= (HAS_LEFT_ARROW_HEAD|HAS_RIGHT_ARROW_HEAD);
 		;
     break;}
 case 116:
-#line 940 "gram.yy"
+#line 939 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= IS_CLOCKWISE;
 		;
     break;}
 case 117:
-#line 945 "gram.yy"
+#line 944 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags &= ~IS_CLOCKWISE;
 		;
     break;}
 case 118:
-#line 950 "gram.yy"
+#line 949 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  text_item **p;
@@ -2392,7 +2391,7 @@ case 118:
 		;
     break;}
 case 119:
-#line 958 "gram.yy"
+#line 957 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  if (yyval.spec->text) 
@@ -2405,7 +2404,7 @@ case 119:
 		;
     break;}
 case 120:
-#line 969 "gram.yy"
+#line 968 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  if (yyval.spec->text) 
@@ -2418,7 +2417,7 @@ case 120:
 		;
     break;}
 case 121:
-#line 980 "gram.yy"
+#line 979 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  if (yyval.spec->text) 
@@ -2431,7 +2430,7 @@ case 121:
 		;
     break;}
 case 122:
-#line 991 "gram.yy"
+#line 990 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  if (yyval.spec->text) 
@@ -2444,7 +2443,7 @@ case 122:
 		;
     break;}
 case 123:
-#line 1002 "gram.yy"
+#line 1001 "gram.yy"
 {
 		  yyval.spec = yyvsp[-2].spec;
 		  yyval.spec->flags |= HAS_THICKNESS;
@@ -2452,20 +2451,20 @@ case 123:
 		;
     break;}
 case 124:
-#line 1008 "gram.yy"
+#line 1007 "gram.yy"
 {
 		  yyval.spec = yyvsp[-1].spec;
 		  yyval.spec->flags |= IS_ALIGNED;
 		;
     break;}
 case 125:
-#line 1016 "gram.yy"
+#line 1015 "gram.yy"
 {
 		  yyval.lstr = yyvsp[0].lstr;
 		;
     break;}
 case 126:
-#line 1020 "gram.yy"
+#line 1019 "gram.yy"
 {
 		  yyval.lstr.filename = yyvsp[-2].lstr.filename;
 		  yyval.lstr.lineno = yyvsp[-2].lstr.lineno;
@@ -2475,7 +2474,7 @@ case 126:
 		;
     break;}
 case 127:
-#line 1031 "gram.yy"
+#line 1030 "gram.yy"
 {
 		  yyval.dv.v = 0;
 		  yyval.dv.nv = 0;
@@ -2483,7 +2482,7 @@ case 127:
 		;
     break;}
 case 128:
-#line 1037 "gram.yy"
+#line 1036 "gram.yy"
 {
 		  yyval.dv = yyvsp[-2].dv;
 		  if (yyval.dv.nv >= yyval.dv.maxv) 
@@ -2507,11 +2506,11 @@ case 128:
 		;
     break;}
 case 129:
-#line 1062 "gram.yy"
+#line 1061 "gram.yy"
 { yyval.pair = yyvsp[0].pair; ;
     break;}
 case 130:
-#line 1064 "gram.yy"
+#line 1063 "gram.yy"
 {
 		  position pos = yyvsp[0].pl;
 		  yyval.pair.x = pos.x;
@@ -2519,58 +2518,58 @@ case 130:
 		;
     break;}
 case 131:
-#line 1073 "gram.yy"
+#line 1072 "gram.yy"
 { yyval.pair = yyvsp[0].pair; ;
     break;}
 case 132:
-#line 1075 "gram.yy"
+#line 1074 "gram.yy"
 {
 		  yyval.pair.x = yyvsp[-2].pair.x + yyvsp[0].pair.x;
 		  yyval.pair.y = yyvsp[-2].pair.y + yyvsp[0].pair.y;
 		;
     break;}
 case 133:
-#line 1080 "gram.yy"
+#line 1079 "gram.yy"
 {
 		  yyval.pair.x = yyvsp[-2].pair.x - yyvsp[0].pair.x;
 		  yyval.pair.y = yyvsp[-2].pair.y - yyvsp[0].pair.y;
 		;
     break;}
 case 134:
-#line 1085 "gram.yy"
+#line 1084 "gram.yy"
 {
 		  yyval.pair.x = yyvsp[-3].pair.x;
 		  yyval.pair.y = yyvsp[-1].pair.y;
 		;
     break;}
 case 135:
-#line 1090 "gram.yy"
+#line 1089 "gram.yy"
 {
 		  yyval.pair.x = (1.0 - yyvsp[-4].x)*yyvsp[-2].pair.x + yyvsp[-4].x*yyvsp[0].pair.x;
 		  yyval.pair.y = (1.0 - yyvsp[-4].x)*yyvsp[-2].pair.y + yyvsp[-4].x*yyvsp[0].pair.y;
 		;
     break;}
 case 136:
-#line 1095 "gram.yy"
+#line 1094 "gram.yy"
 {
 		  yyval.pair.x = (1.0 - yyvsp[-5].x)*yyvsp[-3].pair.x + yyvsp[-5].x*yyvsp[-1].pair.x;
 		  yyval.pair.y = (1.0 - yyvsp[-5].x)*yyvsp[-3].pair.y + yyvsp[-5].x*yyvsp[-1].pair.y;
 		;
     break;}
 case 139:
-#line 1108 "gram.yy"
+#line 1107 "gram.yy"
 { yyval.pair.x = yyvsp[-2].x; yyval.pair.y = yyvsp[0].x; ;
     break;}
 case 140:
-#line 1110 "gram.yy"
+#line 1109 "gram.yy"
 { yyval.pair = yyvsp[-1].pair; ;
     break;}
 case 141:
-#line 1115 "gram.yy"
+#line 1114 "gram.yy"
 { yyval.pl = yyvsp[0].pl; ;
     break;}
 case 142:
-#line 1117 "gram.yy"
+#line 1116 "gram.yy"
 {
 		  path pth(yyvsp[0].crn);
 		  if (!pth.follow(yyvsp[-1].pl, & yyval.pl))
@@ -2578,7 +2577,7 @@ case 142:
 		;
     break;}
 case 143:
-#line 1123 "gram.yy"
+#line 1122 "gram.yy"
 {
 		  path pth(yyvsp[-1].crn);
 		  if (!pth.follow(yyvsp[0].pl, & yyval.pl))
@@ -2586,7 +2585,7 @@ case 143:
 		;
     break;}
 case 144:
-#line 1129 "gram.yy"
+#line 1128 "gram.yy"
 {
 		  path pth(yyvsp[-2].crn);
 		  if (!pth.follow(yyvsp[0].pl, & yyval.pl))
@@ -2594,7 +2593,7 @@ case 144:
 		;
     break;}
 case 145:
-#line 1135 "gram.yy"
+#line 1134 "gram.yy"
 {
 		  yyval.pl.x = current_position.x;
 		  yyval.pl.y = current_position.y;
@@ -2602,7 +2601,7 @@ case 145:
 		;
     break;}
 case 146:
-#line 1144 "gram.yy"
+#line 1143 "gram.yy"
 {
 		  place *p = lookup_label(yyvsp[0].str);
 		  if (!p) 
@@ -2615,13 +2614,13 @@ case 146:
 		;
     break;}
 case 147:
-#line 1155 "gram.yy"
+#line 1154 "gram.yy"
 {
 		  yyval.pl.obj = yyvsp[0].obj;
 		;
     break;}
 case 148:
-#line 1159 "gram.yy"
+#line 1158 "gram.yy"
 {
 		  path pth(yyvsp[0].str);
 		  if (!pth.follow(yyvsp[-2].pl, & yyval.pl))
@@ -2629,26 +2628,26 @@ case 148:
 		;
     break;}
 case 149:
-#line 1168 "gram.yy"
+#line 1167 "gram.yy"
 { yyval.n = yyvsp[0].n; ;
     break;}
 case 150:
-#line 1170 "gram.yy"
+#line 1169 "gram.yy"
 {
 		  // XXX Check for overflow (and non-integers?).
 		  yyval.n = (int)yyvsp[-1].x;
 		;
     break;}
 case 151:
-#line 1178 "gram.yy"
+#line 1177 "gram.yy"
 { yyval.n = 1; ;
     break;}
 case 152:
-#line 1180 "gram.yy"
+#line 1179 "gram.yy"
 { yyval.n = yyvsp[-1].n; ;
     break;}
 case 153:
-#line 1185 "gram.yy"
+#line 1184 "gram.yy"
 {
 		  int count = 0;
 		  object *p;
@@ -2667,7 +2666,7 @@ case 153:
 		;
     break;}
 case 154:
-#line 1202 "gram.yy"
+#line 1201 "gram.yy"
 {
 		  int count = 0;
 		  object *p;
@@ -2686,88 +2685,88 @@ case 154:
 		;
     break;}
 case 155:
-#line 1222 "gram.yy"
+#line 1221 "gram.yy"
 { yyval.obtype = BOX_OBJECT; ;
     break;}
 case 156:
-#line 1224 "gram.yy"
+#line 1223 "gram.yy"
 { yyval.obtype = CIRCLE_OBJECT; ;
     break;}
 case 157:
-#line 1226 "gram.yy"
+#line 1225 "gram.yy"
 { yyval.obtype = ELLIPSE_OBJECT; ;
     break;}
 case 158:
-#line 1228 "gram.yy"
+#line 1227 "gram.yy"
 { yyval.obtype = ARC_OBJECT; ;
     break;}
 case 159:
-#line 1230 "gram.yy"
+#line 1229 "gram.yy"
 { yyval.obtype = LINE_OBJECT; ;
     break;}
 case 160:
-#line 1232 "gram.yy"
+#line 1231 "gram.yy"
 { yyval.obtype = ARROW_OBJECT; ;
     break;}
 case 161:
-#line 1234 "gram.yy"
+#line 1233 "gram.yy"
 { yyval.obtype = SPLINE_OBJECT; ;
     break;}
 case 162:
-#line 1236 "gram.yy"
+#line 1235 "gram.yy"
 { yyval.obtype = BLOCK_OBJECT; ;
     break;}
 case 163:
-#line 1238 "gram.yy"
+#line 1237 "gram.yy"
 { yyval.obtype = TEXT_OBJECT; ;
     break;}
 case 164:
-#line 1243 "gram.yy"
+#line 1242 "gram.yy"
 {
 		  yyval.pth = new path(yyvsp[0].str);
 		;
     break;}
 case 165:
-#line 1247 "gram.yy"
+#line 1246 "gram.yy"
 {
 		  yyval.pth = yyvsp[-2].pth;
 		  yyval.pth->append(yyvsp[0].str);
 		;
     break;}
 case 166:
-#line 1255 "gram.yy"
+#line 1254 "gram.yy"
 {
 		  yyval.pth = new path(yyvsp[0].crn);
 		;
     break;}
 case 167:
-#line 1262 "gram.yy"
+#line 1261 "gram.yy"
 {
 		  yyval.pth = yyvsp[0].pth;
 		;
     break;}
 case 168:
-#line 1266 "gram.yy"
+#line 1265 "gram.yy"
 {
 		  yyval.pth = yyvsp[-1].pth;
 		  yyval.pth->append(yyvsp[0].crn);
 		;
     break;}
 case 169:
-#line 1274 "gram.yy"
+#line 1273 "gram.yy"
 {
 		  yyval.pth = yyvsp[0].pth;
 		;
     break;}
 case 170:
-#line 1278 "gram.yy"
+#line 1277 "gram.yy"
 {
 		  yyval.pth = yyvsp[-3].pth;
 		  yyval.pth->set_ypath(yyvsp[-1].pth);
 		;
     break;}
 case 171:
-#line 1284 "gram.yy"
+#line 1283 "gram.yy"
 {
 		  lex_warning("`%1%2 last %3' in `with' argument ignored",
 			      yyvsp[-3].n, ordinal_postfix(yyvsp[-3].n), object_type_name(yyvsp[-1].obtype));
@@ -2775,7 +2774,7 @@ case 171:
 		;
     break;}
 case 172:
-#line 1290 "gram.yy"
+#line 1289 "gram.yy"
 {
 		  lex_warning("`last %1' in `with' argument ignored",
 			      object_type_name(yyvsp[-1].obtype));
@@ -2783,7 +2782,7 @@ case 172:
 		;
     break;}
 case 173:
-#line 1296 "gram.yy"
+#line 1295 "gram.yy"
 {
 		  lex_warning("`%1%2 %3' in `with' argument ignored",
 			      yyvsp[-2].n, ordinal_postfix(yyvsp[-2].n), object_type_name(yyvsp[-1].obtype));
@@ -2791,7 +2790,7 @@ case 173:
 		;
     break;}
 case 174:
-#line 1302 "gram.yy"
+#line 1301 "gram.yy"
 {
 		  lex_warning("initial `%1' in `with' argument ignored", yyvsp[-1].str);
 		  a_delete yyvsp[-1].str;
@@ -2799,119 +2798,119 @@ case 174:
 		;
     break;}
 case 175:
-#line 1311 "gram.yy"
+#line 1310 "gram.yy"
 { yyval.crn = &object::north; ;
     break;}
 case 176:
-#line 1313 "gram.yy"
+#line 1312 "gram.yy"
 { yyval.crn = &object::east; ;
     break;}
 case 177:
-#line 1315 "gram.yy"
+#line 1314 "gram.yy"
 { yyval.crn = &object::west; ;
     break;}
 case 178:
-#line 1317 "gram.yy"
+#line 1316 "gram.yy"
 { yyval.crn = &object::south; ;
     break;}
 case 179:
-#line 1319 "gram.yy"
+#line 1318 "gram.yy"
 { yyval.crn = &object::north_east; ;
     break;}
 case 180:
-#line 1321 "gram.yy"
+#line 1320 "gram.yy"
 { yyval.crn = &object:: south_east; ;
     break;}
 case 181:
-#line 1323 "gram.yy"
+#line 1322 "gram.yy"
 { yyval.crn = &object::north_west; ;
     break;}
 case 182:
-#line 1325 "gram.yy"
+#line 1324 "gram.yy"
 { yyval.crn = &object::south_west; ;
     break;}
 case 183:
-#line 1327 "gram.yy"
+#line 1326 "gram.yy"
 { yyval.crn = &object::center; ;
     break;}
 case 184:
-#line 1329 "gram.yy"
+#line 1328 "gram.yy"
 { yyval.crn = &object::start; ;
     break;}
 case 185:
-#line 1331 "gram.yy"
+#line 1330 "gram.yy"
 { yyval.crn = &object::end; ;
     break;}
 case 186:
-#line 1333 "gram.yy"
+#line 1332 "gram.yy"
 { yyval.crn = &object::north; ;
     break;}
 case 187:
-#line 1335 "gram.yy"
+#line 1334 "gram.yy"
 { yyval.crn = &object::south; ;
     break;}
 case 188:
-#line 1337 "gram.yy"
+#line 1336 "gram.yy"
 { yyval.crn = &object::west; ;
     break;}
 case 189:
-#line 1339 "gram.yy"
+#line 1338 "gram.yy"
 { yyval.crn = &object::east; ;
     break;}
 case 190:
-#line 1341 "gram.yy"
+#line 1340 "gram.yy"
 { yyval.crn = &object::north_west; ;
     break;}
 case 191:
-#line 1343 "gram.yy"
+#line 1342 "gram.yy"
 { yyval.crn = &object::south_west; ;
     break;}
 case 192:
-#line 1345 "gram.yy"
+#line 1344 "gram.yy"
 { yyval.crn = &object::north_east; ;
     break;}
 case 193:
-#line 1347 "gram.yy"
+#line 1346 "gram.yy"
 { yyval.crn = &object::south_east; ;
     break;}
 case 194:
-#line 1349 "gram.yy"
+#line 1348 "gram.yy"
 { yyval.crn = &object::west; ;
     break;}
 case 195:
-#line 1351 "gram.yy"
+#line 1350 "gram.yy"
 { yyval.crn = &object::east; ;
     break;}
 case 196:
-#line 1353 "gram.yy"
+#line 1352 "gram.yy"
 { yyval.crn = &object::north_west; ;
     break;}
 case 197:
-#line 1355 "gram.yy"
+#line 1354 "gram.yy"
 { yyval.crn = &object::south_west; ;
     break;}
 case 198:
-#line 1357 "gram.yy"
+#line 1356 "gram.yy"
 { yyval.crn = &object::north_east; ;
     break;}
 case 199:
-#line 1359 "gram.yy"
+#line 1358 "gram.yy"
 { yyval.crn = &object::south_east; ;
     break;}
 case 200:
-#line 1361 "gram.yy"
+#line 1360 "gram.yy"
 { yyval.crn = &object::center; ;
     break;}
 case 201:
-#line 1363 "gram.yy"
+#line 1362 "gram.yy"
 { yyval.crn = &object::start; ;
     break;}
 case 202:
-#line 1365 "gram.yy"
+#line 1364 "gram.yy"
 { yyval.crn = &object::end; ;
     break;}
 case 203:
-#line 1370 "gram.yy"
+#line 1369 "gram.yy"
 {
 		  if (!lookup_variable(yyvsp[0].str, & yyval.x)) 
 		    {
@@ -2922,11 +2921,11 @@ case 203:
 		;
     break;}
 case 204:
-#line 1379 "gram.yy"
+#line 1378 "gram.yy"
 { yyval.x = yyvsp[0].x; ;
     break;}
 case 205:
-#line 1381 "gram.yy"
+#line 1380 "gram.yy"
 {
 		  if (yyvsp[-1].pl.obj != 0)
 		    yyval.x = yyvsp[-1].pl.obj->origin().x;
@@ -2935,7 +2934,7 @@ case 205:
 		;
     break;}
 case 206:
-#line 1388 "gram.yy"
+#line 1387 "gram.yy"
 {
 		  if (yyvsp[-1].pl.obj != 0)
 		    yyval.x = yyvsp[-1].pl.obj->origin().y;
@@ -2944,7 +2943,7 @@ case 206:
 		;
     break;}
 case 207:
-#line 1395 "gram.yy"
+#line 1394 "gram.yy"
 {
 		  if (yyvsp[-1].pl.obj != 0)
 		    yyval.x = yyvsp[-1].pl.obj->height();
@@ -2953,7 +2952,7 @@ case 207:
 		;
     break;}
 case 208:
-#line 1402 "gram.yy"
+#line 1401 "gram.yy"
 {
 		  if (yyvsp[-1].pl.obj != 0)
 		    yyval.x = yyvsp[-1].pl.obj->width();
@@ -2962,7 +2961,7 @@ case 208:
 		;
     break;}
 case 209:
-#line 1409 "gram.yy"
+#line 1408 "gram.yy"
 {
 		  if (yyvsp[-1].pl.obj != 0)
 		    yyval.x = yyvsp[-1].pl.obj->radius();
@@ -2971,19 +2970,19 @@ case 209:
 		;
     break;}
 case 210:
-#line 1416 "gram.yy"
+#line 1415 "gram.yy"
 { yyval.x = yyvsp[-2].x + yyvsp[0].x; ;
     break;}
 case 211:
-#line 1418 "gram.yy"
+#line 1417 "gram.yy"
 { yyval.x = yyvsp[-2].x - yyvsp[0].x; ;
     break;}
 case 212:
-#line 1420 "gram.yy"
+#line 1419 "gram.yy"
 { yyval.x = yyvsp[-2].x * yyvsp[0].x; ;
     break;}
 case 213:
-#line 1422 "gram.yy"
+#line 1421 "gram.yy"
 {
 		  if (yyvsp[0].x == 0.0) 
 		    {
@@ -2994,7 +2993,7 @@ case 213:
 		;
     break;}
 case 214:
-#line 1431 "gram.yy"
+#line 1430 "gram.yy"
 {
 		  if (yyvsp[0].x == 0.0) 
 		    {
@@ -3005,7 +3004,7 @@ case 214:
 		;
     break;}
 case 215:
-#line 1440 "gram.yy"
+#line 1439 "gram.yy"
 {
 		  errno = 0;
 		  yyval.x = pow(yyvsp[-2].x, yyvsp[0].x);
@@ -3022,15 +3021,15 @@ case 215:
 		;
     break;}
 case 216:
-#line 1455 "gram.yy"
+#line 1454 "gram.yy"
 { yyval.x = -yyvsp[0].x; ;
     break;}
 case 217:
-#line 1457 "gram.yy"
+#line 1456 "gram.yy"
 { yyval.x = yyvsp[-1].x; ;
     break;}
 case 218:
-#line 1459 "gram.yy"
+#line 1458 "gram.yy"
 {
 		  errno = 0;
 		  yyval.x = sin(yyvsp[-1].x);
@@ -3042,7 +3041,7 @@ case 218:
 		;
     break;}
 case 219:
-#line 1469 "gram.yy"
+#line 1468 "gram.yy"
 {
 		  errno = 0;
 		  yyval.x = cos(yyvsp[-1].x);
@@ -3054,7 +3053,7 @@ case 219:
 		;
     break;}
 case 220:
-#line 1479 "gram.yy"
+#line 1478 "gram.yy"
 {
 		  errno = 0;
 		  yyval.x = atan2(yyvsp[-3].x, yyvsp[-1].x);
@@ -3071,7 +3070,7 @@ case 220:
 		;
     break;}
 case 221:
-#line 1494 "gram.yy"
+#line 1493 "gram.yy"
 {
 		  errno = 0;
 		  yyval.x = log10(yyvsp[-1].x);
@@ -3083,7 +3082,7 @@ case 221:
 		;
     break;}
 case 222:
-#line 1504 "gram.yy"
+#line 1503 "gram.yy"
 {
 		  errno = 0;
 		  yyval.x = pow(10.0, yyvsp[-1].x);
@@ -3095,7 +3094,7 @@ case 222:
 		;
     break;}
 case 223:
-#line 1514 "gram.yy"
+#line 1513 "gram.yy"
 {
 		  errno = 0;
 		  yyval.x = sqrt(yyvsp[-1].x);
@@ -3107,23 +3106,23 @@ case 223:
 		;
     break;}
 case 224:
-#line 1524 "gram.yy"
+#line 1523 "gram.yy"
 { yyval.x = yyvsp[-3].x > yyvsp[-1].x ? yyvsp[-3].x : yyvsp[-1].x; ;
     break;}
 case 225:
-#line 1526 "gram.yy"
+#line 1525 "gram.yy"
 { yyval.x = yyvsp[-3].x < yyvsp[-1].x ? yyvsp[-3].x : yyvsp[-1].x; ;
     break;}
 case 226:
-#line 1528 "gram.yy"
+#line 1527 "gram.yy"
 { yyval.x = floor(yyvsp[-1].x); ;
     break;}
 case 227:
-#line 1530 "gram.yy"
+#line 1529 "gram.yy"
 { yyval.x = 1.0 + floor(((rand()&0x7fff)/double(0x7fff))*yyvsp[-1].x); ;
     break;}
 case 228:
-#line 1532 "gram.yy"
+#line 1531 "gram.yy"
 {
 		  // return a random number in the range [0,1)
 		  // portable, but not very random
@@ -3131,44 +3130,44 @@ case 228:
 		;
     break;}
 case 229:
-#line 1538 "gram.yy"
+#line 1537 "gram.yy"
 { yyval.x = (yyvsp[-2].x < yyvsp[0].x); ;
     break;}
 case 230:
-#line 1540 "gram.yy"
+#line 1539 "gram.yy"
 { yyval.x = (yyvsp[-2].x <= yyvsp[0].x); ;
     break;}
 case 231:
-#line 1542 "gram.yy"
+#line 1541 "gram.yy"
 { yyval.x = (yyvsp[-2].x > yyvsp[0].x); ;
     break;}
 case 232:
-#line 1544 "gram.yy"
+#line 1543 "gram.yy"
 { yyval.x = (yyvsp[-2].x >= yyvsp[0].x); ;
     break;}
 case 233:
-#line 1546 "gram.yy"
+#line 1545 "gram.yy"
 { yyval.x = (yyvsp[-2].x == yyvsp[0].x); ;
     break;}
 case 234:
-#line 1548 "gram.yy"
+#line 1547 "gram.yy"
 { yyval.x = (yyvsp[-2].x != yyvsp[0].x); ;
     break;}
 case 235:
-#line 1550 "gram.yy"
+#line 1549 "gram.yy"
 { yyval.x = (yyvsp[-2].x != 0.0 && yyvsp[0].x != 0.0); ;
     break;}
 case 236:
-#line 1552 "gram.yy"
+#line 1551 "gram.yy"
 { yyval.x = (yyvsp[-2].x != 0.0 || yyvsp[0].x != 0.0); ;
     break;}
 case 237:
-#line 1554 "gram.yy"
+#line 1553 "gram.yy"
 { yyval.x = (yyvsp[0].x == 0.0); ;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/share/bison.simple"
+#line 498 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -3364,7 +3363,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 1558 "gram.yy"
+#line 1557 "gram.yy"
 
 
 // bison defines const to be empty unless __STDC__ is defined, which it

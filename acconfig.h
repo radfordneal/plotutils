@@ -27,6 +27,18 @@
 /* Define to signal that Motif should be used, if X11 is used */
 #undef USE_MOTIF
 
+/* Define to signal support in libc for the pthread threads library */
+#undef PTHREAD_SUPPORT
+
+/* Define if we have the thread-safe library function ctime_r() */
+#undef HAVE_CTIME_R
+
+/* Define if we have the thread-safe library function localtime_r() */
+#undef HAVE_LOCALTIME_R
+
+/* Define to signal support in libXt/libX11 for multithreading */
+#undef X_THREAD_SUPPORT
+
 /* Define to signal support in -lXext for the DBE X11 protocol extension */
 #undef HAVE_DBE_SUPPORT
 

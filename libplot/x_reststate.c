@@ -11,40 +11,41 @@
 
 int
 #ifdef _HAVE_PROTOS
-_x_restorestate(void)
+_x_restorestate(S___(Plotter *_plotter))
 #else
-_x_restorestate()
+_x_restorestate(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  pl_DrawState *oldstate = _plotter->drawstate->previous;
+  plDrawState *oldstate = _plotter->drawstate->previous;
 
   if (!_plotter->open)
     {
-      _plotter->error ("restorestate: invalid operation");
+      _plotter->error (R___(_plotter) "restorestate: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->previous == NULL)
+    /* this is an attempt to pop the lowest state off the stack */
     {
-      /* attempt to pop the lowest state off the stack */
-      _plotter->error ("restorestate: invalid operation");
+      _plotter->error (R___(_plotter) "restorestate: invalid operation");
       return -1;
     }
 
   /* flush polyline if any */
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* elements of current state that are strings are first freed */
-  free (_plotter->drawstate->fill_rule);
-  free (_plotter->drawstate->line_mode);
-  free (_plotter->drawstate->join_mode);
-  free (_plotter->drawstate->cap_mode);
-  free (_plotter->drawstate->font_name);
+  free ((char *)_plotter->drawstate->fill_rule);
+  free ((char *)_plotter->drawstate->line_mode);
+  free ((char *)_plotter->drawstate->join_mode);
+  free ((char *)_plotter->drawstate->cap_mode);
+  free ((char *)_plotter->drawstate->font_name);
   
   /* free dash array too, if nonempty */
   if (_plotter->drawstate->dash_array_len > 0)
-    free (_plotter->drawstate->dash_array);
+    free ((double *)_plotter->drawstate->dash_array);
 
   /* N.B. we do _not_ free _plotter->drawstate->x_font_struct */
 
@@ -52,6 +53,11 @@ _x_restorestate()
      at least one drawable (see x_savestate.c). */
   if (_plotter->x_drawable1 || _plotter->x_drawable2)
     {
+      /* free the dash list in the X11-specific part of the drawing state */
+      if (_plotter->drawstate->x_gc_dash_list_len > 0
+	  && _plotter->drawstate->x_gc_dash_list != (char *)NULL)
+	free ((char *)_plotter->drawstate->x_gc_dash_list);
+
       XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fg);
       XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fill);
       XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_bg);
@@ -63,7 +69,7 @@ _x_restorestate()
 
   /* maybe flush X output buffer and handle X events (a no-op for
      XDrawablePlotters, which is overridden for XPlotters) */
-  _maybe_handle_x_events();
+  _maybe_handle_x_events (S___(_plotter));
 
   return 0;
 }

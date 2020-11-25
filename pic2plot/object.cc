@@ -10,8 +10,8 @@
 #define PIC2PLOT
 
 #include "pic.h"
-#include "ptable.h"
 #include "object.h"
+#include "output.h"
 
 // forward references
 static void print_object_list(object *p);

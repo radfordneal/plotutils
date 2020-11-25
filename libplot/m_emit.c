@@ -4,31 +4,34 @@
    format or ascii [human-readable] plot format.
 
    In releases prior to plotutils-2.0, we assumed that in binary plot
-   format a short integer sufficed to represent any integer.  This was the
-   convention used in traditional plot(5) format, and can be traced to the
-   PDP-11.  Unfortunately it confined us to the range -0x10000..0x7fff on
-   modern two's complement machines.  Actually (see the parsing in plot.c)
-   we always treated the arguments to pencolor(), fillcolor(), and
-   filltype() specially.  An argument of any of those functions was treated
-   as an unsigned integer, so it could be in the range 0..0xffff.
+   format, a short machine integer sufficed to represent any integer.  This
+   was the convention used in traditional plot(5) format, and can be traced
+   to the PDP-11.  Unfortunately it confined us to the range
+   -0x10000..0x7fff on modern two's complement machines.  Actually, the
+   parsing in `plot' always treated the arguments to pencolor(),
+   fillcolor(), and filltype() specially.  An argument of any of those
+   functions was treated as an unsigned integer, so it could be in the
+   range 0..0xffff.
 
-   In plotutils-2.0, we switched to representing integers as integers, in
-   binary plot format.  The parsing of metafiles in plot.c now takes this
-   into account.  There are options for backward compatibility.
+   In plotutils-2.0, we switched in binary plot format to representing
+   integers as machine integers.  The parsing of metafiles by `plot' now
+   takes this into account.  `plot' has command-line options for backward
+   compatibility.
 
    Our binary representation for floating-point numbers is simply the
-   system representation for single-precision floating point.  plot(5)
-   format did not support floating point arguments, so there is no need to
-   maintain backward compatibility here. */
+   machine representation for single-precision floating point.  plot(5)
+   format did not support floating point arguments, so there are no
+   concerns over backward compatibility. */
 
 #include "sys-defines.h"
 #include "extern.h"
 
 void
 #ifdef _HAVE_PROTOS
-_meta_emit_integer (int x)
+_meta_emit_integer (R___(Plotter *_plotter) int x)
 #else
-_meta_emit_integer (x)
+_meta_emit_integer (R___(_plotter) x)
+     S___(Plotter *_plotter;) 
      int x;
 #endif
 {
@@ -37,7 +40,7 @@ _meta_emit_integer (x)
       if (_plotter->meta_portable_output)
 	fprintf (_plotter->outfp, " %d", x);
       else
-	fwrite ((Voidptr) &x, sizeof(int), 1, _plotter->outfp);
+	fwrite ((voidptr_t) &x, sizeof(int), 1, _plotter->outfp);
     }
 #ifdef LIBPLOTTER
   else if (_plotter->outstream)
@@ -52,9 +55,10 @@ _meta_emit_integer (x)
 
 void
 #ifdef _HAVE_PROTOS
-_meta_emit_float (double x)
+_meta_emit_float (R___(Plotter *_plotter) double x)
 #else
-_meta_emit_float (x)
+_meta_emit_float (R___(_plotter) x)
+     S___(Plotter *_plotter;) 
      double x;
 #endif
 {
@@ -67,7 +71,7 @@ _meta_emit_float (x)
 	  float f;
 	  
 	  f = FROUND(x);
-	  fwrite ((Voidptr) &f, sizeof(float), 1, _plotter->outfp);
+	  fwrite ((voidptr_t) &f, sizeof(float), 1, _plotter->outfp);
 	}
     }
 #ifdef LIBPLOTTER
@@ -89,9 +93,10 @@ _meta_emit_float (x)
 /* emit one unsigned character, passed as an int */
 void
 #ifdef _HAVE_PROTOS
-_meta_emit_byte (int c)
+_meta_emit_byte (R___(Plotter *_plotter) int c)
 #else
-_meta_emit_byte (c)
+_meta_emit_byte (R___(_plotter) c)
+     S___(Plotter *_plotter;) 
      int c;
 #endif
 {
@@ -105,30 +110,50 @@ _meta_emit_byte (c)
 
 void
 #ifdef _HAVE_PROTOS
-_meta_emit_string (const char *s)
+_meta_emit_string (R___(Plotter *_plotter) const char *s)
 #else
-_meta_emit_string (s)
+_meta_emit_string (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
+  bool has_newline;
+  char *t = NULL;		/* keep compiler happy */
   char *nl;
+  const char *u;
   
   /* null pointer handled specially */
   if (s == NULL)
     s = "(null)";
   
-  if ((nl = strchr (s, '\n')))
-    *nl = '\0';		/* don't grok multiline arg strings */
+  if (strchr (s, '\n'))
+    /* don't grok multiline arg strings */
+    {
+      has_newline = true;
+      t = (char *)_plot_xmalloc (strlen (s) + 1);      
+      strcpy (t, s);
+      nl = strchr (t, '\n');
+      *nl = '\0';
+      u = t;
+    }
+  else
+    {
+      has_newline = false;
+      u = s;
+    }
       
   if (_plotter->outfp)
     {
-      fputs (s, _plotter->outfp);
+      fputs (u, _plotter->outfp);
       putc ('\n', _plotter->outfp); /* append newline (plot(3) convention) */
     }
 #ifdef LIBPLOTTER
   else if (_plotter->outstream)
-    (*(_plotter->outstream)) << s << '\n';
+    (*(_plotter->outstream)) << u << '\n';
 #endif
+
+  if (has_newline)
+    free (t);
 }
 
 /* this is invoked at the end of each directive, except the ones for which
@@ -136,18 +161,19 @@ _meta_emit_string (s)
    newline (an old plot(3) convention; see above) */
 void
 #ifdef _HAVE_PROTOS
-_meta_emit_terminator (void)
+_meta_emit_terminator (S___(Plotter *_plotter))
 #else
-_meta_emit_terminator ()
+_meta_emit_terminator (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
-  if (_plotter->outfp)
+  if (_plotter->meta_portable_output)
     {
-      if (_plotter->meta_portable_output)
+      if (_plotter->outfp)
 	putc ('\n', _plotter->outfp);
-    }
 #ifdef LIBPLOTTER
-  else if (_plotter->outstream)
-    (*(_plotter->outstream)) << '\n';
+      else if (_plotter->outstream)
+	(*(_plotter->outstream)) << '\n';
 #endif
+    }
 }

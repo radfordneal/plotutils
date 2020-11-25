@@ -10,9 +10,10 @@
 
 void
 #ifdef _HAVE_PROTOS
-_h_set_position (void)
+_h_set_position (S___(Plotter *_plotter))
 #else
-_h_set_position ()
+_h_set_position (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   int xnew, ynew;
@@ -26,10 +27,10 @@ _h_set_position ()
   if (_plotter->hpgl_position_is_unknown == true
       || xnew != _plotter->hpgl_pos.x || ynew != _plotter->hpgl_pos.y)
     {
-      if (_plotter->pendown == true)
+      if (_plotter->hpgl_pendown == true)
 	{
 	  sprintf (_plotter->page->point, "PU;PA%d,%d;", xnew, ynew);
-	  _plotter->pendown = false;
+	  _plotter->hpgl_pendown = false;
 	}
       else
 	sprintf (_plotter->page->point, "PA%d,%d;", xnew, ynew);

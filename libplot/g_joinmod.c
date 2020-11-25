@@ -7,30 +7,35 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_joinmod (const char *s)
+_g_joinmod (R___(Plotter *_plotter) const char *s)
 #else
-_g_joinmod (s)
+_g_joinmod (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
+  char *join_mode;
+
   if (!_plotter->open)
     {
-      _plotter->error ("joinmod: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "joinmod: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* null pointer resets to default */
   if ((!s) || !strcmp(s, "(null)"))
     s = _default_drawstate.join_mode;
 
-  free (_plotter->drawstate->join_mode);
-  _plotter->drawstate->join_mode = (char *)_plot_xmalloc (strlen (s) + 1);
-  strcpy (_plotter->drawstate->join_mode, s);
+  free ((char *)_plotter->drawstate->join_mode);
+  join_mode = (char *)_plot_xmalloc (strlen (s) + 1);
+  strcpy (join_mode, s);
+  _plotter->drawstate->join_mode = join_mode;
 
-  /* The following three join types are now standard. */
+  /* The following four join types are now standard. */
 
   if (strcmp( s, "miter") == 0)
     _plotter->drawstate->join_type = JOIN_MITER;
@@ -43,8 +48,8 @@ _g_joinmod (s)
   else if (strcmp( s, "triangular") == 0)
     _plotter->drawstate->join_type = JOIN_TRIANGULAR;
   else
-    /* don't recognize, silently switch to default mode */
-    return _g_joinmod (_default_drawstate.join_mode);
+    /* unknown, so silently switch to default mode (via recursive call) */
+    return _g_joinmod (R___(_plotter) _default_drawstate.join_mode);
   
   return 0;
 }

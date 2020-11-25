@@ -22,45 +22,56 @@
 #include "sys-defines.h"
 #include "extern.h"
 
-static bool _suppress_retrieve = false;	/* avoids unnecessary font retrieval */
-
-/* This prints a single-font, single-font-size label, and repositions to
-   the end after printing.  When this is called, the current point is on
-   the intended baseline of the label.  */
+/* When this is called (by calling "_plotter->falabel_other()"), the X font
+   may already been retrieved, in whole or in part (by calling
+   "_plotter->retrieve_font()", i.e., by calling the _x_retrieve_font()
+   subroutine in x_retrieve.c).  See g_alabel.c, where the calling takes
+   place.  To retrieve a larger part, the label needs to be passed to
+   _x_retrieve_font() as a "hint".  That is what is done in this
+   function. */
 
 double
 #ifdef _HAVE_PROTOS
-_x_falabel_other (const unsigned char *s, int h_just)
+_x_falabel_other (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_x_falabel_other (s, h_just)
+_x_falabel_other (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
   double x, y, width;
   double theta, costheta, sintheta;
+  int offset = 0;
   
-  if (*s == (unsigned char)'\0')
+  /* sanity check; this routine supports only baseline positioning */
+  if (v_just != JUST_BASE)
     return 0.0;
 
+  /* similarly for horizontal justification */
   if (h_just != JUST_LEFT)
     {
-      _plotter->warning ("ignoring request to use non-default justification for a label");
+      _plotter->warning (R___(_plotter) 
+			 "ignoring request to use non-default justification for a label");
       return 0.0;
     }
 
+  if (*s == (unsigned char)'\0')
+    return 0.0;
+
   /* select our pen color as foreground color in X GC used for drawing */
-  _plotter->set_pen_color();
+  _plotter->set_pen_color (S___(_plotter));
   
   /* compute position in device coordinates */
   x = XD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y);
   y = YD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y);
   
-  /* Retrieve the font -- all of it that we'll need.  We may have
-     previously retrieved only an empty subset of it.  See x_retrieve.c for
-     information on character subsetting. */
+  /* Retrieve the font -- all of it that we'll need, anyway.  We may have
+     previously retrieved a proper subset of it (see above).  See
+     x_retrieve.c for information on character subsetting. */
   _plotter->drawstate->x_label = s;	/* pass hint */
-  _plotter->retrieve_font ();
+  _plotter->retrieve_font (S___(_plotter));
   _plotter->drawstate->x_label = NULL; /* restore to default value */
 
   /* Set font in GC used for drawing (the other GC, used for filling, is
@@ -69,10 +80,10 @@ _x_falabel_other (s, h_just)
 	    _plotter->drawstate->x_font_struct->fid);
 
   if (_plotter->drawstate->x_native_positioning)
+    /* a special case: the font name did not include a pixel matrix, or it
+       did but the text rotation angle is zero; so move the easy way, i.e.,
+       use native repositioning */
     {
-      /* a special case: the font name did not include a pixel matrix, or
-         it did but the text rotation angle is zero; so move the easy way,
-         i.e., use native repositioning */
       int label_len = strlen ((char *)s);
       int ix = IROUND(x);
       int iy = IROUND(y);
@@ -98,17 +109,23 @@ _x_falabel_other (s, h_just)
 			 _plotter->drawstate->x_gc_fg, 
 			 ix, iy, (char *)s, label_len);
 	}
+
+      /* compute width of string in normalized units (font size = 1000) */
+      offset = IROUND(1000.0 * XTextWidth (_plotter->drawstate->x_font_struct, 
+					   (char *)s, 
+					   (int)(strlen((char *)s))) / 
+		      _plotter->drawstate->x_font_pixmatrix[0]);
     }  
   else 
+    /* general case: due to nonzero text rotation and/or a non-uniform
+       transformation from user to device coordinates, a pixel matrix
+       appeared explicitly in the font name (and hence the font name was an
+       XLFD font name); must move the cursor and plot each character
+       individually.  */
     {
-      /* general case: due to nonzero text rotation and/or a non-uniform
-	 transformation from user to device coordinates, a pixel matrix
-	 appeared explicitly in the font name (and hence the font name was
-	 an XLFD font name); must move the cursor and plot each character
-	 individually.  */
-      double offset = 0.0;
       const unsigned char *stringptr = s;
       
+      /* loop over characters */
       while (*stringptr)
 	{
 	  int charno = *stringptr;
@@ -143,17 +160,18 @@ _x_falabel_other (s, h_just)
 			     ix, iy, (char *)stringptr, 1);
 	    }
 	  
+	  /* add this glyph's contribution to the width of the string, in
+             normalized units (font size = 1000) */
+	  offset += (_plotter->drawstate->x_font_struct->per_char ?
+		     _plotter->drawstate->x_font_struct->per_char[char_metric_offset].attributes :
+		     _plotter->drawstate->x_font_struct->min_bounds.attributes);
+
 	  stringptr++;
-	  offset += (double)(_plotter->drawstate->x_font_struct->per_char ?
-			     _plotter->drawstate->x_font_struct->per_char[char_metric_offset].attributes :
-			     _plotter->drawstate->x_font_struct->min_bounds.attributes);
 	}
     }
   
-  /* width of the substring in user units */
-  _suppress_retrieve = true;	/* avoid unnecessary retrieval of X font */
-  width = _x_flabelwidth_other (s);
-  _suppress_retrieve = false;
+  /* convert normalized string width to width in user coors */
+  width = _plotter->drawstate->true_font_size * (double)offset / 1000.0;
 
   /* label rotation angle in radians */
   theta = M_PI * _plotter->drawstate->text_rotation / 180.0;
@@ -166,7 +184,7 @@ _x_falabel_other (s, h_just)
 
   /* maybe flush X output buffer and handle X events (a no-op for
      XDrawablePlotters, which is overridden for XPlotters) */
-  _maybe_handle_x_events();
+  _maybe_handle_x_events (S___(_plotter));
 
   return width;
 }
@@ -176,26 +194,30 @@ _x_falabel_other (s, h_just)
 
 double
 #ifdef _HAVE_PROTOS
-_x_falabel_ps (const unsigned char *s, int h_just)
+_x_falabel_ps (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_x_falabel_ps (s, h_just)
+_x_falabel_ps (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
-  return _x_falabel_other (s, h_just);
+  return _x_falabel_other (R___(_plotter) s, h_just, v_just);
 }
 
 double
 #ifdef _HAVE_PROTOS
-_x_falabel_pcl (const unsigned char *s, int h_just)
+_x_falabel_pcl (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_x_falabel_pcl (s, h_just)
+_x_falabel_pcl (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
-  return _x_falabel_other (s, h_just);
+  return _x_falabel_other (R___(_plotter) s, h_just, v_just);
 }
 
 /* Compute width, in user coordinates, of label in the currently selected
@@ -207,28 +229,28 @@ _x_falabel_pcl (s, h_just)
 
 double
 #ifdef _HAVE_PROTOS
-_x_flabelwidth_other (const unsigned char *s)
+_x_flabelwidth_other (R___(Plotter *_plotter) const unsigned char *s)
 #else
-_x_flabelwidth_other (s)
+_x_flabelwidth_other (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
 #endif
 {
   int offset = 0;
   double label_width;
   
-  /* Retrieve the font -- all of it that we'll need.  We may have
-     previously retrieved only an empty subset of it.  See x_retrieve.c for
+  /* Retrieve the font -- and retrieve only the portion that we'll need,
+     which we specify by passing a "hint".  We may have previously
+     retrieved the font, or a proper subset of it.  See x_retrieve.c for
      information on character subsetting. */
-  if (_suppress_retrieve == false)
-    /* retrieve X font */
-    {
-      _plotter->drawstate->x_label = s;	/* pass hint */
-      _plotter->retrieve_font ();
-      _plotter->drawstate->x_label = NULL; /* restore to default value */
-    }
+  _plotter->drawstate->x_label = s;	/* pass hint */
+  _plotter->retrieve_font (S___(_plotter));
+  _plotter->drawstate->x_label = NULL; /* restore to default value */
 
   if (_plotter->drawstate->x_native_positioning)
     /* have a non-XLFD font, or an XLFD with zero textrotation, no shearing */
+
+    /* compute width of string in normalized units (font size = 1000) */
     offset = IROUND(1000.0 * XTextWidth (_plotter->drawstate->x_font_struct, 
 					 (char *)s, 
 					 (int)(strlen((char *)s))) / 
@@ -236,12 +258,15 @@ _x_flabelwidth_other (s)
   else				
     /* necessarily have an XLFD font, may need to take shearing into account */
     {
+      /* loop over characters */
       while (*s)
 	{
 	  int charno = *s;
 	  int char_metric_offset = 
 	    charno - _plotter->drawstate->x_font_struct->min_char_or_byte2;
 	  
+	  /* add this glyph's contribution to the width of the string, in
+             normalized units (font size = 1000) */
 	  offset += (_plotter->drawstate->x_font_struct->per_char ?
 		     _plotter->drawstate->x_font_struct->per_char[char_metric_offset].attributes :
 		     _plotter->drawstate->x_font_struct->min_bounds.attributes);
@@ -249,12 +274,12 @@ _x_flabelwidth_other (s)
 	}
     }
 
-  /* multiply normalized width by current font size in user coors */
+  /* convert normalized string width to width in user coors */
   label_width = _plotter->drawstate->true_font_size * (double)offset / 1000.0;
 
   /* maybe flush X output buffer and handle X events (a no-op for
      XDrawablePlotters, which is overridden for XPlotters) */
-  _maybe_handle_x_events();
+  _maybe_handle_x_events (S___(_plotter));
 
   return label_width;
 }
@@ -264,22 +289,24 @@ _x_flabelwidth_other (s)
 
 double
 #ifdef _HAVE_PROTOS
-_x_flabelwidth_ps (const unsigned char *s)
+_x_flabelwidth_ps (R___(Plotter *_plotter) const unsigned char *s)
 #else
-_x_flabelwidth_ps (s)
+_x_flabelwidth_ps (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
 #endif
 {
-  return _x_flabelwidth_other (s);
+  return _x_flabelwidth_other (R___(_plotter) s);
 }
 
 double
 #ifdef _HAVE_PROTOS
-_x_flabelwidth_pcl (const unsigned char *s)
+_x_flabelwidth_pcl (R___(Plotter *_plotter) const unsigned char *s)
 #else
-_x_flabelwidth_pcl (s)
+_x_flabelwidth_pcl (R___(_plotter) s)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
 #endif
 {
-  return _x_flabelwidth_other (s);
+  return _x_flabelwidth_other (R___(_plotter) s);
 }

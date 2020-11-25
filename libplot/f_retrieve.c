@@ -16,9 +16,10 @@
 
 void
 #ifdef _HAVE_PROTOS
-_f_retrieve_font(void)
+_f_retrieve_font(S___(Plotter *_plotter))
 #else
-_f_retrieve_font()
+_f_retrieve_font(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   double theta;
@@ -27,7 +28,7 @@ _f_retrieve_font()
   int int_fig_pointsize;
 
   /* invoke generic method */
-  _g_retrieve_font();
+  _g_retrieve_font (S___(_plotter));
 
   if (_plotter->drawstate->font_type == F_HERSHEY)
     /* no additional quantization */
@@ -37,11 +38,11 @@ _f_retrieve_font()
       || !_plotter->drawstate->transform.nonreflection)
     /* anamorphically transformed PS font not supported, use Hershey */
     {
-      char *user_specified_name;
+      const char *user_specified_name;
 
       user_specified_name = _plotter->drawstate->font_name;
       _plotter->drawstate->font_name = DEFAULT_HERSHEY_FONT;
-      _f_retrieve_font();	/* recursive call */
+      _f_retrieve_font (S___(_plotter)); /* recursive call */
       _plotter->drawstate->font_name = user_specified_name;
       return;
 
@@ -55,7 +56,7 @@ _f_retrieve_font()
 	  sprintf (buf, "cannot retrieve font \"%s\", using default \"%s\"", 
 		   _plotter->drawstate->font_name, 
 		   DEFAULT_HERSHEY_FONT);
-	  _plotter->warning (buf);
+	  _plotter->warning (R___(_plotter) buf);
 	  free (buf);
 	  _plotter->font_warning_issued = true;
 	}

@@ -8,15 +8,17 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_fcircle (double x, double y, double r)
+_g_fcircle (R___(Plotter *_plotter) double x, double y, double r)
 #else
-_g_fcircle (x, y, r)
+_g_fcircle (R___(_plotter) x, y, r)
+     S___(Plotter *_plotter;)
      double x, y, r;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fcircle: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fcircle: invalid operation");
       return -1;
     }
 
@@ -25,12 +27,12 @@ _g_fcircle (x, y, r)
     {
       /* just move to center of circle, flushing path if any (a libplot
          convention) */
-      _plotter->fmove (x, y);	
+      _plotter->fmove (R___(_plotter) x, y);
       return 0;
     }
   else
     /* invoke `ellipse' method with equal semi-axes; this will first flush
        any stored path, and end by moving to center of ellipse (libplot
        convention) */
-    return _plotter->fellipse (x, y, r, r, 0.0);
+    return _plotter->fellipse (R___(_plotter) x, y, r, r, 0.0);
 }

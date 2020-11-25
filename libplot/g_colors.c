@@ -13,40 +13,44 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_color (int red, int green, int blue)
+_g_color (R___(Plotter *_plotter) int red, int green, int blue)
 #else
-_g_color (red, green, blue)
+_g_color (R___(_plotter) red, green, blue)
+     S___(Plotter *_plotter;) 
      int red, green, blue;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("color: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "color: invalid operation");
       return -1;
     }
 
-  _plotter->pencolor (red, green, blue);
-  _plotter->fillcolor (red, green, blue);  
+  _plotter->pencolor (R___(_plotter) red, green, blue);
+  _plotter->fillcolor (R___(_plotter) red, green, blue);  
 
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_g_colorname (const char *name)
+_g_colorname (R___(Plotter *_plotter) const char *name)
 #else
-_g_colorname (name)
+_g_colorname (R___(_plotter) name)
+     S___(Plotter *_plotter;)
      const char *name;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("colorname: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "colorname: invalid operation");
       return -1;
     }
 
-  _plotter->pencolorname (name);
-  _plotter->fillcolorname (name);
+  _plotter->pencolorname (R___(_plotter) name);
+  _plotter->fillcolorname (R___(_plotter) name);
   
   return 0;
 }

@@ -9,14 +9,15 @@
 
 int
 #ifdef _HAVE_PROTOS
-_f_openpl (void)
+_f_openpl (S___(Plotter *_plotter))
 #else
-_f_openpl ()
+_f_openpl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) "openpl: invalid operation");
       return -1;
     }
 
@@ -34,7 +35,7 @@ _f_openpl ()
   _plotter->fig_num_usercolors = 0;
   
   /* invoke generic method, to e.g. create drawing state */
-  _g_openpl ();
+  _g_openpl (S___(_plotter));
 
   return 0;
 }

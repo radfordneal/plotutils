@@ -27,14 +27,13 @@
    (The -DNO_CONST_SUPPORT option may need to be used if the C compiler,
    like the version of `cc' supplied with SunOS 4.1.x, is so old that it
    does not understand the `const' type qualifier.  If compiling under
-   SunOS 4.1.x, be sure also to specify the `-static' option to work around
-   problems with undefined symbols in the SunOS X libraries.)
+   SunOS 4.1.x, you may also need to specify the `-static' option, to work
+   around problems with undefined symbols in the SunOS X libraries.)
 
    If you have any trouble running the demo after compiling it, be sure
    your LD_LIBRARY_PATH environment variable includes the directory in
    which libplot is stored.  This only applies on systems in which libplot
-   is implemented as a DLL, i.e. a shared library that is linked at 
-   run time. */
+   is implemented as a shared library that is linked at run time. */
 
 #include <stdio.h> 
 #include <plot.h>
@@ -144,33 +143,48 @@ struct hershey_word demo_word[NUM_DEMO_WORDS] =
 int
 main()
 {
-  int handle, i;
+  plPlotter *plotter;
+  plPlotterParams *plotter_params;
+  int i;
 
-  pl_parampl ("META_PORTABLE", "yes");
-  handle = pl_newpl ("meta", stdin, stdout, stderr);
-  pl_selectpl (handle);
+  /* set Plotter parameters */
+  plotter_params = pl_newplparams ();
+  pl_setplparam (plotter_params, "META_PORTABLE", "yes");
 
-  pl_openpl();
-  pl_erase();
-  pl_fspace (LLX, LLY, URX, URY);
+  /* create a Metafile Plotter with the specified parameters */
+  if ((plotter = pl_newpl_r ("meta", stdin, stdout, stderr,
+			     plotter_params)) == NULL)
+    {
+      fprintf (stderr, "Couldn't create Plotter\n");
+      return 1;
+    }
+  
+  /* open it, set up user coordinate system */
+  pl_openpl_r (plotter);
+  pl_erase_r (plotter);
+  pl_fspace_r (plotter, LLX, LLY, URX, URY);
 
+  /* loop through words, each time saving and restoring graphics state */
   for (i = 0; i < NUM_DEMO_WORDS; i++)
     {
-      pl_savestate();
-      pl_fontname (demo_word[i].fontname);
-      pl_fconcat (demo_word[i].m[0], demo_word[i].m[1], 
-		  demo_word[i].m[2], demo_word[i].m[3],
-		  demo_word[i].m[4], demo_word[i].m[5]);
-      pl_ffontsize (BASE_FONTSIZE);
-      pl_fmove (0.0, 0.0);
-      pl_alabel (demo_word[i].just, 'c', demo_word[i].word);
-      pl_restorestate();
+      pl_savestate_r (plotter);
+      pl_fontname_r (plotter, demo_word[i].fontname);
+      pl_fconcat_r (plotter,
+		    demo_word[i].m[0], demo_word[i].m[1], 
+		    demo_word[i].m[2], demo_word[i].m[3],
+		    demo_word[i].m[4], demo_word[i].m[5]);
+      pl_ffontsize_r (plotter, BASE_FONTSIZE);
+      pl_fmove_r (plotter, 0.0, 0.0);
+      pl_alabel_r (plotter, demo_word[i].just, 'c', demo_word[i].word);
+      pl_restorestate_r (plotter);
     }
 
-  pl_closepl();
-
-  pl_selectpl (0);
-  pl_deletepl (handle);
-
+  /* close and delete Plotter */
+  pl_closepl_r (plotter);
+  if (pl_deletepl_r (plotter) < 0)
+    {
+      fprintf (stderr, "Couldn't delete Plotter\n");
+      return 1;
+    }
   return 0;
 }

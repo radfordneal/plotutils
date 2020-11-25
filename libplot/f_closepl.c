@@ -16,26 +16,27 @@
 
 int
 #ifdef _HAVE_PROTOS
-_f_closepl (void)
+_f_closepl (S___(Plotter *_plotter))
 #else
-_f_closepl ()
+_f_closepl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   int i, retval;
   
   if (!_plotter->open)
     {
-      _plotter->error ("closepl: invalid operation");
+      _plotter->error (R___(_plotter) "closepl: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* pop drawing states in progress, if any, off the stack */
   if (_plotter->drawstate->previous != NULL)
     {
       while (_plotter->drawstate->previous)
-	_plotter->restorestate();
+	_plotter->restorestate (S___(_plotter));
     }
   
   /* Output the page, but only if it's page #1 (currently Fig format
@@ -43,21 +44,21 @@ _f_closepl ()
   if (_plotter->page_number == 1)
     {
       const char *units;
-      Outbuf *fig_header;
+      plOutbuf *fig_header;
       
-      /* prepare Fig header, write it to an Outbuf */
+      /* prepare Fig header, write it to a plOutbuf */
       fig_header = _new_outbuf ();
       
-      units = (_plotter->use_metric ? "Metric" : "Inches");
+      units = (_plotter->page_data->metric ? "Metric" : "Inches");
       sprintf (fig_header->point,
 	       "#FIG 3.2\n%s\n%s\n%s\n%s\n%.2f\n%s\n%d\n%d %d\n",
 	       "Portrait",	/* portrait mode, not landscape */
-	       "Center",	/* justification */
-	       units,
-	       _plotter->page_type,
-	       100.00,
-	       "Single",
-	       -2,
+	       "Flush Left",	/* justification */
+	       units,		/* "Metric" or "Inches" */
+	       _plotter->page_data->fig_name, /* paper size */
+	       100.00,		/* export and print magnification */
+	       "Single",	/* "Single" or "Multiple" pages */
+	       -2,		/* color number for transparent color */
 	       IROUND(FIG_UNITS_PER_INCH), /* Fig units per inch */
 	       2		/* origin in lower left corner (ignored) */
 	       );
@@ -75,13 +76,13 @@ _f_closepl ()
 	  _update_buffer (fig_header);
 	}
 	  
-      /* WRITE HEADER (and free its Outbuf) */
-      _plotter->write_string (fig_header->base); 
+      /* WRITE HEADER (and free its plOutbuf) */
+      _plotter->write_string (R___(_plotter) fig_header->base); 
       _delete_outbuf (fig_header);
       
       /* WRITE OUT ALL FIG OBJECTS */
       if (_plotter->page->len > 0)
-	_plotter->write_string (_plotter->page->base); 
+	_plotter->write_string (R___(_plotter) _plotter->page->base); 
     }
   
   /* Delete the page buffer, since Fig Plotters don't maintain a linked
@@ -92,16 +93,16 @@ _f_closepl ()
   /* remove zeroth drawing state too, so we can start afresh */
 
   /* elements of state that are strings are freed separately */
-  free (_plotter->drawstate->line_mode);
-  free (_plotter->drawstate->join_mode);
-  free (_plotter->drawstate->cap_mode);
-  free (_plotter->drawstate->font_name);
+  free ((char *)_plotter->drawstate->line_mode);
+  free ((char *)_plotter->drawstate->join_mode);
+  free ((char *)_plotter->drawstate->cap_mode);
+  free ((char *)_plotter->drawstate->font_name);
   
   free (_plotter->drawstate);
   _plotter->drawstate = NULL;
 
   /* attempt to flush (will test whether stream is jammed) */
-  retval = _plotter->flushpl ();
+  retval = _plotter->flushpl (S___(_plotter));
 
   _plotter->open = false;	/* flag device as closed */
 

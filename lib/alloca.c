@@ -54,7 +54,7 @@ long i00afunc ();
 #define ADDRESS_FUNCTION(arg) &(arg)
 #endif
 
-extern Voidptr xmalloc ____P((unsigned int length));
+extern voidptr_t xmalloc ____P((size_t length));
 
 /* Define STACK_DIRECTION if you know the direction of stack
    growth for your system; otherwise it will be automatically
@@ -135,7 +135,7 @@ static header *last_alloca_header = NULL;	/* -> last alloca header.  */
    caller, but that method cannot be made to work for some
    implementations of C, for example under Gould's UTX/32.  */
 
-Voidptr
+voidptr_t
 #ifdef _HAVE_PROTOS
 alloca (unsigned size)
 #else
@@ -163,7 +163,7 @@ alloca (size)
 	{
 	  register header *np = hp->h.next;
 
-	  free ((Voidptr) hp);	/* Collect garbage.  */
+	  free ((voidptr_t) hp);	/* Collect garbage.  */
 
 	  hp = np;		/* -> next header.  */
 	}
@@ -179,7 +179,7 @@ alloca (size)
   /* Allocate combined header + user data storage.  */
 
   {
-    register Voidptr newptr = xmalloc (sizeof (header) + size);
+    register voidptr_t newptr = xmalloc (sizeof (header) + size);
     /* Address of header.  */
 
     ((header *) newptr)->h.next = last_alloca_header;
@@ -189,7 +189,7 @@ alloca (size)
 
     /* User storage begins just after header.  */
 
-    return (Voidptr) ((char *) newptr + sizeof (header));
+    return (voidptr_t) ((char *) newptr + sizeof (header));
   }
 }
 

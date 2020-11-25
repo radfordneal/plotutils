@@ -9,8 +9,8 @@
 
      (1) explicitly invokes the endpath() method, or 
      (2) changes the value of one of the relevant drawing attributes, 
-          by invoking move(), linemod(), linewidth(), color(), fillcolor(),
-          or filltype(), or 
+          e.g. by invoking move(), linemod(), linewidth(), pencolor(), 
+	  fillcolor(), or filltype(), or 
      (3) draws some non-path object, by invoking box(), 
            circle(), point(), label(), alabel(), etc., or 
      (4) invokes restorestate() to restore an earlier drawing state. */
@@ -30,9 +30,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_x_fcont (double x, double y)
+_x_fcont (R___(Plotter *_plotter) double x, double y)
 #else
-_x_fcont (x, y)
+_x_fcont (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
@@ -41,40 +42,50 @@ _x_fcont (x, y)
 
   if (!_plotter->open)
     {
-      _plotter->error ("fcont: invalid operation");
+      _plotter->error (R___(_plotter) "fcont: invalid operation");
       return -1;
     }
 
-  if (_plotter->drawstate->line_type == L_SOLID
+  if (_plotter->drawstate->pen_type != 0 /* pen is present */
+      && _plotter->drawstate->line_type == L_SOLID
       && !_plotter->drawstate->dash_array_in_effect
       && _plotter->drawstate->points_are_connected
-      && _plotter->drawstate->quantized_device_line_width == 0)
-    /* zero-width solid line: draw line segment immediately */
+      && _plotter->drawstate->quantized_device_line_width == 0
+      && !_plotter->drawstate->convex_path
+      && _plotter->drawstate->fill_type == 0)
+    /* zero-width solid line, and we're not drawing this line segment as
+       part of a polygonalized built-in object (i.e. the convex rectangles
+       and ellipses that we can draw): if there's no filling to be done,
+       we `pre-draw', i.e., draw the line segment immediately */
     {
-      double xu1, yu1, xd1, yd1, xd2, yd2;
+      /* use same variables for points #1 and #2, since reusing them works
+	 around an obscure bug in gcc 2.7.2.3 that rears its head if -O2 is
+	 used */
+      double xu, yu, xd, yd;
       int x1, y1, x2, y2;
 
       if (_plotter->drawstate->points_in_path == 0)
 	/* no path in progress; this line segment begins a new one */
 	{
-	  /* place line attributes in GC's used for drawing and filling */
-	  _plotter->set_attributes();  
+	  /* update GC used for drawing (specify GC by passing a hint) */
+	  _plotter->drawstate->x_gc_type = X_GC_FOR_DRAWING;
+	  _plotter->set_attributes (S___(_plotter));
 	  
 	  /* select pen color as foreground color in GC used for drawing */
-	  _plotter->set_pen_color();
+	  _plotter->set_pen_color (S___(_plotter));
 	}
   
       /* starting and ending points for zero-width line */
-      xu1 = _plotter->drawstate->pos.x;
-      yu1 = _plotter->drawstate->pos.y;
-      xd1 = XD(xu1, yu1);
-      yd1 = YD(xu1, yu1);
-      xd2 = XD(x,y);
-      yd2 = YD(x,y);
-      x1 = IROUND(xd1);
-      y1 = IROUND(yd1);
-      x2 = IROUND(xd2);
-      y2 = IROUND(yd2);
+      xu = _plotter->drawstate->pos.x;
+      yu = _plotter->drawstate->pos.y;
+      xd = XD(xu, yu);
+      yd = YD(xu, yu);
+      x1 = IROUND(xd);
+      y1 = IROUND(yd);
+      xd = XD(x,y);
+      yd = YD(x,y);
+      x2 = IROUND(xd);
+      y2 = IROUND(yd);
 
       if (x1 != x2 || y1 != y2)
 	/* line segment has nonzero length, so draw it */
@@ -95,15 +106,40 @@ _x_fcont (x, y)
 
 	  something_drawn = true;
 	}
+      else
+	/* line segment in terms of integer device coordinates has zero
+	   length; but if it has nonzero length in user coordinates, draw
+	   it as a single pixel unless cap type is "butt" */
+	if (!(_plotter->drawstate->cap_type == CAP_BUTT
+	      && xu == x && yu == y))
+	  {
+	    if (_plotter->x_double_buffering != DBL_NONE)
+	      /* double buffering, have a `x_drawable3' to draw into */
+	      XDrawPoint (_plotter->x_dpy, _plotter->x_drawable3,
+			  _plotter->drawstate->x_gc_fg, 
+			  x1, y1);
+	    else
+	      /* not double buffering */
+	      {
+		if (_plotter->x_drawable1)
+		  XDrawPoint (_plotter->x_dpy, _plotter->x_drawable1,
+			      _plotter->drawstate->x_gc_fg, 
+			      x1, y1);
+		if (_plotter->x_drawable2)
+		  XDrawPoint (_plotter->x_dpy, _plotter->x_drawable2,
+			      _plotter->drawstate->x_gc_fg, 
+			      x1, y1);
+	      }
+	  }
     }
 
   /* invoke generic method */
-  retval = _g_fcont (x, y);
+  retval = _g_fcont (R___(_plotter) x, y);
 
   if (something_drawn)
     /* maybe flush X output buffer and handle X events (a no-op for
        XDrawablePlotters, which is overridden for XPlotters) */
-  _maybe_handle_x_events();
+  _maybe_handle_x_events (S___(_plotter));
 
   return retval;
 }

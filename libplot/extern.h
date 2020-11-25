@@ -31,21 +31,19 @@
 /* INCLUDE FILES                                         */
 /*************************************************************************/
 
-/* 0. OUR OWN INCLUDE FILES */
+/* 1. OUR OWN INCLUDE FILE */
 
-/* Determine which of libplot/libplotter this is, and include plot.h if the
-   former. */
+/* Determine which of libplot/libplotter this is. */
 #ifndef LIBPLOTTER
-#include "plot.h"
 #define NOT_LIBPLOTTER
 #endif
 
-/* Always include plotter.h.  (If NOT_LIBPLOTTER is defined, it's an
-   internal header file rather than a definition file for the Plotter
-   class.) */
+/* Always include plotter.h.  (If NOT_LIBPLOTTER is defined, it's a C-style
+   header file, declaring the Plotter struct, rather than a declaration
+   file for the Plotter class.) */
 #include "plotter.h"
 
-/* 1. SYSTEM INCLUDE FILES FOR THE X WINDOW SYSTEM */
+/* 2. INCLUDE FILES FOR THE X WINDOW SYSTEM */
 
 #ifndef X_DISPLAY_MISSING
 #include <X11/Xatom.h>
@@ -102,8 +100,8 @@
 #define DEFAULT_POSTSCRIPT_TYPEFACE_INDEX 0
 #define DEFAULT_POSTSCRIPT_FONT_INDEX 1
 
-#define DEFAULT_PCL_FONT "Arial-Roman"
-#define DEFAULT_PCL_TYPEFACE_INDEX 5
+#define DEFAULT_PCL_FONT "Univers"
+#define DEFAULT_PCL_TYPEFACE_INDEX 0
 #define DEFAULT_PCL_FONT_INDEX 1
 
 #define DEFAULT_STICK_FONT "Stick"
@@ -114,7 +112,7 @@
 
 /* our information about each of the 22 Hershey vector fonts in g_fontdb.c,
    and the typefaces they belong to */
-struct hershey_font_info_struct 
+struct plHersheyFontInfoStruct
 {
   const char *name;		/* font name */
   const char *othername;	/* an alias (for backward compatibility) */
@@ -127,7 +125,7 @@ struct hershey_font_info_struct
   bool visible;			/* whether font is visible, i.e. not internal*/
 };
 
-extern const struct hershey_font_info_struct _hershey_font_info[];
+extern const struct plHersheyFontInfoStruct _hershey_font_info[];
 
 /* This numbering should agree with the numbering of Hershey fonts in the
    _hershey_font_info[] array in g_fontdb.c. */
@@ -143,12 +141,12 @@ extern const struct hershey_font_info_struct _hershey_font_info[];
 
 /* accented character information (used in constructing Hershey ISO-Latin-1
    accented characters, see table in g_fontdb.c) */
-struct accented_char_info_struct
+struct plHersheyAccentedCharInfoStruct
 {
   unsigned char composite, character, accent;
 };
 
-extern const struct accented_char_info_struct _hershey_accented_char_info[];
+extern const struct plHersheyAccentedCharInfoStruct _hershey_accented_char_info[];
 
 /* types of accent, for a composite character in a Hershey font */
 #define ACC0 (16384 + 0)	/* superimpose on character */
@@ -172,10 +170,11 @@ extern const char * const _oriental_hershey_glyphs[];
 
 /* our information about each of the 35 standard PS fonts in g_fontdb.c,
    and the typefaces they belong to */
-struct ps_font_info_struct 
+struct plPSFontInfoStruct
 {
   const char *ps_name;		/* the postscript font name */
   const char *ps_name_alt;	/* alternative PS font name, if non-NULL */
+  const char *ps_name_alt2;	/* 2nd alternative PS font name, if non-NULL */
   const char *x_name;		/* the X Windows font name */
   const char *x_name_alt;	/* alternative X Windows font name */
   int pcl_typeface;		/* the PCL typeface number */
@@ -185,6 +184,7 @@ struct ps_font_info_struct
   int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
   int font_ascent;		/* the font's ascent (from bounding box) */
   int font_descent;		/* the font's descent (from bounding box) */
+  int font_cap_height;		/* the font's cap height */
   short width[256];		/* per-character width information */
   short offset[256];		/* per-character left edge information */
   int typeface_index;		/* default typeface for the font */
@@ -193,16 +193,18 @@ struct ps_font_info_struct
   bool iso8859_1;		/* whether font encoding is iso8859-1 */
 };
 
-extern const struct ps_font_info_struct _ps_font_info[];
+extern const struct plPSFontInfoStruct _ps_font_info[];
 
 /* PCL FONTS */
 
 /* our information about each of the 45 PCL fonts in g_fontdb.c, and the
-   typefaces they belong to */
-struct pcl_font_info_struct 
+   typefaces they belong to.  (The `substitute_ps_name' field is present
+   only to support the Tidbits-is-Wingdings botch.) */
+struct plPCLFontInfoStruct
 {
   const char *ps_name;		/* the postscript font name */
-  const char *substitute_ps_name; /* alt. name when in a PS file, if non-NULL*/
+  const char *ps_name_alt;	/* alternative PS font name, if non-NULL */
+  const char *substitute_ps_name; /* replacement name (for use in a PS file) */
   const char *x_name;		/* the X Windows font name */
   int pcl_typeface;		/* the PCL typeface number */
   int pcl_spacing;		/* 0=fixed width, 1=variable */
@@ -218,14 +220,14 @@ struct pcl_font_info_struct
   bool iso8859_1;		/* whether font encoding is iso8859-1 */
 };
 
-extern const struct pcl_font_info_struct _pcl_font_info[];
+extern const struct plPCLFontInfoStruct _pcl_font_info[];
 
 /* STICK FONTS */
 
 /* our information about each of the Stick fonts (i.e., vector fonts
    resident in HP's devices) listed in g_fontdb.c, and the typefaces they
    belong to */
-struct stick_font_info_struct 
+struct plStickFontInfoStruct
 {
   const char *ps_name;		/* the postscript font name */
   bool basic;			/* basic stick font (supp. on all devices)? */
@@ -252,7 +254,7 @@ struct stick_font_info_struct
   bool iso8859_1;		/* encoding is iso8859-1? (after reencoding) */
 };
 
-extern const struct stick_font_info_struct _stick_font_info[];
+extern const struct plStickFontInfoStruct _stick_font_info[];
 
 /* Device-resident kerning data (`spacing table' in HP documentation),
    indexed by `right edge character class' and `left edge character class',
@@ -260,25 +262,25 @@ extern const struct stick_font_info_struct _stick_font_info[];
    tables, shared among old-style HP character sets of size 128, and hence
    among our Stick fonts.  See the article by L. W. Hennessee et al. in the
    Nov. 1981 issue of the Hewlett-Packard Journal. */
-struct stick_spacing_table_struct
+struct plStickCharSpacingTableStruct
 {
   int rows, cols;
   const short *kerns;
 };
 
-extern const struct stick_spacing_table_struct _stick_spacing_tables[];
+extern const struct plStickCharSpacingTableStruct _stick_spacing_tables[];
 
 /* Kerning tables for 128-character halves of our Stick fonts.  A kerning
    table for the lower or upper half of one of our 256-character fonts
    specifies a spacing table (see above), and maps each character in the
    half-font to the appropriate row and column class. */
-struct stick_kerning_table_struct
+struct plStickFontSpacingTableStruct
 {
   int spacing_table;
   char row[128], col[128];	/* we use char's as very short int's */
 };
 
-extern const struct stick_kerning_table_struct _stick_kerning_tables[];
+extern const struct plStickFontSpacingTableStruct _stick_kerning_tables[];
 
 /* TYPEFACES */
 
@@ -287,16 +289,16 @@ extern const struct stick_kerning_table_struct _stick_kerning_tables[];
 
 #define FONTS_PER_TYPEFACE 10	/* maximum */
 
-struct typeface_info_struct
+struct plTypefaceInfoStruct
 {
   int numfonts;
   int fonts[FONTS_PER_TYPEFACE];
 };
 
-extern const struct typeface_info_struct _hershey_typeface_info[];
-extern const struct typeface_info_struct _ps_typeface_info[];
-extern const struct typeface_info_struct _pcl_typeface_info[];
-extern const struct typeface_info_struct _stick_typeface_info[];
+extern const struct plTypefaceInfoStruct _hershey_typeface_info[];
+extern const struct plTypefaceInfoStruct _ps_typeface_info[];
+extern const struct plTypefaceInfoStruct _pcl_typeface_info[];
+extern const struct plTypefaceInfoStruct _stick_typeface_info[];
 
 
 /***********************************************************************/
@@ -305,28 +307,27 @@ extern const struct typeface_info_struct _stick_typeface_info[];
 
 /* miscellaneous data types */
 
-typedef Point Vector;
-
-typedef struct
-{
-  const char *name;
-  unsigned char red;
-  unsigned char green;
-  unsigned char blue;
-} Colornameinfo;
+typedef plPoint plVector;
 
 /* Initializations for default values of Plotter data members, performed
    when space() is first called.  Latter doesn't apply to Plotters whose
-   displays are of type DISP_INTEGER; the default for such Plotters is to
-   use zero-width (i.e. Bresenham) lines. */
+   device models have type DISP_DEVICE_COORS_INTEGER_LIBXMI; the default
+   for such Plotters is to use zero-width (i.e. Bresenham) lines.  See
+   g_space.c. */
 #define DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE (1.0/50.0)
 #define DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (1.0/850.0)
 
-/* justification types for labels (our numbering is the same as xfig's;
-   don't alter without checking the code) */
+/* horizontal justification types for labels (our numbering, but it's the
+   same as xfig's; don't alter without checking the code) */
 #define JUST_LEFT 0
 #define JUST_CENTER 1
 #define JUST_RIGHT 2
+
+/* vertical justification types for labels (our numbering) */
+#define JUST_TOP 0
+#define JUST_HALF 1
+#define JUST_BASE 2
+#define JUST_BOTTOM 3
 
 /* fill rules (our internal numbering) */
 #define FILL_ODD_WINDING 0	/* i.e. `even-odd' fill */
@@ -354,9 +355,9 @@ typedef struct
   int type;			/* internal number (e.g. L_DOTTED) */
   int dash_array_len;		/* length of dash array for this style */
   int dash_array[MAX_DASH_ARRAY_LEN]; /* dash array for this style */
-} LineStyle;
+} plLineStyle;
 
-extern const LineStyle _line_styles[NUM_LINE_STYLES];
+extern const plLineStyle _line_styles[NUM_LINE_STYLES];
 
 /* when using a canonical line style, numbers appearing in the dash array,
    specifying dash/gap distances, mean multiples of the line width, except
@@ -375,33 +376,41 @@ extern const LineStyle _line_styles[NUM_LINE_STYLES];
 #define CAP_PROJECT 2
 #define CAP_TRIANGULAR 3
 
-/* Display type: a Plotter's display is classified as one of these.
+/* A Plotter type is first classified according to whether or not it
+   supports a `display device model', requiring a transformation from a
+   user frame to a device frame (generic Plotters and Metafile Plotters do
+   not).  If it does, it is further classified according to whether the
+   display device to which the user frame is mapped is physical or virtual.
 
-   An `integer' display uses integer coordinates, the correspondence to
-   physical distances being unknown.  A `physical' display is one whose
-   size is specified as one of the known page types (e.g. "letter", "a4").
-   Physical displays may also use integer coordinates.  For example,
-   Fig Plotters do, but PS Plotters don't. */
+   A `physical' display device is one for which the viewport is located on
+   a page of known type (e.g. "letter", "a4").  I.e. the Plotter with a
+   physical display device is one for which the PAGESIZE parameter is
+   meaningful.  A Plotter with a `virtual' display device is one for which
+   it is not: the viewport size that the Plotter uses may be fixed (as is
+   the case for a CGM Plotter), or set in a Plotter-dependent way (e.g.
+   via the BITMAPSIZE parameter).
 
-#define DISP_UNKNOWN 0
-#define DISP_INTEGER 1
-#define DISP_PHYSICAL 2
+   Any Plotter is also classified according to the coordinate type it uses
+   when writing output (i.e. when writing to its display device, if it has
+   one).  A Plotter may use real coordinates (e.g., a PS or an AI Plotter).
+   A Plotter may also use integer coordinates.  There are two subtypes of
+   the latter: one in which a bitmap is produced using libxmi or compatible
+   scan-conversion routines (e.g., PNM, GIF, X, X Drawable Plotters), and
+   one in which graphics with integer coordinates are drawn by other means
+   (e.g., Fig, HPGL, PCL and Tektronix Plotters).  The only significant
+   distinction is that in vector graphics drawn with libxmi, zero-width
+   lines are visible: by convention, zero-width lines are interpreted as
+   Bresenham lines. */
 
-/* Structure used for specifying a known page type (e.g. "letter", "a4";
-   see our database of known page types in g_pagetype.h) */
-typedef struct
-{
-  const char *name;		/* page type, e.g. "letter" */
-  bool metric;			/* metric vs. Imperial, advisory only */
-  Displaycoors fig, ps, hpgl;	/* coors of corners of display (device-dep.) */
-} Pagedata;
+enum { DISP_MODEL_NONE, DISP_MODEL_PHYSICAL, DISP_MODEL_VIRTUAL };
+enum { DISP_DEVICE_COORS_REAL, DISP_DEVICE_COORS_INTEGER_LIBXMI, DISP_DEVICE_COORS_INTEGER_NON_LIBXMI };
 
 /* The user->device coordinate transformation */
 
 /* X, Y Device: transform user coordinates to device coordinates */
 #ifdef __GNUC__
-#define XD(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; m[4] + _x * m[0] + _y * m[2]; })
-#define YD(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; m[5] + _x * m[1] + _y * m[3]; })
+#define XD(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; double _retval = m[4] + _x * m[0] + _y * m[2]; _retval; })
+#define YD(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; double _retval = m[5] + _x * m[1] + _y * m[3]; _retval; })
 #else
 #define XD(x,y) (_plotter->drawstate->transform.m[4] + (x) * _plotter->drawstate->transform.m[0] + (y) * _plotter->drawstate->transform.m[2])
 #define YD(x,y) (_plotter->drawstate->transform.m[5] + (x) * _plotter->drawstate->transform.m[1] + (y) * _plotter->drawstate->transform.m[3])
@@ -409,8 +418,8 @@ typedef struct
 
 /* X,Y Device Vector: transform user vector to device vector */
 #ifdef __GNUC__
-#define XDV(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; m[0] * _x + m[2] * _y; })
-#define YDV(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; m[1] * _x + m[3] * _y; })
+#define XDV(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; double _retval = m[0] * _x + m[2] * _y; _retval; })
+#define YDV(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; double _retval = m[1] * _x + m[3] * _y; _retval; })
 #else
 #define XDV(x,y) (_plotter->drawstate->transform.m[0] * (x) + _plotter->drawstate->transform.m[2] * (y))
 #define YDV(x,y) (_plotter->drawstate->transform.m[1] * (x) + _plotter->drawstate->transform.m[3] * (y))
@@ -419,8 +428,8 @@ typedef struct
 /* X, Y User Vector: transform device vector back to user vector 
    (used by X11 driver only) */
 #ifdef __GNUC__
-#define XUV(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; (m[3] * _x - m[2] * _y) / (m[0] * m[3] - m[1] * m[2]); })
-#define YUV(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; (- m[1] * _x + m[0] * _y) / (m[0] * m[3] - m[1] * m[2]); })
+#define XUV(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; double _retval = (m[3] * _x - m[2] * _y) / (m[0] * m[3] - m[1] * m[2]); _retval; })
+#define YUV(x,y) ({double _x = (x), _y = (y), *m = _plotter->drawstate->transform.m; double _retval = (- m[1] * _x + m[0] * _y) / (m[0] * m[3] - m[1] * m[2]); _retval; })
 #else
 #define XUV(x,y) ((_plotter->drawstate->transform.m[3] * (x) - _plotter->drawstate->transform.m[2] * (y)) / (_plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[3] - _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[2]))
 #define YUV(x,y) ((- _plotter->drawstate->transform.m[1] * (x) + _plotter->drawstate->transform.m[0] * (y)) / (_plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[3] - _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[2]))
@@ -447,25 +456,25 @@ typedef struct
 /* Maximum number of times a circular or elliptic arc is recursively
    subdivided, when it is being approximated by an inscribed polyline.  The
    polyline will contain no more than 2**MAX_ARC_SUBDIVISIONS line
-   segments.  MAX_ARC_SUBDIVISIONS must be no longer than
-   TABULATED_ARC_SUBDIVISIONS below (see g_arc.h). */
+   segments.  MAX_ARC_SUBDIVISIONS must be no larger than
+   TABULATED_ARC_SUBDIVISIONS below (the size of the tables in g_arc.h). */
 #define MAX_ARC_SUBDIVISIONS 5 	/* to avoid buffer overflow on HP7550[A|B] */
 
-/* Types of circular/elliptic arc (which may or may not be drawn via
-   recursive subdivision).  These index into the table in g_arc.h. */
-#define NUM_ARC_TYPES 4
+/* Types of circular/elliptic arc.  These index into the doubly indexed
+   table of `relative chordal deviations' in g_arc.h. */
+#define NUM_ARC_TYPES 3
 
 #define QUARTER_ARC 0
 #define HALF_ARC 1
 #define THREE_QUARTER_ARC 2
-#define USER_DEFINED_ARC 3
+#define USER_DEFINED_ARC -1	/* does not index into table */
 
 #define TABULATED_ARC_SUBDIVISIONS 15	/* length of each table entry */
 
 /* A `path' in libplot/libplotter is a continuous sequence of line
    segments, circular arc segments, elliptic arc segments, quadratic Bezier
    segments, or cubic Bezier segments.  It is represented internally as a
-   list of GeneralizedPoints (see plotter.h).  These are allowed values for
+   list of plGeneralizedPoints (see plotter.h).  These are allowed values for
    the type field. */
 
 #define S_LINE 0
@@ -497,7 +506,7 @@ typedef struct
 
 
 /************************************************************************/
-/* DEFINITIONS, TYPEDEFS, & EXTERNALS SPECIFIC TO INDIVIDUAL DEVICE DRIVERS */
+/* DEFINITIONS & EXTERNALS SPECIFIC TO INDIVIDUAL DEVICE DRIVERS */
 /************************************************************************/
 
 /************************************************************************/
@@ -538,7 +547,7 @@ typedef struct
 /* colors supported by MS-DOS kermit Tek emulation, see t_color2.c */
 
 #define KERMIT_NUM_STD_COLORS 16
-extern const Color _kermit_stdcolors[KERMIT_NUM_STD_COLORS];
+extern const plColor _kermit_stdcolors[KERMIT_NUM_STD_COLORS];
 extern const char * const _kermit_fgcolor_escapes[KERMIT_NUM_STD_COLORS];
 extern const char * const _kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS];
 /* must agree with the ordering in t_color2.c */
@@ -589,11 +598,6 @@ extern const char * const _kermit_bgcolor_escapes[KERMIT_NUM_STD_COLORS];
 #define HPGL_FILL_SOLID_BI 1
 #define HPGL_FILL_SOLID_UNI 2
 #define HPGL_FILL_SHADING 10
-
-/* Maximum number of pens, or logical pens, for an HP-GL/2 device.  Some
-   such devices permit as many as 256, but all should permit at least 32.
-   Our pen numbering will range over 0..HPGL2_MAX_NUM_PENS-1. */
-#define HPGL2_MAX_NUM_PENS 32
 
 /* default values for HPGL_PENS environment variable, for HP-GL[/2]; this
    lists available pens and their positions in carousel */
@@ -685,8 +689,7 @@ extern const int _fig_join_style[], _fig_cap_style[];
 #define C_WHITE 7		/* i.e. #7 in table */
 #define FIG_NUM_STD_COLORS 32
 #define FIG_USER_COLOR_MIN 32
-#define FIG_MAX_NUM_USER_COLORS 512 /* also defined in plotter.h */
-extern const Color _fig_stdcolors[FIG_NUM_STD_COLORS];
+extern const plColor _fig_stdcolors[FIG_NUM_STD_COLORS];
 
 /* xfig's depth attribute ranges from 0 to FIG_MAXDEPTH. */
 #define FIG_MAXDEPTH 999
@@ -695,6 +698,203 @@ extern const Color _fig_stdcolors[FIG_NUM_STD_COLORS];
    FIG_MAXDEPTH, since the user may wish to edit the drawing with xfig to
    include deeper, i.e. obscured objects) */
 #define FIG_INITIAL_DEPTH 989
+
+
+/************************************************************************/
+/* CGM device driver */
+/************************************************************************/
+
+/* CGM output file `profiles', which are increasingly general (our
+   numbering).  The most restrictive is the WebCGM profile.  We increment
+   the profile number appropriately whenever anything noncompliant is
+   seen. */
+
+#define CGM_PROFILE_WEB 0
+#define CGM_PROFILE_MODEL 1
+#define CGM_PROFILE_NONE 2
+
+/* Possible encodings of the CGM output file (our numbering).  Only the
+   first (binary) is allowed by the WebCGM profile. */
+
+#define CGM_ENCODING_BINARY 0	/* default */
+#define CGM_ENCODING_CHARACTER 1 /* not supported by libplot */
+#define CGM_ENCODING_CLEAR_TEXT 2
+
+/* In the binary encoding, how many bytes we use to represent an integer
+   parameter of a CGM command.  This determines the range over which
+   integers (e.g., point coordinates) can vary, and hence the granularity
+   of our quantization to integer coordinates in the output file.  This
+   value should not be greater than the number of bytes used in the system
+   representation for an integer (see comments in c_emit.c).
+
+   Don't change this value unless you know what you're doing.  Some old
+   [buggy] CGM interpreters can't handle any value except 2, or possibly 4.
+   The old RALCGM viewer/translator partially breaks on a value of 3 or 4.
+   (It can display binary-encoded CGM files that use the value of `3', but
+   when it translates such files to the clear text encoding, it produces a
+   bogus [zero] value for the metric scaling factor.) */
+
+#define CGM_BINARY_BYTES_PER_INTEGER 2
+
+/* In the binary encoding, how many bytes we use to represent an RGB color
+   component.  In this is 1, then 24-bit color will be used; if 2, then
+   48-bit color will be used.  Valid values are 1, 2, 3, 4, but our
+   code in c_color.c assumes that the value is 1 or 2. */
+
+#define CGM_BINARY_BYTES_PER_COLOR_COMPONENT 2
+
+/* In the binary encoding, how many bytes we use to represent a string
+   parameter of a CGM command.  (See c_emit.c.)  In the binary encoding, a
+   string <= 254 bytes in length is represented literally, preceded by a
+   1-byte count.  Any string > 254 bytes in length is partitioned: after
+   the initial byte, there are one or more partitions.  Each partition
+   contains an initial byte, and then up to CGM_STRING_PARTITION_SIZE bytes
+   of the string.  According to the CGM spec, CGM_STRING_PARTITION_SIZE
+   could be as large as 32767.  However, since we don't wish to overrun our
+   output buffer, we keep it fairly small (see comment in g_outbuf.c). */
+
+#define CGM_STRING_PARTITION_SIZE 2000
+#define CGM_BINARY_BYTES_PER_STRING(len) \
+((len) <= 254 ? (1 + (len)) : \
+(1 + (len) + 2 * (1 + ((len) - 1) / CGM_STRING_PARTITION_SIZE)))
+
+/* CGM's element classes (CGM numbering) */
+#define CGM_DELIMITER_ELEMENT 0
+#define CGM_METAFILE_DESCRIPTOR_ELEMENT 1
+#define CGM_PICTURE_DESCRIPTOR_ELEMENT 2
+#define CGM_CONTROL_ELEMENT 3
+#define CGM_GRAPHICAL_PRIMITIVE_ELEMENT 4
+#define CGM_ATTRIBUTE_ELEMENT 5
+#define CGM_ESCAPE_ELEMENT 6	/* not used by libplot */
+#define CGM_EXTERNAL_ELEMENT 7	/* not used by libplot */
+#define CGM_SEGMENT_ELEMENT 8	/* not used by libplot */
+
+/* tags for CGM data types within a CGM SDR (structured data record) */
+#define CGM_SDR_DATATYPE_SDR 1
+#define CGM_SDR_DATATYPE_COLOR_INDEX 2
+#define CGM_SDR_DATATYPE_COLOR_DIRECT 3
+#define CGM_SDR_DATATYPE_ENUM 5
+#define CGM_SDR_DATATYPE_INTEGER 6
+#define CGM_SDR_DATATYPE_INDEX 11
+#define CGM_SDR_DATATYPE_REAL 12
+#define CGM_SDR_DATATYPE_STRING 13
+#define CGM_SDR_DATATYPE_STRING_FIXED 14
+#define CGM_SDR_DATATYPE_VDC 16
+#define CGM_SDR_DATATYPE_UNSIGNED_INTEGER_8BIT 18
+#define CGM_SDR_DATATYPE_COLOR_LIST 21
+
+/* CGM font properties, from the CGM spec.  (Value of each of these font
+   props is an SDR, comprising a single datum of `index' type, except for
+   the FAMILY prop, for which the datum is a string, and the DESIGN_GROUP
+   prop, for which the SDR comprises three 8-bit unsigned integers.) */
+#define CGM_FONT_PROP_INDEX 1
+#define CGM_FONT_PROP_FAMILY 4
+#define CGM_FONT_PROP_POSTURE 5
+#define CGM_FONT_PROP_WEIGHT 6
+#define CGM_FONT_PROP_WIDTH 7
+#define CGM_FONT_PROP_DESIGN_GROUP 13
+#define CGM_FONT_PROP_STRUCTURE 14
+
+/* CGM line/edge types (CGM numbering; for custom dash arrays defined by
+   linedash(), negative values are used) */
+#define CGM_L_SOLID 1
+#define CGM_L_DASHED 2
+#define CGM_L_DOTTED 3
+#define CGM_L_DOTDASHED 4
+#define CGM_L_DOTDOTDASHED 5
+
+/* CGM interior styles (CGM numbering) */
+#define CGM_INT_STYLE_HOLLOW 0
+#define CGM_INT_STYLE_SOLID 1
+#define CGM_INT_STYLE_PATTERN 2
+#define CGM_INT_STYLE_HATCH 3
+#define CGM_INT_STYLE_EMPTY 4
+#define CGM_INT_STYLE_GEOMETRIC_PATTERN 5
+#define CGM_INT_STYLE_INTERPOLATED 6
+
+/* CGM line/edge join styles (CGM numbering) */
+#define CGM_JOIN_UNSPEC 1
+#define CGM_JOIN_MITER 2
+#define CGM_JOIN_ROUND 3
+#define CGM_JOIN_BEVEL 4
+
+/* CGM line/edge cap styles (CGM numbering) */
+#define CGM_CAP_UNSPEC 1
+#define CGM_CAP_BUTT 2
+#define CGM_CAP_ROUND 3
+#define CGM_CAP_PROJECTING 4
+#define CGM_CAP_TRIANGULAR 5
+
+/* CGM line/edge dash cap styles (CGM numbering) */
+#define CGM_DASH_CAP_UNSPEC 1
+#define CGM_DASH_CAP_BUTT 2
+#define CGM_DASH_CAP_MATCH 3
+
+/* CGM marker types (CGM numbering) */
+#define CGM_M_DOT 1
+#define CGM_M_PLUS 2
+#define CGM_M_ASTERISK 3
+#define CGM_M_CIRCLE 4
+#define CGM_M_CROSS 5
+
+/* CGM object types (our numbering) */
+#define CGM_OBJECT_OPEN 0
+#define CGM_OBJECT_CLOSED 1
+#define CGM_OBJECT_MARKER 2
+#define CGM_OBJECT_TEXT 3
+#define CGM_OBJECT_OTHER 4
+
+/* CGM horizontal justification types for labels (CGM numbering) */
+#define CGM_ALIGN_NORMAL_HORIZONTAL 0
+#define CGM_ALIGN_LEFT 1
+#define CGM_ALIGN_CENTER 2
+#define CGM_ALIGN_RIGHT 3
+
+/* CGM vertical justification types for labels (CGM numbering) */
+#define CGM_ALIGN_NORMAL_VERTICAL 0
+#define CGM_ALIGN_TOP 1
+#define CGM_ALIGN_CAP 2
+#define CGM_ALIGN_HALF 3
+#define CGM_ALIGN_BASE 4
+#define CGM_ALIGN_BOTTOM 5
+
+/* CGM `restricted text' types (CGM numbering) */
+#define CGM_RESTRICTED_TEXT_TYPE_BASIC 1
+#define CGM_RESTRICTED_TEXT_TYPE_BOXED_CAP 2
+
+/* mappings from internal PS font number to CGM font id, as used in output
+   file; see g_fontdb.c */
+extern const int _ps_font_to_cgm_font_id[];
+extern const int _cgm_font_id_to_ps_font[];
+
+/* structure used to store the CGM properties for a font; see g_fontdb.c */
+typedef struct
+{
+  const char *family;
+  const char *extra_style;
+  const char *style;
+  int posture;			/* 1=upright, 2=oblique, 4=italic */
+  int weight;			/* 4=semilight, 5=normal, 6=semibold, 7=bold */
+  int proportionate_width;	/* 3=condensed, 5=medium */
+  int design_group[3];
+  int structure;		/* 1=filled, 2=outline */
+} plCGMFontProperties;
+
+extern const plCGMFontProperties _cgm_font_properties[];
+
+/* structure used to store a user-defined line type; see g_attribs.c */
+typedef struct plCGMCustomLineTypeStruct
+{
+  int *dashes;
+  int dash_array_len;
+  struct plCGMCustomLineTypeStruct *next;
+} plCGMCustomLineType;
+
+/* maximum number of line types a user can define, and the maximum dash
+   array length a user can specify per line type, without violating the
+   WebCGM or Model CGM profiles */
+#define CGM_MAX_CUSTOM_LINE_TYPES 16
+#define CGM_MAX_DASH_ARRAY_LENGTH 8
 
 
 /************************************************************************/
@@ -713,13 +913,13 @@ extern const long _idraw_brush_pattern[NUM_LINE_STYLES];
 
 /* PS line join and line cap styles [also used by AI device driver] */
 
-#define PS_JOIN_MITER 0
-#define PS_JOIN_ROUND 1
-#define PS_JOIN_BEVEL 2
+#define PS_LINE_JOIN_MITER 0
+#define PS_LINE_JOIN_ROUND 1
+#define PS_LINE_JOIN_BEVEL 2
 
-#define PS_CAP_BUTT 0
-#define PS_CAP_ROUND 1
-#define PS_CAP_PROJECT 2
+#define PS_LINE_CAP_BUTT 0
+#define PS_LINE_CAP_ROUND 1
+#define PS_LINE_CAP_PROJECT 2
 
 /* PS join and cap styles, see p_endpath.c, indexed by our internal join
    and cap type numbering (miter/rd./bevel/triangular and
@@ -729,7 +929,7 @@ extern const int _ps_join_style[], _ps_cap_style[];
 /* information on colors known to idraw, see p_color2.c */
 
 #define IDRAW_NUM_STD_COLORS 12
-extern const Color _idraw_stdcolors[IDRAW_NUM_STD_COLORS];
+extern const plColor _idraw_stdcolors[IDRAW_NUM_STD_COLORS];
 extern const char * const _idraw_stdcolornames[IDRAW_NUM_STD_COLORS];
 
 /* information on shadings known to idraw, see p_color2.c */
@@ -776,6 +976,13 @@ extern const double _idraw_stdshadings[IDRAW_NUM_STD_SHADINGS];
 #define DBL_MBX 2		/* X11 MBX extension */
 #define DBL_DBE 3		/* X11 DBE extension */
 
+/* numbering of our X GC's (graphics contexts); this is the numbering we
+   use when passing the `hint' to x_set_attributes() indicating which GC
+   should be altered */
+#define X_GC_FOR_DRAWING 0
+#define X_GC_FOR_FILLING 1
+#define X_GC_FOR_ERASING 2
+
 #endif /* not X_DISPLAY_MISSING */
 
 
@@ -786,22 +993,11 @@ extern const double _idraw_stdshadings[IDRAW_NUM_STD_SHADINGS];
 /* Default drawing state, defined in g_defstate.c.  This is used for
    initialization of the first state on the drawing state stack that every
    Plotter maintains; see g_savestate.c. */
-extern const pl_DrawState _default_drawstate;
+extern const plDrawState _default_drawstate;
 
 /*************************************************************************/
 /* PLOTTER OBJECTS (structs for libplot, class instances for libplotter) */
 /*************************************************************************/
-
-/* In libplot, "_plotter" is a pointer to the currently selected Plotter
-   (after startup, one is always selected; see the libplot-specific file
-   api.c).  But in libplotter, it's an alias for "this", since it's used
-   only within methods of the base Plotter class or its derived classes. */
-
-#ifndef LIBPLOTTER
-extern Plotter *_plotter;
-#else
-#define _plotter this
-#endif
 
 /* "_plotters" is a sparse array containing pointers to all Plotter
    instances, of size "_plotters_len".  In libplot, they're globals, but in
@@ -829,13 +1025,40 @@ extern int _xplotters_len;
 #ifndef LIBPLOTTER
 /* In libplot, these are the initializations of the function-pointer parts
    of the different types of Plotter.  They are copied to the Plotter at
-   creation time (in api.c, which is libplot-specific). */
-extern const Plotter _g_default_plotter, _m_default_plotter, _t_default_plotter, _h_default_plotter, _q_default_plotter, _f_default_plotter, _p_default_plotter, _a_default_plotter, _i_default_plotter, _n_default_plotter, _x_default_plotter, _y_default_plotter;
+   creation time (in api-newc.c, which is libplot-specific). */
+extern const Plotter _g_default_plotter, _m_default_plotter, _t_default_plotter, _h_default_plotter, _q_default_plotter, _f_default_plotter, _c_default_plotter, _p_default_plotter, _a_default_plotter, _i_default_plotter, _n_default_plotter, _x_default_plotter, _y_default_plotter;
+
+/* Similarly, in libplot this is the initialization of the function-pointer
+   part of any PlotterParams object. */
+extern const PlotterParams _default_plotter_params;
 #endif /* not LIBPLOTTER */
+
+/* The array used for storing the names of recognized Plotter parameters,
+   and their default values.  (See g_params2.c.) */
+struct plParamRecord
+{
+  const char *parameter;	/* parameter name */
+  voidptr_t default_value;	/* default value (applies if string-valued) */
+  bool is_string;		/* whether or not value must be a string */
+};
+
+extern const struct plParamRecord _known_params[NUM_PLOTTER_PARAMETERS];
+
+/* A pointer to a distinguished (global) PlotterParams object, used by the
+   old C and C++ bindings.  The function parampl() sets parameters in this
+   object.  (This is one reason why the old bindings are non-thread-safe.
+   The new bindings allow the programmer to instantiate and use more than a
+   single PlotterParams object, so they are thread-safe.)  In libplotter,
+   this pointer is declared as a static member of the Plotter class. */
+#ifndef LIBPLOTTER
+extern PlotterParams *_old_api_global_plotter_params;
+#else
+#define _old_api_global_plotter_params Plotter::_old_api_global_plotter_params
+#endif
 
 
 /**************************************************************************/
-/* PROTOTYPES for libplot and libplotter */
+/* PROTOTYPES ETC. for libplot and libplotter */
 /**************************************************************************/
 
 /* The P___ macro elides the argument prototypes if the compiler does not
@@ -851,61 +1074,93 @@ extern const Plotter _g_default_plotter, _m_default_plotter, _t_default_plotter,
 #define P___(protos) ()
 #endif
 
-/* Miscellaneous internal functions, which aren't Plotter class methods, so
+/* Miscellaneous internal functions that aren't Plotter class methods, so
    they're declared the same for both libplot and libplotter. */
 
-extern Outbuf * _new_outbuf P___((void));
-extern Point _truecenter P___((Point p0, Point p1, Point pc));
-extern Vector *_vscale P___((Vector *v, double newlen));
-extern Voidptr _get_default_plot_param P___((const char *parameter)); 
-extern Voidptr _plot_xcalloc P___((unsigned int nmemb, unsigned int size));
-extern Voidptr _plot_xmalloc P___((unsigned int size));
-extern Voidptr _plot_xrealloc P___((Voidptr p, unsigned int size));
+/* wrappers for malloc and friends */
+extern voidptr_t _plot_xcalloc P___((size_t nmemb, size_t size));
+extern voidptr_t _plot_xmalloc P___((size_t size));
+extern voidptr_t _plot_xrealloc P___((voidptr_t p, size_t size));
+
+/* plOutbuf methods (see g_outbuf.c) */
+extern plOutbuf * _new_outbuf P___((void));
+extern void _bbox_of_outbuf P___((plOutbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
+extern void _bbox_of_outbufs P___((plOutbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
+extern void _delete_outbuf P___((plOutbuf *outbuf));
+extern void _freeze_outbuf P___((plOutbuf *outbuf));
+extern void _reset_outbuf P___((plOutbuf *outbuf));
+extern void _update_bbox P___((plOutbuf *bufp, double x, double y));
+extern void _update_buffer P___((plOutbuf *outbuf));
+extern void _update_buffer_by_added_bytes P___((plOutbuf *outbuf, int additional));
+
+/* CGMPlotter-related functions, which write a CGM command, or an argument
+   of same, alternatively to a plOutbuf or to a string (see c_emit.c) */
+extern void _cgm_emit_command_header P___((plOutbuf *outbuf, int cgm_encoding, int element_class, int id, int data_len, int *byte_count, const char *op_code));
+extern void _cgm_emit_color_component P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_enum P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count, const char *text_string)); 
+extern void _cgm_emit_index P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_integer P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_point P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, int x, int y, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_points P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, const int *x, const int *y, int npoints, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_real_fixed_point P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, double x, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_real_floating_point P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, double x, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_string P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, const char *s, int string_length, bool use_double_quotes, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_unsigned_integer P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_unsigned_integer_8bit P___((plOutbuf *outbuf, bool no_partitioning, int cgm_encoding, unsigned int x, int data_len, int *data_byte_count, int *byte_count));
+extern void _cgm_emit_command_terminator P___((plOutbuf *outbuf, int cgm_encoding, int *byte_count));
+
+/* miscellaneous */
+extern plPoint _truecenter P___((plPoint p0, plPoint p1, plPoint pc));
+extern plVector *_vscale P___((plVector *v, double newlen));
 extern bool _clean_iso_string P___((unsigned char *s));
-extern bool _string_to_color P___((const char *name, const Colornameinfo **info_p));
-extern const Pagedata * _pagetype P___((const char *name));
 extern double _matrix_norm P___((const double m[6]));
 extern double _xatan2 P___((double y, double x));
 extern int _clip_line P___((double *x0_p, double *y0_p, double *x1_p, double *y1_p, double x_min_clip, double x_max_clip, double y_min_clip, double y_max_clip));
 extern int _codestring_len P___((const unsigned short *codestring));
-extern void _bbox_of_outbuf P___((Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
-extern void _bbox_of_outbufs P___((Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
-extern void _delete_outbuf P___((Outbuf *outbuf));
-extern void _freeze_outbuf P___((Outbuf *outbuf));
 extern void _matrix_product P___((const double m[6], const double n[6], double product[6]));
 extern void _matrix_sing_vals P___((const double m[6], double *min_sing_val, double *max_sing_val));
-extern void _reset_outbuf P___((Outbuf *outbuf));
-extern void _update_bbox P___((Outbuf *bufp, double x, double y));
-extern void _update_buffer P___((Outbuf *outbuf));
+extern voidptr_t _get_default_plot_param P___((const char *parameter)); 
 
-/* Renamings of global functions in the MI scan conversion module (defined
-   in the files g_mi*.c) to ensure they all begin with an underscore.  Not
-   necessary, but it's wise not to fill up the user-level namespace. */
-#define miAppendSpans _miAppendSpans
-#define miCreateETandAET _miCreateETandAET
-#define miFillConvexPoly _miFillConvexPoly
-#define miFillGeneralPoly _miFillGeneralPoly
-#define miFillPolygon _miFillPolygon
-#define miFillSpanGroup _miFillSpanGroup
-#define miFillSpans _miFillSpans
-#define miFillSppPoly _miFillSppPoly
-#define miFillUniqueSpanGroup _miFillUniqueSpanGroup
-#define miFreeSpanGroup _miFreeSpanGroup
-#define miFreeStorage _miFreeStorage
-#define miInitSpanGroup _miInitSpanGroup
-#define miInsertionSort _miInsertionSort
-#define miPolyArc _miPolyArc
-#define miPolyFillArc _miPolyFillArc
-#define miPolyFillRect _miPolyFillRect
-#define miPolyPoint _miPolyPoint
-#define miStepDash _miStepDash
-#define miWideDash _miWideDash
-#define miWideLine _miWideLine
-#define miZeroDash _miZeroDash
-#define miZeroLine _miZeroLine
-#define miZeroPolyArc _miZeroPolyArc
-#define micomputeWAET _micomputeWAET
-#define miloadAET _miloadAET
+/* Renaming of the global symbols in the libxmi scan conversion library,
+   which we include in libplot/libplotter as a rendering module.  We
+   prepend each name with two underscores.  Doing this prevents pollution
+   of the user-level namespace, and allows an application to link with both
+   libplot/libplotter and libxmi. */
+#define mi_xmalloc __mi_xmalloc
+#define mi_xcalloc __mi_xcalloc
+#define mi_xrealloc __mi_xrealloc
+#define miDrawArcs_r_internal __miDrawArcs_r_internal
+#define miDrawArcs_internal __miDrawArcs_internal
+#define miDrawLines_internal __miDrawLines_internal
+#define miDrawRectangles_internal __miDrawRectangles_internal
+#define miPolyArc_r __miPolyArc_r
+#define miPolyArc __miPolyArc
+#define miFillArcs_internal __miFillArcs_internal
+#define miFillRectangles_internal __miFillRectangles_internal
+#define miFillSppPoly __miFillSppPoly
+#define miFillPolygon_internal __miFillPolygon_internal
+#define miFillConvexPoly __miFillConvexPoly
+#define miFillGeneralPoly __miFillGeneralPoly
+#define miDrawPoints_internal __miDrawPoints_internal
+#define miCreateETandAET __miCreateETandAET
+#define miloadAET __miloadAET
+#define micomputeWAET __micomputeWAET
+#define miInsertionSort __miInsertionSort
+#define miFreeStorage __miFreeStorage
+#define miQuickSortSpansY __miQuickSortSpansY
+#define miUniquifyPaintedSet __miUniquifyPaintedSet
+#define miWideDash __miWideDash
+#define miStepDash __miStepDash
+#define miWideLine __miWideLine
+#define miZeroPolyArc_r __miZeroPolyArc_r
+#define miZeroPolyArc __miZeroPolyArc
+#define miZeroLine __miZeroLine
+#define miZeroDash __miZeroDash
+
+/* Don't include unneeded non-reentrant libxmi functions, such as the
+   function miPolyArc().  We use the reentrant version miPolyArc_r()
+   instead, to avoid static data. */
+#define NO_NONREENTRANT_POLYARC_SUPPORT
 
 /* Internal functions that aren't Plotter class methods, but which need to
    be renamed in libplotter, so that both libplot and libplotter can be
@@ -915,183 +1170,190 @@ extern void _update_buffer P___((Outbuf *outbuf));
 #define libplot_error_handler libplotter_error_handler
 #endif
 
-/* Declarations of forwarding functions defined in api.c, used in libplot
-   (not libplotter).  These support the derivation of the PCLPlotter class
-   from the HPGLPlotter class, the MetaPlotter class from the Plotter
-   class, and the XPlotter class from the XDrawablePlotter class. */
+/* Declarations of forwarding functions used in libplot (not libplotter).
+   They support the derivation of the PCLPlotter class from the HPGLPlotter
+   class and the XPlotter class from the XDrawablePlotter class. */
 
 #ifndef LIBPLOTTER
-extern void _maybe_switch_to_hpgl P___((void));
-extern void _maybe_switch_from_hpgl P___((void));
-extern void _recompute_device_line_width P___((void));
+extern void _maybe_switch_to_hpgl P___((Plotter *_plotter));
+extern void _maybe_switch_from_hpgl P___((Plotter *_plotter));
 #ifndef X_DISPLAY_MISSING
-extern void _maybe_get_new_colormap P___((void));
-extern void _maybe_handle_x_events P___((void));
+extern void _maybe_get_new_colormap P___((Plotter *_plotter));
+extern void _maybe_handle_x_events P___((Plotter *_plotter));
 #endif /* not X_DISPLAY_MISSING */
 #endif /* not LIBPLOTTER */
 
 /* Declarations of the Plotter methods and the device-specific versions of
-   same.  The initial letter indicates the Plotter subclass specificity.
+   same.  The initial letter indicates the Plotter class specificity:
    g=generic (i.e. base Plotter class), m=metafile, t=Tektronix, h=HP-GL/2
-   and PCL 5, f=xfig, p=PS, a=Adobe Illustrator, i=GIF, n=PNM
+   and PCL 5, f=xfig, c=CGM, p=PS, a=Adobe Illustrator, i=GIF, n=PNM
    (i.e. PBM/PGM/PPM), x=X11 Drawable, y=X11.
 
-   In libplot, these are definitions of global functions.  But in
+   In libplot, these are declarations of global functions.  But in
    libplotter, we use #define and the double colon notation to make them
-   function members of the appropriate classes. */
+   function members of the appropriate Plotter classes. */
 
 #ifndef LIBPLOTTER
 /* Plotter public methods, for libplot */
-extern FILE* _g_outfile P___((FILE* newstream));/* OBSOLESCENT */
-extern double _g_ffontname P___((const char *s));
-extern double _g_ffontsize P___((double size));
-extern double _g_flabelwidth P___((const char *s));
-extern double _g_ftextangle P___((double angle));
-extern int _g_alabel P___((int x_justify, int y_justify, const char *s));
-extern int _g_arc P___((int xc, int yc, int x0, int y0, int x1, int y1));
-extern int _g_arcrel P___((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-extern int _g_bezier2 P___((int x0, int y0, int x1, int y1, int x2, int y2));
-extern int _g_bezier2rel P___((int dx0, int dy0, int dx1, int dy1, int dx2, int dy2));
-extern int _g_bezier3 P___((int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3));
-extern int _g_bezier3rel P___((int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3));
-extern int _g_bgcolor P___((int red, int green, int blue));
-extern int _g_bgcolorname P___((const char *name));
-extern int _g_box P___((int x0, int y0, int x1, int y1));
-extern int _g_boxrel P___((int dx0, int dy0, int dx1, int dy1));
-extern int _g_capmod P___((const char *s));
-extern int _g_circle P___((int x, int y, int r));
-extern int _g_circlerel P___((int dx, int dy, int r));
-extern int _g_closepl P___((void));
-extern int _g_color P___((int red, int green, int blue));
-extern int _g_colorname P___((const char *name));
-extern int _g_cont P___((int x, int y));
-extern int _g_contrel P___((int x, int y));
-extern int _g_ellarc P___((int xc, int yc, int x0, int y0, int x1, int y1));
-extern int _g_ellarcrel P___((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-extern int _g_ellipse P___((int x, int y, int rx, int ry, int angle));
-extern int _g_ellipserel P___((int dx, int dy, int rx, int ry, int angle));
-extern int _g_endpath P___((void));
-extern int _g_erase P___((void));
-extern int _g_farc P___((double xc, double yc, double x0, double y0, double x1, double y1));
-extern int _g_farcrel P___((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-extern int _g_fbezier2 P___((double x0, double y0, double x1, double y1, double x2, double y2));
-extern int _g_fbezier2rel P___((double dx0, double dy0, double dx1, double dy1, double dx2, double dy2));
-extern int _g_fbezier3 P___((double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
-extern int _g_fbezier3rel P___((double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3));
-extern int _g_fbox P___((double x0, double y0, double x1, double y1));
-extern int _g_fboxrel P___((double dx0, double dy0, double dx1, double dy1));
-extern int _g_fcircle P___((double x, double y, double r));
-extern int _g_fcirclerel P___((double dx, double dy, double r));
-extern int _g_fconcat P___((double m0, double m1, double m2, double m3, double m4, double m5));
-extern int _g_fcont P___((double x, double y));
-extern int _g_fcontrel P___((double x, double y));
-extern int _g_fellarc P___((double xc, double yc, double x0, double y0, double x1, double y1));
-extern int _g_fellarcrel P___((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-extern int _g_fellipse P___((double x, double y, double rx, double ry, double angle));
-extern int _g_fellipserel P___((double dx, double dy, double rx, double ry, double angle));
-extern int _g_fillcolor P___((int red, int green, int blue));
-extern int _g_fillcolorname P___((const char *name));
-extern int _g_fillmod P___((const char *s));
-extern int _g_filltype P___((int level));
-extern int _g_fline P___((double x0, double y0, double x1, double y1));
-extern int _g_flinedash P___((int n, const double *dashes, double offset));
-extern int _g_flinerel P___((double dx0, double dy0, double dx1, double dy1));
-extern int _g_flinewidth P___((double size));
-extern int _g_flushpl P___((void));
-extern int _g_fmarker P___((double x, double y, int type, double size));
-extern int _g_fmarkerrel P___((double dx, double dy, int type, double size));
-extern int _g_fmiterlimit P___((double limit));
-extern int _g_fmove P___((double x, double y));
-extern int _g_fmoverel P___((double x, double y));
-extern int _g_fontname P___((const char *s));
-extern int _g_fontsize P___((int size));
-extern int _g_fpoint P___((double x, double y));
-extern int _g_fpointrel P___((double dx, double dy));
-extern int _g_frotate P___((double theta));
-extern int _g_fscale P___((double x, double y));
-extern int _g_fspace P___((double x0, double y0, double x1, double y1));
-extern int _g_fspace2 P___((double x0, double y0, double x1, double y1, double x2, double y2));
-extern int _g_ftranslate P___((double x, double y));
-extern int _g_havecap P___((const char *s));
-extern int _g_joinmod P___((const char *s));
-extern int _g_label P___((const char *s));
-extern int _g_labelwidth P___((const char *s));
-extern int _g_line P___((int x0, int y0, int x1, int y1));
-extern int _g_linedash P___((int n, const int *dashes, int offset));
-extern int _g_linemod P___((const char *s));
-extern int _g_linerel P___((int dx0, int dy0, int dx1, int dy1));
-extern int _g_linewidth P___((int size));
-extern int _g_marker P___((int x, int y, int type, int size));
-extern int _g_markerrel P___((int dx, int dy, int type, int size));
-extern int _g_move P___((int x, int y));
-extern int _g_moverel P___((int x, int y));
-extern int _g_openpl P___((void));
-extern int _g_pencolor P___((int red, int green, int blue));
-extern int _g_pencolorname P___((const char *name));
-extern int _g_point P___((int x, int y));
-extern int _g_pointrel P___((int dx, int dy));
-extern int _g_restorestate P___((void));
-extern int _g_savestate P___((void));
-extern int _g_space P___((int x0, int y0, int x1, int y1));
-extern int _g_space2 P___((int x0, int y0, int x1, int y1, int x2, int y2));
-extern int _g_textangle P___((int angle));
+extern FILE* _g_outfile P___((Plotter *_plotter, FILE* newstream));/* OBSOLESCENT */
+extern double _g_ffontname P___((Plotter *_plotter, const char *s));
+extern double _g_ffontsize P___((Plotter *_plotter, double size));
+extern double _g_flabelwidth P___((Plotter *_plotter, const char *s));
+extern double _g_ftextangle P___((Plotter *_plotter, double angle));
+extern int _g_alabel P___((Plotter *_plotter, int x_justify, int y_justify, const char *s));
+extern int _g_arc P___((Plotter *_plotter, int xc, int yc, int x0, int y0, int x1, int y1));
+extern int _g_arcrel P___((Plotter *_plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+extern int _g_bezier2 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2));
+extern int _g_bezier2rel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1, int dx2, int dy2));
+extern int _g_bezier3 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3));
+extern int _g_bezier3rel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3));
+extern int _g_bgcolor P___((Plotter *_plotter, int red, int green, int blue));
+extern int _g_bgcolorname P___((Plotter *_plotter, const char *name));
+extern int _g_box P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
+extern int _g_boxrel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1));
+extern int _g_capmod P___((Plotter *_plotter, const char *s));
+extern int _g_circle P___((Plotter *_plotter, int x, int y, int r));
+extern int _g_circlerel P___((Plotter *_plotter, int dx, int dy, int r));
+extern int _g_closepl P___((Plotter *_plotter));
+extern int _g_color P___((Plotter *_plotter, int red, int green, int blue));
+extern int _g_colorname P___((Plotter *_plotter, const char *name));
+extern int _g_cont P___((Plotter *_plotter, int x, int y));
+extern int _g_contrel P___((Plotter *_plotter, int x, int y));
+extern int _g_ellarc P___((Plotter *_plotter, int xc, int yc, int x0, int y0, int x1, int y1));
+extern int _g_ellarcrel P___((Plotter *_plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+extern int _g_ellipse P___((Plotter *_plotter, int x, int y, int rx, int ry, int angle));
+extern int _g_ellipserel P___((Plotter *_plotter, int dx, int dy, int rx, int ry, int angle));
+extern int _g_endpath P___((Plotter *_plotter));
+extern int _g_endsubpath P___((Plotter *_plotter));
+extern int _g_erase P___((Plotter *_plotter));
+extern int _g_farc P___((Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1));
+extern int _g_farcrel P___((Plotter *_plotter, double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
+extern int _g_fbezier2 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2));
+extern int _g_fbezier2rel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2));
+extern int _g_fbezier3 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
+extern int _g_fbezier3rel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3));
+extern int _g_fbox P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _g_fboxrel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1));
+extern int _g_fcircle P___((Plotter *_plotter, double x, double y, double r));
+extern int _g_fcirclerel P___((Plotter *_plotter, double dx, double dy, double r));
+extern int _g_fconcat P___((Plotter *_plotter, double m0, double m1, double m2, double m3, double m4, double m5));
+extern int _g_fcont P___((Plotter *_plotter, double x, double y));
+extern int _g_fcontrel P___((Plotter *_plotter, double x, double y));
+extern int _g_fellarc P___((Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1));
+extern int _g_fellarcrel P___((Plotter *_plotter, double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
+extern int _g_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
+extern int _g_fellipserel P___((Plotter *_plotter, double dx, double dy, double rx, double ry, double angle));
+extern int _g_fillcolor P___((Plotter *_plotter, int red, int green, int blue));
+extern int _g_fillcolorname P___((Plotter *_plotter, const char *name));
+extern int _g_fillmod P___((Plotter *_plotter, const char *s));
+extern int _g_filltype P___((Plotter *_plotter, int level));
+extern int _g_fline P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _g_flinedash P___((Plotter *_plotter, int n, const double *dashes, double offset));
+extern int _g_flinerel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1));
+extern int _g_flinewidth P___((Plotter *_plotter, double size));
+extern int _g_flushpl P___((Plotter *_plotter));
+extern int _g_fmarker P___((Plotter *_plotter, double x, double y, int type, double size));
+extern int _g_fmarkerrel P___((Plotter *_plotter, double dx, double dy, int type, double size));
+extern int _g_fmiterlimit P___((Plotter *_plotter, double limit));
+extern int _g_fmove P___((Plotter *_plotter, double x, double y));
+extern int _g_fmoverel P___((Plotter *_plotter, double x, double y));
+extern int _g_fontname P___((Plotter *_plotter, const char *s));
+extern int _g_fontsize P___((Plotter *_plotter, int size));
+extern int _g_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _g_fpointrel P___((Plotter *_plotter, double dx, double dy));
+extern int _g_frotate P___((Plotter *_plotter, double theta));
+extern int _g_fscale P___((Plotter *_plotter, double x, double y));
+extern int _g_fspace P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _g_fspace2 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2));
+extern int _g_ftranslate P___((Plotter *_plotter, double x, double y));
+extern int _g_havecap P___((Plotter *_plotter, const char *s));
+extern int _g_joinmod P___((Plotter *_plotter, const char *s));
+extern int _g_label P___((Plotter *_plotter, const char *s));
+extern int _g_labelwidth P___((Plotter *_plotter, const char *s));
+extern int _g_line P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
+extern int _g_linedash P___((Plotter *_plotter, int n, const int *dashes, int offset));
+extern int _g_linemod P___((Plotter *_plotter, const char *s));
+extern int _g_linerel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1));
+extern int _g_linewidth P___((Plotter *_plotter, int size));
+extern int _g_marker P___((Plotter *_plotter, int x, int y, int type, int size));
+extern int _g_markerrel P___((Plotter *_plotter, int dx, int dy, int type, int size));
+extern int _g_move P___((Plotter *_plotter, int x, int y));
+extern int _g_moverel P___((Plotter *_plotter, int x, int y));
+extern int _g_openpl P___((Plotter *_plotter));
+extern int _g_orientation P___((Plotter *_plotter, int direction));
+extern int _g_pencolor P___((Plotter *_plotter, int red, int green, int blue));
+extern int _g_pencolorname P___((Plotter *_plotter, const char *name));
+extern int _g_pentype P___((Plotter *_plotter, int level));
+extern int _g_point P___((Plotter *_plotter, int x, int y));
+extern int _g_pointrel P___((Plotter *_plotter, int dx, int dy));
+extern int _g_restorestate P___((Plotter *_plotter));
+extern int _g_savestate P___((Plotter *_plotter));
+extern int _g_space P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
+extern int _g_space2 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2));
+extern int _g_textangle P___((Plotter *_plotter, int angle));
 /* Plotter protected methods, for libplot */
-extern void _g_initialize P___((void));
-extern void _g_terminate P___((void));
-extern double _g_falabel_hershey P___((const unsigned char *s, int x_justify, int y_justify));
-extern double _g_falabel_ps P___((const unsigned char *s, int h_just));
-extern double _g_falabel_pcl P___((const unsigned char *s, int h_just));
-extern double _g_falabel_stick P___((const unsigned char *s, int h_just));
-extern double _g_falabel_other P___((const unsigned char *s, int h_just));
-extern double _g_flabelwidth_hershey P___((const unsigned char *s));
-extern double _g_flabelwidth_pcl P___((const unsigned char *s));
-extern double _g_flabelwidth_ps P___((const unsigned char *s));
-extern double _g_flabelwidth_stick P___((const unsigned char *s));
-extern double _g_flabelwidth_other P___((const unsigned char *s));
-extern void _g_error P___((const char *msg));
-extern void _g_retrieve_font P___((void));
-extern void _g_set_font P___((void));
-extern void _g_set_attributes P___((void));
-extern void _g_set_pen_color P___((void));
-extern void _g_set_fill_color P___((void));
-extern void _g_set_bg_color P___((void));
-extern void _g_set_position P___((void));
-extern void _g_warning P___((const char *msg));
-extern void _g_write_byte P___((unsigned char c));
-extern void _g_write_bytes P___((int n, const unsigned char *c));
-extern void _g_write_string P___((const char *s));
-/* Plotter internal functions overridden in MetaPlotter class, for libplot */
-extern void _g_recompute_device_line_width P___((void));
+extern void _g_initialize P___((Plotter *_plotter));
+extern void _g_terminate P___((Plotter *_plotter));
+extern double _g_falabel_hershey P___((Plotter *_plotter, const unsigned char *s, int x_justify, int y_justify));
+extern double _g_falabel_ps P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _g_falabel_pcl P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _g_falabel_stick P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _g_falabel_other P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _g_flabelwidth_hershey P___((Plotter *_plotter, const unsigned char *s));
+extern double _g_flabelwidth_pcl P___((Plotter *_plotter, const unsigned char *s));
+extern double _g_flabelwidth_ps P___((Plotter *_plotter, const unsigned char *s));
+extern double _g_flabelwidth_stick P___((Plotter *_plotter, const unsigned char *s));
+extern double _g_flabelwidth_other P___((Plotter *_plotter, const unsigned char *s));
+extern void _g_error P___((Plotter *_plotter, const char *msg));
+extern void _g_retrieve_font P___((Plotter *_plotter));
+extern void _g_set_font P___((Plotter *_plotter));
+extern void _g_set_attributes P___((Plotter *_plotter));
+extern void _g_set_pen_color P___((Plotter *_plotter));
+extern void _g_set_fill_color P___((Plotter *_plotter));
+extern void _g_set_bg_color P___((Plotter *_plotter));
+extern void _g_set_position P___((Plotter *_plotter));
+extern void _g_warning P___((Plotter *_plotter, const char *msg));
+extern void _g_write_byte P___((Plotter *_plotter, unsigned char c));
+extern void _g_write_bytes P___((Plotter *_plotter, int n, const unsigned char *c));
+extern void _g_write_string P___((Plotter *_plotter, const char *s));
+/* undocumented methods that provide access to the font tables within
+   libplot/libplotter; for libplot */
+extern voidptr_t get_hershey_font_info P___((Plotter *_plotter));
+extern voidptr_t get_ps_font_info P___((Plotter *_plotter));
+extern voidptr_t get_pcl_font_info P___((Plotter *_plotter));
+extern voidptr_t get_stick_font_info P___((Plotter *_plotter));
 /* other Plotter internal functions, for libplot */
-extern Voidptr _get_plot_param P___((const char *parameter)); 
-extern bool _match_pcl_font P___((void));
-extern bool _match_ps_font P___((void));
-extern double _label_width_hershey P___((const unsigned short *label));
-extern double _render_non_hershey_string P___((const char *s, bool do_render, int x_justify, int y_justify));
-extern double _render_simple_non_hershey_string P___((const unsigned char *s, bool do_render, int h_just));
-extern unsigned short * _controlify P___((const unsigned char *));
-extern void _copy_params_to_plotter P___((void));
-extern void _draw_bezier2 P___((Point p0, Point p1, Point p2));
-extern void _draw_bezier3 P___((Point p0, Point p1, Point p2, Point p3));
-extern void _draw_circular_arc P___((Point p0, Point p1, Point pc));
-extern void _draw_elliptic_arc P___((Point p0, Point p1, Point pc));
-extern void _draw_hershey_glyph P___((int num, double charsize, int type, bool oblique));
-extern void _draw_hershey_penup_stroke P___((double dx, double dy, double charsize, bool oblique));
-extern void _draw_hershey_string P___((const unsigned short *string));
-extern void _draw_hershey_stroke P___((bool pendown, double deltax, double deltay));
-extern void _draw_stroke P___((bool pendown, double deltax, double deltay));
-extern void _fakearc P___((Point p0, Point p1, int arc_type, const double m[4]));
-extern void _fakebezier2 P___((Point p0, Point p1, Point p2));
-extern void _fakebezier3 P___((Point p0, Point p1, Point p2, Point p3));
-extern void _flush_plotter_outstreams P___((void));
-extern void _free_params_in_plotter P___((void));
-extern void _maybe_replace_arc P___((void));
-extern void _set_bezier2_bbox  P___((Outbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2));
-extern void _set_bezier3_bbox P___((Outbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
-extern void _set_common_mi_attributes P___((Voidptr ptr));
-extern void _set_ellipse_bbox P___((Outbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth));
-extern void _set_line_end_bbox P___((Outbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle));
-extern void _set_line_join_bbox P___((Outbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit));
+extern bool _match_pcl_font P___((Plotter *_plotter));
+extern bool _match_ps_font P___((Plotter *_plotter));
+extern bool _string_to_color P___((Plotter *_plotter, const char *name, const plColorNameInfo **info_p));
+extern double _label_width_hershey P___((Plotter *_plotter, const unsigned short *label));
+extern double _render_non_hershey_string P___((Plotter *_plotter, const char *s, bool do_render, int x_justify, int y_justify));
+extern double _render_simple_non_hershey_string P___((Plotter *_plotter, const unsigned char *s, bool do_render, int h_just, int v_just));
+extern unsigned short * _controlify P___((Plotter *_plotter, const unsigned char *));
+extern void _copy_params_to_plotter P___((Plotter *_plotter, const PlotterParams *params));
+extern void _draw_bezier2 P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint p2));
+extern void _draw_bezier3 P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint p2, plPoint p3));
+extern void _draw_circular_arc P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
+extern void _draw_elliptic_arc P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
+extern void _draw_hershey_glyph P___((Plotter *_plotter, int num, double charsize, int type, bool oblique));
+extern void _draw_hershey_penup_stroke P___((Plotter *_plotter, double dx, double dy, double charsize, bool oblique));
+extern void _draw_hershey_string P___((Plotter *_plotter, const unsigned short *string));
+extern void _draw_hershey_stroke P___((Plotter *_plotter, bool pendown, double deltax, double deltay));
+extern void _draw_stroke P___((Plotter *_plotter, bool pendown, double deltax, double deltay));
+extern void _fakearc P___((Plotter *_plotter, plPoint p0, plPoint p1, int arc_type, const double *custom_chord_table, const double m[4]));
+extern void _fakebezier2 P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint p2));
+extern void _fakebezier3 P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint p2, plPoint p3));
+extern void _flush_plotter_outstreams P___((Plotter *_plotter));
+extern void _free_params_in_plotter P___((Plotter *_plotter));
+extern void _maybe_replace_arc P___((Plotter *_plotter));
+extern void _set_bezier2_bbox  P___((Plotter *_plotter, plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2));
+extern void _set_bezier3_bbox P___((Plotter *_plotter, plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
+extern void _set_common_mi_attributes P___((Plotter *_plotter, voidptr_t ptr));
+extern void _set_ellipse_bbox P___((Plotter *_plotter, plOutbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth));
+extern void _set_line_end_bbox P___((Plotter *_plotter, plOutbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle));
+extern void _set_line_join_bbox P___((Plotter *_plotter, plOutbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit));
+extern void _set_page_type P___((Plotter *_plotter, double *xoffset, double *yoffset));
+extern voidptr_t _get_plot_param P___((Plotter *_plotter, const char *parameter)); 
 #else  /* LIBPLOTTER */
 /* static Plotter public method (libplotter only) */
 #define parampl Plotter::parampl
@@ -1120,6 +1382,7 @@ extern void _set_line_join_bbox P___((Outbuf *bufp, double xleft, double yleft, 
 #define _g_ellipse Plotter::ellipse
 #define _g_ellipserel Plotter::ellipserel
 #define _g_endpath Plotter::endpath
+#define _g_endsubpath Plotter::endsubpath
 #define _g_erase Plotter::erase
 #define _g_farc Plotter::farc
 #define _g_farcrel Plotter::farcrel
@@ -1179,9 +1442,11 @@ extern void _set_line_join_bbox P___((Outbuf *bufp, double xleft, double yleft, 
 #define _g_move Plotter::move
 #define _g_moverel Plotter::moverel
 #define _g_openpl Plotter::openpl
+#define _g_orientation Plotter::orientation
 #define _g_outfile Plotter::outfile /* OBSOLESCENT */
 #define _g_pencolor Plotter::pencolor
 #define _g_pencolorname Plotter::pencolorname
+#define _g_pentype Plotter::pentype
 #define _g_point Plotter::point
 #define _g_pointrel Plotter::pointrel
 #define _g_restorestate Plotter::restorestate
@@ -1214,9 +1479,13 @@ extern void _set_line_join_bbox P___((Outbuf *bufp, double xleft, double yleft, 
 #define _g_write_byte Plotter::write_byte
 #define _g_write_bytes Plotter::write_bytes
 #define _g_write_string Plotter::write_string
-/* Plotter internal functions overridden in MetaPlotterclass, for libplotter */
-#define _g_recompute_device_line_width Plotter::_recompute_device_line_width
-/* other Plotter internal functions, for libplotter */
+/* undocumented methods that provide access to the font tables within
+   libplot/libplotter; for libplotter */
+#define get_hershey_font_info Plotter::get_hershey_font_info
+#define get_ps_font_info Plotter::get_ps_font_info
+#define get_pcl_font_info Plotter::get_pcl_font_info
+#define get_stick_font_info Plotter::get_stick_font_info
+/* Plotter internal functions, for libplotter */
 #define _controlify Plotter::_controlify
 #define _copy_params_to_plotter Plotter::_copy_params_to_plotter
 #define _draw_bezier2 Plotter::_draw_bezier2 
@@ -1246,102 +1515,104 @@ extern void _set_line_join_bbox P___((Outbuf *bufp, double xleft, double yleft, 
 #define _set_ellipse_bbox Plotter::_set_ellipse_bbox
 #define _set_line_end_bbox Plotter::_set_line_end_bbox
 #define _set_line_join_bbox Plotter::_set_line_join_bbox
+#define _set_page_type Plotter::_set_page_type
+#define _string_to_color Plotter::_string_to_color
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
 /* MetaPlotter public methods, for libplot */
-extern int _m_alabel P___((int x_justify, int y_justify, const char *s));
-extern int _m_arc P___((int xc, int yc, int x0, int y0, int x1, int y1));
-extern int _m_arcrel P___((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-extern int _m_bezier2 P___((int x0, int y0, int x1, int y1, int x2, int y2));
-extern int _m_bezier2rel P___((int dx0, int dy0, int dx1, int dy1, int dx2, int dy2));
-extern int _m_bezier3 P___((int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3));
-extern int _m_bezier3rel P___((int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3));
-extern int _m_bgcolor P___((int red, int green, int blue));
-extern int _m_box P___((int x0, int y0, int x1, int y1));
-extern int _m_boxrel P___((int dx0, int dy0, int dx1, int dy1));
-extern int _m_capmod P___((const char *s));
-extern int _m_circle P___((int x, int y, int r));
-extern int _m_circlerel P___((int dx, int dy, int r));
-extern int _m_closepl P___((void));
-extern int _m_cont P___((int x, int y));
-extern int _m_contrel P___((int x, int y));
-extern int _m_ellarc P___((int xc, int yc, int x0, int y0, int x1, int y1));
-extern int _m_ellarcrel P___((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-extern int _m_ellipse P___((int x, int y, int rx, int ry, int angle));
-extern int _m_ellipserel P___((int dx, int dy, int rx, int ry, int angle));
-extern int _m_endpath P___((void));
-extern int _m_erase P___((void));
-extern int _m_farc P___((double xc, double yc, double x0, double y0, double x1, double y1));
-extern int _m_farcrel P___((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-extern int _m_fbezier2 P___((double x0, double y0, double x1, double y1, double x2, double y2));
-extern int _m_fbezier2rel P___((double dx0, double dy0, double dx1, double dy1, double dx2, double dy2));
-extern int _m_fbezier3 P___((double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
-extern int _m_fbezier3rel P___((double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3));
-extern int _m_fbox P___((double x0, double y0, double x1, double y1));
-extern int _m_fboxrel P___((double dx0, double dy0, double dx1, double dy1));
-extern int _m_fcircle P___((double x, double y, double r));
-extern int _m_fcirclerel P___((double dx, double dy, double r));
-extern int _m_fconcat P___((double m0, double m1, double m2, double m3, double m4, double m5));
-extern int _m_fcont P___((double x, double y));
-extern int _m_fcontrel P___((double x, double y));
-extern int _m_fellarc P___((double xc, double yc, double x0, double y0, double x1, double y1));
-extern int _m_fellarcrel P___((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-extern int _m_fellipse P___((double x, double y, double rx, double ry, double angle));
-extern int _m_fellipserel P___((double dx, double dy, double rx, double ry, double angle));
-extern double _m_ffontname P___((const char *s));
-extern double _m_ffontsize P___((double size));
-extern int _m_fillcolor P___((int red, int green, int blue));
-extern int _m_fillmod P___((const char *s));
-extern int _m_filltype P___((int level));
-extern int _m_fline P___((double x0, double y0, double x1, double y1));
-extern int _m_flinedash P___((int n, const double *dashes, double offset));
-extern int _m_flinerel P___((double dx0, double dy0, double dx1, double dy1));
-extern int _m_flinewidth P___((double size));
-extern int _m_fmarker P___((double x, double y, int type, double size));
-extern int _m_fmarkerrel P___((double dx, double dy, int type, double size));
-extern int _m_fmiterlimit P___((double limit));
-extern int _m_fmove P___((double x, double y));
-extern int _m_fmoverel P___((double x, double y));
-extern int _m_fontname P___((const char *s));
-extern int _m_fontsize P___((int size));
-extern int _m_fpoint P___((double x, double y));
-extern int _m_fpointrel P___((double dx, double dy));
-extern int _m_fspace P___((double x0, double y0, double x1, double y1));
-extern int _m_fspace2 P___((double x0, double y0, double x1, double y1, double x2, double y2));
-extern double _m_ftextangle P___((double angle));
-extern int _m_joinmod P___((const char *s));
-extern int _m_label P___((const char *s));
-extern int _m_line P___((int x0, int y0, int x1, int y1));
-extern int _m_linedash P___((int n, const int *dashes, int offset));
-extern int _m_linemod P___((const char *s));
-extern int _m_linerel P___((int dx0, int dy0, int dx1, int dy1));
-extern int _m_linewidth P___((int size));
-extern int _m_marker P___((int x, int y, int type, int size));
-extern int _m_markerrel P___((int dx, int dy, int type, int size));
-extern int _m_move P___((int x, int y));
-extern int _m_moverel P___((int x, int y));
-extern int _m_openpl P___((void));
-extern int _m_pencolor P___((int red, int green, int blue));
-extern int _m_point P___((int x, int y));
-extern int _m_pointrel P___((int dx, int dy));
-extern int _m_restorestate P___((void));
-extern int _m_savestate P___((void));
-extern int _m_space P___((int x0, int y0, int x1, int y1));
-extern int _m_space2 P___((int x0, int y0, int x1, int y1, int x2, int y2));
-extern int _m_textangle P___((int angle));
+extern int _m_alabel P___((Plotter *_plotter, int x_justify, int y_justify, const char *s));
+extern int _m_arc P___((Plotter *_plotter, int xc, int yc, int x0, int y0, int x1, int y1));
+extern int _m_arcrel P___((Plotter *_plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+extern int _m_bezier2 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2));
+extern int _m_bezier2rel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1, int dx2, int dy2));
+extern int _m_bezier3 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3));
+extern int _m_bezier3rel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3));
+extern int _m_bgcolor P___((Plotter *_plotter, int red, int green, int blue));
+extern int _m_box P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
+extern int _m_boxrel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1));
+extern int _m_capmod P___((Plotter *_plotter, const char *s));
+extern int _m_circle P___((Plotter *_plotter, int x, int y, int r));
+extern int _m_circlerel P___((Plotter *_plotter, int dx, int dy, int r));
+extern int _m_closepl P___((Plotter *_plotter));
+extern int _m_cont P___((Plotter *_plotter, int x, int y));
+extern int _m_contrel P___((Plotter *_plotter, int x, int y));
+extern int _m_ellarc P___((Plotter *_plotter, int xc, int yc, int x0, int y0, int x1, int y1));
+extern int _m_ellarcrel P___((Plotter *_plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+extern int _m_ellipse P___((Plotter *_plotter, int x, int y, int rx, int ry, int angle));
+extern int _m_ellipserel P___((Plotter *_plotter, int dx, int dy, int rx, int ry, int angle));
+extern int _m_endpath P___((Plotter *_plotter));
+extern int _m_endsubpath P___((Plotter *_plotter));
+extern int _m_erase P___((Plotter *_plotter));
+extern int _m_farc P___((Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1));
+extern int _m_farcrel P___((Plotter *_plotter, double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
+extern int _m_fbezier2 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2));
+extern int _m_fbezier2rel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2));
+extern int _m_fbezier3 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3));
+extern int _m_fbezier3rel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3));
+extern int _m_fbox P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _m_fboxrel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1));
+extern int _m_fcircle P___((Plotter *_plotter, double x, double y, double r));
+extern int _m_fcirclerel P___((Plotter *_plotter, double dx, double dy, double r));
+extern int _m_fconcat P___((Plotter *_plotter, double m0, double m1, double m2, double m3, double m4, double m5));
+extern int _m_fcont P___((Plotter *_plotter, double x, double y));
+extern int _m_fcontrel P___((Plotter *_plotter, double x, double y));
+extern int _m_fellarc P___((Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1));
+extern int _m_fellarcrel P___((Plotter *_plotter, double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
+extern int _m_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
+extern int _m_fellipserel P___((Plotter *_plotter, double dx, double dy, double rx, double ry, double angle));
+extern double _m_ffontname P___((Plotter *_plotter, const char *s));
+extern double _m_ffontsize P___((Plotter *_plotter, double size));
+extern int _m_fillcolor P___((Plotter *_plotter, int red, int green, int blue));
+extern int _m_fillmod P___((Plotter *_plotter, const char *s));
+extern int _m_filltype P___((Plotter *_plotter, int level));
+extern int _m_fline P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _m_flinedash P___((Plotter *_plotter, int n, const double *dashes, double offset));
+extern int _m_flinerel P___((Plotter *_plotter, double dx0, double dy0, double dx1, double dy1));
+extern int _m_flinewidth P___((Plotter *_plotter, double size));
+extern int _m_fmarker P___((Plotter *_plotter, double x, double y, int type, double size));
+extern int _m_fmarkerrel P___((Plotter *_plotter, double dx, double dy, int type, double size));
+extern int _m_fmiterlimit P___((Plotter *_plotter, double limit));
+extern int _m_fmove P___((Plotter *_plotter, double x, double y));
+extern int _m_fmoverel P___((Plotter *_plotter, double x, double y));
+extern int _m_fontname P___((Plotter *_plotter, const char *s));
+extern int _m_fontsize P___((Plotter *_plotter, int size));
+extern int _m_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _m_fpointrel P___((Plotter *_plotter, double dx, double dy));
+extern int _m_fspace P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _m_fspace2 P___((Plotter *_plotter, double x0, double y0, double x1, double y1, double x2, double y2));
+extern double _m_ftextangle P___((Plotter *_plotter, double angle));
+extern int _m_joinmod P___((Plotter *_plotter, const char *s));
+extern int _m_label P___((Plotter *_plotter, const char *s));
+extern int _m_line P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
+extern int _m_linedash P___((Plotter *_plotter, int n, const int *dashes, int offset));
+extern int _m_linemod P___((Plotter *_plotter, const char *s));
+extern int _m_linerel P___((Plotter *_plotter, int dx0, int dy0, int dx1, int dy1));
+extern int _m_linewidth P___((Plotter *_plotter, int size));
+extern int _m_marker P___((Plotter *_plotter, int x, int y, int type, int size));
+extern int _m_markerrel P___((Plotter *_plotter, int dx, int dy, int type, int size));
+extern int _m_move P___((Plotter *_plotter, int x, int y));
+extern int _m_moverel P___((Plotter *_plotter, int x, int y));
+extern int _m_openpl P___((Plotter *_plotter));
+extern int _m_orientation P___((Plotter *_plotter, int direction));
+extern int _m_pencolor P___((Plotter *_plotter, int red, int green, int blue));
+extern int _m_pentype P___((Plotter *_plotter, int level));
+extern int _m_point P___((Plotter *_plotter, int x, int y));
+extern int _m_pointrel P___((Plotter *_plotter, int dx, int dy));
+extern int _m_restorestate P___((Plotter *_plotter));
+extern int _m_savestate P___((Plotter *_plotter));
+extern int _m_space P___((Plotter *_plotter, int x0, int y0, int x1, int y1));
+extern int _m_space2 P___((Plotter *_plotter, int x0, int y0, int x1, int y1, int x2, int y2));
+extern int _m_textangle P___((Plotter *_plotter, int angle));
 /* MetaPlotter protected methods, for libplot */
-extern void _m_initialize P___((void));
-extern void _m_terminate P___((void));
-/* MetaPlotter internal functions that override Plotter internal functions */
-extern void _m_recompute_device_line_width P___((void));
-/* other MetaPlotter internal functions, for libplot */
-extern void _meta_emit_byte P___((int c));
-extern void _meta_emit_float P___((double x)); 
-extern void _meta_emit_integer P___((int x)); 
-extern void _meta_emit_string P___((const char *s));
-extern void _meta_emit_terminator P___((void));
-extern bool _set_initial_font_size P___((double x0, double y0, double x1, double y1, double x2, double y2));
+extern void _m_initialize P___((Plotter *_plotter));
+extern void _m_terminate P___((Plotter *_plotter));
+/* MetaPlotter internal functions, for libplot */
+extern void _meta_emit_byte P___((Plotter *_plotter, int c));
+extern void _meta_emit_float P___((Plotter *_plotter, double x)); 
+extern void _meta_emit_integer P___((Plotter *_plotter, int x)); 
+extern void _meta_emit_string P___((Plotter *_plotter, const char *s));
+extern void _meta_emit_terminator P___((Plotter *_plotter));
 #else  /* LIBPLOTTER */
 /* MetaPlotter public methods, for libplotter */
 #define _m_alabel MetaPlotter::alabel
@@ -1365,6 +1636,7 @@ extern bool _set_initial_font_size P___((double x0, double y0, double x1, double
 #define _m_ellipse MetaPlotter::ellipse
 #define _m_ellipserel MetaPlotter::ellipserel
 #define _m_endpath MetaPlotter::endpath
+#define _m_endsubpath MetaPlotter::endsubpath
 #define _m_erase MetaPlotter::erase
 #define _m_farc MetaPlotter::farc
 #define _m_farcrel MetaPlotter::farcrel
@@ -1416,7 +1688,9 @@ extern bool _set_initial_font_size P___((double x0, double y0, double x1, double
 #define _m_move MetaPlotter::move
 #define _m_moverel MetaPlotter::moverel
 #define _m_openpl MetaPlotter::openpl
+#define _m_orientation MetaPlotter::orientation
 #define _m_pencolor MetaPlotter::pencolor
+#define _m_pentype MetaPlotter::pentype
 #define _m_point MetaPlotter::point
 #define _m_pointrel MetaPlotter::pointrel
 #define _m_restorestate MetaPlotter::restorestate
@@ -1427,35 +1701,32 @@ extern bool _set_initial_font_size P___((double x0, double y0, double x1, double
 /* MetaPlotter protected methods, for libplotter */
 #define _m_initialize MetaPlotter::initialize
 #define _m_terminate MetaPlotter::terminate
-/* MetaPlotter internal functions that override Plotter internal functions */
-#define _m_recompute_device_line_width MetaPlotter::_recompute_device_line_width
 /* MetaPlotter internal functions, for libplotter */
 #define _meta_emit_byte MetaPlotter::_meta_emit_byte
 #define _meta_emit_float MetaPlotter::_meta_emit_float
 #define _meta_emit_integer MetaPlotter::_meta_emit_integer
 #define _meta_emit_string MetaPlotter::_meta_emit_string
 #define _meta_emit_terminator MetaPlotter::_meta_emit_terminator
-#define _set_initial_font_size MetaPlotter::_set_initial_font_size
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
 /* TekPlotter public methods, for libplot */
-extern int _t_closepl P___((void));
-extern int _t_erase P___((void));
-extern int _t_fcont P___((double x, double y));
-extern int _t_fpoint P___((double x, double y));
-extern int _t_openpl P___((void));
+extern int _t_closepl P___((Plotter *_plotter));
+extern int _t_erase P___((Plotter *_plotter));
+extern int _t_fcont P___((Plotter *_plotter, double x, double y));
+extern int _t_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _t_openpl P___((Plotter *_plotter));
 /* TekPlotter protected methods, for libplot */
-extern void _t_initialize P___((void));
-extern void _t_terminate P___((void));
-extern void _t_set_attributes P___((void));
-extern void _t_set_bg_color P___((void));
-extern void _t_set_pen_color P___((void));
+extern void _t_initialize P___((Plotter *_plotter));
+extern void _t_terminate P___((Plotter *_plotter));
+extern void _t_set_attributes P___((Plotter *_plotter));
+extern void _t_set_bg_color P___((Plotter *_plotter));
+extern void _t_set_pen_color P___((Plotter *_plotter));
 /* TekPlotter internal functions, for libplot */
-extern void _tek_mode P___((int newmode));
-extern void _tek_move P___((int xx, int yy));
-extern void _tek_vector P___((int xx, int yy));
-extern void _tek_vector_compressed P___((int xx, int yy, int oldxx, int oldyy, bool force));
+extern void _tek_mode P___((Plotter *_plotter, int newmode));
+extern void _tek_move P___((Plotter *_plotter, int xx, int yy));
+extern void _tek_vector P___((Plotter *_plotter, int xx, int yy));
+extern void _tek_vector_compressed P___((Plotter *_plotter, int xx, int yy, int oldxx, int oldyy, bool force));
 #else  /* LIBPLOTTER */
 /* TekPlotter public methods, for libplotter */
 #define _t_closepl TekPlotter::closepl
@@ -1478,43 +1749,43 @@ extern void _tek_vector_compressed P___((int xx, int yy, int oldxx, int oldyy, b
 
 #ifndef LIBPLOTTER
 /* HPGLPlotter/PCLPlotter public methods, for libplot */
-extern int _h_closepl P___((void));
-extern int _h_endpath P___((void));
-extern int _h_fbox P___((double x0, double y0, double x1, double y1));
-extern int _h_fcircle P___((double x, double y, double r));
-extern int _h_flinewidth P___((double size));
-extern int _h_fpoint P___((double x, double y));
-extern int _h_openpl P___((void));
+extern int _h_closepl P___((Plotter *_plotter));
+extern int _h_endpath P___((Plotter *_plotter));
+extern int _h_fbox P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _h_fcircle P___((Plotter *_plotter, double x, double y, double r));
+extern int _h_flinewidth P___((Plotter *_plotter, double size));
+extern int _h_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _h_openpl P___((Plotter *_plotter));
 /* HPGLPlotter/PCLPlotter protected methods, for libplot */
-extern double _h_falabel_ps P___((const unsigned char *s, int h_just));
-extern double _h_falabel_pcl P___((const unsigned char *s, int h_just));
-extern double _h_falabel_stick P___((const unsigned char *s, int h_just));
-extern void _h_set_attributes P___((void));
-extern void _h_set_fill_color P___((void));
-extern void _h_set_font P___((void));
-extern void _h_set_pen_color P___((void));
-extern void _h_set_position P___((void));
+extern double _h_falabel_ps P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _h_falabel_pcl P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _h_falabel_stick P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern void _h_set_attributes P___((Plotter *_plotter));
+extern void _h_set_fill_color P___((Plotter *_plotter));
+extern void _h_set_font P___((Plotter *_plotter));
+extern void _h_set_pen_color P___((Plotter *_plotter));
+extern void _h_set_position P___((Plotter *_plotter));
 /* HPGLPlotter protected methods, for libplot */
-extern void _h_initialize P___((void));
-extern void _h_terminate P___((void));
+extern void _h_initialize P___((Plotter *_plotter));
+extern void _h_terminate P___((Plotter *_plotter));
 /* PCLPlotter protected methods, for libplot */
-extern void _q_initialize P___((void));
-extern void _q_terminate P___((void));
+extern void _q_initialize P___((Plotter *_plotter));
+extern void _q_terminate P___((Plotter *_plotter));
 /* HPGLPlotter/PCLPlotter internal functions, for libplot */
-extern bool _hpgl2_maybe_update_font P___((void));
-extern bool _hpgl_maybe_update_font P___((void));
-extern bool _parse_pen_string P___((const char *pen_s));
-extern double _angle_of_arc P___((Point p0, Point p1, Point pc));
-extern int _hpgl_pseudocolor P___((int red, int green, int blue, bool restrict_white));
-extern void _compute_pseudo_fillcolor P___((int red, int green, int blue, int *pen, double *shading));
-extern void _set_hp_fill_type P___((int fill_type, double option1));
-extern void _set_hp_pen P___((int pen));
+extern bool _hpgl2_maybe_update_font P___((Plotter *_plotter));
+extern bool _hpgl_maybe_update_font P___((Plotter *_plotter));
+extern bool _parse_pen_string P___((Plotter *_plotter, const char *pen_s));
+extern double _angle_of_arc P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
+extern int _hpgl_pseudocolor P___((Plotter *_plotter, int red, int green, int blue, bool restrict_white));
+extern void _compute_pseudo_fillcolor P___((Plotter *_plotter, int red, int green, int blue, int *pen, double *shading));
+extern void _set_hpgl_fill_type P___((Plotter *_plotter, int fill_type, double option1));
+extern void _set_hpgl_pen P___((Plotter *_plotter, int pen));
 /* HPGLPlotter functions (overridden in PCLPlotter class), for libplotter */
-extern void _h_maybe_switch_to_hpgl P___((void)); 
-extern void _h_maybe_switch_from_hpgl P___((void)); 
+extern void _h_maybe_switch_to_hpgl P___((Plotter *_plotter)); 
+extern void _h_maybe_switch_from_hpgl P___((Plotter *_plotter)); 
 /* PCLPlotter functions (overriding the above), for libplotter */
-extern void _q_maybe_switch_to_hpgl P___((void)); 
-extern void _q_maybe_switch_from_hpgl P___((void)); 
+extern void _q_maybe_switch_to_hpgl P___((Plotter *_plotter)); 
+extern void _q_maybe_switch_from_hpgl P___((Plotter *_plotter)); 
 #else  /* LIBPLOTTER */
 /* HPGLPlotter/PCLPlotter public methods, for libplotter */
 #define _h_closepl HPGLPlotter::closepl
@@ -1546,8 +1817,8 @@ extern void _q_maybe_switch_from_hpgl P___((void));
 #define _hpgl_maybe_update_font HPGLPlotter::_hpgl_maybe_update_font
 #define _hpgl_pseudocolor HPGLPlotter::_hpgl_pseudocolor
 #define _parse_pen_string HPGLPlotter::_parse_pen_string
-#define _set_hp_fill_type HPGLPlotter::_set_hp_fill_type
-#define _set_hp_pen HPGLPlotter::_set_hp_pen
+#define _set_hpgl_fill_type HPGLPlotter::_set_hpgl_fill_type
+#define _set_hpgl_pen HPGLPlotter::_set_hpgl_pen
 /* HPGLPlotter functions (overridden in PCLPlotter class), for libplotter */
 #define _h_maybe_switch_to_hpgl HPGLPlotter::_maybe_switch_to_hpgl
 #define _h_maybe_switch_from_hpgl HPGLPlotter::_maybe_switch_from_hpgl
@@ -1558,27 +1829,27 @@ extern void _q_maybe_switch_from_hpgl P___((void));
 
 #ifndef LIBPLOTTER
 /* FigPlotter public methods, for libplot */
-extern int _f_closepl P___((void));
-extern int _f_endpath P___((void));
-extern int _f_erase P___((void));
-extern int _f_fbox P___((double x0, double y0, double x1, double y1));
-extern int _f_fcircle P___((double x, double y, double r));
-extern int _f_fellipse P___((double x, double y, double rx, double ry, double angle));
-extern int _f_flinewidth P___((double size));
-extern int _f_fpoint P___((double x, double y));
-extern int _f_openpl P___((void));
+extern int _f_closepl P___((Plotter *_plotter));
+extern int _f_endpath P___((Plotter *_plotter));
+extern int _f_erase P___((Plotter *_plotter));
+extern int _f_fbox P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _f_fcircle P___((Plotter *_plotter, double x, double y, double r));
+extern int _f_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
+extern int _f_flinewidth P___((Plotter *_plotter, double size));
+extern int _f_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _f_openpl P___((Plotter *_plotter));
 /* FigPlotter protected methods, for libplot */
-extern void _f_initialize P___((void));
-extern void _f_terminate P___((void));
-extern double _f_falabel_ps P___((const unsigned char *s, int h_just));
-extern void _f_retrieve_font P___((void));
-extern void _f_set_fill_color P___((void));
-extern void _f_set_pen_color P___((void));
+extern void _f_initialize P___((Plotter *_plotter));
+extern void _f_terminate P___((Plotter *_plotter));
+extern double _f_falabel_ps P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern void _f_retrieve_font P___((Plotter *_plotter));
+extern void _f_set_fill_color P___((Plotter *_plotter));
+extern void _f_set_pen_color P___((Plotter *_plotter));
 /* FigPlotter internal functions, for libplot */
-extern int _f_draw_ellipse_internal P___((double x, double y, double rx, double ry, double angle, int subtype));
-extern int _fig_color P___((int red, int green, int blue));
-extern void _f_compute_line_style P___((int *style, double *spacing));
-extern void _f_emit_arc P___((double xc, double yc, double x0, double y0, double x1, double y1));
+extern int _f_draw_ellipse_internal P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle, int subtype));
+extern int _fig_color P___((Plotter *_plotter, int red, int green, int blue));
+extern void _f_compute_line_style P___((Plotter *_plotter, int *style, double *spacing));
+extern void _f_emit_arc P___((Plotter *_plotter, double xc, double yc, double x0, double y0, double x1, double y1));
 #else  /* LIBPLOTTER */
 /* FigPlotter public methods, for libplotter */
 #define _f_closepl FigPlotter::closepl
@@ -1605,25 +1876,65 @@ extern void _f_emit_arc P___((double xc, double yc, double x0, double y0, double
 #endif /* LIBPLOTTER */
 
 #ifndef LIBPLOTTER
+/* CGMPlotter public methods, for libplot */
+extern int _c_closepl P___((Plotter *_plotter));
+extern int _c_endpath P___((Plotter *_plotter));
+extern int _c_erase P___((Plotter *_plotter));
+extern int _c_fbox P___((Plotter *_plotter, double x0, double y0, double x1, double y1));
+extern int _c_fcircle P___((Plotter *_plotter, double x, double y, double r));
+extern int _c_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
+extern int _c_fmarker P___((Plotter *_plotter, double x, double y, int type, double size));
+extern int _c_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _c_openpl P___((Plotter *_plotter));
+/* CGMPlotter protected methods, for libplot */
+extern void _c_initialize P___((Plotter *_plotter));
+extern void _c_set_attributes P___((Plotter *_plotter));
+extern void _c_set_bg_color P___((Plotter *_plotter));
+extern void _c_set_fill_color P___((Plotter *_plotter));
+extern void _c_set_pen_color P___((Plotter *_plotter));
+extern void _c_terminate P___((Plotter *_plotter));
+extern double _c_falabel_ps P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+#else  /* LIBPLOTTER */
+/* CGMPlotter public methods, for libplotter */
+#define _c_closepl CGMPlotter::closepl
+#define _c_endpath CGMPlotter::endpath
+#define _c_erase CGMPlotter::erase
+#define _c_fbox CGMPlotter::fbox
+#define _c_fcircle CGMPlotter::fcircle
+#define _c_fellipse CGMPlotter::fellipse
+#define _c_fmarker CGMPlotter::fmarker
+#define _c_fpoint CGMPlotter::fpoint
+#define _c_openpl CGMPlotter::openpl
+/* CGMPlotter protected methods, for libplotter */
+#define _c_falabel_ps CGMPlotter::falabel_ps
+#define _c_initialize CGMPlotter::initialize
+#define _c_set_attributes CGMPlotter::set_attributes
+#define _c_set_bg_color CGMPlotter::set_bg_color
+#define _c_set_fill_color CGMPlotter::set_fill_color
+#define _c_set_pen_color CGMPlotter::set_pen_color
+#define _c_terminate CGMPlotter::terminate
+#endif /* LIBPLOTTER */
+
+#ifndef LIBPLOTTER
 /* PSPlotter public methods, for libplot */
-extern int _p_closepl P___((void));
-extern int _p_endpath P___((void));
-extern int _p_erase P___((void));
-extern int _p_fcircle P___((double x, double y, double r));
-extern int _p_fellipse P___((double x, double y, double rx, double ry, double angle));
-extern int _p_fpoint P___((double x, double y));
-extern int _p_openpl P___((void));
+extern int _p_closepl P___((Plotter *_plotter));
+extern int _p_endpath P___((Plotter *_plotter));
+extern int _p_erase P___((Plotter *_plotter));
+extern int _p_fcircle P___((Plotter *_plotter, double x, double y, double r));
+extern int _p_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
+extern int _p_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _p_openpl P___((Plotter *_plotter));
 /* PSPlotter protected methods, for libplot */
-extern void _p_initialize P___((void));
-extern void _p_terminate P___((void));
-extern double _p_falabel_ps P___((const unsigned char *s, int h_just));
-extern double _p_falabel_pcl P___((const unsigned char *s, int h_just));
-extern void _p_set_fill_color P___((void));
-extern void _p_set_pen_color P___((void));
+extern void _p_initialize P___((Plotter *_plotter));
+extern void _p_terminate P___((Plotter *_plotter));
+extern double _p_falabel_ps P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _p_falabel_pcl P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern void _p_set_fill_color P___((Plotter *_plotter));
+extern void _p_set_pen_color P___((Plotter *_plotter));
 /* PSPlotter internal functions, for libplot */
-extern double _p_emit_common_attributes P___((void));
-extern void _p_compute_idraw_bgcolor P___((void));
-extern void _p_fellipse_internal P___((double x, double y, double rx, double ry, double angle, bool circlep));
+extern double _p_emit_common_attributes P___((Plotter *_plotter));
+extern void _p_compute_idraw_bgcolor P___((Plotter *_plotter));
+extern void _p_fellipse_internal P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle, bool circlep));
 #else  /* LIBPLOTTER */
 /* PSPlotter public methods, for libplotter */
 #define _p_closepl PSPlotter::closepl
@@ -1648,22 +1959,24 @@ extern void _p_fellipse_internal P___((double x, double y, double rx, double ry,
 
 #ifndef LIBPLOTTER
 /* AIPlotter public methods, for libplot */
-extern int _a_closepl P___((void));
-extern int _a_endpath P___((void));
-extern int _a_fpoint P___((double x, double y));
-extern int _a_openpl P___((void));
+extern int _a_closepl P___((Plotter *_plotter));
+extern int _a_endpath P___((Plotter *_plotter));
+extern int _a_erase P___((Plotter *_plotter));
+extern int _a_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _a_openpl P___((Plotter *_plotter));
 /* AIPlotter protected methods, for libplot */
-extern void _a_initialize P___((void));
-extern void _a_terminate P___((void));
-extern double _a_falabel_ps P___((const unsigned char *s, int h_just));
-extern double _a_falabel_pcl P___((const unsigned char *s, int h_just));
-extern void _a_set_attributes P___((void));
-extern void _a_set_fill_color P___((void));
-extern void _a_set_pen_color P___((void));
+extern void _a_initialize P___((Plotter *_plotter));
+extern void _a_terminate P___((Plotter *_plotter));
+extern double _a_falabel_ps P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _a_falabel_pcl P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern void _a_set_attributes P___((Plotter *_plotter));
+extern void _a_set_fill_color P___((Plotter *_plotter));
+extern void _a_set_pen_color P___((Plotter *_plotter));
 #else /* LIBPLOTTER */
 /* AIPlotter public methods, for libplotter */
 #define _a_closepl AIPlotter::closepl
 #define _a_endpath AIPlotter::endpath
+#define _a_erase AIPlotter::erase
 #define _a_fpoint AIPlotter::fpoint
 #define _a_openpl AIPlotter::openpl
 /* AIPlotter protected methods, for libplotter */
@@ -1678,23 +1991,23 @@ extern void _a_set_pen_color P___((void));
 
 #ifndef LIBPLOTTER
 /* PNMPlotter public methods, for libplot */
-extern int _n_closepl P___((void));
-extern int _n_endpath P___((void));
-extern int _n_erase P___((void));
-extern int _n_fellipse P___((double x, double y, double rx, double ry, double angle));
-extern int _n_fpoint P___((double x, double y));
-extern int _n_openpl P___((void));
+extern int _n_closepl P___((Plotter *_plotter));
+extern int _n_endpath P___((Plotter *_plotter));
+extern int _n_erase P___((Plotter *_plotter));
+extern int _n_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
+extern int _n_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _n_openpl P___((Plotter *_plotter));
 /* PNMPlotter protected methods, for libplot */
-extern void _n_initialize P___((void));
-extern void _n_terminate P___((void));
+extern void _n_initialize P___((Plotter *_plotter));
+extern void _n_terminate P___((Plotter *_plotter));
 /* PNMPlotter internal functions, for libplot */
-extern void _n_delete_image P___((void));
-extern void _n_draw_elliptic_mi_arc_internal P___((int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
-extern void _n_new_image P___((void));
-extern void _n_write_pnm P___((void));
-extern void _n_write_pbm P___((void));
-extern void _n_write_pgm P___((void));
-extern void _n_write_ppm P___((void));
+extern void _n_delete_image P___((Plotter *_plotter));
+extern void _n_draw_elliptic_mi_arc_internal P___((Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
+extern void _n_new_image P___((Plotter *_plotter));
+extern void _n_write_pnm P___((Plotter *_plotter));
+extern void _n_write_pbm P___((Plotter *_plotter));
+extern void _n_write_pgm P___((Plotter *_plotter));
+extern void _n_write_ppm P___((Plotter *_plotter));
 #else  /* LIBPLOTTER */
 /* PNMPlotter public methods, for libplotter */
 #define _n_closepl PNMPlotter::closepl
@@ -1718,29 +2031,29 @@ extern void _n_write_ppm P___((void));
 
 #ifndef LIBPLOTTER
 /* GIFPlotter public methods, for libplot */
-extern int _i_closepl P___((void));
-extern int _i_endpath P___((void));
-extern int _i_erase P___((void));
-extern int _i_fellipse P___((double x, double y, double rx, double ry, double angle));
-extern int _i_fpoint P___((double x, double y));
-extern int _i_openpl P___((void));
+extern int _i_closepl P___((Plotter *_plotter));
+extern int _i_endpath P___((Plotter *_plotter));
+extern int _i_erase P___((Plotter *_plotter));
+extern int _i_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
+extern int _i_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _i_openpl P___((Plotter *_plotter));
 /* GIFPlotter protected methods, for libplot */
-extern void _i_initialize P___((void));
-extern void _i_terminate P___((void));
-extern void _i_set_bg_color P___((void));
-extern void _i_set_fill_color P___((void));
-extern void _i_set_pen_color P___((void));
+extern void _i_initialize P___((Plotter *_plotter));
+extern void _i_terminate P___((Plotter *_plotter));
+extern void _i_set_bg_color P___((Plotter *_plotter));
+extern void _i_set_fill_color P___((Plotter *_plotter));
+extern void _i_set_pen_color P___((Plotter *_plotter));
 /* GIFPlotter internal functions, for libplot */
-extern int _i_scan_pixel P___((void));
-extern unsigned char _i_new_color_index P___((int red, int green, int blue));
-extern void _i_delete_image P___((void));
-extern void _i_draw_elliptic_mi_arc_internal P___((int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
-extern void _i_new_image P___((void));
-extern void _i_start_scan P___((void));
-extern void _i_write_gif_header P___((void));
-extern void _i_write_gif_image P___((void));
-extern void _i_write_gif_trailer P___((void));
-extern void _i_write_short_int P___((unsigned int i));
+extern int _i_scan_pixel P___((Plotter *_plotter));
+extern unsigned char _i_new_color_index P___((Plotter *_plotter, int red, int green, int blue));
+extern void _i_delete_image P___((Plotter *_plotter));
+extern void _i_draw_elliptic_mi_arc_internal P___((Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
+extern void _i_new_image P___((Plotter *_plotter));
+extern void _i_start_scan P___((Plotter *_plotter));
+extern void _i_write_gif_header P___((Plotter *_plotter));
+extern void _i_write_gif_image P___((Plotter *_plotter));
+extern void _i_write_gif_trailer P___((Plotter *_plotter));
+extern void _i_write_short_int P___((Plotter *_plotter, unsigned int i));
 #else  /* LIBPLOTTER */
 /* GIFPlotter public methods, for libplotter */
 #define _i_closepl GIFPlotter::closepl
@@ -1771,61 +2084,59 @@ extern void _i_write_short_int P___((unsigned int i));
 #ifndef X_DISPLAY_MISSING
 #ifndef LIBPLOTTER
 /* XDrawablePlotter/XPlotter public methods, for libplot */
-extern int _x_endpath P___((void));
-extern int _x_erase P___((void));
-extern int _x_fbox P___((double x0, double y0, double x1, double y1));
-extern int _x_fcont P___((double x, double y));
-extern int _x_fellipse P___((double x, double y, double rx, double ry, double angle));
-extern int _x_flushpl P___((void));
-extern int _x_fpoint P___((double x, double y));
-extern int _x_restorestate P___((void));
-extern int _x_savestate P___((void));
+extern int _x_endpath P___((Plotter *_plotter));
+extern int _x_erase P___((Plotter *_plotter));
+extern int _x_fcont P___((Plotter *_plotter, double x, double y));
+extern int _x_fellipse P___((Plotter *_plotter, double x, double y, double rx, double ry, double angle));
+extern int _x_flushpl P___((Plotter *_plotter));
+extern int _x_fpoint P___((Plotter *_plotter, double x, double y));
+extern int _x_restorestate P___((Plotter *_plotter));
+extern int _x_savestate P___((Plotter *_plotter));
 /* XDrawablePlotter public methods, for libplot */
-extern int _x_closepl P___((void));
-extern int _x_erase P___((void));
-extern int _x_openpl P___((void));
+extern int _x_closepl P___((Plotter *_plotter));
+extern int _x_erase P___((Plotter *_plotter));
+extern int _x_openpl P___((Plotter *_plotter));
 /* XPlotter public methods, for libplot */
-extern int _y_closepl P___((void));
-extern int _y_erase P___((void));
-extern int _y_openpl P___((void));
+extern int _y_closepl P___((Plotter *_plotter));
+extern int _y_erase P___((Plotter *_plotter));
+extern int _y_openpl P___((Plotter *_plotter));
 /* XDrawablePlotter/XPlotter protected methods, for libplot */
-extern void _x_initialize P___((void));
-extern void _x_terminate P___((void));
-extern double _x_falabel_ps P___((const unsigned char *s, int h_just));
-extern double _x_falabel_pcl P___((const unsigned char *s, int h_just));
-extern double _x_falabel_other P___((const unsigned char *s, int h_just));
-extern double _x_flabelwidth_ps P___((const unsigned char *s));
-extern double _x_flabelwidth_pcl P___((const unsigned char *s));
-extern double _x_flabelwidth_other P___((const unsigned char *s));
-extern void _x_retrieve_font P___((void));
-extern void _x_set_attributes P___((void));
-extern void _x_set_bg_color P___((void));
-extern void _x_set_fill_color P___((void));
-extern void _x_set_pen_color P___((void));
+extern void _x_initialize P___((Plotter *_plotter));
+extern void _x_terminate P___((Plotter *_plotter));
+extern double _x_falabel_ps P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _x_falabel_pcl P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _x_falabel_other P___((Plotter *_plotter, const unsigned char *s, int h_just, int v_just));
+extern double _x_flabelwidth_ps P___((Plotter *_plotter, const unsigned char *s));
+extern double _x_flabelwidth_pcl P___((Plotter *_plotter, const unsigned char *s));
+extern double _x_flabelwidth_other P___((Plotter *_plotter, const unsigned char *s));
+extern void _x_retrieve_font P___((Plotter *_plotter));
+extern void _x_set_attributes P___((Plotter *_plotter));
+extern void _x_set_bg_color P___((Plotter *_plotter));
+extern void _x_set_fill_color P___((Plotter *_plotter));
+extern void _x_set_pen_color P___((Plotter *_plotter));
 /* XDrawablePlotter/XPlotter internal functions, for libplot */
-extern bool _retrieve_X_color P___((XColor *rgb_ptr));
-extern bool _retrieve_X_font_internal P___((const char *name, double size, double rotation));
-extern bool _select_X_font P___((const char *name, bool is_zero[4], const unsigned char *s));
-extern bool _select_X_font_carefully P___((const char *name, bool is_zero[4], const unsigned char *s));
-extern void _draw_elliptic_X_arc P___((Point p0, Point p1, Point pc));
-extern void _draw_elliptic_X_arc_2 P___((Point p0, Point p1, Point pc));
-extern void _draw_elliptic_X_arc_internal P___((int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
-extern void _set_X_font_dimensions P___((bool is_zero[4]));
+extern bool _retrieve_X_color P___((Plotter *_plotter, XColor *rgb_ptr));
+extern bool _retrieve_X_font_internal P___((Plotter *_plotter, const char *name, double size, double rotation));
+extern bool _select_X_font P___((Plotter *_plotter, const char *name, bool is_zero[4], const unsigned char *s));
+extern bool _select_X_font_carefully P___((Plotter *_plotter, const char *name, bool is_zero[4], const unsigned char *s));
+extern void _draw_elliptic_X_arc P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
+extern void _draw_elliptic_X_arc_2 P___((Plotter *_plotter, plPoint p0, plPoint p1, plPoint pc));
+extern void _draw_elliptic_X_arc_internal P___((Plotter *_plotter, int xorigin, int yorigin, unsigned int squaresize_x, unsigned int squaresize_y, int startangle, int anglerange));
+extern void _set_X_font_dimensions P___((Plotter *_plotter, bool is_zero[4]));
 /* XDrawablePlotter internal functions, for libplot */
-extern void _x_maybe_get_new_colormap P___((void));
-extern void _x_maybe_handle_x_events P___((void));
+extern void _x_maybe_get_new_colormap P___((Plotter *_plotter));
+extern void _x_maybe_handle_x_events P___((Plotter *_plotter));
 /* XPlotter protected methods, for libplot */
-extern void _y_initialize P___((void));
-extern void _y_terminate P___((void));
+extern void _y_initialize P___((Plotter *_plotter));
+extern void _y_terminate P___((Plotter *_plotter));
 /* XPlotter internal functions, for libplot */
-extern void _y_flush_plotter_outstreams P___((void));
-extern void _y_maybe_get_new_colormap P___((void));
-extern void _y_maybe_handle_x_events P___((void));
-extern void _y_set_data_for_quitting P___((void));
+extern void _y_flush_plotter_outstreams P___((Plotter *_plotter));
+extern void _y_maybe_get_new_colormap P___((Plotter *_plotter));
+extern void _y_maybe_handle_x_events P___((Plotter *_plotter));
+extern void _y_set_data_for_quitting P___((Plotter *_plotter));
 #else  /* LIBPLOTTER */
 /* XDrawablePlotter/XPlotter public methods, for libplotter */
 #define _x_endpath XDrawablePlotter::endpath
-#define _x_fbox XDrawablePlotter::fbox
 #define _x_fcont XDrawablePlotter::fcont
 #define _x_fellipse XDrawablePlotter::fellipse
 #define _x_flushpl XDrawablePlotter::flushpl
@@ -1878,5 +2189,22 @@ extern void _y_set_data_for_quitting P___((void));
 #define _y_set_data_for_quitting XPlotter::_y_set_data_for_quitting
 #endif  /* LIBPLOTTER */
 #endif /* not X_DISPLAY_MISSING */
+
+/* Declarations of the PlotterParams methods.  In libplot, these are
+   declarations of global functions.  But in libplotter, we use #define and
+   the double colon notation to make them function members of the
+   PlotterParams class. */
+
+#ifndef LIBPLOTTER
+/* PlotterParams public methods, for libplot */
+extern int _setplparam P___((PlotterParams *_plotter_params, const char *parameter, voidptr_t value));
+extern int _pushplparams P___((PlotterParams *_plotter_params));
+extern int _popplparams P___((PlotterParams *_plotter_params));
+#else /* LIBPLOTTER */
+/* PlotterParams public methods, for libplotter */
+#define _setplparam PlotterParams::setplparam
+#define _pushplparams PlotterParams::pushplparams
+#define _popplparams PlotterParams::popplparams
+#endif /* LIBPLOTTER */
 
 #undef P___

@@ -76,9 +76,6 @@ output *make_tpic_output (void);
 output *make_plot_output (void);
 extern char *display_type;
 
-/* possible rotation angles for plot within graphics display */
-enum rotation { ROT_0, ROT_90, ROT_180, ROT_270 };
-extern enum rotation rotation_angle;
 extern char *font_name;
 extern char *pen_color_name;
 extern double font_size;

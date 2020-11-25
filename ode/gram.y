@@ -10,7 +10,7 @@
  * most important thing to be familiar with before
  * toying with the semantics.
  * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
+ * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
  */
 #include "sys-defines.h"
 #include "ode.h"
@@ -889,7 +889,8 @@ void
 concat (struct expr *e0, struct expr *e1)
 #else
 concat (e0, e1)
-     struct expr *e0, *e1;
+     struct expr *e0;
+     struct expr *e1;
 #endif
 {
   int count;
@@ -910,10 +911,10 @@ concat (e0, e1)
  */
 void
 #ifdef _HAVE_PROTOS
-prexq (struct expr *ep)
+prexq (const struct expr *ep)
 #else
 prexq (ep)
-     struct expr *ep;
+     const struct expr *ep;
 #endif
 {
   const char *s;

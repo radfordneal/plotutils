@@ -5,17 +5,18 @@
    device coordinates, by requiring that the transformation currently in
    effect be be preceded by a specified affine transformation. */
 
-/* Invoking concat causes the device-frame line width to be recomputed; see
-   comment below. */
+/* Invoking concat causes the device-frame line width to be recomputed, if
+   we have a device model; see comment below. */
 
 #include "sys-defines.h"
 #include "extern.h"
 
 int
 #ifdef _HAVE_PROTOS
-_g_fconcat (double m0, double m1, double m2, double m3, double m4, double m5)
+_g_fconcat (R___(Plotter *_plotter) double m0, double m1, double m2, double m3, double m4, double m5)
 #else
-_g_fconcat (m0, m1, m2, m3, m4, m5)
+_g_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5)
+     S___(Plotter *_plotter;) 
      double m0, m1, m2, m3, m4, m5;
 #endif
 {
@@ -24,7 +25,8 @@ _g_fconcat (m0, m1, m2, m3, m4, m5)
 
   if (!_plotter->open)
     {
-      _plotter->error ("fconcat: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fconcat: invalid operation");
       return -1;
     }
 
@@ -68,32 +70,20 @@ _g_fconcat (m0, m1, m2, m3, m4, m5)
   _plotter->drawstate->transform.nonreflection 
     = ((_plotter->flipped_y ? -1 : 1) * det >= 0) ? true : false;
 
-  /* Recompute line width in device coordinates.  In libplot, this is a
-     forwarding function; see api.c.  That's because for a MetaPlotter, it
-     should be almost a no-op, to avoid emitting a bogus LINEWIDTH op code.  */
-  _recompute_device_line_width ();
+  if (_plotter->display_model_type != DISP_MODEL_NONE)
+  /* recompute line width in device coordinates */
+    _plotter->flinewidth (R___(_plotter) _plotter->drawstate->line_width);
 
-  /* Even though we update the device-frame line width, we don't call the
-     retrieve_font function to update the device-frame font size.  That's
-     because on X Plotters, it wouldn't be wise: the new device-frame font
-     size may be so small or large as to be unavailable on the X server,
-     and the user may in fact be planning to invoke fontsize() manually to
-     select a font of an appropriate size.
+  /* Even though we recompute the device-frame line width, we don't call
+     the retrieve_font function to update the device-frame font size.
+     That's because on X Plotters, it wouldn't be wise: the new
+     device-frame font size may be so small or large as to be unavailable
+     on the X server, and the user may in fact be planning to invoke
+     fontsize() manually to select a font of an appropriate size.
 
      Even if the user doesn't plan on doing that, it's OK not to invoke
      retrieve_font here, since it'll be invoked before rendering any string
      (see g_alabel.c). */
 
   return 0;
-}
-
-/* generic (non-MetaPlotter) version of abovementioned function */
-void
-#ifdef _HAVE_PROTOS
-_g_recompute_device_line_width (void)
-#else
-_g_recompute_device_line_width ()
-#endif
-{
-  _plotter->flinewidth (_plotter->drawstate->line_width);
 }

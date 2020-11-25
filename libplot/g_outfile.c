@@ -15,9 +15,10 @@
 
 FILE *
 #ifdef _HAVE_PROTOS
-_g_outfile(FILE *outfile)
+_g_outfile(R___(Plotter *_plotter) FILE *outfile)
 #else
-_g_outfile(outfile)
+_g_outfile(R___(_plotter) outfile)
+     S___(Plotter *_plotter;) 
      FILE *outfile;
 #endif
 {
@@ -25,7 +26,8 @@ _g_outfile(outfile)
   
   if (_plotter->open)
     {
-      _plotter->error ("outfile: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "outfile: invalid operation");
       return (FILE *)NULL;
     }
 

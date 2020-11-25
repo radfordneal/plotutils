@@ -9,14 +9,16 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_openpl (void)
+_g_openpl (S___(Plotter *_plotter))
 #else
-_g_openpl ()
+_g_openpl (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "openpl: invalid operation");
       return -1;
     }
 
@@ -29,7 +31,7 @@ _g_openpl ()
   _plotter->space_invoked = false;
 
   /* create drawing state, add it as the first member of the linked list */
-  _plotter->savestate();			
+  _plotter->savestate (S___(_plotter));			
 
   /* frames in page are numbered starting with zero */
   _plotter->frame_number = 0;

@@ -2,7 +2,7 @@ This file explains how to install the GNU plotutils (plotting utilities)
 package.  The file README summarizes the contents of the package.  Please
 send bug reports to <bug-gnu-utils@gnu.org>, and suggestions for
 longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
-author and current maintainer, Robert Maier <rsm@math.arizona.edu>.
+author and current maintainer, Robert S. Maier <rsm@math.arizona.edu>.
 
 These are package-specific installation instructions: PLEASE READ THEM.
 
@@ -16,12 +16,27 @@ process.  You may produce a copy of the documentation for the package, in
 dvi format, by typing `make dvi'.  This assumes that you have the TeX
 document formatter installed.
 
-The most important point not mentioned in the file INSTALL is the following.
+The most important points not mentioned in the file INSTALL are these.
 
+    **********************************************************************
     If you have a working C++ compiler and would like to build the
     `libplotter' class library and the pic2plot utility, both of which are
     written in C++, you should add the `--enable-libplotter' option to the
     `./configure' command.
+    **********************************************************************
+
+    **********************************************************************
+    If you would like to build and a standalone version of the `libxmi'
+    2D rasterization library, and install the library and its documentation,
+    you should add the `--enable-libxmi' option to the `./configure'
+    command.  The only reason this is not done by default is that libxmi is
+    also distributed as a separate package.
+    **********************************************************************
+
+    **********************************************************************
+    It is not unknown for one or more of the validation tests that are run
+    by doing `make check' to fail for harmless reasons.  See B.7, below.
+    **********************************************************************
 
 The rest of this file discusses possible installation problems.  There are
 some additional options that you can add to the `./configure' command.
@@ -41,31 +56,32 @@ following three sections.  They cover:
 ----------------------------------------------------------------------
 
 A. This section covers problems related to building both the unshared
-version and the shared version (DLL) of the GNU libplot graphics library.
-Except on older systems, GNU libplot will be built as both an unshared
-library and a DLL.  A script called `libtool' is used for this.  
+version and the shared version of the GNU libplot graphics library.  Except
+on older systems, GNU libplot will normally be built as both an unshared
+library and a shared library.  A script called `libtool' is used for this.
 By default, the application programs `graph', `plot', `tek2plot', and
-`plotfont' will be configured to use the DLL.
+`plotfont' will be configured to use the shared library.
 
 If for any reason you wish to disable support for the shared version of
 libplot, you may begin by doing `./configure --disable-shared' instead of
 `./configure'.
 
-    
+
 A.1. On Silicon Graphics systems running IRIX 6.x, you may get error
 messages about `GP overflow'.  If so, you should do `make distclean' and
-start over, this time doing two things differently.  (1) After running
-`./configure', modify, by hand, the file `./libtool'.  In that file, change
-the line "archive_cmds=...", which will be located at about line #170, to
+start over, this time doing two things differently.  
+(1) After running `./configure', modify, by hand, the file `./libtool'.
+In that file, change the line "archive_cmds=..." and/or the line
+"archive_expsym_cmds=...", which will be located at about line #175, to
 include the options `-multigot -shared', rather than just `-shared'.
 (2) Do `make CFLAGS="-O -multigot"' instead of just `make'.
 
-A.2. On some HP-UX systems, the `sed' program is broken.  It is possible
-that this may cause unusual problems for libtool, the script that prepares
-the libplot library.  If mysterious problems occur during the compilation
-and linking of libplot on an HP-UX system, you should install a working
-version of `sed', such as GNU sed, and try again.  There are also problems
-on HP-UX systems related to the X Window System (see below).
+A.2. On some HP-UX systems, the `sed' program is broken.  This may cause
+unusual problems for libtool, the script that prepares the libplot library.
+If mysterious problems occur during the compilation and linking of libplot
+on an HP-UX system, you should install a working version of `sed', such as
+GNU sed, and try again.  There are also problems on HP-UX systems related
+to the X Window System (see below).
 
 ----------------------------------------------------------------------
 
@@ -73,20 +89,20 @@ B. This section covers miscellaneous installation problems.
 
 
 B.1. On some systems, there are potential minor problems having to do with
-installing (rather than building) the libplot DLL.  By default, it is
-installed in `/usr/local/lib'.  On some systems you may need to run a
-command (such as `ldconfig'), or even reboot, to let your system know that
-a new DLL has been installed.  On some systems you may need to add
-`/usr/local/lib' to your LD_LIBRARY_PATH environment variable in order to
-use the `graph', `plot', `tek2plot', `plotfont', and `pic2plot' programs
-after they have been installed.  You will be cautioned about problems of
-this sort, if any, at installation time.
+installing (rather than building) the shared version of libplot.  By
+default, it is installed in `/usr/local/lib'.  On some systems you may need
+to run a command (such as `ldconfig'), or even reboot, to let your system
+know that a new shared library has been installed.  On some systems you may
+need to add `/usr/local/lib' to your LD_LIBRARY_PATH environment variable
+in order to use the `graph', `plot', `tek2plot', `plotfont', and `pic2plot'
+programs after they have been installed.  You will be cautioned about
+problems of this sort, if any, at installation time.
 
 B.2. If you have a recent laser printer that can use the 35 standard
 Postscript fonts even when in PCL 5 or HP-GL/2 mode, such as a 4000-series
-HP LaserJet, you may wish to add the `--enable-ps-fonts-in-pcl' option
-to `./configure'.  No additional font installation is required, since the
-Postscript fonts are internal to the printer.
+HP LaserJet, you may wish to add the `--enable-ps-fonts-in-pcl' option to
+`./configure'.  No additional actions on your part, such as installing
+fonts, are required, since the Postscript fonts are internal to the printer.
 
 B.3. By default, the 45 fonts that are built into recent HP LaserJets are
 available to the plotting utilities when you produce PCL 5 or HP-GL/2
@@ -112,22 +128,27 @@ administrators prefer not to add files to that directory.
 
 B.6. If you are installing this package with DJGPP under MS-DOS, the very
 first thing you should do is rename the file `install-sh' in this directory
-to `install.sh'.  This is on account of filename length limitations in
+to `install.sh'.  That is on account of filename length limitations in
 MS-DOS.  If `./configure' reports that it is unable to find certain
 executable programs that it should in fact find, you may also need to
 replace many of the occurrences of `test -f' in `./configure' and
 `./ltmain' by `test -x' (to compensate for the ".exe" extension that MS-DOS
 uses).  These potential problems are reported by Michel de Ruiter
-<mdruiter@cs.vu.nl>.  Contact him for additional information on MS-DOS
-installations.
+<mdruiter@cs.vu.nl>.  Please contact him for additional information on
+MS-DOS installations.
 
-B.7.  One or more of the validation tests performed by doing `make check'
-may fail on account of incorrect formatting of floating-point numbers.
-This is the case if you are installing with DJGPP under MS-DOS, for
-example.  It may also occur if you are installing the package on an old
-NeXT machine.  Failures of this sort are more or less harmless.  But if any
-of the validation tests should fail on any other system, please report it
-to <bug-gnu-utils@gnu.org>.
+B.7.  It is not unusual for one or more of the validation tests performed
+by doing `make check' to fail on account of minor differences in formatting
+floating-point numbers, or differences in the rounding of floating-point
+numbers.  In particular, the `plot2fig' validation test may fail if you are
+installing with DJGPP under MS-DOS, or if you are installing the package on
+an old NeXT machine.
+
+To emphasize: the failure of one or two of the validation tests, in
+particular the `plot2fig' test, is probably quite harmless.  But if any
+validation test other than the `plot2fig' test should fail, please report
+it to <bug-gnu-utils@gnu.org>.  For some additional remarks on the
+validation tests, see the file ./test/README.
 
 ----------------------------------------------------------------------
 
@@ -147,55 +168,69 @@ recompile it.  (The change makes it use the full set of 35 standard
 Postscript fonts.)  For this too, see the file ./INSTALL.fonts.
 
 C.3. There is a possible installation problem having to do with X widget
-sets.  By default this package uses Athena widgets, which are supported on
-most but not all machines.  Some machines provide Motif widgets instead of
-Athena widgets.  On such machines (e.g. Hewlett-Packard systems running
-HP/UX, and some IBM systems) you should begin by doing `./configure
---with-motif' instead of just `./configure' to ensure that the software is
-configured correctly.  
+sets.  By default this package uses the free Athena widgets, which are
+supported on most but not all machines.  Some machines provide Motif
+widgets instead of Athena widgets.  On such machines (e.g. Hewlett-Packard
+systems running HP/UX, and some IBM systems) you should normally begin by
+doing `./configure --with-motif' instead of just `./configure' to ensure
+that the software is configured correctly.
 
 The only advantage of using Motif widgets, which are not free, is that you
 may be able to use Motif's drag-and-drop facility to drag graphics out of
 popped-up X Windows, e.g., the window popped up by `graph -T X'.
 
-C.4. Old Hewlett-Packard HP/UX systems that are running HP/UX 9.xx or
-earlier have Motif widgets, but the Motif files are stored in unusual
-places.  On such systems, besides doing `./configure --with-motif' you
-may need to do
+C.4. On some Hewlett-Packard systems running HP/UX 10.xx, it is possible to
+use the free Athena widgets rather than the Motif widgets.  If you have an
+HP/UX 10.xx system, you should check whether the directories
+/usr/contrib/X11R6/{include,lib} exist.  If so, you can use the Athena
+widgets.  To use them, you would do `./configure' and then
+
+    make CFLAGS="-O -L/usr/contrib/X11R6/lib -I/usr/contrib/X11R6/include"
+
+rather than just `make'.
+
+Older HP/UX 10.xx systems have X11R5 instead of X11R6, in which case you
+should modify the directory names appropriately.  Also, you may need to
+include "-L/usr/local/X11R5/lib" in CFLAGS.  It is not clear why.
+
+C.5. Old Hewlett-Packard systems that are running HP/UX 9.xx or earlier
+have Motif widgets, but the Motif files are stored in unusual places.  On
+such systems, besides doing `./configure --with-motif' you may need to do
 
 	make CFLAGS="-O -I/usr/include/Motif1.2 -L/usr/lib/Motif1.2"
 
 rather than just `make'.
 
-C.5. On at least some recent HP/UX systems, it may be possible to use the
-free Athena widgets rather than the Motif widgets.  As noted, the Athena
-widgets are not included in most releases of HP/UX.  However, HP made them
-available at an ftp site, and recommended that they be installed in the
-tree /usr/contrib/X11R5/{include,lib}.  If you have a recent HP/UX system
-and have installed Athena widgets as HP recommends, and wish to use them
-instead of Motif widgets, you should do `./configure' and then
+For HP/UX 9.xx systems, X11R6, presumably including the Athena widgets and
+not the Motif widgets, was available as a patch.  If you have an HP/UX 9.xx
+system that X11R6 was installed on, besides doing `./configure' (or
+possibly `./configure --with-motif'), you should do
 
-	make CFLAGS="-O -L/usr/local/X11R5/lib -L/usr/contrib/X11R5/lib
-			-I/usr/contrib/X11R5/include"
+    make CFLAGS="-O -L/usr/contrib/X11R6/lib -I/usr/contrib/X11R6/include"
 
-rather than just `make'.
+rather than just `make'.  This is because on HP/UX 9.xx systems, the X11R6
+patch was installed in the /usr/contrib directory.
 
 C.6. On Suns that are running SunOS 4.1.x with the ancient OpenWindows 3.0
 version of the X Window System, the Xmu and Xt libraries may not link
 correctly.  If so, you will get error messages dealing with "undefined
-symbols" when linking the five programs `graph', `plot', `tek2plot',
+symbols" when linking any of the five programs `graph', `plot', `tek2plot',
 `plotfont', and `pic2plot'.  To solve this problem, please contact your
 local Sun office and request the following patches:
 
   Patch i.d.      Description
-  100512-02       4.1.x OpenWindows 3.0 libXt Jumbo patch
-  100573-03       4.1.x OpenWindows 3.0 undefined symbols when using
+  100512-05       4.1.x OpenWindows 3.0: libXt Jumbo patch
+  100573-03       4.1.x OpenWindows 3.0: undefined symbols when using
                           shared libXmu
 
+You may be able to retrive these patches, or more recent versions of them,
+from the patch archive at ftp://metalab.unc.edu/pub/sun-info/sun-patches/ .
+
 If you are using Sun's cc as your compiler, you may be able to work around
-this problem not by contacting Sun, but by modifying the Makefiles in the
-five directories `graph', `plot', `tek2plot', `plotfont', and `pic2plot'
-by hand.  Here is how you can do this.
+this problem not by installing patches to your system, but rather by
+modifying the Makefiles in the five directories `graph', `plot',
+`tek2plot', `plotfont', and `pic2plot' by hand.  Here is how you can do
+this.
 
 The following explanation applies to graph/Makefile; the four other
 Makefiles are treated similarly.  In graph/Makefile, locate the line
@@ -222,8 +257,8 @@ above line would be replaced by `plot', `tek2plot', `plotfont', and
 If you are using gcc rather than cc as your compiler, this approach will
 not work; but it may be possible to work around the problem by extracting
 the two files named `sharedlib.o' from libXmu.a and libXt.a and adding them
-to the list of objects to be linked.  This is tricky, and contacting Sun to
-request the two patches, instead, is recommended.
+to the list of objects to be linked.  This is tricky, and obtaining the two
+system patches from Sun or elsewhere, instead, is recommended.
 
 A much better workaround is to obtain and install the X11R6 version of the
 X Window System.  Unlike the version that came with SunOS 4.1.x, it

@@ -18,9 +18,10 @@ static int _kermit_pseudocolor ____P((int red, int green, int blue));
 
 void
 #ifdef _HAVE_PROTOS
-_t_set_pen_color(void)
+_t_set_pen_color(S___(Plotter *_plotter))
 #else
-_t_set_pen_color()
+_t_set_pen_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (_plotter->tek_display_type == D_KERMIT)
@@ -33,7 +34,8 @@ _t_set_pen_color()
 			     _plotter->drawstate->fgcolor.blue);
       if (new_kermit_fgcolor != _plotter->tek_kermit_fgcolor)
 	{
-	  _plotter->write_string (_kermit_fgcolor_escapes[new_kermit_fgcolor]);
+	  _plotter->write_string (R___(_plotter) 
+				  _kermit_fgcolor_escapes[new_kermit_fgcolor]);
 	  _plotter->tek_kermit_fgcolor = new_kermit_fgcolor;
 	}
     }
@@ -41,9 +43,10 @@ _t_set_pen_color()
 
 void
 #ifdef _HAVE_PROTOS
-_t_set_bg_color(void)
+_t_set_bg_color(S___(Plotter *_plotter))
 #else
-_t_set_bg_color()
+_t_set_bg_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (_plotter->tek_display_type == D_KERMIT)
@@ -56,7 +59,8 @@ _t_set_bg_color()
 			     _plotter->drawstate->bgcolor.blue);
       if (new_kermit_bgcolor != _plotter->tek_kermit_bgcolor)
 	{
-	  _plotter->write_string (_kermit_bgcolor_escapes[new_kermit_bgcolor]);
+	  _plotter->write_string (R___(_plotter)
+				  _kermit_bgcolor_escapes[new_kermit_bgcolor]);
 	  _plotter->tek_kermit_bgcolor = new_kermit_bgcolor;
 	}
     }

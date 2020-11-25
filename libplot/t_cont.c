@@ -9,8 +9,8 @@
 
      (1) explicitly invokes the endpath() method, or 
      (2) changes the value of one of the relevant drawing attributes, 
-          by invoking move(), linemod(), linewidth(), color(), fillcolor(),
-          or filltype(), or 
+          e.g. by invoking move(), linemod(), linewidth(), pencolor(), 
+          fillcolor(), or filltype(), or 
      (3) draws some non-path object, by invoking box(), 
            circle(), point(), label(), alabel(), etc., or 
      (4) invokes restorestate() to restore an earlier drawing state. */
@@ -25,14 +25,16 @@ enum { ACCEPTED = 0x1, CLIPPED_FIRST = 0x2, CLIPPED_SECOND = 0x4 };
 
 int
 #ifdef _HAVE_PROTOS
-_t_fcont (double x, double y)
+_t_fcont (R___(Plotter *_plotter) double x, double y)
 #else
-_t_fcont (x, y)
+_t_fcont (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
-  Point start, end;		/* endpoints of line seg. (in device coors) */
-  IntPoint istart, iend;	/* same, quantized to integer Tek coors */
+  plPoint start, end;		/* endpoints of line seg. (in device coors) */
+  plIntPoint istart, iend;	/* same, quantized to integer Tek coors */
+  bool same_point;
   bool force;
   int oldindex, newindex;
   int clipval;
@@ -40,7 +42,7 @@ _t_fcont (x, y)
 
   if (!_plotter->open)
     {
-      _plotter->error ("fcont: invalid operation");
+      _plotter->error (R___(_plotter) "fcont: invalid operation");
       return -1;
     }
 
@@ -49,11 +51,15 @@ _t_fcont (x, y)
      However, in any TekPlotter, the value of the `flush_long_polylines'
      data member is false.  This keeps the generic method from calling
      endpath() when the stored polyline gets too long. */
-  retval = _g_fcont (x, y);
+  retval = _g_fcont (R___(_plotter) x, y);
 
   /* Draw new line segment on Tektronix display, in real time */
 
-  /* Skip drawing it if the pen color is white.  Since our TekPlotter class
+  /* skip drawing if pen level is set to `0' */
+  if (_plotter->drawstate->pen_type == 0)
+    return retval;
+
+  /* Skip drawing if the pen color is white.  Since our TekPlotter class
      doesn't support filling, this is ok to do if the Tektronix isn't a
      kermit emulator (the kermit emulator supports color). */
   if (_plotter->tek_display_type != D_KERMIT 
@@ -74,6 +80,7 @@ _t_fcont (x, y)
 	     _plotter->drawstate->datapoints[newindex].y);
   end.y = YD(_plotter->drawstate->datapoints[newindex].x,
 	     _plotter->drawstate->datapoints[newindex].y);
+  same_point = (start.x == end.x && start.y == end.y) ? true : false;
 
   /* clip line segment to rectangular clipping region in device frame */
   clipval = _clip_line (&start.x, &start.y, &end.x, &end.y,
@@ -96,7 +103,7 @@ _t_fcont (x, y)
      are already in the desired mode, emitting the escape sequence will
      prevent a line being drawn at the time of the move (the "dark vector"
      concept).  That is of course what we want. */
-    _tek_move (istart.x, istart.y);
+    _tek_move (R___(_plotter) istart.x, istart.y);
   else
     /* A polyline is underway, >=1 line segments already.  So check whether
        the position on the Tektronix is the same as the starting point of
@@ -115,32 +122,39 @@ _t_fcont (x, y)
 	  || (_plotter->tek_mode != correct_tek_mode))
 	/* Move to desired position.  This automatically shifts the
 	   Tektronix to correct mode, PLOT or POINT; see comment above. */
-	_tek_move (istart.x, istart.y);
+	_tek_move (R___(_plotter) istart.x, istart.y);
     }
 
   /* Sync Tek's linestyle with ours; an escape sequence is emitted only if
      necessary.  Linestyle could have changed on us if a
      savestate()...restorestate() occurred since the last call to cont().
      Sync Tek's color too (significant only for kermit Tek emulator). */
-  _plotter->set_attributes();  
-  _plotter->set_pen_color();
+  _plotter->set_attributes (S___(_plotter));  
+  _plotter->set_pen_color (S___(_plotter));
 
   /* Be sure the background color is correct too.  A background color may
      be set in openpl() from the BG_COLOR parameter, but unless we do the
      following, it won't take effect until erase() is invoked. */
-  _plotter->set_bg_color();     
+  _plotter->set_bg_color (S___(_plotter));
 
   /* If this is the initial line segment of a polyline, force output of a
-  vector even if the line segment has zero length, so that something
-  visible will show up on the Tek display.  We do this only if the cap mode
-  isn't "butt"; if it is, we don't draw anything. */
-  if (oldindex == 0 && _plotter->drawstate->cap_type != CAP_BUTT)
+     vector even if the line segment has zero length, so that something
+     visible will show up on the Tek display.  We do this only if (1) the
+     line segment in the user frame was of nonzero length, or (2) it was of
+     zero length but the cap mode is "round".  This more or less agrees
+     with our convention, on bitmap Plotters (X, PNM, GIF, etc.), for
+     dealing with device-frame vectors that are of (quantized) zero length.  */
+  if (oldindex == 0 
+      && (same_point == false 
+	  || (same_point == true 
+	      && _plotter->drawstate->cap_type == CAP_ROUND)))
     force = true;
   else 
     force = false;
 
   /* continue polyline by drawing vector on Tek display */
-  _tek_vector_compressed (iend.x, iend.y, istart.x, istart.y, force);
+  _tek_vector_compressed (R___(_plotter) 
+			  iend.x, iend.y, istart.x, istart.y, force);
       
   /* update our notion of Tek's notion of position */
   _plotter->tek_pos.x = iend.x;

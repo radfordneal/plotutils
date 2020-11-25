@@ -29,6 +29,8 @@ libplot, and accessible to the plotting utilities.
 		 page on an X Window System display,
 		 `plot -T ps demo-page > demo-page.ps' to prepare a
 		 Postscript version of the page, 
+		 `plot -T cgm demo-page > demo-page.cgm' to prepare a
+		 WebCGM version of the page, 
 		 `plot -T fig demo-page > demo-page.fig' to prepare a
 		 version of the page that can be edited with the `xfig'
 		 drawing editor, etc.

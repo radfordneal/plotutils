@@ -10,32 +10,36 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_linemod (const char *s)
+_g_linemod (R___(Plotter *_plotter) const char *s)
 #else
-_g_linemod (s)
+_g_linemod (R___(_plotter) s)
+     S___(Plotter *_plotter;) 
      const char *s;
 #endif
 {
   bool matched = false;
+  char *line_mode;
   int i;
 
   if (!_plotter->open)
     {
-      _plotter->error ("linemod: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "linemod: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* null pointer resets to default */
   if ((!s) || !strcmp(s, "(null)"))
     s = _default_drawstate.line_mode;
 
-  free (_plotter->drawstate->line_mode);
-  _plotter->drawstate->line_mode = (char *)_plot_xmalloc (strlen (s) + 1);
-  strcpy (_plotter->drawstate->line_mode, s);
-
+  free ((char *)_plotter->drawstate->line_mode);
+  line_mode = (char *)_plot_xmalloc (strlen (s) + 1);
+  strcpy (line_mode, s);
+  _plotter->drawstate->line_mode = line_mode;
+  
   if (strcmp( s, "disconnected") == 0)
      /* we'll implement disconnected lines by drawing a filled circle at
 	each path join point */
@@ -60,7 +64,7 @@ _g_linemod (s)
   
   if (matched == false)
     /* don't recognize, silently switch to default mode */
-    _g_linemod (_default_drawstate.line_mode);
+    _g_linemod (R___(_plotter) _default_drawstate.line_mode);
 
   /* for future paths, use builtin line style rather than user-specified
      dash array */

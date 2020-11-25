@@ -28,20 +28,22 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_fmiterlimit (double new_miter_limit)
+_g_fmiterlimit (R___(Plotter *_plotter) double new_miter_limit)
 #else
-_g_fmiterlimit (new_miter_limit)
+_g_fmiterlimit (R___(_plotter) new_miter_limit)
+     S___(Plotter *_plotter;)
      double new_miter_limit;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("flinewidth: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "flinewidth: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   if (new_miter_limit < 1.0)	/* reset to default */
     new_miter_limit = DEFAULT_MITER_LIMIT;

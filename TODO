@@ -1,98 +1,258 @@
-For plotutils version 2.x
--------------------------
+Top priority
+------------
 
-libplot: add the display list concept (will facilitate adding support for
-compound objects and much else).
+libplot: add support for new XML-based SVG [Scalable Vector Graphics]
+format, now being advanced by the W3 Consortium.
 
-libplot: support copying graphics from one Plotter to another (via display
-list).
+libplot: to CGM Plotters, add support for the version-4 WebCGM features,
+i.e., hyperlinks based on CGM `application structures'.  Maybe set up a
+standard way of defining hyperlinks, which could be used by Illustrator
+Plotters too?  Illustrator format supports hyperlinks.
+
+libplot: in the X11 driver, improve color cell management.  Right now, X11
+color cells are cached in a linked list, which is not efficient.  For
+real-time use of X Drawable Plotters, speedier access to color cells is
+needed.
+
+libplot: add support for PNG format, via --with-libpng configuration option.
+
+libplot: add the display list concept, i.e. retained 2-D graphical objects
+(will also facilitate adding support for compound objects and redrawing).
+libplot must become more widget-like; cf. guppi.
+
+libplot: support copying graphics from one Plotter to another (e.g., via
+display list; cf. OpenGL).
 
 libsciplot: new library.  Incorporate all functionality of VOGLE, PGPLOT,
-and PLPLOT libraries; check into GLE, PLOTPLUS, XYPLOT, DISLIN.  Think
-about Guile, and Tcl/Tk, and Python.  libsciplot will support contouring,
-but not 3d surface plots yet.
+and PLPLOT libraries; check into GLE, PLOTPLUS, XYPLOT, DISLIN (not
+open-source; see http://www.linmpi.mpg.de/dislin/).  Think about Guile, and
+Tcl/Tk, and Python.  libsciplot will support contouring, but not 3d surface
+plots yet.
 
-graph: librarify the plotting routines, and incorporate them in libsciplot.
-N.B. need better clipping for filled regions (present gnuplot-style
+graph: continue librarifying the plotting routines, and incorporate them in
+libsciplot.  Maybe a GUILE interface?
+
+graph: need better clipping for filled regions (present gnuplot-style
 clipping scheme is right for unfilled regions but wrong for filled ones)
 
 libsciplot: when plotting a curve containing data points, symbols should be
 plotted _last_, after endpath() is called.
 
-plot: should document that `plot -TX' will use double buffering if
-environment variable USE_DOUBLE_BUFFERING is "yes".  Maybe make that
-user-settable via an option?
+libplot: write a generic bitmap Plotter; subclass PNM and GIF Plotters from
+it.  Will facilitate importing a bitmap file to serve as a background for
+drawing.
 
-libplot: support object-level clipping
+libplot: support object-level clipping; maybe precise rectangle-level
+clipping for bitmap Plotters?
 
-libplot: add support for compound objects
+libplot: add support for compound objects (supported by Fig, idraw, AI).
+Support should be compatible with support for SVG's `containers'.
 
-libplot: add support for tiling instead of solid filling
+libplot: add support for tiling (with device-dependent rasters) as well as
+solid filling.  libxmi already supports this.
 
-libplot: add support for subpaths i.e. compound paths.
+libplot: add support for subpaths, i.e. compound paths.  Maybe use
+subpath-simulation similar to the approach of Burkhard Plaum
+<plaum@ipf.uni-stuttgart.de>, whose code is used in pstoedit?  (Already
+have an `endsubpath' Plotter operation as placeholder, but it merely
+invokes endpath.  Will need to implement, also, the `orientation'
+operation, specifying direction that rectangles, circles, and ellipses are
+traced out.)
 
-graph: new option to put frame on top of plot, not vice versa.
-maybe automatic, if `plotting is real time' capability is set?
+libplot: add support for rectangular raster objects ("device independent
+rasters").  Supported in CGM format, etc.
 
-libplot X drawable support: add parameter(s) for offset of canvas within
-drawable?
+libplot bitmap Plotter support: add sub-parameters to the BITMAPSIZE
+parameter, for specifying offset of viewport within bitmap?  Clipping too?
 
-graph: add legend support (need new --legend :string1:string2: option),
-i.e. gnuplot-style `key'.  Maybe arbitrarily positioned arrows, text
-strings also.  See how NCAR Graphics does it.
+libplot: alabel() operation should support the value 'C' for the y offset
+argument, aligning the caps line with the current position.  Would be
+almost trivial to add.
 
-Internationalization: think about removing strcasecmp (what if user called
-setlocale i.e. set LOCALE env var)?  Similarly worry about . vs , everywhere, 
-e.g. in PS files.
+libplot: should document that a user of X Drawable Plotters or X Plotters,
+if desiring true thread-safety, must manually invoke XInitThreads() and
+possibly XtToolkitThreadInitialize().  Also, in libplot code
+(e.g. libplot/p_defplot.c) must add appropriate #define's so that ctime_r()
+and localtime_r() are defined and used.  Haven't figured out how to do that
+yet; on some systems, defining _REENTRANT and _POSIX_SOURCE is not enough.
 
-graph: fix positioning of top labels, especially at large sizes
+Intermediate Priority
+---------------------
 
-ode: add atan2() function
+libplot: add support for gradient fill?  Which output formats provide
+native support for it?  Strangely, WebCGM 1.0 does not.
 
-libplot: Support CGM format.  Check that CGM is importable into Corel Draw
-as well as Illustrator.
+libplot: In Illustrator format, colors may be specified by CMYK values or
+(in recent Illustrator versions) by RGB values.  Illustrator's mapping
+between them is not documented, and does not seem to be the usual one.
+When generating Illustrator format we use CMYK, but maybe we should use RGB
+instead?
 
-libplot: add triangular cap mode, join mode to more types of Plotter
+pic2plot: should use new pentype() operation to turn off the boundaries of
+certain graphical objects, rather than drawing them with zero line
+thickness.  For example, filled objects whose boundaries will subsequently
+be `precision dashed'.
 
-write more man pages.
+libplot: CGM driver may not currently support negative values for the
+offset parameter of linedash(); check this.
 
-Major Enhancements (Possible, Probable, or Certain)
----------------------------------------------------
+libplot: if the pen level has been set to `0' by invoking pentype(),
+thereby turning off the edging of paths, circles, and ellipses, the drawing
+of text and of `points' (i.e. pixels) should be turned off too.
+In the texinfo documentation we've promised to do this.
 
-libplot: support PGML output format, maybe VML.
+libplot: improve Bezier flattening: use an adaptive scheme to handle
+unusually `bent' sections of a Bezier.  (For device drivers using integer
+device coordinates, this is particularly important.)
 
-ode: extend parser to plot functions as well as solve differential equations
+pic2plot: extend parser to support the Bell Labs `picasso' constructions
+(extensions of the pic grammar).
+
+libplot: use freeware rasterizer for type 1 fonts [t1lib, by Rainer
+Menzner; see
+ftp://ftp.neuroinformatik.ruhr-uni-bochum.de/pub/software/t1lib ].
+
+libplot: add alpha support to color specification.  Maybe via new
+operations penalpha(), fillalpha().  (WebCGM format already includes alpha
+support, via a registered escape element.)
+
+libplot: when path edges are not drawn (i.e. when `pentype' is called with
+an argument of 0), the scheme used by the PS driver for quantizing fill
+colors for idraw is suboptimal.  Could be much improved.
+
+ode: extend parser to plot functions as well as solve differential equations.
 
 libplot: redo X driver, to support window reuse (`persistence') by any
 X Plotter.  Will require forking off an outboard process.
 
-graph parsing: allow all command-line options in data files, on comment lines
-
-graph: Write alternative parser for interactive version (gnuplot replacement).
+graph: allow all command-line options in input data files, on comment
+lines; maybe write alternative parser for interactive version (gnuplot
+replacement).
 
 libplot: add interactivity (e.g. getloc()), during openpl()...closepl().
 Need to translate back to user coordinates.  [For libsciplot, even
 further?]  For Tektronix driver, implement GIN mode (need stty twiddling?).
 Also need char input (cf. starbase).
 
-libplot: use freeware rasterizer for type 1 fonts [t1lib, by Rainer
-Menzner; see
-ftp://ftp.neuroinformatik.ruhr-uni-bochum.de/pub/software/t1lib ].
-
-libplot: gradient fill?
-
 Break out spline() as subroutine(s), cf. fitpack?  Cf. IMSL interface.
 Similarly with plot frame / axis drawing.  For this, check into NCAR
 Graphics package, `autograph' routines.
 
-ode: need popen() for output; cf. gnuplot
+ode: should support popen() for output; cf. gnuplot.
 
 graph: add `boxes', `steps', `impulses', `bars' plot types (as in gnuplot).
 Boxes, bars should properly support --fill-fraction option.
 
-graph: add support for polar/spherical plots, 3-D (surface) plotting
+graph: add support for polar/spherical plots, 3-D (surface) plotting.
+
+Low-priority (and idle thoughts)
+--------------------------------
+
+libplot: when drawing Hershey fonts, should set the miter limit to
+a standard (fixed) value.
+
+libplot: if HP-GL/2 driver draws with a restricted palette of pens (the
+default), it follows a policy of never quantizing a nonwhite color to
+white, i.e. to pen #0.  Is this the right thing to do?  (Note: this policy
+applies only to the pen color, not the fill color.)
+
+plot: should document that `plot -TX' will use double buffering if
+environment variable USE_DOUBLE_BUFFERING is "yes".  Maybe make that
+user-settable via an option?  Similarly, effect of setting X_AUTO_FLUSH on
+graphics utilities needs to be documented.
+
+libplot: need a queryable PRECISE_DASHING capability, indicating whether or
+not a Plotter supports linedash().
 
 spline: add support for smoothing splines as well as interpolatory splines?
+
+graph: add legend support (need new --legend :string1:string2: option),
+i.e. gnuplot-style `key'.  Maybe arbitrarily positioned arrows, text
+strings also.  See how NCAR Graphics does it.
+
+internationalization: think about removing strcasecmp (what if user called
+setlocale i.e. set LOCALE env var)?  Similarly worry about . vs , everywhere, 
+e.g. in PS files.
+
+libplot: improve appearance of octagonal marker symbols (symbol #30 and
+#31), i.e., make the octagon regular.
+
+libplotter: add overloaded (floating point) versions of integer operations.
+
+graph: tweak positioning of top labels, especially at large sizes.
+
+ode: add atan2() function.
+
+documentation: write more man pages.
+
+double: document it in plotutils.texi.
+
+libplot: after doing XCreatePixmap(), should check for success.  See
+John Cwikla's article on the Motif Zone site (no graceful thread-safe way?).
+
+libplot: CQVXjkuv<>" are the remaining metafile op codes (printable ASCII
+characters other than space).  Of these, CQVX are flagged as recently
+obsolete and should not soon be reused.  What to do when the op codes run out?
+
+libplot: should X driver use a non-default visual if the default visual
+isn't read-only?  Do we wish other applications to be able to modify our
+color cells?  Is this a genuine concern?  Also, should we use a non-default
+visual if user specifies double buffering and the default visual doesn't
+support it via the X11 extension?  (E.g. Xsgi.)
+
+libplot: check that Corel Draw can import generated HP-GL and HP-GL/2
+files, and CGM files too.  As of Corel Draw 8, a single font seems to be
+used for all text (by default TrueType Courier New).  Check also Adobe
+Photoshop, Illustrator.
+
+HP-GL/2 Java viewer available at
+http://www.vanguard.at/products/partshpgl/english/index.htm .  Should check
+whether it can parse our HP-GL/2 output.
+
+libplot: spline the Hershey fonts, use Bezier primitives to draw them.
+
+libplot: kern the HP vector fonts (Stick and Arc) that are available when
+producing PCL5 and HP-GL/2 output.  Kerning was apparently dropped by HP in
+the transition from HP-GL to HP-GL/2, but we have the kerning tables.
+
+Marker symbol #1 should really be drawn as a pendown-penup motion in both
+HP-GL and pre-HP-GL/2, in the same way that a `point' is drawn.
+
+Very old HP-GL pen plotters can't handle full range of coordinates in many
+of our page types.  [See our viewport sizes in libplot/g_pagetype.h; the
+sizes we use, taken from AutoCAD, may not be appropriate for very old pen
+plotters?]
+
+libplot: improve error reporting: change libplot error handler to allow use
+of name of executable.
+
+libplot: to the API, add a comment() function, taking printable string as
+argument (no control chars).  For some drivers, it would appear in the
+output file.
+
+ode: need to avoid any possibility, no matter how theoretical, of a stack
+blowout.
+
+Hershey fonts: add euro and cedilla.
+
+graph, plot, tek2plot, plotfont, etc.: add --display and --geometry
+options, for use with `-T X'?
+
+tests: check into test/plot2ai.test, test/plot2gif.test, test/plot2tek.test
+(not currently run, seem to give system-dependent behavior, possibly
+depending on rounding of floating-point numbers?)
+
+libplot: in text string format, \mk..\rt etc. could be stack machine;
+should also include overline, underline, radical, display fractions etc.
+Cf. eqn and Allen Hershey's typesetting.
+
+libplot: support hatch-filling as well as solid filling?  Somehow support
+HP-GL[/2] and PCL hatch and pattern-filling operations?  Hard to do in a
+device-independent way.  CGM format is the best at specifying hatch
+patterns.
+
+libplot: _flush_plotter_outstreams() method, a non-public member function
+of the Plotter class, should really be static.
 
 Other needed math software:
 
@@ -100,43 +260,4 @@ Other needed math software:
 	contour plotting via level curves; also compute enclosed area
 	surface plotting	(cf. IDL for plotting and contouring)
 
-
-Low-priority items (may be done someday)
-----------------------------------------
-
-libplot X driver: should use a non-default visual if the default visual
-isn't read-only?
-
-libplot X driver: solve the problem of zombie children.
-
-libplot: spline the Hershey fonts, use new spline primitive to draw them.
-
-Very old HP-GL pen plotters can't handle full range of coordinates in many
-of our page types [see libplot/g_pagetype.h; our current page sizes, taken
-from AutoCAD, may not be appropriate for very old pen plotters?]
-
-Improve libplot error reporting: change libplot error handler to use name
-of executable.
-
-Add comment() function, takes printable string as arg (no control chars).
-
-ode: need no stack blowout
-
-Hershey fonts: 
-1. add euro and cedilla
-2. add support for Hershey indexical positioning on baseline?
-
-graph, plot, tek2plot, plotfont, etc.: add --display and --geometry
-options?
-
-check into test/plot2tek.test (not currently run, seems to give
-system-dependent behavior depending on rounding mode?)
-
-libplot text string format: \mk..\rt etc. could be stack machine; should
-also include overline, underline, radical, display fractions etc.  Cf. eqn
-and Allen Hershey's typesetting.
-
-libplot: polyline hatching as well as filling?
-
-libplot: add support for rectangular raster objects ("device independent
-rasters").
+EBCDIC.  Need I say more?

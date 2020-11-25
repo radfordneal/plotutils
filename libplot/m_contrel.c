@@ -7,44 +7,49 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_contrel (int x, int y)
+_m_contrel (R___(Plotter *_plotter) int x, int y)
 #else
-_m_contrel (x, y)
+_m_contrel (R___(_plotter) x, y)
+     S___(Plotter *_plotter;) 
      int x, y;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("contrel: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "contrel: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_CONTREL);
-  _meta_emit_integer (x);
-  _meta_emit_integer (y);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_CONTREL);
+  _meta_emit_integer (R___(_plotter) x);
+  _meta_emit_integer (R___(_plotter) y);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_fcontrel (double x, double y)
+_m_fcontrel (R___(Plotter *_plotter) double x, double y)
 #else
-_m_fcontrel (x, y)
+_m_fcontrel (R___(_plotter) x, y)
+     S___(Plotter *_plotter;) 
      double x, y;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fcontrel: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fcontrel: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_CONTREL : (int)O_FCONTREL);
-  _meta_emit_float (x);
-  _meta_emit_float (y);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) 
+		   _plotter->meta_portable_output ? (int)O_CONTREL : (int)O_FCONTREL);
+  _meta_emit_float (R___(_plotter) x);
+  _meta_emit_float (R___(_plotter) y);
+  _meta_emit_terminator (S___(_plotter));
       
   return 0;
 }

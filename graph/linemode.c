@@ -9,14 +9,16 @@
 #include "plot.h"
 #include "extern.h"
 
-char *linemodes[NO_OF_LINEMODES] =
+/* following line types are the five used by Unix graph(1) */
+
+const char *linemodes[NO_OF_LINEMODES] =
 {
-  "solid", "dotted", "dotdashed", "shortdashed", "longdashed", 
+  "solid", "dotted", "dotdashed", "shortdashed", "longdashed"
 };
 
 /* following colors are the first five used by the gnuplot X11 driver */
 
-char *colorstyle[NO_OF_LINEMODES] =
+const char *colorstyle[NO_OF_LINEMODES] =
 {
-  "red", "green", "blue", "magenta", "cyan", 
+  "red", "green", "blue", "magenta", "cyan"
 };

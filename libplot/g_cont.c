@@ -9,8 +9,8 @@
 
      (1) explicitly invokes the endpath() method, or 
      (2) changes the value of one of the relevant drawing attributes, 
-          by invoking move(), linemod(), linewidth(), color(), fillcolor(),
-          or filltype(), or 
+          e.g. by invoking move(), linemod(), linewidth(), pencolor(), 
+	  fillcolor(), or filltype(), or 
      (3) draws some non-path object, by invoking box(), 
            circle(), point(), label(), alabel(), etc., or 
      (4) invokes restorestate() to restore an earlier drawing state. */
@@ -23,17 +23,19 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_fcont (double x, double y)
+_g_fcont (R___(Plotter *_plotter) double x, double y)
 #else
-_g_fcont (x, y)
+_g_fcont (R___(_plotter) x, y)
+     S___(Plotter *_plotter;) 
      double x, y;
 #endif
 {
-  GeneralizedPoint newpoint;
+  plGeneralizedPoint newpoint;
 
   if (!_plotter->open)
     {
-      _plotter->error ("fcont: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fcont: invalid operation");
       return -1;
     }
 
@@ -41,20 +43,20 @@ _g_fcont (x, y)
      a polyline if that's called for */
   if (_plotter->have_mixed_paths == false
       && _plotter->drawstate->points_in_path == 2)
-    _maybe_replace_arc();
+    _maybe_replace_arc (S___(_plotter));
 
   /* create or adjust size of path buffer, as needed */
   if (_plotter->drawstate->datapoints_len == 0)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
-	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(GeneralizedPoint));
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
+	_plot_xmalloc (DATAPOINTS_BUFSIZ * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len = DATAPOINTS_BUFSIZ;
     }
   if (_plotter->drawstate->points_in_path == _plotter->drawstate->datapoints_len)
     {
-      _plotter->drawstate->datapoints = (GeneralizedPoint *) 
+      _plotter->drawstate->datapoints = (plGeneralizedPoint *) 
 	_plot_xrealloc (_plotter->drawstate->datapoints, 
-			2 * _plotter->drawstate->datapoints_len * sizeof(GeneralizedPoint));
+			2 * _plotter->drawstate->datapoints_len * sizeof(plGeneralizedPoint));
       _plotter->drawstate->datapoints_len *= 2;
     }
   
@@ -92,8 +94,8 @@ _g_fcont (x, y)
       && (_plotter->drawstate->points_in_path 
 	  >= _plotter->max_unfilled_polyline_length)
       && !_plotter->drawstate->suppress_polyline_flushout
-      && (_plotter->drawstate->fill_level == 0))
-    _plotter->endpath();
+      && (_plotter->drawstate->fill_type == 0))
+    _plotter->endpath (S___(_plotter));
   
   /* Check whether we're about to violate the hard length limit on all
      polylines.  (Such a limit is imposed is imposed in an XPlotter,
@@ -101,8 +103,9 @@ _g_fcont (x, y)
      limit is typically INT_MAX.) */
   if (_plotter->drawstate->points_in_path >= _plotter->hard_polyline_length_limit)
     {
-      _plotter->warning ("breaking an overly long path");
-      _plotter->endpath();
+      _plotter->warning (R___(_plotter) 
+			 "breaking an overly long path");
+      _plotter->endpath (S___(_plotter));
     }
 
   return 0;
@@ -118,9 +121,10 @@ _g_fcont (x, y)
    repeatedly calling fcont(). */
 void
 #ifdef _HAVE_PROTOS
-_maybe_replace_arc (void)
+_maybe_replace_arc (S___(Plotter *_plotter))
 #else
-_maybe_replace_arc ()
+_maybe_replace_arc (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
   if (_plotter->have_mixed_paths == false
@@ -128,7 +132,7 @@ _maybe_replace_arc ()
     switch (_plotter->drawstate->datapoints[_plotter->drawstate->points_in_path - 1].type)
       {
 	double ax0, ay0, axc, ayc, ax1, ay1;
-	Point pc, p0, p1;
+	plPoint pc, p0, p1;
 
       case S_ARC:
 	/* path buffer contains a circular arc segment, so replace it */
@@ -148,7 +152,7 @@ _maybe_replace_arc ()
 	p0.x = ax0; p0.y = ay0;
 	p1.x = ax1; p1.y = ay1;      
 	pc.x = axc; pc.y = ayc;      
-	_draw_circular_arc (p0, p1, pc);
+	_draw_circular_arc (R___(_plotter) p0, p1, pc);
 	break;
       case S_ELLARC:
 	/* path buffer contains an elliptic arc segment, so replace it */
@@ -168,7 +172,7 @@ _maybe_replace_arc ()
 	p0.x = ax0; p0.y = ay0;
 	p1.x = ax1; p1.y = ay1;      
 	pc.x = axc; pc.y = ayc;      
-	_draw_elliptic_arc (p0, p1, pc);
+	_draw_elliptic_arc (R___(_plotter) p0, p1, pc);
 	break;
       default:
 	/* other segment type, OK */
@@ -185,8 +189,8 @@ _maybe_replace_arc ()
       && (_plotter->drawstate->points_in_path 
 	  >= _plotter->max_unfilled_polyline_length)
       && !_plotter->drawstate->suppress_polyline_flushout
-      && (_plotter->drawstate->fill_level == 0))
-    _plotter->endpath();
+      && (_plotter->drawstate->fill_type == 0))
+    _plotter->endpath (S___(_plotter));
   
   return;
 }

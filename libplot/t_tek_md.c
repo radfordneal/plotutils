@@ -76,9 +76,10 @@
 
 void
 #ifdef _HAVE_PROTOS
-_tek_mode(int newmode)
+_tek_mode(R___(Plotter *_plotter) int newmode)
 #else
-_tek_mode(newmode)
+_tek_mode(R___(_plotter) newmode)
+     S___(Plotter *_plotter;)
      int newmode;
 #endif
 {
@@ -89,27 +90,28 @@ _tek_mode(newmode)
 	{
 	case MODE_ALPHA:
 	  /* ASCII US, i.e. ^_ (enter alpha mode) */
-	  _plotter->write_byte ('\037');
+	  _plotter->write_byte (R___(_plotter) '\037');
 	  break;
 	case MODE_PLOT:
-	  if ((_plotter->tek_mode_is_unknown) || (_plotter->tek_mode == MODE_POINT)
+	  if ((_plotter->tek_mode_is_unknown) 
+	      || (_plotter->tek_mode == MODE_POINT)
 	      || (_plotter->tek_mode == MODE_INCREMENTAL))
 	    /* ASCII US, i.e. ^_ (enter alpha) */
-	    _plotter->write_byte ('\037');
+	    _plotter->write_byte (R___(_plotter) '\037');
 	  /* ASCII GS, i.e. ^] (enter vector mode)*/
-	  _plotter->write_byte ('\035');
+	  _plotter->write_byte (R___(_plotter) '\035');
 	  break;
 	case MODE_POINT:
 	  if ((_plotter->tek_mode_is_unknown) || 
 	      (_plotter->tek_mode == MODE_INCREMENTAL))
 	    /* ASCII US, i.e. ^_ (enter alpha) */
-	    _plotter->write_byte ('\037'); 
+	    _plotter->write_byte (R___(_plotter) '\037'); 
 	  /* ASCII FS, i.e. ^\ (enter point mode) */
-	  _plotter->write_byte ('\034'); 
+	  _plotter->write_byte (R___(_plotter) '\034'); 
 	  break;
 	case MODE_INCREMENTAL:
 	  /* ASCII RS, i.e. ^^ (enter incplot mode)*/
-	  _plotter->write_byte ('\036'); 
+	  _plotter->write_byte (R___(_plotter) '\036'); 
 	  break;
 	default:
 	  break;

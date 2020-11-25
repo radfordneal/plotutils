@@ -2,7 +2,7 @@
 %{
 /*
  * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
+ * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
  */
 #include "sys-defines.h"
 #include "ode.h"
@@ -140,5 +140,5 @@ lfree (lp)
 #endif
 {
   if (lp != NULL)
-    free ((Voidptr)lp);
+    free ((voidptr_t)lp);
 }

@@ -8,9 +8,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_t_fpoint (double x, double y)
+_t_fpoint (R___(Plotter *_plotter) double x, double y)
 #else
-_t_fpoint (x, y)
+_t_fpoint (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
@@ -19,11 +20,11 @@ _t_fpoint (x, y)
 
   if (!_plotter->open)
     {
-      _plotter->error ("fpoint: invalid operation");
+      _plotter->error (R___(_plotter) "fpoint: invalid operation");
       return -1;
     }
 
-  _plotter->endpath(); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
   
   /* update our notion of position */
   _plotter->drawstate->pos.x = x;
@@ -45,14 +46,14 @@ _t_fpoint (x, y)
   iyy = IROUND(yy);
 
   /* emit an escape sequence if necessary, to switch to POINT mode */
-  _tek_mode (MODE_POINT);
+  _tek_mode (R___(_plotter) MODE_POINT);
   
   /* Output the point.  If in fact we were already in POINT mode, this is
      slightly suboptimal because we can't call _tek_vector_compressed() to
      save (potentially) a few bytes, because we don't know what the
      last-plotted point was.  Unlike when incrementally drawing a polyline,
      when plotting points we don't keep track of "where we last were". */
-  _tek_vector (ixx, iyy);
+  _tek_vector (R___(_plotter) ixx, iyy);
 
   /* update our notion of Tek's notion of position */
   _plotter->tek_pos.x = ixx;

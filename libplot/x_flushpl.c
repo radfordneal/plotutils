@@ -9,14 +9,15 @@
 
 int
 #ifdef _HAVE_PROTOS
-_x_flushpl (void)
+_x_flushpl (S___(Plotter *_plotter))
 #else
-_x_flushpl ()
+_x_flushpl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("flushpl: invalid operation");
+      _plotter->error (R___(_plotter) "flushpl: invalid operation");
       return -1;
     }
 
@@ -24,7 +25,7 @@ _x_flushpl ()
 
   /* maybe flush X output buffer and handle X events (a no-op for
      XDrawablePlotters, which is overridden for XPlotters) */
-  _maybe_handle_x_events();
+  _maybe_handle_x_events (S___(_plotter));
 
   return 0;
 }

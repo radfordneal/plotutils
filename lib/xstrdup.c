@@ -4,7 +4,7 @@
 char * xstrdup ____P((const char *s));
 
 /* external */
-extern Voidptr xmalloc ____P((unsigned int length));
+extern voidptr_t xmalloc ____P((size_t length));
 
 char *
 #ifdef _HAVE_PROTOS

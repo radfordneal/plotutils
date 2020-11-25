@@ -3,32 +3,34 @@
 
 #include "sys-defines.h"
 #include "extern.h"
+#include "xmi.h"
 
 int
 #ifdef _HAVE_PROTOS
-_n_openpl (void)
+_n_openpl (S___(Plotter *_plotter))
 #else
-_n_openpl ()
+_n_openpl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   const char *bg_color_name_s;
   
   if (_plotter->open)
     {
-      _plotter->error ("openpl: invalid operation");
+      _plotter->error (R___(_plotter) "openpl: invalid operation");
       return -1;
     }
 
   /* invoke generic method, to e.g. create drawing state */
-  _g_openpl ();
+  _g_openpl (S___(_plotter));
 
   /* if there's a user-specified background color, set it in drawing state */
-  bg_color_name_s = (const char *)_get_plot_param ("BG_COLOR");
+  bg_color_name_s = (const char *)_get_plot_param (R___(_plotter) "BG_COLOR");
   if (bg_color_name_s)
-    _plotter->bgcolorname (bg_color_name_s);
+    _plotter->bgcolorname (R___(_plotter) bg_color_name_s);
 
   /* create new pixmap of specified size (all pixels of background color) */
-  _n_new_image ();
+  _n_new_image (S___(_plotter));
 
   return 0;
 }
@@ -37,31 +39,25 @@ _n_openpl ()
    with Plotter's background color */
 void
 #ifdef _HAVE_PROTOS
-_n_new_image (void)
+_n_new_image (S___(Plotter *_plotter))
 #else
-_n_new_image ()
+_n_new_image (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  int i, j, xn, yn;
   unsigned char red, green, blue;
+  miPixel pixel;
 
-  /* compute 24-bit color */
+  /* compute 24-bit bg color, and construct a miPixel for it */
   red = ((unsigned int)(_plotter->drawstate->bgcolor.red) >> 8) & 0xff;
   green = ((unsigned int)(_plotter->drawstate->bgcolor.green) >> 8) & 0xff;
   blue = ((unsigned int)(_plotter->drawstate->bgcolor.blue) >> 8) & 0xff;  
+  pixel.type = MI_PIXEL_RGB_TYPE;
+  pixel.u.rgb[0] = red;
+  pixel.u.rgb[1] = green;
+  pixel.u.rgb[2] = blue;
 
-  xn = _plotter->n_xn;
-  yn = _plotter->n_yn;
-  _plotter->n_bitmap = (miPixel **)_plot_xmalloc (yn * sizeof(miPixel *));
-  for (j = 0; j < yn; j++)	/* each row of pixels is contiguous */
-    {
-      _plotter->n_bitmap[j] = 
-	(miPixel *)_plot_xmalloc (xn * sizeof(miPixel));
-      for (i = 0; i < xn; i++)
-	{
-	  _plotter->n_bitmap[j][i].rgb[0] = red;
-	  _plotter->n_bitmap[j][i].rgb[1] = green;
-	  _plotter->n_bitmap[j][i].rgb[2] = blue;
-	}
-    }
+  /* create libxmi miPaintedSet and miCanvas structs */
+  _plotter->n_painted_set = (voidptr_t)miNewPaintedSet ();
+  _plotter->n_canvas = (voidptr_t)miNewCanvas ((unsigned int)_plotter->n_xn, (unsigned int)_plotter->n_yn, pixel);
 }

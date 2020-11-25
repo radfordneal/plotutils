@@ -1,6 +1,5 @@
 // -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com) */
+// Ptable-related definitions, see libgroff/ptable.cc.
 
 #include <assert.h>
 #include <string.h>

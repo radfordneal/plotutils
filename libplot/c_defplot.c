@@ -1,0 +1,1720 @@
+/* This file defines the initialization for any CGMPlotter object,
+   including both private data and public methods.  There is a one-to-one
+   correspondence between public methods and user-callable functions in the
+   C API. */
+
+#include "sys-defines.h"
+#include "extern.h"
+
+/* localtime_r() is currently not used, because there is apparently _no_
+   universal way of ensuring that it is declared.  On some systems
+   (e.g. Red Hat Linux), `#define _POSIX_SOURCE' will do it.  But on other
+   systems, doing `#define _POSIX_SOURCE' **removes** the declaration! */
+#ifdef HAVE_LOCALTIME_R
+#undef HAVE_LOCALTIME_R
+#endif
+
+#ifdef MSDOS
+#include <unistd.h>		/* for fsync() */
+#endif
+
+/* song and dance to define time_t, and declare both time() and localtime() */
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>		/* for time_t on some pre-ANSI Unix systems */
+#endif
+#ifdef TIME_WITH_SYS_TIME
+#include <sys/time.h>		/* for time() on some pre-ANSI Unix systems */
+#include <time.h>		/* for localtime() */
+#else  /* not TIME_WITH_SYS_TIME, include only one (prefer <sys/time.h>) */
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else  /* not HAVE_SYS_TIME_H */
+#include <time.h>
+#endif /* not HAVE_SYS_TIME_H */
+#endif /* not TIME_WITH_SYS_TIME */
+
+/* forward references */
+static void _build_sdr_from_index ____P((plOutbuf *sdr_buffer, int cgm_encoding, int x));
+static void _build_sdr_from_string ____P((plOutbuf *sdr_buffer, int cgm_encoding, const char *s, int string_length, bool use_double_quotes));
+static void _build_sdr_from_ui8s ____P((plOutbuf *sdr_buffer, int cgm_encoding, const int *x, int n));
+
+#ifndef LIBPLOTTER
+/* In libplot, this is the initialization for the function-pointer part of
+   a CGMPlotter struct. */
+const Plotter _c_default_plotter = 
+{
+  /* methods */
+  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _c_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _c_endpath, _g_endsubpath, _c_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _c_fbox, _g_fboxrel, _c_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _c_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _g_flinewidth, _g_flushpl, _c_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _c_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _c_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
+  /* initialization (after creation) and termination (before deletion) */
+  _c_initialize, _c_terminate,
+  /* internal methods that plot strings in Hershey, non-Hershey fonts */
+  _g_falabel_hershey, _c_falabel_ps, _g_falabel_pcl, _g_falabel_stick, _g_falabel_other,
+  _g_flabelwidth_hershey, _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, _g_flabelwidth_other,
+  /* private low-level `retrieve font' method */
+  _g_retrieve_font,
+  /* private low-level `sync font' method */
+  _g_set_font,
+  /* private low-level `sync line attributes' method */
+  _c_set_attributes,
+  /* private low-level `sync color' methods */
+  _c_set_pen_color,
+  _c_set_fill_color,
+  _c_set_bg_color,
+  /* private low-level `sync position' method */
+  _g_set_position,
+  /* error handlers */
+  _g_warning,
+  _g_error,
+  /* low-level output routines */
+  _g_write_byte,
+  _g_write_bytes,
+  _g_write_string
+};
+#endif /* not LIBPLOTTER */
+
+/* The private `initialize' method, which is invoked when a Plotter is
+   created.  It is used for such things as initializing capability flags
+   from the values of class variables, allocating storage, etc.  When this
+   is invoked, _plotter points to the Plotter that has just been
+   created. */
+
+void
+#ifdef _HAVE_PROTOS
+_c_initialize (S___(Plotter *_plotter))
+#else
+_c_initialize (S___(_plotter))
+     S___(Plotter *_plotter;)
+#endif
+{
+  double xoffset, yoffset;
+
+#ifndef LIBPLOTTER
+  /* in libplot, manually invoke superclass initialization method */
+  _g_initialize (S___(_plotter));
+#endif
+
+  /* override generic initializations (which are appropriate to the base
+     Plotter class), as necessary */
+
+#ifndef LIBPLOTTER
+  /* tag field, differs in derived classes */
+  _plotter->type = PL_CGM;
+#endif
+
+  /* user-queryable capabilities: 0/1/2 = no/yes/maybe */
+  _plotter->have_wide_lines = 1;
+  _plotter->have_dash_array = 0;
+  _plotter->have_solid_fill = 1;
+  _plotter->have_odd_winding_fill = 1;
+  _plotter->have_nonzero_winding_fill = 0;
+  _plotter->have_settable_bg = 1;
+  _plotter->have_hershey_fonts = 1;
+  _plotter->have_ps_fonts = 1;
+  _plotter->have_pcl_fonts = 0;
+  _plotter->have_stick_fonts = 0;
+  _plotter->have_extra_stick_fonts = 0;
+
+  /* text and font-related parameters (internal, not queryable by user);
+     note that we don't set kern_stick_fonts, because it was set by the
+     superclass initialization (and it's irrelevant for this Plotter type,
+     anyway) */
+  _plotter->default_font_type = F_POSTSCRIPT;
+  _plotter->pcl_before_ps = false;
+  _plotter->have_horizontal_justification = true;
+  _plotter->have_vertical_justification = true;
+  _plotter->issue_font_warning = true;
+
+  /* path and polyline-related parameters (also internal); note that we
+     don't set max_unfilled_polyline_length, because it was set by the
+     superclass initialization */
+  _plotter->have_mixed_paths = false;
+  _plotter->allowed_arc_scaling = AS_NONE;
+  _plotter->allowed_ellarc_scaling = AS_NONE;
+  _plotter->allowed_quad_scaling = AS_NONE;  
+  _plotter->allowed_cubic_scaling = AS_NONE;  
+  _plotter->flush_long_polylines = true;
+  _plotter->hard_polyline_length_limit = INT_MAX;
+
+  /* dimensions */
+  _plotter->display_model_type = (int)DISP_MODEL_VIRTUAL;
+  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI;
+  _plotter->flipped_y = false;
+      /* we choose viewport coor range to be 1/4 of the integer range */
+  _plotter->imin = - ((1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1);
+  _plotter->imax = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1;
+  _plotter->jmin = - ((1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1);
+  _plotter->jmax = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1;
+  _plotter->xmin = 0.0;
+  _plotter->xmax = 0.0;  
+  _plotter->ymin = 0.0;
+  _plotter->ymax = 0.0;  
+  _plotter->page_data = (plPageData *)NULL;
+
+  /* initialize data members specific to this derived class */
+  /* parameters */
+  _plotter->cgm_encoding = CGM_ENCODING_BINARY;
+  _plotter->cgm_max_version = 4;
+  /* most important dynamic variables (global) */
+  _plotter->cgm_version = 1;
+  _plotter->cgm_profile = CGM_PROFILE_WEB;
+  _plotter->cgm_need_color = false;
+  /* corresponding dynamic variables (page-specific, i.e. picture-specific) */
+  _plotter->cgm_page_version = 1;
+  _plotter->cgm_page_profile = CGM_PROFILE_WEB;
+  _plotter->cgm_page_need_color = false;
+  /* colors (24-bit or 48-bit, initialized to nonphysical or dummy values) */
+  _plotter->cgm_line_color.red = -1;
+  _plotter->cgm_line_color.green = -1;
+  _plotter->cgm_line_color.blue = -1;
+  _plotter->cgm_edge_color.red = -1;
+  _plotter->cgm_edge_color.green = -1;
+  _plotter->cgm_edge_color.blue = -1;
+  _plotter->cgm_fillcolor.red = -1;
+  _plotter->cgm_fillcolor.green = -1;
+  _plotter->cgm_fillcolor.blue = -1;
+  _plotter->cgm_marker_color.red = -1;
+  _plotter->cgm_marker_color.green = -1;
+  _plotter->cgm_marker_color.blue = -1;
+  _plotter->cgm_text_color.red = -1;
+  _plotter->cgm_text_color.green = -1;
+  _plotter->cgm_text_color.blue = -1;
+  _plotter->cgm_bgcolor.red = -1;
+  _plotter->cgm_bgcolor.green = -1;
+  _plotter->cgm_bgcolor.blue = -1;
+  /* other dynamic variables */
+  _plotter->cgm_line_type = CGM_L_SOLID;
+  _plotter->cgm_dash_offset = 0.0;
+  _plotter->cgm_join_style = CGM_JOIN_UNSPEC;
+  _plotter->cgm_cap_style = CGM_CAP_UNSPEC;  
+  _plotter->cgm_dash_cap_style = CGM_CAP_UNSPEC;  
+  	/* CGM's default line width: 1/1000 times the max VDC dimension */
+  _plotter->cgm_line_width = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) / 500;
+  _plotter->cgm_interior_style = CGM_INT_STYLE_HOLLOW;
+  _plotter->cgm_edge_type = CGM_L_SOLID;
+  _plotter->cgm_edge_dash_offset = 0.0;
+  _plotter->cgm_edge_join_style = CGM_JOIN_UNSPEC;
+  _plotter->cgm_edge_cap_style = CGM_CAP_UNSPEC;  
+  _plotter->cgm_edge_dash_cap_style = CGM_CAP_UNSPEC;  
+  	/* CGM's default edge width: 1/1000 times the max VDC dimension */
+  _plotter->cgm_edge_width = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) / 500;
+  _plotter->cgm_edge_is_visible = false;
+  _plotter->cgm_miter_limit = 32767.0;
+  _plotter->cgm_marker_type = CGM_M_ASTERISK;
+  	/* CGM's default marker size: 1/1000 times the max VDC dimension */
+  _plotter->cgm_marker_size = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) /500;
+  	/* label-related variables */
+  _plotter->cgm_char_height = -1; /* impossible (dummy) value */
+  _plotter->cgm_char_base_vector_x = 1;
+  _plotter->cgm_char_base_vector_y = 0;
+  _plotter->cgm_char_up_vector_x = 0;
+  _plotter->cgm_char_up_vector_y = 1;
+  _plotter->cgm_horizontal_text_alignment = CGM_ALIGN_NORMAL_HORIZONTAL;
+  _plotter->cgm_vertical_text_alignment = CGM_ALIGN_NORMAL_VERTICAL;
+  _plotter->cgm_font_id = -1;	/* impossible (dummy) value */
+  _plotter->cgm_charset_lower = 0; /* dummy value (we use values 1..4) */
+  _plotter->cgm_charset_upper = 0; /* dummy value (we use values 1..4) */
+  _plotter->cgm_restricted_text_type = CGM_RESTRICTED_TEXT_TYPE_BASIC;
+
+  /* initialize certain data members from device driver parameters */
+
+  /* determine page type, and hence viewport size (returned xoffset and
+     yoffset make no sense in a CGM context, so we'll ignore them) */
+  _set_page_type (R___(_plotter) &xoffset, &yoffset);
+  
+  /* determine CGM encoding */
+  {
+    const char* cgm_encoding_type;
+    
+    cgm_encoding_type = 
+      (const char *)_get_plot_param (R___(_plotter) "CGM_ENCODING");
+    if (cgm_encoding_type != NULL)
+      {
+	if (strcmp (cgm_encoding_type, "binary") == 0)
+	  _plotter->cgm_encoding = CGM_ENCODING_BINARY;
+	else if (strcmp (cgm_encoding_type, "clear text") == 0
+		 || (strcmp (cgm_encoding_type, "cleartext") == 0)
+		 || (strcmp (cgm_encoding_type, "clear_text") == 0))
+	  _plotter->cgm_encoding = CGM_ENCODING_CLEAR_TEXT;
+	else			/* we don't support the character encoding */
+	  _plotter->cgm_encoding = CGM_ENCODING_BINARY;
+      }
+    else
+      _plotter->cgm_encoding = CGM_ENCODING_BINARY; /* default value */
+  }
+
+  /* determine upper bound on CGM version number */
+  {
+    const char* cgm_max_version_type;
+    
+    cgm_max_version_type = 
+      (const char *)_get_plot_param (R___(_plotter) "CGM_MAX_VERSION");
+    if (cgm_max_version_type != NULL)
+      {
+	if (strcmp (cgm_max_version_type, "1") == 0)
+	  _plotter->cgm_max_version = 1;
+	else if (strcmp (cgm_max_version_type, "2") == 0)
+	  _plotter->cgm_max_version = 2;
+	else if (strcmp (cgm_max_version_type, "3") == 0)
+	  _plotter->cgm_max_version = 3;
+	else if (strcmp (cgm_max_version_type, "4") == 0)
+	  _plotter->cgm_max_version = 4;
+	else			/* use default */
+	  _plotter->cgm_max_version = 4;
+      }
+    else
+      _plotter->cgm_max_version = 4; /* use default */
+  }
+
+  /* If the maximum CGM version number is greater than 1, relax the
+     constraints on what path segments can be stored in libplot's path
+     buffer.  By default, we allow only line segments. */
+ 
+  /* Counterclockwise circular arcs have been in the CGM standard since
+     version 1, but clockwise circular arcs were only added in version 2.
+     To include a circular arc we insist on a uniform map from user to
+     device coordinates, since otherwise it wouldn't be mapped to a
+     circle.
+
+     Similarly, we don't allow elliptic arcs into the arc buffer unless the
+     version is 2 or higher.  Elliptic arcs have been in the standard since
+     version 1, but the `closed figure' construction that we use to fill
+     single elliptic (and circular!) arcs was only added in version 2. */
+  if (_plotter->cgm_max_version >= 2)
+    {
+      _plotter->allowed_arc_scaling = AS_UNIFORM;
+      _plotter->allowed_ellarc_scaling = AS_ANY;
+    }
+
+  /* Bezier cubics were added to the standard in version 3.  Closed mixed
+     paths (`closed figures' in CGM jargon) have been in the standard since
+     version 2, but open mixed paths (`compound lines' in CGM jargon) were
+     only added in version 3. */
+  if (_plotter->cgm_max_version >= 3)
+    {
+      _plotter->allowed_cubic_scaling = AS_ANY;
+      _plotter->have_mixed_paths = true;
+    }
+
+  /* Beginning in version 3 CGM's, user can define line types, by
+     specifying a precise dashing style. */
+  if (_plotter->cgm_max_version >= 3)
+    _plotter->have_dash_array = 1;
+}
+
+/* Lists of metafile elements that we use, indexed by the CGM version less
+   unity, i.e., by 0,1,2,3 for CGM versions 1,2,3,4.  (An obsolescent
+   encoding-dependent metafile element specifying the metafile elements to
+   be used must be written to the metafile.)  We use a standard shorthand:
+   element class -1, and element id 1, 2, etc., specifies certain sets of
+   metafile elements.  E.g., class=-1 and id=0, together with class=-1 and
+   id=1, specifies all the version-1 metafile elements; in the clear text
+   encoding this is written as "DRAWINGSET DRAWINGPLUS". */
+
+#define MAX_CGM_ELEMENT_LIST_LENGTH 5
+typedef struct
+{
+  const char *text_string;
+  int length;			/* number of genuine entries in list */
+  int class_id[MAX_CGM_ELEMENT_LIST_LENGTH];
+  int element_id[MAX_CGM_ELEMENT_LIST_LENGTH];
+}
+plCGMElementList;
+
+static const plCGMElementList _metafile_element_list[4] =
+{
+  /* version 1 */
+  { "DRAWINGSET DRAWINGPLUS",
+    2, {-1, -1, 0, 0, 0},   {0, 1, 0, 0, 0} },
+  /* version 2 */
+  { "DRAWINGSET DRAWINGPLUS VERSION2",
+    3, {-1, -1, -1, 0, 0},  {0, 1, 2, 0, 0} },
+  /* version 3 */
+  { "DRAWINGSET DRAWINGPLUS VERSION2 VERSION3",
+    4, {-1, -1, -1, -1, 0}, {0, 1, 2, 5, 0} },
+  /* version 4 */
+  { "DRAWINGSET DRAWINGPLUS VERSION2 VERSION3 VERSION4",
+    5, {-1, -1, -1, -1, -1}, {0, 1, 2, 5, 6} },
+};
+
+/* CGM character sets, for upper and lower halves of both ISO-Latin-1 and
+   Symbol fonts.  We use standard 8-bit encoding when writing text strings
+   in either sort of font, but the character set used in each font half
+   needs to be specified explicitly.  Supported types of character set
+   include "standard 94-character set" and "standard 96-character set".
+   The character set is further specified by the "tail" string. */
+
+typedef struct
+{
+  int type;			/* a CGM enumerative */
+  const char *type_string;	/* its string representation, for cleartext */
+  const char *tail;		/* the `designation sequence tail' */
+}
+plCGMCharset;
+
+static const plCGMCharset _iso_latin_1_cgm_charset[2] =
+{
+  { 0, "std94", "4/2" },	/* ISO 8859-1 LH */
+  { 1, "std96", "4/1" }		/* ISO 8859-1 RH */
+};
+
+static const plCGMCharset _symbol_cgm_charset[2] =
+{
+  { 0, "std94", "2/10 3/10" },	/* Symbol LH */
+  { 0, "std94", "2/6 3/10" }	/* Symbol RH */
+};
+
+/* The private `terminate' method, which is invoked when a Plotter is
+   deleted.  It may do such things as write to an output stream from
+   internal storage, deallocate storage, etc.  When this is invoked,
+   _plotter points to the Plotter that is about to be deleted. */
+
+/* This version is for CGM Plotters...
+
+   (CGM Plotters differ from most other plotters that do not plot in real
+   time in that they emit output only after all pages have pages have been
+   drawn, rather than at the end of each page.  This is necessary in order
+   to produce the correct header lines.)
+
+   When this is called, the CGM code for the body of each page is stored in
+   a plOutbuf, and the page plOutbufs form a linked list. */
+
+void
+#ifdef _HAVE_PROTOS
+_c_terminate (S___(Plotter *_plotter))
+#else
+_c_terminate (S___(_plotter))
+     S___(Plotter *_plotter;)
+#endif
+{
+  int i;
+  plOutbuf *current_page;
+  bool ps_font_used_in_doc[NUM_PS_FONTS];
+  bool symbol_font_used_in_doc;
+  bool cgm_font_id_used_in_doc[NUM_PS_FONTS];
+  bool doc_uses_fonts;
+  int max_cgm_font_id;
+
+  /* if specified plotter is open, close it */
+  if (_plotter->open)
+    _plotter->closepl (S___(_plotter));
+
+  /* if no pages of graphics (i.e. Plotter was never opened), CGM file
+     won't contain any pictures, and won't satisfy any standard profile */
+  if (_plotter->first_page == (plOutbuf *)NULL)
+    _plotter->cgm_profile = 
+      IMAX(_plotter->cgm_profile, CGM_PROFILE_NONE);
+
+  /* COMMENTED OUT BECAUSE USERS WOULD FIND THIS TOO CONFUSING! */
+#if 0
+  /* only the binary encoding satisfies the WebCGM profile */
+  if (_plotter->cgm_encoding != CGM_ENCODING_BINARY)
+    _plotter->cgm_profile = 
+      IMAX(_plotter->cgm_profile, CGM_PROFILE_MODEL);
+#endif
+
+#ifdef LIBPLOTTER
+  if (_plotter->outfp || _plotter->outstream)
+#else
+  if (_plotter->outfp)
+#endif
+    /* have an output stream, will emit CGM commands */
+    {
+      plOutbuf *doc_header, *doc_trailer;
+      int byte_count, data_byte_count, data_len, string_length;
+      const char *string_param;
+      
+      doc_header = _new_outbuf ();
+
+      /* emit "BEGIN METAFILE" command */
+      {
+	string_param = "CGM plot";
+	string_length = strlen (string_param);
+	data_len = CGM_BINARY_BYTES_PER_STRING(string_length);
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_DELIMITER_ELEMENT, 1,
+				  data_len, &byte_count,
+				  "BEGMF");
+	_cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+			  string_param, 
+			  string_length, true,
+			  data_len, &data_byte_count, &byte_count);
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* emit "METAFILE VERSION" command */
+      {
+	data_len = CGM_BINARY_BYTES_PER_INTEGER;
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 1,
+				  data_len, &byte_count,
+				  "MFVERSION");
+	_cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+			   _plotter->cgm_version,
+			   data_len, &data_byte_count, &byte_count);
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* emit "METAFILE ELEMENT LIST" command; this is encoding-dependent */
+
+      {
+	const plCGMElementList *element_list = 
+	  &(_metafile_element_list[_plotter->cgm_version - 1]);
+	int length = element_list->length;
+	int k;
+
+	/* 1 integer, plus `length' pairs of 2-byte indices */
+	data_len =  CGM_BINARY_BYTES_PER_INTEGER + 2 * 2 * length;
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 11,
+				  data_len, &byte_count,
+				  "MFELEMLIST");
+	switch (_plotter->cgm_encoding)
+	  {
+	  case CGM_ENCODING_BINARY:
+	  default:
+	    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+			       length,
+			       data_len, &data_byte_count, &byte_count);
+	    for (k = 0; k < length; k++)
+	      {
+		_cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				 element_list->class_id[k],
+				 data_len, &data_byte_count, &byte_count);
+		_cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				 element_list->element_id[k],
+				 data_len, &data_byte_count, &byte_count);
+	      }
+	    break;
+	  case CGM_ENCODING_CHARACTER: /* not supported */
+	    break;
+	    
+	  case CGM_ENCODING_CLEAR_TEXT:
+	    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+			      element_list->text_string,
+			      (int) strlen (element_list->text_string),
+			      true,
+			      data_len, &data_byte_count, &byte_count);
+	    break;
+	  }
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* emit "METAFILE DESCRIPTION" command, including profile string etc. */
+      {
+	time_t clock;
+	const char *profile_string, *profile_edition_string;
+	struct tm local_time_struct, *local_time_struct_ptr;
+	char string_param[254];
+
+	/* Work out ASCII specification of profile */
+	switch (_plotter->cgm_profile)
+	  {
+	  case CGM_PROFILE_WEB:
+	    profile_string = "WebCGM";
+	    profile_edition_string = "1.0";
+	    break;
+	  case CGM_PROFILE_MODEL:
+	    profile_string = "Model-Profile";
+	    profile_edition_string = "1";
+	    break;
+	  case CGM_PROFILE_NONE:
+	  default:
+	    profile_string = "None";
+	    profile_edition_string = "0.0"; /* waggish */
+	    break;
+	  }
+
+	/* Compute an ASCII representation of the current time, in a
+	   reentrant way if we're supporting pthreads (i.e. by using
+	   localtime_r if it's available). */
+	time (&clock);
+
+#ifdef PTHREAD_SUPPORT
+#ifdef HAVE_PTHREAD_H
+#ifdef HAVE_LOCALTIME_R
+	localtime_r (&clock, &local_time_struct);
+	local_time_struct_ptr = &local_time_struct;
+#else
+	local_time_struct_ptr = localtime (&clock);
+#endif
+#else  /* not HAVE_PTHREAD_H */
+	local_time_struct_ptr = localtime (&clock);
+#endif /* not HAVE_PTHREAD_H */
+#else  /* not PTHREAD_SUPPORT */
+	local_time_struct_ptr = localtime (&clock);
+#endif /* not PTHREAD_SUPPORT */
+
+	sprintf (string_param,
+		 "\"ProfileId:%s\" \"ProfileEd:%s\" \"ColourClass:%s\" \"Source:GNU libplot %s\" \"Date:%04d%02d%02d\"", 
+		 profile_string, profile_edition_string,
+		 _plotter->cgm_need_color ? "colour" : "monochrome",
+		 LIBPLOT_VERSION,
+		 1900 + local_time_struct_ptr->tm_year,
+		 1 + local_time_struct_ptr->tm_mon,
+		 local_time_struct_ptr->tm_mday);
+	
+	string_length = strlen (string_param);
+	data_len = CGM_BINARY_BYTES_PER_STRING(string_length);
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 2,
+				  data_len, &byte_count,
+				  "MFDESC");
+	_cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+			  string_param, 
+			  string_length, false,	/* delimit by single quotes */
+			  data_len, &data_byte_count, &byte_count);
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* emit "VDC TYPE" command, selecting integer VDC's for the metafile */
+      {
+	data_len = 2;		/* 2 bytes per enum */
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 3,
+				  data_len, &byte_count,
+				  "VDCTYPE");
+	_cgm_emit_enum (doc_header, false, _plotter->cgm_encoding,
+			0,
+			data_len, &data_byte_count, &byte_count,
+			"integer");
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* Emit "INTEGER PRECISION" command.  Parameters are
+	 encoding-dependent: in the binary encoding, the number of bits k,
+	 and in clear text, a pair of integers: the minimum and maximum
+	 integers representable in CGM format, i.e. -(2^(k-1) - 1) and
+	 (2^(k-1) - 1), where k=8*CGM_BINARY_BYTES_PER_INTEGER. */
+      {
+	int j, max_int;
+	
+	data_len = 2;		/* in binary, 16 bits of data; see comment */
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 4,
+				  data_len, &byte_count,
+				  "INTEGERPREC");
+	switch (_plotter->cgm_encoding)
+	  {
+	  case CGM_ENCODING_BINARY:
+	  default:
+
+	    /* The integer precision, in terms of bits, should be encoded
+	       as an integer at the current precision (the default, which
+	       is 16 bits), not the eventual precision.  So we don't call
+	       _cgm_emit_integer; we call _cgm_emit_index instead.  We
+	       always represent indices by 16 bits (the default). */
+
+	    _cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+			     8 * CGM_BINARY_BYTES_PER_INTEGER,
+			     data_len, &data_byte_count, &byte_count);
+	    break;
+	  case CGM_ENCODING_CHARACTER: /* not supported */
+	    break;
+	    
+	  case CGM_ENCODING_CLEAR_TEXT:
+	    max_int = 0;
+	    for (j = 0; j < (8 * CGM_BINARY_BYTES_PER_INTEGER - 1); j++)
+	      max_int += (1 << j);
+	    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+			       -max_int,
+			       data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+			       max_int,
+			       data_len, &data_byte_count, &byte_count);
+	    break;
+	  }
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* Emit "REAL PRECISION" command, selecting default precision.
+
+	 Parameters are encoding-dependent.  In the clear text encoding,
+	 three numbers: the minimum real, the maximum real, and the number
+	 of significant decimal digits (an integer).  Typical choices are
+	 (-32767.0, 32767.0, 4) [the default].  In the binary encoding,
+	 three objects: a 2-octet enumerative specifying the encoding of
+	 reals (0=floating, 1=fixed), and two integers at current intege
+	 precision specifying the size of each piece of the encoded real.
+	 Typical choices are (1,16,16) [the default] or (0,9,23). */
+      {
+	data_len = 2 + 2 * CGM_BINARY_BYTES_PER_INTEGER;
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 5,
+				  data_len, &byte_count,
+				  "REALPREC");
+	switch (_plotter->cgm_encoding)
+	  {
+	  case CGM_ENCODING_BINARY:
+	  default:
+	    _cgm_emit_enum (doc_header, false, _plotter->cgm_encoding,
+			    1,
+			    data_len, &data_byte_count, &byte_count,
+			    "DUMMY");
+	    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+			       16,
+			       data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+			       16,
+			       data_len, &data_byte_count, &byte_count);
+	    break;
+	  case CGM_ENCODING_CHARACTER: /* not supported */
+	    break;
+	    
+	  case CGM_ENCODING_CLEAR_TEXT:
+	    _cgm_emit_real_fixed_point (doc_header, false, _plotter->cgm_encoding,
+					-32767.0,
+					data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_real_fixed_point (doc_header, false, _plotter->cgm_encoding,
+					32767.0,
+					data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+			       4,
+			       data_len, &data_byte_count, &byte_count);
+	    break;
+	  }
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* Emit "COLOR PRECISION" command.  Parameters are
+	 encoding-dependent: in the binary encoding, an integer specifying
+	 the number of bits k, and in clear text, the maximum possible
+	 color component value, i.e. (2^k - 1), where
+	 k=8*CGM_BINARY_BYTES_PER_COLOR_COMPONENT. */
+      {
+	int j;
+	unsigned int max_component;
+	
+	data_len = CGM_BINARY_BYTES_PER_INTEGER;
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 7,
+				  data_len, &byte_count,
+				  "COLRPREC");
+	switch (_plotter->cgm_encoding)
+	  {
+	  case CGM_ENCODING_BINARY:
+	  default:
+	    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+			       8 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT,
+			       data_len, &data_byte_count, &byte_count);
+	    break;
+	  case CGM_ENCODING_CHARACTER: /* not supported */
+	    break;
+	      
+	  case CGM_ENCODING_CLEAR_TEXT:
+	    max_component = 0;
+	    for (j = 0; j < (8 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT); j++)
+	      max_component += (1 << j);
+	    _cgm_emit_unsigned_integer (doc_header, false, _plotter->cgm_encoding,
+					max_component,
+					data_len, &data_byte_count, &byte_count);
+	    break;
+	  }
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* emit "COLOR VALUE EXTENT" command, duplicating the information
+	 we just supplied (this is necessary) */
+      {
+	int j;
+	unsigned int max_component;
+
+	data_len = 6 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 10,
+				  data_len, &byte_count,
+				  "COLRVALUEEXT");
+	_cgm_emit_color_component (doc_header, false, _plotter->cgm_encoding,
+				   (unsigned int)0,
+				   data_len, &data_byte_count, &byte_count);
+	_cgm_emit_color_component (doc_header, false, _plotter->cgm_encoding,
+				   (unsigned int)0,
+				   data_len, &data_byte_count, &byte_count);
+	_cgm_emit_color_component (doc_header, false, _plotter->cgm_encoding,
+				   (unsigned int)0,
+				   data_len, &data_byte_count, &byte_count);
+	max_component = 0;
+	for (j = 0; j < (8 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT); j++)
+	  max_component += (1 << j);
+
+	_cgm_emit_color_component (doc_header, false, _plotter->cgm_encoding,
+				   max_component,
+				   data_len, &data_byte_count, &byte_count);
+	_cgm_emit_color_component (doc_header, false, _plotter->cgm_encoding,
+				   max_component,
+				   data_len, &data_byte_count, &byte_count);
+	_cgm_emit_color_component (doc_header, false, _plotter->cgm_encoding,
+				   max_component,
+				   data_len, &data_byte_count, &byte_count);
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+
+      /* determine fonts needed by document, by examining all pages */
+      {
+	current_page = _plotter->first_page;
+	
+	for (i = 0; i < NUM_PS_FONTS; i++)
+	  ps_font_used_in_doc[i] = false;
+	while (current_page)
+	  {
+	    for (i = 0; i < NUM_PS_FONTS; i++)
+	      if (current_page->ps_font_used[i])
+		ps_font_used_in_doc[i] = true;
+	    current_page = current_page->next;
+	  }
+      }
+
+      /* Map our internal indexing of PS fonts to the indexing we use in a
+	 CGM file (which may be different, because we want the traditional
+	 `Adobe 13' to come first, out of the `Adobe 35').  Also work out
+	 whether Symbol font, which has its own character sets, is used. */
+      symbol_font_used_in_doc = false;
+      for (i = 0; i < NUM_PS_FONTS; i++)
+	{
+	  cgm_font_id_used_in_doc[_ps_font_to_cgm_font_id[i]] = ps_font_used_in_doc[i];
+	  if (ps_font_used_in_doc[i] 
+	      && strcmp (_ps_font_info[i].ps_name, "Symbol") == 0)
+	    symbol_font_used_in_doc = true;
+	}
+      
+      /* compute maximum used font id, if any */
+      max_cgm_font_id = 0;
+      doc_uses_fonts = false;
+      for (i = 0; i < NUM_PS_FONTS; i++)
+	{
+	  if (cgm_font_id_used_in_doc[i] == true)
+	    {
+	      doc_uses_fonts = true;
+	      max_cgm_font_id = i;
+	    }
+	}
+
+      if (doc_uses_fonts)
+	{
+	  /* emit "FONT LIST" command */
+
+	  /* command will include encoded strings, which are the names of
+	     fonts in range 0..max_cgm_font_id; later in the CGM file,
+	     they'll be referred to as 1..max_cgm_font_id+1 */
+	  data_len = 0;
+	  for (i = 0; i <= max_cgm_font_id; i++)
+	    {
+	      int ps_font_index;
+	      int font_name_length, encoded_font_name_length;
+
+	      ps_font_index = _cgm_font_id_to_ps_font[i];
+	      font_name_length = (int) strlen (_ps_font_info[ps_font_index].ps_name);
+	      encoded_font_name_length = 
+		CGM_BINARY_BYTES_PER_STRING(font_name_length);
+	      data_len += encoded_font_name_length;
+	    }
+	  byte_count = data_byte_count = 0;
+
+	  _cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				    CGM_METAFILE_DESCRIPTOR_ELEMENT, 13,
+				    data_len, &byte_count,
+				    "FONTLIST");
+	  for (i = 0; i <= max_cgm_font_id; i++)
+	    {
+	      int ps_font_index;
+
+	      ps_font_index = _cgm_font_id_to_ps_font[i];
+	      _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				_ps_font_info[ps_font_index].ps_name,
+				(int) strlen (_ps_font_info[ps_font_index].ps_name),
+				true,
+				data_len, &data_byte_count, &byte_count);
+	    }
+	  _cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+					&byte_count);
+	  
+	  if (_plotter->cgm_version >= 3)
+	    /* emit version-3 "FONT PROPERTIES" commands; note that if
+	       fonts are used and CGM_MAX_VERSION is >=3, then cgm_version
+	       was previously bumped up to 3 in c_closepl.c */
+	    {
+	      /* For each font in the font list, we specify 7 properties.
+		 Each "FONT PROPERTIES" command refers to a single font.
+		 Its argument list is a sequence of 3-tuples, each being of
+		 the form (property type [an index], priority [an integer],
+		 value), where `value' is an SDR (structured data record).
+		 One of the supported property types is
+		 CGM_FONT_PROP_INDEX, the value of which is an index into
+		 the font list.  For any invocation of the command, this
+		 property type and its value must be supplied.
+
+		 An SDR is a string-encoded structure, and each `run' of a
+		 single CGM datatype within an SDR is encoded as (A) an
+		 identifier for the datatype [an index], (B) a count of the
+		 number of occurrences [an integer], and (C) the
+		 occurrences of the datatype, themselves.  So in the binary
+		 encoding, bytes per SDR equals
+		 2 + bytes_per_integer + data_bytes, since we always encode
+		 CGM indices as 2 bytes.
+
+		 The only SDR's that occur in this context are
+		 (1) single CGM indices [used for 5 of the 7 font properties],
+		 (2) single CGM strings [used for the `family' property], and 
+		 (3) three 8-bit unsigned integers [used for the font's
+		 `design group'].
+
+		 Because we always encode CGM indices as 2 bytes, bytes
+		 per SDR, in the binary encoding, in these 3 cases are:
+		 (1) 1+ CGM_BINARY_BYTES_PER_INTEGER + 4,
+		 (2) 1+ CGM_BINARY_BYTES_PER_INTEGER + 2 + CGM_BYTES_PER_STRING
+		 (3) 1+ CGM_BINARY_BYTES_PER_INTEGER + 5.
+		 (This takes account of the initial byte used for the
+		 string encoding of the SDR.)
+		 
+		 And bytes per 3-tuple in these three cases are:
+		 (1) 2*CGM_BINARY_BYTES_PER_INTEGER + 7,
+		 (2) 2*CGM_BINARY_BYTES_PER_INTEGER + 5 + CGM_BYTES_PER_STRING
+		 (3) 2*CGM_BINARY_BYTES_PER_INTEGER + 8.
+		 Since for every included font, we emit 5 3-tuples of type 1,
+		 1 of type 2, and 1 of type 3, bytes per emitted font equals
+		 14*CGM_BINARY_BYTES_PER_INTEGER + 48 + CGM_BYTES_PER_STRING().
+
+		 In the binary encoding, this is the length, in bytes, of
+		 the argument list of each "FONT PROPERTIES" command.  Here
+		 CGM_BYTES_PER_STRING() stands for the string-encoded
+		 length of the family name of the font. */
+
+	      for (i = 0; i <= max_cgm_font_id; i++)
+		{
+		  int family_length;
+		  plOutbuf *sdr_buffer;
+
+		  family_length = strlen(_cgm_font_properties[i].family);
+		  data_len = (14 * CGM_BINARY_BYTES_PER_INTEGER 
+			      + 48 /* hardcoded constants; see above */
+			      + CGM_BINARY_BYTES_PER_STRING(family_length));
+		  byte_count = data_byte_count = 0;
+
+		  sdr_buffer = _new_outbuf ();
+		  _cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+					    CGM_METAFILE_DESCRIPTOR_ELEMENT, 21,
+					    data_len, &byte_count,
+					    "FONTPROP");
+
+		  /* now emit a sequence of 3-tuples: (index, integer, SDR);
+		     for each 2nd element (a priority), we just specify `1' */
+
+		  /* specify index of font in table (beginning with 1, not
+                     with 0) */
+		  {
+		    _cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				     CGM_FONT_PROP_INDEX,
+				     data_len, &data_byte_count, &byte_count);
+		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+				       1, /* priority */
+				       data_len, &data_byte_count, &byte_count);
+		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   i + 1); /* add 1 to index */
+		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				      sdr_buffer->base,
+				      (int)(sdr_buffer->contents),
+				      false,
+				      data_len, &data_byte_count, &byte_count);
+		    _reset_outbuf (sdr_buffer);
+		  }
+	      
+		  /* specify font family */
+		  {
+		    _cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				     CGM_FONT_PROP_FAMILY,
+				     data_len, &data_byte_count, &byte_count);
+		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+				       1,
+				       data_len, &data_byte_count, &byte_count);
+		    _build_sdr_from_string (sdr_buffer, _plotter->cgm_encoding,
+					    _cgm_font_properties[i].family,
+					    (int)(strlen (_cgm_font_properties[i].family)),
+					    true); /* use double quotes */
+		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				      sdr_buffer->base,
+				      (int)(sdr_buffer->contents),
+				      false,
+				      data_len, &data_byte_count, &byte_count);
+		    _reset_outbuf (sdr_buffer);
+		  }
+	      
+		  /* specify font posture */
+		  {
+		    _cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				     CGM_FONT_PROP_POSTURE,
+				     data_len, &data_byte_count, &byte_count);
+		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+				       1,
+				       data_len, &data_byte_count, &byte_count);
+		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   _cgm_font_properties[i].posture);
+		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				      sdr_buffer->base,
+				      (int)(sdr_buffer->contents),
+				      false,
+				      data_len, &data_byte_count, &byte_count);
+		    _reset_outbuf (sdr_buffer);
+		  }
+	      
+		  /* specify font weight */
+		  {
+		    _cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				     CGM_FONT_PROP_WEIGHT,
+				     data_len, &data_byte_count, &byte_count);
+		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+				       1,
+				       data_len, &data_byte_count, &byte_count);
+		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   _cgm_font_properties[i].weight);
+		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				      sdr_buffer->base,
+				      (int)(sdr_buffer->contents),
+				      false,
+				      data_len, &data_byte_count, &byte_count);
+		    _reset_outbuf (sdr_buffer);
+		  }
+	      
+		  /* specify font width */
+		  {
+		    _cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				     CGM_FONT_PROP_WIDTH,
+				     data_len, &data_byte_count, &byte_count);
+		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+				       1,
+				       data_len, &data_byte_count, &byte_count);
+		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   _cgm_font_properties[i].proportionate_width);
+		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				      sdr_buffer->base,
+				      (int)(sdr_buffer->contents),
+				      false,
+				      data_len, &data_byte_count, &byte_count);
+		    _reset_outbuf (sdr_buffer);
+		  }
+		
+		  /* specify font design group */
+		  {
+		    _cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				     CGM_FONT_PROP_DESIGN_GROUP,
+				     data_len, &data_byte_count, &byte_count);
+		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+				       1,
+				       data_len, &data_byte_count, &byte_count);
+		    _build_sdr_from_ui8s (sdr_buffer, _plotter->cgm_encoding,
+					  _cgm_font_properties[i].design_group,
+					  3);
+		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				      sdr_buffer->base,
+				      (int)(sdr_buffer->contents),
+				      false,
+				      data_len, &data_byte_count, &byte_count);
+		    _reset_outbuf (sdr_buffer);
+		  }
+	      
+		  /* specify font structure */
+		  {
+		    _cgm_emit_index (doc_header, false, _plotter->cgm_encoding,
+				     CGM_FONT_PROP_STRUCTURE,
+				     data_len, &data_byte_count, &byte_count);
+		    _cgm_emit_integer (doc_header, false, _plotter->cgm_encoding,
+				       1,
+				       data_len, &data_byte_count, &byte_count);
+		    _build_sdr_from_index (sdr_buffer, _plotter->cgm_encoding,
+					   _cgm_font_properties[i].structure);
+		    _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				      sdr_buffer->base,
+				      (int)(sdr_buffer->contents),
+				      false,
+				      data_len, &data_byte_count, &byte_count);
+		    _reset_outbuf (sdr_buffer);
+		  }
+
+		  _cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+						&byte_count);
+		  _delete_outbuf (sdr_buffer);
+		}
+	    }
+
+	  /* Emit a "CHARACTER SET LIST" command.  Argument list is a
+	     sequence of character sets, with each character set being
+	     expressed both as a CGM enumerative and a CGM string (the
+	     `designation sequence tail').
+
+	     We include the 2 character sets used in the 8-bit ISO-Latin-1
+	     encoding, and, if we're using the Symbol font, the two
+	     character sets that Symbol uses, also.  So internally, we
+	     index these character sets by 1,2,3,4 (the latter two may not
+	     be present). */
+
+	  data_len = 0;
+	  for (i = 0; i < 2; i++)
+	    {
+	      int tail_length, encoded_tail_length;
+	      
+	      data_len += 2;	/* 2 bytes per enum */
+	      tail_length = strlen (_iso_latin_1_cgm_charset[i].tail);
+	      encoded_tail_length = 
+		CGM_BINARY_BYTES_PER_STRING(tail_length);
+	      data_len += encoded_tail_length;
+	    }
+	  if (symbol_font_used_in_doc)
+	    for (i = 0; i < 2; i++)
+	      {
+		int tail_length, encoded_tail_length;
+		
+		data_len += 2;	/* 2 bytes per enum */
+		tail_length = (int) strlen (_symbol_cgm_charset[i].tail);
+		encoded_tail_length = 
+		  CGM_BINARY_BYTES_PER_STRING(tail_length);
+		data_len += encoded_tail_length;
+	      }
+	  byte_count = data_byte_count = 0;
+	  
+	  _cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				    CGM_METAFILE_DESCRIPTOR_ELEMENT, 14,
+				    data_len, &byte_count,
+				    "CHARSETLIST");
+	  for (i = 0; i < 2; i++)
+	    {
+	      _cgm_emit_enum (doc_header, false, _plotter->cgm_encoding,
+			      _iso_latin_1_cgm_charset[i].type,
+			      data_len, &data_byte_count, &byte_count,
+			      _iso_latin_1_cgm_charset[i].type_string);
+	      _cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+				_iso_latin_1_cgm_charset[i].tail,
+				(int) strlen (_iso_latin_1_cgm_charset[i].tail),
+				true,
+				data_len, &data_byte_count, &byte_count);
+	    }
+	  if (symbol_font_used_in_doc)
+	    for (i = 0; i < 2; i++)
+	      {
+		_cgm_emit_enum (doc_header, false, _plotter->cgm_encoding,
+				_symbol_cgm_charset[i].type,
+				data_len, &data_byte_count, &byte_count,
+				_symbol_cgm_charset[i].type_string);
+		_cgm_emit_string (doc_header, false, _plotter->cgm_encoding,
+  				  _symbol_cgm_charset[i].tail,
+				  (int) strlen (_symbol_cgm_charset[i].tail),
+				  true,
+				  data_len, &data_byte_count, &byte_count);
+	      }
+	  _cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+					&byte_count);
+	}
+
+      /* emit "CHARACTER CODING ANNOUNCER" command, selecting 8-bit
+	 character codes (no switching between font halves for us!) */
+      {
+	data_len = 2; /* 2 bytes per enum */
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_header, _plotter->cgm_encoding,
+				  CGM_METAFILE_DESCRIPTOR_ELEMENT, 15,
+				  data_len, &byte_count,
+				  "CHARCODING");
+	_cgm_emit_enum (doc_header, false, _plotter->cgm_encoding,
+			1,
+			data_len, &data_byte_count, &byte_count,
+			"basic8bit");
+	_cgm_emit_command_terminator (doc_header, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* WRITE DOCUMENT HEADER */
+      _plotter->write_bytes (R___(_plotter) 
+			     (int)(doc_header->contents),
+			     (unsigned char *)doc_header->base);
+      _delete_outbuf (doc_header);
+
+      /* loop over plOutbufs in which successive pages of graphics are
+	 stored; emit each page as a CGM picture, and delete each plOutbuf
+	 as we finish with it */
+      current_page = _plotter->first_page;
+      i = 1;
+
+      while (current_page)
+	{
+	  plOutbuf *next_page;
+	  plOutbuf *current_page_header, *current_page_trailer;
+      
+	  /* prepare a page header */
+
+	  current_page_header = _new_outbuf ();
+
+	  /* emit "BEGIN PICTURE" command */
+	  {
+	    char picture[32];
+	    
+	    sprintf (picture, "picture_%d", i);
+	    string_param = picture;
+	    string_length = strlen (string_param);
+	    data_len = CGM_BINARY_BYTES_PER_STRING(string_length);
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_DELIMITER_ELEMENT, 3,
+				      data_len, &byte_count,
+				      "BEGPIC");
+	    _cgm_emit_string (current_page_header, false, _plotter->cgm_encoding,
+			      string_param,
+			      string_length,
+			      true,
+			      data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+	  
+	  /* emit "VDC EXTENT" command [specify virtual device coor ranges] */
+	  {
+	    data_len = 2 * 2 * 2;
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 6,
+				      data_len, &byte_count,
+				      "VDCEXT");
+	    /* for extent values, see above: we choose viewport coordinates
+	       that are one-fourth the maximum integer range */
+
+	    /* in binary, we write each of these four coordinates as a
+	       16-bit `index' i.e. integer, because we haven't yet changed
+	       the VDC integer precision to our desired value (we can't do
+	       that until the beginning of the picture) */
+	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
+			     _plotter->imin,
+			     data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
+			     _plotter->jmin,
+			     data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
+			     _plotter->imax,
+			     data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
+			     _plotter->jmax,
+			     data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+      
+	  /* emit "SCALING MODE" command.  Specify metric scaling (required
+	   by WebCGM profile).  The argument is the number of millimeters
+	   per VDC unit; it must be a floating-point real.  */
+	  {
+	    /* viewport size in inches; depends on PAGESIZE parameter */
+	    double viewport_size = _plotter->page_data->viewport_size;
+	    double scaling_factor;
+
+	    data_len = 6;	/* 2 bytes per enum, 4 per floating-pt. real */
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 1,
+				      data_len, &byte_count,
+				      "SCALEMODE");
+	    _cgm_emit_enum (current_page_header, false, _plotter->cgm_encoding,
+			     1,
+			     data_len, &data_byte_count, &byte_count,
+			     "metric");
+
+	    /* Compute a metric scaling factor from the criterion that the
+	       nominal physical width and height of VDC space be the
+	       viewport size determined by the PAGESIZE parameter. */
+	    scaling_factor = 
+	      (25.4 * viewport_size) / (_plotter->imax - _plotter->imin);
+
+	    /* yes, this needs to be a floating-point real, not fixed-point! */
+	    _cgm_emit_real_floating_point (current_page_header, false, _plotter->cgm_encoding,
+					   scaling_factor,
+					   data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+      
+	  /* emit "LINE WIDTH SPECIFICATION MODE" command [specify
+	     absolute coordinates] */
+	  {
+	    data_len = 2;	/* 2 bytes per enum */
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 3,
+				      data_len, &byte_count,
+				      "LINEWIDTHMODE");
+	    _cgm_emit_enum (current_page_header, false, _plotter->cgm_encoding,
+			     0,
+			     data_len, &data_byte_count, &byte_count,
+			     "abs");
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+      
+	  /* emit "EDGE WIDTH SPECIFICATION MODE" command [specify absolute
+             coordinates] */
+	  {
+	    data_len = 2;	/* 2 bytes per enum */
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 5,
+				      data_len, &byte_count,
+				      "EDGEWIDTHMODE");
+	    _cgm_emit_enum (current_page_header, false, _plotter->cgm_encoding,
+			     0,
+			     data_len, &data_byte_count, &byte_count,
+			     "abs");
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+      
+	  /* emit "MARKER SIZE SPECIFICATION MODE" command [specify
+             absolute coordinates] */
+	  {
+	    data_len = 2;	/* 2 bytes per enum */
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 4,
+				      data_len, &byte_count,
+				      "MARKERSIZEMODE");
+	    _cgm_emit_enum (current_page_header, false, _plotter->cgm_encoding,
+			     0,
+			     data_len, &data_byte_count, &byte_count,
+			     "abs");
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+      
+	  /* emit "COLOR SELECTION MODE" command [specify direct color,
+	     not indexed color] */
+	  {
+	    data_len = 2;	/* 2 bytes per enum */
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 2,
+				      data_len, &byte_count,
+				      "COLRMODE");
+	    _cgm_emit_enum (current_page_header, false, _plotter->cgm_encoding,
+			     1,
+			     data_len, &data_byte_count, &byte_count,
+			     "direct");
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+      
+	  /* emit "BACKGROUND COLOR" command (note that in a CGM file,
+	     background color is always a direct color specified by color
+	     components, never an indexed color).  The background color for
+	     any page is stored in the `bg_color' element of its plOutbuf
+	     at the time the page is closed; see g_closepl.c.  */
+	  {
+	    data_len = 3 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 7,
+				      data_len, &byte_count,
+				      "BACKCOLR");
+	    _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
+				       (unsigned int)current_page->bg_color.red,
+				       data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
+				       (unsigned int)current_page->bg_color.green,
+				       data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
+				       (unsigned int)current_page->bg_color.blue,
+				       data_len, &data_byte_count, &byte_count);
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+
+	  /* if user defined any line types, emit a sequence of "LINE AND
+             EDGE TYPE DEFINITION" commands */
+	  {
+	    plCGMCustomLineType *linetype_ptr = (plCGMCustomLineType *)current_page->extra;
+	    int linetype = 0;
+	      
+	    while (linetype_ptr)
+	      {
+		int k, cycle_length, dash_array_len, *dash_array;
+
+		linetype--;	/* user-defined ones are -1,-2,-3,... */
+		dash_array_len = linetype_ptr->dash_array_len;
+		dash_array = linetype_ptr->dashes;
+		cycle_length = 0;
+		for (k = 0; k < dash_array_len; k++)
+		  cycle_length += dash_array[k];
+		
+		/* data: a 2-byte index, the cycle length, and the array of
+		   dash lengths (all integers) */
+		data_len = 2 + (1 + dash_array_len) * CGM_BINARY_BYTES_PER_INTEGER;
+		byte_count = data_byte_count = 0;
+		_cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+					  CGM_PICTURE_DESCRIPTOR_ELEMENT, 17,
+					  data_len, &byte_count,
+					  "LINEEDGETYPEDEF");
+		_cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
+				 linetype,
+				 data_len, &data_byte_count, &byte_count);
+		_cgm_emit_integer (current_page_header, false, _plotter->cgm_encoding,
+				   cycle_length,
+				   data_len, &data_byte_count, &byte_count);
+		for (k = 0; k < dash_array_len; k++)
+		  _cgm_emit_integer (current_page_header, false, _plotter->cgm_encoding,
+				     dash_array[k],
+				     data_len, &data_byte_count, &byte_count);
+		_cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					      &byte_count);
+
+		/* on to next user-defined line type */
+		linetype_ptr = linetype_ptr->next;
+	      }
+	  }
+      
+	  /* emit "BEGIN PICTURE BODY" command */
+	  {
+	    data_len = 0;
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_DELIMITER_ELEMENT, 4,
+				      data_len, &byte_count,
+				      "BEGPICBODY");
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+	  
+	  /* Emit "VDC INTEGER PRECISION" command.  Very similar to the
+	     "INTEGER PRECISION" command, except we emit this at the start
+	     of each picture. */
+	  {
+	    int j, max_int;
+	
+	    data_len = CGM_BINARY_BYTES_PER_INTEGER;
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+				      CGM_CONTROL_ELEMENT, 1,
+				      data_len, &byte_count,
+				      "VDCINTEGERPREC");
+	    switch (_plotter->cgm_encoding)
+	      {
+	      case CGM_ENCODING_BINARY:
+	      default:
+		_cgm_emit_integer (current_page_header, false, _plotter->cgm_encoding,
+				   8 * CGM_BINARY_BYTES_PER_INTEGER,
+				   data_len, &data_byte_count, &byte_count);
+		break;
+	      case CGM_ENCODING_CHARACTER: /* not supported */
+		break;
+	    
+	      case CGM_ENCODING_CLEAR_TEXT:
+		max_int = 0;
+		for (j = 0; j < (8 * CGM_BINARY_BYTES_PER_INTEGER - 1); j++)
+		  max_int += (1 << j);
+		_cgm_emit_integer (current_page_header, false, _plotter->cgm_encoding,
+				   -max_int,
+				   data_len, &data_byte_count, &byte_count);
+		_cgm_emit_integer (current_page_header, false, _plotter->cgm_encoding,
+				   max_int,
+				   data_len, &data_byte_count, &byte_count);
+		break;
+	      }
+	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+      
+	  if (doc_uses_fonts)
+	    /* emit "TEXT PRECISION" command */
+	    {
+	      data_len = 2;	/* 2 bytes per enum */
+	      byte_count = data_byte_count = 0;
+	      _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+					CGM_ATTRIBUTE_ELEMENT, 11,
+					data_len, &byte_count,
+					"TEXTPREC");
+	      _cgm_emit_enum (current_page_header, false, _plotter->cgm_encoding,
+			      2,
+			      data_len, &data_byte_count, &byte_count,
+			      "stroke");
+	      _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					    &byte_count);
+	    }
+      
+	  /* write the page header */
+	  _plotter->write_bytes (R___(_plotter) 
+				 (int)(current_page_header->contents),
+				 (unsigned char *)current_page_header->base);
+	  _delete_outbuf (current_page_header);
+
+	  /* WRITE THE PICTURE */
+	  _plotter->write_bytes (R___(_plotter) 
+				 (int)(current_page->contents),
+				 (unsigned char *)current_page->base);
+
+	  /* prepare a page trailer */
+
+	  current_page_trailer = _new_outbuf ();
+
+	  /* emit "END PICTURE" command (no parameters) */
+	  {
+	    data_len = 0;
+	    byte_count = data_byte_count = 0;
+	    _cgm_emit_command_header (current_page_trailer, _plotter->cgm_encoding,
+				      CGM_DELIMITER_ELEMENT, 5,
+				      data_len, &byte_count,
+				      "ENDPIC");
+	    _cgm_emit_command_terminator (current_page_trailer, _plotter->cgm_encoding,
+					  &byte_count);
+	  }
+
+	  /* write page trailer */
+	  _plotter->write_bytes (R___(_plotter) 
+				 (int)(current_page_trailer->contents),
+				 (unsigned char *)current_page_trailer->base);
+	  _delete_outbuf (current_page_trailer);
+	  
+	  /* on to next page (if any) */
+	  next_page = current_page->next;
+	  current_page = next_page;
+	  i++;
+	}
+
+      /* prepare a document trailer */
+
+      doc_trailer = _new_outbuf ();
+
+      /* emit "END METAFILE" command (no parameters) */
+      {
+	data_len = 0;
+	byte_count = data_byte_count = 0;
+	_cgm_emit_command_header (doc_trailer, _plotter->cgm_encoding,
+				  CGM_DELIMITER_ELEMENT, 2,
+				  data_len, &byte_count,
+				  "ENDMF");
+	_cgm_emit_command_terminator (doc_trailer, _plotter->cgm_encoding,
+				      &byte_count);
+      }
+      
+      /* WRITE DOCUMENT TRAILER */
+      _plotter->write_bytes (R___(_plotter) 
+			     (int)(doc_trailer->contents),
+			     (unsigned char *)doc_trailer->base);
+      _delete_outbuf (doc_trailer);
+
+    }
+  
+  /* delete all plOutbufs in which document pages are stored */
+  current_page = _plotter->first_page;
+  while (current_page)
+    {
+      plOutbuf *next_page;
+	  
+      next_page = current_page->next;
+
+      /* deallocate page-specific table of user-specified line types, 
+	 if any */
+      if (current_page->extra)
+	{
+	  plCGMCustomLineType *linetype_ptr = (plCGMCustomLineType *)current_page->extra;
+	  plCGMCustomLineType *old_linetype_ptr;
+	  
+	  while (linetype_ptr)
+	    {
+	      if (linetype_ptr->dash_array_len > 0 /* paranoia */
+		  && linetype_ptr->dashes)
+		free (linetype_ptr->dashes);
+	      old_linetype_ptr = linetype_ptr;
+	      linetype_ptr = linetype_ptr->next;
+	      free (old_linetype_ptr);
+	    }
+	  _plotter->page->extra = (voidptr_t)NULL;
+	}
+
+      _delete_outbuf (current_page);
+      current_page = next_page;
+    }
+  
+  /* flush output stream if any */
+  if (_plotter->outfp)
+    {
+      if (fflush(_plotter->outfp) < 0
+#ifdef MSDOS
+	  /* data can be caught in DOS buffers, so do an fsync() too */
+	  || fsync (_plotter->outfp) < 0
+#endif
+	  )
+	_plotter->error (R___(_plotter) "output stream jammed");
+    }
+#ifdef LIBPLOTTER
+  else if (_plotter->outstream)
+    {
+      _plotter->outstream->flush ();
+      if (!(*(_plotter->outstream)))
+	_plotter->error (R___(_plotter) "output stream jammed");
+    }
+#endif
+
+#ifndef LIBPLOTTER
+  /* in libplot, manually invoke superclass termination method */
+  _g_terminate (S___(_plotter));
+#endif
+}
+
+static void
+#ifdef _HAVE_PROTOS
+_build_sdr_from_index (plOutbuf *sdr_buffer, int cgm_encoding, int x)
+#else
+_build_sdr_from_index (sdr_buffer, cgm_encoding, x)
+     plOutbuf *sdr_buffer;
+     int cgm_encoding;
+     int x;
+#endif
+{
+  int dummy_data_len, dummy_data_byte_count, dummy_byte_count;
+
+  dummy_data_len = dummy_data_byte_count = dummy_byte_count = 0;
+  _cgm_emit_index (sdr_buffer, true, cgm_encoding,
+		   CGM_SDR_DATATYPE_INDEX,
+		   dummy_data_len, &dummy_data_byte_count, 
+		   &dummy_byte_count);
+  _cgm_emit_integer (sdr_buffer, true, cgm_encoding,
+		     1,
+		     dummy_data_len, &dummy_data_byte_count, 
+		     &dummy_byte_count);
+  _cgm_emit_index (sdr_buffer, true, cgm_encoding,
+		   x,
+		   dummy_data_len, &dummy_data_byte_count, 
+		   &dummy_byte_count);
+}
+
+static void
+#ifdef _HAVE_PROTOS
+_build_sdr_from_string (plOutbuf *sdr_buffer, int cgm_encoding, const char *s, int string_length, bool use_double_quotes)
+#else
+_build_sdr_from_string (sdr_buffer, cgm_encoding, s, string_length, use_double_quotes)
+     plOutbuf *sdr_buffer;
+     int cgm_encoding;
+     const char *s;
+     int string_length;
+     bool use_double_quotes;
+#endif
+{
+  int dummy_data_len, dummy_data_byte_count, dummy_byte_count;
+
+  dummy_data_len = dummy_data_byte_count = dummy_byte_count = 0;
+  _cgm_emit_index (sdr_buffer, true, cgm_encoding,
+		   CGM_SDR_DATATYPE_STRING_FIXED,
+		   dummy_data_len, &dummy_data_byte_count, 
+		   &dummy_byte_count);
+  _cgm_emit_integer (sdr_buffer, true, cgm_encoding,
+		     1,
+		     dummy_data_len, &dummy_data_byte_count, 
+		     &dummy_byte_count);
+  _cgm_emit_string (sdr_buffer, true, cgm_encoding,
+		    s, string_length, use_double_quotes,
+		    dummy_data_len, &dummy_data_byte_count, 
+		    &dummy_byte_count);
+}
+
+static void
+#ifdef _HAVE_PROTOS
+_build_sdr_from_ui8s (plOutbuf *sdr_buffer, int cgm_encoding, const int *x, int n)
+#else
+_build_sdr_from_ui8s (sdr_buffer, cgm_encoding, x, n)
+     plOutbuf *sdr_buffer;
+     int cgm_encoding;
+     const int *x;
+     int n;
+#endif
+{
+  int i, dummy_data_len, dummy_data_byte_count, dummy_byte_count;
+
+  dummy_data_len = dummy_data_byte_count = dummy_byte_count = 0;
+  _cgm_emit_index (sdr_buffer, true, cgm_encoding,
+		   CGM_SDR_DATATYPE_UNSIGNED_INTEGER_8BIT,
+		   dummy_data_len, &dummy_data_byte_count, 
+		   &dummy_byte_count);
+  _cgm_emit_integer (sdr_buffer, true, cgm_encoding,
+		     n,
+		     dummy_data_len, &dummy_data_byte_count, 
+		     &dummy_byte_count);
+  for (i = 0; i < n; i++)
+    _cgm_emit_unsigned_integer_8bit (sdr_buffer, true, cgm_encoding,
+				     (unsigned int)(x[i]),
+				     dummy_data_len, &dummy_data_byte_count, 
+				     &dummy_byte_count);
+}
+
+#ifdef LIBPLOTTER
+CGMPlotter::CGMPlotter (FILE *infile, FILE *outfile, FILE *errfile)
+	:Plotter (infile, outfile, errfile)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter (FILE *outfile)
+	:Plotter (outfile)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter (istream& in, ostream& out, ostream& err)
+	: Plotter (in, out, err)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter (ostream& out)
+	: Plotter (out)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter ()
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
+	:Plotter (infile, outfile, errfile, parameters)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter (FILE *outfile, PlotterParams &parameters)
+	:Plotter (outfile, parameters)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
+	: Plotter (in, out, err, parameters)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter (ostream& out, PlotterParams &parameters)
+	: Plotter (out, parameters)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::CGMPlotter (PlotterParams &parameters)
+	: Plotter (parameters)
+{
+  _c_initialize ();
+}
+
+CGMPlotter::~CGMPlotter ()
+{
+  _c_terminate ();
+}
+#endif

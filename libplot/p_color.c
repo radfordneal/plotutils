@@ -14,9 +14,10 @@ static int _idraw_pseudocolor ____P((int red, int green, int blue));
 
 void
 #ifdef _HAVE_PROTOS
-_p_set_pen_color(void)
+_p_set_pen_color(S___(Plotter *_plotter))
 #else
-_p_set_pen_color()
+_p_set_pen_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   _plotter->drawstate->ps_fgcolor_red = 
@@ -41,15 +42,16 @@ _p_set_pen_color()
 
 void
 #ifdef _HAVE_PROTOS
-_p_set_fill_color(void)
+_p_set_fill_color(S___(Plotter *_plotter))
 #else
-_p_set_fill_color()
+_p_set_fill_color(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   double red, green, blue;
   double desaturate;
 
-  if (_plotter->drawstate->fill_level == 0)
+  if (_plotter->drawstate->fill_type == 0)
     /* don't do anything, fill color will be ignored when writing objects*/
     return;
 
@@ -57,17 +59,17 @@ _p_set_fill_color()
   green = ((double)((_plotter->drawstate->fillcolor).green))/0xFFFF;
   blue = ((double)((_plotter->drawstate->fillcolor).blue))/0xFFFF;
 
-  /* fill_level, if nonzero, specifies the extent to which the nominal fill
+  /* fill_type, if nonzero, specifies the extent to which the nominal fill
      color should be desaturated.  1 means no desaturation, 0xffff means
      complete desaturation (white). */
-  desaturate = ((double)_plotter->drawstate->fill_level - 1.)/0xFFFE;
+  desaturate = ((double)_plotter->drawstate->fill_type - 1.)/0xFFFE;
 
   _plotter->drawstate->ps_fillcolor_red = red + desaturate * (1.0 - red);
   _plotter->drawstate->ps_fillcolor_green = green + desaturate * (1.0 - green);
   _plotter->drawstate->ps_fillcolor_blue = blue + desaturate * (1.0 - blue);
 
   /* next subroutine needs fields that this will fill in... */
-  _plotter->set_pen_color();
+  _plotter->set_pen_color (S___(_plotter));
 
   /* Quantize for idraw, in a complicated way; we can choose from among a
      finite discrete set of values for ps_idraw_bgcolor and
@@ -75,7 +77,7 @@ _p_set_fill_color()
      ps_fillcolor_* because the PS interpreter will use the
      ps_idraw_shading variable to interpolate between fgcolor and bgcolor,
      i.e. fgcolor and fillcolor. */
-  _p_compute_idraw_bgcolor();
+  _p_compute_idraw_bgcolor (S___(_plotter));
   
   return;
 }
@@ -147,9 +149,10 @@ _idraw_pseudocolor (red, green, blue)
 
 void
 #ifdef _HAVE_PROTOS
-_p_compute_idraw_bgcolor(void)
+_p_compute_idraw_bgcolor(S___(Plotter *_plotter))
 #else
-_p_compute_idraw_bgcolor()
+_p_compute_idraw_bgcolor(S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   double truered, truegreen, trueblue;

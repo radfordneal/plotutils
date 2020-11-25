@@ -12,20 +12,22 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_pencolor (int red, int green, int blue)
+_g_pencolor (R___(Plotter *_plotter) int red, int green, int blue)
 #else
-_g_pencolor (red, green, blue)
+_g_pencolor (R___(_plotter) red, green, blue)
+     S___(Plotter *_plotter;) 
      int red, green, blue;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("pencolor: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "pencolor: invalid operation");
       return -1;
     }
 
   if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath(); /* flush polyline if any */
+    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   if ((red > 0xffff) || (green > 0xffff) || (blue > 0xffff))
     /* OOB switches to default */

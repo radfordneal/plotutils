@@ -37,9 +37,10 @@ const int _fig_cap_style[] =
 
 int
 #ifdef _HAVE_PROTOS
-_f_endpath (void)
+_f_endpath (S___(Plotter *_plotter))
 #else
-_f_endpath ()
+_f_endpath (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   bool closed; 
@@ -49,7 +50,7 @@ _f_endpath ()
 
   if (!_plotter->open)
     {
-      _plotter->error ("endpath: invalid operation");
+      _plotter->error (R___(_plotter) "endpath: invalid operation");
       return -1;
     }
 
@@ -64,7 +65,7 @@ _f_endpath ()
       double xc = _plotter->drawstate->datapoints[1].xc;
       double yc = _plotter->drawstate->datapoints[1].yc;      
 
-      _f_emit_arc (xc, yc, x0, y0, x1, y1);
+      _f_emit_arc (R___(_plotter) xc, yc, x0, y0, x1, y1);
 
       /* reset path storage buffer */
       free (_plotter->drawstate->datapoints);
@@ -99,8 +100,8 @@ _f_endpath ()
      real databuffer up. */
   if (!_plotter->drawstate->points_are_connected)
     {
-      Point saved_pos;
-      GeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
+      plPoint saved_pos;
+      plGeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
       double radius = 0.5 * _plotter->drawstate->line_width;
       int saved_points_in_path = _plotter->drawstate->points_in_path;
       
@@ -110,20 +111,23 @@ _f_endpath ()
       _plotter->drawstate->datapoints_len = 0;
       _plotter->drawstate->points_in_path = 0;
 
-      _plotter->savestate();
-      _plotter->fillcolor (_plotter->drawstate->fgcolor.red, 
+      _plotter->savestate (S___(_plotter));
+      _plotter->pentype (R___(_plotter) 1);
+      _plotter->fillcolor (R___(_plotter)
+			   _plotter->drawstate->fgcolor.red, 
 			   _plotter->drawstate->fgcolor.green, 
 			   _plotter->drawstate->fgcolor.blue);
-      _plotter->filltype (1);
-      _plotter->linewidth (0);
+      _plotter->filltype (R___(_plotter) 1);
+      _plotter->linewidth (R___(_plotter) 0);
 
       _plotter->drawstate->points_are_connected = true;
       for (i = 0; i < saved_points_in_path - (closed ? 1 : 0); i++)
 	/* draw each point as a filled circle, diameter = line width */
-	_plotter->fcircle (saved_datapoints[i].x, saved_datapoints[i].y, 
+	_plotter->fcircle (R___(_plotter)
+			   saved_datapoints[i].x, saved_datapoints[i].y, 
 			   radius);
       _plotter->drawstate->points_are_connected = false;
-      _plotter->restorestate();
+      _plotter->restorestate (S___(_plotter));
       free (saved_datapoints);
       if (closed)
 	_plotter->drawstate->pos = saved_pos; /* restore graphics cursor */
@@ -144,11 +148,11 @@ _f_endpath ()
     }
 
   /* evaluate fig colors lazily, i.e. only when needed */
-  _plotter->set_pen_color();
-  _plotter->set_fill_color();
+  _plotter->set_pen_color (S___(_plotter));
+  _plotter->set_fill_color (S___(_plotter));
   
   /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
-  _f_compute_line_style (&line_style, &nominal_spacing);
+  _f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
 
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
@@ -160,7 +164,8 @@ _f_endpath ()
 	  polyline_subtype,	/* polyline subtype */
 	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
-	  _plotter->drawstate->quantized_device_line_width, 
+	  (_plotter->drawstate->pen_type == 0 ? 0 :
+	   _plotter->drawstate->quantized_device_line_width), 
 	  _plotter->drawstate->fig_fgcolor, /* pen color */
 	  _plotter->drawstate->fig_fillcolor, /* fill color */
 	  _plotter->fig_drawing_depth, /* depth */
@@ -178,7 +183,7 @@ _f_endpath ()
 
   for (i=0; i<_plotter->drawstate->points_in_path; i++)
     {
-      GeneralizedPoint datapoint;
+      plGeneralizedPoint datapoint;
       double xu, yu, xd, yd;
       int device_x, device_y;
 
@@ -221,14 +226,15 @@ _f_endpath ()
 
 void
 #ifdef _HAVE_PROTOS
-_f_emit_arc (double xc, double yc, double x0, double y0, double x1, double y1)
+_f_emit_arc (R___(Plotter *_plotter) double xc, double yc, double x0, double y0, double x1, double y1)
 #else
-_f_emit_arc (xc, yc, x0, y0, x1, y1)
+_f_emit_arc (R___(_plotter) xc, yc, x0, y0, x1, y1)
+     S___(Plotter *_plotter;)
      double xc, yc, x0, y0, x1, y1;
 #endif
 {
-  Point p0, p1, pc, pb;
-  Vector v, v0, v1;
+  plPoint p0, p1, pc, pb;
+  plVector v, v0, v1;
   double cross, radius, nominal_spacing;
   int line_style, orientation;
 
@@ -259,11 +265,11 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
   pb.y = pc.y - orientation * v.x;
       
   /* evaluate fig colors lazily, i.e. only when needed */
-  _plotter->set_pen_color();
-  _plotter->set_fill_color();
+  _plotter->set_pen_color (S___(_plotter));
+  _plotter->set_fill_color (S___(_plotter));
   
   /* compute line style (type of dotting/dashing, spacing of dots/dashes) */
-  _f_compute_line_style (&line_style, &nominal_spacing);
+  _f_compute_line_style (R___(_plotter) &line_style, &nominal_spacing);
 
   /* update xfig's `depth' attribute */
     if (_plotter->fig_drawing_depth > 0)
@@ -276,7 +282,7 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
     /* interchange p0, p1 (since xfig insists that p0, pb, p1 must appear
        in counterclockwise order around the arc) */
     {
-      Point ptmp;
+      plPoint ptmp;
       
       ptmp = p0;
       p0 = p1;
@@ -289,7 +295,8 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
 	  1,			/* open-ended arc subtype */
 	  line_style,		/* Fig line style */
 	  			/* thickness, in Fig display units */
-	  _plotter->drawstate->quantized_device_line_width, 
+	  (_plotter->drawstate->pen_type == 0 ? 0 :
+	   _plotter->drawstate->quantized_device_line_width), 
 	  _plotter->drawstate->fig_fgcolor, /* pen color */
 	  _plotter->drawstate->fig_fillcolor, /* fill color */
 	  _plotter->fig_drawing_depth, /* depth */
@@ -317,9 +324,10 @@ _f_emit_arc (xc, yc, x0, y0, x1, y1)
    notion of `dash length/dot gap' (in Fig display units) */
 void
 #ifdef _HAVE_PROTOS
-_f_compute_line_style (int *style, double *spacing)
+_f_compute_line_style (R___(Plotter *_plotter) int *style, double *spacing)
 #else
-_f_compute_line_style (style, spacing)
+_f_compute_line_style (R___(_plotter) style, spacing)
+     S___(Plotter *_plotter;)
      int *style;
      double *spacing;
 #endif
@@ -373,7 +381,6 @@ _f_compute_line_style (style, spacing)
       int i, num_dashes, cycle_length;
       const int *dash_array;
       double display_size_in_fig_units, min_dash_unit, dash_unit;
-      Displaycoors info;
 
       num_dashes =
 	_line_styles[_plotter->drawstate->line_type].dash_array_len;
@@ -384,10 +391,9 @@ _f_compute_line_style (style, spacing)
       /* multiply cycle length of dash array by device-frame line width in
 	 Fig display units, with a floor on the latter (see comments at
 	 head of file) */
-      info = _plotter->display_coors;
-      display_size_in_fig_units = (_plotter->device_units_per_inch
-				   * DMIN(info.right - info.left, 
-				      info.bottom - info.top)); /* flipped y */
+      display_size_in_fig_units = DMIN(_plotter->xmax - _plotter->xmin, 
+				       /* flipped y */
+				       _plotter->ymin - _plotter->ymax);
       min_dash_unit = MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
 	* FIG_UNITS_TO_FIG_DISPLAY_UNITS(display_size_in_fig_units);
       dash_unit = DMAX(min_dash_unit, _plotter->drawstate->device_line_width);

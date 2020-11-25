@@ -24,24 +24,26 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_fmiterlimit (double new_miter_limit)
+_m_fmiterlimit (R___(Plotter *_plotter) double new_miter_limit)
 #else
-_m_fmiterlimit (new_miter_limit)
+_m_fmiterlimit (R___(_plotter) new_miter_limit)
+     S___(Plotter *_plotter;)
      double new_miter_limit;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fmiterlimit: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fmiterlimit: invalid operation");
       return -1;
     }
 
   /* invoke generic method */
-  _g_fmiterlimit (new_miter_limit);
+  _g_fmiterlimit (R___(_plotter) new_miter_limit);
 
-  _meta_emit_byte ((int)O_FMITERLIMIT);
-  _meta_emit_float (new_miter_limit);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_FMITERLIMIT);
+  _meta_emit_float (R___(_plotter) new_miter_limit);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }

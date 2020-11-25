@@ -71,9 +71,9 @@ LN_S = @LN_S@
 LTALLOCA = @LTALLOCA@
 MAKEINFO = @MAKEINFO@
 NM = @NM@
+OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
-USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
 X_BASIC_LIBS = @X_BASIC_LIBS@
 X_CFLAGS = @X_CFLAGS@
@@ -86,14 +86,17 @@ ps_fonts_in_pcl = @ps_fonts_in_pcl@
 
 lib_LTLIBRARIES = libplotter.la
 
-libplotter_la_LDFLAGS = -version-info 2:0:0
+libplotter_la_LDFLAGS = -version-info 3:0:1
 
-INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOTTER
+INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT -DLIBPLOTTER
 
-GSRC = g_affine.cc g_alabel.cc g_alab_her.cc g_arc.cc g_bez.cc g_bgcolor.cc g_box.cc g_capmod.cc g_circ.cc g_clipper.cc g_closepl.cc g_colors.cc g_colorname.cc g_concat.cc g_cont.cc g_cntrlify.cc g_dash.cc g_dash2.cc g_defplot.cc g_defstate.cc g_ellipse.cc g_endpath.cc g_error.cc g_erase.cc g_filltype.cc g_fillcolor.cc g_fillrule.cc g_flushpl.cc g_fontdb.cc g_fontd2.cc g_fontname.cc g_fontsize.cc g_havecap.cc g_her_glyph.cc g_integer.cc g_iso.cc g_joinmod.cc g_label.cc g_line.cc g_linemod.cc g_linewidth.cc g_mark.cc g_matrix.cc g_miscmi.cc g_miter.cc g_miarc.cc g_mialloc.cc g_mifllarc.cc g_mifllrct.cc g_mifllspn.cc g_mifplycon.cc g_miply.cc g_miplycon.cc g_miplygen.cc g_miplypnt.cc g_miplyutil.cc g_mispans.cc g_miwidelin.cc g_mizerarc.cc g_mizerolin.cc g_move.cc g_openpl.cc g_outbuf.cc g_outfile.cc g_pagetype.cc g_params.cc g_pencolor.cc g_point.cc g_relative.cc g_range.cc g_reststate.cc g_retrieve.cc g_savestate.cc g_space.cc g_textangle.cc g_vector.cc g_write.cc g_xmalloc.cc g_xstring.cc
+MISRC = mi_alloc.cc mi_api.cc mi_arc.cc mi_canvas.cc mi_fllarc.cc mi_fllrct.cc mi_fplycon.cc mi_gc.cc mi_ply.cc mi_plycon.cc mi_plygen.cc mi_plypnt.cc mi_plyutil.cc mi_spans.cc mi_widelin.cc mi_zerarc.cc mi_zerolin.cc 
 
 
-MSRC = m_alabel.cc m_arc.cc m_arcrel.cc m_bez.cc m_bezrel.cc m_bgcolor.cc m_box.cc m_boxrel.cc m_capmod.cc m_circ.cc m_circrel.cc m_closepl.cc m_concat.cc m_cont.cc m_contrel.cc m_dash.cc m_defplot.cc m_earc.cc m_earcrel.cc m_ellipse.cc m_emit.cc m_endpath.cc m_erase.cc m_filltype.cc m_fillcolor.cc m_fillrule.cc m_fontname.cc m_fontsize.cc m_joinmod.cc m_label.cc m_line.cc m_linemod.cc m_linerel.cc m_linewidth.cc m_mark.cc m_markrel.cc m_miter.cc m_move.cc m_moverel.cc m_openpl.cc m_pencolor.cc m_point.cc m_pointrel.cc m_reststate.cc m_savestate.cc m_space.cc m_textangle.cc
+GSRC = g_affine.cc g_alabel.cc g_alab_her.cc g_arc.cc g_bez.cc g_bgcolor.cc g_box.cc g_capmod.cc g_circ.cc g_clipper.cc g_closepl.cc g_colors.cc g_colorname.cc g_concat.cc g_cont.cc g_cntrlify.cc g_dash.cc g_dash2.cc g_defplot.cc g_defstate.cc g_ellipse.cc g_endpath.cc g_error.cc g_erase.cc g_filltype.cc g_fillcolor.cc g_fillmod.cc g_flushpl.cc g_font.cc g_fontdb.cc g_fontd2.cc g_fontname.cc g_fontsize.cc g_havecap.cc g_her_glyph.cc g_integer.cc g_iso.cc g_joinmod.cc g_label.cc g_line.cc g_linemod.cc g_linewidth.cc g_mark.cc g_matrix.cc g_miscmi.cc g_miter.cc g_move.cc g_openpl.cc g_orient.cc g_outbuf.cc g_outfile.cc g_pagetype.cc g_param.cc g_param2.cc g_pencolor.cc g_pentype.cc g_point.cc g_relative.cc g_range.cc g_reststate.cc g_retrieve.cc g_savestate.cc g_space.cc g_textangle.cc g_vector.cc g_write.cc g_xmalloc.cc g_xstring.cc
+
+
+MSRC = m_alabel.cc m_arc.cc m_arcrel.cc m_bez.cc m_bezrel.cc m_bgcolor.cc m_box.cc m_boxrel.cc m_capmod.cc m_circ.cc m_circrel.cc m_closepl.cc m_concat.cc m_cont.cc m_contrel.cc m_dash.cc m_defplot.cc m_earc.cc m_earcrel.cc m_ellipse.cc m_emit.cc m_endpath.cc m_erase.cc m_filltype.cc m_fillcolor.cc m_fillmod.cc m_fontname.cc m_fontsize.cc m_joinmod.cc m_label.cc m_line.cc m_linemod.cc m_linerel.cc m_linewidth.cc m_mark.cc m_markrel.cc m_miter.cc m_move.cc m_moverel.cc m_openpl.cc m_orient.cc m_pencolor.cc m_pentype.cc m_point.cc m_pointrel.cc m_reststate.cc m_savestate.cc m_space.cc m_textangle.cc
 
 
 TSRC = t_attribs.cc t_closepl.cc t_color.cc t_color2.cc t_cont.cc t_defplot.cc t_erase.cc t_openpl.cc t_point.cc t_tek_md.cc t_tek_mv.cc t_tek_vec.cc
@@ -111,27 +114,33 @@ NSRC = n_closepl.cc n_defplot.cc n_ellipse.cc n_endpath.cc n_erase.cc n_openpl.c
 ISRC = i_closepl.cc i_color.cc i_defplot.cc i_ellipse.cc i_endpath.cc i_erase.cc i_openpl.cc i_point.cc i_rle.cc
 
 
+CSRC = c_alab_ps.cc c_attribs.cc c_box.cc c_closepl.cc c_color.cc	c_defplot.cc c_ellipse.cc c_emit.cc c_endpath.cc c_erase.cc c_mark.cc c_openpl.cc c_point.cc
+
+
 PSRC = p_alab_ps.cc p_closepl.cc p_color.cc p_color2.cc p_defplot.cc p_ellipse.cc p_endpath.cc p_erase.cc p_openpl.cc p_point.cc
 
 
-ASRC = a_alab_ps.cc a_attribs.cc a_color.cc a_closepl.cc a_defplot.cc a_endpath.cc a_openpl.cc a_point.cc
+ASRC = a_alab_ps.cc a_attribs.cc a_color.cc a_closepl.cc a_defplot.cc a_erase.cc a_endpath.cc a_openpl.cc a_point.cc
 
 
-XSRC = x_alab_x.cc x_attribs.cc x_box.cc x_closepl.cc x_color.cc x_cont.cc x_defplot.cc x_ellipse.cc x_endpath.cc x_erase.cc x_flushpl.cc x_openpl.cc x_point.cc x_reststate.cc x_retrieve.cc x_savestate.cc
+XSRC = x_alab_x.cc x_attribs.cc x_closepl.cc x_color.cc x_cont.cc x_defplot.cc x_ellipse.cc x_endpath.cc x_erase.cc x_flushpl.cc x_openpl.cc x_point.cc x_reststate.cc x_retrieve.cc x_savestate.cc
 
 
 YSRC = y_closepl.cc y_defplot.cc y_erase.cc y_openpl.cc
-@NO_X_TRUE@ALLSRC = $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(ASRC) $(ISRC) $(NSRC) 
-@NO_X_FALSE@ALLSRC = $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(ASRC) $(ISRC) $(NSRC) $(XSRC) $(YSRC)
+@NO_X_TRUE@ALLSRC = $(MISRC) $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(CSRC) $(PSRC) $(ASRC) $(ISRC) $(NSRC)
+@NO_X_FALSE@ALLSRC = $(MISRC) $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(CSRC) $(PSRC) $(ASRC) $(ISRC) $(NSRC) $(XSRC) $(YSRC)
 
-ALLHEADERS = extern.h g_arc.h g_colorname.h g_control.h g_cntrlify.h g_her_metr.h g_mi.h g_mifllarc.h g_mifply.h g_miline.h g_miply.h g_miscanfill.h g_mispans.h g_miwidelin.h g_mizerarc.h g_jis.h g_pagetype.h g_params.h h_stick.h i_rle.h p_header.h
+MIHEADERS = xmi.h mi_api.h mi_arc.h mi_fllarc.h mi_fply.h mi_gc.h mi_line.h mi_ply.h mi_scanfill.h mi_spans.h mi_widelin.h mi_zerarc.h
 
 
-noinst_HEADERS = $(ALLHEADERS)
+ALLHEADERS = extern.h g_arc.h g_colorname.h g_control.h g_cntrlify.h g_her_metr.h g_jis.h g_pagetype.h h_stick.h i_rle.h p_header.h
 
-CLEANFILES = $(ALLSRC) $(ALLHEADERS)
 
-libplotter_la_SOURCES = $(ALLSRC)
+noinst_HEADERS = $(ALLHEADERS) $(MIHEADERS)
+
+CLEANFILES = apioldcc.cc $(ALLSRC) $(ALLHEADERS) $(MIHEADERS)
+
+libplotter_la_SOURCES = apioldcc.cc $(ALLSRC)
 @NO_X_TRUE@libplotter_la_LIBADD = 
 @NO_X_FALSE@libplotter_la_LIBADD = $(X_LIBS) $(X_TOOLKIT_LIBS) $(X_PRE_LIBS) $(X_BASIC_LIBS) $(X_EXTRA_LIBS)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -146,102 +155,111 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 @NO_X_TRUE@libplotter_la_DEPENDENCIES = 
 @NO_X_FALSE@libplotter_la_DEPENDENCIES = 
-@NO_X_TRUE@libplotter_la_OBJECTS =  g_affine.lo g_alabel.lo \
+@NO_X_TRUE@libplotter_la_OBJECTS =  apioldcc.lo mi_alloc.lo mi_api.lo \
+@NO_X_TRUE@mi_arc.lo mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
+@NO_X_TRUE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo mi_plygen.lo \
+@NO_X_TRUE@mi_plypnt.lo mi_plyutil.lo mi_spans.lo mi_widelin.lo \
+@NO_X_TRUE@mi_zerarc.lo mi_zerolin.lo g_affine.lo g_alabel.lo \
 @NO_X_TRUE@g_alab_her.lo g_arc.lo g_bez.lo g_bgcolor.lo g_box.lo \
 @NO_X_TRUE@g_capmod.lo g_circ.lo g_clipper.lo g_closepl.lo g_colors.lo \
 @NO_X_TRUE@g_colorname.lo g_concat.lo g_cont.lo g_cntrlify.lo g_dash.lo \
 @NO_X_TRUE@g_dash2.lo g_defplot.lo g_defstate.lo g_ellipse.lo \
 @NO_X_TRUE@g_endpath.lo g_error.lo g_erase.lo g_filltype.lo \
-@NO_X_TRUE@g_fillcolor.lo g_fillrule.lo g_flushpl.lo g_fontdb.lo \
-@NO_X_TRUE@g_fontd2.lo g_fontname.lo g_fontsize.lo g_havecap.lo \
-@NO_X_TRUE@g_her_glyph.lo g_integer.lo g_iso.lo g_joinmod.lo g_label.lo \
-@NO_X_TRUE@g_line.lo g_linemod.lo g_linewidth.lo g_mark.lo g_matrix.lo \
-@NO_X_TRUE@g_miscmi.lo g_miter.lo g_miarc.lo g_mialloc.lo g_mifllarc.lo \
-@NO_X_TRUE@g_mifllrct.lo g_mifllspn.lo g_mifplycon.lo g_miply.lo \
-@NO_X_TRUE@g_miplycon.lo g_miplygen.lo g_miplypnt.lo g_miplyutil.lo \
-@NO_X_TRUE@g_mispans.lo g_miwidelin.lo g_mizerarc.lo g_mizerolin.lo \
-@NO_X_TRUE@g_move.lo g_openpl.lo g_outbuf.lo g_outfile.lo g_pagetype.lo \
-@NO_X_TRUE@g_params.lo g_pencolor.lo g_point.lo g_relative.lo \
-@NO_X_TRUE@g_range.lo g_reststate.lo g_retrieve.lo g_savestate.lo \
-@NO_X_TRUE@g_space.lo g_textangle.lo g_vector.lo g_write.lo \
-@NO_X_TRUE@g_xmalloc.lo g_xstring.lo m_alabel.lo m_arc.lo m_arcrel.lo \
-@NO_X_TRUE@m_bez.lo m_bezrel.lo m_bgcolor.lo m_box.lo m_boxrel.lo \
-@NO_X_TRUE@m_capmod.lo m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo \
-@NO_X_TRUE@m_cont.lo m_contrel.lo m_dash.lo m_defplot.lo m_earc.lo \
-@NO_X_TRUE@m_earcrel.lo m_ellipse.lo m_emit.lo m_endpath.lo m_erase.lo \
-@NO_X_TRUE@m_filltype.lo m_fillcolor.lo m_fillrule.lo m_fontname.lo \
-@NO_X_TRUE@m_fontsize.lo m_joinmod.lo m_label.lo m_line.lo m_linemod.lo \
-@NO_X_TRUE@m_linerel.lo m_linewidth.lo m_mark.lo m_markrel.lo \
-@NO_X_TRUE@m_miter.lo m_move.lo m_moverel.lo m_openpl.lo m_pencolor.lo \
-@NO_X_TRUE@m_point.lo m_pointrel.lo m_reststate.lo m_savestate.lo \
-@NO_X_TRUE@m_space.lo m_textangle.lo t_attribs.lo t_closepl.lo \
-@NO_X_TRUE@t_color.lo t_color2.lo t_cont.lo t_defplot.lo t_erase.lo \
-@NO_X_TRUE@t_openpl.lo t_point.lo t_tek_md.lo t_tek_mv.lo t_tek_vec.lo \
-@NO_X_TRUE@h_alab_pcl.lo h_attribs.lo h_circ.lo h_closepl.lo h_color.lo \
-@NO_X_TRUE@h_defplot.lo h_endpath.lo h_box.lo h_font.lo h_openpl.lo \
-@NO_X_TRUE@h_position.lo h_linewidth.lo h_point.lo f_alab_ps.lo \
-@NO_X_TRUE@f_box.lo f_closepl.lo f_color.lo f_color2.lo f_defplot.lo \
-@NO_X_TRUE@f_ellipse.lo f_endpath.lo f_erase.lo f_linewidth.lo \
-@NO_X_TRUE@f_openpl.lo f_point.lo f_retrieve.lo p_alab_ps.lo \
-@NO_X_TRUE@p_closepl.lo p_color.lo p_color2.lo p_defplot.lo \
-@NO_X_TRUE@p_ellipse.lo p_endpath.lo p_erase.lo p_openpl.lo p_point.lo \
-@NO_X_TRUE@a_alab_ps.lo a_attribs.lo a_color.lo a_closepl.lo \
-@NO_X_TRUE@a_defplot.lo a_endpath.lo a_openpl.lo a_point.lo \
-@NO_X_TRUE@i_closepl.lo i_color.lo i_defplot.lo i_ellipse.lo \
-@NO_X_TRUE@i_endpath.lo i_erase.lo i_openpl.lo i_point.lo i_rle.lo \
-@NO_X_TRUE@n_closepl.lo n_defplot.lo n_ellipse.lo n_endpath.lo \
+@NO_X_TRUE@g_fillcolor.lo g_fillmod.lo g_flushpl.lo g_font.lo \
+@NO_X_TRUE@g_fontdb.lo g_fontd2.lo g_fontname.lo g_fontsize.lo \
+@NO_X_TRUE@g_havecap.lo g_her_glyph.lo g_integer.lo g_iso.lo \
+@NO_X_TRUE@g_joinmod.lo g_label.lo g_line.lo g_linemod.lo \
+@NO_X_TRUE@g_linewidth.lo g_mark.lo g_matrix.lo g_miscmi.lo g_miter.lo \
+@NO_X_TRUE@g_move.lo g_openpl.lo g_orient.lo g_outbuf.lo g_outfile.lo \
+@NO_X_TRUE@g_pagetype.lo g_param.lo g_param2.lo g_pencolor.lo \
+@NO_X_TRUE@g_pentype.lo g_point.lo g_relative.lo g_range.lo \
+@NO_X_TRUE@g_reststate.lo g_retrieve.lo g_savestate.lo g_space.lo \
+@NO_X_TRUE@g_textangle.lo g_vector.lo g_write.lo g_xmalloc.lo \
+@NO_X_TRUE@g_xstring.lo m_alabel.lo m_arc.lo m_arcrel.lo m_bez.lo \
+@NO_X_TRUE@m_bezrel.lo m_bgcolor.lo m_box.lo m_boxrel.lo m_capmod.lo \
+@NO_X_TRUE@m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo m_cont.lo \
+@NO_X_TRUE@m_contrel.lo m_dash.lo m_defplot.lo m_earc.lo m_earcrel.lo \
+@NO_X_TRUE@m_ellipse.lo m_emit.lo m_endpath.lo m_erase.lo m_filltype.lo \
+@NO_X_TRUE@m_fillcolor.lo m_fillmod.lo m_fontname.lo m_fontsize.lo \
+@NO_X_TRUE@m_joinmod.lo m_label.lo m_line.lo m_linemod.lo m_linerel.lo \
+@NO_X_TRUE@m_linewidth.lo m_mark.lo m_markrel.lo m_miter.lo m_move.lo \
+@NO_X_TRUE@m_moverel.lo m_openpl.lo m_orient.lo m_pencolor.lo \
+@NO_X_TRUE@m_pentype.lo m_point.lo m_pointrel.lo m_reststate.lo \
+@NO_X_TRUE@m_savestate.lo m_space.lo m_textangle.lo t_attribs.lo \
+@NO_X_TRUE@t_closepl.lo t_color.lo t_color2.lo t_cont.lo t_defplot.lo \
+@NO_X_TRUE@t_erase.lo t_openpl.lo t_point.lo t_tek_md.lo t_tek_mv.lo \
+@NO_X_TRUE@t_tek_vec.lo h_alab_pcl.lo h_attribs.lo h_circ.lo \
+@NO_X_TRUE@h_closepl.lo h_color.lo h_defplot.lo h_endpath.lo h_box.lo \
+@NO_X_TRUE@h_font.lo h_openpl.lo h_position.lo h_linewidth.lo \
+@NO_X_TRUE@h_point.lo f_alab_ps.lo f_box.lo f_closepl.lo f_color.lo \
+@NO_X_TRUE@f_color2.lo f_defplot.lo f_ellipse.lo f_endpath.lo \
+@NO_X_TRUE@f_erase.lo f_linewidth.lo f_openpl.lo f_point.lo \
+@NO_X_TRUE@f_retrieve.lo c_alab_ps.lo c_attribs.lo c_box.lo \
+@NO_X_TRUE@c_closepl.lo c_color.lo c_defplot.lo c_ellipse.lo c_emit.lo \
+@NO_X_TRUE@c_endpath.lo c_erase.lo c_mark.lo c_openpl.lo c_point.lo \
+@NO_X_TRUE@p_alab_ps.lo p_closepl.lo p_color.lo p_color2.lo \
+@NO_X_TRUE@p_defplot.lo p_ellipse.lo p_endpath.lo p_erase.lo \
+@NO_X_TRUE@p_openpl.lo p_point.lo a_alab_ps.lo a_attribs.lo a_color.lo \
+@NO_X_TRUE@a_closepl.lo a_defplot.lo a_erase.lo a_endpath.lo \
+@NO_X_TRUE@a_openpl.lo a_point.lo i_closepl.lo i_color.lo i_defplot.lo \
+@NO_X_TRUE@i_ellipse.lo i_endpath.lo i_erase.lo i_openpl.lo i_point.lo \
+@NO_X_TRUE@i_rle.lo n_closepl.lo n_defplot.lo n_ellipse.lo n_endpath.lo \
 @NO_X_TRUE@n_erase.lo n_openpl.lo n_point.lo
-@NO_X_FALSE@libplotter_la_OBJECTS =  g_affine.lo g_alabel.lo \
+@NO_X_FALSE@libplotter_la_OBJECTS =  apioldcc.lo mi_alloc.lo mi_api.lo \
+@NO_X_FALSE@mi_arc.lo mi_canvas.lo mi_fllarc.lo mi_fllrct.lo \
+@NO_X_FALSE@mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo mi_plygen.lo \
+@NO_X_FALSE@mi_plypnt.lo mi_plyutil.lo mi_spans.lo mi_widelin.lo \
+@NO_X_FALSE@mi_zerarc.lo mi_zerolin.lo g_affine.lo g_alabel.lo \
 @NO_X_FALSE@g_alab_her.lo g_arc.lo g_bez.lo g_bgcolor.lo g_box.lo \
 @NO_X_FALSE@g_capmod.lo g_circ.lo g_clipper.lo g_closepl.lo g_colors.lo \
 @NO_X_FALSE@g_colorname.lo g_concat.lo g_cont.lo g_cntrlify.lo \
 @NO_X_FALSE@g_dash.lo g_dash2.lo g_defplot.lo g_defstate.lo \
 @NO_X_FALSE@g_ellipse.lo g_endpath.lo g_error.lo g_erase.lo \
-@NO_X_FALSE@g_filltype.lo g_fillcolor.lo g_fillrule.lo g_flushpl.lo \
-@NO_X_FALSE@g_fontdb.lo g_fontd2.lo g_fontname.lo g_fontsize.lo \
-@NO_X_FALSE@g_havecap.lo g_her_glyph.lo g_integer.lo g_iso.lo \
-@NO_X_FALSE@g_joinmod.lo g_label.lo g_line.lo g_linemod.lo \
+@NO_X_FALSE@g_filltype.lo g_fillcolor.lo g_fillmod.lo g_flushpl.lo \
+@NO_X_FALSE@g_font.lo g_fontdb.lo g_fontd2.lo g_fontname.lo \
+@NO_X_FALSE@g_fontsize.lo g_havecap.lo g_her_glyph.lo g_integer.lo \
+@NO_X_FALSE@g_iso.lo g_joinmod.lo g_label.lo g_line.lo g_linemod.lo \
 @NO_X_FALSE@g_linewidth.lo g_mark.lo g_matrix.lo g_miscmi.lo g_miter.lo \
-@NO_X_FALSE@g_miarc.lo g_mialloc.lo g_mifllarc.lo g_mifllrct.lo \
-@NO_X_FALSE@g_mifllspn.lo g_mifplycon.lo g_miply.lo g_miplycon.lo \
-@NO_X_FALSE@g_miplygen.lo g_miplypnt.lo g_miplyutil.lo g_mispans.lo \
-@NO_X_FALSE@g_miwidelin.lo g_mizerarc.lo g_mizerolin.lo g_move.lo \
-@NO_X_FALSE@g_openpl.lo g_outbuf.lo g_outfile.lo g_pagetype.lo \
-@NO_X_FALSE@g_params.lo g_pencolor.lo g_point.lo g_relative.lo \
-@NO_X_FALSE@g_range.lo g_reststate.lo g_retrieve.lo g_savestate.lo \
-@NO_X_FALSE@g_space.lo g_textangle.lo g_vector.lo g_write.lo \
-@NO_X_FALSE@g_xmalloc.lo g_xstring.lo m_alabel.lo m_arc.lo m_arcrel.lo \
-@NO_X_FALSE@m_bez.lo m_bezrel.lo m_bgcolor.lo m_box.lo m_boxrel.lo \
-@NO_X_FALSE@m_capmod.lo m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo \
-@NO_X_FALSE@m_cont.lo m_contrel.lo m_dash.lo m_defplot.lo m_earc.lo \
-@NO_X_FALSE@m_earcrel.lo m_ellipse.lo m_emit.lo m_endpath.lo m_erase.lo \
-@NO_X_FALSE@m_filltype.lo m_fillcolor.lo m_fillrule.lo m_fontname.lo \
+@NO_X_FALSE@g_move.lo g_openpl.lo g_orient.lo g_outbuf.lo g_outfile.lo \
+@NO_X_FALSE@g_pagetype.lo g_param.lo g_param2.lo g_pencolor.lo \
+@NO_X_FALSE@g_pentype.lo g_point.lo g_relative.lo g_range.lo \
+@NO_X_FALSE@g_reststate.lo g_retrieve.lo g_savestate.lo g_space.lo \
+@NO_X_FALSE@g_textangle.lo g_vector.lo g_write.lo g_xmalloc.lo \
+@NO_X_FALSE@g_xstring.lo m_alabel.lo m_arc.lo m_arcrel.lo m_bez.lo \
+@NO_X_FALSE@m_bezrel.lo m_bgcolor.lo m_box.lo m_boxrel.lo m_capmod.lo \
+@NO_X_FALSE@m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo m_cont.lo \
+@NO_X_FALSE@m_contrel.lo m_dash.lo m_defplot.lo m_earc.lo m_earcrel.lo \
+@NO_X_FALSE@m_ellipse.lo m_emit.lo m_endpath.lo m_erase.lo \
+@NO_X_FALSE@m_filltype.lo m_fillcolor.lo m_fillmod.lo m_fontname.lo \
 @NO_X_FALSE@m_fontsize.lo m_joinmod.lo m_label.lo m_line.lo \
 @NO_X_FALSE@m_linemod.lo m_linerel.lo m_linewidth.lo m_mark.lo \
 @NO_X_FALSE@m_markrel.lo m_miter.lo m_move.lo m_moverel.lo m_openpl.lo \
-@NO_X_FALSE@m_pencolor.lo m_point.lo m_pointrel.lo m_reststate.lo \
-@NO_X_FALSE@m_savestate.lo m_space.lo m_textangle.lo t_attribs.lo \
-@NO_X_FALSE@t_closepl.lo t_color.lo t_color2.lo t_cont.lo t_defplot.lo \
-@NO_X_FALSE@t_erase.lo t_openpl.lo t_point.lo t_tek_md.lo t_tek_mv.lo \
-@NO_X_FALSE@t_tek_vec.lo h_alab_pcl.lo h_attribs.lo h_circ.lo \
-@NO_X_FALSE@h_closepl.lo h_color.lo h_defplot.lo h_endpath.lo h_box.lo \
-@NO_X_FALSE@h_font.lo h_openpl.lo h_position.lo h_linewidth.lo \
-@NO_X_FALSE@h_point.lo f_alab_ps.lo f_box.lo f_closepl.lo f_color.lo \
-@NO_X_FALSE@f_color2.lo f_defplot.lo f_ellipse.lo f_endpath.lo \
-@NO_X_FALSE@f_erase.lo f_linewidth.lo f_openpl.lo f_point.lo \
-@NO_X_FALSE@f_retrieve.lo p_alab_ps.lo p_closepl.lo p_color.lo \
-@NO_X_FALSE@p_color2.lo p_defplot.lo p_ellipse.lo p_endpath.lo \
-@NO_X_FALSE@p_erase.lo p_openpl.lo p_point.lo a_alab_ps.lo a_attribs.lo \
-@NO_X_FALSE@a_color.lo a_closepl.lo a_defplot.lo a_endpath.lo \
-@NO_X_FALSE@a_openpl.lo a_point.lo i_closepl.lo i_color.lo i_defplot.lo \
-@NO_X_FALSE@i_ellipse.lo i_endpath.lo i_erase.lo i_openpl.lo i_point.lo \
-@NO_X_FALSE@i_rle.lo n_closepl.lo n_defplot.lo n_ellipse.lo \
-@NO_X_FALSE@n_endpath.lo n_erase.lo n_openpl.lo n_point.lo x_alab_x.lo \
-@NO_X_FALSE@x_attribs.lo x_box.lo x_closepl.lo x_color.lo x_cont.lo \
-@NO_X_FALSE@x_defplot.lo x_ellipse.lo x_endpath.lo x_erase.lo \
-@NO_X_FALSE@x_flushpl.lo x_openpl.lo x_point.lo x_reststate.lo \
-@NO_X_FALSE@x_retrieve.lo x_savestate.lo y_closepl.lo y_defplot.lo \
-@NO_X_FALSE@y_erase.lo y_openpl.lo
+@NO_X_FALSE@m_orient.lo m_pencolor.lo m_pentype.lo m_point.lo \
+@NO_X_FALSE@m_pointrel.lo m_reststate.lo m_savestate.lo m_space.lo \
+@NO_X_FALSE@m_textangle.lo t_attribs.lo t_closepl.lo t_color.lo \
+@NO_X_FALSE@t_color2.lo t_cont.lo t_defplot.lo t_erase.lo t_openpl.lo \
+@NO_X_FALSE@t_point.lo t_tek_md.lo t_tek_mv.lo t_tek_vec.lo \
+@NO_X_FALSE@h_alab_pcl.lo h_attribs.lo h_circ.lo h_closepl.lo \
+@NO_X_FALSE@h_color.lo h_defplot.lo h_endpath.lo h_box.lo h_font.lo \
+@NO_X_FALSE@h_openpl.lo h_position.lo h_linewidth.lo h_point.lo \
+@NO_X_FALSE@f_alab_ps.lo f_box.lo f_closepl.lo f_color.lo f_color2.lo \
+@NO_X_FALSE@f_defplot.lo f_ellipse.lo f_endpath.lo f_erase.lo \
+@NO_X_FALSE@f_linewidth.lo f_openpl.lo f_point.lo f_retrieve.lo \
+@NO_X_FALSE@c_alab_ps.lo c_attribs.lo c_box.lo c_closepl.lo c_color.lo \
+@NO_X_FALSE@c_defplot.lo c_ellipse.lo c_emit.lo c_endpath.lo c_erase.lo \
+@NO_X_FALSE@c_mark.lo c_openpl.lo c_point.lo p_alab_ps.lo p_closepl.lo \
+@NO_X_FALSE@p_color.lo p_color2.lo p_defplot.lo p_ellipse.lo \
+@NO_X_FALSE@p_endpath.lo p_erase.lo p_openpl.lo p_point.lo a_alab_ps.lo \
+@NO_X_FALSE@a_attribs.lo a_color.lo a_closepl.lo a_defplot.lo \
+@NO_X_FALSE@a_erase.lo a_endpath.lo a_openpl.lo a_point.lo i_closepl.lo \
+@NO_X_FALSE@i_color.lo i_defplot.lo i_ellipse.lo i_endpath.lo \
+@NO_X_FALSE@i_erase.lo i_openpl.lo i_point.lo i_rle.lo n_closepl.lo \
+@NO_X_FALSE@n_defplot.lo n_ellipse.lo n_endpath.lo n_erase.lo \
+@NO_X_FALSE@n_openpl.lo n_point.lo x_alab_x.lo x_attribs.lo \
+@NO_X_FALSE@x_closepl.lo x_color.lo x_cont.lo x_defplot.lo x_ellipse.lo \
+@NO_X_FALSE@x_endpath.lo x_erase.lo x_flushpl.lo x_openpl.lo x_point.lo \
+@NO_X_FALSE@x_reststate.lo x_retrieve.lo x_savestate.lo y_closepl.lo \
+@NO_X_FALSE@y_defplot.lo y_erase.lo y_openpl.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -249,7 +267,7 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 HEADERS =  $(noinst_HEADERS)
 
-DIST_COMMON =  Makefile.am Makefile.in
+DIST_COMMON =  README Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -396,9 +414,39 @@ a_defplot.lo a_defplot.o : a_defplot.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 a_endpath.lo a_endpath.o : a_endpath.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
+a_erase.lo a_erase.o : a_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
 a_openpl.lo a_openpl.o : a_openpl.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 a_point.lo a_point.o : a_point.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+apioldcc.lo apioldcc.o : apioldcc.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+c_alab_ps.lo c_alab_ps.o : c_alab_ps.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+c_attribs.lo c_attribs.o : c_attribs.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+c_box.lo c_box.o : c_box.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+c_closepl.lo c_closepl.o : c_closepl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+c_color.lo c_color.o : c_color.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+c_defplot.lo c_defplot.o : c_defplot.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+c_ellipse.lo c_ellipse.o : c_ellipse.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+c_emit.lo c_emit.o : c_emit.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+c_endpath.lo c_endpath.o : c_endpath.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+c_erase.lo c_erase.o : c_erase.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+c_mark.lo c_mark.o : c_mark.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+c_openpl.lo c_openpl.o : c_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+c_point.lo c_point.o : c_point.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 f_alab_ps.lo f_alab_ps.o : f_alab_ps.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
@@ -478,12 +526,14 @@ g_error.lo g_error.o : g_error.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 g_fillcolor.lo g_fillcolor.o : g_fillcolor.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
-g_fillrule.lo g_fillrule.o : g_fillrule.cc ../include/sys-defines.h \
+g_fillmod.lo g_fillmod.o : g_fillmod.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 g_filltype.lo g_filltype.o : g_filltype.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 g_flushpl.lo g_flushpl.o : g_flushpl.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
+g_font.lo g_font.o : g_font.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
 g_fontd2.lo g_fontd2.o : g_fontd2.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 g_fontdb.lo g_fontdb.o : g_fontdb.cc ../include/sys-defines.h \
@@ -514,46 +564,15 @@ g_mark.lo g_mark.o : g_mark.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 g_matrix.lo g_matrix.o : g_matrix.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
-g_mialloc.lo g_mialloc.o : g_mialloc.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
-g_miarc.lo g_miarc.o : g_miarc.cc ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h g_mi.h g_mifply.h g_mifllarc.h
-g_mifllarc.lo g_mifllarc.o : g_mifllarc.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_mifllarc.h
-g_mifllrct.lo g_mifllrct.o : g_mifllrct.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h
-g_mifllspn.lo g_mifllspn.o : g_mifllspn.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h
-g_mifplycon.lo g_mifplycon.o : g_mifplycon.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_mifply.h
-g_miply.lo g_miply.o : g_miply.cc ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h g_mi.h
-g_miplycon.lo g_miplycon.o : g_miplycon.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_miscanfill.h
-g_miplygen.lo g_miplygen.o : g_miplygen.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_miscanfill.h \
-	g_miply.h
-g_miplypnt.lo g_miplypnt.o : g_miplypnt.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h
-g_miplyutil.lo g_miplyutil.o : g_miplyutil.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_miscanfill.h \
-	g_miply.h
 g_miscmi.lo g_miscmi.o : g_miscmi.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h
-g_mispans.lo g_mispans.o : g_mispans.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_mispans.h
+	../config.h extern.h ../include/plotter.h xmi.h
 g_miter.lo g_miter.o : g_miter.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
-g_miwidelin.lo g_miwidelin.o : g_miwidelin.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_mispans.h \
-	g_miwidelin.h
-g_mizerarc.lo g_mizerarc.o : g_mizerarc.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_mizerarc.h
-g_mizerolin.lo g_mizerolin.o : g_mizerolin.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h g_miline.h
 g_move.lo g_move.o : g_move.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 g_openpl.lo g_openpl.o : g_openpl.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_orient.lo g_orient.o : g_orient.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 g_outbuf.lo g_outbuf.o : g_outbuf.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
@@ -561,9 +580,13 @@ g_outfile.lo g_outfile.o : g_outfile.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 g_pagetype.lo g_pagetype.o : g_pagetype.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h g_pagetype.h
-g_params.lo g_params.o : g_params.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_params.h
+g_param.lo g_param.o : g_param.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h
+g_param2.lo g_param2.o : g_param2.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
 g_pencolor.lo g_pencolor.o : g_pencolor.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+g_pentype.lo g_pentype.o : g_pentype.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 g_point.lo g_point.o : g_point.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
@@ -616,21 +639,21 @@ h_point.lo h_point.o : h_point.cc ../include/sys-defines.h ../config.h \
 h_position.lo h_position.o : h_position.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 i_closepl.lo i_closepl.o : i_closepl.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h i_rle.h
+	../config.h extern.h ../include/plotter.h i_rle.h xmi.h
 i_color.lo i_color.o : i_color.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 i_defplot.lo i_defplot.o : i_defplot.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
+	../config.h extern.h ../include/plotter.h xmi.h
 i_ellipse.lo i_ellipse.o : i_ellipse.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h
+	../config.h extern.h ../include/plotter.h xmi.h
 i_endpath.lo i_endpath.o : i_endpath.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h
+	../config.h extern.h ../include/plotter.h xmi.h
 i_erase.lo i_erase.o : i_erase.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 i_openpl.lo i_openpl.o : i_openpl.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
+	../config.h extern.h ../include/plotter.h xmi.h
 i_point.lo i_point.o : i_point.cc ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
+	extern.h ../include/plotter.h xmi.h
 i_rle.lo i_rle.o : i_rle.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h i_rle.h
 m_alabel.lo m_alabel.o : m_alabel.cc ../include/sys-defines.h \
@@ -681,7 +704,7 @@ m_erase.lo m_erase.o : m_erase.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 m_fillcolor.lo m_fillcolor.o : m_fillcolor.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
-m_fillrule.lo m_fillrule.o : m_fillrule.cc ../include/sys-defines.h \
+m_fillmod.lo m_fillmod.o : m_fillmod.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 m_filltype.lo m_filltype.o : m_filltype.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
@@ -713,7 +736,11 @@ m_moverel.lo m_moverel.o : m_moverel.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 m_openpl.lo m_openpl.o : m_openpl.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
+m_orient.lo m_orient.o : m_orient.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
 m_pencolor.lo m_pencolor.o : m_pencolor.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h
+m_pentype.lo m_pentype.o : m_pentype.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 m_point.lo m_point.o : m_point.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
@@ -727,20 +754,68 @@ m_space.lo m_space.o : m_space.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 m_textangle.lo m_textangle.o : m_textangle.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
+mi_alloc.lo mi_alloc.o : mi_alloc.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_api.h
+mi_api.lo mi_api.o : mi_api.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h xmi.h mi_spans.h mi_gc.h mi_api.h
+mi_arc.lo mi_arc.o : mi_arc.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h xmi.h mi_spans.h mi_gc.h mi_api.h \
+	mi_arc.h mi_fply.h mi_fllarc.h
+mi_canvas.lo mi_canvas.o : mi_canvas.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_api.h
+mi_fllarc.lo mi_fllarc.o : mi_fllarc.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_gc.h mi_api.h mi_fllarc.h
+mi_fllrct.lo mi_fllrct.o : mi_fllrct.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_gc.h mi_api.h
+mi_fplycon.lo mi_fplycon.o : mi_fplycon.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_api.h mi_fply.h
+mi_gc.lo mi_gc.o : mi_gc.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h xmi.h mi_spans.h mi_gc.h mi_api.h
+mi_ply.lo mi_ply.o : mi_ply.cc ../include/sys-defines.h ../config.h \
+	extern.h ../include/plotter.h xmi.h mi_spans.h mi_gc.h mi_api.h
+mi_plycon.lo mi_plycon.o : mi_plycon.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_gc.h mi_api.h mi_scanfill.h
+mi_plygen.lo mi_plygen.o : mi_plygen.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_gc.h mi_api.h mi_scanfill.h mi_ply.h
+mi_plypnt.lo mi_plypnt.o : mi_plypnt.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_gc.h mi_api.h
+mi_plyutil.lo mi_plyutil.o : mi_plyutil.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_api.h mi_scanfill.h mi_ply.h
+mi_spans.lo mi_spans.o : mi_spans.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_api.h
+mi_widelin.lo mi_widelin.o : mi_widelin.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_gc.h mi_api.h mi_widelin.h
+mi_zerarc.lo mi_zerarc.o : mi_zerarc.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_gc.h mi_api.h mi_arc.h mi_zerarc.h
+mi_zerolin.lo mi_zerolin.o : mi_zerolin.cc ../include/sys-defines.h \
+	../config.h extern.h ../include/plotter.h xmi.h mi_spans.h \
+	mi_gc.h mi_api.h mi_line.h
 n_closepl.lo n_closepl.o : n_closepl.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
+	../config.h extern.h ../include/plotter.h xmi.h
 n_defplot.lo n_defplot.o : n_defplot.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
+	../config.h extern.h ../include/plotter.h xmi.h
 n_ellipse.lo n_ellipse.o : n_ellipse.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h
+	../config.h extern.h ../include/plotter.h xmi.h
 n_endpath.lo n_endpath.o : n_endpath.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h g_mi.h
+	../config.h extern.h ../include/plotter.h xmi.h
 n_erase.lo n_erase.o : n_erase.cc ../include/sys-defines.h ../config.h \
 	extern.h ../include/plotter.h
 n_openpl.lo n_openpl.o : n_openpl.cc ../include/sys-defines.h \
-	../config.h extern.h ../include/plotter.h
+	../config.h extern.h ../include/plotter.h xmi.h
 n_point.lo n_point.o : n_point.cc ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
+	extern.h ../include/plotter.h xmi.h
 p_alab_ps.lo p_alab_ps.o : p_alab_ps.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 p_closepl.lo p_closepl.o : p_closepl.cc ../include/sys-defines.h \
@@ -789,8 +864,6 @@ x_alab_x.lo x_alab_x.o : x_alab_x.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 x_attribs.lo x_attribs.o : x_attribs.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
-x_box.lo x_box.o : x_box.cc ../include/sys-defines.h ../config.h \
-	extern.h ../include/plotter.h
 x_closepl.lo x_closepl.o : x_closepl.cc ../include/sys-defines.h \
 	../config.h extern.h ../include/plotter.h
 x_color.lo x_color.o : x_color.cc ../include/sys-defines.h ../config.h \
@@ -904,6 +977,9 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
+apioldcc.cc: $(top_srcdir)/libplot/apioldcc.c $(ALLHEADERS)
+	@rm -f apioldcc.cc ; if $(LN_S) $(top_srcdir)/libplot/apioldcc.c apioldcc.cc ; then true ; else cp -p $(top_srcdir)/libplot/apioldcc.c apioldcc.cc ; fi
+
 a_alab_ps.cc: $(top_srcdir)/libplot/a_alab_ps.c $(ALLHEADERS)
 	@rm -f a_alab_ps.cc ; if $(LN_S) $(top_srcdir)/libplot/a_alab_ps.c a_alab_ps.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_alab_ps.c a_alab_ps.cc ; fi
 
@@ -921,6 +997,9 @@ a_defplot.cc: $(top_srcdir)/libplot/a_defplot.c $(ALLHEADERS)
 
 a_endpath.cc: $(top_srcdir)/libplot/a_endpath.c $(ALLHEADERS)
 	@rm -f a_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/a_endpath.c a_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_endpath.c a_endpath.cc ; fi
+
+a_erase.cc: $(top_srcdir)/libplot/a_erase.c $(ALLHEADERS)
+	@rm -f a_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/a_erase.c a_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_erase.c a_erase.cc ; fi
 
 a_openpl.cc: $(top_srcdir)/libplot/a_openpl.c $(ALLHEADERS)
 	@rm -f a_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/a_openpl.c a_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/a_openpl.c a_openpl.cc ; fi
@@ -1042,14 +1121,17 @@ g_error.cc: $(top_srcdir)/libplot/g_error.c $(ALLHEADERS)
 g_fillcolor.cc: $(top_srcdir)/libplot/g_fillcolor.c $(ALLHEADERS)
 	@rm -f g_fillcolor.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fillcolor.c g_fillcolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fillcolor.c g_fillcolor.cc ; fi
 
-g_fillrule.cc: $(top_srcdir)/libplot/g_fillrule.c $(ALLHEADERS)
-	@rm -f g_fillrule.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fillrule.c g_fillrule.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fillrule.c g_fillrule.cc ; fi
+g_fillmod.cc: $(top_srcdir)/libplot/g_fillmod.c $(ALLHEADERS)
+	@rm -f g_fillmod.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fillmod.c g_fillmod.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fillmod.c g_fillmod.cc ; fi
 
 g_filltype.cc: $(top_srcdir)/libplot/g_filltype.c $(ALLHEADERS)
 	@rm -f g_filltype.cc ; if $(LN_S) $(top_srcdir)/libplot/g_filltype.c g_filltype.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_filltype.c g_filltype.cc ; fi
 
 g_flushpl.cc: $(top_srcdir)/libplot/g_flushpl.c $(ALLHEADERS)
 	@rm -f g_flushpl.cc ; if $(LN_S) $(top_srcdir)/libplot/g_flushpl.c g_flushpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_flushpl.c g_flushpl.cc ; fi
+
+g_font.cc: $(top_srcdir)/libplot/g_font.c $(ALLHEADERS)
+	@rm -f g_font.cc ; if $(LN_S) $(top_srcdir)/libplot/g_font.c g_font.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_font.c g_font.cc ; fi
 
 g_fontd2.cc: $(top_srcdir)/libplot/g_fontd2.c $(ALLHEADERS)
 	@rm -f g_fontd2.cc ; if $(LN_S) $(top_srcdir)/libplot/g_fontd2.c g_fontd2.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_fontd2.c g_fontd2.cc ; fi
@@ -1102,56 +1184,14 @@ g_miscmi.cc: $(top_srcdir)/libplot/g_miscmi.c $(ALLHEADERS)
 g_miter.cc: $(top_srcdir)/libplot/g_miter.c $(ALLHEADERS)
 	@rm -f g_miter.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miter.c g_miter.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miter.c g_miter.cc ; fi
 
-g_mialloc.cc: $(top_srcdir)/libplot/g_mialloc.c $(ALLHEADERS)
-	@rm -f g_mialloc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mialloc.c g_mialloc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mialloc.c g_mialloc.cc ; fi
-
-g_miarc.cc: $(top_srcdir)/libplot/g_miarc.c $(ALLHEADERS)
-	@rm -f g_miarc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miarc.c g_miarc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miarc.c g_miarc.cc ; fi
-
-g_mifllarc.cc: $(top_srcdir)/libplot/g_mifllarc.c $(ALLHEADERS)
-	@rm -f g_mifllarc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mifllarc.c g_mifllarc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mifllarc.c g_mifllarc.cc ; fi
-
-g_mifllrct.cc: $(top_srcdir)/libplot/g_mifllrct.c $(ALLHEADERS)
-	@rm -f g_mifllrct.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mifllrct.c g_mifllrct.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mifllrct.c g_mifllrct.cc ; fi
-
-g_mifllspn.cc: $(top_srcdir)/libplot/g_mifllspn.c $(ALLHEADERS)
-	@rm -f g_mifllspn.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mifllspn.c g_mifllspn.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mifllspn.c g_mifllspn.cc ; fi
-
-g_mifplycon.cc: $(top_srcdir)/libplot/g_mifplycon.c $(ALLHEADERS)
-	@rm -f g_mifplycon.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mifplycon.c g_mifplycon.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mifplycon.c g_mifplycon.cc ; fi
-
-g_miply.cc: $(top_srcdir)/libplot/g_miply.c $(ALLHEADERS)
-	@rm -f g_miply.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miply.c g_miply.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miply.c g_miply.cc ; fi
-
-g_miplycon.cc: $(top_srcdir)/libplot/g_miplycon.c $(ALLHEADERS)
-	@rm -f g_miplycon.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miplycon.c g_miplycon.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miplycon.c g_miplycon.cc ; fi
-
-g_miplygen.cc: $(top_srcdir)/libplot/g_miplygen.c $(ALLHEADERS)
-	@rm -f g_miplygen.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miplygen.c g_miplygen.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miplygen.c g_miplygen.cc ; fi
-
-g_miplypnt.cc: $(top_srcdir)/libplot/g_miplypnt.c $(ALLHEADERS)
-	@rm -f g_miplypnt.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miplypnt.c g_miplypnt.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miplypnt.c g_miplypnt.cc ; fi
-
-g_miplyutil.cc: $(top_srcdir)/libplot/g_miplyutil.c $(ALLHEADERS)
-	@rm -f g_miplyutil.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miplyutil.c g_miplyutil.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miplyutil.c g_miplyutil.cc ; fi
-
-g_mispans.cc: $(top_srcdir)/libplot/g_mispans.c $(ALLHEADERS)
-	@rm -f g_mispans.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mispans.c g_mispans.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mispans.c g_mispans.cc ; fi
-
-g_miwidelin.cc: $(top_srcdir)/libplot/g_miwidelin.c $(ALLHEADERS)
-	@rm -f g_miwidelin.cc ; if $(LN_S) $(top_srcdir)/libplot/g_miwidelin.c g_miwidelin.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_miwidelin.c g_miwidelin.cc ; fi
-
-g_mizerarc.cc: $(top_srcdir)/libplot/g_mizerarc.c $(ALLHEADERS)
-	@rm -f g_mizerarc.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mizerarc.c g_mizerarc.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mizerarc.c g_mizerarc.cc ; fi
-
-g_mizerolin.cc: $(top_srcdir)/libplot/g_mizerolin.c $(ALLHEADERS)
-	@rm -f g_mizerolin.cc ; if $(LN_S) $(top_srcdir)/libplot/g_mizerolin.c g_mizerolin.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_mizerolin.c g_mizerolin.cc ; fi
-
 g_move.cc: $(top_srcdir)/libplot/g_move.c $(ALLHEADERS)
 	@rm -f g_move.cc ; if $(LN_S) $(top_srcdir)/libplot/g_move.c g_move.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_move.c g_move.cc ; fi
 
 g_openpl.cc: $(top_srcdir)/libplot/g_openpl.c $(ALLHEADERS)
 	@rm -f g_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/g_openpl.c g_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_openpl.c g_openpl.cc ; fi
+
+g_orient.cc: $(top_srcdir)/libplot/g_orient.c $(ALLHEADERS)
+	@rm -f g_orient.cc ; if $(LN_S) $(top_srcdir)/libplot/g_orient.c g_orient.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_orient.c g_orient.cc ; fi
 
 g_outbuf.cc: $(top_srcdir)/libplot/g_outbuf.c $(ALLHEADERS)
 	@rm -f g_outbuf.cc ; if $(LN_S) $(top_srcdir)/libplot/g_outbuf.c g_outbuf.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_outbuf.c g_outbuf.cc ; fi
@@ -1162,11 +1202,17 @@ g_outfile.cc: $(top_srcdir)/libplot/g_outfile.c $(ALLHEADERS)
 g_pagetype.cc: $(top_srcdir)/libplot/g_pagetype.c $(ALLHEADERS)
 	@rm -f g_pagetype.cc ; if $(LN_S) $(top_srcdir)/libplot/g_pagetype.c g_pagetype.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_pagetype.c g_pagetype.cc ; fi
 
-g_params.cc: $(top_srcdir)/libplot/g_params.c $(ALLHEADERS)
-	@rm -f g_params.cc ; if $(LN_S) $(top_srcdir)/libplot/g_params.c g_params.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_params.c g_params.cc ; fi
+g_param.cc: $(top_srcdir)/libplot/g_param.c $(ALLHEADERS)
+	@rm -f g_param.cc ; if $(LN_S) $(top_srcdir)/libplot/g_param.c g_param.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_param.c g_param.cc ; fi
+
+g_param2.cc: $(top_srcdir)/libplot/g_param2.c $(ALLHEADERS)
+	@rm -f g_param2.cc ; if $(LN_S) $(top_srcdir)/libplot/g_param2.c g_param2.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_param2.c g_param2.cc ; fi
 
 g_pencolor.cc: $(top_srcdir)/libplot/g_pencolor.c $(ALLHEADERS)
 	@rm -f g_pencolor.cc ; if $(LN_S) $(top_srcdir)/libplot/g_pencolor.c g_pencolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_pencolor.c g_pencolor.cc ; fi
+
+g_pentype.cc: $(top_srcdir)/libplot/g_pentype.c $(ALLHEADERS)
+	@rm -f g_pentype.cc ; if $(LN_S) $(top_srcdir)/libplot/g_pentype.c g_pentype.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_pentype.c g_pentype.cc ; fi
 
 g_point.cc: $(top_srcdir)/libplot/g_point.c $(ALLHEADERS)
 	@rm -f g_point.cc ; if $(LN_S) $(top_srcdir)/libplot/g_point.c g_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/g_point.c g_point.cc ; fi
@@ -1363,8 +1409,8 @@ m_erase.cc: $(top_srcdir)/libplot/m_erase.c $(ALLHEADERS)
 m_fillcolor.cc: $(top_srcdir)/libplot/m_fillcolor.c $(ALLHEADERS)
 	@rm -f m_fillcolor.cc ; if $(LN_S) $(top_srcdir)/libplot/m_fillcolor.c m_fillcolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_fillcolor.c m_fillcolor.cc ; fi
 
-m_fillrule.cc: $(top_srcdir)/libplot/m_fillrule.c $(ALLHEADERS)
-	@rm -f m_fillrule.cc ; if $(LN_S) $(top_srcdir)/libplot/m_fillrule.c m_fillrule.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_fillrule.c m_fillrule.cc ; fi
+m_fillmod.cc: $(top_srcdir)/libplot/m_fillmod.c $(ALLHEADERS)
+	@rm -f m_fillmod.cc ; if $(LN_S) $(top_srcdir)/libplot/m_fillmod.c m_fillmod.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_fillmod.c m_fillmod.cc ; fi
 
 m_filltype.cc: $(top_srcdir)/libplot/m_filltype.c $(ALLHEADERS)
 	@rm -f m_filltype.cc ; if $(LN_S) $(top_srcdir)/libplot/m_filltype.c m_filltype.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_filltype.c m_filltype.cc ; fi
@@ -1411,8 +1457,14 @@ m_moverel.cc: $(top_srcdir)/libplot/m_moverel.c $(ALLHEADERS)
 m_openpl.cc: $(top_srcdir)/libplot/m_openpl.c $(ALLHEADERS)
 	@rm -f m_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/m_openpl.c m_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_openpl.c m_openpl.cc ; fi
 
+m_orient.cc: $(top_srcdir)/libplot/m_orient.c $(ALLHEADERS)
+	@rm -f m_orient.cc ; if $(LN_S) $(top_srcdir)/libplot/m_orient.c m_orient.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_orient.c m_orient.cc ; fi
+
 m_pencolor.cc: $(top_srcdir)/libplot/m_pencolor.c $(ALLHEADERS)
 	@rm -f m_pencolor.cc ; if $(LN_S) $(top_srcdir)/libplot/m_pencolor.c m_pencolor.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_pencolor.c m_pencolor.cc ; fi
+
+m_pentype.cc: $(top_srcdir)/libplot/m_pentype.c $(ALLHEADERS)
+	@rm -f m_pentype.cc ; if $(LN_S) $(top_srcdir)/libplot/m_pentype.c m_pentype.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_pentype.c m_pentype.cc ; fi
 
 m_point.cc: $(top_srcdir)/libplot/m_point.c $(ALLHEADERS)
 	@rm -f m_point.cc ; if $(LN_S) $(top_srcdir)/libplot/m_point.c m_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_point.c m_point.cc ; fi
@@ -1431,6 +1483,45 @@ m_space.cc: $(top_srcdir)/libplot/m_space.c $(ALLHEADERS)
 
 m_textangle.cc: $(top_srcdir)/libplot/m_textangle.c $(ALLHEADERS)
 	@rm -f m_textangle.cc ; if $(LN_S) $(top_srcdir)/libplot/m_textangle.c m_textangle.cc ; then true ; else cp -p $(top_srcdir)/libplot/m_textangle.c m_textangle.cc ; fi
+
+c_alab_ps.cc: $(top_srcdir)/libplot/c_alab_ps.c $(ALLHEADERS)
+	@rm -f c_alab_ps.cc ; if $(LN_S) $(top_srcdir)/libplot/c_alab_ps.c c_alab_ps.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_alab_ps.c c_alab_ps.cc ; fi
+
+c_attribs.cc: $(top_srcdir)/libplot/c_attribs.c $(ALLHEADERS)
+	@rm -f c_attribs.cc ; if $(LN_S) $(top_srcdir)/libplot/c_attribs.c c_attribs.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_attribs.c c_attribs.cc ; fi
+
+c_box.cc: $(top_srcdir)/libplot/c_box.c $(ALLHEADERS)
+	@rm -f c_box.cc ; if $(LN_S) $(top_srcdir)/libplot/c_box.c c_box.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_box.c c_box.cc ; fi
+
+c_closepl.cc: $(top_srcdir)/libplot/c_closepl.c $(ALLHEADERS)
+	@rm -f c_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/c_closepl.c c_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_closepl.c c_closepl.cc ; fi
+
+c_color.cc: $(top_srcdir)/libplot/c_color.c $(ALLHEADERS)
+	@rm -f c_color.cc ; if $(LN_S) $(top_srcdir)/libplot/c_color.c c_color.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_color.c c_color.cc ; fi
+
+c_defplot.cc: $(top_srcdir)/libplot/c_defplot.c $(ALLHEADERS)
+	@rm -f c_defplot.cc ; if $(LN_S) $(top_srcdir)/libplot/c_defplot.c c_defplot.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_defplot.c c_defplot.cc ; fi
+
+c_ellipse.cc: $(top_srcdir)/libplot/c_ellipse.c $(ALLHEADERS)
+	@rm -f c_ellipse.cc ; if $(LN_S) $(top_srcdir)/libplot/c_ellipse.c c_ellipse.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_ellipse.c c_ellipse.cc ; fi
+
+c_emit.cc: $(top_srcdir)/libplot/c_emit.c $(ALLHEADERS)
+	@rm -f c_emit.cc ; if $(LN_S) $(top_srcdir)/libplot/c_emit.c c_emit.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_emit.c c_emit.cc ; fi
+
+c_endpath.cc: $(top_srcdir)/libplot/c_endpath.c $(ALLHEADERS)
+	@rm -f c_endpath.cc ; if $(LN_S) $(top_srcdir)/libplot/c_endpath.c c_endpath.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_endpath.c c_endpath.cc ; fi
+
+c_erase.cc: $(top_srcdir)/libplot/c_erase.c $(ALLHEADERS)
+	@rm -f c_erase.cc ; if $(LN_S) $(top_srcdir)/libplot/c_erase.c c_erase.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_erase.c c_erase.cc ; fi
+
+c_mark.cc: $(top_srcdir)/libplot/c_mark.c $(ALLHEADERS)
+	@rm -f c_mark.cc ; if $(LN_S) $(top_srcdir)/libplot/c_mark.c c_mark.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_mark.c c_mark.cc ; fi
+
+c_openpl.cc: $(top_srcdir)/libplot/c_openpl.c $(ALLHEADERS)
+	@rm -f c_openpl.cc ; if $(LN_S) $(top_srcdir)/libplot/c_openpl.c c_openpl.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_openpl.c c_openpl.cc ; fi
+
+c_point.cc: $(top_srcdir)/libplot/c_point.c $(ALLHEADERS)
+	@rm -f c_point.cc ; if $(LN_S) $(top_srcdir)/libplot/c_point.c c_point.cc ; then true ; else cp -p $(top_srcdir)/libplot/c_point.c c_point.cc ; fi
 
 p_alab_ps.cc: $(top_srcdir)/libplot/p_alab_ps.c $(ALLHEADERS)
 	@rm -f p_alab_ps.cc ; if $(LN_S) $(top_srcdir)/libplot/p_alab_ps.c p_alab_ps.cc ; then true ; else cp -p $(top_srcdir)/libplot/p_alab_ps.c p_alab_ps.cc ; fi
@@ -1504,9 +1595,6 @@ x_alab_x.cc: $(top_srcdir)/libplot/x_alab_x.c $(ALLHEADERS)
 x_attribs.cc: $(top_srcdir)/libplot/x_attribs.c $(ALLHEADERS)
 	@rm -f x_attribs.cc ; if $(LN_S) $(top_srcdir)/libplot/x_attribs.c x_attribs.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_attribs.c x_attribs.cc ; fi
 
-x_box.cc: $(top_srcdir)/libplot/x_box.c $(ALLHEADERS)
-	@rm -f x_box.cc ; if $(LN_S) $(top_srcdir)/libplot/x_box.c x_box.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_box.c x_box.cc ; fi
-
 x_closepl.cc: $(top_srcdir)/libplot/x_closepl.c $(ALLHEADERS)
 	@rm -f x_closepl.cc ; if $(LN_S) $(top_srcdir)/libplot/x_closepl.c x_closepl.cc ; then true ; else cp -p $(top_srcdir)/libplot/x_closepl.c x_closepl.cc ; fi
 
@@ -1579,38 +1667,8 @@ g_her_metr.h: $(top_srcdir)/libplot/g_her_metr.h
 g_jis.h: $(top_srcdir)/libplot/g_jis.h
 	@rm -f g_jis.h ; if $(LN_S) $(top_srcdir)/libplot/g_jis.h g_jis.h ; then true ; else cp -p $(top_srcdir)/libplot/g_jis.h g_jis.h ; fi
 
-g_mi.h: $(top_srcdir)/libplot/g_mi.h
-	@rm -f g_mi.h ; if $(LN_S) $(top_srcdir)/libplot/g_mi.h g_mi.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mi.h g_mi.h ; fi
-
-g_mifllarc.h: $(top_srcdir)/libplot/g_mifllarc.h
-	@rm -f g_mifllarc.h ; if $(LN_S) $(top_srcdir)/libplot/g_mifllarc.h g_mifllarc.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mifllarc.h g_mifllarc.h ; fi
-
-g_mifply.h: $(top_srcdir)/libplot/g_mifply.h
-	@rm -f g_mifply.h ; if $(LN_S) $(top_srcdir)/libplot/g_mifply.h g_mifply.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mifply.h g_mifply.h ; fi
-
-g_miline.h: $(top_srcdir)/libplot/g_miline.h
-	@rm -f g_miline.h ; if $(LN_S) $(top_srcdir)/libplot/g_miline.h g_miline.h ; then true ; else cp -p $(top_srcdir)/libplot/g_miline.h g_miline.h ; fi
-
-g_miply.h: $(top_srcdir)/libplot/g_miply.h
-	@rm -f g_miply.h ; if $(LN_S) $(top_srcdir)/libplot/g_miply.h g_miply.h ; then true ; else cp -p $(top_srcdir)/libplot/g_miply.h g_miply.h ; fi
-
-g_miscanfill.h: $(top_srcdir)/libplot/g_miscanfill.h
-	@rm -f g_miscanfill.h ; if $(LN_S) $(top_srcdir)/libplot/g_miscanfill.h g_miscanfill.h ; then true ; else cp -p $(top_srcdir)/libplot/g_miscanfill.h g_miscanfill.h ; fi
-
-g_mispans.h: $(top_srcdir)/libplot/g_mispans.h
-	@rm -f g_mispans.h ; if $(LN_S) $(top_srcdir)/libplot/g_mispans.h g_mispans.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mispans.h g_mispans.h ; fi
-
-g_miwidelin.h: $(top_srcdir)/libplot/g_miwidelin.h
-	@rm -f g_miwidelin.h ; if $(LN_S) $(top_srcdir)/libplot/g_miwidelin.h g_miwidelin.h ; then true ; else cp -p $(top_srcdir)/libplot/g_miwidelin.h g_miwidelin.h ; fi
-
-g_mizerarc.h: $(top_srcdir)/libplot/g_mizerarc.h
-	@rm -f g_mizerarc.h ; if $(LN_S) $(top_srcdir)/libplot/g_mizerarc.h g_mizerarc.h ; then true ; else cp -p $(top_srcdir)/libplot/g_mizerarc.h g_mizerarc.h ; fi
-
 g_pagetype.h: $(top_srcdir)/libplot/g_pagetype.h
 	@rm -f g_pagetype.h ; if $(LN_S) $(top_srcdir)/libplot/g_pagetype.h g_pagetype.h ; then true ; else cp -p $(top_srcdir)/libplot/g_pagetype.h g_pagetype.h ; fi
-
-g_params.h: $(top_srcdir)/libplot/g_params.h
-	@rm -f g_params.h ; if $(LN_S) $(top_srcdir)/libplot/g_params.h g_params.h ; then true ; else cp -p $(top_srcdir)/libplot/g_params.h g_params.h ; fi
 
 h_stick.h: $(top_srcdir)/libplot/h_stick.h
 	@rm -f h_stick.h ; if $(LN_S) $(top_srcdir)/libplot/h_stick.h h_stick.h ; then true ; else cp -p $(top_srcdir)/libplot/h_stick.h h_stick.h ; fi
@@ -1620,6 +1678,93 @@ i_rle.h: $(top_srcdir)/libplot/i_rle.h
 
 p_header.h: $(top_srcdir)/libplot/p_header.h
 	@rm -f p_header.h ; if $(LN_S) $(top_srcdir)/libplot/p_header.h p_header.h ; then true ; else cp -p $(top_srcdir)/libplot/p_header.h p_header.h ; fi
+
+mi_alloc.cc: $(top_srcdir)/libxmi/mi_alloc.c $(MIHEADERS) extern.h
+	@rm -f mi_alloc.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_alloc.c mi_alloc.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_alloc.c mi_alloc.cc ; fi
+
+mi_api.cc: $(top_srcdir)/libxmi/mi_alloc.c $(MIHEADERS) extern.h
+	@rm -f mi_api.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_api.c mi_api.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_api.c mi_api.cc ; fi
+
+mi_arc.cc: $(top_srcdir)/libxmi/mi_arc.c $(MIHEADERS) extern.h
+	@rm -f mi_arc.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_arc.c mi_arc.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_arc.c mi_arc.cc ; fi
+
+mi_canvas.cc: $(top_srcdir)/libxmi/mi_canvas.c $(MIHEADERS) extern.h
+	@rm -f mi_canvas.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_canvas.c mi_canvas.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_canvas.c mi_canvas.cc ; fi
+
+mi_fllarc.cc: $(top_srcdir)/libxmi/mi_fllarc.c $(MIHEADERS) extern.h
+	@rm -f mi_fllarc.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_fllarc.c mi_fllarc.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_fllarc.c mi_fllarc.cc ; fi
+
+mi_fllrct.cc: $(top_srcdir)/libxmi/mi_fllrct.c $(MIHEADERS) extern.h
+	@rm -f mi_fllrct.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_fllrct.c mi_fllrct.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_fllrct.c mi_fllrct.cc ; fi
+
+mi_fplycon.cc: $(top_srcdir)/libxmi/mi_fplycon.c $(MIHEADERS) extern.h
+	@rm -f mi_fplycon.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_fplycon.c mi_fplycon.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_fplycon.c mi_fplycon.cc ; fi
+
+mi_gc.cc: $(top_srcdir)/libxmi/mi_gc.c $(MIHEADERS) extern.h
+	@rm -f mi_gc.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_gc.c mi_gc.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_gc.c mi_gc.cc ; fi
+
+mi_ply.cc: $(top_srcdir)/libxmi/mi_ply.c $(MIHEADERS) extern.h
+	@rm -f mi_ply.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_ply.c mi_ply.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_ply.c mi_ply.cc ; fi
+
+mi_plycon.cc: $(top_srcdir)/libxmi/mi_plycon.c $(MIHEADERS) extern.h
+	@rm -f mi_plycon.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_plycon.c mi_plycon.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_plycon.c mi_plycon.cc ; fi
+
+mi_plygen.cc: $(top_srcdir)/libxmi/mi_plygen.c $(MIHEADERS) extern.h
+	@rm -f mi_plygen.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_plygen.c mi_plygen.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_plygen.c mi_plygen.cc ; fi
+
+mi_plypnt.cc: $(top_srcdir)/libxmi/mi_plypnt.c $(MIHEADERS) extern.h
+	@rm -f mi_plypnt.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_plypnt.c mi_plypnt.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_plypnt.c mi_plypnt.cc ; fi
+
+mi_plyutil.cc: $(top_srcdir)/libxmi/mi_plyutil.c $(MIHEADERS) extern.h
+	@rm -f mi_plyutil.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_plyutil.c mi_plyutil.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_plyutil.c mi_plyutil.cc ; fi
+
+mi_spans.cc: $(top_srcdir)/libxmi/mi_spans.c $(MIHEADERS) extern.h
+	@rm -f mi_spans.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_spans.c mi_spans.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_spans.c mi_spans.cc ; fi
+
+mi_widelin.cc: $(top_srcdir)/libxmi/mi_widelin.c $(MIHEADERS) extern.h
+	@rm -f mi_widelin.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_widelin.c mi_widelin.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_widelin.c mi_widelin.cc ; fi
+
+mi_zerarc.cc: $(top_srcdir)/libxmi/mi_zerarc.c $(MIHEADERS) extern.h
+	@rm -f mi_zerarc.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_zerarc.c mi_zerarc.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_zerarc.c mi_zerarc.cc ; fi
+
+mi_zerolin.cc: $(top_srcdir)/libxmi/mi_zerolin.c $(MIHEADERS) extern.h
+	@rm -f mi_zerolin.cc ; if $(LN_S) $(top_srcdir)/libxmi/mi_zerolin.c mi_zerolin.cc ; then true ; else cp -p $(top_srcdir)/libxmi/mi_zerolin.c mi_zerolin.cc ; fi
+
+xmi.h: $(top_srcdir)/libxmi/xmi.h
+	@rm -f xmi.h ; if $(LN_S) $(top_srcdir)/libxmi/xmi.h xmi.h ; then true ; else cp -p $(top_srcdir)/libxmi/xmi.h xmi.h ; fi
+
+mi_api.h: $(top_srcdir)/libxmi/mi_api.h
+	@rm -f mi_api.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_api.h mi_api.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_api.h mi_api.h ; fi
+
+mi_arc.h: $(top_srcdir)/libxmi/mi_arc.h
+	@rm -f mi_arc.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_arc.h mi_arc.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_arc.h mi_arc.h ; fi
+
+mi_fllarc.h: $(top_srcdir)/libxmi/mi_fllarc.h
+	@rm -f mi_fllarc.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_fllarc.h mi_fllarc.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_fllarc.h mi_fllarc.h ; fi
+
+mi_fply.h: $(top_srcdir)/libxmi/mi_fply.h
+	@rm -f mi_fply.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_fply.h mi_fply.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_fply.h mi_fply.h ; fi
+
+mi_gc.h: $(top_srcdir)/libxmi/mi_gc.h
+	@rm -f mi_gc.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_gc.h mi_gc.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_gc.h mi_gc.h ; fi
+
+mi_line.h: $(top_srcdir)/libxmi/mi_line.h
+	@rm -f mi_line.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_line.h mi_line.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_line.h mi_line.h ; fi
+
+mi_ply.h: $(top_srcdir)/libxmi/mi_ply.h
+	@rm -f mi_ply.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_ply.h mi_ply.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_ply.h mi_ply.h ; fi
+
+mi_scanfill.h: $(top_srcdir)/libxmi/mi_scanfill.h
+	@rm -f mi_scanfill.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_scanfill.h mi_scanfill.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_scanfill.h mi_scanfill.h ; fi
+
+mi_spans.h: $(top_srcdir)/libxmi/mi_spans.h
+	@rm -f mi_spans.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_spans.h mi_spans.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_spans.h mi_spans.h ; fi
+
+mi_widelin.h: $(top_srcdir)/libxmi/mi_widelin.h
+	@rm -f mi_widelin.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_widelin.h mi_widelin.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_widelin.h mi_widelin.h ; fi
+
+mi_zerarc.h: $(top_srcdir)/libxmi/mi_zerarc.h
+	@rm -f mi_zerarc.h ; if $(LN_S) $(top_srcdir)/libxmi/mi_zerarc.h mi_zerarc.h ; then true ; else cp -p $(top_srcdir)/libxmi/mi_zerarc.h mi_zerarc.h ; fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

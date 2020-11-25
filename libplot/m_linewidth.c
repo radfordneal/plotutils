@@ -7,48 +7,52 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_linewidth (int new_line_width)
+_m_linewidth (R___(Plotter *_plotter) int new_line_width)
 #else
-_m_linewidth (new_line_width)
+_m_linewidth (R___(_plotter) new_line_width)
+     S___(Plotter *_plotter;) 
      int new_line_width;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("linewidth: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "linewidth: invalid operation");
       return -1;
     }
 
   /* invoke generic method */
-  _g_flinewidth ((double)new_line_width);
+  _g_flinewidth (R___(_plotter) (double)new_line_width);
 
-  _meta_emit_byte ((int)O_LINEWIDTH);
-  _meta_emit_integer (new_line_width);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_LINEWIDTH);
+  _meta_emit_integer (R___(_plotter) new_line_width);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_flinewidth (double new_line_width)
+_m_flinewidth (R___(Plotter *_plotter) double new_line_width)
 #else
-_m_flinewidth (new_line_width)
+_m_flinewidth (R___(_plotter) new_line_width)
+     S___(Plotter *_plotter;) 
      double new_line_width;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("flinewidth: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "flinewidth: invalid operation");
       return -1;
     }
 
   /* invoke generic method */
-  _g_flinewidth (new_line_width);
+  _g_flinewidth (R___(_plotter) new_line_width);
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_LINEWIDTH : (int)O_FLINEWIDTH);
-  _meta_emit_float (new_line_width);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) _plotter->meta_portable_output ? (int)O_LINEWIDTH : (int)O_FLINEWIDTH);
+  _meta_emit_float (R___(_plotter) new_line_width);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }

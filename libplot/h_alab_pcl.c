@@ -67,11 +67,13 @@ typedef enum { LOWER_HALF, UPPER_HALF } state_type;
 
 double
 #ifdef _HAVE_PROTOS
-_h_falabel_pcl (const unsigned char *s, int h_just)
+_h_falabel_pcl (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_h_falabel_pcl (s, h_just)
+_h_falabel_pcl (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;) 
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
   bool created_temp_string = false;
@@ -86,9 +88,14 @@ _h_falabel_pcl (s, h_just)
   if (*s == (unsigned char)'\0')
     return 0.0;
 
+  /* sanity check; this routine supports only baseline positioning */
+  if (v_just != JUST_BASE)
+    return 0.0;
+
+  /* similarly for horizontal justification */
   if (h_just != JUST_LEFT)
     {
-      _plotter->warning ("ignoring request to use non-default justification for a label");
+      _plotter->warning (R___(_plotter) "ignoring request to use non-default justification for a label");
       return 0.0;
     }
 
@@ -105,17 +112,17 @@ _h_falabel_pcl (s, h_just)
     default:
       master_font_index =
 	(_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
-      width = _plotter->flabelwidth_pcl (s);
+      width = _plotter->flabelwidth_pcl (R___(_plotter) s);
       break;
     case F_POSTSCRIPT:
       master_font_index =
 	(_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
-      width = _plotter->flabelwidth_ps (s);
+      width = _plotter->flabelwidth_ps (R___(_plotter) s);
       break;
     case F_STICK:
       master_font_index =
 	(_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
-      width = _plotter->flabelwidth_stick (s);
+      width = _plotter->flabelwidth_stick (R___(_plotter) s);
       break;
     }
 
@@ -327,16 +334,16 @@ _h_falabel_pcl (s, h_just)
     sintheta * _plotter->drawstate->true_font_size * hp_offset;
 
   /* sync font and pen position */
-  _plotter->set_font();
-  _plotter->set_position();
+  _plotter->set_font (S___(_plotter));
+  _plotter->set_position (S___(_plotter));
 
-  /* Sync pen color.  This may set the _plotter->bad_pen flag (if optimal
+  /* Sync pen color.  This may set the _plotter->hpgl_bad_pen flag (if optimal
      pen is #0 [white] and we're not allowed to use pen #0 to draw with).
-     So we test _plotter->bad_pen before drawing the label (see below). */
-  _plotter->set_pen_color ();
+     So we test _plotter->hpgl_bad_pen before drawing the label (see below). */
+  _plotter->set_pen_color (S___(_plotter));
 
   if (t[0] != '\0' /* i.e. label nonempty */
-      && _plotter->bad_pen == false)
+      && _plotter->hpgl_bad_pen == false)
     /* output the label via an `LB' instruction, including label
        terminator; don't use sprintf to avoid having to escape % and \ */
     {
@@ -378,24 +385,28 @@ _h_falabel_pcl (s, h_just)
 
 double
 #ifdef _HAVE_PROTOS
-_h_falabel_ps (const unsigned char *s, int h_just)
+_h_falabel_ps (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_h_falabel_ps (s, h_just)
+_h_falabel_ps (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;)
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
-  return _h_falabel_pcl (s, h_just);
+  return _h_falabel_pcl (R___(_plotter) s, h_just, v_just);
 }
 
 double
 #ifdef _HAVE_PROTOS
-_h_falabel_stick (const unsigned char *s, int h_just)
+_h_falabel_stick (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
 #else
-_h_falabel_stick (s, h_just)
+_h_falabel_stick (R___(_plotter) s, h_just, v_just)
+     S___(Plotter *_plotter;) 
      const unsigned char *s;
      int h_just;  /* horizontal justification: JUST_LEFT, CENTER, or RIGHT */
+     int v_just;  /* vertical justification: JUST_TOP, HALF, BASE, BOTTOM */
 #endif
 {
-  return _h_falabel_pcl (s, h_just);
+  return _h_falabel_pcl (R___(_plotter) s, h_just, v_just);
 }

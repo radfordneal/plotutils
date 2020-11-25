@@ -15,9 +15,10 @@
 
 void
 #ifdef _HAVE_PROTOS
-_tek_move (int xx, int yy)
+_tek_move (R___(Plotter *_plotter) int xx, int yy)
 #else
-_tek_move (xx, yy)
+_tek_move (R___(_plotter) xx, yy)
+     S___(Plotter *_plotter;)
      int xx, yy;
 #endif
 {
@@ -28,18 +29,18 @@ _tek_move (xx, yy)
     {
     case MODE_POINT:
       /* ASCII FS, i.e. ^\ (enter POINT mode)*/
-      _plotter->write_byte ('\034'); 
+      _plotter->write_byte (R___(_plotter) '\034'); 
       break;
     case MODE_PLOT:
       /* ASCII GS, i.e. ^] (enter PLOT mode) */
-      _plotter->write_byte ('\035'); 
+      _plotter->write_byte (R___(_plotter) '\035'); 
       break;
     default:			/* shouldn't happen */
       return;
     }
 
   /* output location to the Tektronix */
-  _tek_vector (xx, yy);
+  _tek_vector (R___(_plotter) xx, yy);
 
   /* Tek position is now correct */
   _plotter->tek_pos.x = xx;

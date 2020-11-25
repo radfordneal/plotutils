@@ -8,96 +8,106 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_circlerel (int x, int y, int r)
+_m_circlerel (R___(Plotter *_plotter) int x, int y, int r)
 #else
-_m_circlerel (x, y, r)
+_m_circlerel (R___(_plotter) x, y, r)
+     S___(Plotter *_plotter;) 
      int x, y, r;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("circlerel: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "circlerel: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_CIRCLEREL);
-  _meta_emit_integer (x);
-  _meta_emit_integer (y);
-  _meta_emit_integer (r);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_CIRCLEREL);
+  _meta_emit_integer (R___(_plotter) x);
+  _meta_emit_integer (R___(_plotter) y);
+  _meta_emit_integer (R___(_plotter) r);
+  _meta_emit_terminator (S___(_plotter));
 
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_fcirclerel (double x, double y, double r)
+_m_fcirclerel (R___(Plotter *_plotter) double x, double y, double r)
 #else
-_m_fcirclerel (x, y, r)
+_m_fcirclerel (R___(_plotter) x, y, r)
+     S___(Plotter *_plotter;) 
      double x, y, r;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fcirclerel: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fcirclerel: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_CIRCLEREL : (int)O_FCIRCLEREL);
-  _meta_emit_float (x);
-  _meta_emit_float (y);
-  _meta_emit_float (r);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) 
+		   _plotter->meta_portable_output ? (int)O_CIRCLEREL : (int)O_FCIRCLEREL);
+  _meta_emit_float (R___(_plotter) x);
+  _meta_emit_float (R___(_plotter) y);
+  _meta_emit_float (R___(_plotter) r);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_ellipserel (int x, int y, int rx, int ry, int angle)
+_m_ellipserel (R___(Plotter *_plotter) int x, int y, int rx, int ry, int angle)
 #else
-_m_ellipserel (x, y, rx, ry, angle)
+_m_ellipserel (R___(_plotter) x, y, rx, ry, angle)
+     S___(Plotter *_plotter;) 
      int x, y, rx, ry, angle;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("ellipserel: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "ellipserel: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_ELLIPSEREL);
-  _meta_emit_integer (x);
-  _meta_emit_integer (y);
-  _meta_emit_integer (rx);
-  _meta_emit_integer (ry);
-  _meta_emit_integer (angle);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_ELLIPSEREL);
+  _meta_emit_integer (R___(_plotter) x);
+  _meta_emit_integer (R___(_plotter) y);
+  _meta_emit_integer (R___(_plotter) rx);
+  _meta_emit_integer (R___(_plotter) ry);
+  _meta_emit_integer (R___(_plotter) angle);
+  _meta_emit_terminator (S___(_plotter));
 
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_fellipserel (double x, double y, double rx, double ry, double angle)
+_m_fellipserel (R___(Plotter *_plotter) double x, double y, double rx, double ry, double angle)
 #else
-_m_fellipserel (x, y, rx, ry, angle)
+_m_fellipserel (R___(_plotter) x, y, rx, ry, angle)
+     S___(Plotter *_plotter;) 
      double x, y, rx, ry, angle;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fellipserel: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fellipserel: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_ELLIPSEREL : (int)O_FELLIPSEREL);
-  _meta_emit_float (x);
-  _meta_emit_float (y);
-  _meta_emit_float (rx);
-  _meta_emit_float (ry);
-  _meta_emit_float (angle);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) 
+		   _plotter->meta_portable_output ? (int)O_ELLIPSEREL : (int)O_FELLIPSEREL);
+  _meta_emit_float (R___(_plotter) x);
+  _meta_emit_float (R___(_plotter) y);
+  _meta_emit_float (R___(_plotter) rx);
+  _meta_emit_float (R___(_plotter) ry);
+  _meta_emit_float (R___(_plotter) angle);
+  _meta_emit_terminator (S___(_plotter));
 
   return 0;
 }

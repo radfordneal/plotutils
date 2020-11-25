@@ -3,8 +3,9 @@
      Written by James Clark (jjc@jclark.com) */
 
 #include <stdio.h>
-#include "assert.h"
+#include <assert.h>
 #include "errarg.h"
+#include "lib.h"		// for our_itoa()
 
 errarg::errarg(const char *p) : type(STRING)
 {
@@ -41,16 +42,12 @@ errarg::empty() const
   return type == EMPTY;
 }
 
-extern "C" {
-  const char *itoa(int);
-}
-	    
 void
 errarg::print() const
 {
   switch (type) {
   case INTEGER:
-    fputs(itoa(n), stderr);
+    fputs(our_itoa(n), stderr);
     break;
   case CHAR:
     putc(c, stderr);

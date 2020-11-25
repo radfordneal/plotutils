@@ -8,11 +8,11 @@
 
 #ifndef LIBPLOTTER
 /* In libplot, this is the initialization for the function-pointer part of
-   the MetaPlotter struct. */
+   a MetaPlotter struct. */
 const Plotter _m_default_plotter = 
 {
   /* methods */
-  _m_alabel, _m_arc, _m_arcrel, _m_bezier2, _m_bezier2rel, _m_bezier3, _m_bezier3rel, _m_bgcolor, _g_bgcolorname, _m_box, _m_boxrel, _m_capmod, _m_circle, _m_circlerel, _m_closepl, _g_color, _g_colorname, _m_cont, _m_contrel, _m_ellarc, _m_ellarcrel, _m_ellipse, _m_ellipserel, _m_endpath, _m_erase, _m_farc, _m_farcrel, _m_fbezier2, _m_fbezier2rel, _m_fbezier3, _m_fbezier3rel, _m_fbox, _m_fboxrel, _m_fcircle, _m_fcirclerel, _m_fconcat, _m_fcont, _m_fcontrel, _m_fellarc, _m_fellarcrel, _m_fellipse, _m_fellipserel, _m_ffontname, _m_ffontsize, _m_fillcolor, _g_fillcolorname, _m_fillmod, _m_filltype, _g_flabelwidth, _m_fline, _m_flinedash, _m_flinerel, _m_flinewidth, _g_flushpl, _m_fmarker, _m_fmarkerrel, _m_fmiterlimit, _m_fmove, _m_fmoverel, _m_fontname, _m_fontsize, _m_fpoint, _m_fpointrel, _g_frotate, _g_fscale, _m_fspace, _m_fspace2, _m_ftextangle, _g_ftranslate, _g_havecap, _m_joinmod, _m_label, _g_labelwidth, _m_line, _m_linedash, _m_linemod, _m_linerel, _m_linewidth, _m_marker, _m_markerrel, _m_move, _m_moverel, _m_openpl, _g_outfile, _m_pencolor, _g_pencolorname, _m_point, _m_pointrel, _m_restorestate, _m_savestate, _m_space, _m_space2, _m_textangle,
+  _m_alabel, _m_arc, _m_arcrel, _m_bezier2, _m_bezier2rel, _m_bezier3, _m_bezier3rel, _m_bgcolor, _g_bgcolorname, _m_box, _m_boxrel, _m_capmod, _m_circle, _m_circlerel, _m_closepl, _g_color, _g_colorname, _m_cont, _m_contrel, _m_ellarc, _m_ellarcrel, _m_ellipse, _m_ellipserel, _m_endpath, _m_endsubpath, _m_erase, _m_farc, _m_farcrel, _m_fbezier2, _m_fbezier2rel, _m_fbezier3, _m_fbezier3rel, _m_fbox, _m_fboxrel, _m_fcircle, _m_fcirclerel, _m_fconcat, _m_fcont, _m_fcontrel, _m_fellarc, _m_fellarcrel, _m_fellipse, _m_fellipserel, _m_ffontname, _m_ffontsize, _m_fillcolor, _g_fillcolorname, _m_fillmod, _m_filltype, _g_flabelwidth, _m_fline, _m_flinedash, _m_flinerel, _m_flinewidth, _g_flushpl, _m_fmarker, _m_fmarkerrel, _m_fmiterlimit, _m_fmove, _m_fmoverel, _m_fontname, _m_fontsize, _m_fpoint, _m_fpointrel, _g_frotate, _g_fscale, _m_fspace, _m_fspace2, _m_ftextangle, _g_ftranslate, _g_havecap, _m_joinmod, _m_label, _g_labelwidth, _m_line, _m_linedash, _m_linemod, _m_linerel, _m_linewidth, _m_marker, _m_markerrel, _m_move, _m_moverel, _m_openpl, _m_orientation, _g_outfile, _m_pencolor, _g_pencolorname, _m_pentype, _m_point, _m_pointrel, _m_restorestate, _m_savestate, _m_space, _m_space2, _m_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _m_initialize, _m_terminate,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
@@ -43,19 +43,20 @@ const Plotter _m_default_plotter =
 /* The private `initialize' method, which is invoked when a Plotter is
    created.  It is used for such things as initializing capability flags
    from the values of class variables, allocating storage, etc.  When this
-   is invoked, _plotter points (temporarily) to the Plotter that has just
-   been created. */
+   is invoked, _plotter points to the Plotter that has just been
+   created. */
 
 void
 #ifdef _HAVE_PROTOS
-_m_initialize (void)
+_m_initialize (S___(Plotter *_plotter))
 #else
-_m_initialize ()
+_m_initialize (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
-  _g_initialize ();
+  _g_initialize (S___(_plotter));
 #endif
 
   /* override superclass initializations, as necessary */
@@ -78,11 +79,14 @@ _m_initialize ()
   _plotter->have_stick_fonts = 1;
   _plotter->have_extra_stick_fonts = 0;
 
-  /* text and font-related parameters (internal, not queryable by user) */
+  /* text and font-related parameters (internal, not queryable by user);
+     note that we don't set kern_stick_fonts, because it was set by the
+     superclass initialization (and it's irrelevant for this Plotter type,
+     anyway) */
   _plotter->default_font_type = F_HERSHEY;
   _plotter->pcl_before_ps = false;
-  _plotter->have_justification = true;
-  _plotter->kern_stick_fonts = false;
+  _plotter->have_horizontal_justification = true;
+  _plotter->have_vertical_justification = false;
   _plotter->issue_font_warning = false;
 
   /* path and polyline-related parameters (also internal) */
@@ -96,21 +100,18 @@ _m_initialize ()
   _plotter->hard_polyline_length_limit = INT_MAX;
 
   /* dimensions */
-  _plotter->display_type = DISP_UNKNOWN;
-  _plotter->integer_device_coors = false;
+  _plotter->display_model_type = (int)DISP_MODEL_NONE;
+  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_REAL;
+  _plotter->flipped_y = false;
   _plotter->imin = 0;
   _plotter->imax = 0;  
   _plotter->jmin = 0;
   _plotter->jmax = 0;  
-  _plotter->display_coors.left = 0.0;
-  _plotter->display_coors.right = 0.0;
-  _plotter->display_coors.bottom = 0.0;
-  _plotter->display_coors.top = 0.0;
-  _plotter->display_coors.extra = 0.0;  
-  _plotter->page_type = NULL;
-  _plotter->device_units_per_inch = 0.0;
-  _plotter->use_metric = false;
-  _plotter->flipped_y = false;
+  _plotter->xmin = 0.0;
+  _plotter->xmax = 0.0;  
+  _plotter->ymin = 0.0;
+  _plotter->ymax = 0.0;  
+  _plotter->page_data = (plPageData *)NULL;
 
   /* initialize data members specific to this derived class */
   _plotter->meta_portable_output = false;
@@ -121,7 +122,8 @@ _m_initialize ()
   {
     const char *portable_s;
     
-    portable_s = (const char *)_get_plot_param ("META_PORTABLE");
+    portable_s = (const char *)_get_plot_param (R___(_plotter) 
+						"META_PORTABLE");
     if (strcasecmp (portable_s, "yes") == 0)
       _plotter->meta_portable_output = true;
     else
@@ -132,19 +134,23 @@ _m_initialize ()
 /* The private `terminate' method, which is invoked when a Plotter is
    deleted.  It may do such things as write to an output stream from
    internal storage, deallocate storage, etc.  When this is invoked,
-   _plotter points (temporarily) to the Plotter that is about to be
-   deleted. */
+   _plotter points to the Plotter that is about to be deleted. */
 
 void
 #ifdef _HAVE_PROTOS
-_m_terminate (void)
+_m_terminate (S___(Plotter *_plotter))
 #else
-_m_terminate ()
+_m_terminate (S___(_plotter))
+     S___(Plotter *_plotter;) 
 #endif
 {
+  /* if specified plotter is open, close it */
+  if (_plotter->open)
+    _plotter->closepl (S___(_plotter));
+
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
-  _g_terminate ();
+  _g_terminate (S___(_plotter));
 #endif
 }
 
@@ -174,6 +180,36 @@ MetaPlotter::MetaPlotter (ostream& out)
 }
 
 MetaPlotter::MetaPlotter ()
+{
+  _m_initialize ();
+}
+
+MetaPlotter::MetaPlotter (FILE *infile, FILE *outfile, FILE *errfile, PlotterParams &parameters)
+	:Plotter (infile, outfile, errfile, parameters)
+{
+  _m_initialize ();
+}
+
+MetaPlotter::MetaPlotter (FILE *outfile, PlotterParams &parameters)
+	:Plotter (outfile, parameters)
+{
+  _m_initialize ();
+}
+
+MetaPlotter::MetaPlotter (istream& in, ostream& out, ostream& err, PlotterParams &parameters)
+	: Plotter (in, out, err, parameters)
+{
+  _m_initialize ();
+}
+
+MetaPlotter::MetaPlotter (ostream& out, PlotterParams &parameters)
+	: Plotter (out, parameters)
+{
+  _m_initialize ();
+}
+
+MetaPlotter::MetaPlotter (PlotterParams &parameters)
+	: Plotter (parameters)
 {
   _m_initialize ();
 }

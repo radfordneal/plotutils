@@ -1,7 +1,7 @@
 /*
  * declarations of external variables and functions for ode
  * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
- * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
+ * GNU enhancements copyright (C) 1996-1999 Free Software Foundation, Inc.
  */
 
 /*
@@ -42,8 +42,6 @@ bool check ____P((void));
 bool hierror ____P((void));
 bool intpr ____P((double t));
 bool lowerror ____P((void));
-bool xatof ____P((char *s, double *dval));
-bool xatol ____P((char *s, long int *ival));
 double eval ____P((const struct expr *ep));
 void am ____P((void));
 void ama ____P((void));
@@ -73,7 +71,7 @@ void title ____P((void));
 void trivial ____P((void));
 struct expr * ealloc ____P((void));
 struct prt * palloc ____P((void));
-struct sym * lookup ____P((char *nam));
+struct sym * lookup ____P((const char *nam));
 struct sym * salloc ____P((void));
 RETSIGTYPE fptrap ____P((int sig));
 
@@ -84,7 +82,7 @@ int yyparse ____P((void));
 struct lex * lalloc ____P((void));
 void concat ____P((struct expr *e0, struct expr *e1));
 void lfree ____P((struct lex *lp));
-void prexq ____P((struct expr *ep));
+void prexq ____P((const struct expr *ep));
 
 /* math library exception handling */
 #ifdef HAVE_MATHERR
@@ -121,8 +119,8 @@ double norm ____P((double x));
 
 /* in libcommon */
 void display_usage ____P((const char *progname, const int *omit_vals, const char *appendage, bool fonts));
-Voidptr xcalloc ____P ((unsigned int nmemb, unsigned int size));
-Voidptr xmalloc ____P ((unsigned int size));
+voidptr_t xcalloc ____P ((size_t nmemb, size_t size));
+voidptr_t xmalloc ____P ((size_t size));
 char *xstrdup ____P ((const char *s));
 
 /* support C++ */

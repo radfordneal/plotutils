@@ -10,7 +10,6 @@
    What does !c mean? */
 
 #include "pic.h"
-#include "ptable.h"
 #include "object.h"
 #include "gram.h"
 

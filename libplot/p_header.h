@@ -13,7 +13,7 @@
 #define PS_PROCSET_VERSION "1.0"
 
 static const char * const _ps_fontproc =
-{"\
+"\
 /ISOLatin1Encoding [\n\
 /.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n\
 /.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n\
@@ -50,8 +50,10 @@ dup dup findfont dup length dict begin\n\
 { 1 index /FID ne { def }{ pop pop } ifelse } forall\n\
 /Encoding ISOLatin1Encoding def\n\
 currentdict end definefont\n\
-} def\n"
-};
+} def\n";
+
+/* The following is split into substrings, because some compilers (e.g., 
+   MS VC++) can't handle very long strings. */
 
 static const char * const _ps_procset[] =
 {"\
@@ -107,8 +109,8 @@ patternGrayLevel -1 eq {\n\
 false /patternNone idef\n\
 } ifelse\n\
 } def\n\
-\n\
-/BSpl {\n\
+\n",
+"/BSpl {\n\
 0 begin\n\
 storexyn\n\
 newpath\n\
@@ -212,8 +214,8 @@ closepath\n\
 patternNone not { ifill } if\n\
 brushNone not { istroke } if\n\
 } def\n\
-\n\
-/Rect {\n\
+\n",
+"/Rect {\n\
 0 begin\n\
 /t exch def\n\
 /r exch def\n\
@@ -265,8 +267,8 @@ w h true [w 0 0 h neg 0 h] { patternproc } imagemask\n\
 grestore\n\
 end\n\
 } dup 0 8 dict put def\n\
-\n\
-/istroke {\n\
+\n",
+"/istroke {\n\
 gsave\n\
 brushDashOffset -1 eq {\n\
 [] 0 setdash\n\
@@ -340,8 +342,8 @@ x0 x1 add 2 div\n\
 y0 y1 add 2 div\n\
 end\n\
 } dup 0 4 dict put def\n\
-\n\
-/thirdpoint {\n\
+\n",
+"/thirdpoint {\n\
 0 begin\n\
 /y1 exch def\n\
 /x1 exch def\n\
@@ -392,8 +394,8 @@ y i 3 2 roll put\n\
 x i 3 2 roll put\n\
 } for\n\
 } def\n\
-\n\
-/arrowhead {\n\
+\n",
+"/arrowhead {\n\
 0 begin\n\
 transform originalCTM itransform\n\
 /taily exch def\n\
@@ -434,8 +436,8 @@ istroke\n\
 grestore\n\
 end\n\
 } dup 0 9 dict put def\n\
-\n\
-/arrowheadpath {\n\
+\n",
+"/arrowheadpath {\n\
 newpath\n\
 arrowHeight neg arrowWidth 2 div moveto\n\
 0 0 lineto\n\

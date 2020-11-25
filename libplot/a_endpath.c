@@ -47,19 +47,20 @@
 
 int
 #ifdef _HAVE_PROTOS
-_a_endpath (void)
+_a_endpath (S___(Plotter *_plotter))
 #else
-_a_endpath ()
+_a_endpath (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   int i, numpoints;
   bool closed;
   double linewidth;
-  GeneralizedPoint oldpoint, newpoint;
+  plGeneralizedPoint oldpoint, newpoint;
 
   if (!_plotter->open)
     {
-      _plotter->error ("endpath: invalid operation");
+      _plotter->error (R___(_plotter) "endpath: invalid operation");
       return -1;
     }
 
@@ -88,8 +89,8 @@ _a_endpath ()
 
   if (!_plotter->drawstate->points_are_connected)
     {
-      Point saved_pos;
-      GeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
+      plPoint saved_pos;
+      plGeneralizedPoint *saved_datapoints = _plotter->drawstate->datapoints;
       double radius = 0.5 * _plotter->drawstate->line_width;
       int saved_points_in_path = _plotter->drawstate->points_in_path;
       
@@ -99,21 +100,23 @@ _a_endpath ()
       _plotter->drawstate->datapoints_len = 0;
       _plotter->drawstate->points_in_path = 0;
 
-      _plotter->savestate();
-      _plotter->fillcolor (_plotter->drawstate->fgcolor.red, 
+      _plotter->savestate (S___(_plotter));
+      _plotter->pentype (R___(_plotter) 1);
+      _plotter->fillcolor (R___(_plotter) _plotter->drawstate->fgcolor.red, 
 			   _plotter->drawstate->fgcolor.green, 
 			   _plotter->drawstate->fgcolor.blue);
-      _plotter->filltype (1);
-      _plotter->linewidth (0);
+      _plotter->filltype (R___(_plotter) 1);
+      _plotter->linewidth (R___(_plotter) 0);
 
       _plotter->drawstate->points_are_connected = true;
       for (i = 0; i < saved_points_in_path - (closed ? 1 : 0); i++)
 	/* draw each point as a filled circle, diameter = line width */
-	_plotter->fcircle (saved_datapoints[i].x, saved_datapoints[i].y, 
+	_plotter->fcircle (R___(_plotter) 
+			   saved_datapoints[i].x, saved_datapoints[i].y, 
 			   radius);
       _plotter->drawstate->points_are_connected = false;
 
-      _plotter->restorestate();
+      _plotter->restorestate (S___(_plotter));
       free (saved_datapoints);
       if (closed)
 	_plotter->drawstate->pos = saved_pos; /* restore graphics cursor */
@@ -123,28 +126,39 @@ _a_endpath ()
   /* general case: successive points are endpoints of contiguous line
      and/or cubic Bezier segments */
 
+  if (_plotter->drawstate->pen_type == 0 
+      && _plotter->drawstate->fill_type == 0)
+    /* nothing to draw */
+    {
+      /* reset path storage buffer and return */
+      free (_plotter->drawstate->datapoints);
+      _plotter->drawstate->datapoints_len = 0;
+      _plotter->drawstate->points_in_path = 0;
+      return 0;
+    }
+
   /* set fill color and pen color */
-  if (_plotter->drawstate->fill_level > 0)
+  if (_plotter->drawstate->fill_type)
     /* will be filling the path */
-    _plotter->set_fill_color();
+    _plotter->set_fill_color (S___(_plotter));
   else
     /* won't be filling the path, but set AI's fill color anyway;
        in particular set it to be the same as the pen color (this is a
        convenience for AI users who may wish e.g. to switch from stroking
        to filling) */
     {
-      Color old_fillcolor;
+      plColor old_fillcolor;
 
       old_fillcolor = _plotter->drawstate->fillcolor;
       _plotter->drawstate->fillcolor = _plotter->drawstate->fgcolor;
-      _plotter->set_fill_color();
+      _plotter->set_fill_color (S___(_plotter));
       _plotter->drawstate->fillcolor = old_fillcolor;
     }
-  _plotter->set_pen_color();
+  _plotter->set_pen_color (S___(_plotter));
 
   /* update line attributes (cap style, join style, line width),
      if necessary */
-  _plotter->set_attributes();
+  _plotter->set_attributes (S___(_plotter));
 
   linewidth = _plotter->drawstate->line_width;
   numpoints = _plotter->drawstate->points_in_path;
@@ -300,7 +314,7 @@ _a_endpath ()
 		}
 	    }
 	  /* take path end into account: update bounding box */
-	  _set_line_end_bbox (_plotter->page,
+	  _set_line_end_bbox (R___(_plotter) _plotter->page,
 			      xcurrent, ycurrent, xother, yother,
 			      linewidth, _plotter->drawstate->cap_type);
 	}
@@ -354,7 +368,7 @@ _a_endpath ()
 	    }
 	  
 	  /* take path join into account: update bounding box */
-	  _set_line_join_bbox(_plotter->page,
+	  _set_line_join_bbox(R___(_plotter) _plotter->page,
 			      xleft, yleft, xcurrent, ycurrent, xright, yright,
 			      linewidth, 
 			      _plotter->drawstate->join_type,
@@ -399,7 +413,7 @@ _a_endpath ()
 		      _plotter->drawstate->datapoints[i].yd));
 	  _update_buffer (_plotter->page);
 	  /* update bounding box due to extremal x/y values in device frame */
-	  _set_bezier3_bbox (_plotter->page, 
+	  _set_bezier3_bbox (R___(_plotter) _plotter->page, 
 			     _plotter->drawstate->datapoints[i-1].x,
 			     _plotter->drawstate->datapoints[i-1].y,
 			     _plotter->drawstate->datapoints[i].xc,
@@ -442,24 +456,42 @@ _a_endpath ()
     } /* end of loop over (generalized) path points */
 
 
-  /* emit `closepath' if path is closed; stroke and maybe fill */
-  if (_plotter->drawstate->fill_level > 0)
+  if (_plotter->drawstate->pen_type)
+    /* have a pen to draw with */
     {
-      if (closed)
-	/* close path, fill and stroke */
-	sprintf (_plotter->page->point, "b\n");
+      /* emit `closepath' if path is closed; stroke and maybe fill */
+      if (_plotter->drawstate->fill_type)
+	{
+	  if (closed)
+	    /* close path, fill and stroke */
+	    sprintf (_plotter->page->point, "b\n");
+	  else
+	    /* fill and stroke */
+	    sprintf (_plotter->page->point, "B\n");
+	}
       else
-	/* fill and stroke */
-	sprintf (_plotter->page->point, "B\n");
+	{
+	  if (closed)
+	    /* close path, stroke */
+	    sprintf (_plotter->page->point, "s\n");
+	  else
+	    /* stroke */
+	    sprintf (_plotter->page->point, "S\n");
+	}
     }
   else
+    /* no pen to draw with, but we may do filling */
     {
-      if (closed)
-	/* close path, stroke */
-	sprintf (_plotter->page->point, "s\n");
-      else
-	/* stroke */
-	sprintf (_plotter->page->point, "S\n");
+      /* emit `closepath' if path is closed; don't stroke */
+      if (_plotter->drawstate->fill_type)
+	{
+	  if (closed)
+	    /* close path, fill */
+	    sprintf (_plotter->page->point, "f\n");
+	  else
+	    /* fill */
+	    sprintf (_plotter->page->point, "F\n");
+	}
     }
   _update_buffer (_plotter->page);
 

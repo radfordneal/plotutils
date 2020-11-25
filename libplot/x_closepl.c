@@ -1,5 +1,5 @@
-/* This file contains the openpl method, which is a standard part of
-   libplot.  It opens a Plotter object. 
+/* This file contains the closepl method, which is a standard part of
+   libplot.  It closes a Plotter object.
 
    This implementation is for XDrawablePlotters. */
 
@@ -8,18 +8,19 @@
 
 int
 #ifdef _HAVE_PROTOS
-_x_closepl (void)
+_x_closepl (S___(Plotter *_plotter))
 #else
-_x_closepl ()
+_x_closepl (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("closepl: invalid operation");
+      _plotter->error (R___(_plotter) "closepl: invalid operation");
       return -1;
     }
 
-  _plotter->endpath (); /* flush polyline if any */
+  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
 
   /* Xdrawable Plotters support double buffering `by hand', so check for it */
 
@@ -53,16 +54,16 @@ _x_closepl ()
   if (_plotter->drawstate->previous != NULL)
     {
       while (_plotter->drawstate->previous)
-	_plotter->restorestate();
+	_plotter->restorestate (S___(_plotter));
     }
   
   /* remove zeroth drawing state too, so we can start afresh */
   
   /* elements of state that are strings etc. are freed separately */
-  free (_plotter->drawstate->line_mode);
-  free (_plotter->drawstate->join_mode);
-  free (_plotter->drawstate->cap_mode);
-  free (_plotter->drawstate->font_name);
+  free ((char *)_plotter->drawstate->line_mode);
+  free ((char *)_plotter->drawstate->join_mode);
+  free ((char *)_plotter->drawstate->cap_mode);
+  free ((char *)_plotter->drawstate->font_name);
   /* free graphics contexts, if we have them -- and to have them, must have
      at least one drawable (see x_savestate.c) */
   if (_plotter->x_drawable1 || _plotter->x_drawable2)
@@ -73,7 +74,7 @@ _x_closepl ()
     }
   
   free (_plotter->drawstate);
-  _plotter->drawstate = (pl_DrawState *)NULL;
+  _plotter->drawstate = (plDrawState *)NULL;
   
   _plotter->open = false;	/* flag Plotter as closed */
   

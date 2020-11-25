@@ -8,50 +8,55 @@
 
 int
 #ifdef _HAVE_PROTOS
-_m_ellipse (int x, int y, int rx, int ry, int angle)
+_m_ellipse (R___(Plotter *_plotter) int x, int y, int rx, int ry, int angle)
 #else
-_m_ellipse (x, y, rx, ry, angle)
+_m_ellipse (R___(_plotter) x, y, rx, ry, angle)
+     S___(Plotter *_plotter;) 
      int x, y, rx, ry, angle;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("ellipse: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "ellipse: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte ((int)O_ELLIPSE);
-  _meta_emit_integer (x);
-  _meta_emit_integer (y);
-  _meta_emit_integer (rx);
-  _meta_emit_integer (ry);
-  _meta_emit_integer (angle);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) (int)O_ELLIPSE);
+  _meta_emit_integer (R___(_plotter) x);
+  _meta_emit_integer (R___(_plotter) y);
+  _meta_emit_integer (R___(_plotter) rx);
+  _meta_emit_integer (R___(_plotter) ry);
+  _meta_emit_integer (R___(_plotter) angle);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_m_fellipse (double x, double y, double rx, double ry, double angle)
+_m_fellipse (R___(Plotter *_plotter) double x, double y, double rx, double ry, double angle)
 #else
-_m_fellipse (x, y, rx, ry, angle)
+_m_fellipse (R___(_plotter) x, y, rx, ry, angle)
+     S___(Plotter *_plotter;) 
      double x, y, rx, ry, angle;
 #endif
 {
   if (!_plotter->open)
     {
-      _plotter->error ("fellipse: invalid operation");
+      _plotter->error (R___(_plotter) 
+		       "fellipse: invalid operation");
       return -1;
     }
 
-  _meta_emit_byte (_plotter->meta_portable_output ? (int)O_ELLIPSE : (int)O_FELLIPSE);
-  _meta_emit_float (x);
-  _meta_emit_float (y);
-  _meta_emit_float (rx);
-  _meta_emit_float (ry);
-  _meta_emit_float (angle);
-  _meta_emit_terminator ();
+  _meta_emit_byte (R___(_plotter) 
+		   _plotter->meta_portable_output ? (int)O_ELLIPSE : (int)O_FELLIPSE);
+  _meta_emit_float (R___(_plotter) x);
+  _meta_emit_float (R___(_plotter) y);
+  _meta_emit_float (R___(_plotter) rx);
+  _meta_emit_float (R___(_plotter) ry);
+  _meta_emit_float (R___(_plotter) angle);
+  _meta_emit_terminator (S___(_plotter));
   
   return 0;
 }

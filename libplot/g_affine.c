@@ -7,9 +7,10 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_ftranslate (double x, double y)
+_g_ftranslate (R___(Plotter *_plotter) double x, double y)
 #else
-_g_ftranslate (x, y)
+_g_ftranslate (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
@@ -17,7 +18,8 @@ _g_ftranslate (x, y)
 
   if (!_plotter->open)
     {
-      _plotter->error ("ftranslate: invalid operation");
+      _plotter->error (R___(_plotter)
+		       "ftranslate: invalid operation");
       return -1;
     }
 
@@ -25,16 +27,17 @@ _g_ftranslate (x, y)
   m1 = m2 = 0.0;
   m4 = x;
   m5 = y;
-  _plotter->fconcat (m0, m1, m2, m3, m4, m5);
+  _plotter->fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_g_frotate (double theta)
+_g_frotate (R___(Plotter *_plotter) double theta)
 #else
-_g_frotate (theta)
+_g_frotate (R___(_plotter) theta)
+     S___(Plotter *_plotter;)
      double theta;
 #endif
 {
@@ -43,7 +46,8 @@ _g_frotate (theta)
   
   if (!_plotter->open)
     {
-      _plotter->error ("frotate: invalid operation");
+      _plotter->error (R___(_plotter)
+		       "frotate: invalid operation");
       return -1;
     }
 
@@ -51,16 +55,17 @@ _g_frotate (theta)
   m1 = sin (radians);
   m2 = - sin (radians);
   m4 = m5 = 0.0;
-  _plotter->fconcat (m0, m1, m2, m3, m4, m5);
+  _plotter->fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
 
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_g_fscale (double x, double y)
+_g_fscale (R___(Plotter *_plotter) double x, double y)
 #else
-_g_fscale (x, y)
+_g_fscale (R___(_plotter) x, y)
+     S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
@@ -68,14 +73,15 @@ _g_fscale (x, y)
 
   if (!_plotter->open)
     {
-      _plotter->error ("fscale: invalid operation");
+      _plotter->error (R___(_plotter)
+		       "fscale: invalid operation");
       return -1;
     }
 
   m0 = x;
   m3 = y;
   m1 = m2 = m4 = m5 = 0.0;
-  _plotter->fconcat (m0, m1, m2, m3, m4, m5);
+  _plotter->fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
 
   return 0;
 }
