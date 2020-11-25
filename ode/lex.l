@@ -7,7 +7,7 @@
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
-#include "gram.tab.h"
+#include "gram.h"
 
 int curline = 1;
 %}
@@ -117,7 +117,11 @@ igamma		{ return IGAMMA; }
  * space management for the lexer
  */
 struct lex *
-lalloc()
+#ifdef _HAVE_PROTOS
+lalloc (void)
+#else
+lalloc ()
+#endif
 {
   struct lex *lp;
   
@@ -128,8 +132,12 @@ lalloc()
 }
 
 void
-lfree(lp)
+#ifdef _HAVE_PROTOS
+lfree (struct lex *lp)
+#else
+lfree (lp)
      struct lex *lp;
+#endif
 {
   if (lp != NULL)
     free ((Voidptr)lp);

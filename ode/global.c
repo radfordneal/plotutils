@@ -10,7 +10,8 @@
 
 /* defined and initialized */
 
-char    *progname	= "ode";
+const char    *progname	= "ode"; /* name of this program */
+
 int	prec	= -1;
 long	it	= 0;
 double	hmin	= HMIN;
@@ -38,17 +39,17 @@ struct	expr	exprone =
   NULL,
   NULL,
 };
+bool     sawstep = false, sawprint = false;
+bool	    sawevery = false, sawfrom = false;
+bool     tflag = false, pflag = false, sflag = false;
+bool     eflag = false, rflag = false, hflag = false, conflag = false;
 integration_type algorithm = A_RUNGE_KUTTA_FEHLBERG;
 
 /* defined but not initialized */
 
-char	    *filename;
-Boolean     printnum;
-int         sawstep, sawprint, sawevery, sawfrom;
-int         tflag, pflag, sflag, eflag, rflag, hflag, conflag;
-
+char	*filename;
 jmp_buf mark;
-int     prerr;
 int	fwd;
 int     tevery;
 double  tstart, tstop, tstep, tfrom;
+bool printnum, prerr;

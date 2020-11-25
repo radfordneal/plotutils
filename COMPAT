@@ -1,0 +1,48 @@
+These are some notes on backward compatibility of the plotutils package, on
+both the user and programmer levels.
+
+In release 2.0 the idea of separate variants of the `graph', `plot', and
+`tek2plot' programs for each display device was finally done away with.
+There is now only a single instance of each program.  The display device is
+specified by the `-T' option.
+
+The merging of the device-specific variants was made possible by the
+merging of the device-specific variants of the libplot library on which
+they were based.  There is now only a single library, which is structured
+in an object-oriented way.  There are new functions, newpl(), selectpl(),
+openpl(), which allow the creation of an arbitrarily large number of
+`Plotter' objects simultaneously.  Each Plotter produces output for one
+display device.
+
+On startup of libplot, a single default Plotter is created and selected,
+namely one that produces GNU metafile format.  This is for backward
+compatibility: it allows programs written for earlier versions of GNU
+libplot, and even Unix libplot, to link with it and run as expected.  If
+you prefer a different default Plotter type, you should select it at
+installation time.  For example, including -DDEFAULT_PLOTTER_TYPE=\"ps\"
+in your CFLAGS option will cause the default Plotter to produce
+Postscript output instead.
+
+The libplot API changed in release 2.0 in a few other ways.
+
+1. falabel() was dropped from the API, and alabel() no longer returns a
+value related to the width of the text string that it renders.  If you need
+to get the width of a text string, use flabelwidth() or labelwidth().
+
+2. The semantics of the arc() primitive have changed.  It now draws an arc
+that may be clockwise as well as counterclockwise, but is restricted to
+have opening angle no more than 180 degrees.  Also, it moved the graphics
+cursor position to the endpoint of the arc.
+
+3. The box() primitive now moves the graphics cursor to the midpoint of the
+box, rather than to the second-listed vertex.
+
+4. endpoly() has been renamed endpath(), and fill() has been renamed
+filltype().  These last changes are temporarily supported by the plot.h
+include file.
+
+As of release 2.0 of the package, libplot has its own, independent,
+versioning system.  The version of libplot distributed with release 2.0 is
+numbered 0.0.  Beginning with version 0.0, libplot is installed both as a
+static library and as a shared library (a DLL), on machines that support
+shared libraries.

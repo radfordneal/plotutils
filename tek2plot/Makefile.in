@@ -1,123 +1,358 @@
-# This is the Makefile for tek2plot, a filter which translates Tektronix
-# plot files to any of several output formats, depending on which plotting
-# library is linked with it.  tek2plot, tek2tek, tek2fig, and
-# tek2ps are the executables.
+# Makefile.in generated automatically by automake 1.2 from Makefile.am
 
-VERSION = @VERSION@
+# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy, distribute and modify it.
 
-top_srcdir = @top_srcdir@
-srcdir = @srcdir@
-VPATH  = @srcdir@
 
 SHELL = /bin/sh
 
-CC = @CC@
-CFLAGS = @CFLAGS@
-X_CFLAGS = @X_CFLAGS@
-INSTALL = @INSTALL@
-INSTALL_DATA = @INSTALL_DATA@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-LDFLAGS = @LDFLAGS@
-X_LIBS = @X_LIBS@
-X_PRE_LIBS = @X_PRE_LIBS@
-XLIBS = @XLIBS@
-X_EXTRA_LIBS = @X_EXTRA_LIBS@
-LIBS = @LIBS@
-RANLIB = @RANLIB@
-NO_X = @no_x@
-
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+
 bindir = @bindir@
-infodir = @infodir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
 libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
 includedir = @includedir@
-oldincludedir = @oldincludedir@
+oldincludedir = /usr/include
 
-######################################################################
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
 
-TEK2PLOT = tek2plot tek2tek tek2fig tek2ps 
-TEK2PLOTX = tek2X
-GETOPT=../getopt
+top_builddir = ..
 
-SRCS = tek2.c
-OBJS = tek2.o
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
 
-INCLUDES=-I.. -I$(top_srcdir)/include -I$(top_srcdir)/getopt
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
 
-all: $(TEK2PLOT)
-	if test "$(NO_X)" != "yes"; then \
-			for i in $(TEK2PLOTX); do $(MAKE) $$i; done; \
-	fi
+NORMAL_INSTALL = true
+PRE_INSTALL = true
+POST_INSTALL = true
+NORMAL_UNINSTALL = true
+PRE_UNINSTALL = true
+POST_UNINSTALL = true
+host_alias = @host_alias@
+host_triplet = @host@
+CC = @CC@
+LD = @LD@
+LEX = @LEX@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+LTALLOCA = @LTALLOCA@
+MAKEINFO = @MAKEINFO@
+NM = @NM@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+VERSION = @VERSION@
+XLIBS = @XLIBS@
+X_CFLAGS = @X_CFLAGS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+YACC = @YACC@
 
-.PHONY: all install uninstall clean realclean distclean
+bin_PROGRAMS = tek2plot
+
+tek2plot_SOURCES = tek2plot.c Tektable.c
+tek2plot_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ../libplot/libplot.la $(X_LIBS) $(X_PRE_LIBS) $(XLIBS) $(X_EXTRA_LIBS)
+noinst_HEADERS = Tekparse.h
+
+INCLUDES = -I$(srcdir)/../include
+
+SUBDIRS = teksamples
+
+# remove executables installed by previous versions of the package
+
+OBSOLETEBINS = tek2tek tek2hpgl tek2fig tek2ps tek2X
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+PROGRAMS =  $(bin_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+tek2plot_OBJECTS =  tek2plot.o Tektable.o
+tek2plot_DEPENDENCIES =  ../lib/libcommon.a ../lib/libfontlist.a \
+../libplot/libplot.la
+tek2plot_LDFLAGS = 
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LINK = $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+HEADERS =  $(noinst_HEADERS)
+
+DIST_COMMON =  README Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP = --best
+SOURCES = $(tek2plot_SOURCES)
+OBJECTS = $(tek2plot_OBJECTS)
+
+default: all
 
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .lo .o
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps tek2plot/Makefile
+
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
+	done
 
 .c.o:
-	$(CC) -DVERSION=\"$(VERSION)\" $(CFLAGS) $(INCLUDES) -c $<
+	$(COMPILE) -c $<
 
-tek2X: $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotX/libplotX.a
-	$(CC) $(CFLAGS) $(X_CFLAGS) $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotX/libplotX.a $(X_LIBS) $(X_PRE_LIBS) $(XLIBS) $(X_EXTRA_LIBS) $(LIBS) $(LDFLAGS) -o $@
+mostlyclean-compile:
+	rm -f *.o core
 
-tek2ps: $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotps/libplotps.a
-	$(CC) $(CFLAGS) $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotps/libplotps.a $(LIBS) $(LDFLAGS) -o $@
+clean-compile:
 
-tek2fig: $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotfig/libplotfig.a
-	$(CC) $(CFLAGS) $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotfig/libplotfig.a $(LIBS) $(LDFLAGS) -o $@
+distclean-compile:
+	rm -f *.tab.c
 
-tek2tek: $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplottek/libplottek.a
-	$(CC) $(CFLAGS) $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplottek/libplottek.a $(LIBS) $(LDFLAGS) -o $@
+maintainer-clean-compile:
 
-tek2plot: $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplot/libplot.a
-	$(CC) $(CFLAGS) $(OBJS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplot/libplot.a $(LIBS) $(LDFLAGS) -o $@
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
 
-../libs/libplotX/libplotX.a:
-	cd ../libs/libplotX; $(MAKE) libplotX.a CC="$(CC)" CFLAGS="$(CFLAGS)" X_CFLAGS="$(X_CFLAGS)"
+mostlyclean-libtool:
+	rm -f *.lo
 
-../libs/libplotps/libplotps.a:
-	cd ../libs/libplotps; $(MAKE) libplotps.a CC="$(CC)" CFLAGS="$(CFLAGS)"
+clean-libtool:
+	rm -rf .libs
 
-../libs/libplotfig/libplotfig.a:
-	cd ../libs/libplotfig; $(MAKE) libplotfig.a CC="$(CC)" CFLAGS="$(CFLAGS)"
+distclean-libtool:
 
-../libs/libplottek/libplottek.a:
-	cd ../libs/libplottek; $(MAKE) libplottek.a CC="$(CC)" CFLAGS="$(CFLAGS)"
+maintainer-clean-libtool:
 
-../libs/libplot/libplot.a:
-	cd ../libs/libplot; $(MAKE) libplot.a CC="$(CC)" CFLAGS="$(CFLAGS)"
+tek2plot: $(tek2plot_OBJECTS) $(tek2plot_DEPENDENCIES)
+	@rm -f tek2plot
+	$(LINK) $(tek2plot_LDFLAGS) $(tek2plot_OBJECTS) $(tek2plot_LDADD) $(LIBS)
 
-$(GETOPT)/getopt.o $(GETOPT)/getopt1.o: $(top_srcdir)/getopt/getopt.c $(top_srcdir)/getopt/getopt1.c
-	cd $(GETOPT); $(MAKE) all CC="$(CC)" CFLAGS="$(CFLAGS)"
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
 
-install: $(TEK2PLOT)
-	$(top_srcdir)/mkdirs.sh $(bindir)
-	for f in $(TEK2PLOT) ; do $(INSTALL_PROGRAM) $$f $(bindir)/$$f ; \
+@SET_MAKE@
+
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	for subdir in $(SUBDIRS); do \
+	  target=`echo $@ | sed s/-recursive//`; \
+	  echo "Making $$target in $$subdir"; \
+	  (cd $$subdir && $(MAKE) $$target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	rev=''; for subdir in $(SUBDIRS); do rev="$$rev $$subdir"; done; \
+	for subdir in $$rev; do \
+	  target=`echo $@ | sed s/-recursive//`; \
+	  echo "Making $$target in $$subdir"; \
+	  (cd $$subdir && $(MAKE) $$target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  (cd $$subdir && $(MAKE) tags); \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES)
+	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
+
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES)
+	tags=; \
+	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
 	done; \
-	if test "$(NO_X)" != "yes"; then $(MAKE) install-X; fi
+	test -z "$(ETAGS_ARGS)$(SOURCES)$(HEADERS)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $(SOURCES) $(HEADERS) -o $$here/TAGS)
 
-install-X: $(TEK2PLOTX)
-	$(top_srcdir)/mkdirs.sh $(bindir)
-	for f in $(TEK2PLOTX) ; do $(INSTALL_PROGRAM) $$f $(bindir)/$$f ; done
+mostlyclean-tags:
 
-uninstall:
-	-for f in $(TEK2PLOT) ; do rm -f $(bindir)/$$f ; done
-	-for f in $(TEK2PLOTX) ; do rm -f $(bindir)/$$f ; done
+clean-tags:
 
-clean:
-	-rm -f *.o $(TEK2PLOT) $(TEK2PLOTX) ts core test* data*
+distclean-tags:
+	rm -f TAGS ID
 
-distclean: clean
-	-rm -f \#* *~ TAGS Makefile
+maintainer-clean-tags:
 
-realclean: distclean
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-TAGS: $(SRCS) $(top_srcdir)/include/sys-defines.h $(top_srcdir)/include/plot.h $(top_srcdir)/getopt/getopt.h
-	cd $(srcdir) && etags $(SRCS) ../include/sys-defines.h ../include/plot.h ../getopt/getopt.h
+subdir = tek2plot
 
-######################################################################
-# dependencies generated by gcc -c -MM *.c -I etc.
-######################################################################
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  test -f $(distdir)/$$file \
+	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	  || cp -p $$d/$$file $(distdir)/$$file; \
+	done
+	for subdir in $(SUBDIRS); do		\
+	  test -d $(distdir)/$$subdir		\
+	  || mkdir $(distdir)/$$subdir		\
+	  || exit 1;				\
+	  chmod 777 $(distdir)/$$subdir;	\
+	  (cd $$subdir && $(MAKE) top_distdir=../$(top_distdir) distdir=../$(distdir)/$$subdir distdir) \
+	    || exit 1; \
+	done
+Tektable.o Tektable.lo: Tektable.c Tekparse.h
+tek2plot.o tek2plot.lo: tek2plot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h ./../include/getopt.h \
+	Tekparse.h
 
-tek2.o: tek2.c $(top_srcdir)/include/sys-defines.h $(top_srcdir)/include/plot.h $(top_srcdir)/getopt/getopt.h
+info: info-recursive
+dvi: dvi-recursive
+check: all-am
+	$(MAKE) check-recursive
+installcheck: installcheck-recursive
+all-am: Makefile $(PROGRAMS) $(HEADERS)
+
+install-exec-am: install-binPROGRAMS
+
+uninstall-am: uninstall-binPROGRAMS
+
+install-exec: install-exec-recursive install-exec-am
+	@$(NORMAL_INSTALL)
+	$(MAKE) install-exec-hook
+
+install-data: install-data-recursive
+	@$(NORMAL_INSTALL)
+
+install: install-recursive install-exec-am
+	@:
+
+uninstall: uninstall-recursive uninstall-am
+
+all: all-recursive all-am
+
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
+installdirs: installdirs-recursive
+	$(mkinstalldirs)  $(bindir)
+
+
+mostlyclean-generic:
+	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+
+clean-generic:
+	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	rm -f Makefile $(DISTCLEANFILES)
+	rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+
+maintainer-clean-generic:
+	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-tags \
+		mostlyclean-generic
+
+clean-am:  clean-binPROGRAMS clean-compile clean-libtool clean-tags \
+		clean-generic mostlyclean-am
+
+distclean-am:  distclean-binPROGRAMS distclean-compile distclean-libtool \
+		distclean-tags distclean-generic clean-am
+
+maintainer-clean-am:  maintainer-clean-binPROGRAMS \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-tags maintainer-clean-generic \
+		distclean-am
+
+mostlyclean:  mostlyclean-recursive mostlyclean-am
+
+clean:  clean-recursive clean-am
+
+distclean:  distclean-recursive distclean-am
+	rm -f config.status
+	rm -f libtool
+
+maintainer-clean:  maintainer-clean-recursive maintainer-clean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+.PHONY: default mostlyclean-binPROGRAMS distclean-binPROGRAMS \
+clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
+install-binPROGRAMS mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile mostlyclean-libtool distclean-libtool \
+clean-libtool maintainer-clean-libtool install-data-recursive \
+uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
+maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir info dvi \
+installcheck all-am install-exec-am uninstall-am install-exec \
+install-data install uninstall all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+install-exec-hook:
+	-for f in $(OBSOLETEBINS) ; do rm -f $(bindir)/$$f; done
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

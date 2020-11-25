@@ -120,7 +120,7 @@ typedef struct
   double input_min, input_max;	/* min, max */
   double input_range;		/* max - min, precomputed for speed */
   /* If we're reversing axes, we'll then map [0.0,1.0] to [1.0,0.0] */
-  Boolean reverse;
+  bool reverse;
   /* We'll map [0.0,1.0] to another (smaller) interval, linearly */
   double squeezed_min, squeezed_max; /* min, max */
   double squeezed_range;	/* max - min */
@@ -199,16 +199,16 @@ typedef struct
   int type;			/* axis layout type (A_LINEAR or A_LOG10) */
   double tick_spacing;		/* distance between ticks */
   int min_tick_count, max_tick_count; /* tick location = count * spacing */
-  Boolean have_lin_subticks;	/* does axis have linearly spaced subticks? */
+  bool have_lin_subticks;	/* does axis have linearly spaced subticks? */
   double lin_subtick_spacing;	/* distance between linearly spaced subticks */
   int min_lin_subtick_count, max_lin_subtick_count; 
-  Boolean have_normal_subsubticks; /* does axis have logarithmic subsubticks?*/
-  Boolean user_specified_subsubticks; /* axis has user-spec'd subsubticks? */
+  bool have_normal_subsubticks; /* does axis have logarithmic subsubticks?*/
+  bool user_specified_subsubticks; /* axis has user-spec'd subsubticks? */
   double subsubtick_spacing;	/* spacing for user-specified ones */
   double other_axis_loc;	/* location of intersection w/ other axis */
   double alt_other_axis_loc;	/* alternative loc. (e.g. right end vs. left)*/
-  Boolean switch_axis_end;	/* other axis at right/top, not left/bottom? */
-  Boolean omit_ticks;		/* just plain omit them (and their labels) ? */
+  bool switch_axis_end;	/* other axis at right/top, not left/bottom? */
+  bool omit_ticks;		/* just plain omit them (and their labels) ? */
   double max_label_width;	/* max width of labels placed on axis, in
 				   libplot coors (we update this during
 				   plotting, for y axis only) */
@@ -228,10 +228,11 @@ static Axis x_axis, y_axis;
 typedef struct
 {
   /* following elements are parameters (not updated during plotter operation)*/
-  Boolean save_screen;		/* erase display when opening plotter? */
+  char *display_type;		/* mnemonic: type of libplot device driver */
+  bool save_screen;		/* erase display when opening plotter? */
   grid_type grid_spec;		/* frame specification */
   double blankout_fraction;	/* 1.0 means blank whole box before plot */
-  Boolean no_rotate_y_label;	/* useful for pre-X11R6 X servers */
+  bool no_rotate_y_label;	/* useful for pre-X11R6 X servers */
   double tick_size;		/* fractional tick size */
   double subtick_size;		/* fractional subtick size (for linear axes) */
   double frame_line_width;	/* fractional width of lines in the frame */
@@ -243,8 +244,8 @@ typedef struct
   int clip_mode;		/* 0, 1, or 2 (cf. clipping in gnuplot) */
   /* following elements are updated during plotter operation; they're the
      repository for plotter state */
-  Boolean first_point_of_plot;	/* TRUE only at beginning of each plot */
-  Boolean need_break;		/* break polyline before next point? */
+  bool first_point_of_plot;	/* true only at beginning of each plot */
+  bool need_break;		/* break polyline before next point? */
   double oldpoint_x, oldpoint_y; /* last-plotted point */
   int symbol;			/* symbol being plotted at each point */
   int linemode;			/* linemode used for polyline */
@@ -253,32 +254,25 @@ typedef struct
 static Plotter plotter;
 
 /* forward references */
-#if __STDC__
-#define P__(a)	a
-#else
-#define P__(a)	()
-#endif
-
-static int clip_line P__((double *x0_p, double *y0_p, double *x1_p, double *y1_p));
-static int spacing_type P__((double spacing));
-static outcode compute_outcode P__((double x, double y));
-static void plot_errorbar P__((const Point *p));
-static void prepare_axis P__((Axis *axisp, Transform *trans, 
+static int clip_line __P((double *x0_p, double *y0_p, double *x1_p, double *y1_p));
+static int spacing_type __P((double spacing));
+static outcode compute_outcode __P((double x, double y));
+static void plot_errorbar __P((const Point *p));
+static void prepare_axis __P((Axis *axisp, Transform *trans, 
 		       double min, double max, double spacing, 
 		       char *font_name, double font_size, char *label, 
 		       double subsubtick_spacing, 
-		       Boolean user_specified_subsubticks, 
-		       Boolean round_to_next_tick, Boolean log_axis,
-		       Boolean reverse_axis, Boolean switch_axis_end, 
-		       Boolean omit_ticks));
-static void plot_abscissa_log_subsubtick P__((double xval));
-static void plot_ordinate_log_subsubtick P__((double xval));
-static void print_tick_label P__((char *labelbuf, Axis axis, Transform transform, double val));
-static void scale1 P__((double min, double max, 
+		       bool user_specified_subsubticks, 
+		       bool round_to_next_tick, bool log_axis,
+		       bool reverse_axis, bool switch_axis_end, 
+		       bool omit_ticks));
+static void plot_abscissa_log_subsubtick __P((double xval));
+static void plot_ordinate_log_subsubtick __P((double xval));
+static void print_tick_label __P((char *labelbuf, Axis axis, Transform transform, double val));
+static void scale1 __P((double min, double max, 
 		 double *tick_spacing, int *tick_spacing_type));
-static void set_line_style P__((int style, Boolean use_color));
-static void transpose_portmanteau P__((int *val));
-#undef P__
+static void set_line_style __P((int style, bool use_color));
+static void transpose_portmanteau __P((int *val));
 
 
 /* print_tick_label() prints a label on an axis tick.  The format depends
@@ -287,17 +281,21 @@ static void transpose_portmanteau P__((int *val));
  */
 
 static void
+#ifdef _HAVE_PROTOS
+print_tick_label (char *labelbuf, Axis axis, Transform transform, double val)
+#else
 print_tick_label (labelbuf, axis, transform, val)
      char *labelbuf;
      Axis axis;
      Transform transform;
      double val;
+#endif
 {
   int prec;
   char *eloc, *ptr;
   char labelbuf_tmp[64], incrbuf[64];
   double spacing;
-  Boolean big_exponents;
+  bool big_exponents;
   double min, max;
 
   /* two possibilities: large/small exponent magnitudes */
@@ -365,8 +363,9 @@ print_tick_label (labelbuf, axis, transform, val)
 	}
       
       /* \sp ... \ep is start_superscript ... end_superscript, and \r6 is
-	 right-shift by 1/6 em.  \mu is the `times' character. */
-      sprintf (dst, "%.*f\\r6\\mu10\\sp%d\\ep", 
+	 right-shift by 1/6 em.  \mu is the `times' character.  The \r8\l8
+	 foolishness is to work around a bug in xfig 3.1. */
+      sprintf (dst, "%.*f\\r6\\mu\\r8\\l810\\sp%d\\ep", 
 	       prec, prefactor, exponent);
 
       return;
@@ -421,12 +420,16 @@ print_tick_label (labelbuf, axis, transform, val)
  */
 
 static void
+#ifdef _HAVE_PROTOS
+scale1 (double min, double max, double *tick_spacing, int *tick_spacing_type)
+#else
 scale1 (min, max, tick_spacing, tick_spacing_type)
      double min;		/* Data min */
      double max;		/* Data max */
      double *tick_spacing;	/* Inter-tick spacing */
      int *tick_spacing_type;	/* Inter-tick spacing type (0, 1, or 2,
 				   i.e. S_ONE, S_TWO, or S_FIVE) */
+#endif
 {
   int k;
   double nal;
@@ -480,17 +483,21 @@ scale1 (min, max, tick_spacing, tick_spacing_type)
 /* Determine whether an inter-tick spacing (in practice, one specified by
    the user) is 1.0, 2.0, or 5.0 times a power of 10. */
 static int 
+#ifdef _HAVE_PROTOS
+spacing_type (double incr)
+#else
 spacing_type (incr)
      double incr;
+#endif
 {
   int i;
-  int i_tenpower = (int)floor(log10(incr));
+  int i_tenpower = (int)(floor(log10(incr)));
   double tenpower = 1.0;
-  Boolean neg_power = FALSE;
+  bool neg_power = false;
 
   if (i_tenpower < 0)
     {
-      neg_power = TRUE;
+      neg_power = true;
       i_tenpower = -i_tenpower;
     }
 
@@ -517,6 +524,14 @@ spacing_type (incr)
  */
 
 static void 
+#ifdef _HAVE_PROTOS
+prepare_axis (Axis *axisp, Transform *trans, double min, double max, 
+	      double spacing, char *font_name, double font_size, char *label,
+	      double subsubtick_spacing, 
+	      bool user_specified_subsubticks, bool round_to_next_tick,
+	      bool log_axis, bool reverse_axis, 
+	      bool switch_axis_end, bool omit_ticks)
+#else
 prepare_axis (axisp, trans, 
 	      min, max, spacing, 
 	      font_name, font_size, label,
@@ -532,19 +547,20 @@ prepare_axis (axisp, trans,
      double font_size;
      char *label;
      double subsubtick_spacing;
-     Boolean user_specified_subsubticks; /* i.e. linear ticks on a log axis */
-     Boolean round_to_next_tick; /* round limits to the next tick mark */
-     Boolean log_axis;	/* log axis */
-     Boolean reverse_axis;	/* will reverse min, max */
-     Boolean switch_axis_end;	/* intersection w/ other axis in alt. pos. */
-     Boolean omit_ticks;	/* suppress all ticks and tick labels */
+     bool user_specified_subsubticks; /* i.e. linear ticks on a log axis */
+     bool round_to_next_tick; /* round limits to the next tick mark */
+     bool log_axis;	/* log axis */
+     bool reverse_axis;	/* will reverse min, max */
+     bool switch_axis_end;	/* intersection w/ other axis in alt. pos. */
+     bool omit_ticks;	/* suppress all ticks and tick labels */
+#endif
 {
   double range;
   int tick_spacing_type = 0;
   double tick_spacing, lin_subtick_spacing;
   int min_tick_count, max_tick_count;
   int min_lin_subtick_count, max_lin_subtick_count;
-  Boolean have_lin_subticks;
+  bool have_lin_subticks;
 
   if (min > max)
     /* paranoia, max < min is swapped at top level */
@@ -597,10 +613,10 @@ prepare_axis (axisp, trans,
 	  double true_range = true_max - true_min;
 	  int min_count, max_count;
 	  
-	  min_count = (int)floor ((true_min + FUZZ * true_range)
-				  / subsubtick_spacing);
-	  max_count = (int)ceil ((true_max - FUZZ * true_range) 
-				 / subsubtick_spacing);
+	  min_count = (int)(floor ((true_min + FUZZ * true_range)
+				   / subsubtick_spacing));
+	  max_count = (int)(ceil ((true_max - FUZZ * true_range) 
+				  / subsubtick_spacing));
 	  min = log10 (min_count * subsubtick_spacing);
 	  max = log10 (max_count * subsubtick_spacing);	  
 	  range = max - min;
@@ -608,8 +624,8 @@ prepare_axis (axisp, trans,
 	}
       else
 	{
-	  min_tick_count = (int)floor((min + FUZZ * range)/ tick_spacing);
-	  max_tick_count = (int)ceil((max - FUZZ * range)/ tick_spacing);
+	  min_tick_count = (int)(floor((min + FUZZ * range)/ tick_spacing));
+	  max_tick_count = (int)(ceil((max - FUZZ * range)/ tick_spacing));
 	  /* max_tick_count > min_tick_count always */
 	  /* tickval = tick_spacing * count, 
 	     for all count in [min_count,max_count]; must have >=2 ticks */
@@ -620,8 +636,8 @@ prepare_axis (axisp, trans,
     }
   else		/* don't expand limits to next tick */
     {
-      min_tick_count = (int)ceil((min - FUZZ * range)/ tick_spacing);
-      max_tick_count = (int)floor((max + FUZZ * range)/ tick_spacing); 
+      min_tick_count = (int)(ceil((min - FUZZ * range)/ tick_spacing));
+      max_tick_count = (int)(floor((max + FUZZ * range)/ tick_spacing)); 
       /* max_tick_count <= min_tick_count is possible */
       /* tickval = incr * count, 
 	 for all count in [min_count,max_count]; can have 0,1,2,3... ticks */
@@ -640,13 +656,13 @@ prepare_axis (axisp, trans,
       break;
     case S_ONE:
       lin_subtick_spacing = tick_spacing / 10;
-      min_lin_subtick_count = (int)ceil((min - FUZZ * range)/ lin_subtick_spacing);
-      max_lin_subtick_count = (int)floor((max + FUZZ * range)/ lin_subtick_spacing); 
+      min_lin_subtick_count = (int)(ceil((min - FUZZ * range)/ lin_subtick_spacing));
+      max_lin_subtick_count = (int)(floor((max + FUZZ * range)/ lin_subtick_spacing)); 
       if (max_lin_subtick_count - min_lin_subtick_count > MAX_NUM_SUBTICKS)
 	{
 	  lin_subtick_spacing = tick_spacing / 5;
-	  min_lin_subtick_count = (int)ceil((min - FUZZ * range)/ lin_subtick_spacing);
-	  max_lin_subtick_count = (int)floor((max + FUZZ * range)/ lin_subtick_spacing); 
+	  min_lin_subtick_count = (int)(ceil((min - FUZZ * range)/ lin_subtick_spacing));
+	  max_lin_subtick_count = (int)(floor((max + FUZZ * range)/ lin_subtick_spacing)); 
 	  if (max_lin_subtick_count - min_lin_subtick_count > MAX_NUM_SUBTICKS)
 	    lin_subtick_spacing = tick_spacing / 2;
 	}
@@ -660,8 +676,8 @@ prepare_axis (axisp, trans,
   if (log_axis && lin_subtick_spacing <= 1.0)
     lin_subtick_spacing = 1.0;
 
-  min_lin_subtick_count = (int)ceil((min - FUZZ * range)/ lin_subtick_spacing);
-  max_lin_subtick_count = (int)floor((max + FUZZ * range)/ lin_subtick_spacing); 
+  min_lin_subtick_count = (int)(ceil((min - FUZZ * range)/ lin_subtick_spacing));
+  max_lin_subtick_count = (int)(floor((max + FUZZ * range)/ lin_subtick_spacing)); 
   have_lin_subticks 
     = (tick_spacing_type != S_UNKNOWN /* S_UNKNOWN -> no subticks */
        && (max_lin_subtick_count - min_lin_subtick_count) <= MAX_NUM_SUBTICKS);
@@ -697,13 +713,13 @@ prepare_axis (axisp, trans,
       if (max - min <= 
 	  MAX_DECADES_WITH_LOG_SUBSUBTICKS + FUZZ) 
 	/* not too many orders of magnitude, so plot normal log subsubticks */
-	axisp->have_normal_subsubticks = TRUE;
+	axisp->have_normal_subsubticks = true;
       else
 	/* too many orders of magnitude, don't plot log subsubticks */
-	axisp->have_normal_subsubticks = FALSE;
+	axisp->have_normal_subsubticks = false;
     }
   else				/* linear axes don't have log subsubticks */
-    axisp->have_normal_subsubticks = FALSE;
+    axisp->have_normal_subsubticks = false;
 }
 
 /* The following routines [initialize_plotter(), open_plotter(),
@@ -712,7 +728,24 @@ prepare_axis (axisp, trans,
  */
 
 void 
-initialize_plotter(save_screen, frame_line_width, frame_color,
+#ifdef _HAVE_PROTOS
+initialize_plotter(char *display_type, bool save_screen, 
+		   double frame_line_width, char *frame_color, char *title, 
+		   char *title_font_name, double title_font_size, 
+		   double tick_size, grid_type grid_spec, double x_min, 
+		   double x_max, double x_spacing, double y_min, double y_max,
+		   double y_spacing, bool spec_x_spacing, 
+		   bool spec_y_spacing, double width, double height, 
+		   double up, double right, char *x_font_name, 
+		   double x_font_size, char *x_label, char *y_font_name, 
+		   double y_font_size, char *y_label, 
+		   bool no_rotate_y_label, int log_axis,
+		   int round_to_next_tick, int switch_axis_end, 
+		   int omit_ticks, int clip_mode, double blankout_fraction,
+		   bool transpose_axes)
+#else
+initialize_plotter(display_type,
+		   save_screen, frame_line_width, frame_color,
 		   title, title_font_name, title_font_size,
 		   tick_size, grid_spec, 
 		   x_min, x_max, x_spacing, y_min, y_max, y_spacing, 
@@ -726,9 +759,10 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
 		   switch_axis_end, omit_ticks, 
 		   clip_mode, blankout_fraction,
 		   transpose_axes)
-     Boolean save_screen;	/* whether or not to erase */
+     char *display_type;	/* mnemonic: type of libplot display driver */
+     bool save_screen;	/* whether or not to erase */
      double frame_line_width;	/* fractional width of lines in the frame */
-     char *frame_color;		/* color for frame (and plot if no -C option) */
+     char *frame_color;		/* color for frame (and plot if no -C option)*/
      char *title;		/* plot title */
      char *title_font_name; /* font for plot title (string) */
      double title_font_size;	/* font size for plot title  */
@@ -736,8 +770,8 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
      grid_type grid_spec;	/* gridstyle (and tickstyle) spec */
      double x_min, x_max, x_spacing;
      double y_min, y_max, y_spacing;
-     Boolean spec_x_spacing;
-     Boolean spec_y_spacing;
+     bool spec_x_spacing;
+     bool spec_y_spacing;
      double width, height, up, right;
      char *x_font_name;
      double x_font_size;
@@ -745,7 +779,7 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
      char *y_font_name; 
      double y_font_size;
      char *y_label;
-     Boolean no_rotate_y_label;
+     bool no_rotate_y_label;
      /* portmanteaux */
      int log_axis;		/* whether axes should be logarithmic */
      int round_to_next_tick;	/* round limits to the next tick mark */
@@ -754,19 +788,22 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
      /* other args */
      int clip_mode;		/* clip mode = 0, 1, or 2 */
      double blankout_fraction;	/* 1.0 means blank out whole box before plot*/
-     Boolean transpose_axes;
+     bool transpose_axes;
+#endif
 {
   double x_subsubtick_spacing = 0.0, y_subsubtick_spacing = 0.0;
   /* local portmanteau variables */
   int reverse_axis = 0;		/* min > max on an axis? */
   int user_specified_subsubticks = 0; /* i.e. linear ticks on a log axis? */
 
+  plotter.display_type = xstrdup (display_type);
+
   if (log_axis & X_AXIS)
     {
       if (spec_x_spacing)
 	/* spacing is handled specially for log axes */
 	{
-	  spec_x_spacing = FALSE;
+	  spec_x_spacing = false;
 	  user_specified_subsubticks |= X_AXIS;
 	  x_subsubtick_spacing = x_spacing;
 	}
@@ -777,7 +814,7 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
       if (spec_y_spacing)
 	{
 	  /* spacing is handled specially for log axes */
-	  spec_y_spacing = FALSE;
+	  spec_y_spacing = false;
 	  user_specified_subsubticks |= Y_AXIS;
 	  y_subsubtick_spacing = y_spacing;
 	}
@@ -798,7 +835,7 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
   if (x_max == x_min)
     {
       fprintf (stderr, 
-	       "%s: warning: separating identical upper and lower x limits\n",
+	       "%s: separating identical upper and lower x limits\n",
 	       progname);
       /* separate them */
       x_max += 1.0;
@@ -819,7 +856,7 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
   if (y_max == y_min)
     {
       fprintf (stderr, 
-	       "%s: warning: separating identical upper and lower y limits\n",
+	       "%s: separating identical upper and lower y limits\n",
 	       progname);
       /* separate them */
       y_max += 1.0;
@@ -917,22 +954,22 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
 	       x_min, x_max, x_spacing,
 	       x_font_name, x_font_size, x_label, 
 	       x_subsubtick_spacing,
-	       (Boolean)(user_specified_subsubticks & X_AXIS), 
-	       (Boolean)(round_to_next_tick & X_AXIS),
-	       (Boolean)(log_axis & X_AXIS), 
-	       (Boolean)(reverse_axis & X_AXIS),
-	       (Boolean)(switch_axis_end & X_AXIS),
-	       (Boolean)(omit_ticks & X_AXIS));
+	       (bool)(user_specified_subsubticks & X_AXIS), 
+	       (bool)(round_to_next_tick & X_AXIS),
+	       (bool)(log_axis & X_AXIS), 
+	       (bool)(reverse_axis & X_AXIS),
+	       (bool)(switch_axis_end & X_AXIS),
+	       (bool)(omit_ticks & X_AXIS));
   prepare_axis(&y_axis, &y_trans,
 	       y_min, y_max, y_spacing,
 	       y_font_name, y_font_size, y_label, 
 	       y_subsubtick_spacing,
-	       (Boolean)(user_specified_subsubticks & Y_AXIS), 
-	       (Boolean)(round_to_next_tick & Y_AXIS),
-	       (Boolean)(log_axis & Y_AXIS), 
-	       (Boolean)(reverse_axis & Y_AXIS),
-	       (Boolean)(switch_axis_end & Y_AXIS),
-	       (Boolean)(omit_ticks & Y_AXIS));
+	       (bool)(user_specified_subsubticks & Y_AXIS), 
+	       (bool)(round_to_next_tick & Y_AXIS),
+	       (bool)(log_axis & Y_AXIS), 
+	       (bool)(reverse_axis & Y_AXIS),
+	       (bool)(switch_axis_end & Y_AXIS),
+	       (bool)(omit_ticks & Y_AXIS));
   
   /* fill in additional parameters in the two Transform structures */
   x_trans.squeezed_min = right;
@@ -988,20 +1025,30 @@ initialize_plotter(save_screen, frame_line_width, frame_color,
   /* The following is a version of (plotter.frame_line_width)/2 (expressed
      in terms of libplot coordinates) which the plotter uses as an offset,
      to get highly accurate positioning of ticks and labels. */
-  if (frame_line_width < 0.0 || !_libplot_have_wide_lines)
+  if (frame_line_width < 0.0 || havecap ("WIDE_LINES") == 0)
     plotter.half_line_width = 0.0;/* N.B. <0.0 -> default width, pres. small */
   else
     plotter.half_line_width = 0.5 * frame_line_width * x_trans.output_range;
 
   /* initialize the plotter state variables */
-  plotter.first_point_of_plot = TRUE;
+  plotter.first_point_of_plot = true;
   plotter.oldpoint_x = 0.0; 
   plotter.oldpoint_y = 0.0;
 }
 
 int
+#ifdef _HAVE_PROTOS
+open_plotter(void)
+#else
 open_plotter()
+#endif
 {
+  int handle;
+
+  if ((handle = newpl (plotter.display_type, NULL, stdout, stderr)) < 0)
+    return -1;
+  else
+    selectpl (handle);
   if (openpl () < 0)
     return -1;
   if (!plotter.save_screen)
@@ -1012,7 +1059,11 @@ open_plotter()
 }
 
 int
+#ifdef _HAVE_PROTOS
+close_plotter(void)
+#else
 close_plotter()
+#endif
 {
   return closepl ();
 }
@@ -1052,10 +1103,14 @@ close_plotter()
 */
 
 void
+#ifdef _HAVE_PROTOS
+plot_frame (bool draw_canvas)
+#else
 plot_frame (draw_canvas)
-     Boolean draw_canvas;
+     bool draw_canvas;
+#endif
 {
-  static Boolean tick_warning_printed = FALSE; /*when too few labelled ticks*/
+  static bool tick_warning_printed = false; /*when too few labelled ticks*/
 
   savestate();	/* wrap savestate()--restorestate() around all 9 tasks */
 
@@ -1072,7 +1127,7 @@ plot_frame (draw_canvas)
     {
       savestate();
       colorname ("white");
-      fill (1);			/* turn on filling */
+      filltype (1);		/* turn on filling */
       fbox (XP(XSQ(0.5 - 0.5 * plotter.blankout_fraction)), 
 	    YP(YSQ(0.5 - 0.5 * plotter.blankout_fraction)),
 	    XP(XSQ(0.5 + 0.5 * plotter.blankout_fraction)),
@@ -1090,13 +1145,7 @@ plot_frame (draw_canvas)
 
       /* switch to our font for drawing title */
       fontname (plotter.title_font_name);
-      if (_libplot_have_font_metrics)
-	title_font_size = ffontsize (SS(plotter.title_font_size));
-      else
-	{
-	  title_font_size = SS(plotter.title_font_size);
-	  ffontsize (title_font_size);
-	}
+      title_font_size = ffontsize (SS(plotter.title_font_size));
 
       fmove (XP(XSQ(0.5)), 
 	     YP(YSQ(1.0 
@@ -1417,7 +1466,8 @@ plot_frame (draw_canvas)
 		     YV (yval));
 	      print_tick_label (labelbuf, y_axis, y_trans,
 				(y_axis.type == A_LOG10) ? pow (10.0, yval) : yval);
-	      new_width = falabel ('r', 'c', labelbuf);
+	      new_width = flabelwidth (labelbuf);
+	      alabel ('r', 'c', labelbuf);
 	      y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
 	      y_axis.labelled_ticks++;
 	    }
@@ -1440,7 +1490,8 @@ plot_frame (draw_canvas)
 		     YV (yval));
 	      print_tick_label (labelbuf, y_axis, y_trans,
 				(y_axis.type == A_LOG10) ? pow (10.0, yval) : yval);
-	      new_width = falabel ('l', 'c', labelbuf);
+	      new_width = flabelwidth (labelbuf);
+	      alabel ('l', 'c', labelbuf);
 	      y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
 	      y_axis.labelled_ticks++;
 	    }
@@ -1601,8 +1652,8 @@ plot_frame (draw_canvas)
 
       /* compute an integer range (of powers of 10) large enough to include
 	 the entire desired axis */
-      imin = (int)floor (x_trans.input_min - FUZZ * xrange);
-      imax = (int)ceil (x_trans.input_max + FUZZ * xrange);
+      imin = (int)(floor (x_trans.input_min - FUZZ * xrange));
+      imax = (int)(ceil (x_trans.input_max + FUZZ * xrange));
 
       for (i = imin; i < imax; i++)
 	{
@@ -1626,10 +1677,10 @@ plot_frame (draw_canvas)
       
       /* compute an integer range large enough to include the entire
 	 desired axis */
-      imin = (int)floor (pow (10.0, x_trans.input_min - FUZZ * xrange) 
-			 / x_axis.subsubtick_spacing);
-      imax = (int)ceil (pow (10.0, x_trans.input_max + FUZZ * xrange) 
-			/ x_axis.subsubtick_spacing);
+      imin = (int)(floor (pow (10.0, x_trans.input_min - FUZZ * xrange) 
+			  / x_axis.subsubtick_spacing));
+      imax = (int)(ceil (pow (10.0, x_trans.input_max + FUZZ * xrange) 
+			 / x_axis.subsubtick_spacing));
       
       /* draw user-specified subsubticks */
       for (i = imin; i <= imax; i++)
@@ -1653,8 +1704,8 @@ plot_frame (draw_canvas)
 
       /* compute an integer range (of powers of 10) large enough to include
 	 the entire desired axis */
-      imin = (int)floor (y_trans.input_min - FUZZ * yrange);
-      imax = (int)ceil (y_trans.input_max + FUZZ * yrange);
+      imin = (int)(floor (y_trans.input_min - FUZZ * yrange));
+      imax = (int)(ceil (y_trans.input_max + FUZZ * yrange));
 
       /* draw normal subticks */
       for (i = imin; i < imax; i++)
@@ -1679,10 +1730,10 @@ plot_frame (draw_canvas)
       
       /* compute an integer range large enough to include the entire
 	 desired axis */
-      imin = (int)floor (pow (10.0, y_trans.input_min - FUZZ * yrange) 
-			 / y_axis.subsubtick_spacing);
-      imax = (int)ceil (pow (10.0, y_trans.input_max + FUZZ * yrange) 
-			/ y_axis.subsubtick_spacing);
+      imin = (int)(floor (pow (10.0, y_trans.input_min - FUZZ * yrange) 
+			  / y_axis.subsubtick_spacing));
+      imax = (int)(ceil (pow (10.0, y_trans.input_max + FUZZ * yrange) 
+			 / y_axis.subsubtick_spacing));
       
       /* draw user-specified subsubticks */
       for (i = imin; i <= imax; i++)
@@ -1705,13 +1756,7 @@ plot_frame (draw_canvas)
 
       /* switch to our font for drawing x axis label and tick labels */
       fontname (x_axis.font_name);
-      if (_libplot_have_font_metrics)
-	x_axis_font_size = ffontsize (SS(x_axis.font_size));
-      else
-	{
-	  x_axis_font_size = SS(x_axis.font_size);
-	  ffontsize (x_axis_font_size);
-	}
+      x_axis_font_size = ffontsize (SS(x_axis.font_size));
 
       if (plotter.grid_spec != AXES_AT_ORIGIN)
 	/* center the label on the axis */
@@ -1762,13 +1807,7 @@ plot_frame (draw_canvas)
 
       /* switch to our font for drawing y axis label and tick labels */
       fontname (y_axis.font_name);
-      if (_libplot_have_font_metrics)
-	y_axis_font_size = ffontsize (SS(y_axis.font_size));
-      else
-	{
-	  y_axis_font_size = SS(y_axis.font_size);
-	  ffontsize (y_axis_font_size);
-	}
+      y_axis_font_size = ffontsize (SS(y_axis.font_size));
 
       if (plotter.grid_spec != AXES_AT_ORIGIN)
 	/* center the label on the axis */
@@ -1786,10 +1825,13 @@ plot_frame (draw_canvas)
 		  0.5 * (y_axis.other_axis_loc + y_trans.input_min);
 	}
       
+/* a relic of temps perdus */
+#define libplot_has_font_metrics 1
+
       if (!x_axis.switch_axis_end)
 	{
 	  fmove (XN (x_axis.other_axis_loc)
-		 - (_libplot_have_font_metrics ?
+		 - (libplot_has_font_metrics ?
 		    (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
 			* fabs(plotter.tick_size)) 
 		     + 1.15 * y_axis.max_label_width
@@ -1801,7 +1843,7 @@ plot_frame (draw_canvas)
 		       + plotter.half_line_width)),
 		 YV(yloc));
 	  
-	  if (_libplot_have_font_metrics
+	  if (libplot_has_font_metrics
 	      && !plotter.no_rotate_y_label) /* can rotate label */
 	    {
 	      textangle (90);
@@ -1815,7 +1857,7 @@ plot_frame (draw_canvas)
       else
 	{
 	  fmove (XN (x_axis.alt_other_axis_loc)
-		 + (_libplot_have_font_metrics ?
+		 + (libplot_has_font_metrics ?
 		    (SS((plotter.tick_size >= 0.0 ? 0.75 : 1.75) 
 			* fabs(plotter.tick_size)) 
 		     + 1.15 * y_axis.max_label_width 
@@ -1827,7 +1869,7 @@ plot_frame (draw_canvas)
 		       + plotter.half_line_width)), 
 		 YV(yloc));
 	  
-	  if (_libplot_have_font_metrics
+	  if (libplot_has_font_metrics
 	      && !plotter.no_rotate_y_label) /* can rotate label */
 	    {
 	      textangle (90);
@@ -1852,9 +1894,9 @@ plot_frame (draw_canvas)
       if (!tick_warning_printed && 
 	  (x_axis.labelled_ticks <= 2 || y_axis.labelled_ticks <= 2))
 	{
-	  fprintf (stderr, "%s: warning: too few labelled axis ticks, set tick spacing manually\n",
+	  fprintf (stderr, "%s: too few labelled axis ticks, set tick spacing manually\n",
 		   progname);
-	  tick_warning_printed = TRUE;
+	  tick_warning_printed = true;
 	}
     }
 }
@@ -1866,8 +1908,12 @@ plot_frame (draw_canvas)
    ones */
 
 static void
+#ifdef _HAVE_PROTOS
+plot_abscissa_log_subsubtick (double xval)
+#else
 plot_abscissa_log_subsubtick (xval)
 	double xval;		/* log of location */
+#endif
 {
   double xrange = x_trans.input_max - x_trans.input_min;
   /* there is no way you could use longer labels on tick marks! */
@@ -1975,8 +2021,12 @@ plot_abscissa_log_subsubtick (xval)
 }
 
 static void
+#ifdef _HAVE_PROTOS
+plot_ordinate_log_subsubtick (double yval)
+#else
 plot_ordinate_log_subsubtick (yval)
      double yval;		/* log of location */
+#endif
 {
   double yrange = y_trans.input_max - y_trans.input_min;
   /* there is no way you could use longer labels on tick marks! */
@@ -2007,7 +2057,8 @@ plot_ordinate_log_subsubtick (yval)
 		    * fabs((double)tick_size)
 		    + plotter.half_line_width),
 		 YV (yval));
-	  new_width = falabel ('r', 'c', labelbuf);
+	  new_width = flabelwidth (labelbuf);
+	  alabel ('r', 'c', labelbuf);
 	  y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
 	  y_axis.labelled_ticks++;
 	}
@@ -2018,7 +2069,8 @@ plot_ordinate_log_subsubtick (yval)
 		    * fabs((double)tick_size)
 		    + plotter.half_line_width),
 		YV (yval));
-	  new_width = falabel ('l', 'c', labelbuf);
+	  new_width = flabelwidth (labelbuf);
+	  alabel ('l', 'c', labelbuf);
 	  y_axis.max_label_width = DMAX(y_axis.max_label_width, new_width);
 	  y_axis.labelled_ticks++;
 	}
@@ -2092,9 +2144,13 @@ plot_ordinate_log_subsubtick (yval)
  * explanation at head of file. */
 
 static void
+#ifdef _HAVE_PROTOS
+set_line_style (int style, bool use_color)
+#else
 set_line_style (style, use_color)
      int style;
-     Boolean use_color;
+     bool use_color;
+#endif
 {
   if (!use_color)		/* monochrome */
     {
@@ -2128,7 +2184,7 @@ set_line_style (style, use_color)
       else			/* neg. linemode (no line will be drawn) */
 	j = (-style - 1) % (NO_OF_LINEMODES - 1);
 
-      color (colorstyle[j].red, colorstyle[j].green, colorstyle[j].blue);      
+      colorname (colorstyle[j]);
     }
 }
 
@@ -2138,9 +2194,13 @@ set_line_style (style, use_color)
  */
 
 void
+#ifdef _HAVE_PROTOS
+plot_point_array (const Point *p, int length)
+#else
 plot_point_array (p, length)
      const Point *p;
      int length;
+#endif
 {
   int index;
 
@@ -2158,8 +2218,12 @@ plot_point_array (p, length)
  */
 
 void
+#ifdef _HAVE_PROTOS
+plot_point (const Point *point)
+#else
 plot_point (point)
      const Point *point;
+#endif
 {
   double local_x0, local_y0, local_x1, local_y1;
   int clipval;
@@ -2182,7 +2246,7 @@ plot_point (point)
 	intfill = 0;		/* transparent */
       else			/* guaranteed to be <= 1.0 */
 	intfill = 1 + IROUND((1.0 - point->fill_fraction) * 0xfffe);
-      fill (intfill);
+      filltype (intfill);
     }
 
   local_x0 = plotter.oldpoint_x;
@@ -2257,7 +2321,7 @@ plot_point (point)
   else				/* move with pen up */
     fmove (XV (point->x), YV (point->y)); 
 
-  plotter.first_point_of_plot = FALSE;
+  plotter.first_point_of_plot = false;
   
   /* if target point is OOB, return without plotting symbol */
   if (clipval & CLIPPED_SECOND)
@@ -2328,8 +2392,12 @@ plot_point (point)
  */
 
 static int
+#ifdef _HAVE_PROTOS
+clip_line (double *x0_p, double *y0_p, double *x1_p, double *y1_p)
+#else
 clip_line (x0_p, y0_p, x1_p, y1_p)
      double *x0_p, *y0_p, *x1_p, *y1_p;
+#endif
 {
   double x0 = *x0_p;
   double y0 = *y0_p;
@@ -2337,19 +2405,19 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
   double y1 = *y1_p;
   outcode outcode0 = compute_outcode (x0, y0);
   outcode outcode1 = compute_outcode (x1, y1);  
-  Boolean accepted;
+  bool accepted;
   int clipval = 0;
   
   do
     {
       if (!(outcode0 | outcode1)) /* accept */
 	{
-	  accepted = TRUE;
+	  accepted = true;
 	  break;
 	}
       else if (outcode0 & outcode1) /* reject */
 	{
-	  accepted = FALSE;
+	  accepted = false;
 	  break;
 	}
       else
@@ -2393,7 +2461,7 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
 	    }
 	}
     }
-  while (TRUE);
+  while (true);
 
   if (accepted)
     {
@@ -2412,8 +2480,12 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
 }
 
 static outcode
+#ifdef _HAVE_PROTOS
+compute_outcode (double x, double y)
+#else
 compute_outcode (x, y)
      double x, y;
+#endif
 {
   outcode code = 0;
   double xfuzz = FUZZ * x_trans.input_range;
@@ -2432,10 +2504,14 @@ compute_outcode (x, y)
 }
 
 static void
+#ifdef _HAVE_PROTOS
+transpose_portmanteau (int *val)
+#else
 transpose_portmanteau (val)
      int *val;
+#endif
 {
-  Boolean xtrue, ytrue;
+  bool xtrue, ytrue;
   int newval;
   
   xtrue = *val & X_AXIS;
@@ -2446,8 +2522,12 @@ transpose_portmanteau (val)
 }
 
 static void 
+#ifdef _HAVE_PROTOS
+plot_errorbar (const Point *p)
+#else
 plot_errorbar (p)
      const Point *p;
+#endif
 {
   if (p->have_x_errorbar || p->have_y_errorbar)
     /* save & restore state, since error bars are solid */

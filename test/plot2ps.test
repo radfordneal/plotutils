@@ -1,0 +1,14 @@
+#!/bin/sh
+
+../plot/plot -T ps <graph.xout >plot2ps.out
+
+egrep -v 'CreationDate|Creator' $SRCDIR/plot2ps.xout > plot2ps0.out
+egrep -v 'CreationDate|Creator' plot2ps.out > plot2ps1.out
+
+if (cmp -s plot2ps0.out plot2ps1.out)
+	then retval=0;
+	else retval=1;
+	fi;
+
+rm -f *.out
+exit $retval

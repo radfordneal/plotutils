@@ -14,8 +14,12 @@ double stack[NSTACK];
  */
 
 double
+#ifdef _HAVE_PROTOS
+eval (const struct expr *ep)
+#else
 eval (ep)
-     struct expr *ep;
+     const struct expr *ep;
+#endif
 {
   double *sp;
   double tmp, tmp2;
@@ -182,11 +186,15 @@ eval (ep)
 }
 
 struct expr *
+#ifdef _HAVE_PROTOS
+ealloc (void)
+#else
 ealloc ()
+#endif
 {
   struct expr *ep;
   
-  ep = (struct expr *)xmalloc (sizeof(struct expr));
+  ep = (struct expr *)xmalloc ((unsigned int)sizeof(struct expr));
   ep->ex_next = NULL;
   ep->ex_sym = NULL;
   ep->ex_oper = O_NOOP;		/* default */
@@ -194,8 +202,12 @@ ealloc ()
 }
 
 void
+#ifdef _HAVE_PROTOS
+efree (struct expr *ep)
+#else
 efree (ep)
      struct expr *ep;
+#endif
 {
   if (ep == NULL || ep == &exprzero || ep == &exprone)
     return;

@@ -1,117 +1,184 @@
-/* This is plot.h, the user-level include file for the several versions of
-   GNU libplot.  stdio.h must be included by the user before this file is
-   included. */
+/* This is plot.h, the user-level include file for release 0.0 of 
+   GNU libplot, a shared library for 2-dimensional vector graphics.  
 
-#ifndef _plot_h_
-#define _plot_h_
+   Release 0.0 of libplot, and this file, are distributed as part of
+   release 2.0 of the GNU plotting utilities package. */
+
+/* stdio.h must be included before this file is included. */
+
+#ifndef _PLOT_H_
+#define _PLOT_H_ 1
 
 /* support C++ */
+#ifdef __BEGIN_DECLS
+#undef __BEGIN_DECLS
+#endif
+#ifdef __END_DECLS
+#undef __END_DECLS
+#endif
 #ifdef __cplusplus
-#define externMod extern "C"
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
 #else
-#define externMod extern
+# define __BEGIN_DECLS		/* empty */
+# define __END_DECLS		/* empty */
+#endif
+     
+/* ___P is a macro used to wrap function prototypes, so that compilers that
+   don't understand ANSI C prototypes still work, and ANSI C compilers can
+   issue warnings about type mismatches. */
+#ifdef ___P
+#undef ___P
+#endif
+#if defined (__STDC__) || defined (_AIX) \
+	|| (defined (__mips) && defined (_SYSTYPE_SVR4)) \
+	|| defined(WIN32) || defined(__cplusplus)
+#define ___P(protos) protos
+#else
+#define ___P(protos) ()
 #endif
 
-/* This elides the argument prototypes if the compiler does not support
-   them. The name P__ is chosen in hopes that it will not collide with any
-   others. */
-#if __STDC__
-#define P__(a)	a
+/* For old compilers (e.g. RT-PC) */
+#ifdef ___const
+#undef ___const
+#endif
+#ifdef NO_CONST_SUPPORT
+#define ___const
 #else
-#define P__(a)	()
+#define ___const const
 #endif
 
-/* functions in traditional libplot */
-externMod int arc P__ ((int xc, int yc, int x0, int y0, int x1, int y1));
-externMod int box P__ ((int x0, int y0, int x1, int y1));
-externMod int circle P__ ((int x, int y, int r));
-externMod int closepl P__ ((void));
-externMod int cont P__ ((int x, int y));
-externMod int dot P__ ((int x, int y, int dx, int n, char *pattern));
-externMod int erase P__ ((void));
-externMod int label P__ ((char *s));
-externMod int line P__ ((int x0, int y0, int x1, int y1));
-externMod int linemod P__ ((char *s));
-externMod int move P__ ((int x, int y));
-externMod int openpl P__ ((void));
-externMod int point P__ ((int x, int y));
-externMod int space P__ ((int x0, int y0, int x1, int y1));
+__BEGIN_DECLS
+
+/* THE C API */
+
+/* THE GLOBAL FUNCTIONS IN GNU LIBPLOT */
+/* There are 79 basic functions, plus 4 that are specific to the C binding */
+
+/* functions in traditional (pre-GNU) libplot */
+int arc ___P ((int xc, int yc, int x0, int y0, int x1, int y1));
+int box ___P ((int x0, int y0, int x1, int y1));
+int circle ___P ((int x, int y, int r));
+int closepl ___P ((void));
+int cont ___P ((int x, int y));
+int erase ___P ((void));
+int label ___P ((___const char *s));
+int line ___P ((int x0, int y0, int x1, int y1));
+int linemod ___P ((___const char *s));
+int move ___P ((int x, int y));
+int openpl ___P ((void));
+int point ___P ((int x, int y));
+int space ___P ((int x0, int y0, int x1, int y1));
 
 /* additional functions in GNU libplot */
-externMod int alabel P__ ((int x_justify, int y_justify, char *s));
-externMod int arcrel P__ ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-externMod int boxrel P__ ((int dx0, int dy0, int dx1, int dy1));
-externMod int capmod P__ ((char *s));
-externMod int circlerel P__ ((int dx, int dy, int r));
-externMod int color P__ ((int red, int green, int blue));
-externMod int colorname P__ ((char *name));
-externMod int contrel P__ ((int x, int y));
-externMod int ellarc P__ ((int xc, int yc, int x0, int y0, int x1, int y1));
-externMod int ellarcrel P__ ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
-externMod int ellipse P__ ((int x, int y, int rx, int ry, int angle));
-externMod int ellipserel P__ ((int dx, int dy, int rx, int ry, int angle));
-externMod int endpoly P__((void));
-externMod int fill P__ ((int level));
-externMod int fillcolor P__ ((int red, int green, int blue));
-externMod int fillcolorname P__ ((char *name));
-externMod int flushpl P__ ((void));
-externMod int fontname P__ ((char *s));
-externMod int fontsize P__ ((int size));
-externMod int joinmod P__ ((char *s));
-externMod int labelwidth P__ ((char *s));
-externMod int linerel P__ ((int dx0, int dy0, int dx1, int dy1));
-externMod int linewidth P__ ((int size));
-externMod int marker P__ ((int x, int y, int type, int size));
-externMod int markerrel P__ ((int dx, int dy, int type, int size));
-externMod int moverel P__ ((int x, int y));
-externMod FILE* outfile P__((FILE* newstream)); /* defined in stdio.h */
-externMod int pencolor P__ ((int red, int green, int blue));
-externMod int pencolorname P__ ((char *name));
-externMod int pointrel P__ ((int dx, int dy));
-externMod int restorestate P__((void));
-externMod int savestate P__((void));
-externMod int space2 P__ ((int x0, int y0, int x1, int y1, int x2, int y2));
-externMod int textangle P__ ((int angle));
+int alabel ___P ((int x_justify, int y_justify, ___const char *s));
+int arcrel ___P ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+int boxrel ___P ((int dx0, int dy0, int dx1, int dy1));
+int capmod ___P ((___const char *s));
+int circlerel ___P ((int dx, int dy, int r));
+int color ___P ((int red, int green, int blue));
+int colorname ___P ((___const char *name));
+int contrel ___P ((int x, int y));
+int ellarc ___P ((int xc, int yc, int x0, int y0, int x1, int y1));
+int ellarcrel ___P ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+int ellipse ___P ((int x, int y, int rx, int ry, int angle));
+int ellipserel ___P ((int dx, int dy, int rx, int ry, int angle));
+int endpath ___P((void));
+int filltype ___P ((int level));
+int fillcolor ___P ((int red, int green, int blue));
+int fillcolorname ___P ((___const char *name));
+int flushpl ___P ((void));
+int fontname ___P ((___const char *s));
+int fontsize ___P ((int size));
+int havecap ___P ((___const char *s));
+int joinmod ___P ((___const char *s));
+int labelwidth ___P ((___const char *s));
+int linerel ___P ((int dx0, int dy0, int dx1, int dy1));
+int linewidth ___P ((int size));
+int marker ___P ((int x, int y, int type, int size));
+int markerrel ___P ((int dx, int dy, int type, int size));
+int moverel ___P ((int x, int y));
+FILE* outfile ___P((FILE* newstream));
+int pencolor ___P ((int red, int green, int blue));
+int pencolorname ___P ((___const char *name));
+int pointrel ___P ((int dx, int dy));
+int restorestate ___P((void));
+int savestate ___P((void));
+int space2 ___P ((int x0, int y0, int x1, int y1, int x2, int y2));
+int textangle ___P ((int angle));
 
-/* floating point counterparts to the above (all GNU extensions) */
-externMod double falabel P__ ((int x_justify, int y_justify, char *s));
-externMod double ffontname P__ ((char *s));
-externMod double ffontsize P__ ((double size));
-externMod double flabelwidth P__ ((char *s));
-externMod double ftextangle P__ ((double angle));
-externMod int farc P__ ((double xc, double yc, double x0, double y0, double x1, double y1));
-externMod int farcrel P__ ((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-externMod int fbox P__ ((double x0, double y0, double x1, double y1));
-externMod int fboxrel P__ ((double dx0, double dy0, double dx1, double dy1));
-externMod int fcircle P__ ((double x, double y, double r));
-externMod int fcirclerel P__ ((double dx, double dy, double r));
-externMod int fcont P__ ((double x, double y));
-externMod int fcontrel P__ ((double x, double y));
-externMod int fellarc P__ ((double xc, double yc, double x0, double y0, double x1, double y1));
-externMod int fellarcrel P__ ((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
-externMod int fellipse P__ ((double x, double y, double rx, double ry, double angle));
-externMod int fellipserel P__ ((double dx, double dy, double rx, double ry, double angle));
-externMod int fline P__ ((double x0, double y0, double x1, double y1));
-externMod int flinerel P__ ((double dx0, double dy0, double dx1, double dy1));
-externMod int flinewidth P__ ((double size));
-externMod int fmarker P__ ((double x, double y, int type, double size));
-externMod int fmarkerrel P__ ((double dx, double dy, int type, double size));
-externMod int fmove P__ ((double x, double y));
-externMod int fmoverel P__ ((double x, double y));
-externMod int fpoint P__ ((double x, double y));
-externMod int fpointrel P__ ((double dx, double dy));
-externMod int fspace P__ ((double x0, double y0, double x1, double y1));
-externMod int fspace2 P__ ((double x0, double y0, double x1, double y1, double x2, double y2));
+/* floating point counterparts to the above (all GNU additions) */
+double ffontname ___P ((___const char *s));
+double ffontsize ___P ((double size));
+double flabelwidth ___P ((___const char *s));
+double ftextangle ___P ((double angle));
+int farc ___P ((double xc, double yc, double x0, double y0, double x1, double y1));
+int farcrel ___P ((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
+int fbox ___P ((double x0, double y0, double x1, double y1));
+int fboxrel ___P ((double dx0, double dy0, double dx1, double dy1));
+int fcircle ___P ((double x, double y, double r));
+int fcirclerel ___P ((double dx, double dy, double r));
+int fcont ___P ((double x, double y));
+int fcontrel ___P ((double x, double y));
+int fellarc ___P ((double xc, double yc, double x0, double y0, double x1, double y1));
+int fellarcrel ___P ((double dxc, double dyc, double dx0, double dy0, double dx1, double dy1));
+int fellipse ___P ((double x, double y, double rx, double ry, double angle));
+int fellipserel ___P ((double dx, double dy, double rx, double ry, double angle));
+int fline ___P ((double x0, double y0, double x1, double y1));
+int flinerel ___P ((double dx0, double dy0, double dx1, double dy1));
+int flinewidth ___P ((double size));
+int fmarker ___P ((double x, double y, int type, double size));
+int fmarkerrel ___P ((double dx, double dy, int type, double size));
+int fmove ___P ((double x, double y));
+int fmoverel ___P ((double x, double y));
+int fpoint ___P ((double x, double y));
+int fpointrel ___P ((double dx, double dy));
+int fspace ___P ((double x0, double y0, double x1, double y1));
+int fspace2 ___P ((double x0, double y0, double x1, double y1, double x2, double y2));
 
-/* floating point operations with no integer counterpart (GNU extensions) */
-externMod int fconcat P__ ((double m0, double m1, double m2, double m3, double m4, double m5));
-externMod int frotate P__ ((double theta));
-externMod int fscale P__ ((double x, double y));
-externMod int ftranslate P__ ((double x, double y));
+/* floating point operations with no integer counterpart (GNU additions) */
+int fconcat ___P ((double m0, double m1, double m2, double m3, double m4, double m5));
+int frotate ___P ((double theta));
+int fscale ___P ((double x, double y));
+int ftranslate ___P ((double x, double y));
 
-#undef P__
+/* functions specific to the C binding (for construction/destruction of
+   Plotters, and setting of low-level Plotter parameters ) */
+int newpl ___P((___const char *type, FILE *instream, FILE *outstream, FILE *errstream));
+int selectpl ___P ((int handle));
+int deletepl ___P ((int handle));
+#ifdef NO_VOID_SUPPORT
+int parampl ___P ((___const char *parameter, char *value));
+#else
+int parampl ___P ((___const char *parameter, void *value));
+#endif
 
-/* symbol types for marker(), 1 through 5 are as in GKS */
+__END_DECLS
+
+/* THE GLOBAL VARIABLES IN GNU LIBPLOT */
+/* There are two; both are user-settable error handlers. */
+extern int (*libplot_warning_handler) ___P ((___const char *msg));
+extern int (*libplot_error_handler) ___P ((___const char *msg));
+
+#undef ___const
+#undef ___P
+
+/* A temporary kludge.  In plotutils-2.x, endpoly() and fill() were renamed
+   endpath() and filltype().  Also, falabel() and the undocumented function
+   dot() were dropped, and the return value for alabel() was changed.  We
+   can't do anything to work around the latter changes, but for the next
+   couple of releases we'll at least support endpoly() and fill() by
+   including the following preprocessor definitions. */
+
+#ifndef endpoly
+#define endpoly() endpath()
+#endif
+#ifndef fill
+#define fill(arg) filltype(arg)
+#endif
+
+/* symbol types for the marker() function, 1 through 5 are as in GKS */
+
 #define M_NONE 0
 #define M_DOT 1
 #define M_PLUS 2
@@ -145,96 +212,15 @@ externMod int ftranslate P__ ((double x, double y));
 #define M_OCTAGON 30
 #define M_FILLED_OCTAGON 31
 
-/* THE FOLLOWING EXTERNAL VARIABLES APPEAR IN ANY VERSION OF GNU LIBPLOT. */
 
-/* 1. READ-ONLY EXTERNAL LIBPLOT VARIABLES */
+/* ONE-BYTE OP CODES FOR GNU METAFILE FORMAT */
 
-/* The string _libplot_suffix distinguishes among the versions of libplot.
-   It is the string appended to "plot" to form the name of the library.  It
-   is "fig" for libplotfig, "" for raw libplot, etc. */
-
-externMod char *_libplot_suffix;
-
-/* The following four variables are capability variables (three dealing
-   with fonts, and one dealing with lines).  Values are 0, 1, or 2, meaning
-   YES/NO/MAYBE.  In raw libplot some of these variables may take values
-   `MAYBE', since plot(5) format can be displayed on several sorts of
-   graphic device, with different capabilities. */
-
-/* HAVE_FONT_METRICS specifies whether or not definitive font metric
-   information is available, for the default font, at least.  If so, the
-   alabel() and labelwidth() functions will return the width of the string
-   argument, in user units, and the fontname(), fontsize(), and textangle()
-   functions will return the size of the font, in user units.  This is true
-   for all versions of libplot except raw libplot. */
-
-externMod int _libplot_have_font_metrics;
-
-/* HAVE_VECTOR_FONTS specifies whether or not the standard Hershey fonts
-   are directly supported (this is the case for all versions of libplot,
-   except for raw libplot, which produces output in a GNU-enhanced version
-   of the traditional plot(5) format, which must be translated with one of
-   the plot filters). */
-
-externMod int _libplot_have_vector_fonts;
-
-/* HAVE_PS_FONTS specifies whether or not the 35 standard Postscript fonts
-   are directly supported.  This is the case for libplotfig, libplotps, and
-   libplotX, though not for libplottek, or raw libplot. */
-
-externMod int _libplot_have_ps_fonts;
-
-/* HAVE_WIDE_LINES specifies whether or not lines with a non-default width
-   are supported, i.e. whether or not linewidth() is guaranteed to have an
-   effect.  This is the case for libplotfig, libplotps, and libplotX,
-   though not for libplottek, or raw libplot. */
-
-externMod int _libplot_have_wide_lines;
-
-/* 2. WRITABLE EXTERNAL LIBPLOT VARIABLES */
-
-/* Maximum length an unfilled polyline is allowed to grow to, before it is
-   flushed out (we put no [small] maximum on the length of filled
-   polylines, since they need to be preserved as discrete objects if the
-   filling is to be performed properly).  This is accessible to the user.
-   Warning: this is not looked at by libplottek, since that library
-   currently plots points as they are supplied. */
-
-externMod int _libplot_max_unfilled_polyline_length;
-
-/* The following two modifiable external variables are relevant only in raw
-   libplot, since they determine the format of its plot(5) directives.  But
-   some applications expect them always to be present, so they can twiddle
-   them. */
-
-/* OUTPUT_IS_ASCII specifies whether the output of libplot will be in a
-   GNU-enhanced version of the traditional plot(5) format, or in an
-   portable ASCII (non-binary) format.
-
-   A value of 0 specifies traditional plot(5) format.  A nonzero value
-   specifies an ASCII format. */
-
-externMod int _libplot_output_is_ascii;
-
-/* OUTPUT_HIGH_BYTE_FIRST specifies the byte order for two-byte integers
-   written to the output stream, if a GNU-enhanced version of plot(5)
-   format is used.
-
-   A value of 1 specifies that the integers will be written high byte
-   first.  A value of -1 specifies that they will be written low byte
-   first.  A zero value specifies that the host (default) byte order and
-   format is used.  The host format may not even be a two-byte format. */
-
-externMod int _libplot_output_high_byte_first;
-
-/* One-byte op codes for GNU-enhanced plot(5) format */
-
-/* Op codes for the traditional graphics operations */
+/* Op codes for primitive graphics operations, as in Unix plot(5)
+   format. */
 #define ARC		'a'
-#define BOX		'B'	/* not a separate op code in Unix libplot */
+#define BOX		'B'	/* not a separate op code in Unix plot(5) */
 #define CIRCLE		'c'
 #define CONT		'n'
-#define DOT		'd'	/* obsolete, see dot.c */
 #define ERASE		'e'
 #define LABEL		't'
 #define LINEMOD		'f'
@@ -249,15 +235,16 @@ externMod int _libplot_output_high_byte_first;
 #define BOXREL		'H'
 #define CAPMOD		'K'
 #define CIRCLEREL	'G'
-#define COLOR		'C'	/* obsolete, to be removed in v. 2.0 */
+#define CLOSEPL		'x'
+#define COLOR		'C'	/* obsolete, to be removed */
 #define COMMENT		'#'
 #define CONTREL		'N'
 #define ELLARC		'?'
 #define ELLARCREL	'/'
 #define ELLIPSE		'+'
 #define ELLIPSEREL	'='
-#define ENDPOLY		'E'
-#define FILL		'L'
+#define ENDPATH		'E'
+#define FILLTYPE	'L'
 #define FILLCOLOR	'D'
 #define FONTNAME	'F'
 #define FONTSIZE	'S'
@@ -267,6 +254,7 @@ externMod int _libplot_output_high_byte_first;
 #define MARKER		'Y'
 #define MARKERREL	'Z'
 #define MOVEREL		'M'
+#define OPENPL		'o'
 #define PENCOLOR	'-'
 #define POINTREL	'P'
 #define RESTORESTATE	'O'
@@ -274,7 +262,8 @@ externMod int _libplot_output_high_byte_first;
 #define SPACE2		':'
 #define TEXTANGLE	'R'
 
-/* Op codes for floating point counterparts to the above */
+/* Floating point counterparts to the above.  Used only in binary metafile
+   format, not in portable metafile format. */
 #define FARC		'1'
 #define FARCREL		'2'
 #define FBOX		'3'
@@ -307,4 +296,4 @@ externMod int _libplot_output_high_byte_first;
 #define FSCALE		'X'
 #define FTRANSLATE	'Q'
 
-#endif /* _plot_h_ */
+#endif /* _PLOT_H_ */

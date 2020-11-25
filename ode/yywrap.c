@@ -8,7 +8,11 @@
 #include "extern.h"
 
 int
-yywrap()
+#ifdef _HAVE_PROTOS
+yywrap (void)
+#else
+yywrap ()
+#endif
 {
   if (yyin != stdin)		/* we were reading from a file, */
     {				/* so switch to reading from stdin */

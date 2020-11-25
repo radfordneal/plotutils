@@ -19,8 +19,12 @@
  *	the independent variable has a derivative == 1.
  *	each dependent variable has an ODE and an initial value
  */
-Boolean
+bool
+#ifdef _HAVE_PROTOS
+check (void)
+#else
 check ()
+#endif
 {
   struct sym *sp, *ivp, *prevp;
   struct prt *pp;
@@ -58,7 +62,7 @@ check ()
 		       progname,
 		       NAMMAX, sp->sy_name,
 		       NAMMAX, ivp->sy_name);
-	      return FALSE;
+	      return false;
 	    }
 	  ivp = sp;
 	}
@@ -130,7 +134,7 @@ check ()
    */
   dqueue = symtab->sy_link;
 
-  return TRUE;
+  return true;
 }
 
 /*
@@ -139,7 +143,11 @@ check ()
  * initialize values for printq() and numerical routines
  */
 void
+#ifdef _HAVE_PROTOS
+defalt (void)
+#else
 defalt ()
+#endif
 {
   if (!sawfrom)
     tfrom = tstart;
@@ -149,14 +157,18 @@ defalt ()
     tstep = -tstep;
   else if (tstart<tstop && tstep<0)
     tstep = -tstep;
-  printnum = FALSE;
+  printnum = false;
 }
 
 /*
  * evaluate all the derivatives
  */
 void
+#ifdef _HAVE_PROTOS
+field(void)
+#else
 field()
+#endif
 {
   for (fsp = symtab->sy_link; fsp!=NULL; fsp = fsp->sy_link)
     fsp->sy_prime = eval(fsp->sy_expr);
@@ -166,17 +178,25 @@ field()
  * internal error (fatal)
  */
 void
+#ifdef _HAVE_PROTOS
+panic (const char *s)
+#else
 panic (s)
-     char *s;
+     const char *s;
+#endif
 {
   fprintf (stderr, "%s panic: %s\n", progname, s);
   exit (1);
 }
 
 void
+#ifdef _HAVE_PROTOS
+panicn (const char *fmt, int n)
+#else
 panicn (fmt, n)
-     char *fmt;
+     const char *fmt;
      int n;
+#endif
 {
   fprintf (stderr, "%s panic: ", progname);
   fprintf (stderr, fmt, n);
@@ -189,7 +209,11 @@ panicn (fmt, n)
 #define	PRFROM	(tstep>0 ? t >= TFROM : t<= TFROM)
 
 void
+#ifdef _HAVE_PROTOS
+printq (void)
+#else
 printq ()
+#endif
 {
   double f = 0.0;
   double t;
@@ -197,8 +221,8 @@ printq ()
 
   t = symtab->sy_value;
   if (!printnum && PRFROM)
-    printnum = TRUE;
-  if ((!(it % tevery) && printnum) || LASTVAL) 
+    printnum = true;
+  if (((it % tevery == 0) && printnum) || LASTVAL) 
     {
       pp = pqueue;
       if (pp != NULL) 
@@ -243,8 +267,12 @@ printq ()
  * kludge for Pascal compatibility
  */
 void
+#ifdef _HAVE_PROTOS
+prval (double x)
+#else
 prval (x)
      double x;
+#endif
 {
   if (prec < 0) 
     {
@@ -268,8 +296,12 @@ prval (x)
  */
 #ifdef HAVE_MATHERR
 int 
+#ifdef _HAVE_PROTOS
+matherr (struct exception *x)
+#else
 matherr (x)
      struct exception *x;
+#endif
 {
   switch (x->type) 
     {
@@ -280,22 +312,22 @@ matherr (x)
       rterrors ("singularity error in %s", x->name);
       break;
     case OVERFLOW:
-      rterrors ("overflow range error in %s", x->name);
+      rterrors ("range error (overflow) in %s", x->name);
       break;
 #ifdef TLOSS
     case TLOSS:
-      rterrors ("range error in %s (total loss of significance)",
+      rterrors ("range error (total loss of significance) in %s",
 		x->name);
       break;
 #endif
 #ifdef PLOSS
     case PLOSS:
-      rterrors ("range error in %s (partial loss of significance)", 
+      rterrors ("range error (partial loss of significance) in %s", 
 		x->name);
       break;
 #endif
     case UNDERFLOW:		/* treat as non-fatal */
-      rtsquawks ("underflow range error in %s", x->name);
+      rtsquawks ("range error (underflow) in %s", x->name);
       break;
     default:
       rterrors ("unknown error in %s", x->name);
@@ -311,8 +343,12 @@ matherr (x)
  * uses fsp to decide which dependent variable was being worked
  */
 void
+#ifdef _HAVE_PROTOS
+rterror (const char *s)
+#else
 rterror (s)
-     char *s;
+     const char *s;
+#endif
 {
   if (fsp == NULL)		/* no computation, just print message */
     fprintf (stderr, "%s: %s\n", progname, s);
@@ -325,8 +361,12 @@ rterror (s)
 }
 
 void
+#ifdef _HAVE_PROTOS
+rterrors (const char *fmt, const char *s)
+#else
 rterrors (fmt, s)
-     char *fmt, *s;
+     const char *fmt, *s;
+#endif
 {
   if (fsp != NULL)		/* interrupt computation */
     {
@@ -348,8 +388,12 @@ rterrors (fmt, s)
  * computation continues
  */
 void
+#ifdef _HAVE_PROTOS
+rtsquawks (const char *fmt, const char *s)
+#else
 rtsquawks (fmt, s)
-     char *fmt, *s;
+     const char *fmt, *s;
+#endif
 {
   fprintf (stderr, "%s: ", progname);
   fprintf (stderr, fmt, s);
@@ -366,12 +410,16 @@ rtsquawks (fmt, s)
  * 'step' statement.
  */
 void
+#ifdef _HAVE_PROTOS
+solve (void)
+#else
 solve ()
+#endif
 {
   struct sym *sp;
-  int adapt;
+  bool adapt;
   
-  if (check() == FALSE)
+  if (check() == false)
     return;
   defalt ();
   if (tflag)
@@ -421,7 +469,11 @@ solve ()
  * choose step size at tstart
  */
 void
+#ifdef _HAVE_PROTOS
+startstep (void)
+#else
 startstep ()
+#endif
 {
   if (!hflag)
     hmax = fabs ((tstop-tstart)/2);
@@ -441,7 +493,11 @@ startstep ()
  * Try to center the headings over the columns
  */
 void
+#ifdef _HAVE_PROTOS
+title (void)
+#else
 title ()
+#endif
 {
   struct prt *pp;
   char tag = '\0';

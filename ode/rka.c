@@ -12,9 +12,13 @@
  */
 
 void
+#ifdef _HAVE_PROTOS
+rka (void)
+#else
 rka ()
+#endif
 {
-  Boolean gdval = TRUE; 		/* good value to print ? */
+  bool gdval = true; 		/* good value to print ? */
   int overtime = 1;
   double prevstep = 0.0;
   double t;
@@ -110,7 +114,7 @@ rka ()
 	      tstep *= HALF;
 	      for (fsp = dqueue; fsp != NULL; fsp = fsp->sy_link)
 		fsp->sy_value = fsp->sy_val[0];
-	      gdval = FALSE;
+	      gdval = false;
 	      continue;
 	    }
 	  else 
@@ -120,11 +124,11 @@ rka ()
 		tstep *= TWO;
 		for (fsp = dqueue; fsp != NULL; fsp = fsp->sy_link)
 		  fsp->sy_value = fsp->sy_val[0];
-		gdval = FALSE;
+		gdval = false;
 		continue;
 	      }
 	}
-      gdval = TRUE;
+      gdval = true;
       prevstep = 0.0;
       ++it;
       t += tstep; /* the roundoff error is gross */

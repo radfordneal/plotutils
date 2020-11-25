@@ -1,29 +1,57 @@
-This directory contains supplementary documentation on the plotting
-utilities, in ASCII format.  (The main documentation is supplied in texinfo
-format, in the directory ../info.)  
+This directory contains supplementary documentation on GNU libplot, the
+drawing library on which the plotting utilities graph, plot, and tek2plot
+are based.
 
+    ./colors.txt: A listing of the color names recognized by libplot,
+  		  and hence by each of the three plotting utilities.  
+  		  An RGB representation for each color is given.
 
-	./colors.txt: A listing of the color names recognized by libplot,
-		and hence by the plotting utilities.  An RGB representation
-		for each color is given.
+  		  For example, you may use the command
 
-    The following files deal with the Hershey glyphs built into libplot.
+			graph --frame-color chocolate
 
-	./hershey-numbering: A discussion of the indexing schemes used in
-		the various public distributions of the Hershey glyphs.
-	
-	./hershey.bib: A bibliography, in BibTeX format, of publications
-		dealing with the Hershey glyphs and with Allen Hershey's
-		system for scientific typography, which was designed to work
-		with them.  Most cited items are technical reports that
-		are available from the U.S. National Technical Information
-		Service (+1 703 487 4650); stock numbers are given.
-	
-	./hershey.doc: A breakdown of the `occidental' Hershey glyphs, 
-		by number.
-	
-	./kana.doc: The encodings used for the Hershey Hiragana and Katakana
-		(syllabic Japanese characters).
-	
-	./kanji.doc: The encoding of the 603 available Japanese Kanji
-		(ideographic characters), and their meaning.
+		  because "chocolate" is one of the listed color names.
+		  In the RGB scheme, "chocolate" means (210,105,30).
+
+The following files are relevant to the 16 Hershey fonts built into GNU
+libplot.  
+
+The program hershey-demo.c, if compiled and linked with libplot (the
+instructions are at the head of the file), will emit to standard output a
+sample page, in portable metafile format, illustrating many of the Hershey
+fonts.  The sample page is taken from Allen Hershey's 1972 article in
+Computer Graphics and Image Processing (vol. 1, no. 4, pp. 373-385).
+
+When specifying to the plotting utilities that a Hershey font should be
+used, you would usually specify it by name, e.g., `graph --font-name
+HersheyGothic-English'.  However, the Hershey fonts are assembled from a
+large collection of vector glyphs (`Hershey glyphs'), including both
+occidental and Japanese characters.  If the current font is a Hershey font,
+you may access any glyph by its number, even if it is not a character in
+the font. For example, the command
+
+	graph --font-name HersheyGothic-English -L '\#H0745\#H0745'
+
+would label the graph being drawn with a title line consisting of
+two fleurs-de-lys.  That is because the fleur-de-lys is Hershey glyph #745.
+
+    ./hershey-number: A history of the various public distributions of the 
+	Hershey glyphs, and their schemes for indexing glyphs.
+    
+    ./hershey.bib: A bibliography, in BibTeX format, of publications
+        dealing with the Hershey glyphs and with Allen Hershey's system for
+        scientific typography, which was designed to use them.  Most cited
+        items are technical reports that are available from the
+        U.S. National Technical Information Service (+1 703 487 4650);
+        stock numbers are given.
+    
+    ./hershey.doc: A breakdown of the `occidental' Hershey glyphs,
+        by number.
+    
+    ./kana.doc: The encodings used for the Hershey Hiragana and Katakana
+        (syllabic Japanese characters).  These are part of the HersheyEUC
+	font, but may be accessed by number.
+    
+    ./kanji.doc: The encoding of the 603 available Japanese Kanji
+        (ideographic characters), and their meaning.  These are part of the
+	HersheyEUC font, but may be accessed by number.

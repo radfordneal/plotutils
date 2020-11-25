@@ -9,7 +9,11 @@
  */
 
 struct prt *
+#ifdef _HAVE_PROTOS
+palloc (void)
+#else
 palloc ()
+#endif
 {
   struct prt *pp;
   
@@ -21,8 +25,12 @@ palloc ()
 }
 
 void
+#ifdef _HAVE_PROTOS
+pfree (struct prt *pp)
+#else
 pfree (pp)
      struct prt *pp;
+#endif
 {
   if (pp != NULL) 
     {

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+../plot/plot -O <graph.xout >plot2plot.out
+
+if (cmp -s $SRCDIR/plot2plot.xout plot2plot.out)
+	then retval=0;
+	else retval=1;
+	fi;
+
+rm -f *.out
+exit $retval

@@ -497,9 +497,9 @@ goto find_rule; \
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 char *yytext;
-#line 1 "./lex.l"
+#line 1 "lex.l"
 #define INITIAL 0
-#line 3 "./lex.l"
+#line 3 "lex.l"
 /*
  * Copyright Nicholas B. Tufillaro, 1982-1994. All rights reserved.
  * GNU enhancements copyright (C) 1996-1997 Free Software Foundation, Inc.
@@ -507,7 +507,7 @@ char *yytext;
 #include "sys-defines.h"
 #include "ode.h"
 #include "extern.h"
-#include "gram.tab.h"
+#include "gram.h"
 
 int curline = 1;
 #line 514 "lex.yy.c"
@@ -660,7 +660,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 16 "./lex.l"
+#line 16 "lex.l"
 
 #line 666 "lex.yy.c"
 
@@ -752,24 +752,24 @@ case 1:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 17 "./lex.l"
+#line 17 "lex.l"
 ;	/* N.B.: comments can't be continued */
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 18 "./lex.l"
+#line 18 "lex.l"
 {
 			curline++;
 		}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 21 "./lex.l"
+#line 21 "lex.l"
 ;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 22 "./lex.l"
+#line 22 "lex.l"
 {
 			yylval.lexptr = lalloc();
 			yylval.lexptr->lx_lino = curline;
@@ -780,7 +780,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 29 "./lex.l"
+#line 29 "lex.l"
 {
 			yylval.lexptr = lalloc();
 			yylval.lexptr->lx_u.lxu_value =	M_PI;
@@ -792,7 +792,7 @@ case 6:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 34 "./lex.l"
+#line 34 "lex.l"
 {
 			/* lonely . isn't EOF in a -f file */
 			if (yyin == stdin)
@@ -802,197 +802,197 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 40 "./lex.l"
+#line 40 "lex.l"
 { return EVERY; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 41 "./lex.l"
+#line 41 "lex.l"
 { return FROM; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 42 "./lex.l"
+#line 42 "lex.l"
 { return PRINT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 43 "./lex.l"
+#line 43 "lex.l"
 { return STEP; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 44 "./lex.l"
+#line 44 "lex.l"
 { return EXAM; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 45 "./lex.l"
+#line 45 "lex.l"
 { return ABS; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 46 "./lex.l"
+#line 46 "lex.l"
 { return SQRT; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 47 "./lex.l"
+#line 47 "lex.l"
 { return EXP; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 48 "./lex.l"
+#line 48 "lex.l"
 { return LOG10; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 49 "./lex.l"
+#line 49 "lex.l"
 { return LOG; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 50 "./lex.l"
+#line 50 "lex.l"
 { return LOG; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 51 "./lex.l"
+#line 51 "lex.l"
 { return SIN; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 52 "./lex.l"
+#line 52 "lex.l"
 { return COS; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 53 "./lex.l"
+#line 53 "lex.l"
 { return TAN; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 54 "./lex.l"
+#line 54 "lex.l"
 { return ASINH; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 55 "./lex.l"
+#line 55 "lex.l"
 { return ACOSH; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 56 "./lex.l"
+#line 56 "lex.l"
 { return ATANH; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 57 "./lex.l"
+#line 57 "lex.l"
 { return ASIN; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 58 "./lex.l"
+#line 58 "lex.l"
 { return ACOS; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 59 "./lex.l"
+#line 59 "lex.l"
 { return ATAN; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 60 "./lex.l"
+#line 60 "lex.l"
 { return SINH; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 61 "./lex.l"
+#line 61 "lex.l"
 { return COSH; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 62 "./lex.l"
+#line 62 "lex.l"
 { return TANH; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 63 "./lex.l"
+#line 63 "lex.l"
 { return FLOOR; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 64 "./lex.l"
+#line 64 "lex.l"
 { return CEIL; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 65 "./lex.l"
+#line 65 "lex.l"
 { return J0; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 66 "./lex.l"
+#line 66 "lex.l"
 { return J1; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 67 "./lex.l"
+#line 67 "lex.l"
 { return Y0; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 68 "./lex.l"
+#line 68 "lex.l"
 { return Y1; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 69 "./lex.l"
+#line 69 "lex.l"
 { return ERFC; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 70 "./lex.l"
+#line 70 "lex.l"
 { return ERF; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 71 "./lex.l"
+#line 71 "lex.l"
 { return INVERF; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 72 "./lex.l"
+#line 72 "lex.l"
 { return LGAMMA; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 73 "./lex.l"
+#line 73 "lex.l"
 { return GAMMA; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 74 "./lex.l"
+#line 74 "lex.l"
 { return NORM; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 75 "./lex.l"
+#line 75 "lex.l"
 { return INVNORM; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 76 "./lex.l"
+#line 76 "lex.l"
 { return IBETA; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 77 "./lex.l"
+#line 77 "lex.l"
 { return IGAMMA; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 78 "./lex.l"
+#line 78 "lex.l"
 {
 			yylval.lexptr = lalloc();
 			strncpy(yylval.lexptr->lx_u.lxu_name,yytext,NAMMAX);
@@ -1000,12 +1000,12 @@ YY_RULE_SETUP
 		}
 	YY_BREAK
 case 46:
-#line 84 "./lex.l"
+#line 84 "lex.l"
 case 47:
-#line 85 "./lex.l"
+#line 85 "lex.l"
 case 48:
 YY_RULE_SETUP
-#line 85 "./lex.l"
+#line 85 "lex.l"
 {
 			/*
 			 * restrictions on numbers:
@@ -1019,7 +1019,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 95 "./lex.l"
+#line 95 "lex.l"
 {
 			/*
 			 * accept as few as possible so the error
@@ -1030,7 +1030,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 102 "./lex.l"
+#line 102 "lex.l"
 {
 			if (*yytext > '~' || *yytext < ' ')
 				fprintf (stderr, 
@@ -1047,7 +1047,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 115 "./lex.l"
+#line 115 "lex.l"
 ECHO;
 	YY_BREAK
 #line 1054 "lex.yy.c"
@@ -1905,13 +1905,17 @@ int main()
 	return 0;
 	}
 #endif
-#line 115 "./lex.l"
+#line 115 "lex.l"
 
 /*
  * space management for the lexer
  */
 struct lex *
-lalloc()
+#ifdef _HAVE_PROTOS
+lalloc (void)
+#else
+lalloc ()
+#endif
 {
   struct lex *lp;
   
@@ -1922,8 +1926,12 @@ lalloc()
 }
 
 void
-lfree(lp)
+#ifdef _HAVE_PROTOS
+lfree (struct lex *lp)
+#else
+lfree (lp)
      struct lex *lp;
+#endif
 {
   if (lp != NULL)
     free ((Voidptr)lp);

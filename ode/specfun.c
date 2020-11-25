@@ -65,37 +65,49 @@
 
 /* Forward references */
 
-#if __STDC__
-#define P__(a)	a
-#else
-#define P__(a)	()
+/* The following gamma-related nonsense is necessary because (1) some
+   vendors have lgamma(), some have gamma(), and some have neither [see
+   include/sys-defines.h for further comments], (2) some vendors do not
+   declare whichever function they have [e.g. Irix 5.3 requires an
+   auxiliary preprocessing symbol to be defined for the declaration in
+   math.h to be visible], and (3) some vendors supply broken versions which
+   we can't use [e.g. AIX's libm.a gamma support is conspicuously broken],
+   so we need to link in a replacement, but we can't use the same name for
+   the external symbol `signgam'.  What a mess! -- rsm */
+#ifdef NO_SYSTEM_GAMMA
+#define SIGNGAM our_signgam
+static int SIGNGAM;
+double f_lgamma __P((double x));
+static double lgamneg __P((double x));
+static double lgampos __P((double x));
+#else  /* not NO_SYSTEM_GAMMA, we link in vendor code */
+#define SIGNGAM signgam
+extern int SIGNGAM;
 #endif
+double f_gamma __P((double x));
 
-#ifdef NO_GAMMA_SUPPORT
-double f_lgamma P__((double x));
-static double lgamneg P__((double x));
-static double lgampos P__((double x));
-static int signgam;
-#else
-extern int signgam;
-#endif
-double f_gamma P__((double x));
 #ifndef HAVE_ERF
-double erf P__((double x));
-double erfc P__((double x));
+double erf __P((double x));
+double erfc __P((double x));
 #endif
-double ibeta P__((double a, double b, double x));
-double igamma P__((double a, double x));
-double inverf P__((double p));
-double invnorm P__((double p));
-double norm P__((double x));
-static double confrac P__((double a, double b, double x));
+double ibeta __P((double a, double b, double x));
+double igamma __P((double a, double x));
+double inverf __P((double p));
+double invnorm __P((double p));
+double norm __P((double x));
+static double confrac __P((double a, double b, double x));
 
-#undef P__
-
+/* Our gamma function.  F_LGAMMA(), which this calls, computes the log of
+   the gamma function, with the sign being returned in SIGNGAM.  F_LGAMMA()
+   is defined in include/sys-defines.h.  It may be a vendor-supplied
+   lgamma(), a vendor-supplied gamma(), or our own f_lgamma (see below). */
 double
+#ifdef _HAVE_PROTOS
+f_gamma (double x)
+#else
 f_gamma (x)
      double x;
+#endif
 {
 #ifdef HAVE_MATHERR
   struct exception exc;
@@ -122,39 +134,42 @@ f_gamma (x)
 #endif
     }
   else
-    return signgam * exp(y);
+    return SIGNGAM * exp(y);
 }
 
-#ifdef NO_GAMMA_SUPPORT
+#ifdef NO_SYSTEM_GAMMA
 /**
  * from statlib, Thu Jan 23 15:02:27 EST 1992 ***
  *
  * This file contains two algorithms for the logarithm of the gamma
  * function.  Algorithm AS 245 is the faster (but longer) and gives an
  * accuracy of about 10-12 significant decimal digits except for small
- * regions around X = 1 and X = 2, where the function goes to zero.  The
- * second algorithm is not part of the AS algorithms.  It is slower but
- * gives 14 or more significant decimal digits accuracy, except around X =
- * 1 and X = 2.  The Lanczos series from which this algorithm is derived is
- * interesting in that it is a convergent series approximation for the
- * gamma function, whereas the familiar series due to De Moivre (and
- * usually wrongly called Stirling's approximation) is only an asymptotic
- * approximation, as is the true and preferable approximation due to
- * Stirling.
+ * regions around z = 1 and z = 2, where the function goes to zero.  
+ * 
+ * The second algorithm (used below) is not part of the AS algorithms.
+ * It is slower but gives 14 or more significant decimal digits accuracy,
+ * except around z = 1 and z = 2.  The Lanczos series from which this
+ * algorithm is derived is interesting in that it is a convergent series
+ * approximation for the gamma function, whereas the familiar series due to
+ * De Moivre (and usually wrongly called Stirling's approximation) is only
+ * an asymptotic approximation, as is the true and preferable approximation
+ * due to Stirling.
+
+ * Uses Lanczos-type approximation to log(gamma(z)) for z > 0. 
+ * 
+ * Reference: C. Lanczos, `A precision approximation of the 
+ * 	      gamma function', SIAM J. Numer. Anal., B, 1, 86-96, 1964.  
+ * Accuracy: about 14 significant digits except for small regions in 
+ * 	     the vicinity of 1 and 2.
  *
- * Uses Lanczos-type approximation to ln(gamma) for z > 0. Reference:
- * Lanczos, C., `A precision approximation of the gamma function', J. SIAM
- * Numer.  Anal., B, 1, 86-96, 1964. Accuracy: About 14 significant digits
- * except for small regions in the vicinity of 1 and 2.
+ * Programmer: Alan Miller, CSIRO Division of Mathematics & Statistics
  * 
- * Programmer: Alan Miller CSIRO Division of Mathematics & Statistics
- * 
- * Latest revision - 17 April 1988
+ * Latest revision: 17 April 1988
  * 
  * Additions: Translated from Fortran to C, code added to handle values z < 0.
- * The global variable signgam contains the sign of the gamma function.
+ * The global variable SIGNGAM contains the sign of the gamma function.
  * 
- * IMPORTANT: The signgam variable contains garbage until AFTER the call to
+ * IMPORTANT: The SIGNGAM variable contains garbage until AFTER the call to
  * lgamma().
  * 
  * Permission granted to distribute freely for non-commercial purposes only
@@ -162,23 +177,28 @@ f_gamma (x)
  */
 
 /* high-precision values from Ray Toy <toy@rtp.ericsson.se> */
-static double a[] = {
-        .99999999999980993227684700473478296744476168282198,
-     676.52036812188509856700919044401903816411251975244084,
-   -1259.13921672240287047156078755282840836424300664868028,
-     771.32342877765307884865282588943070775227268469602500,
-    -176.61502916214059906584551353999392943274507608117860,
-      12.50734327868690481445893685327104972970563021816420,
-       -.13857109526572011689554706984971501358032683492780,
-        .00000998436957801957085956266828104544089848531228,
-        .00000015056327351493115583383579667028994545044040,
+static double a[] = 
+{
+       .99999999999980993227684700473478296744476168282198,
+    676.52036812188509856700919044401903816411251975244084,
+  -1259.13921672240287047156078755282840836424300664868028,
+    771.32342877765307884865282588943070775227268469602500,
+   -176.61502916214059906584551353999392943274507608117860,
+     12.50734327868690481445893685327104972970563021816420,
+      -.13857109526572011689554706984971501358032683492780,
+       .00000998436957801957085956266828104544089848531228,
+       .00000015056327351493115583383579667028994545044040,
 };
 
 static double   
-lgamneg(z)
+#ifdef _HAVE_PROTOS
+lgamneg (double z)
+#else
+lgamneg (z)
      double z;
+#endif
 {
-  double tmp;
+  double tmp, result;
 #ifdef HAVE_MATHERR
   struct exception exc;
 #endif
@@ -209,13 +229,13 @@ lgamneg(z)
   if (tmp < 0.0) 
     {
       tmp = -tmp;
-      signgam = -1;
+      SIGNGAM = -1;
     }
   result = M_LNPI - lgampos(1.0 - z) - log(tmp);
 
   if (fabs (result) == HUGE_VAL)
-#ifdef HAVE_MATHERR
     {
+#ifdef HAVE_MATHERR
       exc.name = "gamma";
       exc.arg1 = z;
       exc.retval = HUGE_VAL;
@@ -233,8 +253,12 @@ lgamneg(z)
 }
 
 static double   
-lgampos(z)
+#ifdef _HAVE_PROTOS
+lgampos (double z)
+#else
+lgampos (z)
      double z;
+#endif
 {
   double          sum;
   double          tmp;
@@ -270,25 +294,37 @@ lgampos(z)
       return HUGE_VAL;
 #endif
     }
+
+  return result;
 }
 
-static double 
-f_lgamma(z)
+/* Our log-of-gamma function, which we use if the vendor doesn't supply
+   one, or if the vendor's version is buggy. */
+double 
+#ifdef _HAVE_PROTOS
+f_lgamma (double z)
+#else
+f_lgamma (z)
      double z;
+#endif
 {
-  signgam = 1;
+  SIGNGAM = 1;
   
   if (z <= 0.0)
     return lgamneg(z);
   else
     return lgampos(z);
 }
-#endif /* NO_GAMMA_SUPPORT */
+#endif /* NO_SYSTEM_GAMMA */
 
 #ifndef HAVE_ERF
 double
-erf(x)
+#ifdef _HAVE_PROTOS
+erf (double x)
+#else
+erf (x)
      double x;
+#endif
 {
   x = x < 0.0 ? -igamma(0.5, x * x) : igamma(0.5, x * x);
 
@@ -296,8 +332,12 @@ erf(x)
 }
 
 double
-erfc(x)
+#ifdef _HAVE_PROTOS
+erfc (double x)
+#else
+erfc (x)
      double x;
+#endif
 {
   x = x < 0.0 ? 1.0 + igamma(0.5, x * x) : 1.0 - igamma(0.5, x * x);
 
@@ -339,8 +379,12 @@ erfc(x)
  */
 
 double
-ibeta(a, b, x)
+#ifdef _HAVE_PROTOS
+ibeta (double a, double b, double x)
+#else
+ibeta (a, b, x)
      double a, b, x;
+#endif
 {
   /* Test for admissibility of arguments */
   if (a <= 0.0 || b <= 0.0 || x < 0.0 || x > 1.0)
@@ -355,8 +399,12 @@ ibeta(a, b, x)
 }
 
 static double   
-confrac(a, b, x)
+#ifdef _HAVE_PROTOS
+confrac (double a, double b, double x)
+#else
+confrac (a, b, x)
      double a, b, x;
+#endif
 {
   double          Alo = 0.0;
   double          Ahi;
@@ -435,8 +483,12 @@ confrac(a, b, x)
  */
 
 double
-igamma(a, x)
+#ifdef _HAVE_PROTOS
+igamma (double a, double x)
+#else
+igamma (a, x)
      double a, x;
+#endif
 {
   double          arg;
   double          aa;
@@ -528,8 +580,12 @@ igamma(a, x)
    ---------------------------------------------------------------- */
 
 double
-norm(x)				/* Normal or Gaussian Probability Function */
+#ifdef _HAVE_PROTOS
+norm (double x)			/* Normal or Gaussian Probability Function */
+#else
+norm (x)			/* Normal or Gaussian Probability Function */
      double x;
+#endif
 {
   /* Ref.: Abramowitz and Stegun 1964, "Handbook of Mathematical
      Functions", Applied Mathematics Series, vol. 55, Chapter 26, page 934,
@@ -546,16 +602,20 @@ norm(x)				/* Normal or Gaussian Probability Function */
 }
 
 double 
-invnorm(p)			/* Inverse Normal Probability Function */
+#ifdef _HAVE_PROTOS
+invnorm (double p)		/* Inverse Normal Probability Function */
+#else
+invnorm (p)			/* Inverse Normal Probability Function */
      double p;
+#endif
 {
   /* Source: This routine was derived (using f2c) from the Fortran
    * subroutine MDNRIS found in ACM Algorithm 602, obtained from netlib.
    *
-   * MDNRIS code contains the 1978 Copyright by IMSL, INC.  Since MDNRIS
-   * has been submitted to netlib it may be used with the restriction that
-   * it may only be used for noncommercial purposes, and that IMSL be
-   * acknowledged as the copyright-holder of the code.
+   * MDNRIS code is copyright 1978 by IMSL, Inc.  Since MDNRIS has been
+   * submitted to netlib it may be used with the restrictions that it may
+   * only be used for noncommercial purposes, and that IMSL be acknowledged
+   * as the copyright-holder of the code.
    */
 
   /* Initialized data */
@@ -597,17 +657,21 @@ invnorm(p)			/* Inverse Normal Probability Function */
 } 
 
 double 
-inverf(p)			/* Inverse Error Function */
+#ifdef _HAVE_PROTOS
+inverf (double p)		/* Inverse Error Function */
+#else
+inverf (p)			/* Inverse Error Function */
      double p;
+#endif
 {
   /* 
    * Source: This routine was derived (using f2c) from the Fortran
    * subroutine MERFI found in ACM Algorithm 602, obtained from netlib.
    * 
-   * MDNRIS code contains the 1978 Copyright by IMSL, INC.  Since MERFI has
-   * been submitted to netlib, it may be used with the restriction that it
-   * may only be used for noncommercial purposes, and that IMSL be
-   * acknowledged as the copyright-holder of the code.
+   * MDNRIS code is copyright 1978 by IMSL, Inc.  Since MERFI has been
+   * submitted to netlib, it may be used with the restrictions that it may
+   * only be used for noncommercial purposes, and that IMSL be acknowledged
+   * as the copyright-holder of the code.
    */
 
   /* Initialized data */

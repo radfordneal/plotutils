@@ -1,7 +1,7 @@
 /* This file contains the main routine, and a few support subroutines, for
    GNU graph.
 
-   Copyright (C) 1989-1997 Free Software Foundation, Inc. */
+   Copyright (C) 1989-1998 Free Software Foundation, Inc. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -12,8 +12,11 @@
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
-static struct option long_options[] =
+struct option long_options[] =
 {
+  /* The most important option */
+  {"display-type",	ARG_REQUIRED,	NULL, 'T'},
+  /* Other frequently used options */
   {"auto-abscissa",	ARG_OPTIONAL,	NULL, 'a'}, /* 0 or 1 or 2 */
   {"clip-mode",		ARG_REQUIRED,	NULL, 'K'},
   {"fill-fraction",	ARG_REQUIRED,	NULL, 'q'},
@@ -27,7 +30,7 @@ static struct option long_options[] =
   {"right-shift",	ARG_REQUIRED,	NULL, 'r'},
   {"save-screen",	ARG_NONE,	NULL, 's'},
   {"symbol",		ARG_OPTIONAL,	NULL, 'S'}, /* 0 or 1 or 2 */
-  {"tick-size",		ARG_REQUIRED,	NULL, 'T'},
+  {"tick-size",		ARG_REQUIRED,	NULL, 'k'},
   {"toggle-auto-bump",	ARG_NONE,	NULL, 'B'},
   {"toggle-log-axis",	ARG_REQUIRED,	NULL, 'l'},
   {"toggle-no-ticks",	ARG_REQUIRED,	NULL, 'N'},
@@ -41,21 +44,21 @@ static struct option long_options[] =
   {"x-limits",		ARG_OPTIONAL,	NULL, 'x'}, /* 0, 1, 2, or 3 */
   {"y-label",		ARG_REQUIRED,	NULL, 'Y'},
   {"y-limits",		ARG_OPTIONAL,	NULL, 'y'}, /* 0, 1, 2, or 3 */
-  /* Long options with no equivalent int option alias */
+  /* Long options with no equivalent short option alias */
   {"blankout",		ARG_REQUIRED,	NULL, 'b' << 8},  
   {"frame-line-width",	ARG_REQUIRED,	NULL, 'W' << 8},
   {"frame-color",	ARG_REQUIRED,	NULL, 'C' << 8},
   {"max-line-length",	ARG_REQUIRED,	NULL, 'M' << 8},
   {"reposition",	ARG_REQUIRED,	NULL, 'R' << 8}, /* 3 */
+  {"rotate",		ARG_REQUIRED,	NULL, 'Q' << 8},
   {"symbol-font-name",	ARG_REQUIRED,	NULL, 'G' << 8},
   {"title-font-name",	ARG_REQUIRED,	NULL, 'Z' << 8},
   {"title-font-size",	ARG_REQUIRED,	NULL, 'F' << 8},
   {"toggle-rotate-y-label",	ARG_NONE,	NULL, 'N' << 8},
   {"toggle-switch-axis-end",	ARG_REQUIRED,	NULL, 's' << 8},
+  {"page-size",		ARG_REQUIRED,	NULL, 'P' << 8},
   /* Options relevant only to raw graph (refers to plot(5) output) */
-  {"high-byte-first",	ARG_NONE,	NULL, 'H' << 8},
-  {"low-byte-first",	ARG_NONE,	NULL, 'L' << 8},
-  {"ascii-output",	ARG_NONE,	NULL, 'O'},
+  {"portable-output",	ARG_NONE,	NULL, 'O'},
   /* Documentation options */
   {"help-fonts",	ARG_NONE,	NULL, 'f' << 8},
   {"version",		ARG_NONE,	NULL, 'V' << 8},
@@ -63,107 +66,72 @@ static struct option long_options[] =
   {NULL, 0, 0, 0}
 };
 
-/* for listing of fonts, if this executable is linked with a version of
-   libplot that contains the _font_info[] array */
-#ifdef LIST_FONTS
-struct vector_font_info_struct 
-{
-  char *name;			/* font name */
-  char *othername;		/* alternative font name */
-  int chars[256];		/* array of vector glyphs */
-  int typeface_index;		/* default typeface for the font */
-  int font_index;		/* which font within typeface this is */
-  Boolean obliquing;		/* whether to apply obliquing */
-  Boolean iso8859_1;		/* whether font encoding is iso8859-1 */
-  Boolean visible;		/* whether font is visible, i.e. not internal */
-};
-extern struct vector_font_info_struct _vector_font_info[];
+/* null-terminated list of options that we don't show to the user */
+int hidden_options[] = { 0 };
 
-struct ps_font_info_struct 
-{
-  char *ps_name;		/* the postscript font name */
-  char *x_name;			/* the X Windows font name */
-  int font_ascent;		/* the font's ascent (from bounding box) */
-  int font_descent;		/* the font's descent (from bounding box) */
-  int width[256];		/* the font width information */
-  int typeface_index;		/* default typeface for the font */
-  int font_index;		/* which font within typeface this is */
-  int fig_id;			/* Fig's font id */
-  Boolean used;			/* whether font has been used */
-  Boolean iso8859_1;		/* whether font encoding is iso8859-1 */
-};
-
-extern struct ps_font_info_struct _ps_font_info[];
-#endif
-
-char *base_progname = "graph";
-char *progname;		/* Program name */
+const char *progname = "graph";	/* name of this program */
 
 /* forward references */
-#if __STDC__
-#define P__(a)	a
-#else
-#define P__(a)	()
-#endif
-static void close_file P__ ((char *filename, FILE *stream));
-static void display_fonts P__((void));
-static void display_usage P__((void));
-static void display_version P__((void));
-static void open_file_for_reading P__ ((char *filename, FILE **input));
-#undef P__
+static void close_file __P ((char *filename, FILE *stream));
+static void open_file_for_reading __P ((char *filename, FILE **input));
 
 int
+#ifdef _HAVE_PROTOS
+main (int argc, char *argv[])
+#else
 main (argc, argv)
      int argc;
      char *argv[];
+#endif
 {
   /* Variables related to getopt parsing */
 
   int option;
   int opt_index;
   int errcnt = 0;		/* errors encountered in getopt parsing */
-  Boolean using_getopt = TRUE;	/* true until end of command-line options */
-  Boolean continue_parse = TRUE; /* reset e.g. when --help or --version seen */
-  Boolean show_version = FALSE;	/* show version message? */
-  Boolean show_usage = FALSE;	/* show usage message? */
-  Boolean show_fonts = FALSE;	/* show a list of fonts? */
-  Boolean filter = FALSE;	/* will we act as a filter? */
-  Boolean new_symbol = FALSE;
-  Boolean new_symbol_size = FALSE;
-  Boolean new_symbol_font_name = FALSE;
-  Boolean new_linemode = FALSE;
-  Boolean new_plot_line_width = FALSE;
-  Boolean new_fill_fraction = FALSE;
-  Boolean new_use_color = FALSE;
-  Boolean first_file_of_plot = TRUE;
-  Boolean first_plot = TRUE;
+  bool using_getopt = true;	/* true until end of command-line options */
+  bool continue_parse = true;	/* reset e.g. when --help or --version seen */
+  bool show_version = false;	/* show version message? */
+  bool show_usage = false;	/* show usage message? */
+  bool show_fonts = false;	/* show a list of fonts? */
+  bool filter = false;		/* will we act as a filter? */
+  bool new_symbol = false;
+  bool new_symbol_size = false;
+  bool new_symbol_font_name = false;
+  bool new_linemode = false;
+  bool new_plot_line_width = false;
+  bool new_fill_fraction = false;
+  bool new_use_color = false;
+  bool first_file_of_plot = true;
+  bool first_plot = true;
   FILE *data_file = NULL;
+  char *display_type = "meta";	/* default libplot output format */
 
   /* Variables related to the point reader */
 
-  data_type data_spec = T_ASCII; /* by default we read ascii data */
-  Boolean auto_bump = TRUE;	/* auto-bump linemode between polylines? */
-  Boolean auto_abscissa = FALSE; /* generate abscissa values automatically? */
+  data_type input_type = T_ASCII; /* by default we read ascii data */
+  bool auto_bump = true;	/* auto-bump linemode between polylines? */
+  bool auto_abscissa = false;	/* generate abscissa values automatically? */
   double x_start = 0.;		/* start and increment, for auto-abscissa */
   double delta_x = 1.;
   /* polyline attributes */
   int linemode_index = 1;	/* linemode for polylines, 1=solid, etc. */
-  double plot_line_width = -0.001; /* polyline width (as frac. of display width)*/
+  double plot_line_width = -0.001; /* polyline width (as frac. of display width), negative means default provided by libplot) */
   int symbol_index = 0;		/* 0=none, 1=dot, 2=plus, 3=asterisk, etc. */
   double symbol_size = .03;	/* symbol size (as frac. of plotting box width) */
   double fill_fraction = -1.0;	/* negative means regions aren't filled */
-  Boolean use_color = FALSE;	/* color / monochrome */
+  bool use_color = false;	/* color / monochrome */
 
   /* Variables related to both the point reader and the point plotter */
 
-  Boolean transpose_axes = FALSE; /* true means -x applies to y axis, etc. */
+  bool transpose_axes = false;	/* true means -x applies to y axis, etc. */
 
   /* Variables related to the point plotter */
 
   grid_type grid_spec = AXES_AND_BOX; /* frame type for the plot */
-  char *frame_color = "black";	/* color of frame (and plot, if no -C option) */
-  Boolean save_screen = FALSE;	/* save screen, i.e. no erase before plot? */
-  Boolean no_rotate_y_label = FALSE; /* used for pre-X11R6 servers */
+  char *frame_color = "black";	/* color of frame (and plot, if no -C option)*/
+  bool save_screen = false;	/* save screen, i.e. no erase before plot? */
+  bool no_rotate_y_label = false; /* used for pre-X11R6 servers */
   int clip_mode = 1;		/* clipping mode (cf. gnuplot) */
   /* following variables are portmanteau: x and y are included as bitfields*/
   int log_axis = 0;		/* log axes or linear axes? */
@@ -182,7 +150,7 @@ main (argc, argv)
   double plot_height = .6;	/* height of the plot */
   double plot_width = .6;	/* width of the plot */
 
-  /* plotter dimensions, expressed as fractions of the width of plotting area */
+  /* dimensions, expressed as fractions of the width of the plotting area */
   double tick_size = .02;	/* size of tick marks (< 0.0 allowed) */
   double font_size = 0.0525;	/* fontsize */
   double title_font_size = 0.07; /* title fontsize */
@@ -202,9 +170,9 @@ main (argc, argv)
   double spacing_x = 0.0, spacing_y = 0.0;
 
   /* flags indicating which axis limits the user has specified */
-  Boolean spec_min_x = FALSE, spec_min_y = FALSE;
-  Boolean spec_max_x = FALSE, spec_max_y = FALSE;
-  Boolean spec_spacing_x = FALSE, spec_spacing_y = FALSE;
+  bool spec_min_x = false, spec_min_y = false;
+  bool spec_max_x = false, spec_max_y = false;
+  bool spec_spacing_x = false, spec_spacing_y = false;
 
   /* misc. local variables used in getopt parsing, counterparts to the above */
   double local_x_start, local_delta_x;
@@ -225,10 +193,10 @@ main (argc, argv)
   int final_round_to_next_tick = 0;
   double final_min_x = 0.0, final_max_x = 0.0, final_spacing_x = 0.0;
   double final_min_y = 0.0, final_max_y = 0.0, final_spacing_y = 0.0;  
-  Boolean final_spec_min_x = FALSE, final_spec_min_y = FALSE;
-  Boolean final_spec_max_x = FALSE, final_spec_max_y = FALSE;
-  Boolean final_spec_spacing_x = FALSE, final_spec_spacing_y = FALSE;
-  Boolean final_transpose_axes = FALSE;
+  bool final_spec_min_x = false, final_spec_min_y = false;
+  bool final_spec_max_x = false, final_spec_max_y = false;
+  bool final_spec_spacing_x = false, final_spec_spacing_y = false;
+  bool final_transpose_axes = false;
 
   /* for storage of data points (if we're not acting as a filter) */
   Point *p;			/* points array */
@@ -241,26 +209,17 @@ main (argc, argv)
   double old_reposition_trans_x, old_reposition_trans_y;
   double old_reposition_scale;
 
-  /* Determine our name: depends on which libplot version we're linked with */
-  progname = xmalloc (strlen (base_progname) + strlen (_libplot_suffix) + 2);
-  strcpy (progname, base_progname);
-  if (*_libplot_suffix)
-    {
-      strcat (progname, "-");
-      strcat (progname, _libplot_suffix);
-    }
-
   /* parse argv[] */
   while (continue_parse)
     {
       if (using_getopt)		/* true until end of options */
 	{
 	  option = getopt_long (argc, argv, 
-				"-BCOVstF:f:g:h:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::", 
+				"-BCOVstF:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::", 
 			    long_options, &opt_index);
 	  if (option == EOF)	/* end of options */
 	    {
-	      using_getopt = FALSE;
+	      using_getopt = false;
 	      continue;		/* back to top of while loop */
 	    }
 	  if (option == 1)	/* filename embedded among options */
@@ -299,7 +258,7 @@ main (argc, argv)
 	  /* ----------- options with no argument --------------*/
 
 	case 's':		/* Don't erase display before plot, ARG NONE */
-	  save_screen = TRUE;
+	  save_screen = true;
 	  break;
 	case 't':		/* Toggle transposition of axes, ARG NONE */
 	  transpose_axes = !transpose_axes;
@@ -308,29 +267,23 @@ main (argc, argv)
 	  auto_bump = !auto_bump;
 	  break;
 	case 'C':
-	  new_use_color = TRUE;
+	  new_use_color = true;
 	  use_color = !use_color; /* Toggle color/monochrome, ARG NONE */
 	  break;
 	case 'O':
-	  _libplot_output_is_ascii = 1; /* plot(5) ASCII format, ARG NONE */
-	  break;
-	case 'H' << 8:		/* Output high byte first, ARG NONE */
-	  _libplot_output_high_byte_first = 1;
-	  break;
-	case 'L' << 8:		/* Output low byte first, ARG NONE */
-	  _libplot_output_high_byte_first = -1;
+	  parampl ("META_PORTABLE", "yes"); /* portable format, ARG NONE */
 	  break;
 	case 'V' << 8:		/* Version, ARG NONE		*/
-	  show_version = TRUE;
-	  continue_parse = FALSE;
+	  show_version = true;
+	  continue_parse = false;
 	  break;
 	case 'h' << 8:		/* Help, ARG NONE		*/
-	  show_usage = TRUE;
-	  continue_parse = FALSE;
+	  show_usage = true;
+	  continue_parse = false;
 	  break;
 	case 'f' << 8:		/* Help on fonts, ARG NONE	*/
-	  show_fonts = TRUE;
-	  continue_parse = FALSE;
+	  show_fonts = true;
+	  continue_parse = false;
 	  break;
 	case 'N' << 8:		/* Toggle rotation of y-label, ARG NONE */
 	  no_rotate_y_label = !no_rotate_y_label;
@@ -343,19 +296,27 @@ main (argc, argv)
 	    {
 	    case 'a':
 	    case 'A':
-	      data_spec = T_ASCII;
+	      input_type = T_ASCII;
+	      break;
+	    case 'f':
+	    case 'F':
+	      input_type = T_SINGLE;
 	      break;
 	    case 'd':
 	    case 'D':
-	      data_spec = T_DOUBLE;
+	      input_type = T_DOUBLE;
+	      break;
+	    case 'i':
+	    case 'I':
+	      input_type = T_INTEGER;
 	      break;
 	    case 'e':
 	    case 'E':
-	      data_spec = T_ASCII_ERRORBAR;
+	      input_type = T_ASCII_ERRORBAR;
 	      break;
 	    case 'g':
 	    case 'G':
-	      data_spec = T_GNUPLOT;	/* gnuplot `table' format */
+	      input_type = T_GNUPLOT;	/* gnuplot `table' format */
 	      break;
 	    default:
 	      fprintf (stderr,
@@ -373,10 +334,10 @@ main (argc, argv)
 	      errcnt++;
 	    }
 	  if (local_font_size < 0.0)
-	    fprintf (stderr, "%s: warning: ignoring negative font size `%f'\n",
+	    fprintf (stderr, "%s: ignoring negative font size `%f'\n",
 		     progname, local_font_size);
 	  else if (local_font_size == 0.0)
-	    fprintf (stderr, "%s: warning: ignoring zero font size\n",
+	    fprintf (stderr, "%s: ignoring zero font size\n",
 		     progname);
 	  else
 	    font_size = local_font_size;
@@ -433,7 +394,7 @@ main (argc, argv)
 	  if ((sscanf (optarg, "%d", &local_clip_mode) <= 0)
 	      || local_clip_mode < 0 || local_clip_mode > 2)
 	    fprintf (stderr,
-		     "%s: warning: ignoring bad clip mode `%s' (must be 0, 1, or 2)\n",
+		     "%s: ignoring bad clip mode `%s' (must be 0, 1, or 2)\n",
 		     progname, optarg);
 	  else
 	    clip_mode = local_clip_mode;
@@ -451,7 +412,7 @@ main (argc, argv)
 	      break;
 	    default:
 	      fprintf (stderr, 
-		       "%s: warning: ignoring unrecognized axis specification `%s'\n", 
+		       "%s: ignoring unrecognized axis specification `%s'\n", 
 		       progname, optarg);
 	      break;
 	    }
@@ -469,13 +430,13 @@ main (argc, argv)
 	      break;
 	    default:
 	      fprintf (stderr, 
-		       "%s: warning: ignoring unrecognized axis specification `%s'\n", 
+		       "%s: ignoring unrecognized axis specification `%s'\n", 
 		       progname, optarg);
 	      break;
 	    }
 	  break;
 	case 'm':		/* Linemode, ARG REQUIRED	*/
-	  new_linemode = TRUE;
+	  new_linemode = true;
 	  if (sscanf (optarg, "%d", &linemode_index) <= 0)
 	    {
 	      fprintf (stderr,
@@ -494,12 +455,12 @@ main (argc, argv)
 	    }
 	  if (local_fill_fraction > 1.0)
 	    fprintf (stderr, 
-		       "%s: warning: ignoring bad region fill fraction `%f' (must be <=1.0)\n",
+		       "%s: ignoring bad region fill fraction `%f' (must be <=1.0)\n",
 		     progname, local_fill_fraction);
 	  else
 	    {
 	      fill_fraction = local_fill_fraction;
-	      new_fill_fraction = TRUE;
+	      new_fill_fraction = true;
 	    }
 	  break;
 	case 'r':		/* Right shift, ARG REQUIRED */
@@ -529,6 +490,9 @@ main (argc, argv)
 	      errcnt++;
 	    }
 	  break;
+	case 'T':		/* Display type, ARG REQUIRED      */
+	  display_type = xstrdup (optarg);
+	  break;
 	case 'F':		/* Font name, ARG REQUIRED      */
 	  font_name = xstrdup (optarg);
 	  break;
@@ -537,7 +501,7 @@ main (argc, argv)
 	  break;
 	case 'G' << 8:		/* Symbol Font name, ARG REQUIRED      */
 	  symbol_font_name = xstrdup (optarg);
-	  new_symbol_font_name = TRUE;
+	  new_symbol_font_name = true;
 	  break;
 	case 'R':		/* Toggle rounding to next tick, ARG REQUIRED*/
 	  switch (*optarg)
@@ -552,7 +516,7 @@ main (argc, argv)
 	      break;
 	    default:
 	      fprintf (stderr, 
-		       "%s: warning: ignoring unrecognized axis specification `%s'\n", 
+		       "%s: ignoring unrecognized axis specification `%s'\n", 
 		       progname, optarg);
 	      break;
 	    }
@@ -560,7 +524,7 @@ main (argc, argv)
 	case 'L':		/* Top title, ARG REQUIRED	*/
 	  top_label = xstrdup (optarg);
 	  break;
-	case 'T':		/* Tick size, ARG REQUIRED	*/
+	case 'k':		/* Tick size, ARG REQUIRED	*/
 	  if (sscanf (optarg, "%lf", &tick_size) <= 0)
 	    {
 	      fprintf (stderr,
@@ -578,12 +542,12 @@ main (argc, argv)
 	      errcnt++;
 	    }
 	  if (local_plot_line_width < 0.0)
-	    fprintf (stderr, "%s: warning: ignoring negative plot line width `%f'\n",
+	    fprintf (stderr, "%s: ignoring negative plot line width `%f'\n",
 		     progname, local_plot_line_width);
 	  else
 	    {
 	      plot_line_width = local_plot_line_width;
-	      new_plot_line_width = TRUE;
+	      new_plot_line_width = true;
 	    }
 	  break;
 	case 'X':		/* X axis title, ARG REQUIRED	*/
@@ -606,7 +570,7 @@ main (argc, argv)
 	      break;
 	    default:
 	      fprintf (stderr, 
-		       "%s: warning: ignoring unrecognized axis specification `%s'\n", 
+		       "%s: ignoring unrecognized axis specification `%s'\n", 
 		       progname, optarg);
 	      break;
 	    }
@@ -629,10 +593,10 @@ main (argc, argv)
 	      errcnt++;
 	    }
 	  if (local_title_font_size < 0.0)
-	    fprintf (stderr, "%s: warning: ignoring negative title font size `%f'\n",
+	    fprintf (stderr, "%s: ignoring negative title font size `%f'\n",
 		     progname, local_title_font_size);
 	  if (local_title_font_size == 0.0)
-	    fprintf (stderr, "%s: warning: ignoring zero title font size\n",
+	    fprintf (stderr, "%s: ignoring zero title font size\n",
 		     progname);
 	  else
 	    title_font_size = local_title_font_size;
@@ -646,20 +610,19 @@ main (argc, argv)
 	      errcnt++;
 	    }
 	  if (local_frame_line_width < 0.0)
-	    fprintf (stderr, "%s: warning: ignoring negative frame line width `%f'\n",
+	    fprintf (stderr, "%s: ignoring negative frame line width `%f'\n",
 		     progname, local_frame_line_width);
 	  else
 	    frame_line_width = local_frame_line_width;
 	  break;
 	case 'M' << 8:		/* Max line length, ARG REQUIRED	*/
-	  if (sscanf (optarg, "%d", 
-		      &_libplot_max_unfilled_polyline_length) <= 0)
-	    {
-	      fprintf (stderr,
-		       "%s: error: max line length must be an integer, was `%s'.\n",
-		       progname, optarg);
-	      errcnt++;
-	    }
+	  parampl ("MAX_LINE_LENGTH", optarg);
+	  break;
+	case 'P' << 8:		/* Page size, ARG REQUIRED	*/
+	  parampl ("PAGESIZE", optarg);
+	  break;
+	case 'Q' << 8:		/* Plot rotation angle, ARG REQUIRED	*/
+	  parampl ("ROTATE", optarg);
 	  break;
 	case 'C' << 8:		/* Frame color, ARG REQUIRED      */
 	  frame_color = xstrdup (optarg);
@@ -669,7 +632,7 @@ main (argc, argv)
 	  /*------ options with zero or more arguments ---------*/
 
 	case 'a':		/* Auto-abscissa, ARG OPTIONAL [0,1,2] */
-	  auto_abscissa = TRUE;
+	  auto_abscissa = true;
 	  if (optind >= argc)
 	    break;
 	  if (sscanf (argv[optind], "%lf", &local_delta_x) <= 0)
@@ -678,7 +641,7 @@ main (argc, argv)
 	  if (local_delta_x == 0.0)
 	    /* "-a 0" turns off auto-abscissa for next file */
 	    {
-	      auto_abscissa = FALSE;
+	      auto_abscissa = false;
 	      break;
 	    }
 	  delta_x = local_delta_x;
@@ -693,29 +656,29 @@ main (argc, argv)
 	  if ((optind >= argc)
 	      || (sscanf (argv[optind], "%lf", &local_min_x) <= 0))
 	    {
-	      spec_min_x = spec_max_x = spec_spacing_x = FALSE;
+	      spec_min_x = spec_max_x = spec_spacing_x = false;
 	      break;
 	    }
 	  min_x = local_min_x;
-	  spec_min_x = TRUE;
+	  spec_min_x = true;
 	  optind++;	/* tell getopt we recognized min_x */
 	  if ((optind >= argc)
 	      || (sscanf (argv [optind], "%lf", &local_max_x) <= 0))
 	    {
-	      spec_max_x = spec_spacing_x = FALSE;
+	      spec_max_x = spec_spacing_x = false;
 	      break;
 	    }
 	  max_x = local_max_x;
-	  spec_max_x = TRUE;
+	  spec_max_x = true;
 	  optind++;	/* tell getopt we recognized max_x */
 	  if ((optind >= argc)
 	      || (sscanf (argv [optind], "%lf", &local_spacing_x) <= 0))
 	    {
-	      spec_spacing_x = FALSE;
+	      spec_spacing_x = false;
 	      break;
 	    }
 	  spacing_x = local_spacing_x;
-	  spec_spacing_x = TRUE;
+	  spec_spacing_x = true;
 	  optind++;	/* tell getopt we recognized spacing_x */
 	  break;
 
@@ -723,40 +686,40 @@ main (argc, argv)
 	  if ((optind >= argc) 
 	      || (sscanf (argv [optind], "%lf", &local_min_y) <= 0))
 	    {
-	      spec_min_y = spec_max_y = spec_spacing_y = FALSE;
+	      spec_min_y = spec_max_y = spec_spacing_y = false;
 	      break;
 	    }
 	  min_y = local_min_y;
-	  spec_min_y = TRUE;
+	  spec_min_y = true;
 	  optind++;	/* tell getopt we recognized min_y */
 	  if ((optind >= argc)
 	      || (sscanf (argv [optind], "%lf", &local_max_y) <= 0))
 	    {
-	      spec_max_y = spec_spacing_y = FALSE;
+	      spec_max_y = spec_spacing_y = false;
 	      break;
 	    }
 	  max_y = local_max_y;
-	  spec_max_y = TRUE;
+	  spec_max_y = true;
 	  optind++;	/* tell getopt we recognized max_y */
 	  if ((optind >= argc)
 	      || (sscanf (argv [optind], "%lf", &local_spacing_y) <= 0))
 	    {
-	      spec_spacing_y = FALSE;	      
+	      spec_spacing_y = false;	      
 	      break;
 	    }
 	  spacing_y = local_spacing_y;
-	  spec_spacing_y = TRUE;
+	  spec_spacing_y = true;
 	  optind++;	/* tell getopt we recognized spacing_y */
 	  break;
 	case 'S':		/* Symbol, ARG OPTIONAL	[0,1,2]		*/
-	  new_symbol = TRUE;
+	  new_symbol = true;
 	  symbol_index = M_DOT; /* symbol # 1 is switched to by -S alone */
 	  if (optind >= argc)
 	    break;
 	  if (sscanf (argv[optind], "%d", &local_symbol_index) <= 0)
 	    break;
 	  if (local_symbol_index < 0 || local_symbol_index > 255)
-	    fprintf (stderr, "%s: warning: ignoring symbol type `%d' (must be in range 0..255)\n",
+	    fprintf (stderr, "%s: ignoring symbol type `%d' (must be in range 0..255)\n",
 		     progname, local_symbol_index);
 	  else
 	    symbol_index = local_symbol_index;
@@ -766,15 +729,15 @@ main (argc, argv)
 	  if (sscanf (argv[optind], "%lf", &local_symbol_size) <= 0)
 	    break;
 	  if (local_symbol_size < 0.0)
-	    fprintf (stderr, "%s: warning: ignoring negative symbol size `%f'\n",
+	    fprintf (stderr, "%s: ignoring negative symbol size `%f'\n",
 		     progname, local_symbol_size);
 	  else if (local_symbol_size == 0.0)
-	    fprintf (stderr, "%s: warning: ignoring zero symbol size\n",
+	    fprintf (stderr, "%s: ignoring zero symbol size\n",
 		     progname);
 	  else
 	    {
 	      symbol_size = local_symbol_size;
-	      new_symbol_size = TRUE;
+	      new_symbol_size = true;
 	    }
 	  optind++;		/* tell getopt we recognized symbol_size */
 	  break;
@@ -854,7 +817,8 @@ main (argc, argv)
 		    title_font_name = font_name;
 	      
 		  /* initialize plotter, using (in part) finalized arguments */
-		  initialize_plotter(save_screen, /* for open_plotter() only */
+		  initialize_plotter(display_type,
+				     save_screen, /* for open_plotter() only */
 				     frame_line_width,
 				     frame_color,
 				     top_label,
@@ -880,7 +844,7 @@ main (argc, argv)
 				     final_transpose_axes);
 	      
 		  if (first_plot)
-		    /* haven't opened plotter yet */
+		    /* haven't opened plotter yet, do so now */
 		    {
 		      if (open_plotter() < 0)
 			{
@@ -912,7 +876,7 @@ main (argc, argv)
 		  /* free points array */
 		  free (p);
 		  no_of_points = 0;
-		  first_file_of_plot = FALSE;
+		  first_file_of_plot = false;
 	      
 		} /* end of not-filter case */
 	  
@@ -921,8 +885,8 @@ main (argc, argv)
 	      restorestate();
 
 	      /* on to next plot */
-	      first_plot = FALSE;
-	      first_file_of_plot = TRUE;
+	      first_plot = false;
+	      first_file_of_plot = true;
 	    }
 	  
 	  break;
@@ -960,7 +924,7 @@ main (argc, argv)
 		  if (spec_max_x)
 		    {
 		      if (max_x > 0.0)
-		    max_x = log10(max_x);
+			max_x = log10(max_x);
 		      else
 			{
 			  fprintf(stderr, 
@@ -1008,7 +972,7 @@ main (argc, argv)
 	      final_log_axis = log_axis;
 	      final_round_to_next_tick = round_to_next_tick;
 
-	      /* Boolean */
+	      /* bool */
 	      final_transpose_axes = transpose_axes;
 
 	      /* x-axis specific */
@@ -1058,7 +1022,8 @@ main (argc, argv)
 		    title_font_name = font_name;
 	      
 		  /* following is in effect for the entire plot */
-		  initialize_plotter(save_screen, /* for open_plotter() only */
+		  initialize_plotter(display_type,
+				     save_screen, /* for open_plotter() only */
 				     frame_line_width, 
 				     frame_color,
 				     top_label,
@@ -1114,7 +1079,7 @@ main (argc, argv)
 		     this isn't the first plot */
 		  plot_frame(!first_plot);
 		  
-		  initialize_reader (data_spec,
+		  initialize_reader (input_type,
 				     auto_abscissa, delta_x, x_start,
 				     /* following three are plot-specific */
 				     final_transpose_axes, 
@@ -1125,15 +1090,15 @@ main (argc, argv)
 				     symbol_font_name,
 				     linemode_index, plot_line_width, 
 				     fill_fraction, use_color);
-		  new_symbol = new_symbol_size = new_symbol_font_name = FALSE;
-		  new_linemode = new_plot_line_width = FALSE;
-		  new_fill_fraction = new_use_color = FALSE;
+		  new_symbol = new_symbol_size = new_symbol_font_name = false;
+		  new_linemode = new_plot_line_width = false;
+		  new_fill_fraction = new_use_color = false;
 		}
 	      else	/* not first file of plot, but do some things anyway */
 		{
 		  /* set reader parameters that may change when we move
 		     from file to file within a plot */
-		  set_reader_parameters (data_spec,
+		  set_reader_parameters (input_type,
 					 auto_abscissa, delta_x, x_start,
 					 /* following args set dataset 
 					    attributes */
@@ -1141,15 +1106,15 @@ main (argc, argv)
 					 symbol_font_name,
 					 linemode_index, plot_line_width, 
 					 fill_fraction, use_color,
-					 /* following Booleans make up a mask*/
+					 /* following bools make up a mask*/
 					 new_symbol, new_symbol_size,
 					 new_symbol_font_name,
 					 new_linemode, new_plot_line_width, 
 					 new_fill_fraction, new_use_color);
 
-		  new_symbol = new_symbol_size = new_symbol_font_name = FALSE;
-		  new_linemode = new_plot_line_width = FALSE;
-		  new_fill_fraction = new_use_color = FALSE;
+		  new_symbol = new_symbol_size = new_symbol_font_name = false;
+		  new_linemode = new_plot_line_width = false;
+		  new_fill_fraction = new_use_color = false;
 		}
     
 	      /* call read_and_plot_file() on the file; each dataset in the
@@ -1170,7 +1135,7 @@ main (argc, argv)
 		{
 		  p = (Point *)xmalloc (points_length * sizeof (Point));
 		  
-		  initialize_reader (data_spec, 
+		  initialize_reader (input_type, 
 				     auto_abscissa, delta_x, x_start,
 				     /* following three are plot-specific */
 				     final_transpose_axes, 
@@ -1181,15 +1146,15 @@ main (argc, argv)
 				     symbol_font_name,
 				     linemode_index, plot_line_width, 
 				     fill_fraction, use_color);
-		  new_symbol = new_symbol_size = new_symbol_font_name = FALSE;
-		  new_linemode = new_plot_line_width = FALSE;
-		  new_fill_fraction = new_use_color = FALSE;
+		  new_symbol = new_symbol_size = new_symbol_font_name = false;
+		  new_linemode = new_plot_line_width = false;
+		  new_fill_fraction = new_use_color = false;
 		}
 	      else	/* not first file of plot, but do some things anyway */
 		{
 		  /* set reader parameters that may change when we move
 		     from file to file within a plot */
-		  set_reader_parameters (data_spec, 
+		  set_reader_parameters (input_type, 
 					 auto_abscissa, delta_x, x_start,
 					 /* following args set dataset 
 					    attributes */
@@ -1197,15 +1162,15 @@ main (argc, argv)
 					 symbol_font_name,
 					 linemode_index, plot_line_width, 
 					 fill_fraction, use_color,
-					 /* following Booleans make up a mask*/
+					 /* following bools make up a mask*/
 					 new_symbol, new_symbol_size,
 					 new_symbol_font_name,
 					 new_linemode, new_plot_line_width, 
 					 new_fill_fraction, new_use_color);
 
-		  new_symbol = new_symbol_size = new_symbol_font_name = FALSE;
-		  new_linemode = new_plot_line_width = FALSE;
-		  new_fill_fraction = new_use_color = FALSE;
+		  new_symbol = new_symbol_size = new_symbol_font_name = false;
+		  new_linemode = new_plot_line_width = false;
+		  new_fill_fraction = new_use_color = false;
 		}
 	      
 	      /* add points to points array by calling read_file() on file */
@@ -1217,37 +1182,39 @@ main (argc, argv)
 	  if (data_file != stdin)
 	    close_file (optarg, data_file);
 
-	  first_file_of_plot = FALSE;
+	  first_file_of_plot = false;
 	  break;		/* end of `case 1' in switch() */
 	  
 	  /*---------------- End of options ----------------*/
 
 	default:		/* Default, unknown option */
 	  errcnt++;
-	  continue_parse = FALSE;
+	  continue_parse = false;
 	  break;
 	}			/* end of switch() */
 
+      if (errcnt > 0)
+	continue_parse = false;
     }				/* end of while loop */
   
   if (errcnt > 0)
     {
-      fprintf (stderr, "Try `%s --help' for more information.\n", progname);
+      fprintf (stderr, "Try `%s --help' for more information\n", progname);
       return 1;
     }
   if (show_version)
     {
-      display_version ();
+      display_version (progname);
       return 0;
     }
   if (show_fonts)
     {
-      display_fonts ();
+      display_fonts (display_type, progname);
       return 0;
     }
   if (show_usage)
     {
-      display_usage ();
+      display_usage (progname, hidden_options, true, true);
       return 0;
     }
 
@@ -1274,7 +1241,8 @@ main (argc, argv)
 	  if ((title_font_name == NULL) && (font_name != NULL))
 	    title_font_name = font_name;
 	      
-	  initialize_plotter(save_screen, /* for open_plotter() only */
+	  initialize_plotter(display_type, 
+			     save_screen, /* for open_plotter() only */
 			     frame_line_width,
 			     frame_color,
 			     top_label,
@@ -1300,7 +1268,7 @@ main (argc, argv)
 			     final_transpose_axes);
 	  
 	  if (first_plot)
-	    /* still haven't opened plotter */
+	    /* still haven't opened plotter, do so now */
 	    {
 	      if (open_plotter() < 0)
 		{
@@ -1341,7 +1309,7 @@ main (argc, argv)
   
   if (close_plotter() < 0)
     {
-      fprintf (stderr, "%s: error: couldn't close plot device\n", 
+      fprintf (stderr, "%s: error: could not close plot device\n", 
 	       progname);
       return 1;
     }
@@ -1350,52 +1318,14 @@ main (argc, argv)
 }
 
 
-Voidptr 
-xmalloc (length)
-     unsigned int length;
-{
-  Voidptr p;
-  p = (Voidptr) malloc (length);
-
-  if (p == (Voidptr) NULL)
-    {
-      fprintf (stderr, "%s: ", progname);
-      perror ("malloc failed");
-      exit (1);
-    }
-  return p;
-}
-
-Voidptr 
-xrealloc (p, length)
-     Voidptr p;
-     unsigned int length;
-{
-  p = (Voidptr) realloc (p, length);
-
-  if (p == (Voidptr) NULL)
-    {
-      fprintf (stderr, "%s: ", progname);
-      perror ("realloc failed");
-      exit (1);
-    }
-  return p;
-}
-
-char *
-xstrdup (s)
-     const char *s;
-{
-  char *t = (char *)xmalloc (strlen (s) + 1);
-
-  strcpy (t, s);
-  return t;
-}
-
 static void
+#ifdef _HAVE_PROTOS
+open_file_for_reading (char *filename, FILE **input)
+#else
 open_file_for_reading (filename, input)
      char *filename;
      FILE **input;
+#endif
 {
   FILE *data_file;
 		
@@ -1403,7 +1333,7 @@ open_file_for_reading (filename, input)
   if (data_file == NULL)
     {
       fprintf (stderr, 
-	       "%s: error: couldn't open file `%s'\n",
+	       "%s: error: input file `%s' is nonexistent or inaccessible\n",
 	       progname, filename);
       exit (1);
     }
@@ -1412,99 +1342,16 @@ open_file_for_reading (filename, input)
 }  
 
 static void
+#ifdef _HAVE_PROTOS
+close_file (char *filename, FILE *stream)
+#else
 close_file (filename, stream)
      char *filename;
      FILE *stream;
+#endif
 {
   if (fclose (stream) < 0)
-    {
-      fprintf (stderr, 
-	       "%s: error: couldn't close file `%s'\n", 
-	       progname, filename);
-      exit (1);
-    }
-}
-
-static void
-display_usage ()
-{
-  int i;
-  int col = 0;
-  
-  fprintf (stderr, "Usage: %s", progname);
-  col += (strlen (progname) + 7);
-  for (i = 0; long_options[i].name; i++)
-    {
-      int option_len;
-      
-      option_len = strlen (long_options[i].name);
-      if (col >= 80 - (option_len + 16))
-	{
-	  fprintf (stderr, "\n\t");
-	  col = 8;
-	}
-      fprintf (stderr, " [--%s", long_options[i].name);
-      col += (option_len + 4);
-      if ((unsigned int)(long_options[i].val) < 256)
-	{
-	  fprintf (stderr, " | -%c", long_options[i].val);
-	  col += 5;
-	}
-      if (long_options[i].has_arg == ARG_REQUIRED)
-	{
-	  fprintf (stderr, " arg]");
-	  col += 5;
-	}
-      else if (long_options[i].has_arg == ARG_OPTIONAL)
-	{
-	  fprintf (stderr, " [arg(s)]]");
-	  col += 10;
-	}
-      else
-	{
-	  fprintf (stderr, "]");
-	  col++;
-	}
-    }
-  fprintf (stderr, "\n");
-  fprintf (stderr, 
-	   "For information on available fonts, type `%s --help-fonts'.\n",
-	   progname);
-}
-
-static void
-display_fonts ()
-{
-#ifdef LIST_FONTS
-  int i;
-
-  if (_libplot_have_vector_fonts)
-    {
-      fprintf (stderr, "Names of supported vector fonts (case-insensitive):\n");
-      for (i=0; _vector_font_info[i].name; i++)
-	if (_vector_font_info[i].visible)
-	  fprintf (stderr, "\t%s\n", _vector_font_info[i].name);
-    }
-
-  if (_libplot_have_ps_fonts)
-    {
-      fprintf (stderr, "Names of supported Postscript fonts (case-insensitive):\n");
-      for (i=0; _ps_font_info[i].ps_name; i++)
-	fprintf (stderr, "\t%s\n", _ps_font_info[i].ps_name);
-    }
-#else
-  fprintf (stderr, 
-	   "%s: No font information available in this version\n", progname);
-#endif
-}
-
-static void
-display_version ()
-{
-  fprintf (stderr, "%s (GNU plotutils) %s\n", progname, VERSION);
-  fprintf (stderr, "Copyright (C) 1997 Free Software Foundation, Inc.\n");
-  fprintf (stderr, 
-	   "The GNU plotutils come with NO WARRANTY, to the extent permitted by law.\n");
-  fprintf (stderr, "You may redistribute copies of the GNU plotutils\n");
-  fprintf (stderr, "under the terms of the GNU General Public License.\n");
+    fprintf (stderr, 
+	     "%s: could not close input file `%s'\n", 
+	     progname, filename);
 }

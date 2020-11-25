@@ -13,10 +13,10 @@
 typedef struct
 {
   double x, y;	    /* location of the point in user coordinates */
-  Boolean have_x_errorbar, have_y_errorbar;
+  bool have_x_errorbar, have_y_errorbar;
   double xmin, xmax; /* meaningful only if have_x_errorbar field is set */
   double ymin, ymax; /* meaningful only if have_y_errorbar field is set */
-  Boolean pendown;  /* connect to previous point? */
+  bool pendown;  /* connect to previous point? */
   /* following fields are polyline attributes: constant over a polyline */
   int symbol;	    /* either a number indicating which standard marker
 		     symbol is to be plotted at the point (<0 means none)
@@ -27,13 +27,13 @@ typedef struct
   int linemode;		/* linemode of polyline (<0 means no polyline) */
   double line_width;	/* line width as fraction of size of the display */
   double fill_fraction;	/* in interval [0,1], <0 means polyline isn't filled */
-  Boolean use_color;	/* color/monochrome interpretation of linemode */
+  bool use_color;	/* color/monochrome interpretation of linemode */
 } Point;
 
-/* type of data we'll read from the input files.*/
+/* type of data in input stream */
 typedef enum
 {
-  T_ASCII, T_DOUBLE, T_GNUPLOT, T_ASCII_ERRORBAR
+  T_ASCII, T_SINGLE, T_DOUBLE, T_INTEGER, T_GNUPLOT, T_ASCII_ERRORBAR
 } data_type;
 
 /* style of plot frame; the 1st four of these are increasingly fancy, but
@@ -57,65 +57,71 @@ typedef struct
   int blue;
 } Color;
 
-extern char	*progname;	/* Program name */
+extern const char	*progname; /* Program name */
+
+/*------------prototypes for libcommon functions----------------------------*/
+
+extern void 
+display_fonts __P((const char *display_type, const char *progname));
+
+extern void 
+display_usage __P((const char *progname, const int *omit_vals, bool files, bool fonts));
+
+extern void 
+display_version __P((const char *progname));
+
+extern Voidptr 
+xmalloc __P ((unsigned int length));
+
+extern Voidptr 
+xrealloc __P ((Voidptr p, unsigned int length));
+
+extern char * 
+xstrdup __P((const char *s));
 
 /*--------------------------------prototypes--------------------------------*/
 
-#if __STDC__
-#define P__(a)	a
-#else
-#define P__(a)	()
-#endif
-
-extern Voidptr 
-xmalloc P__ ((unsigned int length));
-
-extern Voidptr 
-xrealloc P__ ((Voidptr p, unsigned int length));
-
-extern char * 
-xstrdup P__((const char *s));
-
 extern void 
-array_bounds P__((const Point *p, int length, Boolean transpose_axes, 
+array_bounds __P((const Point *p, int length, bool transpose_axes, 
 		  double *min_x, double *min_y,
-		  double *max_x, double *max_y, Boolean spec_min_x, Boolean
-		  spec_min_y, Boolean spec_max_x, Boolean spec_max_y));
+		  double *max_x, double *max_y, bool spec_min_x, bool
+		  spec_min_y, bool spec_max_x, bool spec_max_y));
 
 extern void
-read_file P__((FILE *input, Point **p, int *length, int *no_of_points));
+read_file __P((FILE *input, Point **p, int *length, int *no_of_points));
 
 extern void 
-read_and_plot_file P__((FILE *input));
+read_and_plot_file __P((FILE *input));
 
 extern void
-set_reader_parameters P__((data_type data_spec, Boolean auto_abscissa, double
+set_reader_parameters __P((data_type input_type, bool auto_abscissa, double
 			   delta_x, double abscissa, 
 			   int symbol, double symbol_size, 
 			   char *symbol_font_name, 
 			   int linemode, double line_width, 
-			   double fill_fraction, Boolean use_color,
-			   Boolean new_symbol, Boolean new_symbol_size, 
-			   Boolean new_symbol_font_name,
-			   Boolean new_linemode, Boolean new_line_width,
-			   Boolean new_fill_fraction, Boolean new_use_color));
+			   double fill_fraction, bool use_color,
+			   bool new_symbol, bool new_symbol_size, 
+			   bool new_symbol_font_name,
+			   bool new_linemode, bool new_line_width,
+			   bool new_fill_fraction, bool new_use_color));
 
 extern void
-initialize_reader P__((data_type data_spec, Boolean auto_abscissa, double
-		       delta_x, double abscissa, Boolean transpose_axes, 
-		       int log_axis, Boolean auto_bump, 
+initialize_reader __P((data_type input_type, bool auto_abscissa, double
+		       delta_x, double abscissa, bool transpose_axes, 
+		       int log_axis, bool auto_bump, 
 		       int symbol, double symbol_size, 
 		       char *symbol_font_name, int linemode, 
-		       double line_width, double fill_fraction, Boolean use_color));
+		       double line_width, double fill_fraction, bool use_color));
 
 extern void
-reset_reader P__((void));
+reset_reader __P((void));
 
 extern void
-set_plotter_parameters P__ ((double plot_line_width, char *point_label_font_name));
+set_plotter_parameters __P ((double plot_line_width, char *point_label_font_name));
 
 extern void
-initialize_plotter P__((Boolean save_screen, 
+initialize_plotter __P((char *display_type,
+			bool save_screen, 
 			double frame_line_width,
 			char *frame_color,
 			char *title, char *title_font_name, 
@@ -123,32 +129,30 @@ initialize_plotter P__((Boolean save_screen,
 			double tick_size, grid_type grid_spec, 
 			double x_min, double x_max, double x_spacing, 
 			double y_min, double y_max, double y_spacing, 
-			Boolean spec_x_spacing, 
-			Boolean spec_y_spacing, 
+			bool spec_x_spacing, 
+			bool spec_y_spacing, 
 			double width, double height, double up, double right, 
 			char *x_font_name, double x_font_size, char *x_label,
 			char *y_font_name, double y_font_size, 
-			char *y_label, Boolean no_rotate_y_label,
+			char *y_label, bool no_rotate_y_label,
 			int log_axis,
 			int round_to_next_tick,
 			int switch_axis_end, int omit_labels, 
 			int clip_mode,
 			double blankout_fraction,
-			Boolean transpose_axes));
+			bool transpose_axes));
 
 extern void
-plot_frame P__((Boolean draw_canvas));
+plot_frame __P((bool draw_canvas));
 
 extern void
-plot_point_array P__((const Point *p, int length));
+plot_point_array __P((const Point *p, int length));
 
 extern void
-plot_point P__((const Point *point));
+plot_point __P((const Point *point));
 
 extern int
-open_plotter P__((void));
+open_plotter __P((void));
 
 extern int
-close_plotter P__((void));
-
-#undef P__
+close_plotter __P((void));

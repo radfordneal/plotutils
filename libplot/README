@@ -1,0 +1,59 @@
+This directory holds the source files for a 2-D vector graphics library:
+GNU libplot.  Seven different sorts of graphic output are supported:
+metafile, Tektronix, HP-GL/2, xfig, Postscript, X11, and X11 Drawable.  The
+first five are supported via output streams.  The last two are supported
+directly, by calling X routines.  The X11 driver pops up a window
+(actually, a Label widget) on an X display, and draws graphics in it.  The
+X11 Drawable driver draws graphics in a `drawable' (a window or a pixmap),
+which must be passed to it.
+
+The names of the source files in this directory include as prefix a letter
+indicating which driver they include code for.  For example, the file
+h_filltype.c is part of the HP-GL/2 driver, and contains the source code
+for the function _h_filltype().  m=metafile, t=Tektronix, f=Fig,
+p=Postscript, x=X11, y=X11 Drawable.  The many files whose names begin with
+`g' (e.g., g_relative.c) include generic code that is used by more than one
+driver.
+
+The library provides a uniform `virtual plotter' interface to each display
+device.  The C binding for the library is set up in api.c.  Besides
+defining 79 standard user-level functions, it defines the functions
+newpl(), selectpl(), and deletepl(), which create and manipulate an array
+of virtual plotters.  Each virtual plotter is implemented as a C++-style
+object, which means it is a rather large structure.  We call each such
+object a `Plotter'.  Each Plotter includes both private data and public
+methods: one method for each of the user-level functions in the libplot API.
+
+Plotters are created by calling newpl() and destroyed by calling
+deletepl(); an arbitrarily large number of Plotters may exist
+simultaneously.  But exactly one Plotter may be selected at any specified
+time, by calling selectpl().  Which Plotter is selected determines which
+low-level routines are invoked in response to calling the user-level
+libplot functions.  Throughout this library, the pointer `_plotter' points
+to the currently selected Plotter.
+
+For example, calling the user-level function filltype() will invoke
+_m_filltype() if _plotter points to a Plotter that produces metafile
+format, _t_filltype() if it is one that produces Tektronix format,
+_h_filltype() if the format is HP-GL/2, _f_filltype() if the format is
+xfig, _p_filltype() if it is Postscript, and _x_filltype() if the Plotter
+is an X11 plotter, which directs the output of libplot to an X display
+rather than to an output stream.
+
+Adding support for a new display device, given the object-oriented way in
+which this code is structured, is quite easy.  An entry for any new device
+must be added to the _plotter_initializations[] array in api.c.  This entry
+must contain an initialization for the corresponding type of Plotter
+structure.  The structures that initialize the existing types of Plotter
+(e.g., _ps_default_plotter) are located in the files *_defplot.c.  Most
+Plotter methods are `generic'; in fact, each type of Plotter structure,
+with the exception of the type that implements the metafile device driver,
+is built largely from generic methods.
+
+To see how easy it is to add or remove support for a new display device,
+search for the symbol X_DISPLAY_MISSING.  If this is defined, support for
+the X display device will be dropped at compile time.  The only occurrences
+of `#ifdef X_DISPLAY_MISSING' are in api.c, the header file extern.h, and
+*_defplot.c and *_defstate.c.  The reason for its appearance in the C files
+other than api.c is that the basic datastructures include X-specific
+fields, which are omitted if X support is not included.

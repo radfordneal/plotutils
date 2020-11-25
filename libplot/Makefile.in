@@ -1,0 +1,739 @@
+# Makefile.in generated automatically by automake 1.2 from Makefile.am
+
+# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy, distribute and modify it.
+
+
+SHELL = /bin/sh
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = true
+PRE_INSTALL = true
+POST_INSTALL = true
+NORMAL_UNINSTALL = true
+PRE_UNINSTALL = true
+POST_UNINSTALL = true
+host_alias = @host_alias@
+host_triplet = @host@
+CC = @CC@
+LD = @LD@
+LEX = @LEX@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+LTALLOCA = @LTALLOCA@
+MAKEINFO = @MAKEINFO@
+NM = @NM@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+VERSION = @VERSION@
+XLIBS = @XLIBS@
+X_CFLAGS = @X_CFLAGS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+YACC = @YACC@
+
+lib_LTLIBRARIES = libplot.la
+
+INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include
+
+GSRC = g_affine.c g_alabel.c g_alab_her.c g_box.c g_capmod.c \
+g_circ.c g_clipper.c g_colors.c g_colorname.c g_concat.c g_cont.c \
+g_cntrlify.c g_endpath.c g_error.c g_erase.c g_fakearc.c \
+g_filltype.c g_fillcolor.c g_flushpl.c g_fontdb.c g_fontname.c g_fontsize.c \
+g_havecap.c g_her_glyph.c g_integer.c g_iso.c g_joinmod.c g_label.c \
+g_line.c g_linemod.c g_linewidth.c g_mark.c g_matrix.c g_move.c \
+g_outbuf.c g_outfile.c g_pagetype.c g_pencolor.c g_relative.c g_reststate.c \
+g_retrieve.c g_savestate.c g_space.c g_textangle.c g_vector.c g_xmalloc.c \
+g_xstring.c
+
+MSRC = m_affine.c m_alabel.c m_arc.c m_arcrel.c m_box.c m_boxrel.c \
+m_capmod.c m_circ.c m_circrel.c m_closepl.c m_concat.c m_cont.c \
+m_contrel.c m_defplot.c m_defstate.c m_earc.c m_earcrel.c \
+m_ellipse.c m_emit.c m_endpath.c m_erase.c m_filltype.c m_fillcolor.c \
+m_fontname.c m_fontsize.c m_joinmod.c m_label.c m_line.c m_linemod.c \
+m_linerel.c m_linewidth.c m_mark.c m_markrel.c m_move.c m_moverel.c \
+m_openpl.c m_pencolor.c m_point.c m_pointrel.c m_reststate.c m_savestate.c \
+m_space.c m_textangle.c
+
+TSRC = t_attribs.c t_closepl.c t_color.c t_color2.c t_cont.c \
+t_defplot.c t_defstate.c t_erase.c t_openpl.c t_point.c t_tek_md.c \
+t_tek_mv.c t_tek_vec.c
+
+HSRC = h_alab_pcl.c h_arc.c h_attribs.c h_circ.c h_closepl.c \
+h_color.c h_defplot.c h_defstate.c h_endpath.c h_font.c h_position.c \
+h_linewidth.c h_openpl.c h_point.c
+
+FSRC = f_alab_ps.c f_arc.c f_box.c f_closepl.c f_color.c f_color2.c \
+f_defplot.c f_defstate.c f_ellipse.c f_endpath.c f_erase.c f_linewidth.c \
+f_openpl.c f_point.c f_retrieve.c
+
+PSRC = p_alab_ps.c p_closepl.c p_color.c p_color2.c p_defplot.c \
+p_defstate.c p_ellipse.c p_endpath.c p_erase.c p_header.c p_openpl.c \
+p_point.c p_range.c
+
+XSRC = x_alab_X.c x_arc.c x_attribs.c x_box.c x_closepl.c x_color.c \
+x_defplot.c x_defstate.c x_earc.c x_ellipse.c x_endpath.c x_erase.c \
+x_flushpl.c x_openpl.c x_point.c x_reststate.c x_retrieve.c x_savestate.c \
+x_xevents.c
+
+YSRC = y_closepl.c y_defplot.c y_openpl.c
+
+@NO_X_TRUE@ALLSRC = api.c $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC)
+@NO_X_FALSE@ALLSRC = api.c $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(XSRC) $(YSRC)
+libplot_la_SOURCES = $(ALLSRC)
+
+libplot_la_LDFLAGS = -version-info 0:0:0
+
+noinst_HEADERS = extern.h g_colorname.h g_control.h g_cntrlify.h \
+g_fakearc.h g_her_metr.h g_jis.h g_pagetype.h g_params.h h_stick.h
+
+EXTRA_libplot_la_SOURCES = x_alab_X.c x_arc.c x_attribs.c x_box.c \
+x_closepl.c x_color.c x_defplot.c x_defstate.c x_earc.c x_ellipse.c \
+x_endpath.c x_erase.c x_flushpl.c x_openpl.c x_point.c x_reststate.c \
+x_retrieve.c x_savestate.c x_xevents.c y_closepl.c y_defplot.c y_openpl.c
+
+EXTRA_DIST = DEDICATION HUMOR README.fig README.hpgl README.tek
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(lib_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+libplot_la_LIBADD = 
+@NO_X_TRUE@libplot_la_OBJECTS =  api.lo g_affine.lo g_alabel.lo \
+@NO_X_TRUE@g_alab_her.lo g_box.lo g_capmod.lo g_circ.lo g_clipper.lo \
+@NO_X_TRUE@g_colors.lo g_colorname.lo g_concat.lo g_cont.lo \
+@NO_X_TRUE@g_cntrlify.lo g_endpath.lo g_error.lo g_erase.lo \
+@NO_X_TRUE@g_fakearc.lo g_filltype.lo g_fillcolor.lo g_flushpl.lo \
+@NO_X_TRUE@g_fontdb.lo g_fontname.lo g_fontsize.lo g_havecap.lo \
+@NO_X_TRUE@g_her_glyph.lo g_integer.lo g_iso.lo g_joinmod.lo g_label.lo \
+@NO_X_TRUE@g_line.lo g_linemod.lo g_linewidth.lo g_mark.lo g_matrix.lo \
+@NO_X_TRUE@g_move.lo g_outbuf.lo g_outfile.lo g_pagetype.lo \
+@NO_X_TRUE@g_pencolor.lo g_relative.lo g_reststate.lo g_retrieve.lo \
+@NO_X_TRUE@g_savestate.lo g_space.lo g_textangle.lo g_vector.lo \
+@NO_X_TRUE@g_xmalloc.lo g_xstring.lo m_affine.lo m_alabel.lo m_arc.lo \
+@NO_X_TRUE@m_arcrel.lo m_box.lo m_boxrel.lo m_capmod.lo m_circ.lo \
+@NO_X_TRUE@m_circrel.lo m_closepl.lo m_concat.lo m_cont.lo m_contrel.lo \
+@NO_X_TRUE@m_defplot.lo m_defstate.lo m_earc.lo m_earcrel.lo \
+@NO_X_TRUE@m_ellipse.lo m_emit.lo m_endpath.lo m_erase.lo m_filltype.lo \
+@NO_X_TRUE@m_fillcolor.lo m_fontname.lo m_fontsize.lo m_joinmod.lo \
+@NO_X_TRUE@m_label.lo m_line.lo m_linemod.lo m_linerel.lo \
+@NO_X_TRUE@m_linewidth.lo m_mark.lo m_markrel.lo m_move.lo m_moverel.lo \
+@NO_X_TRUE@m_openpl.lo m_pencolor.lo m_point.lo m_pointrel.lo \
+@NO_X_TRUE@m_reststate.lo m_savestate.lo m_space.lo m_textangle.lo \
+@NO_X_TRUE@t_attribs.lo t_closepl.lo t_color.lo t_color2.lo t_cont.lo \
+@NO_X_TRUE@t_defplot.lo t_defstate.lo t_erase.lo t_openpl.lo t_point.lo \
+@NO_X_TRUE@t_tek_md.lo t_tek_mv.lo t_tek_vec.lo h_alab_pcl.lo h_arc.lo \
+@NO_X_TRUE@h_attribs.lo h_circ.lo h_closepl.lo h_color.lo h_defplot.lo \
+@NO_X_TRUE@h_defstate.lo h_endpath.lo h_font.lo h_position.lo \
+@NO_X_TRUE@h_linewidth.lo h_openpl.lo h_point.lo f_alab_ps.lo f_arc.lo \
+@NO_X_TRUE@f_box.lo f_closepl.lo f_color.lo f_color2.lo f_defplot.lo \
+@NO_X_TRUE@f_defstate.lo f_ellipse.lo f_endpath.lo f_erase.lo \
+@NO_X_TRUE@f_linewidth.lo f_openpl.lo f_point.lo f_retrieve.lo \
+@NO_X_TRUE@p_alab_ps.lo p_closepl.lo p_color.lo p_color2.lo \
+@NO_X_TRUE@p_defplot.lo p_defstate.lo p_ellipse.lo p_endpath.lo \
+@NO_X_TRUE@p_erase.lo p_header.lo p_openpl.lo p_point.lo p_range.lo
+@NO_X_FALSE@libplot_la_OBJECTS =  api.lo g_affine.lo g_alabel.lo \
+@NO_X_FALSE@g_alab_her.lo g_box.lo g_capmod.lo g_circ.lo g_clipper.lo \
+@NO_X_FALSE@g_colors.lo g_colorname.lo g_concat.lo g_cont.lo \
+@NO_X_FALSE@g_cntrlify.lo g_endpath.lo g_error.lo g_erase.lo \
+@NO_X_FALSE@g_fakearc.lo g_filltype.lo g_fillcolor.lo g_flushpl.lo \
+@NO_X_FALSE@g_fontdb.lo g_fontname.lo g_fontsize.lo g_havecap.lo \
+@NO_X_FALSE@g_her_glyph.lo g_integer.lo g_iso.lo g_joinmod.lo \
+@NO_X_FALSE@g_label.lo g_line.lo g_linemod.lo g_linewidth.lo g_mark.lo \
+@NO_X_FALSE@g_matrix.lo g_move.lo g_outbuf.lo g_outfile.lo \
+@NO_X_FALSE@g_pagetype.lo g_pencolor.lo g_relative.lo g_reststate.lo \
+@NO_X_FALSE@g_retrieve.lo g_savestate.lo g_space.lo g_textangle.lo \
+@NO_X_FALSE@g_vector.lo g_xmalloc.lo g_xstring.lo m_affine.lo \
+@NO_X_FALSE@m_alabel.lo m_arc.lo m_arcrel.lo m_box.lo m_boxrel.lo \
+@NO_X_FALSE@m_capmod.lo m_circ.lo m_circrel.lo m_closepl.lo m_concat.lo \
+@NO_X_FALSE@m_cont.lo m_contrel.lo m_defplot.lo m_defstate.lo m_earc.lo \
+@NO_X_FALSE@m_earcrel.lo m_ellipse.lo m_emit.lo m_endpath.lo m_erase.lo \
+@NO_X_FALSE@m_filltype.lo m_fillcolor.lo m_fontname.lo m_fontsize.lo \
+@NO_X_FALSE@m_joinmod.lo m_label.lo m_line.lo m_linemod.lo m_linerel.lo \
+@NO_X_FALSE@m_linewidth.lo m_mark.lo m_markrel.lo m_move.lo \
+@NO_X_FALSE@m_moverel.lo m_openpl.lo m_pencolor.lo m_point.lo \
+@NO_X_FALSE@m_pointrel.lo m_reststate.lo m_savestate.lo m_space.lo \
+@NO_X_FALSE@m_textangle.lo t_attribs.lo t_closepl.lo t_color.lo \
+@NO_X_FALSE@t_color2.lo t_cont.lo t_defplot.lo t_defstate.lo t_erase.lo \
+@NO_X_FALSE@t_openpl.lo t_point.lo t_tek_md.lo t_tek_mv.lo t_tek_vec.lo \
+@NO_X_FALSE@h_alab_pcl.lo h_arc.lo h_attribs.lo h_circ.lo h_closepl.lo \
+@NO_X_FALSE@h_color.lo h_defplot.lo h_defstate.lo h_endpath.lo \
+@NO_X_FALSE@h_font.lo h_position.lo h_linewidth.lo h_openpl.lo \
+@NO_X_FALSE@h_point.lo f_alab_ps.lo f_arc.lo f_box.lo f_closepl.lo \
+@NO_X_FALSE@f_color.lo f_color2.lo f_defplot.lo f_defstate.lo \
+@NO_X_FALSE@f_ellipse.lo f_endpath.lo f_erase.lo f_linewidth.lo \
+@NO_X_FALSE@f_openpl.lo f_point.lo f_retrieve.lo p_alab_ps.lo \
+@NO_X_FALSE@p_closepl.lo p_color.lo p_color2.lo p_defplot.lo \
+@NO_X_FALSE@p_defstate.lo p_ellipse.lo p_endpath.lo p_erase.lo \
+@NO_X_FALSE@p_header.lo p_openpl.lo p_point.lo p_range.lo x_alab_X.lo \
+@NO_X_FALSE@x_arc.lo x_attribs.lo x_box.lo x_closepl.lo x_color.lo \
+@NO_X_FALSE@x_defplot.lo x_defstate.lo x_earc.lo x_ellipse.lo \
+@NO_X_FALSE@x_endpath.lo x_erase.lo x_flushpl.lo x_openpl.lo x_point.lo \
+@NO_X_FALSE@x_reststate.lo x_retrieve.lo x_savestate.lo x_xevents.lo \
+@NO_X_FALSE@y_closepl.lo y_defplot.lo y_openpl.lo
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LINK = $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+HEADERS =  $(noinst_HEADERS)
+
+DIST_COMMON =  README COPYING Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP = --best
+SOURCES = $(libplot_la_SOURCES) $(EXTRA_libplot_la_SOURCES)
+OBJECTS = $(libplot_la_OBJECTS)
+
+default: all
+
+.SUFFIXES:
+.SUFFIXES: .c .lo .o
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps libplot/Makefile
+
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-libLTLIBRARIES:
+
+clean-libLTLIBRARIES:
+	test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
+
+distclean-libLTLIBRARIES:
+
+maintainer-clean-libLTLIBRARIES:
+
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(libdir)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(libdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(libdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-libLTLIBRARIES:
+	$(NORMAL_UNINSTALL)
+	list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(libdir)/$$p; \
+	done
+
+.c.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	rm -f *.o core
+
+clean-compile:
+
+distclean-compile:
+	rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	rm -f *.lo
+
+clean-libtool:
+	rm -rf .libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+libplot.la: $(libplot_la_OBJECTS) $(libplot_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(libplot_la_LDFLAGS) $(libplot_la_OBJECTS) $(libplot_la_LIBADD) $(LIBS)
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES)
+	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES)
+	tags=; \
+	here=`pwd`; \
+	test -z "$(ETAGS_ARGS)$(SOURCES)$(HEADERS)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $(SOURCES) $(HEADERS) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = libplot
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  test -f $(distdir)/$$file \
+	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	  || cp -p $$d/$$file $(distdir)/$$file; \
+	done
+api.o api.lo: api.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h g_params.h
+f_alab_ps.o f_alab_ps.lo: f_alab_ps.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_arc.o f_arc.lo: f_arc.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+f_box.o f_box.lo: f_box.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+f_closepl.o f_closepl.lo: f_closepl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_color.o f_color.lo: f_color.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+f_color2.o f_color2.lo: f_color2.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_defplot.o f_defplot.lo: f_defplot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_defstate.o f_defstate.lo: f_defstate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_ellipse.o f_ellipse.lo: f_ellipse.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_endpath.o f_endpath.lo: f_endpath.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_erase.o f_erase.lo: f_erase.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+f_linewidth.o f_linewidth.lo: f_linewidth.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_openpl.o f_openpl.lo: f_openpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+f_point.o f_point.lo: f_point.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+f_retrieve.o f_retrieve.lo: f_retrieve.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_affine.o g_affine.lo: g_affine.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_alab_her.o g_alab_her.lo: g_alab_her.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h g_control.h \
+	g_her_metr.h
+g_alabel.o g_alabel.lo: g_alabel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h g_control.h
+g_box.o g_box.lo: g_box.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_capmod.o g_capmod.lo: g_capmod.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_circ.o g_circ.lo: g_circ.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_clipper.o g_clipper.lo: g_clipper.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_cntrlify.o g_cntrlify.lo: g_cntrlify.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h g_control.h \
+	g_cntrlify.h g_jis.h
+g_colorname.o g_colorname.lo: g_colorname.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h g_colorname.h
+g_colors.o g_colors.lo: g_colors.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_concat.o g_concat.lo: g_concat.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_cont.o g_cont.lo: g_cont.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_endpath.o g_endpath.lo: g_endpath.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_erase.o g_erase.lo: g_erase.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_error.o g_error.lo: g_error.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_fakearc.o g_fakearc.lo: g_fakearc.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h g_fakearc.h
+g_fillcolor.o g_fillcolor.lo: g_fillcolor.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_filltype.o g_filltype.lo: g_filltype.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_flushpl.o g_flushpl.lo: g_flushpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_fontdb.o g_fontdb.lo: g_fontdb.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_fontname.o g_fontname.lo: g_fontname.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_fontsize.o g_fontsize.lo: g_fontsize.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_havecap.o g_havecap.lo: g_havecap.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_her_glyph.o g_her_glyph.lo: g_her_glyph.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_integer.o g_integer.lo: g_integer.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_iso.o g_iso.lo: g_iso.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_joinmod.o g_joinmod.lo: g_joinmod.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_label.o g_label.lo: g_label.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_line.o g_line.lo: g_line.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_linemod.o g_linemod.lo: g_linemod.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_linewidth.o g_linewidth.lo: g_linewidth.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_mark.o g_mark.lo: g_mark.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_matrix.o g_matrix.lo: g_matrix.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_move.o g_move.lo: g_move.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_outbuf.o g_outbuf.lo: g_outbuf.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_outfile.o g_outfile.lo: g_outfile.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_pagetype.o g_pagetype.lo: g_pagetype.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h g_pagetype.h
+g_pencolor.o g_pencolor.lo: g_pencolor.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_relative.o g_relative.lo: g_relative.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_reststate.o g_reststate.lo: g_reststate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_retrieve.o g_retrieve.lo: g_retrieve.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h g_her_metr.h
+g_savestate.o g_savestate.lo: g_savestate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_space.o g_space.lo: g_space.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+g_textangle.o g_textangle.lo: g_textangle.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_vector.o g_vector.lo: g_vector.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_xmalloc.o g_xmalloc.lo: g_xmalloc.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+g_xstring.o g_xstring.lo: g_xstring.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+h_alab_pcl.o h_alab_pcl.lo: h_alab_pcl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h h_stick.h
+h_arc.o h_arc.lo: h_arc.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+h_attribs.o h_attribs.lo: h_attribs.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+h_circ.o h_circ.lo: h_circ.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+h_closepl.o h_closepl.lo: h_closepl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+h_color.o h_color.lo: h_color.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+h_defplot.o h_defplot.lo: h_defplot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+h_defstate.o h_defstate.lo: h_defstate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+h_endpath.o h_endpath.lo: h_endpath.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+h_font.o h_font.lo: h_font.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+h_linewidth.o h_linewidth.lo: h_linewidth.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+h_openpl.o h_openpl.lo: h_openpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+h_point.o h_point.lo: h_point.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+h_position.o h_position.lo: h_position.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_affine.o m_affine.lo: m_affine.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_alabel.o m_alabel.lo: m_alabel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_arc.o m_arc.lo: m_arc.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_arcrel.o m_arcrel.lo: m_arcrel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_box.o m_box.lo: m_box.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_boxrel.o m_boxrel.lo: m_boxrel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_capmod.o m_capmod.lo: m_capmod.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_circ.o m_circ.lo: m_circ.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_circrel.o m_circrel.lo: m_circrel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_closepl.o m_closepl.lo: m_closepl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_concat.o m_concat.lo: m_concat.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_cont.o m_cont.lo: m_cont.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_contrel.o m_contrel.lo: m_contrel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_defplot.o m_defplot.lo: m_defplot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_defstate.o m_defstate.lo: m_defstate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_earc.o m_earc.lo: m_earc.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_earcrel.o m_earcrel.lo: m_earcrel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_ellipse.o m_ellipse.lo: m_ellipse.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_emit.o m_emit.lo: m_emit.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_endpath.o m_endpath.lo: m_endpath.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_erase.o m_erase.lo: m_erase.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_fillcolor.o m_fillcolor.lo: m_fillcolor.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_filltype.o m_filltype.lo: m_filltype.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_fontname.o m_fontname.lo: m_fontname.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_fontsize.o m_fontsize.lo: m_fontsize.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_joinmod.o m_joinmod.lo: m_joinmod.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_label.o m_label.lo: m_label.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_line.o m_line.lo: m_line.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_linemod.o m_linemod.lo: m_linemod.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_linerel.o m_linerel.lo: m_linerel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_linewidth.o m_linewidth.lo: m_linewidth.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_mark.o m_mark.lo: m_mark.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_markrel.o m_markrel.lo: m_markrel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_move.o m_move.lo: m_move.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_moverel.o m_moverel.lo: m_moverel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_openpl.o m_openpl.lo: m_openpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_pencolor.o m_pencolor.lo: m_pencolor.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_point.o m_point.lo: m_point.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_pointrel.o m_pointrel.lo: m_pointrel.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_reststate.o m_reststate.lo: m_reststate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_savestate.o m_savestate.lo: m_savestate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+m_space.o m_space.lo: m_space.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+m_textangle.o m_textangle.lo: m_textangle.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_alab_ps.o p_alab_ps.lo: p_alab_ps.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_closepl.o p_closepl.lo: p_closepl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_color.o p_color.lo: p_color.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+p_color2.o p_color2.lo: p_color2.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_defplot.o p_defplot.lo: p_defplot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_defstate.o p_defstate.lo: p_defstate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_ellipse.o p_ellipse.lo: p_ellipse.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_endpath.o p_endpath.lo: p_endpath.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_erase.o p_erase.lo: p_erase.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+p_header.o p_header.lo: p_header.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_openpl.o p_openpl.lo: p_openpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+p_point.o p_point.lo: p_point.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+p_range.o p_range.lo: p_range.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+t_attribs.o t_attribs.lo: t_attribs.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+t_closepl.o t_closepl.lo: t_closepl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+t_color.o t_color.lo: t_color.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+t_color2.o t_color2.lo: t_color2.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+t_cont.o t_cont.lo: t_cont.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+t_defplot.o t_defplot.lo: t_defplot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+t_defstate.o t_defstate.lo: t_defstate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+t_erase.o t_erase.lo: t_erase.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+t_openpl.o t_openpl.lo: t_openpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+t_point.o t_point.lo: t_point.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+t_tek_md.o t_tek_md.lo: t_tek_md.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+t_tek_mv.o t_tek_mv.lo: t_tek_mv.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+t_tek_vec.o t_tek_vec.lo: t_tek_vec.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_alab_X.o x_alab_X.lo: x_alab_X.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_arc.o x_arc.lo: x_arc.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+x_attribs.o x_attribs.lo: x_attribs.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_box.o x_box.lo: x_box.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+x_closepl.o x_closepl.lo: x_closepl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_color.o x_color.lo: x_color.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+x_defplot.o x_defplot.lo: x_defplot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_defstate.o x_defstate.lo: x_defstate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_earc.o x_earc.lo: x_earc.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+x_ellipse.o x_ellipse.lo: x_ellipse.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_endpath.o x_endpath.lo: x_endpath.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_erase.o x_erase.lo: x_erase.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+x_flushpl.o x_flushpl.lo: x_flushpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_openpl.o x_openpl.lo: x_openpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_point.o x_point.lo: x_point.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+x_reststate.o x_reststate.lo: x_reststate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_retrieve.o x_retrieve.lo: x_retrieve.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h g_her_metr.h
+x_savestate.o x_savestate.lo: x_savestate.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+x_xevents.o x_xevents.lo: x_xevents.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+y_closepl.o y_closepl.lo: y_closepl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+y_defplot.o y_defplot.lo: y_defplot.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+y_openpl.o y_openpl.lo: y_openpl.c ./../include/sys-defines.h \
+	../config.h ./../include/plot.h extern.h
+
+info:
+dvi:
+check: all
+	$(MAKE)
+installcheck:
+install-exec: install-libLTLIBRARIES
+	@$(NORMAL_INSTALL)
+
+install-data: 
+	@$(NORMAL_INSTALL)
+
+install: install-exec install-data all
+	@:
+
+uninstall: uninstall-libLTLIBRARIES
+
+all: Makefile $(LTLIBRARIES) $(HEADERS)
+
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
+installdirs:
+	$(mkinstalldirs)  $(libdir)
+
+
+mostlyclean-generic:
+	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+
+clean-generic:
+	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	rm -f Makefile $(DISTCLEANFILES)
+	rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+
+maintainer-clean-generic:
+	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+mostlyclean:  mostlyclean-libLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-tags \
+		mostlyclean-generic
+
+clean:  clean-libLTLIBRARIES clean-compile clean-libtool clean-tags \
+		clean-generic mostlyclean
+
+distclean:  distclean-libLTLIBRARIES distclean-compile distclean-libtool \
+		distclean-tags distclean-generic clean
+	rm -f config.status
+	rm -f libtool
+
+maintainer-clean:  maintainer-clean-libLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-tags maintainer-clean-generic \
+		distclean
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+.PHONY: default mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
+uninstall-libLTLIBRARIES install-libLTLIBRARIES mostlyclean-compile \
+distclean-compile clean-compile maintainer-clean-compile \
+mostlyclean-libtool distclean-libtool clean-libtool \
+maintainer-clean-libtool tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info dvi installcheck \
+install-exec install-data install uninstall all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

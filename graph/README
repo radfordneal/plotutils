@@ -1,8 +1,0 @@
-This directory contains the source for the GNU version of the `graph'
-program.
-
-The build process creates five versions of this program: graph-X, graph-ps,
-graph-fig, graph-tek, and raw graph [which produces output in a
-GNU-enhanced version of the traditional plot(5) format].  They differ from
-one another in the graphics device they are able to drive.  During the
-build process, they are linked with different version of GNU libplot.

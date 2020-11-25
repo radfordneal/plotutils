@@ -12,7 +12,11 @@ static double   ssemax, abemax, acemax;
 static char     *ssenam, *abenam, *acenam;
 
 void
+#ifdef _HAVE_PROTOS
+maxerr (void)
+#else
 maxerr ()
+#endif
 {
   struct sym *sp, *dq;
   
@@ -38,8 +42,12 @@ maxerr ()
     }
 }
 
-Boolean
+bool
+#ifdef _HAVE_PROTOS
+hierror (void) /* not enough accuracy */
+#else
 hierror () /* not enough accuracy */
+#endif
 {
   double t = symtab->sy_val[0];
 
@@ -49,33 +57,37 @@ hierror () /* not enough accuracy */
       longjmp (mark, 1);
     }
   if (ssemax <= ssmax && abemax <= abmax && acemax <= acmax)
-    return FALSE;
+    return false;
   if (fabs(tstep) >= fabs(hmin))
-    return TRUE;
+    return true;
   if (sflag)
-    return FALSE;
+    return false;
   if (ssemax > ssmax)
     fprintf (stderr, 
 	     "%s: relative error limit exceeded while calculating %.*s'\n",
 	     progname, NAMMAX, ssenam);
-  if (abemax > abmax)
+  else if (abemax > abmax)
     fprintf (stderr, 
 	     "%s: absolute error limit exceeded while calculating %.*s'\n",
 	     progname, NAMMAX, abenam);
-  if (acemax > acmax)
+  else if (acemax > acmax)
     fprintf (stderr, 
 	     "%s: accumulated error limit exceeded while calculating %.*s'\n",
 	     progname, NAMMAX, acenam);
   longjmp (mark, 1);
 }
 
-Boolean
+bool
+#ifdef _HAVE_PROTOS
+lowerror (void) /* more than enough accuracy */
+#else
 lowerror () /* more than enough accuracy */
+#endif
 {
   if (ssemax < ssmin || abemax < abmin)
     if (fabs(tstep) <= fabs(hmax))
-      return TRUE;
-  return FALSE;
+      return true;
+  return false;
 }
 
 /*
@@ -86,21 +98,25 @@ lowerror () /* more than enough accuracy */
 #define BEFORESTOP(stepvar) (t+0.9375*stepvar < tstop && \
                                 t+0.0625*stepvar > tstop)
 
-Boolean
+bool
+#ifdef _HAVE_PROTOS
+intpr (double t)
+#else
 intpr (t)
      double t;
+#endif
 {
   if (tstep > 0)
     if (!PASTSTOP(tstep))
-      return FALSE;
+      return false;
   if (tstep < 0)
     if (!BEFORESTOP(tstep))
-      return FALSE;
+      return false;
   if (tstep > 0)
     while (PASTSTOP(tstep))
       tstep = HALF * tstep;
   if (tstep < 0)
     while (BEFORESTOP(tstep))
       tstep = HALF * tstep;
-  return TRUE;
+  return true;
 }

@@ -23,7 +23,7 @@
       a use_color flag (true or false)
 
    A sequence of points defines a polyline, or a sequence of polylines.
-   pendown=TRUE means that a polyline is being drawn; pendown=FALSE means
+   pendown=true means that a polyline is being drawn; pendown=false means
    that a polyline has just ended, and that the point (x,y), which begins a
    new polyline, should be moved to without drawing a line segment.  By
    convention, the final seven fields, and have_?_errorbar, are the same
@@ -80,14 +80,14 @@ typedef struct
 {
 /* parameters that are constant for the duration of each plot, and which
    affect the computation of the returned point structures */
-  Boolean transpose_axes;	/* x <-> y ? */
+  bool transpose_axes;	/* x <-> y ? */
   int log_axis;			/* x,y axes are logarithmic? (portmanteau) */
 /* parameters that are constant for the duration of each file  */
-  data_type data_spec;		/* file format (T_ASCII, T_DOUBLE, etc.) */
-  Boolean auto_abscissa;	/* auto-generate x values?  */
+  data_type input_type;		/* file format (T_ASCII, T_DOUBLE, etc.) */
+  bool auto_abscissa;		/* auto-generate x values?  */
   double delta_x;		/* increment for x value, if auto-generated */
   double initial_abscissa;	/* initial value for x, if auto-generated */
-  Boolean auto_bump;		/* bump linemode when starting next polyline?*/
+  bool auto_bump;		/* bump linemode when starting next polyline?*/
 /* parameters that are constant for the duration of each dataset  */
   int symbol;			/* symbol type */
   double symbol_size;		/* symbol size (in `box coordinates') */
@@ -95,58 +95,62 @@ typedef struct
   int linemode;			/* linemode */
   double line_width;		/* line width (as frac. of display size) */
   double fill_fraction;		/* in interval [0,1], <0 means no filling */
-  Boolean use_color;		/* color/monochrome interp. of linemode */
+  bool use_color;		/* color/monochrome interp. of linemode */
 /* state variables, updated during reader operation */
   double abscissa;		/* x value, if auto-generated */
-  Boolean first_plot_point;     /* true for first point of dataset only */
-  Boolean need_break;		/* draw next point with pen up ? */
+  bool first_plot_point;	/* true for first point of dataset only */
+  bool need_break;		/* draw next point with pen up ? */
 }
 Reader;				/* internal state of a point reader */
 
 static Reader reader;		/* our point reader */
 
 /* forward references */
-#if __STDC__
-#define P__(a)	a
-#else
-#define P__(a)	()
-#endif
-static Boolean skip_whitespace P__ ((FILE *stream));
-static int read_and_plot_dataset P__((FILE *input));
-static int read_dataset P__((FILE *input, Point **p, int *length, int *no_of_points));
-static int read_point P__ ((FILE *input, Point *point));
-static int read_point_ascii P__ ((FILE *input, Point *point));
-static int read_point_ascii_errorbar P__ ((FILE *input, Point *point));
-static int read_point_double P__ ((FILE *input, Point *point));
-static int read_point_gnuplot P__ ((FILE *input, Point *point));
-#undef P__
+static bool skip_whitespace __P ((FILE *stream));
+static int read_and_plot_dataset __P((FILE *input));
+static int read_dataset __P((FILE *input, Point **p, int *length, int *no_of_points));
+static int read_point __P ((FILE *input, Point *point));
+static int read_point_ascii __P ((FILE *input, Point *point));
+static int read_point_ascii_errorbar __P ((FILE *input, Point *point));
+static int read_point_binary __P ((FILE *input, Point *point, data_type input_type));
+static int read_point_gnuplot __P ((FILE *input, Point *point));
 
 /* initialize_reader() is called before reading data points from each file */
 
 void 
-initialize_reader (data_spec, auto_abscissa, delta_x, abscissa,
+#ifdef _HAVE_PROTOS
+initialize_reader (data_type input_type, bool auto_abscissa, 
+		   double delta_x, double abscissa, bool transpose_axes,
+		   int log_axis, bool auto_bump, int symbol, 
+		   double symbol_size, char *symbol_font_name, int linemode,
+		   double line_width, double fill_fraction, 
+		   bool use_color)
+#else
+initialize_reader (input_type, auto_abscissa, delta_x, abscissa,
 		   transpose_axes, log_axis, auto_bump,
 		   symbol, symbol_size, symbol_font_name,
 		   linemode, line_width, fill_fraction, use_color)
-     data_type data_spec;	/* double, or ascii, etc. */
-     Boolean auto_abscissa;
+     data_type input_type;	/* double, or ascii, etc. */
+     bool auto_abscissa;
      double delta_x;
      double abscissa;
-     Boolean transpose_axes;
+     bool transpose_axes;
      int log_axis;
-     Boolean auto_bump;
+     bool auto_bump;
      int symbol;
      double symbol_size;	/* for markers */
      char *symbol_font_name;	/* for markers >= 32 */
      int linemode;
      double line_width;		/* as fraction of display size */
-     double fill_fraction;	/* in [0,1], <0 means no fill (transparent) */
-     Boolean use_color;
-{
-  reader.first_plot_point = TRUE;
-  reader.need_break = TRUE;	/* force break in polyline */
+     double fill_fraction;	/* in [0,1], <0 means unfilled (transparent) */
+     bool use_color;
+#endif
 
-  reader.data_spec = data_spec;
+{
+  reader.first_plot_point = true;
+  reader.need_break = true;	/* force break in polyline */
+
+  reader.input_type = input_type;
   reader.auto_abscissa = auto_abscissa;
   reader.delta_x = delta_x;
   reader.initial_abscissa = abscissa;
@@ -171,9 +175,13 @@ initialize_reader (data_spec, auto_abscissa, delta_x, abscissa,
    effect. */
 
 void
+#ifdef _HAVE_PROTOS
+reset_reader(void)
+#else
 reset_reader()
+#endif
 {
-  reader.need_break = TRUE;	/* force break in polyline */
+  reader.need_break = true;	/* force break in polyline */
 
   /* bump linemode if appropriate */
   if (reader.auto_bump)
@@ -193,14 +201,24 @@ reset_reader()
    command-line specification of linemode/symbol type on a per-file basis.)  */
 
 void 
-set_reader_parameters (data_spec, auto_abscissa, delta_x, abscissa,
+#ifdef _HAVE_PROTOS
+set_reader_parameters (data_type input_type, bool auto_abscissa, 
+		       double delta_x, double abscissa, int symbol,
+		       double symbol_size, char *symbol_font_name, 
+		       int linemode, double line_width, double fill_fraction, 
+		       bool use_color, bool new_symbol, 
+		       bool new_symbol_size, bool new_symbol_font_name,
+		       bool new_linemode, bool new_line_width,
+		       bool new_fill_fraction, bool new_use_color)
+#else
+set_reader_parameters (input_type, auto_abscissa, delta_x, abscissa,
 		       symbol, symbol_size, symbol_font_name,
 		       linemode, line_width, fill_fraction, use_color,
 		       new_symbol, new_symbol_size, new_symbol_font_name,
 		       new_linemode, new_line_width, new_fill_fraction, 
 		       new_use_color)
-     data_type data_spec;
-     Boolean auto_abscissa;
+     data_type input_type;
+     bool auto_abscissa;
      double delta_x;
      double abscissa;
      int symbol;
@@ -209,13 +227,14 @@ set_reader_parameters (data_spec, auto_abscissa, delta_x, abscissa,
      int linemode;
      double line_width;
      double fill_fraction;
-     Boolean use_color;
-     /* following booleans make up a mask */
-     Boolean new_symbol, new_symbol_size, new_symbol_font_name;
-     Boolean new_linemode, new_line_width, new_fill_fraction, new_use_color;
+     bool use_color;
+     /* following bools make up a mask */
+     bool new_symbol, new_symbol_size, new_symbol_font_name;
+     bool new_linemode, new_line_width, new_fill_fraction, new_use_color;
+#endif
 {
-  reader.need_break = TRUE;	/* force break in polyline */
-  reader.data_spec = data_spec;
+  reader.need_break = true;	/* force break in polyline */
+  reader.input_type = input_type;
   reader.auto_abscissa = auto_abscissa;
   reader.delta_x = delta_x;
   reader.initial_abscissa = abscissa;
@@ -253,15 +272,19 @@ set_reader_parameters (data_spec, auto_abscissa, delta_x, abscissa,
    interpreted as terminating an additional [null] dataset).
 
    This routine calls read_point_ascii(), read_point_ascii_errorbar(),
-   read_point_double(), or read_point_gnuplot() to do the actual reading.
+   read_point_binary(), or read_point_gnuplot() to do the actual reading.
 */
 
 static int
+#ifdef _HAVE_PROTOS
+read_point (FILE *input, Point *point)
+#else
 read_point (input, point)
      FILE *input;
      Point *point;
+#endif
 {
-  Boolean success;
+  bool success;
 
   /* following fields are constant throughout each polyline */
   point->symbol = reader.symbol;
@@ -271,19 +294,21 @@ read_point (input, point)
   point->line_width = reader.line_width;
   point->fill_fraction = reader.fill_fraction;
   point->use_color = reader.use_color;
-  point->have_x_errorbar = FALSE; /* not supported yet */
-  point->have_y_errorbar = (reader.data_spec == T_ASCII_ERRORBAR);
+  point->have_x_errorbar = false; /* not supported yet */
+  point->have_y_errorbar = (reader.input_type == T_ASCII_ERRORBAR);
   
  head:
 
-  switch (reader.data_spec)
+  switch (reader.input_type)
     {
     case T_ASCII:
     default:
       success = read_point_ascii (input, point);
       break;
+    case T_SINGLE:
     case T_DOUBLE:
-      success = read_point_double (input, point);
+    case T_INTEGER:
+      success = read_point_binary (input, point, reader.input_type);
       break;
     case T_ASCII_ERRORBAR:
       success = read_point_ascii_errorbar (input, point);
@@ -295,7 +320,7 @@ read_point (input, point)
 
   if (success == 0)		/* got a point */
     {
-      Boolean bad_point = FALSE;
+      bool bad_point = false;
 
       /* If we have log axes, the values we work with ALL refer to the log10
 	 values of the data.  A nonpositive value generates a warning, and a
@@ -305,24 +330,24 @@ read_point (input, point)
 	  if (point->x > 0.0)
 	    point->x = log10 (point->x);
 	  else
-	    bad_point = TRUE;
+	    bad_point = true;
 	  if (point->have_x_errorbar)
 	    {
 	      if (point->xmin > 0.0)
 		point->xmin = log10 (point->xmin);
 	      else
-		bad_point = TRUE;
+		bad_point = true;
 	      if (point->xmax > 0.0)
 		point->xmax = log10 (point->xmax);
 	      else
-		bad_point = TRUE;
+		bad_point = true;
 	    }
 	  
 	  if (bad_point)
 	    {
-	      fprintf (stderr, "%s: warning: log plot, dropping point (%g,%g)\n",
+	      fprintf (stderr, "%s: log plot, dropping inappropriate point (%g,%g)\n",
 		       progname, point->x, point->y);
-	      reader.need_break = TRUE;
+	      reader.need_break = true;
 	      goto head;		/* on to next point */
 	    }
 	}
@@ -331,25 +356,25 @@ read_point (input, point)
 	  if (point->y > 0.0)
 	    point->y = log10 (point->y);
 	  else
-	    bad_point = TRUE;
+	    bad_point = true;
 
 	  if (point->have_y_errorbar)
 	    {
 	      if (point->ymin > 0.0)
 		point->ymin = log10 (point->ymin);
 	      else
-		bad_point = TRUE;
+		bad_point = true;
 	      if (point->ymax > 0.0)
 		point->ymax = log10 (point->ymax);
 	      else
-		bad_point = TRUE;
+		bad_point = true;
 	    }
 	  
 	  if (bad_point)
 	    {
-	      fprintf (stderr, "%s: warning: log plot, dropping point (%g,%g)\n",
+	      fprintf (stderr, "%s: log plot, dropping inappropriate point (%g,%g)\n",
 		       progname, point->x, point->y);
-	      reader.need_break = TRUE;
+	      reader.need_break = true;
 	      goto head;		/* on to next point */
 	    }
 	}
@@ -357,7 +382,7 @@ read_point (input, point)
       if (reader.transpose_axes)
 	{
 	  double tmp;
-	  Boolean tmp_bool;
+	  bool tmp_bool;
 	  
 	  tmp = point->x;
 	  point->x = point->y;
@@ -375,27 +400,31 @@ read_point (input, point)
       
       /* we have a point, but we may need to break the polyline before it */
       if (reader.need_break || reader.first_plot_point)
-	point->pendown = FALSE;
+	point->pendown = false;
       else
-	point->pendown = TRUE;
+	point->pendown = true;
       
       /* reset break-polyline flag */
-      reader.need_break = FALSE;
+      reader.need_break = false;
       
       /* reader is no longer virgin */
-      reader.first_plot_point = FALSE;
+      reader.first_plot_point = false;
     }
 
   return success;		/* could be 0, 1, 2, 3, or 4 */
 }
 
 static int
+#ifdef _HAVE_PROTOS
+read_point_ascii (FILE *input, Point *point)
+#else
 read_point_ascii (input, point)
      FILE *input;
      Point *point;
+#endif
 {
   int items_read, lookahead;
-  Boolean two_newlines;
+  bool two_newlines;
 
  head:
 
@@ -458,18 +487,22 @@ read_point_ascii (input, point)
   else 
     {
       if (!reader.auto_abscissa)
-	fprintf (stderr, "%s: warning: truncated ascii-format input file\n", progname);
+	fprintf (stderr, "%s: ascii-format input file terminated prematurely\n", progname);
       return 1;			/* couldn't get y coor, effectively EOF */
     }
 }
 
 static int
+#ifdef _HAVE_PROTOS
+read_point_ascii_errorbar (FILE *input, Point *point)
+#else
 read_point_ascii_errorbar (input, point)
      FILE *input;
      Point *point;
+#endif
 {
   int items_read, lookahead;
-  Boolean two_newlines;
+  bool two_newlines;
   double error_size;
 
  head:
@@ -531,14 +564,14 @@ read_point_ascii_errorbar (input, point)
   if (items_read != 1)
     {
       if (!reader.auto_abscissa)
-	fprintf (stderr, "%s: warning: truncated errorbar-format input file\n", progname);
+	fprintf (stderr, "%s: errorbar-format input file terminated prematurely\n", progname);
       return 1;			/* couldn't get y coor, effectively EOF */
     }
 
   items_read = fscanf (input, "%lf", &error_size);
   if (items_read != 1)
     {
-      fprintf (stderr, "%s: warning: truncated errorbar-format input file\n", progname);
+      fprintf (stderr, "%s: errorbar-format input file terminated prematurely\n", progname);
       return 1;			/* couldn't get y coor, effectively EOF */
     }
 
@@ -553,9 +586,14 @@ read_point_ascii_errorbar (input, point)
 }
 
 static int
-read_point_double (input, point)
+#ifdef _HAVE_PROTOS
+read_point_binary (FILE *input, Point *point, data_type input_type)
+#else
+read_point_binary (input, point, input_type)
      FILE *input;
      Point *point;
+     data_type input_type;
+#endif
 {
   int items_read;
   
@@ -567,33 +605,90 @@ read_point_double (input, point)
     }
   else
     {
-      items_read = fread ((Voidptr) &(point->x), sizeof (point->x), 1, input);
+      switch (input_type)
+	{
+	case T_DOUBLE:
+	default:
+	  items_read = 
+	    fread ((Voidptr) &(point->x), sizeof (double), 1, input);
+	  break;
+	case T_SINGLE:
+	  {
+	    float fx;
+	    
+	    items_read = 
+	      fread ((Voidptr) &fx, sizeof (float), 1, input);
+	    point->x = fx;
+	  }
+	  break;
+	case T_INTEGER:
+	  {
+	    int ix;
+	    
+	    items_read = 
+	      fread ((Voidptr) &ix, sizeof (int), 1, input);
+	    point->x = ix;
+	  }
+	  break;
+	}
       if (items_read <= 0)
 	return 1;		/* presumably EOF */
     }
 
-  if (point->x == MAXDOUBLE)
+  if ((input_type == T_DOUBLE && point->x == MAXDOUBLE)
+      || (input_type == T_SINGLE && point->x == (double)MAXFLOAT)
+      || (input_type == T_INTEGER && point->x == (double)MAXINT))
     return 2;			/* end of dataset */
 
-  items_read = fread ((Voidptr) &(point->y), sizeof (point->y), 1, input);
+  switch (input_type)
+    {
+    case T_DOUBLE:
+    default:
+      items_read = 
+	fread ((Voidptr) &(point->y), sizeof (double), 1, input);
+      break;
+    case T_SINGLE:
+      {
+	float fy;
+	
+	items_read = 
+	  fread ((Voidptr) &fy, sizeof (float), 1, input);
+	point->y = fy;
+      }
+      break;
+    case T_INTEGER:
+      {
+	int iy;
+	
+	items_read = 
+	  fread ((Voidptr) &iy, sizeof (int), 1, input);
+	point->y = iy;
+      }
+      break;
+    }
+
   if (items_read == 1)
     return 0;			/* got a pair of floats */
   else 
     {
       if (!reader.auto_abscissa)
-	fprintf (stderr, "%s: warning: truncated double-format input file\n", progname);
+	fprintf (stderr, "%s: binary-format input file terminated prematurely\n", progname);
       return 1;			/* effectively EOF */
     }
 }
 
 static int
+#ifdef _HAVE_PROTOS
+read_point_gnuplot (FILE *input, Point *point)
+#else
 read_point_gnuplot (input, point)
      FILE *input;
      Point *point;
+#endif
 {
   int lookahead, items_read;
   char directive, c;
-  Boolean two_newlines;
+  bool two_newlines;
   
  head:
   
@@ -631,7 +726,7 @@ read_point_gnuplot (input, point)
       else
 	{
 	  fprintf (stderr, 
-		   "%s: warning: truncated gnuplot-format input file\n", 
+		   "%s: gnuplot-format input file terminated prematurely\n", 
 		   progname);
 	  return 1;		/* effectively EOF */
 	}
@@ -644,7 +739,7 @@ read_point_gnuplot (input, point)
 	  if (items_read <= 0)
 	    {
 	      fprintf (stderr, 
-		       "%s: warning: truncated gnuplot-format input file\n", 
+		       "%s: gnuplot-format input file terminated prematurely\n", 
 		       progname);
 	    return 1;		/* effectively EOF */
 	    }
@@ -652,11 +747,11 @@ read_point_gnuplot (input, point)
       while (c != '\n');
 
       /* break the polyline here in a soft way (don't start a new dataset) */
-      reader.need_break = TRUE;	
+      reader.need_break = true;	
       goto head;
     default:
       fprintf (stderr, 
-	       "%s: warning: unknown gnuplot directive `%c' in input file \n", 
+	       "%s: unknown gnuplot directive `%c' encountered in input file\n", 
 	       progname, (char)lookahead);
       return 1;			/* effectively EOF */
     }
@@ -680,16 +775,20 @@ read_point_gnuplot (input, point)
    line mode between datasets. */
 
 static int
+#ifdef _HAVE_PROTOS
+read_dataset (FILE *input, Point **p_addr, int *length, int *no_of_points)
+#else
 read_dataset (input, p_addr, length, no_of_points)
      FILE *input;
      Point **p_addr;
      int *length;  /* buffer length in bytes, should begin > 0 */
      int *no_of_points;
+#endif
 {
   Point *p = *p_addr;
   int success;
 
-  while (TRUE)
+  while (true)
     {
       /*
        * Grow the buffer if needed
@@ -717,14 +816,18 @@ read_dataset (input, p_addr, length, no_of_points)
    the number of points, are passed back.  */
 
 void
+#ifdef _HAVE_PROTOS
+read_file (FILE *input, Point **p_addr, int *length, int *no_of_points)
+#else
 read_file (input, p_addr, length, no_of_points)
      FILE *input;
      Point **p_addr;
      int *length;  /* buffer length in bytes, should begin > 0 */
      int *no_of_points;
+#endif
 {
   int success;
-  Boolean saved_auto_bump;
+  bool saved_auto_bump;
 
   do
     {
@@ -737,7 +840,7 @@ read_file (input, p_addr, length, no_of_points)
       if (success == 3)
 	{
 	  saved_auto_bump = reader.auto_bump;
-	  reader.auto_bump = FALSE;
+	  reader.auto_bump = false;
 	  reset_reader();
 	  reader.auto_bump = saved_auto_bump;
 	}
@@ -763,12 +866,16 @@ read_file (input, p_addr, length, no_of_points)
    terminating an additional [null] dataset). */
 
 static int
+#ifdef _HAVE_PROTOS
+read_and_plot_dataset (FILE *input)
+#else
 read_and_plot_dataset (input)
      FILE *input;
+#endif
 {
   int success;
 
-  while (TRUE)
+  while (true)
     {
       Point point;
 
@@ -786,11 +893,15 @@ read_and_plot_dataset (input)
    plots them as they are read. */
 
 void
+#ifdef _HAVE_PROTOS
+read_and_plot_file (FILE *input)
+#else
 read_and_plot_file (input)
      FILE *input;
+#endif
 {
   int success;
-  Boolean saved_auto_bump;
+  bool saved_auto_bump;
 
   do
     {
@@ -803,7 +914,7 @@ read_and_plot_file (input)
       if (success == 3)
 	{
 	  saved_auto_bump = reader.auto_bump;
-	  reader.auto_bump = FALSE;
+	  reader.auto_bump = false;
 	  reset_reader();
 	  reader.auto_bump = saved_auto_bump;
 	}
@@ -814,7 +925,7 @@ read_and_plot_file (input)
          device */
       if (success != 4)
 	{
-	  endpoly();
+	  endpath();
 	  flushpl();
 	}
     }
@@ -827,9 +938,13 @@ read_and_plot_file (input)
    whether or not two newlines were in fact seen.  (For ascii-format
    input streams, two newlines signals an end-of-dataset.) */
 
-static Boolean
+static bool
+#ifdef _HAVE_PROTOS
+skip_whitespace (FILE *stream)
+#else
 skip_whitespace (stream)
      FILE *stream;
+#endif
 {
   int lookahead;
   int nlcount = 0;
@@ -845,7 +960,7 @@ skip_whitespace (stream)
 	 && nlcount < 2);
 
   if (lookahead == EOF)
-    return FALSE;
+    return false;
   
   ungetc (lookahead, stream);
   return (nlcount == 2);

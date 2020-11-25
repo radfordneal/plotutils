@@ -77,7 +77,7 @@
  */
 static  char    *errmess = NULL;
 
-int     erritem;
+bool erritem;
 %}
 %union {
         struct  lex     *lexptr;
@@ -113,6 +113,7 @@ stat            : SEP
                 | IDENT '=' expr SEP
                         {
                         struct sym *sp;
+
                         sp = lookup($1->lx_u.lxu_name);
                         sp->sy_value = eval($3);
                         sp->sy_flags |= SF_INIT;
@@ -136,6 +137,7 @@ stat            : SEP
                         {
                         struct sym *sp;
                         struct prt *pp, *qp;
+
                         sp = lookup($1->lx_u.lxu_name);
                         efree(sp->sy_expr);
                         sp->sy_expr = $4;
@@ -160,9 +162,9 @@ stat            : SEP
                         }
                 | PRINT prtlist optevery optfrom SEP
                         {
-                        sawprint = 1;
+                        sawprint = true;
                         prerr = erritem;
-                        erritem = 0;
+                        erritem = false;
                         lfree($5);
                         }
                 | STEP cexpr ',' cexpr SEP
@@ -175,11 +177,13 @@ stat            : SEP
                         if (!conflag)
                                 startstep();
                         solve();
-                        sawstep = 1;
+                        sawstep = true;
                         }
                 | STEP cexpr ',' cexpr ',' cexpr SEP
                         {
-                        int savstep, savconf;
+			double savstep;
+			int savconf;
+
                         lfree($7);
                         tstart = $2->lx_u.lxu_value;
                         lfree($2);
@@ -189,11 +193,11 @@ stat            : SEP
                         tstep = $6->lx_u.lxu_value;
                         lfree($6);
                         savconf = conflag;
-                        conflag = 1;
+                        conflag = true;
                         solve();
                         tstep = savstep;
                         conflag = savconf;
-                        sawstep = 1;
+                        sawstep = true;
                         }
                 | EXAM IDENT SEP
                         {
@@ -242,6 +246,7 @@ prtlist         : prtitem
                 | prtlist ',' prtitem
                         {
                         struct prt *pp;
+
                         for (pp=pqueue; pp->pr_link!=NULL; pp=pp->pr_link)
                                 ;
                         pp->pr_link = $3;
@@ -251,9 +256,10 @@ prtlist         : prtitem
 prtitem         : IDENT prttag
                         {
                         struct prt *pp;
+
                         pp = palloc();
                         pp->pr_sym = lookup($1->lx_u.lxu_name);
-                        pp->pr_which = $2;
+                        pp->pr_which = (ent_cell)($2);
                         lfree($1);
                         $$ = pp;
                         }
@@ -266,35 +272,35 @@ prttag          : /* empty */
                 | '~'
                         {
                         $$ = P_ACERR;
-                        erritem = 1;
+                        erritem = true;
                         }
                 | '!'
                         {
                         $$ = P_ABERR;
-                        erritem = 1;
+                        erritem = true;
                         }
                 | '?'
                         {
                         $$ = P_SSERR;
-                        erritem = 1;
+                        erritem = true;
                         }
                 ;
 
 optevery        : /* empty */
-                        { sawevery = 0; }
+                        { sawevery = false; }
                 | EVERY cexpr
                         {
-                        sawevery = 1;
-                        tevery = $2->lx_u.lxu_value;
+                        sawevery = true;
+                        tevery = IROUND($2->lx_u.lxu_value);
                         lfree($2);
                         }
                 ;
 
 optfrom         : /* empty */
-                        { sawfrom = 0; }
+                        { sawfrom = false; }
                 | FROM cexpr
                         {
-                        sawfrom = 1;
+                        sawfrom = true;
                         tfrom = $2->lx_u.lxu_value;
                         lfree($2);
                         }
@@ -509,6 +515,7 @@ expr            : '(' expr ')'
                 | expr '^' expr
                         {
                         double f;
+			bool invert = false;
 
                         if (TWOCON($1,$3)) {
                                 /* case const ^ const */
@@ -524,7 +531,6 @@ expr            : '(' expr ')'
                         } else if (!ONECON($3))
                                 goto other;
                         else {
-                                int invert = 0;
                                 f = $3->ex_value;
                                 if (f < 0.) {
                                         /*
@@ -532,7 +538,7 @@ expr            : '(' expr ')'
                                          * to append an invert cmd
                                          */
                                         f = -f;
-                                        invert = 1;
+                                        invert = true;
                                 }
                                 if (f == 2.) {
                                         /* case x ^ 2 */
@@ -565,7 +571,7 @@ expr            : '(' expr ')'
                                 } else {
                         other:
                                         /* default */
-                                        invert = 0;
+                                        invert = false;
                                         BINARY($1,$3,$$,O_POWER);
                                 }
                                 if (invert)
@@ -832,8 +838,12 @@ expr            : '(' expr ')'
 %%
 
 int
+#ifdef _HAVE_PROTOS
+yyerror (const char *s)
+#else
 yyerror (s)
-     char *s;
+     const char *s;
+#endif
 {
   return 0;
 }
@@ -845,8 +855,12 @@ yyerror (s)
  * lists, hence the silly count.
  */
 void
+#ifdef _HAVE_PROTOS
+concat (struct expr *e0, struct expr *e1)
+#else
 concat (e0, e1)
      struct expr *e0, *e1;
+#endif
 {
   int count;
   
@@ -865,10 +879,14 @@ concat (e0, e1)
  * called when EXAMINE is invoked on a variable (see above)
  */
 void
+#ifdef _HAVE_PROTOS
+prexq (struct expr *ep)
+#else
 prexq (ep)
      struct expr *ep;
+#endif
 {
-  char *s;
+  const char *s;
   
   printf (" code:");
   if (ep == NULL)

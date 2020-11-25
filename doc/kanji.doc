@@ -1,7 +1,7 @@
 The table below lists the Kanji (Japanese ideographic characters) that are
-available in GNU libplot and the GNU plotting utilities generally.  For
-each Kanji, the table lists its index according to three different
-numbering schemes, and one or more possible meanings.  
+built into the GNU libplot library and the GNU plotting utilities, such as
+`graph'.  For each Kanji, the table lists its index according to three
+different numbering schemes, and one or more possible meanings.
 
 In all, 603 Kanji are available.  They were digitized by Dr. Allen V.
 Hershey of the U.S. Naval Surface Weapons Center (Dahlgren, VA) in the
@@ -10,14 +10,19 @@ explanation of how they were chosen, see his technical report "Calligraphy
 for Computers".  (Available from the U.S. National Technical Information
 Service at +1 703 487 4650; ask for item number AD662398.)
 
-The first column of the table lists the index of each Kanji in the
-hexadecimal version of the 2-byte encoding specified by the JIS X0208
-standard, and the second column lists its index in the 2-byte Unicode
-encoding.  For information on the JIS X0208 standard, see Ken Lunde's
-"Understanding Japanese Information Processing" (O'Reilly, 1993), or his
-on-line supplement, http://www.ora.com/people/authors/lunde/cjk_inf.html .
+These Kanji are part of the HersheyEUC font, which is employed for drawing
+multibyte Japanese text strings.  But you may also use these Kanji while
+drawing text strings in any other Hershey font, by inserting the
+appropriate escape sequences.
 
-Once you know the hexadecimal JIS code for a Kanji, you can use it when
+The first column of the table lists the hexadecimal index of each Kanji in
+the 2-byte encoding specified by the JIS X0208 standard, and the second
+column lists its index in the 2-byte Unicode encoding.  For information on
+the JIS X0208 standard, see Ken Lunde's "Understanding Japanese Information
+Processing" (O'Reilly, 1993), or his on-line supplement,
+http://www.ora.com/people/authors/lunde/cjk_inf.html .
+
+Once you know the hexadecimal JIS code for a Kanji, you may use it when
 drawing a text string in any of the non-Japanese Hershey fonts built into
 GNU libplot.  For example, Kanji J3021 would be specified, when drawing a
 text string in any non-Japanese Hershey font, by the escape sequence
@@ -32,13 +37,11 @@ the "Modern Reader's Japanese-English Character Dictionary", edited by
 A. N. Nelson. (C. E. Tuttle and Co., 1962, available as ISBN 0-8048-0408-7
 for approximately US$50; a revised edition [ISBN 0-8048-2036-8] is due in
 1997, but uses a different numbering.)  GNU libplot supports the
-specification of Kanji by `Nelson index', as well as by hexadecimal JIS
-code.  As you can see from the table, Kanji N0001 is equivalent to Kanji
-J306c.  This Kanji could be specified, when drawing a text string in any
-non-Japanese Hershey font, by the escape sequence "\#N0001", as well as by
-the escape sequence "\#J306c".  JIS escape sequences are in hexadecimal,
-but Nelson escape sequences are in decimal.  Four decimal digits are
-required.  It is the Nelson numbering that libplot uses internally.
+specification of Kanji by decimal `Nelson index', as well as by hexadecimal
+JIS code.  As you can see from the table, Kanji N0001 is equivalent to
+Kanji J306c.  This Kanji could be specified, when drawing a text string in
+any non-Japanese Hershey font, by the escape sequence "\#N0001", as well as
+by the escape sequence "\#J306c".  Four decimal digits are required.
 
 The table was constructed with the aid of the KANJIDIC file prepared by Jim
 Breen <jwb@dgs.monash.edu.au>.  The KANJIDIC file is a text file that

@@ -1,42 +1,46 @@
 dnl Configure template for the GNU plotutils package.
-dnl Copyright (C) 1989-97 Free Software Foundation, Inc.
+dnl Copyright (C) 1989-98 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(graph/graph.c)
-AC_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(plotutils, 2.0)
+AM_CONFIG_HEADER(config.h)
 
-dnl Version information.
-VERSION=1.3
-AC_SUBST(VERSION)
+dnl We now use libtool to make and installed a shared library.
+AM_PROG_LIBTOOL
 
-dnl Programs.
+dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LEX
-AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
 AC_PROG_YACC
+dnl rendered obsolete by AM_PROG_LIBTOOL (see above)
+dnl AC_PROG_RANLIB
 
-dnl Header files.
+dnl Checks for header files.
 AC_CHECK_HEADERS(malloc.h string.h strings.h sys/time.h unistd.h values.h)
 AC_HEADER_STDC
 
-dnl X-specific headers and libraries.
+dnl X-specific headers and libraries (by default, we support X but not Motif)
 AC_PATH_XTRA
-AC_SUBST(no_x)
 AC_SUBST(X_CFLAGS)
 AC_SUBST(X_LIBS)
 AC_SUBST(X_PRE_LIBS)
-AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], XLIBS="-lXm -lXt -lXext -lX11"; USE_MOTIF=1, XLIBS="-lXaw -lXmu -lXt -lXext -lX11"; USE_MOTIF=0)
 AC_SUBST(XLIBS)
 AC_SUBST(X_EXTRA_LIBS)
-AC_SUBST(USE_MOTIF)
+AC_ARG_WITH(x, [  --with-x                use the X Window System], if test "$withval" != "no"; then BASIC_XLIBS="-lXt -lXext -lX11"; else BASIC_XLIBS=""; fi, BASIC_XLIBS="-lXt -lXext -lX11";)
+AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], if test "$BASIC_XLIBS" = ""; then XLIBS=""; else XLIBS="-lXm $BASIC_XLIBS"; fi; AC_DEFINE(USE_MOTIF), if test "$BASIC_XLIBS" = ""; then XLIBS=""; else XLIBS="-lXaw -lXmu $BASIC_XLIBS"; fi;)
+AM_CONDITIONAL(NO_X, test "$no_x" = yes)
 
 dnl Typedefs, structures, and compiler characteristics.
+AC_MSG_CHECKING(for void)
+AC_TRY_COMPILE(, [void *foo = 0;], 
+  [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_VOID)], [AC_MSG_RESULT(no)])
 AC_C_CONST
 AC_HEADER_TIME
 AC_TYPE_SIGNAL
+AC_TYPE_PID_T
 
 dnl Override default "-g -O2", for libplot especially.
 CFLAGS="-O"
@@ -46,7 +50,7 @@ AC_DECL_YYTEXT
 dnl 
 dnl SGI's have matherr in libmx.a, not libm.a
 AC_CHECK_LIB(mx, matherr, LIBS="$LIBS -lmx", LIBS="$LIBS -lm")
-AC_CHECK_FUNCS(gethostname memcpy strchr strcasecmp matherr j0 erf)
+AC_CHECK_FUNCS(memcpy strchr strcasecmp matherr j0 erf)
 dnl
 dnl lgamma() and gamma() both compute the log of the gamma function.  There
 dnl are old systems out there which do not have lgamma (the name was
@@ -66,4 +70,26 @@ AC_EGREP_HEADER(_HPUX_SOURCE, math.h, AC_EGREP_HEADER(matherr, math.h, AC_DEFINE
 dnl Sui generis.
 AC_FUNC_ALLOCA
 
-AC_OUTPUT(Makefile double/Makefile getopt/Makefile graph/Makefile include/Makefile info/Makefile libs/Makefile libs/libplot/Makefile libs/libplottek/Makefile libs/libplotfig/Makefile libs/libplotps/Makefile libs/libplotX/Makefile plot2dev/Makefile tek2plot/Makefile test/Makefile spline/Makefile ode/Makefile)
+dnl Check whether fflush(NULL) works
+AC_TRY_RUN([
+#include <stdio.h>
+main()
+{
+  FILE *fpw, *fpr;
+  char test_array[7];
+
+  if ((fpw = fopen ("conftest0", "w")) == (FILE *)0
+      || fwrite ("FOOBAR", 1, 7, fpw) != 7
+      || fflush ((FILE *)0) < 0
+      || (fpr = fopen ("conftest0", "r")) == (FILE *)0
+      || fread (test_array, 1, 7, fpr) != 7)
+    exit (1);
+  else
+    exit(0); }], 
+AC_DEFINE(HAVE_NULL_FLUSH), AC_DEFINE(DONT_HAVE_NULL_FLUSH), AC_DEFINE(DONT_HAVE_NULL_FLUSH))
+
+dnl Necessitated by lack of support in autoconf for libtool.
+LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/.lo/g'`
+AC_SUBST(LTALLOCA)
+
+AC_OUTPUT(Makefile double/Makefile graph/Makefile info/Makefile lib/Makefile libplot/Makefile plot/Makefile tek2plot/Makefile tek2plot/teksamples/Makefile spline/Makefile ode/Makefile ode-examples/Makefile include/Makefile doc/Makefile fonts/Makefile fonts/bdf/Makefile fonts/pcf/Makefile fonts/pfb/Makefile test/Makefile)

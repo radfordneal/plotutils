@@ -1,6 +1,6 @@
-In GNU libplot, the original `occidental' Hershey glyphs are available via
-escape sequences in the range "\#H0001" to "\#H3926", with many gaps.  They
-fall into the following groups:
+In the GNU libplot library and the GNU plotting utilities, such as `graph',
+the original `occidental' Hershey glyphs are available via escape sequences
+in the range "\#H0001" to "\#H3926".  They fall into the following groups:
 
 0001--0284	alphanumeric symbols, cartographic [small] size
 0501--0746	alphanumeric symbols, principal [large] size
@@ -30,8 +30,8 @@ the point (0,0).  The `baseline' concept was not used.  Each alphanumeric
 symbols had a well-defined baseline, but the baselines differed for the
 three sizes.
 
-In GNU libplot, when strings are drawn with the alabel() function, e.g.,
-when GNU `graph' labels axes, a baseline must be chosen.  For alphanumeric
+In libplot, when strings are drawn with the alabel() function, e.g., when
+GNU `graph' labels axes, a baseline must be chosen.  For alphanumeric
 symbols of all kinds and also centered symbols, we have chosen it to be the
 baseline appropriate for the principal [large] size alphanumeric symbols.
 This determines a choice of vertical elevation of each symbol, when it is

@@ -258,8 +258,12 @@ static double qyone[9] =
 /* Bessel function approximations */
 
 double 
+#ifdef _HAVE_PROTOS
+jzero (double x)
+#else
 jzero (x)
      double x;
+#endif
 {
   double p, q, x2;
   int n;
@@ -276,8 +280,12 @@ jzero (x)
 }
 
 static double 
+#ifdef _HAVE_PROTOS
+pzero (double x)
+#else
 pzero (x)
      double x;
+#endif
 {
   double p, q, z, z2;
   int n;
@@ -295,8 +303,12 @@ pzero (x)
 }
 
 static double 
+#ifdef _HAVE_PROTOS
+qzero (double x)
+#else
 qzero (x)
      double x;
+#endif
 {
   double p, q, z, z2;
   int n;
@@ -314,8 +326,12 @@ qzero (x)
 }
 
 static double 
+#ifdef _HAVE_PROTOS
+yzero (double x)
+#else
 yzero (x)
      double x;
+#endif
 {
   double p, q, x2;
   int n;
@@ -332,8 +348,12 @@ yzero (x)
 }
 
 double 
+#ifdef _HAVE_PROTOS
+j0 (double x)
+#else
 j0 (x)
      double x;
+#endif
 {
   if (x <= 0.0)
     x = -x;
@@ -346,8 +366,12 @@ j0 (x)
 }
 
 double 
+#ifdef _HAVE_PROTOS
+y0 (double x)
+#else
 y0 (x)
      double x;
+#endif
 {
   if (x < 0.0)
     return (dzero/dzero);	/* IEEE machines: invalid operation */
@@ -361,8 +385,12 @@ y0 (x)
 }
 
 static double 
+#ifdef _HAVE_PROTOS
+jone (double x)
+#else
 jone (x)
      double x;
+#endif
 {
   double p, q, x2;
   int n;
@@ -379,8 +407,12 @@ jone (x)
 }
 
 static double 
+#ifdef _HAVE_PROTOS
+pone (double x)
+#else
 pone (x)
      double x;
+#endif
 {
   double p, q, z, z2;
   int n;
@@ -398,8 +430,12 @@ pone (x)
 }
 
 static double 
+#ifdef _HAVE_PROTOS
+qone (double x)
+#else
 qone (x)
      double x;
+#endif
 {
   double p, q, z, z2;
   int n;
@@ -417,8 +453,12 @@ qone (x)
 }
 
 static double 
+#ifdef _HAVE_PROTOS
+yone (double x)
+#else
 yone (x)
      double x;
+#endif
 {
   double p, q, x2;
   int n;
@@ -435,8 +475,12 @@ yone (x)
 }
 
 double 
+#ifdef _HAVE_PROTOS
+j1 (double x)
+#else
 j1 (x)
      double x;
+#endif
 {
   double v,w;
   v = x;
@@ -456,8 +500,12 @@ j1 (x)
 }
 
 double 
+#ifdef _HAVE_PROTOS
+y1 (double x)
+#else
 y1 (x)
      double x;
+#endif
 {
   if (x <= 0.0)
     return (dzero/dzero);	/* IEEE machines: invalid operation */
@@ -487,9 +535,13 @@ y1 (x)
 */
 
 double
+#ifdef _HAVE_PROTOS
+jn (int n, double x) 
+#else
 jn (n, x) 
      int n; 
      double x;
+#endif
 {
   int i;
   
@@ -538,9 +590,13 @@ jn (n, x)
 }
 
 double
-yn (n,x) 
-     int n; 
+#ifdef _HAVE_PROTOS
+yn (int n, double x) 
+#else
+yn (n, x) 
+     int n;
      double x;
+#endif
 {
   int i, sign;
   double a, b, tmp;

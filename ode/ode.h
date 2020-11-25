@@ -42,11 +42,10 @@ struct sym
  * enumeration of printable cells in 
  * a symbol table entry
  */
-typedef enum
+typedef enum 
 {
   P_VALUE, P_PRIME, P_SSERR, P_ACERR, P_ABERR
-}
-ent_cell;
+} ent_cell;
 
 /*
  * the print queue is made
@@ -77,15 +76,14 @@ struct lex
 /*
  * operation types
  */
-typedef enum
+typedef enum 
 {
   O_NOOP, O_PLUS, O_MINUS, O_MULT, O_DIV, O_POWER, O_SQRT, O_EXP, O_LOG,
   O_LOG10, O_SIN, O_COS, O_TAN, O_ASIN, O_ACOS, O_ATAN, O_IDENT, O_CONST,
   O_NEG, O_ABS, O_SINH, O_COSH, O_TANH, O_ASINH, O_ACOSH, O_ATANH, O_SQAR,
   O_CUBE, O_INV, O_FLOOR, O_CEIL, O_J0, O_J1, O_Y0, O_Y1, O_ERF, O_ERFC,
   O_INVERF, O_LGAMMA, O_GAMMA, O_NORM, O_INVNORM, O_IGAMMA, O_IBETA
-}
-op_type;
+} op_type;
 
 /*
  * an operation in an expression list

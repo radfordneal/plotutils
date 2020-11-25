@@ -9,7 +9,11 @@
  */
 
 void
+#ifdef _HAVE_PROTOS
+rk (void)
+#else
 rk ()
+#endif
 {
   double t;
   double halfstep = HALF * tstep;

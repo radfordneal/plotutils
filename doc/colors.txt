@@ -1,12 +1,19 @@
-The following table lists the 665 color names recognized by GNU libplot,
-together with the representation of each color in the RGB color model.  The
-names are case-insensitive, and spaces in color names are ignored, so that
+The following table lists the 665 color names recognized by the GNU libplot
+library and by the GNU plotting utilities, such as `graph'.  The
+representation of each color in the RGB color model is also listed.  Names
+are case-insensitive, and spaces in names are ignored, so that
 "antiquewhite1", "antique white 1" and "AntiqueWhite1" are equivalent.
+
+The recognized color names are essentially the names recognized by recent
+releases of the X Windows System.  However for every color name containing
+the string "gray", a version containing "grey" is included.
 
 The R, G, and B numbers for each color are the intensities of its red,
 green, and blue components, in a 24-bit color model (255=full intensity,
 0=none).  To convert to the corresponding intensities in the 48-bit color
-model used by libplot, multiply each intensity by 257.
+model used by GNU libplot, multiply each intensity by 257.
+
+
 
  R   G   B       Color Name
 ---------------------------

@@ -16,9 +16,13 @@
  */
 
 void
+#ifdef _HAVE_PROTOS
+ama (void)
+#else
 ama ()
+#endif
 {
-  Boolean gdval = TRUE;		/* good value to print ? */
+  bool gdval = true;		/* good value to print ? */
   int overtime = 1;
   long startit = 0;
   double prevstep = 0.0;
@@ -127,7 +131,7 @@ ama ()
 	      tstep *= HALF;
 	      for (fsp = symtab; fsp != NULL; fsp = fsp->sy_link)
 		fsp->sy_value = fsp->sy_val[0];
-	      gdval = FALSE;
+	      gdval = false;
 	      continue;
 	    }
 	  else if (lowerror() && prevstep != tstep) 
@@ -136,11 +140,11 @@ ama ()
 	      tstep *= 2.0;
 	      for (fsp = dqueue; fsp != NULL; fsp = fsp->sy_link)
 		fsp->sy_value = fsp->sy_val[0];
-	      gdval = FALSE;
+	      gdval = false;
 	      continue;
 	    }
 	}
-      gdval = TRUE;
+      gdval = true;
       ++it;
       t += tstep;	/* the roundoff error is gross */
     }
@@ -194,7 +198,7 @@ ama ()
 		  fsp->sy_prime = fsp->sy_pri[0];
 		}
 	      startit = --it;
-	      gdval = FALSE;
+	      gdval = false;
 	      goto top;
 	    }
 	  else if (lowerror()) 
@@ -207,7 +211,7 @@ ama ()
 		  fsp->sy_prime = fsp->sy_pri[0];
 		}
 	      startit = --it;
-	      gdval = FALSE;
+	      gdval = false;
 	      goto top;
 	    }
 	}

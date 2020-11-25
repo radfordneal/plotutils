@@ -9,7 +9,7 @@
  */
 
 /* variables defined and initted in global.c */
-extern char           *progname;
+extern const char     *progname;
 extern int            prec;
 extern long           it;
 extern double         hmin, hmax, ssmin, ssmax, abmin, abmax, acmax;
@@ -17,18 +17,17 @@ extern struct sym     *symtab, *fsp;
 extern struct sym     *dqueue;
 extern struct prt     *pqueue;
 extern struct expr    exprzero, exprone;
+extern bool        sawstep, sawprint, sawevery, sawfrom;
+extern bool        tflag, pflag, sflag, eflag, rflag, hflag, conflag;
+extern integration_type	algorithm;
 
 /* variables defined but not initted in global.c */
 extern char    *filename;
 extern jmp_buf mark;
-extern int     prerr;
-extern int     sawstep, sawprint, sawevery, sawfrom;
-extern int     printnum;
-extern int     tflag, pflag, sflag, eflag, rflag, hflag, conflag;
 extern int     fwd;
 extern int     tevery;
 extern double  tstart, tstop, tstep, tfrom;
-extern integration_type	algorithm;
+extern bool printnum, prerr;
 
 /* in parser */
 extern FILE    *yyin;
@@ -39,86 +38,108 @@ extern int     curline;
 /*
  * external function declarations
  */
-
-#if __STDC__
-#define P__(a)	a
-#else
-#define P__(a)	()
-#endif
-
-extern Boolean check P__((void));
-extern Boolean hierror P__((void));
-extern Boolean intpr P__((double t));
-extern Boolean lowerror P__((void));
-extern Boolean xatof P__((char *s, double *dval));
-extern Boolean xatol P__((char *s, long int *ival));
-extern Voidptr xmalloc P__((unsigned int length));
-extern char * xstrdup P__((const char *s));
-extern double eval P__((struct expr *ep));
-extern void am P__((void));
-extern void ama P__((void));
-extern void args P__((int ac, char **av));
-extern void defalt P__((void));
-extern void eu P__((void));
-extern void efree P__((struct expr *ep));
-extern void field P__((void));
-extern void maxerr P__((void));
-extern void panic P__((char *s));
-extern void panicn P__((char *fmt, int n));
-extern void pfree P__((struct prt *pp));
-extern void printq P__((void));
-extern void prval P__((double x));
-extern void maxerror P__((void));
-extern void resetflt P__((void));
-extern void rk P__((void));
-extern void rka P__((void));
-extern void rterror P__((char *s));
-extern void rterrors P__((char *fmt, char *s));
-extern void rtsquawks P__((char *fmt, char *s));
-extern void setflt P__((void));
-extern void sfree P__((struct sym *sp));
-extern void solve P__((void));
-extern void startstep P__((void));
-extern void title P__((void));
-extern void trivial P__((void));
-extern struct expr * ealloc P__((void));
-extern struct prt * palloc P__((void));
-extern struct sym * lookup P__((char *nam));
-extern struct sym * salloc P__((void));
-extern RETSIGTYPE fptrap P__((int sig));
+bool check __P((void));
+bool hierror __P((void));
+bool intpr __P((double t));
+bool lowerror __P((void));
+bool xatof __P((char *s, double *dval));
+bool xatol __P((char *s, long int *ival));
+double eval __P((const struct expr *ep));
+void am __P((void));
+void ama __P((void));
+void args __P((int ac, char **av));
+void defalt __P((void));
+void eu __P((void));
+void efree __P((struct expr *ep));
+void field __P((void));
+void maxerr __P((void));
+void panic __P((const char *s));
+void panicn __P((const char *fmt, int n));
+void pfree __P((struct prt *pp));
+void printq __P((void));
+void prval __P((double x));
+void maxerror __P((void));
+void resetflt __P((void));
+void rk __P((void));
+void rka __P((void));
+void rterror __P((const char *s));
+void rterrors __P((const char *fmt, const char *s));
+void rtsquawks __P((const char *fmt, const char *s));
+void setflt __P((void));
+void sfree __P((struct sym *sp));
+void solve __P((void));
+void startstep __P((void));
+void title __P((void));
+void trivial __P((void));
+struct expr * ealloc __P((void));
+struct prt * palloc __P((void));
+struct sym * lookup __P((char *nam));
+struct sym * salloc __P((void));
+RETSIGTYPE fptrap __P((int sig));
 
 /* in scanner or parser */
-extern int yyparse P__((void));
-extern int yywrap P__((void));
-extern struct lex * lalloc P__((void));
-extern void concat P__((struct expr *e0, struct expr *e1));
-extern void lfree P__((struct lex *lp));
-extern void prexq P__((struct expr *ep));
+int yyerror __P((const char *msg));
+int yylex __P((void));
+int yyparse __P((void));
+struct lex * lalloc __P((void));
+void concat __P((struct expr *e0, struct expr *e1));
+void lfree __P((struct lex *lp));
+void prexq __P((struct expr *ep));
 
 /* math library exception handling */
 #ifdef HAVE_MATHERR
-extern int matherr P__((struct exception *x));
+int matherr __P((struct exception *x));
 #endif
 
 /* math functions in bessel.c and specfun.c */
 #ifndef HAVE_J0
-extern double j0 P__((double x));
-extern double j1 P__((double x));
-extern double y0 P__((double x));
-extern double y1 P__((double x));
+double j0 __P((double x));
+double j1 __P((double x));
+double y0 __P((double x));
+double y1 __P((double x));
 #endif
-#ifdef NO_GAMMA_SUPPORT
-extern double f_lgamma P__((double x));
+#ifdef NO_SYSTEM_GAMMA
+double f_lgamma __P((double x));
+#else  /* not NO_SYSTEM_GAMMA, we link in vendor code */
+#ifdef HAVE_LGAMMA
+extern double lgamma __P((double x)); /* declaration may be gratuitous */
 #endif
-extern double f_gamma P__((double x));
+#ifdef HAVE_GAMMA
+extern double gamma __P((double x)); /* declaration may be gratuitous */
+#endif
+#endif
+double f_gamma __P((double x));
 #ifndef HAVE_ERF
-extern double erf P__((double x));
-extern double erfc P__((double x));
+double erf __P((double x));
+double erfc __P((double x));
 #endif
-extern double ibeta P__((double a, double b, double x));
-extern double igamma P__((double a, double x));
-extern double inverf P__((double p));
-extern double invnorm P__((double p));
-extern double norm P__((double x));
+double ibeta __P((double a, double b, double x));
+double igamma __P((double a, double x));
+double inverf __P((double p));
+double invnorm __P((double p));
+double norm __P((double x));
 
-#undef P__
+/* in libcommon */
+void display_usage __P((const char *progname, const int *omit_vals, bool files, bool fonts));
+Voidptr xcalloc __P ((unsigned int nmemb, unsigned int size));
+Voidptr xmalloc __P ((unsigned int size));
+char *xstrdup __P ((const char *s));
+
+/* support C++ */
+#ifdef __BEGIN_DECLS
+#undef __BEGIN_DECLS
+#endif
+#ifdef __END_DECLS
+#undef __END_DECLS
+#endif
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS		/* empty */
+# define __END_DECLS		/* empty */
+#endif
+
+__BEGIN_DECLS
+int yywrap __P((void));
+__END_DECLS     

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+../ode/ode <$SRCDIR/../ode-examples/dynamo.ode >ode.out
+
+if (cmp -s $SRCDIR/ode.xout ode.out)
+	then retval=0;
+	else retval=1;
+	fi;
+
+rm -f *.out
+exit $retval

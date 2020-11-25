@@ -1,0 +1,82 @@
+The GNU libplot library and the GNU plotting utilities, such as `graph' and
+`plot', can display text strings containing the standard (`occidental') and
+Japanese (`oriental') Hershey glyphs.  These glyphs were digitized by
+Dr. Allen V. Hershey at what is now the U.S. Naval Surface Weapons Center
+in Dahlgren, VA (formerly the U.S. Naval Weapons Laboratory), c. 1967.
+There have been many public distributions of the glyphs, not all of them
+compatible in their glyph repertory or numbering schemes.  The following
+distributions are noteworthy.
+
+#0. Distributions by Dr. Hershey himself, in the late 1960's and 1970's.
+These were distributions of his typographic software, of which the glyph
+distribution was a part.  Initial distributions were on punched cards, and
+later ones were on magnetic tape.  At least 120 copies of the typographic
+software were distributed.  It is not known how many distinct releases
+there were, either of the software or of the glyphs.
+
+#1. The NBS [U.S. National Bureau of Standards] publication "A Contribution
+to Computer Typesetting Techniques", dated 1976, and the accompanying
+magnetic tape.  This presumably included all glyphs in use at that time.
+In Figure 15, 45 additional glyphs (digitized by Norman Wolcott at NBS)
+were shown, but the data for them were not given.  (Glyphs 2250, 2260 were
+probably included in Figure 15 erroneously; they were also listed among the
+standard glyphs).
+
+#2. The Usenet distribution of Pete Holzmann and Jim Hurt (to the newsgroup
+mod.sources, now defunct).  Circa 1985, but based on the above 1976 tape.
+It introduced the scheme for encoding vector glyphs as strings which is now
+used in libplot.  Almost identical to the above (none of the 43 new Wolcott
+glyphs), but included three additional glyphs: 997, 998, 999, respectively
+"MWMXWX", "JZJZZZ", and "JZJ]Z]".  These were merely horizontal strokes.
+
+#3. The glyph database incorporated in the PGPLOT utility of Tim Pearson
+<tjp@astro.caltech.edu>, still available by ftp and http from
+astro.caltech.edu.  This was probably based, c. 1980, on a distribution
+obtained either from Nelson Beebe (see #4 below) or directly from
+Dr. Hershey.  It included data for the 43 new Wolcott glyphs, and 10
+additional glyphs numbered 236 (an cartographic-sized `@'), 590 (an
+underscore), 2078 (Aring), 3330, 3331, 3332, 3430, 3431, 3432
+(umlaut-accented German letters), and 4000 (a boxed inverted questionmark).
+The last of these (#4000) apparently did not originate with Dr. Hershey,
+but the others did.  The horizontal stroke glyphs 997, 998, 999 from
+distribution #2 were not present.  Ten glyphs were revised: 1225, 1226,
+1407, 1408, 2225, 2226, 2407, 2408, 3010, and 3159.  The first eight of
+these were braces.  There were 1642 separately indexed glyphs in all.
+
+#4.  The glyph database incorporated in the PLOT79 utility of Nelson Beebe
+<beebe@math.utah.edu>.  Also dates back to c. 1980; based on a tape from
+Dr. Hershey himself, with local additions.  All the 1642 glyphs from #3 are
+present, except that 590 (an underscore) and 2078 (Aring) are missing.
+(The Hershey tape may have been a slightly earlier one than the tape used
+for #3?)  Also, 911..922 (twelve outline and filled arrows) and 923..926
+(four large pointing hands) were added by Dr. Beebe.  As well, 256 small
+fixed-width glyphs (marker symbols taken from a plotter in the 1970's, and
+low-resolution alphabets based on the plotter alphabet) in the 1500..1627
+and 1700..1827 ranges were added.  There were 1912 separately indexed
+glyphs in all.
+
+
+In Dr. Hershey's 1995 technical report, "Cartography and Typography with
+True Basic", he mentions that as of 1995, his occidental repertory included
+1642 characters, which is the same as the number of glyphs included in #3.
+If #4000 was not `authentic Hershey', he must have created an additional
+glyph to make the total equal to 1642.  This may have been a variant
+lower-case omega (such a glyph appears in several equations in his 1979 TR
+"Terrestrial and Celestial Cartography").
+
+The glyph array built into libplot, and accessible to the GNU plotting
+utilities, includes 1641 `authentic Hershey' glyphs (all the glyphs from
+distribution #3 with the exception of the non-Hershey #4000).  They are
+located in the 1..4000 range of the array.
+
+Many non-Hershey glyphs were also included in the glyph array, to
+facilitate the construction of ISO-Latin-1 Hershey fonts.  The 4001..4194
+range contains a large number of such non-Hershey glyphs.  Nelson Beebe's
+large pointing hands (923..926 in distribution #4) were included, and are
+numbered 4040..4043.  An important source of non-Hershey glyphs was Robert
+Beach's UGS [Unified Graphics System], which was developed at the SLAC
+[Stanford Linear Accelerator Center] Computation Research Group in the
+1970's.  (See Computer Graphics, Fall 1974, pp. 22-23.  The UGS source code
+may still be available at ftp://ftp.slac.stanford.edu/software/ugs77/ .)
+A number of glyphs in the 4001..4025 range were taken from the UGS glyph
+repertory.

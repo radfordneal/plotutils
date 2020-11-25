@@ -9,7 +9,11 @@
  */
 
 void
+#ifdef _HAVE_PROTOS
+eu (void)
+#else
 eu ()
+#endif
 {
   double t;
   
@@ -32,7 +36,11 @@ eu ()
  * if tstart == tstop, i.e., step nowhere, then just print current values
  */
 void
+#ifdef _HAVE_PROTOS
+trivial (void)
+#else
 trivial ()
+#endif
 {
   symtab->sy_value = symtab->sy_val[0] = tstart;
   field();

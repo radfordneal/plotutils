@@ -14,82 +14,42 @@
 
 struct option long_options[] =
 {
-  {"absolute-error-bound",	ARG_REQUIRED,	NULL, 'e'}, /* 1 or 2 */
   {"input-file",		ARG_REQUIRED,	NULL, 'f'},
-  {"step-size-bound",		ARG_REQUIRED,	NULL, 'h'}, /* 1 or 2 */
   {"precision",			ARG_REQUIRED,	NULL, 'p'},
-  {"relative-error-bound",	ARG_REQUIRED,	NULL, 'r'}, /* 1 or 2 */
-  {"suppress-error-bound",	ARG_NONE,	NULL, 's'},
-  {"title",			ARG_NONE,	NULL, 't'},
+  /* integration algorithms */
   {"adams-moulton",		ARG_OPTIONAL,	NULL, 'A'}, /* 0 or 1 */
   {"euler",			ARG_OPTIONAL,	NULL, 'E'}, /* 0 or 1 */
   {"runge-kutta",		ARG_OPTIONAL,	NULL, 'R'}, /* 0 or 1 */
+  /* error bounds */
+  {"absolute-error-bound",	ARG_REQUIRED,	NULL, 'e'}, /* 1 or 2 */
+  {"step-size-bound",		ARG_REQUIRED,	NULL, 'h'}, /* 1 or 2 */
+  {"relative-error-bound",	ARG_REQUIRED,	NULL, 'r'}, /* 1 or 2 */
+  {"suppress-error-bound",	ARG_NONE,	NULL, 's'},
+  {"title",			ARG_NONE,	NULL, 't'},
   /* Long options with no equivalent short option alias */
   {"version",			ARG_NONE,	NULL, 'V' << 8},
   {"help",			ARG_NONE,	NULL, 'h' << 8},
   {NULL, 0, 0, 0}
 };
 
-#if __STDC__
-#define P__(a)	a
+/* null-terminated list of options that we don't show to the user */
+int hidden_options[] = { 0 };
+
+/* forward references */
+static void display_version __P((const char *progname));
+static void fatal __P((const char *s));
+
+static void
+#ifdef _HAVE_PROTOS
+display_version (const char *progname)
 #else
-#define P__(a)	()
+display_version (progname)
+     const char *progname;
 #endif
-void display_usage P__((void));
-void display_version P__((void));
-void fatal P__((char *s));
-#undef P__
-
-void
-display_usage ()
-{
-  int i;
-  int col = 0;
-  
-  fprintf (stderr, "Usage: %s", progname);
-  col += (strlen (progname) + 7);
-  for (i = 0; long_options[i].name; i++)
-    {
-      int option_len;
-      
-      option_len = strlen (long_options[i].name);
-      if (col >= 80 - (option_len + 16))
-	{
-	  fprintf (stderr, "\n\t");
-	  col = 8;
-	}
-      fprintf (stderr, " [--%s", long_options[i].name);
-      col += (option_len + 4);
-      if ((unsigned int)(long_options[i].val) < 256)
-	{
-	  fprintf (stderr, " | -%c", long_options[i].val);
-	  col += 5;
-	}
-      if (long_options[i].has_arg == ARG_REQUIRED)
-	{
-	  fprintf (stderr, " arg]");
-	  col += 5;
-	}
-      else if (long_options[i].has_arg == ARG_OPTIONAL)
-	{
-	  fprintf (stderr, " [arg]]");
-	  col += 10;
-	}
-      else
-	{
-	  fprintf (stderr, "]");
-	  col++;
-	}
-    }
-  fprintf (stderr, "\n");
-}
-
-void
-display_version ()
 {
   fprintf (stderr, "%s (GNU plotutils) %s\n", progname, VERSION);
   fprintf (stderr, 
-	   "Copyright (C) 1982-97 Free Software Foundation, Inc.,\nand Nicholas B. Tufillaro.\n");
+	   "Copyright (C) 1982-98 Free Software Foundation, Inc.,\nand Nicholas B. Tufillaro.\n");
   fprintf (stderr, 
 	   "The GNU plotutils come with NO WARRANTY, to the extent permitted by law.\n");
   fprintf (stderr, "You may redistribute copies of the GNU plotutils\n");
@@ -99,28 +59,36 @@ display_version ()
 /*
  * fatal error message
  */
-void
+static void
+#ifdef _HAVE_PROTOS
+fatal (const char *s)
+#else
 fatal (s)
-     char *s;
+     const char *s;
+#endif
 {
   fprintf (stderr, "%s: %s\n", progname, s);
   exit (1);
 }
 
 int
+#ifdef _HAVE_PROTOS
+main (int argc, char *argv[])
+#else
 main (argc, argv)
      int argc;
      char *argv[];
+#endif
 {
   int option;
   int opt_index;
   int errcnt = 0;		/* errors encountered */
-  Boolean show_version = FALSE;	/* remember to show version message */
-  Boolean show_usage = FALSE;	/* remember whether to output usage message. */
+  bool show_version = false;	/* remember to show version message */
+  bool show_usage = false;	/* remember whether to output usage message. */
   double local_tstep, local_hmax;
   FILE *infile = NULL;
 
-  while (TRUE)
+  while (true)
     {
       option = getopt_long (argc, argv, "e:f:h:p:r:stA::E::R::V", long_options, &opt_index);
       if (option == 0)
@@ -131,10 +99,10 @@ main (argc, argv)
 	  /* ----------- options with no argument --------------*/
 
 	case 's':		/* Suppress error bound, ARG NONE */
-	  sflag = 1;
+	  sflag = true;
 	  break;
 	case 't':		/* Title, ARG NONE		*/
-	  tflag = 1;
+	  tflag = true;
 	  if (!pflag) 
 	    {
 	      prec = 6;
@@ -142,10 +110,10 @@ main (argc, argv)
 	    }
 	  break;
 	case 'V' << 8:		/* Version, ARG NONE		*/
-	  show_version = TRUE;
+	  show_version = true;
 	  break;
 	case 'h' << 8:		/* Help, ARG NONE		*/
-	  show_usage = TRUE;
+	  show_usage = true;
 	  break;
 
 	  /*----------- options with a single argument --------------*/
@@ -154,7 +122,7 @@ main (argc, argv)
 	  filename = xstrdup (optarg);
 	  break;
 	case 'p':		/* Precision, ARG REQUIRED 	*/
-	  pflag = 1;
+	  pflag = true;
 	  if (sscanf (optarg, "%d", &prec) <= 0)
 	    fatal ("-p: bad argument");
 	  prec--;
@@ -176,11 +144,11 @@ main (argc, argv)
 	    break;
 	  tstep = local_tstep;
 	  optind++;	/* tell getopt we recognized timestep */
-	  conflag = 1;
+	  conflag = true;
 	  break;
 	case 'E':		/* Euler */
 	  algorithm = A_EULER;
-	  conflag = 1;
+	  conflag = true;
 	  tstep = 0.1;
 	  if (optind >= argc)
 	    break;
@@ -199,7 +167,7 @@ main (argc, argv)
 	    break;
 	  tstep = local_tstep;
 	  optind++;	/* tell getopt we recognized timestep */
-	  conflag = 1;
+	  conflag = true;
 	  break;
 
 	  /*----------- options with 1 or 2 arguments --------------*/
@@ -216,11 +184,11 @@ main (argc, argv)
 	    break;
 	  hmax = local_hmax;
 	  optind++;	/* tell getopt we recognized hmax */
-	  hflag = 1;
+	  hflag = true;
 	  break;
 
 	case 'r':		/* Relative Error Bound(s) */
-	  rflag = 1;
+	  rflag = true;
 	  if (sscanf (optarg, "%lf", &ssmax) <= 0)
 	    fatal ("-r: bad argument");
 	  if (ssmax < HMIN)
@@ -237,7 +205,7 @@ main (argc, argv)
 	  break;
 
 	case 'e':		/* Absolute Error Bound(s) */
-	  eflag = 1;
+	  eflag = true;
 	  if (sscanf (optarg, "%lf", &abmax) <= 0)
 	    fatal ("-e: bad argument");
 	  if (abmax < HMIN)
@@ -275,17 +243,17 @@ main (argc, argv)
   
   if (errcnt > 0)
     {
-      fprintf (stderr, "Try `%s --help' for more information.\n", progname);
+      fprintf (stderr, "Try `%s --help' for more information\n", progname);
       return 1;
     }
   if (show_version)
     {
-      display_version ();
+      display_version (progname);
       return 0;
     }
   if (show_usage)
     {
-      display_usage ();
+      display_usage (progname, hidden_options, false, false);
       return 0;
     }
 

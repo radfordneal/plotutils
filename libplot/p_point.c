@@ -1,0 +1,43 @@
+/* This file contains the point method, which is a standard part of
+   libplot.  It plots an object: a point with coordinates x,y. */
+
+/* So far as the PSPlotter class goes, we display a `point' as a small
+   circle (a marker symbol). */
+
+#include "sys-defines.h"
+#include "plot.h"
+#include "extern.h"
+
+#define POINT_PS_SIZE 0.5  /* em size (in printer's points) for a font in
+			      which a `point' could appear as a symbol */
+
+int
+#ifdef _HAVE_PROTOS
+_p_fpoint (double x, double y)
+#else
+_p_fpoint (x, y)
+     double x, y;
+#endif
+{
+  double norm;
+
+  if (!_plotter->open)
+    {
+      _plotter->error ("fpoint: invalid operation");
+      return -1;
+    }
+
+  _plotter->endpath(); /* flush polyline if any */
+
+  /* compute size of a `point' in user coordinates */
+  norm = _matrix_norm (_plotter->drawstate->transform.m);
+  if (norm != 0.0)
+    {
+      double user_size;
+
+      user_size = POINT_PS_SIZE / _matrix_norm (_plotter->drawstate->transform.m);
+      _plotter->fmarker (x, y, M_FILLED_CIRCLE, user_size);
+    }
+
+  return 0;
+}

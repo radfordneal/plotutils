@@ -1,137 +1,296 @@
-# This is the Makefile for graph, a program which generates plot files in
-# any of several formats, depending on which plotting library is linked
-# with it.  graph, graph-tek, graph-fig, graph-ps, and graph-X are the
-# executables.  
+# Makefile.in generated automatically by automake 1.2 from Makefile.am
 
-VERSION = @VERSION@
+# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy, distribute and modify it.
 
-top_srcdir = @top_srcdir@
-srcdir = @srcdir@
-VPATH  = @srcdir@
 
 SHELL = /bin/sh
 
-CC = @CC@
-CFLAGS = @CFLAGS@
-X_CFLAGS = @X_CFLAGS@
-INSTALL = @INSTALL@
-INSTALL_DATA = @INSTALL_DATA@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-LDFLAGS = @LDFLAGS@
-X_LIBS = @X_LIBS@
-X_PRE_LIBS = @X_PRE_LIBS@
-XLIBS = @XLIBS@
-X_EXTRA_LIBS = @X_EXTRA_LIBS@
-LIBS = @LIBS@
-RANLIB = @RANLIB@
-NO_X = @no_x@
-
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+
 bindir = @bindir@
-infodir = @infodir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
 libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
 includedir = @includedir@
-oldincludedir = @oldincludedir@
+oldincludedir = /usr/include
 
-#----------------------------------------------------------------
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
 
-GRAPH = graph graph-tek graph-fig graph-ps
-GRAPHX = graph-X
+top_builddir = ..
 
-SRCS = graph.c reader.c misc.c plotter.c 
-OBJSPLUS = graphlist.o reader.o misc.o plotter.o
-OBJSMINUS = graphnolist.o reader.o misc.o plotter.o
-INCLUDES=-I.. -I$(top_srcdir)/include -I$(top_srcdir)/getopt
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
 
-GETOPT=../getopt
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
 
-all: $(GRAPH)
-	if test "$(NO_X)" != "yes"; then \
-			for i in $(GRAPHX); do $(MAKE) $$i; done; \
-	fi
+NORMAL_INSTALL = true
+PRE_INSTALL = true
+POST_INSTALL = true
+NORMAL_UNINSTALL = true
+PRE_UNINSTALL = true
+POST_UNINSTALL = true
+host_alias = @host_alias@
+host_triplet = @host@
+CC = @CC@
+LD = @LD@
+LEX = @LEX@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+LTALLOCA = @LTALLOCA@
+MAKEINFO = @MAKEINFO@
+NM = @NM@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+VERSION = @VERSION@
+XLIBS = @XLIBS@
+X_CFLAGS = @X_CFLAGS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+YACC = @YACC@
 
-.PHONY: all install uninstall clean realclean distclean
+bin_PROGRAMS = graph
+
+graph_SOURCES = graph.c misc.c reader.c plotter.c
+graph_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ../libplot/libplot.la $(X_LIBS) $(X_PRE_LIBS) $(XLIBS) $(X_EXTRA_LIBS)
+noinst_HEADERS = linemode.h extern.h
+
+INCLUDES = -I$(srcdir)/../include
+
+# remove executables installed by previous versions of the package, and
+# remove obsolete library versions too
+
+OBSOLETEBINS = graph-tek graph-hpgl graph-fig graph-ps graph-X
+OBSOLETELIBS = libplottek.a libplothpgl.a libplotfig.a libplotps.a libplotX.a
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+PROGRAMS =  $(bin_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+graph_OBJECTS =  graph.o misc.o reader.o plotter.o
+graph_DEPENDENCIES =  ../lib/libcommon.a ../lib/libfontlist.a \
+../libplot/libplot.la
+graph_LDFLAGS = 
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LINK = $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+HEADERS =  $(noinst_HEADERS)
+
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP = --best
+SOURCES = $(graph_SOURCES)
+OBJECTS = $(graph_OBJECTS)
+
+default: all
 
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .lo .o
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps graph/Makefile
+
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
+	done
 
 .c.o:
-	$(CC) -DVERSION=\"$(VERSION)\" $(CFLAGS) $(INCLUDES) -c $<
+	$(COMPILE) -c $<
 
-graphlist.o: graph.c $(top_srcdir)/getopt/getopt.h $(top_srcdir)/include/sys-defines.h $(top_srcdir)/include/plot.h extern.h
-	$(CC) -c -DVERSION=\"$(VERSION)\" $(CFLAGS) -DLIST_FONTS $(INCLUDES) $(srcdir)/graph.c
-	mv graph.o $@
+mostlyclean-compile:
+	rm -f *.o core
 
-graphnolist.o: graph.c $(top_srcdir)/getopt/getopt.h $(top_srcdir)/include/sys-defines.h $(top_srcdir)/include/plot.h extern.h
-	$(CC) -c -DVERSION=\"$(VERSION)\" $(CFLAGS) $(INCLUDES) $(srcdir)/graph.c
-	mv graph.o $@
+clean-compile:
 
-graph: $(OBJSMINUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplot/libplot.a
-	$(CC) $(CFLAGS) $(OBJSMINUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplot/libplot.a $(LIBS) $(LDFLAGS) -o $@
+distclean-compile:
+	rm -f *.tab.c
 
-graph-tek: $(OBJSPLUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplottek/libplottek.a
-	$(CC) $(CFLAGS) $(OBJSPLUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplottek/libplottek.a $(LIBS) $(LDFLAGS) -o $@
+maintainer-clean-compile:
 
-graph-fig: $(OBJSPLUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotfig/libplotfig.a
-	$(CC) $(CFLAGS) $(OBJSPLUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotfig/libplotfig.a $(LIBS) $(LDFLAGS) -o $@
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
 
-graph-ps: $(OBJSPLUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotps/libplotps.a
-	$(CC) $(CFLAGS) $(OBJSPLUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotps/libplotps.a $(LIBS) $(LDFLAGS) -o $@
+mostlyclean-libtool:
+	rm -f *.lo
 
-graph-X: $(OBJSPLUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotX/libplotX.a
-	$(CC) $(CFLAGS) $(X_CFLAGS) $(OBJSPLUS) $(GETOPT)/getopt.o $(GETOPT)/getopt1.o ../libs/libplotX/libplotX.a $(X_LIBS) $(X_PRE_LIBS) $(XLIBS) $(X_EXTRA_LIBS) $(LIBS) $(LDFLAGS) -o $@;
+clean-libtool:
+	rm -rf .libs
 
-../libs/libplot/libplot.a:
-	cd ../libs/libplot; $(MAKE) libplot.a CC="$(CC)" CFLAGS="$(CFLAGS)"
+distclean-libtool:
 
-../libs/libplottek/libplottek.a:
-	cd ../libs/libplottek; $(MAKE) libplottek.a CC="$(CC)" CFLAGS="$(CFLAGS)"
+maintainer-clean-libtool:
 
-../libs/libplotfig/libplotfig.a:
-	cd ../libs/libplotfig; $(MAKE) libplotfig.a CC="$(CC)" CFLAGS="$(CFLAGS)"
+graph: $(graph_OBJECTS) $(graph_DEPENDENCIES)
+	@rm -f graph
+	$(LINK) $(graph_LDFLAGS) $(graph_OBJECTS) $(graph_LDADD) $(LIBS)
 
-../libs/libplotps/libplotps.a:
-	cd ../libs/libplotps; $(MAKE) libplotps.a CC="$(CC)" CFLAGS="$(CFLAGS)"
+tags: TAGS
 
-../libs/libplotX/libplotX.a:
-	cd ../libs/libplotX; $(MAKE) libplotX.a CC="$(CC)" CFLAGS="$(CFLAGS)" X_CFLAGS="$(X_CFLAGS)"
+ID: $(HEADERS) $(SOURCES)
+	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
 
-$(GETOPT)/getopt.o $(GETOPT)/getopt1.o: $(top_srcdir)/getopt/getopt.c $(top_srcdir)/getopt/getopt1.c
-	cd $(GETOPT); $(MAKE) all CC="$(CC)" CFLAGS="$(CFLAGS)"
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES)
+	tags=; \
+	here=`pwd`; \
+	test -z "$(ETAGS_ARGS)$(SOURCES)$(HEADERS)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $(SOURCES) $(HEADERS) -o $$here/TAGS)
 
-install: $(GRAPH)
-	$(top_srcdir)/mkdirs.sh $(bindir)
-	for f in $(GRAPH) ; do $(INSTALL_PROGRAM) $$f $(bindir)/$$f ; \
-	done; \
-	if test "$(NO_X)" != "yes"; then $(MAKE) install-X; fi
+mostlyclean-tags:
 
-install-X: $(GRAPHX)
-	$(top_srcdir)/mkdirs.sh $(bindir)
-	for f in $(GRAPHX) ; do $(INSTALL_PROGRAM) $$f $(bindir)/$$f ; done
+clean-tags:
 
-uninstall:
-	-for f in $(GRAPH) ; do rm -f $(bindir)/$$f ; done
-	-for f in $(GRAPHX) ; do rm -f $(bindir)/$$f ; done
+distclean-tags:
+	rm -f TAGS ID
 
-clean:
-	-rm -f *.o $(GRAPH) $(GRAPHX) core test* data*
+maintainer-clean-tags:
 
-distclean: clean
-	-rm -f \#* *~ TAGS Makefile
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-realclean: distclean
+subdir = graph
 
-TAGS: $(SRCS) $(top_srcdir)/include/sys-defines.h $(top_srcdir)/include/plot.h $(srcdir)/extern.h $(top_srcdir)/getopt/getopt.h
-	cd $(srcdir) && etags $(SRCS) ../include/sys-defines.h ../include/plot.h extern.h ../getopt/getopt.h
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  test -f $(distdir)/$$file \
+	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	  || cp -p $$d/$$file $(distdir)/$$file; \
+	done
+graph.o graph.lo: graph.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h ./../include/getopt.h
+misc.o misc.lo: misc.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
+plotter.o plotter.lo: plotter.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h linemode.h
+reader.o reader.lo: reader.c ./../include/sys-defines.h ../config.h \
+	./../include/plot.h extern.h
 
-######################################################################
-# dependencies generated by gcc -c -MM *.c -I etc.
-######################################################################
+info:
+dvi:
+check: all
+	$(MAKE)
+installcheck:
+install-exec: install-binPROGRAMS
+	@$(NORMAL_INSTALL)
+	$(MAKE) install-exec-hook
 
-graph.o: graph.c $(top_srcdir)/getopt/getopt.h $(top_srcdir)/include/sys-defines.h $(top_srcdir)/include/plot.h extern.h
-misc.o: misc.c $(top_srcdir)/include/sys-defines.h extern.h
-reader.o: reader.c $(top_srcdir)/include/sys-defines.h $(top_srcdir)/include/plot.h extern.h
-plotter.o: plotter.c $(top_srcdir)/include/sys-defines.h $(top_srcdir)/include/plot.h extern.h linemode.h
-$(GETOPT)/getopt.o: $(top_srcdir)/getopt/getopt.h
-$(GETOPT)/getopt1.o: $(top_srcdir)/getopt/getopt.h
+install-data: 
+	@$(NORMAL_INSTALL)
+
+install: install-exec install-data all
+	@:
+
+uninstall: uninstall-binPROGRAMS
+
+all: Makefile $(PROGRAMS) $(HEADERS)
+
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
+installdirs:
+	$(mkinstalldirs)  $(bindir)
+
+
+mostlyclean-generic:
+	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+
+clean-generic:
+	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	rm -f Makefile $(DISTCLEANFILES)
+	rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+
+maintainer-clean-generic:
+	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-tags \
+		mostlyclean-generic
+
+clean:  clean-binPROGRAMS clean-compile clean-libtool clean-tags \
+		clean-generic mostlyclean
+
+distclean:  distclean-binPROGRAMS distclean-compile distclean-libtool \
+		distclean-tags distclean-generic clean
+	rm -f config.status
+	rm -f libtool
+
+maintainer-clean:  maintainer-clean-binPROGRAMS maintainer-clean-compile \
+		maintainer-clean-libtool maintainer-clean-tags \
+		maintainer-clean-generic distclean
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+.PHONY: default mostlyclean-binPROGRAMS distclean-binPROGRAMS \
+clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
+install-binPROGRAMS mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile mostlyclean-libtool distclean-libtool \
+clean-libtool maintainer-clean-libtool tags mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir info dvi \
+installcheck install-exec install-data install uninstall all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
+
+install-exec-hook:
+	-for f in $(OBSOLETEBINS) ; do rm -f $(bindir)/$$f; done
+	-for f in $(OBSOLETELIBS) ; do rm -f $(libdir)/$$f; done
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

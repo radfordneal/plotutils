@@ -10,8 +10,12 @@
  */
 
 struct sym *
+#ifdef _HAVE_PROTOS
+lookup (char *nam)
+#else
 lookup (nam)
      char *nam;
+#endif
 {
   struct sym *sp;
   
@@ -24,7 +28,11 @@ lookup (nam)
 }
 
 struct sym *
+#ifdef _HAVE_PROTOS
+salloc (void)
+#else
 salloc ()
+#endif
 {
   struct sym *sp;
   
@@ -39,8 +47,12 @@ salloc ()
 }
 
 void
+#ifdef _HAVE_PROTOS
+sfree (struct sym *sp)
+#else
 sfree (sp)
      struct sym *sp;
+#endif
 {
   if (sp != NULL)
     free ((Voidptr)sp);

@@ -1,23 +1,6 @@
 This directory contains the source for the GNU tek2plot program, which
 translates Tektronix graphics commands to graphics commands for other
-display devices.  This program is not made by default; to make and install
-it, you need to type `make' and `make install' in this directory.
+display devices. 
 
-The build process creates five versions of this program: tek2X, tek2ps,
-tek2fig, tek2tek [redundant], and raw tek2plot [which produces output in a
-GNU-enhanced version of the traditional plot(5) format].  They differ from
-one another in the graphics device they are able to drive.  During the
-build process, they are linked with different versions of GNU libplot.
-
-tek2plot emulates the non-interactive features of a Tektronix 4014 with
-extended graphics module (EGM), as described in the 4014 Service Manual
-(Tektronix Part #070-1648-00, dated 8/74; there is also a User Manual [Part
-#070-1647-00]).  We don't attempt to support interactive features, such as
-GIN mode, status enquiry, or bypass mode.  We also don't support
-write-through mode or beam defocusing.
-   
-tek2plot does emulate some features of other Tektronix 4014 emulators (see
-comments in the code).
-
-The subdirectory ./teksamples contains some old Tektronix files, of unknown
-provenance, which may be used to test tek2plot.
+The subdirectory ./teksamples contains a few Tektronix files, some of
+unknown provenance, which may be used to test tek2plot.
