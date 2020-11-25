@@ -1,6 +1,6 @@
 This directory contains X Windows fonts and related files.  Users of the
 plotutils package may wish to install these fonts, in full or in part.
-Installation instructions are in the file ../README.fonts.
+Installation instructions are in the file ../INSTALL.fonts.
 
 The fonts in ./pfb were contributed by URW GmbH for distribution under the
 GNU License.  Copyright (c) 1992 URW GmbH, Hamburg, Germany.  The

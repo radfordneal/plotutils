@@ -4,7 +4,7 @@ lib_LTLIBRARIES = libplot.la
 
 INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include
 
-GSRC = g_affine.c g_alabel.c g_alab_her.c g_box.c g_capmod.c \
+GSRC = g_affine.c g_alabel.c g_alab_her.c g_bgcolor.c g_box.c g_capmod.c \
 g_circ.c g_clipper.c g_colors.c g_colorname.c g_concat.c g_cont.c \
 g_cntrlify.c g_endpath.c g_error.c g_erase.c g_fakearc.c \
 g_filltype.c g_fillcolor.c g_flushpl.c g_fontdb.c g_fontname.c g_fontsize.c \
@@ -14,8 +14,8 @@ g_outbuf.c g_outfile.c g_pagetype.c g_pencolor.c g_relative.c g_reststate.c \
 g_retrieve.c g_savestate.c g_space.c g_textangle.c g_vector.c g_xmalloc.c \
 g_xstring.c
 
-MSRC = m_affine.c m_alabel.c m_arc.c m_arcrel.c m_box.c m_boxrel.c \
-m_capmod.c m_circ.c m_circrel.c m_closepl.c m_concat.c m_cont.c \
+MSRC = m_affine.c m_alabel.c m_arc.c m_arcrel.c m_bgcolor.c m_box.c \
+m_boxrel.c m_capmod.c m_circ.c m_circrel.c m_closepl.c m_concat.c m_cont.c \
 m_contrel.c m_defplot.c m_defstate.c m_earc.c m_earcrel.c \
 m_ellipse.c m_emit.c m_endpath.c m_erase.c m_filltype.c m_fillcolor.c \
 m_fontname.c m_fontsize.c m_joinmod.c m_label.c m_line.c m_linemod.c \
@@ -53,7 +53,7 @@ ALLSRC = api.c $(GSRC) $(MSRC) $(TSRC) $(HSRC) $(FSRC) $(PSRC) $(XSRC) $(YSRC)
 endif
 libplot_la_SOURCES = $(ALLSRC)
 
-libplot_la_LDFLAGS = -version-info 0:0:0
+libplot_la_LDFLAGS = -version-info 1:0:1
 
 noinst_HEADERS = extern.h g_colorname.h g_control.h g_cntrlify.h \
 g_fakearc.h g_her_metr.h g_jis.h g_pagetype.h g_params.h h_stick.h
@@ -63,4 +63,4 @@ x_closepl.c x_color.c x_defplot.c x_defstate.c x_earc.c x_ellipse.c \
 x_endpath.c x_erase.c x_flushpl.c x_openpl.c x_point.c x_reststate.c \
 x_retrieve.c x_savestate.c x_xevents.c y_closepl.c y_defplot.c y_openpl.c
 
-EXTRA_DIST = DEDICATION HUMOR README.fig README.hpgl README.tek
+EXTRA_DIST = DEDICATION HUMOR README.fig README.hpgl README.tek VERSION

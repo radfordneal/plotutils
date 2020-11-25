@@ -43,7 +43,7 @@ _g_fconcat (m0, m1, m2, m3, m4, m5)
   /* does map preserve axis directions? */
   _plotter->drawstate->transform.axes_preserved = 
     (_plotter->drawstate->transform.m[1] == 0.0 
-     && _plotter->drawstate->transform.m[2] == 0.0);
+     && _plotter->drawstate->transform.m[2] == 0.0) ? true : false;
 
 #define FUZZ 0.0000001		/* potential roundoff error */
 #define IS_ZERO(arg) (IS_ZERO1(arg) && IS_ZERO2(arg))
@@ -67,7 +67,7 @@ _g_fconcat (m0, m1, m2, m3, m4, m5)
 	 - (_plotter->drawstate->transform.m[1] *
 	    _plotter->drawstate->transform.m[2]));
   _plotter->drawstate->transform.nonreflection 
-    = ((_plotter->flipped_y ? -1 : 1) * det >= 0);
+    = ((_plotter->flipped_y ? -1 : 1) * det >= 0) ? true : false;
 
   /* This is a bit of a botch.  We recompute device-frame line width, which
      incidentally calls `endpath'.  But we don't do so if the Plotter on

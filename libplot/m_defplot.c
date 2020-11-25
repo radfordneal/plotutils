@@ -11,7 +11,7 @@
 Plotter _meta_default_plotter = 
 {
   /* methods */
-  _m_alabel, _m_arc, _m_arcrel, _m_box, _m_boxrel, _m_capmod, _m_circle, _m_circlerel, _m_closepl, _g_color, _g_colorname, _m_cont, _m_contrel, _m_ellarc, _m_ellarcrel, _m_ellipse, _m_ellipserel, _m_endpath, _m_erase, _m_farc, _m_farcrel, _m_fbox, _m_fboxrel, _m_fcircle, _m_fcirclerel, _m_fconcat, _m_fcont, _m_fcontrel, _m_fellarc, _m_fellarcrel, _m_fellipse, _m_fellipserel, _m_ffontname, _m_ffontsize, _m_fillcolor, _g_fillcolorname, _m_filltype, _g_flabelwidth, _m_fline, _m_flinerel, _m_flinewidth, _g_flushpl, _m_fmarker, _m_fmarkerrel, _m_fmove, _m_fmoverel, _m_fontname, _m_fontsize, _m_fpoint, _m_fpointrel, _m_frotate, _m_fscale, _m_fspace, _m_fspace2, _m_ftextangle, _m_ftranslate, _g_havecap, _m_joinmod, _m_label, _g_labelwidth, _m_line, _m_linemod, _m_linerel, _m_linewidth, _m_marker, _m_markerrel, _m_move, _m_moverel, _m_openpl, _g_outfile, _m_pencolor, _g_pencolorname, _m_point, _m_pointrel, _m_restorestate, _m_savestate, _m_space, _m_space2, _m_textangle,
+  _m_alabel, _m_arc, _m_arcrel, _m_bgcolor, _g_bgcolorname, _m_box, _m_boxrel, _m_capmod, _m_circle, _m_circlerel, _m_closepl, _g_color, _g_colorname, _m_cont, _m_contrel, _m_ellarc, _m_ellarcrel, _m_ellipse, _m_ellipserel, _m_endpath, _m_erase, _m_farc, _m_farcrel, _m_fbox, _m_fboxrel, _m_fcircle, _m_fcirclerel, _m_fconcat, _m_fcont, _m_fcontrel, _m_fellarc, _m_fellarcrel, _m_fellipse, _m_fellipserel, _m_ffontname, _m_ffontsize, _m_fillcolor, _g_fillcolorname, _m_filltype, _g_flabelwidth, _m_fline, _m_flinerel, _m_flinewidth, _g_flushpl, _m_fmarker, _m_fmarkerrel, _m_fmove, _m_fmoverel, _m_fontname, _m_fontsize, _m_fpoint, _m_fpointrel, _m_frotate, _m_fscale, _m_fspace, _m_fspace2, _m_ftextangle, _m_ftranslate, _g_havecap, _m_joinmod, _m_label, _g_labelwidth, _m_line, _m_linemod, _m_linerel, _m_linewidth, _m_marker, _m_markerrel, _m_move, _m_moverel, _m_openpl, _g_outfile, _m_pencolor, _g_pencolorname, _m_point, _m_pointrel, _m_restorestate, _m_savestate, _m_space, _m_space2, _m_textangle,
   /* internal methods that plot strings of various supported types */
   NULL, NULL, NULL,
   _g_flabelwidth_ps, _g_flabelwidth_pcl, NULL,
@@ -33,6 +33,7 @@ Plotter _meta_default_plotter =
   PL_META,			/* plotter type */
   false,			/* open? */
   false,			/* opened? */
+  0,				/* number of times opened */
   (FILE *)NULL,			/* input stream [not used] */
   (FILE *)NULL,			/* output stream (if any) */
   (FILE *)NULL,			/* error stream (if any) */
@@ -41,7 +42,7 @@ Plotter _meta_default_plotter =
     NULL, NULL, NULL, NULL, 
     NULL, NULL, NULL, NULL },
   /* capabilities */
-  2, 2, 1, 1, 1, 0,		/* capability flags (see extern.h) */
+  2, 2, 2, 1, 1, 1, 0,		/* capability flags (see extern.h) */
   MAXINT,			/* hard polyline length limit */
   /* output buffer */
   {NULL, 0, NULL, 0},		/* output buffer (for non-realtime devices) */
@@ -63,7 +64,7 @@ Plotter _meta_default_plotter =
   {0, 0},			/* cursor position (for a bitmap device) */
   false,			/* issued warning on lack of sheared fonts */
   /* elements specific to the metafile device driver */
-  0,				/* 0/1, i.e. binary/portable output format */
+  false,			/* portable, not binary output format? */
   /* elements specific to the Tektronix device driver */
   D_GENERIC,			/* which sort of Tektronix? */
   MODE_ALPHA,			/* one of MODE_* */

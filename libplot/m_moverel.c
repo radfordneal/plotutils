@@ -55,8 +55,11 @@ _m_fmoverel (x, y)
   if (_plotter->outstream)
     {
       if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g %g\n", 
-		 MOVEREL, x, y);
+	{
+	  putc (FMOVEREL, _plotter->outstream);	  
+	  fprintf (_plotter->outstream, " %g %g\n", 
+		   x, y);
+	}
       else
 	{
 	  putc (FMOVEREL, _plotter->outstream);

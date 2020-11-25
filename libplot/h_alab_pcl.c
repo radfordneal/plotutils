@@ -48,7 +48,7 @@ _h_falabel_pcl (s, h_just)
   master_font_index =
     (_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
   typeface = _pcl_font_info[master_font_index].pcl_typeface;  
-  stick_font = (typeface == HPGL2_STICK);
+  stick_font = (typeface == HPGL2_STICK) ? true : false;
 
   if (stick_font)
     /* font is a HP-GL/2 Stick font, which uses HP's Roman-8 encoding, so

@@ -43,8 +43,11 @@ _f_retrieve_font()
 
       if (!_plotter->font_warning_issued)
 	{
+	  /* Warning commented out; it confused too many end-users. */
+	  /*
 	  _plotter->warning ("xfig does not support anamorphically transformed PS fonts");
 	  _plotter->warning ("will use only Hershey vector fonts");
+	  */
 	  _plotter->font_warning_issued = true;
 	}
       user_specified_name = _plotter->drawstate->font_name;

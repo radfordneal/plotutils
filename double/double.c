@@ -348,7 +348,7 @@ main (argc, argv)
 	      dataset_ok = ((dataset_index >= dataset_min)
 			    && (dataset_index <= dataset_max)
 			    && ((dataset_index - dataset_min) 
-				% dataset_spacing == 0));
+				% dataset_spacing == 0)) ? true : false;
 
 	      /* output a separator between successive datasets */
 	      if (dataset_printed && dataset_ok)
@@ -359,7 +359,7 @@ main (argc, argv)
 					  scale, baseline,
 					  add_fp, mult_fp, 
 					  pre_join_fp, post_join_fp,
-					  precision, !dataset_ok);
+					  precision, dataset_ok ? false : true);
 
 	      if (dataset_ok)
 		dataset_printed = true;
@@ -382,7 +382,7 @@ main (argc, argv)
 	dataset_ok = ((dataset_index >= dataset_min)
 		      && (dataset_index <= dataset_max)
 		      && ((dataset_index - dataset_min) 
-			  % dataset_spacing == 0));
+			  % dataset_spacing == 0)) ? true : false;
 
 	/* output a separator between successive datasets */
 	if (dataset_printed && dataset_ok)
@@ -393,7 +393,7 @@ main (argc, argv)
 				    scale, baseline,
 				    add_fp, mult_fp, 
 				    pre_join_fp, post_join_fp,
-				    precision, !dataset_ok);
+				    precision, dataset_ok ? false : true);
 	if (dataset_ok)
 	  dataset_printed = true;
 
@@ -404,7 +404,7 @@ main (argc, argv)
   return 0;
 }
 
-/* read_float reads a single floating point quantity from an input stream
+/* read_float reads a single floating point quantity from an input file
    (in either ascii or double format).  Return value indicates whether it
    was read successfully. */
 
@@ -442,6 +442,12 @@ read_float (input, dptr)
     }
   if (num_read <= 0)
     return false;
+  if (dval != dval)
+    {
+      fprintf (stderr, "%s: encountered a NaN (not-a-number) in binary input file\n",
+	       progname);
+      return false;
+    }
   else
     {
       *dptr = dval;
@@ -450,11 +456,11 @@ read_float (input, dptr)
 }
 
 /* get_record() attempts to read a record (a sequence of record_length
-   data, i.e., floating-point quantities) from an input stream.  Return
+   data, i.e., floating-point quantities) from an input file.  Return
    value is 0 if a record was successfully read, 1 if no record could be
    read (i.e. EOF or garbage in stream).  A return value of 2 is special:
    it indicates that an explicit end-of-dataset indicator was seen in the
-   input stream.  For an ascii stream this is two newlines in succession;
+   input file.  For an ascii stream this is two newlines in succession;
    for a stream of doubles it is a MAXDOUBLE appearing at what would
    otherwise have been the beginning of the record, etc. */
 
@@ -498,7 +504,7 @@ get_record (input, record, record_length)
       if (!success)		/* EOF or garbage */
 	{
 	  if (i > 0)
-	    fprintf (stderr, "%s: encountered premature EOF in input stream\n",
+	    fprintf (stderr, "%s: input file terminated prematurely\n",
 		     progname);
 	  return 1;
 	}
@@ -619,7 +625,7 @@ set_format_type (s, typep)
 
 /* mung_dataset() is the main routine for extracting fields from records in
    a dataset, and munging them.  Its return value indicates whether the
-   records in the input stream ended with an explicit end-of-dataset
+   records in the input file ended with an explicit end-of-dataset
    indicator, i.e., whether another dataset is expected to follow.  An
    end-of-dataset indicator is two newlines in succession for an ascii
    stream, and a MAXDOUBLE for a stream of doubles, etc. */
@@ -713,10 +719,10 @@ mung_dataset (input, record_length, field_array, scale, baseline, add_fp, mult_f
     }      
 }	  
 
-/* skip_whitespace() skips whitespace in an ascii-format input stream,
+/* skip_whitespace() skips whitespace in an ascii-format input file,
    up to but not including a second newline.  Return value indicates
    whether or not two newlines were in fact seen.  (For ascii-format
-   input streams, two newlines signals an end-of-dataset.) */
+   input files, two newlines signals an end-of-dataset.) */
 
 bool
 #ifdef _HAVE_PROTOS
@@ -743,7 +749,7 @@ skip_whitespace (stream)
     return false;
   
   ungetc (lookahead, stream);
-  return (nlcount == 2);
+  return (nlcount == 2 ? true : false);
 }
 
 /* Output a separator between datasets.  For ascii-format output streams
@@ -784,7 +790,7 @@ output_dataset_separator()
 }
 
 void
-#ifdef HAVE_PROTOS
+#ifdef _HAVE_PROTOS
 maybe_emit_oob_warning (void)
 #else
 maybe_emit_oob_warning ()

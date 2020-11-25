@@ -429,7 +429,7 @@ solve ()
   setflt ();
   if (!setjmp (mark)) 
     {
-      adapt = eflag|rflag|!conflag;
+      adapt = eflag|rflag|!conflag ? true : false;
       if (tstart == tstop)
 	trivial();
       else switch (algorithm)

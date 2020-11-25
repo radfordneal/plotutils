@@ -1243,7 +1243,7 @@ const struct ps_font_info_struct _ps_font_info[] = {
  790, 790, 890, 823, 549, 250, 713, 603, 603, 1042,
  987, 603, 987, 603, 494, 329, 790, 790, 786, 713,
  384, 384, 384, 384, 384, 384, 494, 494, 494, 494,
- 790, 329, 274, 686, 686, 686, 384, 384, 384, 384,
+ 762, 329, 274, 686, 686, 686, 384, 384, 384, 384,
  384, 384, 494, 494, 494, 0},
   2, 0,
   32,
@@ -1341,9 +1341,10 @@ const struct typeface_info_struct _ps_typeface_info[] =
    the character arrays in these printable ranges which are not proper
    glyphs.  They are:
 
-   0. undefined characters: thorn, eth, the guillemets, and the mysterious
-   `currency' symbol.  These are written as UNDE, which is a glyph
-   consisting of several horizontal lines.
+   0. undefined characters: thorn, eth, the guillemets, a mysterious
+   `currency' symbol, and the European 'euro' currency symbol.  These are
+   written as UNDE, which is a glyph consisting of several horizontal
+   lines.
 
    1. the characters onesuperior, twosuperior, threesuperior, ordmasculine,
    ordfeminine.  These are written as 0, which means an empty glyph.  That
@@ -2156,7 +2157,7 @@ const struct vector_font_info_struct _vector_font_info[] =
       4080, 4078, 4081, 4046, 4048, 4050, 4049, 4047,
        743, 2227,  273,  274, 4097, 2402, UNDE, UNDE,
       UNDE, 4176, UNDE, 4174, UNDE, UNDE, UNDE, UNDE,
-         0, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
       UNDE, 4177, UNDE, 4175, UNDE, UNDE, UNDE,    0
     },
     0, 0, false, false, true
@@ -2200,7 +2201,7 @@ const struct vector_font_info_struct _vector_font_info[] =
       4080, 4078, 4081, 4046, 4048, 4050, 4049, 4047,
        743, 2227,  273,  274, 4097, 2402, UNDE, UNDE,
       UNDE, 4172, UNDE, 4170, UNDE, UNDE, UNDE, UNDE,
-         0, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
+      UNDE, 2228, 2268, UNDE, UNDE, UNDE, UNDE, UNDE,
       UNDE, 4173, UNDE, 4171, UNDE, UNDE, UNDE,    0
     },
     1, 0, false, false, true
@@ -3900,7 +3901,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
     790, 790, 890, 823, 549, 250, 713, 603, 603, 1042,
     987, 603, 987, 603, 494, 329, 790, 790, 786, 713, 
     384, 384, 384, 384, 384, 384, 494, 494, 494, 603, 
-    0, 329, 274, 686, 384, 686, 384, 384, 384, 384,
+    762, 329, 274, 686, 384, 686, 384, 384, 384, 384,
     494, 384, 494, 494, 494, 0
   },
       2, 0,

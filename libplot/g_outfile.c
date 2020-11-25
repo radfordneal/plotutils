@@ -30,6 +30,7 @@ _g_outfile(newstream)
 
   oldstream = _plotter->outstream;
   _plotter->outstream = newstream;
+  _plotter->page_number = 0;	/* reset */
 
   return oldstream;
 }

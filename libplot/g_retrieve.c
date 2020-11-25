@@ -99,7 +99,8 @@ _g_retrieve_font()
 	      _plotter->drawstate->font_index = 
 		_pcl_font_info[i].font_index;
 	      _plotter->drawstate->font_is_iso8859 = 
-		(_pcl_font_info[i].pcl_symbol_set == PCL_ISO_8859_1);
+		(_pcl_font_info[i].pcl_symbol_set 
+		 == PCL_ISO_8859_1) ? true : false;
 	      _plotter->drawstate->font_ascent 
 		= _plotter->drawstate->font_size 
 		  * (double)(_pcl_font_info[i].font_ascent)/1000.0;

@@ -10,14 +10,14 @@
 #define XPLOT_APP_NAME "xplot"
 #define XPLOT_APP_CLASS "Xplot"
 
-/* The size of the plotting window is set here, not in extern.h.  Users can
-   specify a geometry manually, in their .Xdefaults files (by specifying
-   the Xplot.geometry resource, which by default is "570x570").
+/* Fallback resources.  The default size of the plotting window is set
+   here, not in extern.h.  Users may override the default by specifying a
+   geometry manually, in their .Xdefaults files (by specifying the
+   xplot.geometry resource), and of course by specifying the device driver
+   parameter BITMAPSIZE.
 
-   The foreground color resource is ignored, since we always set the
-   default pen color to black.  Users may wish to select a background color
-   for the window, e.g., some sort of off-white.  That is not currently
-   supported; background color is always white. */
+   Note that the foreground and background color resources are ignored,
+   since we always initialize them to black and white respectively. */
 static String _xplot_resources[] = 
 {
   "Xplot*geometry:      570x570",
@@ -33,10 +33,11 @@ static String _xplot_resources[] =
   (String)NULL 
 };
 
-/* command-line mimicry; we punch in the display string below */
-const char *_xplot_nargv[4] = { XPLOT_APP_NAME, "-display", NULL, NULL };
-int _xplot_nargc = 3;
-#define NARGV_DISPLAY_SLOT 2
+/* command-line mimicry; we punch in the display and geometry */
+static const char *_fake_argv[] = { XPLOT_APP_NAME, "-display", NULL, "-geometry", NULL, NULL };
+#define FAKE_ARGV_DISPLAY_SLOT 2
+#define FAKE_ARGV_GEOMETRY_SLOT 4
+#define DEFAULT_FAKE_ARGC 3	/* assuming -geometry option not included */
 
 /* translate mouse clicks to `quit if closed', i.e. quit if already forked
    off, and not otherwise */
@@ -56,6 +57,7 @@ static String _xplot_translations =
 
 /* forward references */
 static void Quit_if_closed __P((Widget widget, XEvent *event, String *params, Cardinal *num_params));
+static bool _bitmap_size_ok __P((const char *bitmap_size_s));
 
 /* Quit_if_closed() is called when `q' is pressed or a mouse button pushed,
    to close a spun-off window (and kill the forked-off process managing it) */
@@ -93,17 +95,14 @@ _x_openpl (void)
 _x_openpl ()
 #endif
 {
-  const char *length_s, *vanish_s;
-  int i, copied_nargc;
-  String *copied_nargv;
-  static bool toolkit_initted = false;
-  Arg wargs[10];
+  Arg wargs[10];		/* werewolves */
   Dimension window_height, window_width;
-  int screen;			/* screen number */
   Screen *screen_struct;	/* screen structure */
-  /*
-  XColor canvas_background;
-  */
+  String *copied_fake_argv;
+  const char *length_s, *vanish_s;
+  int i, fake_argc, copied_fake_argc;
+  int screen;			/* screen number */
+  static bool toolkit_initted = false;
 
   if (_plotter->open)
     {
@@ -151,31 +150,26 @@ _x_openpl ()
       toolkit_initted = true;
     }
   
-  /* create new application context for this and all other XPlotters */
+  /* create new application context for this XPlotter page */
   _plotter->app_con = XtCreateApplicationContext();
   if (_plotter->app_con == (XtAppContext)NULL)
     {
       _plotter->error ("can't create X application context");
       return -2;
     }
-  /* set misc. resources (incl. window size) to be used by our canvas
-     widgets; these are specific to the application context */
+  /* set misc. resources (including fallback window size) to be used by
+     canvas widget; specific to application context */
   XtAppSetFallbackResources (_plotter->app_con, _xplot_resources);
   
   /* register an action table [currently containing only
-     "quit_if_closed->Quit_if_closed", see above] */
-  XtAppAddActions (_plotter->app_con, 
-		   _xplot_actions, XtNumber (_xplot_actions));
-  
-  /* copy fake command-line option list */
-  copied_nargv = (String *)_plot_xmalloc((_xplot_nargc + 1) * sizeof(String));
-  for (i = 0 ; i < _xplot_nargc ; i++) 
-    copied_nargv[i] = (String)(_xplot_nargv[i]);
-  copied_nargv[i] = (String)NULL;
-  copied_nargc = _xplot_nargc;
+     "quit_if_closed->Quit_if_closed", see above]; 
+     specific to application context */
+  XtAppAddActions (_plotter->app_con, _xplot_actions,
+		   XtNumber (_xplot_actions));
   
   /* Punch the DISPLAY parameter into the fake command-line option list.
-     Incidentally DISPLAY doesn't change over the life of a Plotter. */
+     Incidentally, DISPLAY doesn't change over the life of a Plotter,
+     i.e. between invocations of openpl(). */
       {
 	const char *display_s;
 	char *copied_display_s;
@@ -188,31 +182,53 @@ _x_openpl ()
 	  }
 	copied_display_s = (char *)_plot_xmalloc(strlen (display_s) + 1);
 	strcpy (copied_display_s, display_s);
-	copied_nargv[NARGV_DISPLAY_SLOT] = (String)copied_display_s;
+	_fake_argv[FAKE_ARGV_DISPLAY_SLOT] = (String)copied_display_s;
+	fake_argc = DEFAULT_FAKE_ARGC;
       }
+  
+  /* check whether user specified BITMAPSIZE, if so use it as -geometry arg */
+      {
+	const char *bitmap_size_s;
+	char *copied_bitmap_size_s;
+	
+	bitmap_size_s = (const char *)_get_plot_param ("BITMAPSIZE");
+	if (bitmap_size_s && _bitmap_size_ok (bitmap_size_s))
+	  {
+	    copied_bitmap_size_s = (char *)_plot_xmalloc(strlen (bitmap_size_s) + 1);
+	    strcpy (copied_bitmap_size_s, bitmap_size_s);
+	    _fake_argv[FAKE_ARGV_GEOMETRY_SLOT] = (String)copied_bitmap_size_s;
+	    fake_argc += 2;	/* -geometry and its arg */
+	  }
+      }
+
+  /* copy fake command-line option list */
+  copied_fake_argv = (String *)_plot_xmalloc((fake_argc + 1) * sizeof(String));
+  for (i = 0 ; i < fake_argc ; i++) 
+    copied_fake_argv[i] = (String)(_fake_argv[i]);
+  copied_fake_argv[i] = (String)NULL;
+  copied_fake_argc = fake_argc;
   
   /* open new connection to the X display, using fake option list */
   _plotter->dpy = 
     XtOpenDisplay (_plotter->app_con,
-		   /* display_string = NULL, so take from nargv */
+		   /* display_string = NULL, so take from fake commandline */
 		   (String)NULL, 
-		   /* application name = NULL, so take from nargv */
+		   /* application name = NULL, so take from fake commandline */
 		   (String)NULL,	
 		   /* application class */
 		   (String)XPLOT_APP_CLASS, 
-		   /* application-specific commandline
-		      parsetable (for XrmParseCommand), used in
-		      setting display resources */
+		   /* application-specific commandline parsetable (for
+		      XrmParseCommand), used in setting display resources */
 		   NULL, (Cardinal)0, 
-		   /* command line */
-		   &copied_nargc, copied_nargv);
+		   /* fake commandline */
+		   &copied_fake_argc, copied_fake_argv);
   if (_plotter->dpy == (Display *)NULL)
     {
       char *buf;
 	  
-      buf = (char *)_plot_xmalloc (sizeof (copied_nargv[NARGV_DISPLAY_SLOT]) + 50);
+      buf = (char *)_plot_xmalloc (sizeof (copied_fake_argv[FAKE_ARGV_DISPLAY_SLOT]) + 50);
       sprintf (buf, "can't open X display \"%s\"",
-	       (char *)copied_nargv[NARGV_DISPLAY_SLOT]);
+	       (char *)copied_fake_argv[FAKE_ARGV_DISPLAY_SLOT]);
       _plotter->warning (buf);
       free (buf);
       return -2;
@@ -233,25 +249,31 @@ _x_openpl ()
   
   /* Also for every invocation of openpl(), we create a toplevel widget,
      associated with default screen of the opened display.  (N.B. could
-     vary name of app instance from invocation to invocation.) */
+     vary name of app instance from page to page.) */
   XtSetArg(wargs[0], XtNscreen, screen_struct);
-  XtSetArg(wargs[1], XtNargc, copied_nargc);
-  XtSetArg(wargs[2], XtNargv, copied_nargv);
+  XtSetArg(wargs[1], XtNargc, copied_fake_argc);
+  XtSetArg(wargs[2], XtNargv, copied_fake_argv);
   _plotter->toplevel = XtAppCreateShell(NULL, /* name of app instance */
 			     (String)XPLOT_APP_CLASS, /* app class */
 			     applicationShellWidgetClass, 
 			     _plotter->dpy, /* dpy to get resources from */
 			     wargs, (Cardinal)3); /*arglist to get res. from */
-  free (copied_nargv);
+  free (copied_fake_argv);
 
-  /* create drawing canvas (a Label widget), and realize both widgets */
+  /* Create drawing canvas (a Label widget) as child of toplevel widget.
+     If user specified BITMAPSIZE parameter we use it; otherwise size taken
+     from xplot.geometry.  Fallback size is specified at head of file. */
 #ifdef USE_MOTIF
   _plotter->canvas = XtCreateManagedWidget ((String)"", xmLabelWidgetClass,
-					_plotter->toplevel, NULL, (Cardinal)0);
-#else
+					    _plotter->toplevel, 
+					    NULL, (Cardinal)0);
+#else  
   _plotter->canvas = XtCreateManagedWidget ((String)"", labelWidgetClass,
-					_plotter->toplevel, NULL, (Cardinal)0);
+					    _plotter->toplevel, 
+					    NULL, (Cardinal)0);
 #endif
+  
+  /* realize both widgets */
   XtRealizeWidget (_plotter->toplevel);
   
   /* replace the Label widget's default translations by ours [see above;
@@ -265,10 +287,11 @@ _x_openpl ()
 #endif
   XtSetValues (_plotter->canvas, wargs, (Cardinal)1);
 
-  /* get Label widget's window and window size.  Store it in Plotter struct
-     as `drawable #2'. */
+  /* get Label widget's window; store it in Plotter struct as
+     `drawable #2' */
   _plotter->drawable2 = (Drawable)XtWindow(_plotter->canvas);
 
+  /* get the window size that was actually chosen, store it */
 #ifdef USE_MOTIF
   XtSetArg (wargs[0], XmNwidth, &window_width);
   XtSetArg (wargs[1], XmNheight, &window_height);
@@ -278,9 +301,9 @@ _x_openpl ()
 #endif
   XtGetValues (_plotter->canvas, wargs, (Cardinal)2);
   _plotter->imin = 0;
-  _plotter->imax = window_width - 1;
+  _plotter->imax = (int)window_width - 1;
   /* note flipped-y convention for this device: min > max */
-  _plotter->jmin = window_height - 1;
+  _plotter->jmin = (int)window_height - 1;
   _plotter->jmax = 0;
 
   /* request backing store for Label widget's window */
@@ -304,22 +327,28 @@ _x_openpl ()
 			      (unsigned int)window_height, 
 			      (unsigned int)PlanesOfScreen(screen_struct));
 
-  /* save background/foreground colors for initial drawing state; store in
-     default drawing state because there's no real drawing state in the
+  /* save foreground and background colors for initial drawing state; store
+     in default drawing state because there's no real drawing state in the
      XPlotter yet */
-  _plotter->default_drawstate->x_bgcolor = WhitePixelOfScreen(screen_struct);
   _plotter->default_drawstate->x_fgcolor = BlackPixelOfScreen(screen_struct);
+  _plotter->default_drawstate->x_bgcolor = WhitePixelOfScreen(screen_struct);
   
   /* get background color of the Label widget's window (user-settable) */
+  /* COMMENTED OUT because we now always use white (see line immy. above) */
   /*
-  XtSetArg (wargs[0], XtNbackground, &canvas_background);
-  XtGetValues (_plotter->canvas, wargs, (Cardinal)1);
-  _plotter->default_drawstate->x_bgcolor = canvas_background.pixel;
+  {
+    XColor canvas_background;
+    
+    XtSetArg (wargs[0], XtNbackground, &canvas_background);
+    XtGetValues (_plotter->canvas, wargs, (Cardinal)1);
+    _plotter->default_drawstate->x_bgcolor = canvas_background.pixel;
+  }
   */
 
   /* flag Plotter as open (and as having been opened at least once) */
   _plotter->open = true;
   _plotter->opened = true;
+  (_plotter->page_number)++;
 
   /* Create an initial drawing state with default attributes, including the
      just-computed foreground and background colors, and an X GC.  The
@@ -346,6 +375,23 @@ _x_openpl ()
   /* do an XSync on the display (this will cause the background color of
    the pixmap to show up) */
   _plotter->flushpl ();
-
   return 0;
+}
+
+static bool 
+#ifdef _HAVE_PROTOS
+_bitmap_size_ok (const char *bitmap_size_s)
+#else
+_bitmap_size_ok (bitmap_size_s)
+     const char *bitmap_size_s;
+#endif
+{
+  int width, height;
+  
+  if (bitmap_size_s
+      && (sscanf (bitmap_size_s, "%dx%d", &width, &height) == 2)
+      && (width > 0) && (height > 0))
+    return true;
+  else
+    return false;
 }

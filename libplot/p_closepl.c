@@ -53,10 +53,9 @@ _p_closepl ()
 	_plotter->restorestate();
     }
   
-  if (_plotter->outstream)
+  if (_plotter->outstream && _plotter->page_number == 1)
+  /* first page, so write Postscript header to output stream */
     {
-
-      /* begin writing Postscript header to output stream */
       fprintf (_plotter->outstream, "\
 %%!PS-Adobe-3.0 EPSF-3.0\n\
 %%%%Creator: GNU libplot drawing library\n\
@@ -68,16 +67,16 @@ _p_closepl ()
 %%Pages: 1\n\
 %%PageOrder: Ascend\n", _plotter->outstream);
       
-      /* ... in particular, the bounding box. */
+      /* ... in particular, the bounding box for the first page */
       _get_range (&xmin, &xmax, &ymin, &ymax);
       fprintf (_plotter->outstream, "\
 %%%%BoundingBox: %d %d %d %d\n",
 	       IROUND(xmin - 0.5), IROUND(ymin - 0.5),
 	       IROUND(xmax + 0.5), IROUND(ymax + 0.5));
       
-      /* write out list of fonts used */
+      /* write out list of fonts used by first page */
       fputs ("\
-%%DocumentFonts: ", _plotter->outstream);
+%%DocumentNeededResources: font ", _plotter->outstream);
       for (i = 0; i < NUM_PS_FONTS; i++)
 	{
 	  if (_plotter->ps_font_used[i])
@@ -86,25 +85,36 @@ _p_closepl ()
 	      fputs (" ", _plotter->outstream);
 	    }
 	}
-      fputs ("\n", _plotter->outstream);
       
-      fputs ("\
+      fputs ("\n\
 %%EndComments\n\n\
-%%BeginProcSet: plotps.pro\n", 
+%%BeginProlog\n\
+%%EndProlog\n\n",
 	     _plotter->outstream);
+    }
       
-      /* write out the idraw PS prologue */
+  /* emit the page */
+
+  if (_plotter->outstream)
+    {
+      fprintf (_plotter->outstream, "\
+%%%%Page: %d %d\n",
+     _plotter->page_number, _plotter->page_number);
+      _get_range (&xmin, &xmax, &ymin, &ymax);
+      fprintf (_plotter->outstream, "\
+%%%%PageBoundingBox: %d %d %d %d\n",
+	       IROUND(xmin - 0.5), IROUND(ymin - 0.5),
+	       IROUND(xmax + 0.5), IROUND(ymax + 0.5));
+      fputs ("\
+%%BeginPageSetup\n", _plotter->outstream);
+
+      /* write out the idraw PS prologue (switches to local dictionary,
+	 makes many definitions) */
       for (i=0; *_ps_header[i]; i++)
 	fputs (_ps_header[i], _plotter->outstream);
+      fputs ("\n", _plotter->outstream);
       
-      fputs ("\
-%%EndProcSet\n\
-%%EndProlog\n\
-\n", _plotter->outstream);
-      
-      /* reencode each used ISO8859-1 font */
-      fputs ("\
-%%BeginSetup\n", _plotter->outstream);
+      /* emit code to reencode each used ISO8859-1 font */
       for (i = 0; i < NUM_PS_FONTS; i++)
 	{
 	  if (_plotter->ps_font_used[i] && _ps_font_info[i].iso8859_1)
@@ -112,15 +122,14 @@ _p_closepl ()
 /%s reencodeISO def\n",
 		     _ps_font_info[i].ps_name);
 	}
+
       fputs ("\
-%%EndSetup\n\
-\n", _plotter->outstream);
-      
-      /* `8' below is the version number of the idraw PS format we're
+%%EndPageSetup\n\n", _plotter->outstream);
+
+      /* output a brief page header (including idraw, PS directives) */
+      /* N.B. `8' below is the version number of the idraw PS format we're
 	 producing; see <Unidraw/Components/psformat.h> */
       fputs ("\
-%%Page: 1 1\n\
-\n\
 %I Idraw 8\n\
 \n\
 Begin\n\
@@ -135,23 +144,21 @@ Begin\n\
 /trueoriginalCTM matrix currentmatrix def\n\
 \n", _plotter->outstream);
 
-  if (_plotter->outbuf.len > 0)	/* output all the cached Postscript */
+  if (_plotter->outbuf.len > 0)
+    /* emit the cached Postscript for this page */
     fputs (_plotter->outbuf.base, _plotter->outstream); 
 
+  /* output a brief page trailer (including idraw, PS directives) */
   fputs ("\
 End %I eop\n\
 \n\
-%%Trailer\n\
-", _plotter->outstream);
-  /* if we had an `atend' trailer it would go here */
-  fputs ("\
-\n\
 end\n\
 showpage\n\
-%%EOF\n\
+%%PageTrailer\n\n\
+%%EOF\n\n\
 ", _plotter->outstream);
-  }
-
+    }
+  
   free (_plotter->outbuf.base);		/* free output buffer */
 
   /* remove zeroth drawing state too, so we can start afresh */

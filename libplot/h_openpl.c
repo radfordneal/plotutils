@@ -264,6 +264,7 @@ _h_openpl ()
   /* flag device as open */
   _plotter->open = true;
   _plotter->opened = true;
+  (_plotter->page_number)++;
 
   /* create drawing state, add it as the first member of the linked list */
   _plotter->savestate();			

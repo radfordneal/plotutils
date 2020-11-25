@@ -98,7 +98,7 @@ where \"device\" is the display device: X, ps, fig, hpgl, or tek.\n",
       for (i=0; _vector_font_info[i].name; i++)
 	if (_vector_font_info[i].visible)
 	numfonts++;
-      odd = (numfonts % 2 == 1);
+      odd = (numfonts % 2 == 1 ? true : false);
       numpairs = numfonts / 2;
 
       /* compute j and k: j=0, k=numpairs + (odd ? 1 : 0) in terms of visibles */
@@ -147,7 +147,7 @@ where \"device\" is the display device: X, ps, fig, hpgl, or tek.\n",
       numfonts = 0;
       for (i=0; _ps_font_info[i].ps_name; i++)
 	numfonts++;
-      odd = (numfonts % 2 == 1);
+      odd = (numfonts % 2 == 1 ? true : false);
       numpairs = numfonts / 2;
 
       fprintf (stderr, 
@@ -172,7 +172,7 @@ where \"device\" is the display device: X, ps, fig, hpgl, or tek.\n",
       numfonts = 0;
       for (i=0; _pcl_font_info[i].ps_name; i++)
 	numfonts++;
-      odd = (numfonts % 2 == 1);
+      odd = (numfonts % 2 == 1 ? true : false);
       numpairs = numfonts / 2;
 
       fprintf (stderr, 

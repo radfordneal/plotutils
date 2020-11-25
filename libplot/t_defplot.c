@@ -17,7 +17,7 @@
 Plotter _tek_default_plotter = 
 {
   /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _t_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _g_endpath, _t_erase, _g_farc, _g_farcrel, _g_fbox, _g_fboxrel, _g_fcircle, _g_fcirclerel, _g_fconcat, _t_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _t_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _t_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
+  _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _t_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _g_endpath, _t_erase, _g_farc, _g_farcrel, _g_fbox, _g_fboxrel, _g_fcircle, _g_fcirclerel, _g_fconcat, _t_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _t_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _t_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* internal methods that plot strings of various supported types */
   NULL, NULL, NULL,
   NULL, NULL, NULL,
@@ -39,6 +39,7 @@ Plotter _tek_default_plotter =
   PL_TEK,			/* plotter type */
   false,			/* open? */
   false,			/* opened? */
+  0,				/* number of times opened */
   (FILE *)NULL,			/* input stream (if any) */
   (FILE *)NULL,			/* output stream (if any) */
   (FILE *)NULL,			/* error stream (if any) */
@@ -47,7 +48,7 @@ Plotter _tek_default_plotter =
     NULL, NULL, NULL, NULL, 
     NULL, NULL, NULL, NULL },
   /* capabilities */
-  0, 0, 1, 0, 0, 0,		/* capability flags (see extern.h) */
+  0, 0, 0, 1, 0, 0, 0,		/* capability flags (see extern.h) */
   MAXINT,			/* hard polyline length limit */
   /* output buffer */
   {NULL, 0, NULL, 0},		/* output buffer (for non-realtime devices) */
@@ -69,7 +70,7 @@ Plotter _tek_default_plotter =
   {0, 0},			/* cursor position (for a bitmap device) */
   false,			/* issued warning on lack of sheared fonts */
   /* elements specific to the metafile device driver */
-  0,				/* 0/1, i.e. binary/portable output format */
+  false,			/* portable, not binary output format? */
   /* elements specific to the Tektronix device driver */
   D_GENERIC,			/* which sort of Tektronix? */
   MODE_ALPHA,			/* one of MODE_* */

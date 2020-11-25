@@ -1,13 +1,13 @@
 /* This file defines the C binding for GNU libplot.  The C API consists of
-   79 functions that are wrappers around the 79 methods that may be applied
+   81 functions that are wrappers around the 81 methods that may be applied
    to any Plotter object, plus four additional functions (newpl, selectpl,
    deletepl, parampl) that are specific to the C binding.
 
    These four functions maintain an array of Plotter objects, and construct
    and destroy them, as requested.  The _plotter pointer, which is
-   referenced in the 79 basic functions, is a pointer to one of the objects
+   referenced in the 81 basic functions, is a pointer to one of the objects
    in the array of constructed plotters.  It must be selected by calling
-   selectpl.  
+   selectpl.
 
    By default, _plotter points to a Plotter object that sends output in
    metafile format to standard output.  That is for compatibility with
@@ -82,7 +82,7 @@ static void _copy_params_to_plotter __P((Plotter *plotter));
 
 /* Initialize the array of plotters (on entry, _num_plotters should be 0).
    This is invoked when the user calls, for the very first time, one of the
-   79 basic libplot functions. */
+   81 basic libplot functions. */
 static void
 #ifdef _HAVE_PROTOS
 _init_plotter_array (void)
@@ -511,9 +511,10 @@ _api_warning (msg)
     fprintf (stderr, "libplot: warning: %s\n", msg);
 }
 
-/* The following are the C bindings for the 79 methods that operate on
+/* The following are the C bindings for the 81 methods that operate on
    objects in the Plotter class.  Together with the four functions above
-   (newpl, selectpl, deletepl; also parampl), they make up the libplot C API.
+   (newpl, selectpl, deletepl; also parampl), they make up the 
+   libplot C API.
 
    Each binding tests whether _num_plotters > 0, which determines whether
    the array of plotters has been initialized.  That is because it makes no
@@ -568,6 +569,32 @@ arcrel (xc, yc, x0, y0, x1, y1)
   if (_num_plotters == 0)
     _init_plotter_array ();
   return _plotter->arcrel (xc, yc, x0, y0, x1, y1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+bgcolor (int red, int green, int blue)
+#else
+bgcolor (red, green, blue)
+     int red, green, blue;
+#endif
+{
+  if (_num_plotters == 0)
+    _init_plotter_array ();
+  return _plotter->bgcolor (red, green, blue);
+}
+
+int
+#ifdef _HAVE_PROTOS
+bgcolorname (const char *s)
+#else
+bgcolorname (s)
+     const char *s;
+#endif
+{
+  if (_num_plotters == 0)
+    _init_plotter_array ();
+  return _plotter->bgcolorname (s);
 }
 
 int

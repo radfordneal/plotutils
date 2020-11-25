@@ -315,7 +315,9 @@ const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] =
   {0355, "lk", "braceleftmid"},
   {0356, "lb", "braceleftbt"},
   {0357, "bv", "braceex"},
-  {0360, "NO_ABBREV", "applelogo"}, /* Apple logo? */
+  /* Euro symbol, added by Adobe 1997(?).  OBHistorical note: Back in Apple
+     LaserWriter days, the Apple logo was stored in this slot. */
+  {0360, "eu", "euro"},	
   {0361, "ra", "angleright"},
   {0362, "is", "integral"},
   {0363, "NO_ABBREV", "integraltp"},
@@ -444,11 +446,11 @@ const Deligature_escape _deligature_escape_tbl[NUM_DELIGATURED_ESCAPES] =
 {
   {"AE", "AE", 999},
   {"ae", "ae", 999},
-  {"ss", "ss", 11},	/* no deligature of \ss in font #11, ie. Gothic-German */
+  {"ss", "ss", 11},   /* no deligature of \ss in font #11, ie. Gothic-German */
 };
 
 /* A table of the ligatures present in the Hershey fonts.  Ligaturization
-   is automatic; see controlify.c.  The eszet ligature, found only in
+   is automatic; see g_cntrlify.c.  The eszet ligature, found only in
    HersheyGothic-German, is not listed here because it is not constructed
    automatically; the user must request it, with either "\ss" or 'ß'.  The
    table has the longer ligatures first because it is scanned from first to

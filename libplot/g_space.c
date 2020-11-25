@@ -124,7 +124,7 @@ _g_fspace2 (x0, y0, x1, y1, x2, y2)
   /* does map preserve axis directions? */
   _plotter->drawstate->transform.axes_preserved = 
     (_plotter->drawstate->transform.m[1] == 0.0 
-     && _plotter->drawstate->transform.m[2] == 0.0);
+     && _plotter->drawstate->transform.m[2] == 0.0) ? true : false;
 
 #define IS_ZERO(arg) (IS_ZERO1(arg) && IS_ZERO2(arg))
 #define IS_ZERO1(arg) (fabs(arg) < FUZZ * DMAX(_plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[0], _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[1]))
@@ -150,7 +150,7 @@ _g_fspace2 (x0, y0, x1, y1, x2, y2)
 	   - (_plotter->drawstate->transform.m[1] *
 	      _plotter->drawstate->transform.m[2]));
     _plotter->drawstate->transform.nonreflection 
-      = ((_plotter->flipped_y ? -1 : 1) * det >= 0);
+      = ((_plotter->flipped_y ? -1 : 1) * det >= 0) ? true : false;
   }
   
   /* Compute matrix norm of linear transformation appearing in the affine

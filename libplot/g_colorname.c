@@ -39,7 +39,6 @@ _g_pencolorname (name)
       intred = (red << 8) | red;
       intgreen = (green << 8) | green;
       intblue = (blue << 8) | blue;
-
     }
 
   _plotter->pencolor (intred, intgreen, intblue);
@@ -74,10 +73,43 @@ _g_fillcolorname (name)
       intred = (red << 8) | red;
       intgreen = (green << 8) | green;
       intblue = (blue << 8) | blue;
-
     }
 
   _plotter->fillcolor (intred, intgreen, intblue);
+
+  return 0;
+}
+
+int 
+#ifdef _HAVE_PROTOS
+_g_bgcolorname (const char *name)
+#else
+_g_bgcolorname (name)
+     const char *name;
+#endif
+{
+  const Colornameinfo *info;
+  int intred, intgreen, intblue;
+
+  /* RGB values for default color: white */
+  intred = 0xffff;
+  intgreen = 0xffff;
+  intblue = 0xffff;
+
+  if (_string_to_color (name, &info))
+    {
+      unsigned int red, green, blue;
+
+      red = info->red;
+      green = info->green;
+      blue = info->blue;
+      /* to convert from 24-bit to 48-bit color, double bytes */
+      intred = (red << 8) | red;
+      intgreen = (green << 8) | green;
+      intblue = (blue << 8) | blue;
+    }
+
+  _plotter->bgcolor (intred, intgreen, intblue);
 
   return 0;
 }

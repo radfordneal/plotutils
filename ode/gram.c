@@ -1163,7 +1163,7 @@ case 9:
 #line 183 "gram.y"
 {
 			double savstep;
-			int savconf;
+			bool savconflag;
 
                         lfree(yyvsp[0].lexptr);
                         tstart = yyvsp[-5].lexptr->lx_u.lxu_value;
@@ -1173,11 +1173,11 @@ case 9:
                         savstep = tstep;
                         tstep = yyvsp[-1].lexptr->lx_u.lxu_value;
                         lfree(yyvsp[-1].lexptr);
-                        savconf = conflag;
+                        savconflag = conflag;
                         conflag = true;
                         solve();
                         tstep = savstep;
-                        conflag = savconf;
+                        conflag = savconflag;
                         sawstep = true;
                         ;
     break;}

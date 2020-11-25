@@ -80,7 +80,6 @@
 #include "sys-defines.h"
 #include "plot.h"
 #include "extern.h"
-#include "linemode.h"		/* defines linemodes, color styles */
 
 #define FUZZ 0.000001		/* bd. on floating pt. roundoff error */
 
@@ -230,6 +229,7 @@ typedef struct
   /* following elements are parameters (not updated during plotter operation)*/
   char *display_type;		/* mnemonic: type of libplot device driver */
   bool save_screen;		/* erase display when opening plotter? */
+  char *bg_color;		/* color of background, if non-NULL */
   grid_type grid_spec;		/* frame specification */
   double blankout_fraction;	/* 1.0 means blank whole box before plot */
   bool no_rotate_y_label;	/* useful for pre-X11R6 X servers */
@@ -256,7 +256,7 @@ static Plotter plotter;
 /* forward references */
 static int clip_line __P((double *x0_p, double *y0_p, double *x1_p, double *y1_p));
 static int spacing_type __P((double spacing));
-static outcode compute_outcode __P((double x, double y));
+static outcode compute_outcode __P((double x, double y, bool tolerant));
 static void plot_errorbar __P((const Point *p));
 static void prepare_axis __P((Axis *axisp, Transform *trans, 
 		       double min, double max, double spacing, 
@@ -729,7 +729,7 @@ prepare_axis (axisp, trans,
 
 void 
 #ifdef _HAVE_PROTOS
-initialize_plotter(char *display_type, bool save_screen, 
+initialize_plotter(char *display_type, bool save_screen, char *bg_color,
 		   double frame_line_width, char *frame_color, char *title, 
 		   char *title_font_name, double title_font_size, 
 		   double tick_size, grid_type grid_spec, double x_min, 
@@ -744,8 +744,8 @@ initialize_plotter(char *display_type, bool save_screen,
 		   int omit_ticks, int clip_mode, double blankout_fraction,
 		   bool transpose_axes)
 #else
-initialize_plotter(display_type,
-		   save_screen, frame_line_width, frame_color,
+initialize_plotter(display_type, save_screen, bg_color,
+		   frame_line_width, frame_color,
 		   title, title_font_name, title_font_size,
 		   tick_size, grid_spec, 
 		   x_min, x_max, x_spacing, y_min, y_max, y_spacing, 
@@ -760,11 +760,12 @@ initialize_plotter(display_type,
 		   clip_mode, blankout_fraction,
 		   transpose_axes)
      char *display_type;	/* mnemonic: type of libplot display driver */
-     bool save_screen;	/* whether or not to erase */
+     bool save_screen;		/* whether or not to erase */
+     char *bg_color;		/* color of background, if non-NULL */
      double frame_line_width;	/* fractional width of lines in the frame */
      char *frame_color;		/* color for frame (and plot if no -C option)*/
      char *title;		/* plot title */
-     char *title_font_name; /* font for plot title (string) */
+     char *title_font_name;	/* font for plot title (string) */
      double title_font_size;	/* font size for plot title  */
      double tick_size;		/* fractional size of ticks */
      grid_type grid_spec;	/* gridstyle (and tickstyle) spec */
@@ -930,6 +931,7 @@ initialize_plotter(display_type,
   /* fill in the Plotter struct */
 
   plotter.save_screen = save_screen;
+  plotter.bg_color = bg_color;
   plotter.frame_line_width = frame_line_width;
   plotter.frame_color = frame_color;
   plotter.no_rotate_y_label = no_rotate_y_label;
@@ -1051,7 +1053,9 @@ open_plotter()
     selectpl (handle);
   if (openpl () < 0)
     return -1;
-  if (!plotter.save_screen)
+  if (plotter.bg_color)
+    bgcolorname (plotter.bg_color);
+  if (!plotter.save_screen || plotter.bg_color)
     erase ();
   fspace (0.0, 0.0, (double)PLOT_SIZE, (double)PLOT_SIZE);
 
@@ -1115,7 +1119,8 @@ plot_frame (draw_canvas)
   savestate();	/* wrap savestate()--restorestate() around all 9 tasks */
 
   /* set color for plot frame (and for plot also, if a monochrome one) */
-  pencolorname (plotter.frame_color); 
+  if (plotter.frame_color)
+    pencolorname (plotter.frame_color);
 
   /* set line width as a fraction of width of display, <0.0 means default */
   flinewidth (plotter.frame_line_width * x_trans.output_range);
@@ -1126,7 +1131,11 @@ plot_frame (draw_canvas)
   if (draw_canvas)
     {
       savestate();
-      colorname ("white");
+      /* use user-specified background color (if any) instead of white */
+      if (havecap ("SETTABLE_BACKGROUND") != 0 && plotter.bg_color)
+	colorname (plotter.bg_color);
+      else
+	colorname ("white");
       filltype (1);		/* turn on filling */
       fbox (XP(XSQ(0.5 - 0.5 * plotter.blankout_fraction)), 
 	    YP(YSQ(0.5 - 0.5 * plotter.blankout_fraction)),
@@ -2249,11 +2258,13 @@ plot_point (point)
       filltype (intfill);
     }
 
+  /* have endpoints of new line segment */
   local_x0 = plotter.oldpoint_x;
   local_y0 = plotter.oldpoint_y;
   local_x1 = point->x;
   local_y1 = point->y;
 
+  /* save current point for use as endpoint of next line segment */
   plotter.oldpoint_x = point->x;
   plotter.oldpoint_y = point->y;
 
@@ -2266,41 +2277,50 @@ plot_point (point)
       return;
     }
 
-  if (point->pendown && (point->linemode > 0)) /* ideally move with pen down */
+  /* not rejected, ideally move with pen down */
+  if (point->pendown && (point->linemode > 0))
     {
-      switch (plotter.clip_mode) /* gnuplot style clipping (0, 1, or 2) */
+      switch (plotter.clip_mode) /* do gnuplot style clipping (0, 1, or 2) */
 	{
 	case 0:
 	  if ((clipval & CLIPPED_FIRST) || (clipval & CLIPPED_SECOND))
+	    /* clipped on at least one end, so move with pen up */
 	    fmove (XV (point->x), YV (point->y));
 	  else
-	    if (!plotter.first_point_of_plot)
-	      fcont (XV (point->x), YV (point->y));
-	    else
-	      fmove (XV (point->x), YV (point->y));
+	    /* line segment within box, so move with pen down */
+	    {
+	      if (!plotter.first_point_of_plot)
+		fcont (XV (point->x), YV (point->y));
+	      else
+		fmove (XV (point->x), YV (point->y));
+	    }
 	  break;
 	case 1:
 	default:
 	  if ((clipval & CLIPPED_FIRST) && (clipval & CLIPPED_SECOND))
-	    fmove (XV (point->x), YV (point->y)); /* both OOB */
-	  else			/* at least one point is not OOB */
+	    /* both OOB, so move with pen up */
+	    fmove (XV (point->x), YV (point->y));
+	  else			
+	    /* at most one point is OOB */
 	    {
-	      if (clipval & CLIPPED_FIRST) /* current point is OOB */
+	      if (clipval & CLIPPED_FIRST) /*current pt. OOB, new pt. not OOB*/
 		{
 		  if (!plotter.first_point_of_plot)
 		    {
+		      /* move to clipped current point, draw line segment */
 		      fmove (XV (local_x0), YV (local_y0));
 		      fcont (XV (point->x), YV (point->y));
 		    }
 		  else
 		    fmove (XV (point->x), YV (point->y));
 		}
-	      else		/* current point not OOB */
+	      else		/* current point not OOB, new point OOB */
 		{
 		  if (!plotter.first_point_of_plot)
 		    {
+		      /* draw line segment to clipped new point */
 		      fcont (XV (local_x1), YV (local_y1));
-		      /* libplot's notion of position now differs from ours */
+		      /* N.B. lib's notion of position now differs from ours */
 		    }
 		  else
 		    fmove (XV (point->x), YV (point->y));
@@ -2309,11 +2329,14 @@ plot_point (point)
 	  break;
 	case 2:
 	  if ((clipval & CLIPPED_FIRST) || plotter.first_point_of_plot)
+	    /* move to clipped current point if necc. */
 	    fmove (XV (local_x0), YV (local_y0));
 	  
+	  /* draw line segment to clipped new point */
 	  fcont (XV (local_x1), YV (local_y1));
 	  
 	  if (clipval & CLIPPED_SECOND)
+	    /* new point OOB, so move to new point, breaking polyline */
 	    fmove (XV (point->x), YV (point->y)); 
 	  break;
 	}
@@ -2323,12 +2346,12 @@ plot_point (point)
 
   plotter.first_point_of_plot = false;
   
-  /* if target point is OOB, return without plotting symbol */
+  /* if target point is OOB, return without plotting symbol or errorbar */
   if (clipval & CLIPPED_SECOND)
     return;
 
-  /* Plot symbol and label, doing a savestate()--restorestate() to keep
-     from breaking the polyline under construction. */
+  /* plot symbol and errorbar, doing a savestate()--restorestate() to keep
+     from breaking the polyline under construction (if any) */
   if (point->symbol >= 32)	/* yow, a character */
     {
       /* will do a font change, so save & restore state */
@@ -2352,9 +2375,9 @@ plot_point (point)
 	  restorestate();
 	}
       else
-	/* not drawing a polyline, so just place the marker */
+	/* not drawing a line, so just place the marker */
 	{
-	  plot_errorbar (point);      	  
+	  plot_errorbar (point);
 	  fmarker (XV(point->x), YV(point->y), 
 		   point->symbol, SS(point->symbol_size));
 	}
@@ -2363,7 +2386,7 @@ plot_point (point)
   else if (point->symbol == 0 && point->linemode == 0)
     /* backward compatibility: -m 0 (even with -S 0) plots a dot */
     {
-      plot_errorbar (point);      
+      plot_errorbar (point);
       fmarker (XV(point->x), YV(point->y), M_DOT, SS(point->symbol_size));
     }
 
@@ -2372,9 +2395,9 @@ plot_point (point)
       if (point->linemode > 0)
 	/* drawing a line, so (to keep from breaking it) save & restore state*/
 	{
-	  savestate();
+	  savestate ();
 	  plot_errorbar (point);      
-	  restorestate();
+	  restorestate ();
 	}
       else
 	/* no polyline, no symbol either; just draw errorbar */
@@ -2403,8 +2426,8 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
   double y0 = *y0_p;
   double x1 = *x1_p;
   double y1 = *y1_p;
-  outcode outcode0 = compute_outcode (x0, y0);
-  outcode outcode1 = compute_outcode (x1, y1);  
+  outcode outcode0 = compute_outcode (x0, y0, true);
+  outcode outcode1 = compute_outcode (x1, y1, true);  
   bool accepted;
   int clipval = 0;
   
@@ -2451,13 +2474,13 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
 	    {
 	      x0 = x;
 	      y0 = y;
-	      outcode0 = compute_outcode (x0, y0);
+	      outcode0 = compute_outcode (x0, y0, true);
 	    }
 	  else
 	    {
 	      x1 = x; 
 	      y1 = y;
-	      outcode1 = compute_outcode (x1, y1);
+	      outcode1 = compute_outcode (x1, y1, true);
 	    }
 	}
     }
@@ -2479,25 +2502,31 @@ clip_line (x0_p, y0_p, x1_p, y1_p)
   return clipval;
 }
 
+/* Compute usual Cohen-Sutherland outcode, containing bitfields LEFT,
+   RIGHT, BOTTOM, TOP.  Nine possibilities: 
+   {LEFT, interior, RIGHT} x {BOTTOM, interior, TOP}.
+   The `tolerant' flag specifies how we handle points on the boundary. */
 static outcode
 #ifdef _HAVE_PROTOS
-compute_outcode (double x, double y)
+compute_outcode (double x, double y, bool tolerant)
 #else
-compute_outcode (x, y)
+compute_outcode (x, y, tolerant)
      double x, y;
+     bool tolerant;
 #endif
 {
   outcode code = 0;
   double xfuzz = FUZZ * x_trans.input_range;
   double yfuzz = FUZZ * y_trans.input_range;  
+  int sign = (tolerant == true ? 1 : -1);
   
-  if (x > x_trans.input_max + xfuzz)
+  if (x > x_trans.input_max + sign * xfuzz)
     code |= RIGHT;
-  else if (x < x_trans.input_min - xfuzz)
+  else if (x < x_trans.input_min - sign * xfuzz)
     code |= LEFT;
-  if (y > y_trans.input_max + yfuzz)
+  if (y > y_trans.input_max + sign * yfuzz)
     code |= TOP;
-  else if (y < y_trans.input_min - yfuzz)
+  else if (y < y_trans.input_min - sign * yfuzz)
     code |= BOTTOM;
   
   return code;

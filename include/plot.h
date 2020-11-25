@@ -1,10 +1,15 @@
-/* This is plot.h, the user-level include file for release 0.0 of 
+/* This is plot.h, the user-level include file for release 1.0 of 
    GNU libplot, a shared library for 2-dimensional vector graphics.  
 
-   Release 0.0 of libplot, and this file, are distributed as part of
-   release 2.0 of the GNU plotting utilities package. */
+   Release 1.0 of libplot, and this file, are distributed as part of
+   release 2.1 of the GNU plotting utilities package. */
 
 /* stdio.h must be included before this file is included. */
+
+/* This file is written for ANSI C compilers.  If you use it with a
+   pre-ANSI C compiler that does not support the `const' keyword, such as
+   the `cc' compiler supplied with SunOS (i.e., Solaris 1.x), you should
+   use the -DNO_CONST_SUPPORT option when compiling your code. */
 
 #ifndef _PLOT_H_
 #define _PLOT_H_ 1
@@ -38,7 +43,7 @@
 #define ___P(protos) ()
 #endif
 
-/* For old compilers (e.g. RT-PC) */
+/* For old compilers (e.g. SunOS) */
 #ifdef ___const
 #undef ___const
 #endif
@@ -53,7 +58,7 @@ __BEGIN_DECLS
 /* THE C API */
 
 /* THE GLOBAL FUNCTIONS IN GNU LIBPLOT */
-/* There are 79 basic functions, plus 4 that are specific to the C binding */
+/* There are 81 basic functions, plus 4 that are specific to the C binding */
 
 /* functions in traditional (pre-GNU) libplot */
 int arc ___P ((int xc, int yc, int x0, int y0, int x1, int y1));
@@ -73,6 +78,8 @@ int space ___P ((int x0, int y0, int x1, int y1));
 /* additional functions in GNU libplot */
 int alabel ___P ((int x_justify, int y_justify, ___const char *s));
 int arcrel ___P ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+int bgcolor ___P ((int red, int green, int blue));
+int bgcolorname ___P ((___const char *name));
 int boxrel ___P ((int dx0, int dy0, int dx1, int dy1));
 int capmod ___P ((___const char *s));
 int circlerel ___P ((int dx, int dy, int r));
@@ -215,8 +222,7 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 
 /* ONE-BYTE OP CODES FOR GNU METAFILE FORMAT */
 
-/* Op codes for primitive graphics operations, as in Unix plot(5)
-   format. */
+/* Op codes for primitive graphics operations, as in Unix plot(5) format. */
 #define ARC		'a'
 #define BOX		'B'	/* not a separate op code in Unix plot(5) */
 #define CIRCLE		'c'
@@ -232,6 +238,7 @@ extern int (*libplot_error_handler) ___P ((___const char *msg));
 /* Op codes for operations that are GNU extensions */
 #define ALABEL		'T'
 #define ARCREL		'A'
+#define BGCOLOR		'~'
 #define BOXREL		'H'
 #define CAPMOD		'K'
 #define CIRCLEREL	'G'

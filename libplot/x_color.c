@@ -23,7 +23,10 @@ _x_set_pen_color()
 
   /* allocate color cell */
   if (XAllocColor (_plotter->dpy, _plotter->cmap, &rgb) == 0)
-    _plotter->warning ("color request failed, couldn't allocate color cell");
+    {
+      _plotter->warning ("color request failed, couldn't allocate color cell");
+      return;
+    }
 
   /* select pen color as foreground color in X GC */
   XSetForeground (_plotter->dpy, _plotter->drawstate->gc, rgb.pixel);
@@ -67,8 +70,11 @@ _x_set_fill_color()
 
   /* allocate color cell */
   if (XAllocColor (_plotter->dpy, _plotter->cmap, &rgb) == 0)
-    _plotter->warning ("color request failed, couldn't allocate color cell");
-
+    {
+      _plotter->warning ("color request failed, couldn't allocate color cell");
+      return;
+    }
+      
   /* select fill color as foreground color in X GC */
   XSetForeground (_plotter->dpy, _plotter->drawstate->gc, rgb.pixel);
 

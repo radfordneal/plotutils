@@ -1,6 +1,17 @@
 These are some notes on backward compatibility of the plotutils package, on
 both the user and programmer levels.
 
+Release 2.1
+-----------
+
+No incompatibilities with plotutils release 2.0.  But many new command-line
+options added to user-level utilities, and the libplot API was expanded by
+the addition of bgcolor() and bgcolorname().  The libplot version number is
+now 1.0.
+
+Release 2.0
+-----------
+
 In release 2.0 the idea of separate variants of the `graph', `plot', and
 `tek2plot' programs for each display device was finally done away with.
 There is now only a single instance of each program.  The display device is
@@ -31,11 +42,11 @@ to get the width of a text string, use flabelwidth() or labelwidth().
 
 2. The semantics of the arc() primitive have changed.  It now draws an arc
 that may be clockwise as well as counterclockwise, but is restricted to
-have opening angle no more than 180 degrees.  Also, it moved the graphics
+have opening angle no more than 180 degrees.  Also, it moves the graphics
 cursor position to the endpoint of the arc.
 
 3. The box() primitive now moves the graphics cursor to the midpoint of the
-box, rather than to the second-listed vertex.
+box, rather than to the second-specified vertex.
 
 4. endpoly() has been renamed endpath(), and fill() has been renamed
 filltype().  These last changes are temporarily supported by the plot.h

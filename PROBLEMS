@@ -27,23 +27,25 @@ investigation) contains two characters: a square root symbol, and a
 matching overbar.  At least in OpenWindows version 3, their heights above
 the baseline did not match as they should.
 
-Some versions of OpenWindows may also include bitmapped versions of the
-Symbol font in which the horizontal overbar is displaced horizontally, as
-well as vertically.  This makes the problem even worse.
+Some versions of OpenWindows may include bitmapped versions of the Symbol
+font in which the horizontal overbar is displaced horizontally, as well as
+vertically.  This makes the problem even worse.
 
 The fix for the square root problem is to uninstall OpenWindows and replace
 it with industry-standard X11; in particular, X11R6.
 
 2. Old (pre-X11R6) X servers do not support rotation, non-uniform scaling,
-or shearing of fonts.  This problem is automatically worked around.  If
-`graph -T X' or libplot's X driver is used to drive a display attached to
-such a server, a default Hershey font will be automatically substituted for
-any unavailable X font.
+or shearing of fonts.  
+
+This problem is automatically worked around.  If `graph -T X' or libplot's
+X driver is used to drive a display attached to such a server, a default
+Hershey font (HersheySerif) will be automatically substituted for any
+unavailable X font.
 
 This problem shows up, e.g., when you attempt to label a y-axis.  By
 default the y-axis label on a plot produced by `graph' is rotated ninety
 degrees.  You may turn this rotation off by using the
---toggle-rotate-y-label option, preventing the font substitution.
+--toggle-rotate-y-label option, preventing the font substitution if any.
 
 ----------------------------------------------------------------------
 
@@ -63,19 +65,22 @@ recommended that you use a version at least as recent as release 4.xx.
 Earlier releases of Ghostscript are reported to have had similar problems.
 
 2. It has been reported that the freeware `bbfig' program, which is widely
-used for estimating the bounding boxes of Postscript files, does not
+used for computing the bounding boxes of Postscript files, does not
 necessarily compute the correct bounding box when it is applied to the
 output of libplot's PS driver; for example, to a graph produced by `graph
--T ps'.  But the problem turns out to be with bbfig, not with libplot.
+-T ps'.
 
-You should never need to run `bbfig' on Postscript files produced by this
-package, since they already contain accurate bounding boxes.
+The bug here is in bbfig, not in libplot.  You should never need to run
+`bbfig' on Postscript files produced by this package, since they already
+contain accurate bounding boxes.
 
 3. As seen by the idraw drawing editor, a Postscript file produced by
 `graph -T ps' or libplot's PS driver will have its colors quantized.  Both
-pen color and fill color will be quantized.  These quantizations are due to
-limitations of idraw.  Line widths will be quantized too, since the width
-of a line in idraw must be an integer number of printer's points.
+pen color and fill color will be quantized.  
+
+These quantizations are due to limitations of idraw.  Line widths will be
+quantized too, since the width of a line in idraw must be an integer number
+of printer's points.
 
 No such quantizations will take place if the Postscript file is viewed with
 a Postscript interpreter such as Ghostscript, sent to a printer, or
@@ -105,7 +110,8 @@ However, if an application that uses libplot's xfig driver calls the setup
 function space() or space2() so as to define a drawing window in the user
 frame which is not square, the affine map from the user frame to the device
 frame will involve a non-uniform scaling, and possibly even a shearing.  In
-such cases a default Hershey font will be substituted for the Postscript font.
+such cases a default Hershey font (HersheySerif) will be substituted for
+the Postscript font.
 
 3. Another problem with libplot's xfig driver and `graph -T fig' worth
 mentioning is that "dotdashed" lines (obtained e.g. with the "-m 3" option
@@ -116,12 +122,6 @@ support the traditional libplot line modes "solid", "dotted",
 "shortdashed", and "longdashed".  But xfig doesn't support anything so
 exotic as "dotdashed" lines.  So we map them into dotted lines with a large
 inter-dot gap, to distinguish them for conventional dotted lines.
-
-3. If libplot's xfig driver or `graph -T fig' is used to draw a label
-(i.e. a text string) that includes a printable non-ASCII (i.e. 8-bit)
-character followed by a digit, the label may be drawn incorrectly when the
-output file is displayed with xfig.  This is a bug in xfig 3.1; the fix is
-to upgrade to xfig 3.2.
 
 ----------------------------------------------------------------------
 
@@ -173,12 +173,12 @@ apparently supports a restricted sort of region filling, but there are
 currently no plans to extend libplot to use it.
 
 The 35 Postscript fonts could in principle be supported by libplot's
-Tektronix driver, if Type 1 rasterizer code were added to libplot.  There
-are plans for this, though libplot at present includes no bitmap driver.
-It probably will, eventually.  But most people are interested in using such
-a driver to produce bitmaps for the Web, not in using it to draw Type 1
-fonts on Tek displays.  (The phrase "bolting a V-8 onto a Model T" comes 
-to mind.)
+Tektronix driver, if Type 1 or TrueType rasterizer code were added to
+libplot.  There are plans for this, though libplot at present includes no
+bitmap driver.  It probably will, eventually.  But most people are
+interested in using such a driver to produce bitmaps for the Web, not in
+using it to draw Type 1 or TT fonts on Tek displays.  (The phrase "bolting
+a V-8 onto a Model T" comes to mind.)
 
 In `graph -T tek' the --line-width and --frame-line-width options do not
 work, since the Tektronix driver does not support lines with other than a
@@ -209,13 +209,13 @@ X Windows does not support such sheared thick lines.  Nor do the xfig or
 idraw drawing editors, or the HP-GL and HP-GL/2 languages.  However,
 Postscript supports them.
 
-As a consequence, libplot's PS driver is only one of its drivers which
+As a consequence, libplot's PS driver is the only one of its drivers which
 displays sheared thick lines correctly.  The problem is evident only for
 unusually thick lines, of course.
 
 GNU `graph' does not ask libplot to perform shearing transformations, so
-the problem is visible only by calling, directly, the libplot non-PS
-drivers.
+the problem is visible only by drawing graphics with one of the non-PS
+Plotter objects supported by libplot.
 
 ======================================================================
 

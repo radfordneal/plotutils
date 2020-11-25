@@ -3,7 +3,7 @@ dnl Copyright (C) 1989-98 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(graph/graph.c)
-AM_INIT_AUTOMAKE(plotutils, 2.0)
+AM_INIT_AUTOMAKE(plotutils, 2.1)
 AM_CONFIG_HEADER(config.h)
 
 dnl We now use libtool to make and installed a shared library.
@@ -12,11 +12,11 @@ AM_PROG_LIBTOOL
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-AC_PROG_LEX
 AC_PROG_MAKE_SET
 AC_PROG_YACC
-dnl rendered obsolete by AM_PROG_LIBTOOL (see above)
-dnl AC_PROG_RANLIB
+
+dnl We now have automake use a replacement for lex if lex is missing.
+AM_PROG_LEX
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(malloc.h string.h strings.h sys/time.h unistd.h values.h)
@@ -26,11 +26,12 @@ dnl X-specific headers and libraries (by default, we support X but not Motif)
 AC_PATH_XTRA
 AC_SUBST(X_CFLAGS)
 AC_SUBST(X_LIBS)
+AC_SUBST(X_TOOLKIT_LIBS)
 AC_SUBST(X_PRE_LIBS)
-AC_SUBST(XLIBS)
+AC_SUBST(X_BASIC_LIBS)
 AC_SUBST(X_EXTRA_LIBS)
-AC_ARG_WITH(x, [  --with-x                use the X Window System], if test "$withval" != "no"; then BASIC_XLIBS="-lXt -lXext -lX11"; else BASIC_XLIBS=""; fi, BASIC_XLIBS="-lXt -lXext -lX11";)
-AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], if test "$BASIC_XLIBS" = ""; then XLIBS=""; else XLIBS="-lXm $BASIC_XLIBS"; fi; AC_DEFINE(USE_MOTIF), if test "$BASIC_XLIBS" = ""; then XLIBS=""; else XLIBS="-lXaw -lXmu $BASIC_XLIBS"; fi;)
+AC_ARG_WITH(x, [  --with-x                use the X Window System], if test "$withval" != "no"; then X_BASIC_LIBS="-lXext -lX11"; X_TOOLKIT_LIBS="-lXt"; else X_BASIC_LIBS=""; X_TOOLKIT_LIBS=""; fi, X_BASIC_LIBS="-lXext -lX11"; X_TOOLKIT_LIBS="-lXt")
+AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], if test "$X_TOOLKIT_LIBS" = ""; then X_TOOLKIT_LIBS=""; else X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"; fi; AC_DEFINE(USE_MOTIF), if test "$X_TOOLKIT_LIBS" = ""; then X_TOOLKIT_LIBS=""; else X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS"; fi;)
 AM_CONDITIONAL(NO_X, test "$no_x" = yes)
 
 dnl Typedefs, structures, and compiler characteristics.
@@ -46,7 +47,6 @@ dnl Override default "-g -O2", for libplot especially.
 CFLAGS="-O"
 
 dnl Library functions and auxiliary libraries.
-AC_DECL_YYTEXT
 dnl 
 dnl SGI's have matherr in libmx.a, not libm.a
 AC_CHECK_LIB(mx, matherr, LIBS="$LIBS -lmx", LIBS="$LIBS -lm")

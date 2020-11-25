@@ -13,8 +13,8 @@ START-INFO-DIR-ENTRY
 * Appendices: (plotutils)Appendices.    More info on the plotting utilities
 END-INFO-DIR-ENTRY
 
-   This file documents version 2.0 of the GNU plotting utilities
-package.  Last updated 25 January 1998.
+   This file documents version 2.1 of the GNU plotting utilities
+package.
 
    Copyright (C) 1989-1998 Free Software Foundation, Inc.
 
@@ -35,7 +35,7 @@ translation approved by the Foundation.
 
 File: plotutils.info,  Node: Top,  Next: Plotutils Intro,  Prev: (dir),  Up: (dir)
 
-   This is the documentation for version 2.0 of the GNU plotting
+   This is the documentation for version 2.1 of the GNU plotting
 utilities package.  The package consists of programs and functions for
 data plotting and vector graphics.
 
@@ -122,15 +122,17 @@ hpgl', and `tek2plot'.  `tek2plot' is useful if you have a legacy
 application that produces drawings in Tektronix format.
 
    Among the other GNU plotting utilities, `spline' does spline
-interpolation of data.  It normally uses either cubic spline
-interpolation or exponential splines in tension, but like `graph' it
-can function as a real-time filter under some circumstances.  `ode'
-provides the ability to integrate an ordinary differential equation or
-a system of ordinary differential equations, when provided with an
-explicit expression for each equation.  It supplements the plotting
-program `gnuplot', which can plot functions but not integrate ordinary
-differential equations.  The final plotting utility, `double', is a
-filter for converting, scaling and cutting binary or ASCII data
+interpolation of scalar or vector-valued data.  It normally uses either
+cubic spline interpolation or exponential splines in tension, but like
+`graph' it can function as a real-time filter under some circumstances.
+Besides splining datasets, it can construct curves, either open or
+closed, through arbitrarily chosen points in d-dimensional space.
+`ode' provides the ability to integrate an ordinary differential
+equation or a system of ordinary differential equations, when provided
+with an explicit expression for each equation.  It supplements the
+plotting program `gnuplot', which can plot functions but not integrate
+ordinary differential equations.  The final plotting utility, `double',
+is a filter for converting, scaling and cutting binary or ASCII data
 streams.  It is still under development and is not yet documented.
 
    Distributed along with the plotting utilities is GNU `libplot', the
@@ -269,10 +271,11 @@ terminal is the DOS version of `kermit'.
    `graph' may behave differently depending on the environment in which
 it is invoked.  We have already mentioned the `PAGESIZE' environment
 variable, which affects the operation of `graph -T ps', `graph -T fig',
-and `graph -T hpgl'.  The `DISPLAY' and `TERM' environment variables
-affect the operation of `graph -T X' and `graph -T tek', respectively.
-There are also several environment variables that affect the operation
-of `graph -T hpgl'.  For a complete discussion of the effects of the
+and `graph -T hpgl'.  The `DISPLAY' and `BITMAPSIZE' environment
+variables affect the operation of `graph -T X', and the `TERM'
+environment variable affects the operation of `graph -T tek'.  There
+are also several environment variables that affect the operation of
+`graph -T hpgl'.  For a complete discussion of the effects of the
 environment on `graph', see *Note graph Environment::.  The following
 remarks apply irrespective of which display device is specified.
 
@@ -477,19 +480,22 @@ the plot will be shifted slightly downward and to the left.
 
    The `graphics display', within which the plotting box is located, is
 an abstraction.  For `graph -T X', it is a square window on an
-X display.  For `graph -T tek', it is a square region occupying the
-central part of a Tektronix display.  (Tektronix displays are 4/3 times
-as wide as they are high.)  For `graph -T ps', by default it is a
-square region centered on an 8.5in by 11in page (US letter size),
-occupying the full width of the page with allowance being made for
-margins.  For `graph -T fig', by default it is a square region of the
-same size, positioned in the upper left corner of an `xfig' display.
-For `graph -T hpgl', by default it is a square region of the same size,
-position and orientation on the page are controlled by environment
-variables.  The page size used by `graph -T ps', `graph -T fig', and
-`graph -T hpgl' may be altered by setting the environment variable
-`PAGESIZE'.  For example, setting it to "a4" would position the
-graphics display appropriately on an A4-size page (21cm by 29.7cm).
+X display, the size of which may be set by using the `--bitmap-size'
+option, or by setting the `BITMAPSIZE' environment variable.  For
+`graph -T tek', it is a square region occupying the central part of a
+Tektronix display.  (Tektronix displays are 4/3 times as wide as they
+are high.)  For `graph -T ps', by default it is a square region
+centered on an 8.5in by 11in page (US letter size), occupying the full
+width of the page with allowance being made for margins.  For `graph -T
+fig', by default it is a square region of the same size, positioned in
+the upper left corner of an `xfig' display.  For `graph -T hpgl',
+by default it is a square region of the same size, with position and
+orientation on the page being controlled by environment variables.  The
+page size used by `graph -T ps', `graph -T fig', and `graph -T hpgl'
+may be set by using the `--page-size' option, or by setting the
+environment variable `PAGESIZE'.  For example, setting `PAGESIZE' to
+"a4" would position the graphics display appropriately on an A4-size
+page (21cm by 29.7cm).
 
    Changing the width of the plotting box may have unforeseen
 consequences.  A number of command-line options specify sizes or
@@ -714,7 +720,7 @@ The inclusion of multiple datasets within a single binary file is
 supported.  If a binary file contains more than a single dataset,
 successive datasets should be separated by a single occurrence of the
 the largest possible number.  For single precision datasets this is the
-quantity `MAXFLOAT', for single precision datasets it is the quantity
+quantity `MAXFLOAT', for double precision datasets it is the quantity
 `MAXDOUBLE', and for integer datasets it is the quantity `MAXINT'.  On
 most machines `MAXFLOAT' is approximately 3.4x10^38, `MAXDOUBLE' is
 approximately 1.8x10^308, and `MAXINT' is 2^32-1.
@@ -763,7 +769,7 @@ variables, so there is a section discussing them as well.
 * Multiplot Options::	Options for drawing several plots at once
 * Raw graph Options::	Options relevant only to raw graph
 * Info Options::	Options requesting information (e.g., --help)
-* graph Environment::   Environment variables and X resources
+* graph Environment::   Environment variables
 
 
 File: plotutils.info,  Node: Plot Options,  Next: Dataset Options,  Prev: graph Invocation,  Up: graph Invocation
@@ -884,8 +890,8 @@ after each `--reposition X Y' option.
 `--save-screen'
      Save the screen.  This option requests that `graph' not erase the
      display device before it begins to plot.  This is relevant only to
-     `graph -T tek' and raw `graph'.  It may be employed to perform a
-     crude sort of multiplotting.
+     `graph -T tek'.  It may be employed to perform a crude sort of
+     multiplotting.
 
 `-T TICK_SIZE'
 `--tick-size TICK_SIZE'
@@ -957,6 +963,22 @@ after each `--reposition X Y' option.
      `--toggle-rotate-y-label' option.  The `-F' and `-f' options may
      be used to specify the name of the font and the size of the font.
 
+`--bg-color NAME'
+     (String, default "white".)  Set the color used for the plot
+     background to be NAME.  This is relevant only to `graph -T X'.
+     An unrecognized name sets the color to the default.  For
+     information on what names are recognized, see *Note Color Names::.
+
+`--bitmap-size BITMAP_SIZE'
+     (String, default "570x570".)  Set the size of the graphics
+     display, in terms of pixels, to be BITMAP_SIZE.  This is relevant
+     only to `graph -T X', for which the graphics display is an
+     X window.  The use of a square window, rather than a rectangular
+     window, is recommended.  The environment variable `BITMAPSIZE' may
+     equally well be used to specify the window size.  For backward
+     compatibility, the X resource `Xplot.geometry', which may be set
+     by the user, may be used instead.
+
 `--frame-color NAME'
      (String, default "black".)  Set the color used for drawing the plot
      frame, and for drawing monochrome datasets (if any) to be NAME.
@@ -976,7 +998,7 @@ after each `--reposition X Y' option.
      `graph -T tek' does not support drawing lines with other than a
      default width, and `graph -T hpgl' does not support doing so if
      the environment variable `HPGL_VERSION' is set to a value less than
-     "2" (the default).  `idraw'.
+     "2" (the default).
 
 `--max-line-length MAX_LINE_LENGTH'
      (Integer, default 500.) Set the maximum number of points that a
@@ -1013,6 +1035,13 @@ after each `--reposition X Y' option.
      positioning of the graphics display on the page may be
      accomplished by setting certain environment variables (*note graph
      Environment::.).
+
+`--pen-colors COLORS'
+     (String, default "1=red:2=green:3=blue:4=magenta:5=cyan".)  Set the
+     colors of the pens used for drawing plots, as numbered, to be
+     COLORS.  The format should be self-explanatory.  An unrecognized
+     name sets the corresponding color to the default.  For information
+     on what names are recognized, see *Note Color Names::.
 
 `--rotate ANGLE'
      (Integer, default 0.)  Set the rotation angle of the plot on the
@@ -1077,13 +1106,14 @@ from files.
      This specifies which format the subsequent input file(s) are in.
 
     `a'
-          ASCII format.  Each input file consists of pairs of floating
+          ASCII format.  Each input file is a sequence of floating
           point numbers, interpreted as the x and y coordinates of the
-          data points in a dataset.  The x and y coordinates of a point
-          need not appear on the same line, and points need not appear
-          on different lines.  But if a blank line occurs (i.e., two
-          newlines in succession are seen), it is interpreted as the
-          end of a dataset, and the beginning of the next.
+          successive data points in a dataset.  The x and y coordinates
+          of a point need not appear on the same line, and points need
+          not appear on different lines.  But if a blank line occurs
+          (i.e., two newlines in succession are seen), it is
+          interpreted as the end of a dataset, and the beginning of the
+          next.
 
     `e'
           ASCII format, including error bars.  Similar to `a' format,
@@ -1121,12 +1151,13 @@ from files.
      (Floats, defaults 1.0 and 0.0.) Automatically generate abscissa
      (x) values.  Irrespective of data format (`a', `e', `f', `d',
      or `i'), this option specifies that the abscissa (x) values are
-     missing: the dataset(s) to be read contain only ordinate (y)
-     values.  The difference between successive x values will be
-     STEP_SIZE, and the first x value will be LOWER_LIMIT.  To return
-     to reading abscissa values from the input you may specify `-a 0',
-     which disables automatic generation of the abscissa and returns
-     STEP_SIZE and LOWER_LIMIT to their default values.
+     missing from the input file: the dataset(s) to be read contain
+     only ordinate (y) values.  The increment from each x value to the
+     next will be STEP_SIZE, and the first x value will be LOWER_LIMIT.
+     To return to reading abscissa values from the input, i.e., for
+     subsequent input files, you may specify `-a 0', which disables
+     automatic generation of the abscissa values and returns STEP_SIZE
+     and LOWER_LIMIT to their default values.
 
 `-B'
 `--toggle-auto-bump'
@@ -1335,24 +1366,21 @@ Informational options
 
 File: plotutils.info,  Node: graph Environment,  Prev: Info Options,  Up: graph Invocation
 
-Environment variables and X Window System resources
-===================================================
+Environment variables
+=====================
 
-   The behavior of `graph' is affected by several environment variables
-and X Window System resources.  We have already mentioned the
-environment variables `PAGESIZE', `ROTATE', and `MAX_LINE_LENGTH'.
-They simply serve as backups for the options `--page-size', `--rotate',
-and `--max-line-length'.  The remaining environment variables are
-specific to individual display devices.  They control device driver
-parameters.
+   The behavior of `graph' is affected by several environment
+variables.  We have already mentioned the environment variables
+`BITMAPSIZE', `PAGESIZE', `MAX_LINE_LENGTH', and `ROTATE'.  They simply
+serve as backups for the options `--bitmap-size', `--page-size',
+`--max-line-length', and `--rotate'.  The remaining environment
+variables are specific to individual display devices.  They control
+device driver parameters.
 
    `graph -T X', which pops up a window on an X Window System display
 and draws graphics in it, checks the `DISPLAY' environment variable.
 The value of this variable determines the display on which the window
-will be popped up.  `graph -T X' also looks at the X resource
-`Xplot.geometry'.  It will use the value of this resource, which may be
-set by the user, as the size of the window in terms of pixels.  The
-default value is "570x570".
+will be popped up.
 
    `graph -T hpgl', which produces Hewlett-Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -1426,7 +1454,7 @@ The `plot' Utility
 
 * plot Examples::	How to use a plot filter
 * plot Invocation::	Command-line options
-* plot Environment::    Environment variables and X resources
+* plot Environment::    Environment variables
 
 
 File: plotutils.info,  Node: plot Examples,  Next: plot Invocation,  Prev: plot,  Up: plot
@@ -1466,7 +1494,7 @@ To print the plot on a Postscript printer, you would do something like
 
      plot -T ps < test.plot | lpr
 
-To edit it with the idraw drawing editor, you would do
+To edit it with the `idraw' drawing editor, you would do
 
      plot -T ps < test.plot > test.ps
      idraw test.ps
@@ -1480,11 +1508,11 @@ editor, you would do
    `plot' may behave differently depending on the environment in which
 it is invoked.  In particular, `plot -T ps', `plot -T fig', and `plot
 -T hpgl' are affected by the environment variable `PAGESIZE'.  `plot -T
-X' and `plot -T tek' are affected by the environment variables
-`DISPLAY' and `TERM', respectively.  There are also several environment
-variables that affect the operation of `plot -T hpgl'.  For a complete
-discussion of the effects of the environment on `plot', see *Note plot
-Environment::.
+X' is affected by the environment variables `DISPLAY' and `BITMAPSIZE',
+and `plot -T tek' is affected by the environment variable `TERM'.
+There are also several environment variables that affect the operation
+of `plot -T hpgl'.  For a complete discussion of the effects of the
+environment on `plot', see *Note plot Environment::.
 
 
 File: plotutils.info,  Node: plot Invocation,  Next: plot Environment,  Prev: plot Examples,  Up: plot
@@ -1523,6 +1551,26 @@ specified, the standard input is read.
      `idraw'-editable Postscript, the format used by the `xfig' drawing
      editor, the Hewlett-Packard Graphics Language, Tektronix format,
      and device-independent GNU metafile format.
+
+`-p N'
+`--page-number N'
+     (Positive integer.) Display only page number N, within the
+     metafile or sequence of metafiles that is being translated.
+     Metafiles may consist of one or more pages, numbered beginning
+     with 1.  By default, `plot' translates all pages.  For example,
+     `plot -T X' displays each page in its own X window.  This option
+     may be used to override the default behavior and select a
+     particular page for display.
+
+`--bitmap-size BITMAP_SIZE'
+     (String, default "570x570".)  Set the size of the graphics
+     display, in terms of pixels, to be BITMAP_SIZE.  This is relevant
+     only to `plot -T X', for which the graphics display is an X window.
+     The use of a square window, rather than a rectangular window, is
+     recommended.  The environment variable `BITMAPSIZE' may equally
+     well be used to specify the window size.  For backward
+     compatibility, the X resource `Xplot.geometry', which may be set
+     by the user, may be used instead.
 
 `--max-line-length MAX_LINE_LENGTH'
      (Integer, default 500.) Set the maximum number of points that a
@@ -1572,6 +1620,12 @@ parameters.  All of these may be overridden by directives in the
 metafile itself.  In fact, these options are useful mostly for plotting
 old metafiles in the pre-GNU `plot(5)' format, which did not include
 such directives.
+
+`--bg-color NAME'
+     (String, default "white".)  Set the color used for the drawing
+     background to be NAME.  This is relevant only to `plot -T X'.
+     An unrecognized name sets the color to the default.  For
+     information on what names are recognized, see *Note Color Names::.
 
 `-f FONT_SIZE'
 `--font-size FONT_SIZE'
@@ -1623,23 +1677,32 @@ format the input is in.  There are two types: binary (the default) and
 portable (human-readable).  The binary format is machine-dependent.
 *Note Metafiles::.
 
-   For compatibility with older software, the reading of input files in
-the pre-GNU `plot(5)' metafile format is also supported.  This is a
-binary format, with each integer argument represented as exactly two
-bytes.  The order of the two bytes is machine dependent.  You may
-specify that the input is in plot(5) format rather than the ordinary
-GNU metafile format by using either the `-h' option ("high byte first")
-or the `-l' option ("low byte first").
+   For compatibility with older plotting software, the reading of input
+files in the pre-GNU `plot(5)' format is also supported.  This is
+normally a binary format, with each integer in the metafile represented
+as a pair of bytes.  The order of the two bytes is machine dependent.
+You may specify that input file(s) are in plot(5) format rather than
+ordinary GNU metafile format by using either the `-h' option ("high
+byte first") or the `-l' option ("low byte first"), whichever is
+appropriate.  Some non-GNU systems support an ASCII (human-readable)
+variant of plot(5) format.  You may specify that the input is in this
+format by using the `-A' option.  Irrespective of the variant, a file
+in plot(5) format includes only one page of graphics.
 
 `-h'
 `--high-byte-first-input'
-     Input is assumed to be in the traditional `plot(5)' metafile
+     Input file(s) are assumed to be in traditional `plot(5)' metafile
      format, with the high-order byte of each integer occurring first.
 
 `-l'
 `--low-byte-first-input'
-     Input is assumed to be in the traditional `plot(5)' metafile
+     Input file(s) are assumed to be in traditional `plot(5)' metafile
      format, with the low-order byte of each integer occurring first.
+
+`-A'
+`--ascii-input'
+     Input file(s) are assumed to be in the ASCII variant of traditional
+     `plot(5)' metafile format.
 
    The following options request information.
 
@@ -1663,24 +1726,21 @@ or the `-l' option ("low byte first").
 
 File: plotutils.info,  Node: plot Environment,  Prev: plot Invocation,  Up: plot
 
-Environment variables and X Window System resources
-===================================================
+Environment variables
+=====================
 
-   The behavior of `plot' is affected by several environment variables
-and X Window System resources.  We have already mentioned the
-environment variables `PAGESIZE', `ROTATE', and `MAX_LINE_LENGTH'.
-They simply serve as backups for the options `--page-size', `--rotate',
-and `--max-line-length'.  The remaining environment variables are
-specific to individual display devices.  They control device driver
-parameters.
+   The behavior of `plot' is affected by several environment variables.
+We have already mentioned the environment variables `BITMAPSIZE',
+`PAGESIZE', `MAX_LINE_LENGTH', and `ROTATE'.  They simply serve as
+backups for the options `--bitmap-size', `--page-size',
+`--max-line-length', and `--rotate'.  The remaining environment
+variables are specific to individual display devices.  They control
+device driver parameters.
 
    `plot -T X', which pops up a window on an X Window System display
 and draws graphics in it, checks the `DISPLAY' environment variable.
 The value of this variable determines the display on which the window
-will be popped up.  `plot -T X' also looks at the X resource
-`Xplot.geometry'.  It will use the value of this resource, which may be
-set by the user, as the size of the window in terms of pixels.  The
-default value is "570x570".
+will be popped up.
 
    `plot -T hpgl', which produces Hewlett-Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -1754,7 +1814,7 @@ The `tek2plot' Utility
 
 * tek2plot Examples::         How to use tek2plot
 * tek2plot Invocation::       Command-line options
-* tek2plot Environment::      Environment variables and X resources
+* tek2plot Environment::      Environment variables
 
 
 File: plotutils.info,  Node: tek2plot Examples,  Next: tek2plot Invocation,  Prev: tek2plot,  Up: tek2plot
@@ -1821,12 +1881,11 @@ specified, the standard input is read.
      (Nonnegative integer.) Display only page number N, within the
      Tektronix file or sequence of Tektronix files that is being
      translated.  Tektronix files may consist of one or more pages,
-     numbered beginning with zero.  By default, `tek2plot -T X',
-     `tek2plot -T tek', and `tek2plot -T meta' display these pages in
-     succession, finally displaying the last page.  By default, the
-     other variants of `tek2plot' display only the last page.  This
-     option may be used to override the default behavior and select a
-     particular page for display.
+     numbered beginning with zero.  By default, `tek2plot' displays all
+     nonempty pages in succession.  For example, `tek2plot -T X'
+     displays each page in its own X window.  This option may be used
+     to override the default behavior and select a particular page for
+     display.
 
      Most Tektronix files consist of either one page (page #0) or two
      pages (an empty page #0, and page #1).  Tektronix files produced
@@ -1857,6 +1916,22 @@ specified, the standard input is read.
      `tek2plot -T hpgl' does not support drawing lines with other than a
      default width if the environment variable `HPGL_VERSION' is set to
      a value less than "2" (the default).
+
+`--bg-color NAME'
+     (String, default "white".)  Set the color used for the background
+     to be NAME.  This is relevant only to `tek2plot -T X'.
+     An unrecognized name sets the color to the default.  For
+     information on what names are recognized, see *Note Color Names::.
+
+`--bitmap-size BITMAP_SIZE'
+     (String, default "570x570".)  Set the size of the graphics
+     display, in terms of pixels, to be BITMAP_SIZE.  This is relevant
+     only to `plot -T X', for which the graphics display is an X window.
+     The use of a square window, rather than a rectangular window, is
+     recommended.  The environment variable `BITMAPSIZE' may equally
+     well be used to specify the window size.  For backward
+     compatibility, the X resource `Xplot.geometry', which may be set
+     by the user, may be used instead.
 
 `--max-line-length MAX_LINE_LENGTH'
      (Integer, default 500.) Set the maximum number of points that a
@@ -1922,10 +1997,16 @@ specified, the standard input is read.
      plotting utilities package under the names `tekfont0'...`tekfont3'.
      They may readily be installed on any modern X Windows server.  For
      this option to work properly, you must also select a window size of
-     "1024x1024" pixels, by setting the `Xplot.geometry' resource.
-     *Note tek2plot Environment::.  The reason for this restriction is
-     that bitmap fonts, unlike the scalable fonts that the plotting
-     utilities normally use, may not be rescaled.
+     1024x1024 pixels, either by using the `--bitmap-size 1024x1024'
+     option or by setting the value of the `Xplot.geometry' resource.
+     The reason for this restriction is that bitmap fonts, unlike the
+     scalable fonts that the plotting utilities normally use, may not be
+     rescaled.
+
+     This option is useful only if you have a file in Tektronix format
+     that draws text using native Tektronix fonts.  Tektronix files
+     produced by the GNU plotting utilities (e.g., by `graph -T tek')
+     do not use native Tektronix fonts to draw text.
 
    The following option is relevant only to raw `tek2plot', i.e.,
 relevant only if no display device is specified with the `-T' option.
@@ -1958,26 +2039,24 @@ In this case `tek2plot' outputs a graphics metafile.
 
 File: plotutils.info,  Node: tek2plot Environment,  Prev: tek2plot Invocation,  Up: tek2plot
 
-Environment variables and X Window System resources
-===================================================
+Environment variables
+=====================
 
    The behavior of `tek2plot' is affected by several environment
-variables and X Window System resources, which are the same as those
-that affect `graph' and `plot'.  For convenience, we list them here.
+variables, which are the same as those that affect `graph' and `plot'.
+For convenience, we list them here.
 
-   We have already mentioned the environment variables `PAGESIZE',
-`ROTATE', and `MAX_LINE_LENGTH'.  They simply serve as backups for the
-options `--page-size', `--rotate', and `--max-line-length'.  The
-remaining environment variables are specific to individual display
-devices.  They control device driver parameters.
+   We have already mentioned the environment variables `BITMAPSIZE',
+`PAGESIZE', `MAX_LINE_LENGTH', and `ROTATE'.  They simply serve as
+backups for the options `--bitmap-size', `--page-size',
+`--max-line-length', and `--rotate'.  The remaining environment
+variables are specific to individual display devices.  They control
+device driver parameters.
 
    `tek2plot -T X', which pops up a window on an X Window System
 display and draws graphics in it, checks the `DISPLAY' environment
 variable.  The value of this variable determines the display on which
-the window will be popped up.  `tek2plot -T X' also looks at the
-X resource `Xplot.geometry'.  It will use the value of this resource,
-which may be set by the user, as the size of the window in terms of
-pixels.  The default value is "570x570".
+the window will be popped up.
 
    `tek2plot -T hpgl', which produces Hewlett-Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -2026,35 +2105,40 @@ The `spline' Utility
 * Menu:
 
 * spline Examples::         How to use spline
+* Advanced Use of spline::  More sophisticated uses
 * spline Invocation::       Command-line options
 
 
-File: plotutils.info,  Node: spline Examples,  Next: spline Invocation,  Prev: spline,  Up: spline
+File: plotutils.info,  Node: spline Examples,  Next: Advanced Use of spline,  Prev: spline,  Up: spline
 
 How to use `spline'
 ===================
 
    GNU `spline' is a program for interpolating between the data points
 in one or more datasets.  Each dataset would consist of values for an
-independent variable and a single dependent variable.  When discussing
-interpolation, we call these variables `t' and `x', respectively.  The
-simplest case is when there is only a single dataset, in ASCII format.
-For example, the input file could contain the lines
+independent variable and a dependent variable, which may be a vector of
+specified fixed length.  When discussing interpolation, we call these
+variables `t' and `y', respectively.  To emphasize: t is a scalar, but
+in general the dependent variable y may be a vector.
+
+   The simplest case is when there is a single input file, which is in
+ASCII format, and the vector y is one-dimensional.  This is the
+default.  For example, the input file could contain the dataset
 
      0.0  0.0
      1.0  1.0
      2.0  0.0
 
-which are the coordinates (t,x) of the data points (0,0), (1,1), and
+which are the coordinates (t,y) of the data points (0,0), (1,1), and
 (2,0).  Data points do not need to be on different lines, nor do the t
-and x coordinates of a data point need to be on the same line.
+and y coordinates of a data point need to be on the same line.
 However, there should be no blank lines in the input if it is to be
-viewed as forming a single dataset.  Also, the t coordinates should be
-monotonically increasing: the dataset must have an interpretation as a
-function.
+viewed as forming a single dataset.  Also, by default the t coordinate
+should be monotonically increasing, so that y may be viewed as a
+function of t.
 
-   You would construct a curve (an `interpolating spline') passing
-through the points in such a dataset by doing
+   You would construct a spline (the graph of an `interpolating
+function') passing through the points in this dataset by doing
 
      spline input_file > output_file
 
@@ -2072,14 +2156,15 @@ altogether.  `spline' will read from standard input if no files are
 specified on the command line, or if the special name name `-' is
 specified.
 
-   What exactly does `spline' do?  First, it fits a curve through the
-points in the dataset.  Then it splits the interval over which the
-independent variable t ranges into 100 sub-intervals, and computes the
-x values at each of the 101 subdivision points.  It then outputs each
-of the pairs (t, x).  These are the coordinates of 101 points that lie
-along a curve that interpolates between the points in the dataset.  If
-there is more than one dataset in the input (separated by blank lines),
-each dataset is interpolated separately.
+   What exactly does `spline' do?  First, it fits a curve (the graph of
+an interpolating function) through the points in the dataset.  Then it
+splits the interval over which the independent variable t ranges into
+100 sub-intervals, and computes the y values at each of the 101
+subdivision points.  It then outputs each of the pairs (t, y).  These
+are the coordinates of 101 points that lie along a curve that
+interpolates between the points in the dataset.  If there is more than
+one dataset in the input (separated by blank lines), each dataset is
+interpolated separately.
 
    You may use the `-n' option to replace `100' by any other integer.
 You may also use the `-t' option to specify an interpolation interval
@@ -2093,12 +2178,12 @@ with t values spaced regularly between 1.0 and 1.5 (rather than between
 0.0 and 2.0).  The data points will lie along a curve passing through
 (0,0), (1,1), and (2,0).  This curve will be a parabola.
 
-   In general, the interpolating curve will be a piecewise cubic spline.
-That is, between each pair of adjacent `nodes' (points in the input
-dataset), x will be a cubic function of t.  This function will differ,
-depending on which pair of nodes t lies between.  At each node, both
-the slope and curvature of the cubic pieces to either side will match.
-In mathematical terms, the interpolating curve will be twice
+   In general, the interpolating function will be a piecewise cubic
+spline.  That is, between each pair of adjacent `knots' (points in the
+input dataset), y will be a cubic function of t.  This function will
+differ, depending on which pair of knots y lies between.  At each knot,
+both the slope and curvature of the cubic pieces to either side will
+match.  In mathematical terms, the interpolating curve will be twice
 continuously differentiable.
 
    `spline' supports `adding tension' to the interpolating curve.
@@ -2129,17 +2214,17 @@ obtain a scaled version of the original spline.  If the tension is zero
 will be unaffected by linear scaling of the data.
 
    In mathematical terms, a spline under tension will satisfy the
-differential equation x""=sgn(tension)*(tension^2)x" between each
-successive pair of nodes.  If the tension equals zero, which is the
-default, the fourth derivative of x with respect to t will equal zero
-at every point.  In this case, x as a function of t will reduce to a
-cubic polynomial between each successive pair of nodes.  But if the
-tension is nonzero, x will not be a polynomial function of t.  It may
+differential equation y""=sgn(tension)*(tension^2)y" between each
+successive pair of knots.  If the tension equals zero, which is the
+default, the fourth derivative of y with respect to t will equal zero
+at every point.  In this case, y as a function of t will reduce to a
+cubic polynomial between each successive pair of knots.  But if the
+tension is nonzero, y will not be a polynomial function of t.  It may
 be expressed in terms of exponential functions, however.
 
    Irrespective of whether or not the spline is under tension, you may
 specify the `-p' option if you wish the spline to be a periodic
-function of t.  This will only work if the x values for the first and
+function of t.  This will only work if the y values for the first and
 last points in the dataset are equal.  Otherwise, it would make no
 sense to compute a periodic interpolation.
 
@@ -2152,29 +2237,127 @@ is specified, `spline' will indeed function as a filter.  A different
 interpolation algorithm (cubic Bessel interpolation, which is local
 rather than global) will be used.  If `-f' is specified, `-p' may not
 be specified.  Also, if `-f' is specified then an interpolation
-interval must be requested explicitly with the `-t' option.
+interval (a range of t values) must be requested explicitly with the
+`-t' option.
 
    Cubic Bessel interpolation is inherently less smooth than the
 construction of a global cubic spline.  If the `-f' option is
-specified, the slope of the spline at each node will be chosen by
-fitting a parabola through that node, and the two adjacent nodes.  The
+specified, the slope of the spline at each knot will be chosen by
+fitting a parabola through that knot, and the two adjacent knots.  The
 slopes of the two interpolating segments to either side of each interior
-node will match at that node, but typically their curvatures will not.
+knot will match at that knot, but typically their curvatures will not.
 In mathematical terms, the interpolating curve will be continuously
 differentiable, but in general not twice continuously differentiable.
 This loss of differentiability is the price that is paid for functioning
 as a real-time filter.
 
-   The algorithms used by `spline' are similar to those discussed in
-D. Kincaid and W. Cheney, `Numerical Analysis' (2nd ed., Brooks/Cole,
-1996), section 6.4, and C. de Boor, `A Practical Guide to Splines'
-(Springer-Verlag, 1978), Chapter 4.
+
+File: plotutils.info,  Node: Advanced Use of spline,  Next: spline Invocation,  Prev: spline Examples,  Up: spline
+
+Advanced use of `spline'
+========================
+
+   The preceding section explains how `spline' may be employed to
+interpolate a function y of a scalar variable t, in the case when y is
+a scalar.  In this section we explain how to perform more sophisticated
+interpolations.  This includes multidimensional interpolations, and
+interpolations that are splinings of curves, rather than of functions.
+
+   `spline' can handle the case when y is a vector of arbitrary
+specified dimensionality.  The dimension may be specified with the `-d'
+option.  For example, an input file could contain the multidimensional
+dataset
+
+     0.0  0.0  1.0
+     1.0  1.0  0.0
+     2.0  0.0  1.0
+
+which are the coordinates (t,y) of the data points (0,0,1), (1,1,0),
+and (2,0,1).  You would construct a spline (the graph of an
+interpolating function) passing through the points in this dataset by
+doing
+
+     spline -d 2 input_file > output_file
+
+The option `-d 2' is used because in this example, the dependent
+variable y is a two-dimensional vector.  Each of the components of y
+will be interpolated independently, and the output file will contain
+points that lie along the graph of the resulting interpolating function.
+
+   When doing multidimensional splining, you may use any of the options
+that apply in the default one-dimensional case.  For example, the `-f'
+option may be employed to request real-time cubic Bessel interpolation.
+As in the one-dimensional case, if the `-f' option is used then the
+`-t' option must be used as well, to specify an interpolation interval
+(a range of t values).  The `-p' option may be employed to obtain a
+periodic spline, i.e., the graph of a periodic vector-valued function.
+For this, the first and last dataset y values must be the same.
+
+   `spline' may also be used to draw a curve through arbitrarily chosen
+points in the plane, or in general through arbitrarily chosen points in
+d-dimensional space.  This is not the same as splining, at least as the
+term is conventionally defined.  The reason is that `splining' refers
+to construction of a function, rather than the construction of a curve
+that may or may not be the graph of a function.  Not every curve is the
+graph of a function.
+
+   The following example shows how one may `spline a curve'.  The
+command
+
+     echo 0 0 1 0 1 1 0 1 | spline -d 2 -a -s | graph -T X
+
+will construct a curve in the plane through the four points (0,0),
+(1,0), (1,1), and (0,1), and graph it on an X Window System display.
+The `-d 2' option specifies that the dependent variable y is
+two-dimensional.  The `-a' option specifies that t values are missing
+from the input, and should be automatically generated.  By default, the
+first t value is 0, the second is 1, etc.  The `-s' option specifies
+that the t values should be stripped from the output.
+
+   The same technique may be used to spline a closed curve.  For
+example, doing
+
+     echo 0 0 1 0 0 1 0 0 | spline -d 2 -a -s -p | graph -T X
+
+will construct and graph a closed, lozenge-shaped curve through the
+three points (0,0), (1,0), and (0,1).  The construction of a closed
+curve is guaranteed by the `-p' (i.e., `--periodic') option, and by the
+repetition of the initial point (0,0) at the end of the sequence.
+
+   When splining a curve, whether open or closed, you may wish to
+substitute the `-A' option for the `-a' option.  Like the `-a' option,
+the `-A' option specifies that t values are missing from the input and
+should be automatically generated.  However, the first t value will be
+zero, and the increment from one t value to the next will be the
+distance between the corresponding values of y.  This scheme for
+generating t values, when constructing a curve through a sequence of
+points, is the scheme that is used in the well known FITPACK subroutine
+library.  It is probably the best approach when the distances between
+successive points fluctuate considerably.
+
+   A curve through a sequence of points in the plane, whether open or
+closed, may cross itself.  Some interesting visual effects may be
+obtained by adding negative tension to such a curve.  For example, doing
+
+     echo 0 0 1 0 1 1 0 0 | spline -d 2 -a -s -p -T -14 -n 500 | graph -T X
+
+will construct a closed curve through the three points (0,0), (1,0),
+and (0,1), which is wound into curlicues.  The `-n 500' option is
+included because there are so many windings.  It specifies that 501
+points should be generated, which is enough to draw a smooth curve.
 
 
-File: plotutils.info,  Node: spline Invocation,  Prev: spline Examples,  Up: spline
+File: plotutils.info,  Node: spline Invocation,  Prev: Advanced Use of spline,  Up: spline
 
 `spline' command-line options
 =============================
+
+`spline' is a general-purpose program for interpolating vector-valued
+functions of a scalar variable t, and for interpolating curves in
+d-dimensional space.  The algorithms used by `spline' are similar to
+those discussed in D. Kincaid and [E.] W. Cheney, `Numerical Analysis'
+(2nd ed., Brooks/Cole, 1996), section 6.4, and C. de Boor, `A Practical
+Guide to Splines' (Springer-Verlag, 1978), Chapter 4.
 
    The options to `spline' are listed below.  There are three sorts of
 option:
@@ -2191,22 +2374,26 @@ and default value of the argument.
    Besides options, the command line may include the names of one or
 more input files. If no files are listed, the standard input is read.
 Unless the `-a' option is used (see below), the input is expected to be
-a sequence of data points, given as alternating t and x coordinates.
-There may be more than one dataset per input file.  If the files are in
-ASCII format (the default), datasets are separated by blank lines.
+a sequence of data points, given as alternating t and y values.  t is
+the scalar independent variable, and y is the vector-valued dependent
+variable.  The dimensionality of y is specified with the `-d' option
+(the default is 1).
 
-   The following options specify the type of interpolation to be
-performed on each dataset.
+   There may be more than one dataset per input file.  If the files are
+in ASCII format (the default), datasets are separated by blank lines.
+The following options specify the type of interpolation to be performed
+on each dataset.
 
 `-f'
 `--filter'
      Use a local interpolation algorithm (the cubic Bessel algorithm),
      so that `spline' may be used as a real-time filter.  The slope of
      the interpolating curve at each point in a dataset will be chosen
-     by fitting a parabola through that point and the two adjacent
-     points in the dataset.  If `-f' is specified then the `-t' option,
-     otherwise optional, must be used as well.  Also, if `-f' is
-     specified then the `-k', `-p', and `-T' options may not be used.
+     by fitting a quadratic function through that point and the two
+     adjacent points in the dataset.  If `-f' is specified then the
+     `-t' option, otherwise optional, must be used as well.  Also, if
+     `-f' is specified then the `-k', `-p', and `-T' options may not be
+     used.
 
      If `-f' is *not* specified, then a different (global)
      interpolation algorithm will be used.
@@ -2214,13 +2401,15 @@ performed on each dataset.
 `-k K'
 `--boundary-condition K'
      (Float, default 1.0.) Set the boundary condition parameter for each
-     constructed spline to be K.  The spline will satisfy the two
-     boundary conditions x"[0]=kx"[1] and x"[n]=kx"[n-1].  Here x[0]
-     and x[1] signify the ordinate values at the first two points of a
-     dataset, and x[n-1] and x[n] the ordinate values at the last two
-     points.  Setting K to zero will yield a `natural' spline, i.e.,
-     one that has zero curvature at the two ends of the dataset.  The
-     `-k' option may not be used if `-f' or `-p' is specified.
+     constructed spline to be K.  In each of its components, the spline
+     will satisfy the two boundary conditions y"[0]=ky"[1] and
+     y"[n]=ky"[n-1].  Here y[0] and y[1] signify the values of a
+     specified component of the vector-valued dependent variable y at
+     the first two points of a dataset, and y[n-1] and y[n] the values
+     at the last two points.  Setting K to zero will yield a `natural'
+     spline, i.e., one that has zero curvature at the two ends of the
+     dataset.  The `-k' option may not be used if `-f' or `-p' is
+     specified.
 
 `-n N'
 `--number-of-intervals N'
@@ -2230,7 +2419,7 @@ performed on each dataset.
 
 `-p'
 `--periodic'
-     Construct a periodic spline.  If this option is specified, the x
+     Construct a periodic spline.  If this option is specified, the y
      values for the first and last points in each dataset must be
      equal.  The `-f' and `-k' options may not be used if `-p' is
      specified.
@@ -2240,10 +2429,11 @@ performed on each dataset.
      (Float, default 0.0.) Set the tension in each interpolating spline
      to be TENSION.  Between each pair of successive points in a
      dataset, the constructed spline will satisfy the differential
-     equation x""=sgn(tension)*(tension^2)x".  If TENSION equals zero,
-     the spline will be piecewise cubic.  As TENSION increases to
-     positive infinity, the spline will converge to a polygonal line.
-     The `-T' option may not be used if `-f' is specified.
+     equation y""=sgn(tension)*(tension^2)y" in each of its components.
+     If TENSION equals zero, the spline will be piecewise cubic.  As
+     TENSION increases to positive infinity, the spline will converge
+     to a polygonal line.  The `-T' option may not be used if `-f' is
+     specified.
 
 `-t TMIN TMAX [TSPACING]'
 `--t-limits TMIN TMAX [TSPACING]'
@@ -2259,6 +2449,11 @@ performed on each dataset.
 The following options specify the format of the input file(s) and the
 output file.
 
+`-d DIMENSION'
+`--y-dimension DIMENSION'
+     (Integer, default 1.)  Set the dimensionality of the dependent
+     variable y in the input and output files to be DIMENSION.
+
 `-I DATA-FORMAT'
 `--input-format DATA-FORMAT'
      (Character, default `a'.)  Set the data format for the input
@@ -2266,33 +2461,41 @@ output file.
      follows.
 
     `a'
-          ASCII format.  Each file consists of pairs of floating point
-          numbers, interpreted as the t and x coordinates of the data
-          points in a dataset.  The t and x coordinates of a point need
-          not appear on the same line, and points need not appear on
-          different lines.  But if a blank line occurs (i.e., two
-          newlines in succession are seen), it is interpreted as the
-          end of a dataset, and the beginning of the next.
+          ASCII format.  Each file is a sequence of floating point
+          numbers, interpreted as the t and y coordinates of the
+          successive data points in a dataset.  If y is d-dimensional,
+          there will be d+1 numbers for each point.  The t and y
+          coordinates of a point need not appear on the same line, and
+          points need not appear on different lines.  But if a blank
+          line occurs (i.e., two newlines in succession are seen), it is
+          interpreted as the end of a dataset, and the beginning of the
+          next.
 
     `f'
           Single precision binary format.  Each file is a sequence of
-          single precision floating point numbers, interpreted as
-          forming pairs (t,x).  Successive datasets are separated by a
-          single occurrence of the quantity `MAXFLOAT', which is the
-          largest possible single precision floating point number.  On
-          most machines this is approximately 3.4x10^38.
+          floating point numbers, interpreted as the t and y coordinates
+          of the successive data points in a dataset.  If y is
+          d-dimensional, there will be d+1 numbers for each point.
+          Successive datasets are separated by a single occurrence of
+          the quantity `MAXFLOAT', which is the largest possible single
+          precision floating point number.  On most machines this is
+          approximately 3.4x10^38.
 
     `d'
           Double precision binary format.  Each file is a sequence of
-          double precision floating point numbers, interpreted as
-          forming pairs (t,x).  Successive datasets are separated by a
-          single occurrence of the quantity `MAXDOUBLE', which is the
-          largest possible double precision floating point number.  On
-          most machines this is approximately 1.8x10^308.
+          double precision floating point numbers, interpreted as the t
+          and y coordinates of the successive data points in a dataset.
+          If y is d-dimensional, there will be d+1 numbers for each
+          point.  Successive datasets are separated by a single
+          occurrence of the quantity `MAXDOUBLE', which is the largest
+          possible double precision floating point number.  On most
+          machines this is approximately 1.8x10^308.
 
     `i'
           Integer binary format.  Each file is a sequence of integers,
-          interpreted as forming pairs (t,x).  Successive datasets are
+          interpreted as the t and y coordinates of the successive data
+          points in a dataset.  If y is d-dimensional, there will be
+          d+1 numbers for each point.  Successive datasets are
           separated by a single occurrence of the quantity `MAXINT',
           which is the largest possible integer.  On most machines this
           is 2^31-1.
@@ -2301,14 +2504,21 @@ output file.
 `--auto-abscissa [STEP_SIZE [LOWER_LIMIT]]'
      (Floats, defaults 1.0 and 0.0.)  Automatically generate values for
      the independent variable (t).  Irrespective of data format (`a',
-     `e', `f', `d', or `i'), this option specifies that the values of
-     the independent variable (t) are missing: the dataset(s) to be
-     read contain only values of the dependent variable (x).  The
-     difference between successive t values will be STEP_SIZE, and the
-     first t value will be LOWER_LIMIT.  To return to reading the
-     values of t from the input you may specify `-a 0', which disables
-     automatic generation of t and returns STEP_SIZE and LOWER_LIMIT to
-     their default values.
+     `f', `d', or `i'), this option specifies that the values of the
+     independent variable (t) are missing from the input file: the
+     dataset(s) to be read contain only values of the dependent
+     variable (y), so that if y is d-dimensional, there will be only
+     d numbers for each point.  The increment from each t value to the
+     next will be STEP_SIZE, and the first t value will be LOWER_LIMIT.
+
+`-A'
+`--auto-dist-abscissa'
+     Automatically generate values for the independent variable (t).
+     This is a variant form of the `-a' option.  The increment from
+     each t value to the next will be the distance between the
+     corresponding y values, and the first t value will be 0.0.  This
+     option is useful when interpolating curves rather than functions
+     (*note Advanced Use of spline::.).
 
 `-O DATA-FORMAT'
 `--output-format DATA-FORMAT'
@@ -2318,12 +2528,21 @@ output file.
 
 `-P SIGNIFICANT-DIGITS'
 `--precision SIGNIFICANT-DIGITS'
-     (Integer, default 6.)  Set the numerical precision for the t and x
-     coordinates in the output file to be SIGNIFICANT-DIGITS.  This
-     takes effect only if the output file is written in `a' format,
-     i.e., in ASCII.
+     (Integer, default 6.)  Set the numerical precision for the t and y
+     values in the output file to be SIGNIFICANT-DIGITS.  This takes
+     effect only if the output file is written in `a' format, i.e., in
+     ASCII.
+
+`-s'
+`--suppress-abscissa'
+     Omit the independent variable t from the output file; for each
+     point, supply only the dependent variable y.  If y is
+     d-dimensional, there will be only d numbers for each point,
+     not d+1.  This option is useful when interpolating curves rather
+     than functions (*note Advanced Use of spline::.).
 
 The following options request information.
+
 `--help'
      Print a list of command-line options, and then exit.
 
@@ -3230,7 +3449,6 @@ single-step error in the vicinity of a `bad' point being large.
      error bounds, and compare the generated solution curves with the
      actual solution.
 
-
    There are several rough and ready heuristic checks you can perform on
 the accuracy of any numerical solution produced by `ode'.  We discuss
 them in turn.
@@ -3495,7 +3713,6 @@ We now explain the effects (the `semantics') of each type, in turn.
      value on the stack, which is all that is required to compute its
      derivative in this case.
 
-
    The grammar for the `ode' input language contains four types of
 terminal token: FUNCTION, IDENTIFIER, NUMBER, and SEP.  They have the
 following meanings.
@@ -3532,7 +3749,6 @@ following meanings.
   4. SEP
 
      A separator: a semicolon or a (non-escaped) newline.
-
 
    In the `ode' input language, upper and lower-case letters are
 distinct.  Comments begin with the character `#' and continue to the
@@ -3573,17 +3789,20 @@ File: plotutils.info,  Node: libplot,  Next: Appendices,  Prev: ode,  Up: Top
 *****************************
 
    `libplot' is a library of functions for device-independent
-two-dimensional vector graphics.  The graphical objects which it can
-draw include paths, circles and ellipses, points, markers, and `adjusted
-labels' (justified text strings).  A *path* is a sequence of line
-segments, circular arcs, and/or elliptic arcs, which may be open or
-closed.  User-specified filling of paths, circles, and ellipses is
-supported (fill color, as well as pen color, may be specified).  There
-is support for maintaining a Postscript-style stack of graphics
-contexts, i.e., a stack of drawing attribute sets.  User-specifiable
-attributes other than pen color and fill color include path-related
-attributes such as line type and line width, and text-related attributes
-such as font name, font size, and text angle.
+two-dimensional vector graphics.  This chapter documents version 1.0 of
+`libplot'.
+
+   The graphical objects which `libplot' can draw include paths,
+circles and ellipses, points, markers, and `adjusted labels' (justified
+text strings).  A *path* is a sequence of line segments, circular arcs,
+and/or elliptic arcs, which may be open or closed.  User-specified
+filling of paths, circles, and ellipses is supported (fill color,
+as well as pen color, may be specified).  There is support for
+maintaining a Postscript-style stack of graphics contexts, i.e.,
+a stack of drawing attribute sets.  User-specifiable attributes other
+than pen color and fill color include path-related attributes such as
+line type and line width, and text-related attributes such as font
+name, font size, and text angle.
 
    The fundamental abstraction provided by `libplot' is that of a
 *Plotter*.  A Plotter is an object with an interface for the drawing of
@@ -3663,24 +3882,31 @@ definitions must be placed at the head of the output file.
 
    The most important operations supported by any Plotter are `openpl'
 and `closepl', which open and close it.  Graphics may be drawn, and
-drawing attributes set, only within an `openpl'...`closepl' pair.  In
-principle, any Plotter may be opened and closed arbitrarily many times.
-The graphics produced by each `openpl'...`closepl' pair constitute a
-`page'.  An X Plotter displays each page in a separate X window, and an
-HP-GL Plotter renders each page as a separate physical page.
+drawing attributes set, only within an `openpl'...`closepl' pair.  The
+graphics produced by each `openpl'...`closepl' sequence constitute a
+`page'.  In principle, any Plotter may be opened and closed arbitrarily
+many times.  An X Plotter displays each page in a separate X window,
+and an HP-GL Plotter renders each page as a separate physical page.
 X Drawable Plotters and Tektronix Plotters manipulate a single drawable
 or display, on which pages are displayed in succession.
 
-   There is a minor problem with extending these semantics to Postscript
-and Fig Plotters.  The `closepl' operation ensures that all graphical
-objects that have been drawn are written to the output.  But output
-files in Postscript and Fig format may not be concatenated.  For this
-reason, all Plotters support an additional operation: `outfile'.  The
+   There is a problem with extending these semantics to Postscript and
+Fig Plotters, which do not draw in real time.  In the present release of
+`libplot', the `closepl' operation writes the preceding page of
+graphics to the output stream.  Successive pages will, in effect, be
+concatenated.  In consequence, a multipage output file in Postscript
+format will not obey the so-called Document Structuring Conventions for
+Postscript files, and a multipage file in Fig format will not be a
+legitimate Fig file at all.
+
+   On account of this potential problem with Postscript and Fig
+Plotters, all Plotters support an additional operation: `outfile'.  The
 output stream for a Plotter, if it has one, may be altered by invoking
 `outfile' on it.  `outfile' may only be invoked outside an
 `openpl'...`closepl' pair.  By using `outfile', a programmer may
-produce multipage graphics output from Postscript and Fig Plotters.
-Its use in other contexts is deprecated.
+produce multipage graphics output from Postscript and Fig Plotters by
+directing output to a sequence of output streams, one per page.  The
+use of `outfile' in other contexts is deprecated.
 
    There are several other basic operations which any Plotter supports.
 The `graphics display' drawn in by a Plotter is a square or rectangular
@@ -3738,6 +3964,15 @@ Plotter at any time, even when the selected Plotter is open.  A Plotter
 that is not currently selected may be deleted, and its storage freed,
 by calling `deletepl'.
 
+   *Warning:* Though at present the use of `deletepl' is optional, that
+will change in future releases.  At present, Plotters that do not do
+real-time output (i.e., Postscript, Fig, and HP-GL Plotters) write out
+graphics at the conclusion of each page, i.e., when `closepl' is
+called.  Our plan is for these Plotters to write out graphics only when
+the plot is finished, and `deletepl' is called.  You should get into
+the habit of calling `deletepl' whenever you are finished using a
+Plotter.
+
    Strictly speaking, you do not need to call `newpl', `selectpl', or
 `deletepl' in order to draw graphics.  That is because at startup, a
 single Metafile Plotter that writes to standard output (with
@@ -3764,10 +3999,17 @@ would use
 
      -lplot -lXaw -lXmu -lXt -lXext -lX11 -lm
 
-(or perhaps `-lplot -lXm -lXt -lXext -lX11 -lm', `-lplot -lXm -lXt
--lXext -lX11 -lm -lc -lgen', or `-lplot -lXm -lXt -lXext -lX11 -lm -lc
--lPW', on systems that provide Motif widgets instead of Athena
-widgets).  Note that on most systems `libplot' is installed as a DLL
+or, in recent versions of the X Window System,
+
+     -lplot -lXaw -lXmu -lXt -lSM -lICE -lXext -lX11 -lm
+
+(Alternatively, you may need to use `-lplot -lXm -lXt -lXext -lX11
+-lm', `-lplot -lXm -lXt -lXext -lX11 -lm -lc -lgen', or `-lplot -lXm
+-lXt -lXext -lX11 -lm -lc -lPW', on systems that provide Motif widgets
+instead of Athena widgets.  In recent versions of the X Window System,
+you may need to insert `-lSM -lICE' also.)
+
+   Note that on most systems `libplot' is installed as a DLL
 (dynamically linked library, or `shared' library).  This means that the
 linking with your application will take place at run time rather than
 compile time.  The environment variable `LD_LIBRARY_PATH' lists the
@@ -3802,13 +4044,11 @@ is the envelope of a myriad of epicyclic octagons.
      {
        int handle;
      
-       {
        /* create a Postscript Plotter that writes to standard output */
        handle = newpl ("ps", stdin, stdout, stderr);
-       selectpl (handle);             /* select the Plotter */
-       }
+       selectpl (handle);          /* select the Plotter */
      
-       if (openpl () < 0)           /* open Plotter */
+       if (openpl () < 0)          /* open Plotter */
          {
            fprintf (stderr, "Couldn't open Plotter\n");
            return 1;
@@ -3836,15 +4076,15 @@ As you can see, this application begins by calling the `newpl' function
 to create a Postscript Plotter.  The three arguments `stdin', `stdout',
 `stderr' require a bit of explanation.  Currently, Plotters are
 write-only: they are not interactive, so they do not read from an input
-stream.  So the second argument to `newpl' is a dummy.  If non-NULL,
-the third and fourth arguments must be an output stream and an error
-stream, both of which are opened for writing.  This is the case for
-Plotters other than X Plotters, at least.  The graphical objects that
-are drawn between any `openpl'...`closepl' pair will be written to the
-output stream, and error messages (if any) will be written to the error
-stream, provided that it is non-NULL.  All plotters other than
-X Plotters and X Drawable Plotters use an output stream to draw
-graphics.
+stream.  So the second argument to `newpl' is a dummy.  The third and
+fourth arguments, if non-NULL, must be an output stream and an error
+stream, both of which are opened for writing.  The graphical objects
+that are drawn between any `openpl'...`closepl' pair will be written to
+the output stream, and error messages (if any) will be written to the
+error stream, provided that it is non-NULL.  This is the case for
+Plotters other than X Plotters and X Drawable Plotters, at least.  All
+plotters other than X Plotters and X Drawable Plotters use an output
+stream to draw graphics.
 
    The application draws the "C" curve recursively, and (since a
 Postscript Plotter is selected) writes a Postscript file to standard
@@ -3884,13 +4124,13 @@ The functions in `libplot': A detailed listing
 
    The functions in GNU `libplot' include the three Plotter
 manipulation functions discussed in the previous section (`newpl',
-`selectpl', and `deletepl'), which are specific to the C binding.  The
-also include 80 basic functions: `parampl', a function that sets
+`selectpl', and `deletepl'), which are specific to the C binding.  They
+also include 82 basic functions: `parampl', a function that sets
 low-level options for subsequently created Plotters (*Note Driver
-Parameters::), and 79 functions that operate on the currently selected
+Parameters::), and 81 functions that operate on the currently selected
 Plotter.
 
-   These 80 functions are divided into the four sets tabulated below.
+   These 82 functions are divided into the four sets tabulated below.
 
    Many functions come in two versions: integer and double precision
 floating point.  Internally, `libplot' uses double precision floating
@@ -3934,24 +4174,50 @@ int parampl (const char *PARAMETER, void *VALUE);
      string.  *Note Driver Parameters::.
 
 int openpl ();
-     openpl opens a Plotter.  Depending on the type of the Plotter,
-     it may write initialization commands to an output stream.
-     A negative return value indicates the Plotter could not be opened.
+     openpl opens a Plotter, i.e., begins a page of graphics.  Depending
+     on the type of the Plotter, it may write initialization commands to
+     an output stream.  A negative return value indicates the Plotter
+     could not be opened.
 
      An X Plotter, which has no output stream, pops up a window on its
      X Window System display instead.  Currently, a new window is
-     popped up with each invocation of `openpl'.  Future releases may
-     support window re-use.
+     popped up for each page of graphics, i.e., with each invocation of
+     `openpl'.  Future releases may support window re-use.
 
 int erase ();
      erase clears all previously plotted objects from the graphics
-     display.  This is useful for Plotters that are persistent, in the
-     sense that objects drawn within an `openpl'...`closepl' pair are
-     still visible and are liable to be overwritten when `openpl' is
-     next invoked.  For such Plotters, you may wish to invoke erase
+     display, and fills it with the background color (if any).  This is
+     useful for Plotters that are persistent, in the sense that objects
+     drawn within an `openpl'...`closepl' pair are still visible and
+     are liable to be overwritten when `openpl' is next invoked, and a
+     new page is begun.  For such Plotters, you may wish to invoke erase
      immediately after openpl.  Currently, only X Drawable Plotters and
      Tektronix Plotters are persistent.  Future releases may support
      persistence for X Plotters also.
+
+int bgcolor (int RED, int GREEN, int BLUE);
+     bgcolor sets the background color for the graphics display, using a
+     48-bit RGB color model.  The arguments RED, GREEN and BLUE specify
+     the red, green and blue intensities of the background color.  Each
+     is an integer in the range 0x0000...0xffff, i.e., 0...65535.  The
+     choice (0, 0, 0) signifies black, and the choice (65535, 65535,
+     65535) signifies white.
+
+     bgcolor has an effect only on X Plotters and X Drawable Plotters.
+     Its effect is simple: the next time the erase operation is invoked
+     on such a Plotter, its display will be filled with the specified
+     color.
+
+int bgcolorname (const char *NAME);
+     bgcolorname sets the background color for the the graphics display
+     to be NAME.  For information on what color names are recognized,
+     see *Note Color Names::.  Unrecognized colors are interpreted as
+     "white".
+
+     bgcolorname has an effect only on X Plotters and X Drawable
+     Plotters.  Its effect is simple: the next time the erase operation
+     is invoked on such a Plotter, its display will be filled with the
+     specified color.
 
 int space (int X0, int Y0, int X1, int Y1);
 int fspace (double X0, double Y0, double X1, double Y1);
@@ -3959,25 +4225,29 @@ int fspace (double X0, double Y0, double X1, double Y1);
      positions of the lower left corner and upper right corner of the
      graphics display, in user coordinates.  In other words, calling
      space or fspace sets the affine transformation from user
-     coordinates to device coordinates.
+     coordinates to device coordinates.  One of these operations must be
+     invoked at the beginning of each page of graphics, i.e.,
+     immediately after openpl is invoked.
 
 int space2 (int X0, int Y0, int X1, int Y1, int X2, int Y2);
 int fspace2 (double X0, double Y0, double X1, double Y1, double X2, double Y2);
-     space2 and fspace2 are extended versions of space and fspace.
-     Their arguments are the three defining vertices of an `affine
-     window' (a drawing parallelogram), in user coordinates.  The
-     specified vertices are the lower left, the lower right, and the
-     upper left.  This window will be mapped affinely onto the graphics
-     display.
+     space2 and fspace2 are extended versions of space and fspace,
+     which may be used instead.  Their arguments are the three defining
+     vertices of an `affine window' (a drawing parallelogram), in user
+     coordinates.  The specified vertices are the lower left, the lower
+     right, and the upper left.  This window will be mapped affinely
+     onto the graphics display.
 
 int havecap (const char *S);
      havecap tests whether or not a Plotter has a specified capability.
      The return value is 0, 1, or 2, signifying no/yes/maybe.  For
      unrecognized capabilities the return value is zero.  Capabilities
-     include "SOLID_FILL" and "WIDE_LINES" (i.e., lines with a
-     non-default width).  They also include "HERSHEY_FONTS",
-     "PS_FONTS", and "PCL_FONTS", which indicate whether or not fonts
-     of a particular class are supported.  *Note Text Fonts::.
+     include "SOLID_FILL", "WIDE_LINES" (i.e., the ability to draw
+     lines with a non-default width), and "SETTABLE_BACKGROUND" (the
+     ability to set the color of the background).  They also include
+     "HERSHEY_FONTS", "PS_FONTS", and "PCL_FONTS", which indicate
+     whether or not fonts of a particular class are supported.  *Note
+     Text Fonts::.
 
 int flushpl ();
      flushpl flushes (i.e., pushes onward) all plotting commands to the
@@ -3988,22 +4258,22 @@ int flushpl ();
      not do real-time plotting.
 
 int closepl ();
-     closepl closes a Plotter.  If the currently selected Plotter does
-     not do real-time plotting (i.e., if it is a Postscript, Fig, or
-     HP-GL Plotter), it writes the plotted objects to the output
-     stream.  A negative return value indicates the Plotter could not
-     be closed.
+     closepl closes a Plotter, i.e., terminates a page of graphics.  If
+     the currently selected Plotter does not do real-time plotting
+     (i.e., if it is a Postscript, Fig, or HP-GL Plotter), it writes
+     the plotted objects to the output stream.  A negative return value
+     indicates the Plotter could not be closed.
 
 FILE *outfile (FILE *FP);
      outfile, which must be called outside a openpl...closepl pair,
      redirects all graphics output from a Plotter to the stream FP.
      The previous output stream is returned.
 
-     This operation is useful on Plotters that may not meaningfully be
-     opened more than once, i.e., Postscript and Fig Plotters.  On
-     other Plotters, its use is deprecated.  On Plotters that do not
-     have an output stream in the conventional sense, i.e., X Plotters
-     and X Drawable Plotters, it has no effect.
+     This operation is useful on Plotters that are designed to be
+     opened only once, i.e., Postscript and Fig Plotters.  On other
+     Plotters, its use is deprecated.  On Plotters that do not have an
+     output stream in the conventional sense, i.e., X Plotters and
+     X Drawable Plotters, it has no effect.
 
 
 File: plotutils.info,  Node: Drawing Functions,  Next: Attribute Functions,  Prev: Setup Functions,  Up: Functions
@@ -4340,7 +4610,7 @@ int flinewidth (double SIZE);
      paths, circles, and ellipses subsequently drawn on the graphics
      display.  A negative value means that a default width should be
      used.  This default width depends on the type of Plotter.  The
-     interpretation of zero line width is does also (for some types of
+     interpretation of zero line width does also (for some types of
      Plotter, a zero-width line is the thinnest line that can be drawn;
      for others, a zero-width line is invisible).
 
@@ -4482,19 +4752,22 @@ flexibility: an application programmer may allow non-critical driver
 parameters to be specified by the user, via environment variables.
 
    The following are the currently recognized parameters.  The most
-important parameters are `DISPLAY', which affects X Plotters, and
-`PAGESIZE', which affects Postscript, Fig, and HP-GL Plotters.  These
-two parameters are listed first and the others alphabetically.  Many of
-the parameters, such as the several whose names begin with "HPGL",
-affect only a single type of Plotter.
+important parameters are `DISPLAY' and `BITMAPSIZE', which affect
+X Plotters, and `PAGESIZE', which affects Postscript, Fig, and HP-GL
+Plotters.  These three parameters are listed first and the others
+alphabetically.  Many of the parameters, such as the several whose
+names begin with "HPGL", affect only a single type of Plotter.
 
 `DISPLAY'
      (Default NULL.)  The X Window System display on which the graphics
      display will be popped up, as an X window.  This is relevant only
-     to X Plotters.  The size of the window in terms of pixels is
-     currently specified only by the X resource Xplot.geometry (see
-     below).  In future releases it will be possible to specify the
-     size of the window by setting a driver parameter.
+     to X Plotters.
+
+`BITMAPSIZE'
+     (Default "570x570".)  The size of the graphics display in terms of
+     pixels.  This is relevant only to X Plotters.  If this parameter
+     is not set, its value will automatically be taken from the
+     X resource `Xplot.geometry'.  This is for backward compatibility.
 
 `PAGESIZE'
      (Default "letter".)  The size of the page on which the graphics
@@ -4643,13 +4916,6 @@ affect only a single type of Plotter.
      two drawables are specified, they must have the same dimensions
      and depth, and be associated with the same X display.
 
-   There is is one other low-level parameter worth mentioning.  An
-X Plotter always checks the value of the X resource `Xplot.geometry'.
-It uses this value, which is a string that may be set by the user, as
-the size of its graphics display in terms of pixels.  The default value
-is "570x570".  In future releases it will be possible to set the size
-of an X Plotter graphics display by setting a driver parameter.
-
 
 File: plotutils.info,  Node: Appendices,  Prev: libplot,  Up: Top
 
@@ -4713,6 +4979,7 @@ Format::.), the built-in fonts are divided into typefaces.  The 16
 Hershey fonts are divided into typefaces as follows.
 
    * HersheySerif
+
        1. HersheySerif
 
        2. HersheySerif-Italic
@@ -4726,6 +4993,7 @@ Hershey fonts are divided into typefaces as follows.
        6. HersheyEUC
 
    * HersheySans
+
        1. HersheySans
 
        2. HersheySans-Oblique
@@ -4735,6 +5003,7 @@ Hershey fonts are divided into typefaces as follows.
        4. HersheySans-BoldOblique
 
    * HersheyScript
+
        1. HersheyScript
 
        2. HersheyScript
@@ -4761,6 +5030,7 @@ HersheySans-Symbol, as appropriate) as font #0.
    The 35 Postscript fonts are divided into typefaces as follows.
 
    * Helvetica
+
        1. Helvetica
 
        2. Helvetica-Oblique
@@ -4770,6 +5040,7 @@ HersheySans-Symbol, as appropriate) as font #0.
        4. Helvetica-BoldOblique
 
    * Helvetica-Narrow
+
        1. Helvetica-Narrow
 
        2. Helvetica-Narrow-Oblique
@@ -4779,6 +5050,7 @@ HersheySans-Symbol, as appropriate) as font #0.
        4. Helvetica-Narrow-BoldOblique
 
    * Times
+
        1. Times-Roman
 
        2. Times-Italic
@@ -4788,6 +5060,7 @@ HersheySans-Symbol, as appropriate) as font #0.
        4. Times-BoldItalic
 
    * AvantGarde
+
        1. AvantGarde-Book
 
        2. AvantGarde-BookOblique
@@ -4797,6 +5070,7 @@ HersheySans-Symbol, as appropriate) as font #0.
        4. AvantGarde-DemiOblique
 
    * Bookman
+
        1. Bookman-Light
 
        2. Bookman-LightItalic
@@ -4806,6 +5080,7 @@ HersheySans-Symbol, as appropriate) as font #0.
        4. Bookman-DemiItalic
 
    * Courier
+
        1. Courier
 
        2. Courier-Oblique
@@ -4815,6 +5090,7 @@ HersheySans-Symbol, as appropriate) as font #0.
        4. Courier-BoldOblique
 
    * NewCenturySchlbk
+
        1. NewCenturySchlbk-Roman
 
        2. NewCenturySchlbk-Italic
@@ -4824,6 +5100,7 @@ HersheySans-Symbol, as appropriate) as font #0.
        4. NewCenturySchlbk-BoldItalic
 
    * Palatino
+
        1. Palatino-Roman
 
        2. Palatino-Italic
@@ -4845,6 +5122,7 @@ typeface contains the Symbol font as font #0.
    The 45 PCL 5 fonts are divided into typefaces as follows.
 
    * Univers
+
        1. Univers
 
        2. Univers-Oblique
@@ -4854,6 +5132,7 @@ typeface contains the Symbol font as font #0.
        4. Univers-BoldOblique
 
    * UniversCondensed
+
        1. UniversCondensed
 
        2. UniversCondensed-Oblique
@@ -4863,6 +5142,7 @@ typeface contains the Symbol font as font #0.
        4. UniversCondensed-BoldOblique
 
    * CGTimes
+
        1. CGTimes-Roman
 
        2. CGTimes-Italic
@@ -4872,6 +5152,7 @@ typeface contains the Symbol font as font #0.
        4. CGTimes-BoldItalic
 
    * Albertus
+
        1. AlbertusMedium
 
        2. AlbertusMedium
@@ -4881,6 +5162,7 @@ typeface contains the Symbol font as font #0.
        4. AlbertusExtraBold
 
    * AntiqueOlive
+
        1. AntiqueOlive
 
        2. AntiqueOlive-Italic
@@ -4888,6 +5170,7 @@ typeface contains the Symbol font as font #0.
        3. AntiqueOlive-Bold
 
    * Arial
+
        1. Arial-Roman
 
        2. Arial-Italic
@@ -4901,6 +5184,7 @@ typeface contains the Symbol font as font #0.
    * Coronet
 
    * Courier
+
        1. Courier
 
        2. Courier-Italic
@@ -4910,6 +5194,7 @@ typeface contains the Symbol font as font #0.
        4. Courier-BoldItalic
 
    * Garamond
+
        1. Garamond
 
        2. Garamond-Italic
@@ -4919,6 +5204,7 @@ typeface contains the Symbol font as font #0.
        4. Garamond-BoldItalic
 
    * LetterGothic
+
        1. LetterGothic-Roman
 
        2. LetterGothic-Italic
@@ -4930,6 +5216,7 @@ typeface contains the Symbol font as font #0.
    * Marigold
 
    * CGOmega
+
        1. CGOmega-Roman
 
        2. CGOmega-Italic
@@ -4939,6 +5226,7 @@ typeface contains the Symbol font as font #0.
        4. CGOmega-BoldItalic
 
    * TimesNewRoman
+
        1. TimesNewRoman
 
        2. TimesNewRoman-Italic
@@ -5887,8 +6175,8 @@ NONE
 "\bv"
      [0357] braceex
 
-NONE
-     [0360] applelogo
+"\eu"
+     [0360] euro
 
 "\ra"
      [0361] angleright
@@ -6411,15 +6699,18 @@ by Allen V. Hershey.  Additional characters and/or marker symbols were
 taken from the SLAC Unified Graphics System developed by Robert C.
 Beach in the mid-1970's, and from the fonts designed by
 Thomas Wolff <wolff@inf.fu-berlin.de> for Ghostscript.  The
-table-driven parser used in `tek2plot' was written at Berkeley in the
-mid-1980's by Edward Moy <moy@parc.xerox.com>.  Arthur Smith, formerly
-of LASSP at Cornell, provided code for his `xplot' utility.
-Ray Toy <toy@rtp.ericsson.se> helped with the tick mark spacing code in
-`graph' and was the first to incorporate GNU `getopt'.  Peter Karnow of
-URW and Ken Turkowski <turk@apple.com> of Apple developed the `sagitta'
-algorithm used in an extended form in `libplot' for drawing circular
-and elliptic arcs.  Nelson Beebe <beebe@math.utah.edu> exhaustively
-tested the package installation process.
+interpolation algorithms used in `spline' are based on the algorithms
+of Alan K. Cline <cline@cs.utexas.edu>, as described in his papers in
+the Apr. 1974 issue of `Communications of the ACM'.  The table-driven
+parser used in `tek2plot' was written at Berkeley in the mid-1980's by
+Edward Moy <moy@parc.xerox.com>.  The `sagitta' algorithm used in an
+extended form in `libplot' for drawing circular and elliptic arcs was
+developed by Peter Karnow of URW and Ken Turkowski <turk@apple.com> of
+Apple.  Ray Toy <toy@rtp.ericsson.se> helped with the tick mark spacing
+code in `graph' and was the first to incorporate GNU `getopt'.  Arthur
+Smith, formerly of LASSP at Cornell, provided code for his `xplot'
+utility.  Nelson Beebe <beebe@math.utah.edu> exhaustively tested the
+package installation process.
 
    Robert Maier wrote the documentation, which now incorporates Nick
 Tufillaro's `ode' manual.  Julie Sussmann checked over the
@@ -6428,60 +6719,61 @@ documentation for style and clarity.
 
 
 Tag Table:
-Node: Top1602
-Node: Plotutils Intro2325
-Node: graph9438
-Node: Simple Examples10217
-Node: Non-Square Plots22509
-Node: Multiple Datasets25055
-Node: Multiplotting30672
-Node: Data Formats33494
-Node: graph Invocation36226
-Node: Plot Options37101
-Node: Dataset Options51254
-Node: Multiplot Options59983
-Node: Raw graph Options61299
-Node: Info Options61929
-Node: graph Environment62843
-Node: plot67573
-Node: plot Examples67846
-Node: plot Invocation69980
-Node: plot Environment77895
-Node: tek2plot82603
-Node: tek2plot Examples82908
-Node: tek2plot Invocation84047
-Node: tek2plot Environment92289
-Node: spline95725
-Node: spline Examples95951
-Node: spline Invocation103030
-Node: ode110171
-Node: Basic Math111406
-Node: Simple ode Examples114278
-Node: Additional ode Examples123287
-Node: ode Invocation130290
-Node: Diagnostics134341
-Node: Numerical Error138466
-Node: Running Time150228
-Node: Input Language151557
-Node: ODE Bibliography159918
-Node: libplot160842
-Node: C Programming168964
-Node: Functions176165
-Node: Setup Functions177709
-Node: Drawing Functions182263
-Node: Attribute Functions192902
-Node: Mapping Functions203455
-Node: Driver Parameters205511
-Node: Appendices216120
-Node: Text and Markers216563
-Node: Text Fonts217271
-Node: Text String Format228634
-Node: Marker Symbols246714
-Node: Color Names248748
-Node: Metafiles250094
-Node: Auxiliary Software253593
-Node: idraw253868
-Node: xfig255070
-Node: Acknowledgements255830
+Node: Top1571
+Node: Plotutils Intro2294
+Node: graph9563
+Node: Simple Examples10342
+Node: Non-Square Plots22685
+Node: Multiple Datasets25400
+Node: Multiplotting31017
+Node: Data Formats33839
+Node: graph Invocation36571
+Node: Plot Options37430
+Node: Dataset Options52755
+Node: Multiplot Options61568
+Node: Raw graph Options62884
+Node: Info Options63514
+Node: graph Environment64428
+Node: plot68889
+Node: plot Examples69146
+Node: plot Invocation71320
+Node: plot Environment80954
+Node: tek2plot85393
+Node: tek2plot Examples85682
+Node: tek2plot Invocation86821
+Node: tek2plot Environment96113
+Node: spline99275
+Node: spline Examples99553
+Node: Advanced Use of spline106676
+Node: spline Invocation111242
+Node: ode120382
+Node: Basic Math121617
+Node: Simple ode Examples124489
+Node: Additional ode Examples133498
+Node: ode Invocation140501
+Node: Diagnostics144552
+Node: Numerical Error148677
+Node: Running Time160438
+Node: Input Language161767
+Node: ODE Bibliography170126
+Node: libplot171050
+Node: C Programming179616
+Node: Functions187533
+Node: Setup Functions189078
+Node: Drawing Functions195229
+Node: Attribute Functions205868
+Node: Mapping Functions216418
+Node: Driver Parameters218474
+Node: Appendices228741
+Node: Text and Markers229184
+Node: Text Fonts229892
+Node: Text String Format241277
+Node: Marker Symbols259353
+Node: Color Names261387
+Node: Metafiles262733
+Node: Auxiliary Software266232
+Node: idraw266507
+Node: xfig267709
+Node: Acknowledgements268469
 
 End Tag Table

@@ -75,6 +75,9 @@ hierror () /* not enough accuracy */
 	     "%s: accumulated error limit exceeded while calculating %.*s'\n",
 	     progname, NAMMAX, acenam);
   longjmp (mark, 1);
+
+  /* doesn't return, but must keep unintelligent compilers happy */
+  return false;
 }
 
 bool
@@ -93,10 +96,10 @@ lowerror () /* more than enough accuracy */
 /*
  * interpolate to tstop in Runge-Kutta routines
  */
-#define PASTSTOP(stepvar) (t+0.9375*stepvar > tstop && \
-                                t+0.0625*stepvar < tstop)
-#define BEFORESTOP(stepvar) (t+0.9375*stepvar < tstop && \
-                                t+0.0625*stepvar > tstop)
+#define PASTSTOP(stepvar) (t + 0.9375*stepvar > tstop && \
+                                t + 0.0625*stepvar < tstop)
+#define BEFORESTOP(stepvar) (t + 0.9375*stepvar < tstop && \
+                                t + 0.0625*stepvar > tstop)
 
 bool
 #ifdef _HAVE_PROTOS

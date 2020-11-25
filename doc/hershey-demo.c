@@ -2,33 +2,39 @@
    libplot, will emit to standard output a sample page illustrating many of
    the Hershey fonts.  The file will be in portable metafile format.  It
    may be translated to other formats, or viewed in an X window, with the
-   `plot' utility.
+   `plot' utility.  The sample page is taken from Allen Hershey's 1972
+   article in Computer Graphics and Image Processing (vol. 1, no. 4,
+   pp. 373-385).
 
    Compile and link with: 
 
-   gcc -o hershey-demo hershey-demo.c -lplot -lXaw -lXmu -lXt -lXext -lX11 -lm
+       gcc hershey-demo.c -lplot -lXaw -lXmu -lXt -lXext -lX11 -lm
 
-   (This assumes that libplot has been installed in a place where your
-   linker will find it.  You may need to include such an option as
-   -L/usr/local/lib to ensure this.  Also, if you are using Motif, the
-   linking options may differ; and if compiling under SunOS 4.1.3, be sure
-   to specify the `-static' option to work around problems with undefined
-   symbols in the SunOS X libraries.  If you are using a C compiler other
-   than gcc, consult your system administrator.  The -DNO_CONST_SUPPORT
-   option may need to be used if the C compiler, like the SunOS 4.1.3 cc,
-   is so old that it does not understand the `const' type qualifier.)
+   or, in recent versions of the X Window System,
+
+       gcc hershey-demo.c -lplot -lXaw -lXmu -lXt -lSM -lICE -lXext -lX11 -lm
 
    To translate the sample page to Postscript, you would do 
-   `hershey-demo | plot -T ps > page.ps'.  To display the page in an 
-   X Window, you would do `hershey-demo | plot -T X', etc.  
+   `a.out | plot -T ps > page.ps'.  To display the page in an 
+   X Window, you would do `a.out | plot -T X', etc.  
 
-   (If you have any trouble running the demo after compiling it, be sure
+   The above compilation instructions assume that your linker will be able
+   to find libplot and the X Window System libraries.  You may need to
+   include such options as -L/usr/local/lib and -L/usr/X11/lib to ensure
+   this.  Also, the linking options may differ if you are using Motif.
+   If you are using a C compiler other than gcc, consult your system
+   administrator.
+   
+   (The -DNO_CONST_SUPPORT option may need to be used if the C compiler,
+   like the version of `cc' supplied with SunOS 4.1.x, is so old that it
+   does not understand the `const' type qualifier.  If compiling under
+   SunOS 4.1.x, be sure also to specify the `-static' option to work around
+   problems with undefined symbols in the SunOS X libraries.)
+
+   If you have any trouble running the demo after compiling it, be sure
    your LD_LIBRARY_PATH environment variable includes the directory in
    which libplot is stored.  This applies on systems in which libplot is
-   implemented as a DLL, i.e. a library that is linked at run time.)
-
-   The sample page is taken from Allen Hershey's 1972 article in Computer
-   Graphics and Image Processing (vol. 1, no. 4, pp. 373-385). */
+   implemented as a DLL, i.e. a shared library that is linked at run time. */
 
 #include <stdio.h> 
 #include <plot.h>

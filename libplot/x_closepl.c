@@ -97,7 +97,7 @@ _x_closepl ()
 		 _plotter->drawstate->gc, 
 		 0, 0, 
 		 (unsigned int)((_plotter->imax - _plotter->imin) + 1),
-		 /* flipped y */
+		 /* flipped y convention */
 		 (unsigned int)((_plotter->jmin - _plotter->jmax) + 1),
 		 0, 0);
 

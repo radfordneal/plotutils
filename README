@@ -1,11 +1,12 @@
-This is release 2.0 of the GNU plotutils (plotting utilities) package,
+This is release 2.1 of the GNU plotutils (plotting utilities) package,
 including GNU libplot: a function library for 2-D device-independent vector
-graphics.
+graphics.  The package now has its own Web page:
+http://www.gnu.org/software/plotutils/plotutils.html .
 
-The file INSTALL contains generic instructions dealing with installation of
-a GNU package, and the file INSTALL.pkg contains package-specific
-installation instructions.  Please read them in full, as well as this file,
-before attempting to install the package.
+In this directory, the file INSTALL contains generic instructions dealing
+with installation of a GNU package, and the file INSTALL.pkg contains
+package-specific installation instructions.  Please read them in full,
+as well as this file, before attempting to install the package.
 
 Please send bug reports to <bug-gnu-utils@gnu.org>, and suggestions for
 longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
@@ -120,7 +121,7 @@ The contents of the plotutils package are:
 		another format or uses it to drive a display device.
 
 		Since this distribution includes `graph -T X', `graph -T
-		ps', `graph -T fig', `graph -T hpgl', and `graph -T tek,
+		ps', `graph -T fig', `graph -T hpgl', and `graph -T tek',
 		all of which can drive display devices directly, `plot' is
 		only occasionally useful.  It may be used, though, to
 		produce graphical output in more than one format at once.

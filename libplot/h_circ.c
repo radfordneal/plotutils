@@ -46,7 +46,11 @@ _h_fcircle (x, y, r)
       if (_plotter->hpgl_version == 1)
 	sprintf (_plotter->outbuf.current, "PM0;CI%d;PM2;", IROUND(radius));
       else			/* HP-GL/2, use small chord angle */
-	sprintf (_plotter->outbuf.current, "PM0;CI%d,2;PM2;", IROUND(radius));
+	/* Note -- commented out because 2 degrees may be too small */
+	/* sprintf (_plotter->outbuf.current, "PM0;CI%d,2;PM2;", 
+	   IROUND(radius)); */
+	sprintf (_plotter->outbuf.current, "PM0;CI%d;PM2;", 
+		 IROUND(radius));
       _update_buffer (&_plotter->outbuf);
       /* lift pen */
       strcpy (_plotter->outbuf.current, "PU;");

@@ -1,33 +1,36 @@
 The table below displays the encodings for the Japanese Kana (syllabic
 characters) that are built into the GNU libplot library and the GNU
-plotting utilities, such as `graph'.  They were digitized by Dr. Allen
-V. Hershey of the U.S. Naval Surface Weapons Center (Dahlgren, VA) in the
-mid-1960s.  For details, see his technical report "Calligraphy for
-Computers".  (Available from the U.S. National Technical Information
+plotting utilities based on it, such as `graph'.  They were digitized by
+Dr. Allen V. Hershey of the U.S. Naval Surface Weapons Center (Dahlgren,
+VA) in the mid-1960s.  For details, see his technical report "Calligraphy
+for Computers".  (Available from the U.S. National Technical Information
 Service at +1 703 487 4650; ask for item number AD662398.)
 
 These Kana are part of the HersheyEUC font, which is employed for drawing
 multibyte Japanese text strings.  But you may also use these Kana while
 drawing text strings in any other Hershey font, by inserting the
-appropriate escape sequences.
+appropriate escape sequences.  For example, you may label in Kana the axes
+of a graph prepared with `graph'.
 
 There are 83 Hiragana (cursive characters) and 86 Katakana (block
-characters).  The Hiragana and Katakana are indexed in the table below as
-bytes 0x21..0x73 and 0x21..0x76, respectively.  A transliteration of each
-Kana is included in the table.
+characters).  The indexing of the Kana is specified in the JIS X0208
+standard.  In that standard the Hiragana appear as 0x2421..0x2473 and the
+Katakana as 0x2521..0x2576.  Here `0x' means that the number that follows
+is in base 16, or hexadecimal.  For full information on the JIS standard,
+see "Understanding Japanese Information Processing", by Ken Lunde
+(O'Reilly, 1993).
 
-The indexing of the Kana is specified in the JIS X0208 standard.  Actually,
-in that standard the Hiragana appear as 0x2421..0x2473 and the Katakana
-appear as 0x2521..0x2576.  For full information on the JIS standard, see
-"Understanding Japanese Information Processing", by Ken Lunde (O'Reilly,
-1993).
+The Hiragana and Katakana are indexed in the table below as 0x21..0x73 and
+0x21..0x76, respectively.  A transliteration of each Kana is included.  For
+example, the Kana `ka' is listed as 0x2b.  The corresponding Hiragana would
+be 0x242b, and the corresponding Katakana would be 0x252b.
 
-To draw Hiragana `a', indexed as 0x22 below, you would use the escape
-sequence "\#J2422".  To draw Katakana `a', you would use the escape
-sequence "\#J2522".  These escape sequences would be valid whenever the
-current font is a Hershey font other than HersheyEUC.  By using the table
-below, you should find it easy to draw a phonetic representation of most
-Japanese words, syllable by syllable.
+To draw Hiragana `ka', you would use the escape sequence "\#J242b".  To
+draw Katakana `ka', you would use the escape sequence "\#J252b".  These
+escape sequences would be valid whenever the current font is a Hershey font
+other than HersheyEUC.  By using the table below, you should find it easy
+to draw a phonetic representation of most Japanese words, syllable by
+syllable.
 
 You should be aware that in Japanese, many words are normally written with
 ideographic characters (Kanji) rather than Kana.  However, any Japanese
@@ -42,7 +45,7 @@ consonant k, s, t, or p is interpreted not as a syllable, but as a sign
 that that consonant should be doubled.
 
 
-Pos. 	Kana transliteration
+Code 	Kana transliteration
 ---- 	--------------------
      
 0x21 	a [small]

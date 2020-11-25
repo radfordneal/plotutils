@@ -31,8 +31,9 @@ _m_openpl ()
   
   /* flag device as open */
   _plotter->open = true;
-  not_previously_opened = !_plotter->opened;
+  not_previously_opened = _plotter->opened ? false : true;
   _plotter->opened = true;
+  (_plotter->page_number)++;
 
   if (_plotter->outstream)
     {

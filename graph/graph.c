@@ -45,10 +45,13 @@ struct option long_options[] =
   {"y-label",		ARG_REQUIRED,	NULL, 'Y'},
   {"y-limits",		ARG_OPTIONAL,	NULL, 'y'}, /* 0, 1, 2, or 3 */
   /* Long options with no equivalent short option alias */
+  {"bg-color",		ARG_REQUIRED,	NULL, 'q' << 8},
+  {"bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8},
   {"blankout",		ARG_REQUIRED,	NULL, 'b' << 8},  
   {"frame-line-width",	ARG_REQUIRED,	NULL, 'W' << 8},
   {"frame-color",	ARG_REQUIRED,	NULL, 'C' << 8},
   {"max-line-length",	ARG_REQUIRED,	NULL, 'M' << 8},
+  {"pen-colors",	ARG_REQUIRED,	NULL, 'p' << 8},
   {"reposition",	ARG_REQUIRED,	NULL, 'R' << 8}, /* 3 */
   {"rotate",		ARG_REQUIRED,	NULL, 'Q' << 8},
   {"symbol-font-name",	ARG_REQUIRED,	NULL, 'G' << 8},
@@ -74,6 +77,7 @@ const char *progname = "graph";	/* name of this program */
 /* forward references */
 static void close_file __P ((char *filename, FILE *stream));
 static void open_file_for_reading __P ((char *filename, FILE **input));
+static bool parse_pen_string __P ((const char *pen_s));
 
 int
 #ifdef _HAVE_PROTOS
@@ -130,6 +134,7 @@ main (argc, argv)
 
   grid_type grid_spec = AXES_AND_BOX; /* frame type for the plot */
   char *frame_color = "black";	/* color of frame (and plot, if no -C option)*/
+  char *bg_color = NULL;	/* color of background, if non-NULL */
   bool save_screen = false;	/* save screen, i.e. no erase before plot? */
   bool no_rotate_y_label = false; /* used for pre-X11R6 servers */
   int clip_mode = 1;		/* clipping mode (cf. gnuplot) */
@@ -261,14 +266,14 @@ main (argc, argv)
 	  save_screen = true;
 	  break;
 	case 't':		/* Toggle transposition of axes, ARG NONE */
-	  transpose_axes = !transpose_axes;
+	  transpose_axes = (transpose_axes == true ? false : true);
 	  break;
 	case 'B':		/* Toggle linemode auto-bumping, ARG NONE */
-	  auto_bump = !auto_bump;
+	  auto_bump = (auto_bump == true ? false : true);
 	  break;
-	case 'C':
+	case 'C':		/* Toggle color/monochrome, ARG NONE */
 	  new_use_color = true;
-	  use_color = !use_color; /* Toggle color/monochrome, ARG NONE */
+	  use_color = (use_color == true ? false : true);
 	  break;
 	case 'O':
 	  parampl ("META_PORTABLE", "yes"); /* portable format, ARG NONE */
@@ -286,7 +291,7 @@ main (argc, argv)
 	  continue_parse = false;
 	  break;
 	case 'N' << 8:		/* Toggle rotation of y-label, ARG NONE */
-	  no_rotate_y_label = !no_rotate_y_label;
+	  no_rotate_y_label = (no_rotate_y_label == true ? false : true);
 	  break;
 
 	  /*----------- options with a single argument --------------*/
@@ -584,6 +589,9 @@ main (argc, argv)
 	      errcnt++;
 	    }
 	  break;
+	case 'B' << 8:		/* Bitmap size, ARG REQUIRED	*/
+	  parampl ("BITMAPSIZE", optarg);
+	  break;
 	case 'F' << 8:		/* Title font size, ARG REQUIRED	*/
 	  if (sscanf (optarg, "%lf", &local_title_font_size) <= 0)
 	    {
@@ -623,6 +631,16 @@ main (argc, argv)
 	  break;
 	case 'Q' << 8:		/* Plot rotation angle, ARG REQUIRED	*/
 	  parampl ("ROTATE", optarg);
+	  break;
+	case 'p' << 8:		/* Pen color string, ARG REQUIRED      */
+	  if (parse_pen_string (optarg) == false)
+	    {
+	      fprintf (stderr, "%s: ignoring unparseable pen string `%s'\n",
+		       progname, optarg);
+	    }
+	  break;
+	case 'q' << 8:		/* Background color, ARG REQUIRED      */
+	  bg_color = xstrdup (optarg);
 	  break;
 	case 'C' << 8:		/* Frame color, ARG REQUIRED      */
 	  frame_color = xstrdup (optarg);
@@ -819,6 +837,7 @@ main (argc, argv)
 		  /* initialize plotter, using (in part) finalized arguments */
 		  initialize_plotter(display_type,
 				     save_screen, /* for open_plotter() only */
+				     bg_color,
 				     frame_line_width,
 				     frame_color,
 				     top_label,
@@ -868,7 +887,7 @@ main (argc, argv)
 		  /* draw the plot frame (grid, ticks, etc.); draw a
 		     `canvas' (a background opaque white rectangle) only if
 		     this isn't the first plot */
-		  plot_frame(!first_plot);
+		  plot_frame((first_plot == true ? false : true));
 	      
 		  /* plot the laboriously read-in array */
 		  plot_point_array (p, no_of_points);
@@ -1024,6 +1043,7 @@ main (argc, argv)
 		  /* following is in effect for the entire plot */
 		  initialize_plotter(display_type,
 				     save_screen, /* for open_plotter() only */
+				     bg_color,
 				     frame_line_width, 
 				     frame_color,
 				     top_label,
@@ -1243,6 +1263,7 @@ main (argc, argv)
 	      
 	  initialize_plotter(display_type, 
 			     save_screen, /* for open_plotter() only */
+			     bg_color,
 			     frame_line_width,
 			     frame_color,
 			     top_label,
@@ -1291,7 +1312,7 @@ main (argc, argv)
 	  /* draw the plot frame (grid, ticks, etc.); draw a `canvas' (a
 	     background opaque white rectangle) only if this isn't the
 	     first plot */
-	  plot_frame(!first_plot);
+	  plot_frame((first_plot == true ? false : true));
 	  
 	  /* plot the laboriously read-in array */
 	  plot_point_array (p, no_of_points);
@@ -1354,4 +1375,65 @@ close_file (filename, stream)
     fprintf (stderr, 
 	     "%s: could not close input file `%s'\n", 
 	     progname, filename);
+}
+
+static bool
+#ifdef _HAVE_PROTOS
+parse_pen_string (const char *pen_s)
+#else
+parse_pen_string (pen_s)
+     const char *pen_s;
+#endif
+{
+  const char *charp;
+  char name[MAX_COLOR_NAME_LEN];
+  int i;
+
+  charp = pen_s;
+  while (*charp)
+    {
+      int pen_num;
+      bool got_digit;
+      const char *tmp;
+
+      if (*charp == ':')	/* skip any ':' */
+	{
+	  charp++;
+	  continue;		/* back to top of while loop */
+	}
+      pen_num = 0;
+      got_digit = false;
+      while (*charp >= '0' && *charp <= '9')
+	{
+	  pen_num = 10 * pen_num + (int)*charp - (int)'0';
+	  got_digit = true;
+	  charp++;
+	}
+      if (!got_digit || pen_num < 1 || pen_num > NO_OF_LINEMODES)
+	return false;
+      if (*charp != '=')
+	return false;
+      charp++;
+      for (tmp = charp, i = 0; i < MAX_COLOR_NAME_LEN; tmp++, i++)
+	{
+	  if (*tmp == ':') /* end of color name string */
+	    {
+	      name[i] = '\0';
+	      charp = tmp + 1;
+	      break;
+	    }
+	  else if (*tmp == '\0') /* end of name string and env var also */
+	    {
+	      name[i] = '\0';
+	      charp = tmp;
+	      break;
+	    }
+	  else
+	    name[i] = *tmp;
+	}
+
+      /* replace pen color name by user-specified color name */
+      colorstyle[pen_num - 1] = xstrdup (name);
+    }
+  return true;
 }

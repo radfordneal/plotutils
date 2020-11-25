@@ -53,8 +53,9 @@ State _X_default_drawstate = {
   1,				/* font index (within typeface; this is the Helvetica font)*/
   true,				/* true means an ISO-Latin-1 font */
   0.0,				/* degrees counterclockwise, for labels */
-  {0, 0, 0},			/* foreground color */
-  {0, 0, 0},			/* fill color */
+  {0, 0, 0},			/* foreground color (= black) */
+  {0, 0, 0},			/* fill color (= black) */
+  {65535, 65535, 65535},	/* background color (= white) */
   true,				/* if not set, polyline reduces to points */
   1.0,				/* line width in device coordinates */
   1,				/* line width, quantized to integer */

@@ -54,11 +54,11 @@ the modified version ./fonts/u_fonts.c.  The recompiled version of xfig
 will take advantage of the new fonts.  The modified version of u_fonts.c
 which we supply should work with xfig versions 3.1 and 3.2, at least.
 
-If you plan to use the tek2plot utility, you may also wish to install the
-X Windows bitmap fonts in ./fonts/pcf.  The four font files `tekfont0.pcf'
+If you plan to use the tek2plot utility, you may also wish to install the X
+Windows bitmap fonts in ./fonts/pcf.  The four font files `tekfont0.pcf'
 through `tekfont3.pcf' are bitmap fonts that are believed to be those used
-on the original Tektronix 4010/4014.  The tek2X program will use them if
+on the original Tektronix 4010/4014.  The `tek2plot -T X' will use them if
 you specify the `--use-tek-fonts' options.  For this to work properly, you
 must also select a canvas size of 1024x1024 pixels by specifying the
-Xplot.geometry resource in your .Xdefaults file to be "1024x1024".  This
-is because bitmap fonts, unlike Type 1 and Hershey fonts, may not be rescaled.
+`--bitmap-size 1024x1024' option.  This is because bitmap fonts, unlike
+Type 1 and Hershey fonts, may not be rescaled.

@@ -3,7 +3,7 @@
 bin_PROGRAMS = plot
 
 plot_SOURCES = plot.c
-plot_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ../libplot/libplot.la $(X_LIBS) $(X_PRE_LIBS) $(XLIBS) $(X_EXTRA_LIBS)
+plot_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ../libplot/libplot.la $(X_LIBS) $(X_TOOLKIT_LIBS) $(X_PRE_LIBS) $(X_BASIC_LIBS) $(X_EXTRA_LIBS)
 
 INCLUDES = -I$(srcdir)/../include
 

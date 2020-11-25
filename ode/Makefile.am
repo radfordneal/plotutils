@@ -7,7 +7,6 @@ noinst_HEADERS = extern.h num.h ode.h
 ode_LDADD = ../lib/libcommon.a @LEXLIB@
 
 YFLAGS = -d
-YACCFLAGS = -d
 
 INCLUDES = -I$(srcdir)/../include
 

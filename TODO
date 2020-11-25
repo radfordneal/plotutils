@@ -1,10 +1,23 @@
 Comparatively minor things, for Versions 2.x
 --------------------------------------------
 
-graph parsing: allow all command-line options in data files, on comment lines
-
 graph: need better clipping for filled regions (present gnuplot-style
 clipping scheme is right for unfilled regions but wrong for filled ones)
+
+graph parsing: allow all command-line options in data files, on comment lines
+
+graph: add legend support (need new --legend :string1:string2: option),
+i.e. gnuplot-style `key'.  Maybe arbitrarily positioned arrows, text
+strings also
+
+old HP-GL plotters can't handle full range of coordinates (AutoCAD values
+for range may not be good)
+
+libplot: report failure-to-retrieve font (e.g. anamorphic problem) better.
+Maybe print anamorphic message only when alabel() is called?
+
+Also improve libplot error reporting: change libplot error handler to use
+name of executable
 
 libplot: redo X driver, to support window reuse (`persistence') by any
 X Plotter.  Will require forking off an outboard process.
@@ -14,22 +27,11 @@ maybe automatic, if `plotting is real time' capability is set?
 
 spline, double: should ignore comment lines in ascii input (cf. graph)
 
-add copyright notices and authorship to each file
-
 graph: fix positioning of top labels, especially at large sizes
 
 HP-GL/2 stick font size should be reduced?
 
-be sure all future libtool releases include "\`\$" when computing thisdir
-in ltmain.sh (this was a bug in libtool-1.0h, maybe in ltconfig.h.in)
-
-graph: add environment variable GRAPHCOLORS for selecting 5-color palette
-(and monochrome color).  Also --graph-colors option.
-
-add comment() function, takes printable string as arg (no control chars)
-
-graph: why are two ^d's currently needed to terminate datapoint input from
-a tty?
+Add comment() function, takes printable string as arg (no control chars)
 
 PCL fonts for libplot: keep trying to track down slight differences between
 HP-GL/2's font sizes and font sizes as specifed in the .AFM files
@@ -49,13 +51,7 @@ Internationalization: think about removing strcasecmp (what if user called
 setlocale i.e. set LOCALE env var)?  Similarly worry about . vs ,
 everywhere, e.g. in PS files.
 
-libplot: add a command to set miter limit for line joins
-
-libplot Tek driver: line modes for kermit Tek emulator still scrambled?
-
-Think about extracting individual pages with plot, cf. tek2plot.
-
-private colormap for libplot X driver?
+libplot: add a command to set miter limit for line joins, to the API
 
 Hershey fonts:
 1. add cedilla; also embolden `times', > , < , etc.
@@ -72,23 +68,27 @@ system-dependent behavior depending on rounding mode?)
 Major Enhancements (Possible, Probable, or Certain)
 ---------------------------------------------------
 
-C++ binding
+C++ binding for libplot
 
-Incorporate all functionality of VOGLE, PGPLOT, and PLPLOT libraries.
-Think about Guile, and Tcl/Tk, and Python.
+graph: librarify the plotting routines, and incorporate them in libplot.
 
-Clipping and the setting of a viewport, double buffering to support animation.
+libplot: Incorporate all functionality of VOGLE, PGPLOT, and PLPLOT
+libraries.  Think about Guile, and Tcl/Tk, and Python.
+
+libplot: Support Adobe Illustrator format (-T ai).
+
+graph: Write alternative parser for interactive version (gnuplot replacement).
+
+libplot: add support for compound objects, spline objects, raster objects
+
+libplot: Clipping and the setting of a viewport, double buffering to support animation.
 
 Need interactivity (e.g. getloc()), during openpl()...closepl().  For
 libplot Tektronix, implement GIN mode (need stty twiddling?).  Also need
 char input (cf. starbase).
 
-libplot: Support Adobe Illustrator format (-T ai).
-
 libplot: write a version producing a bitmap format (e.g. PBM); use new
 freeware rasterizer for type 1 fonts
-
-graph: Write alternative parser for interactive version (gnuplot replacement).
 
 libplot: add the display list concept (would facilitate addition of
 compound objects).  Once display list is there, support zooming in libplot
@@ -96,21 +96,14 @@ X driver [PS output via buttons?].  Add a `close window' button instead of
 closing by a single mouse click.
 
 libplot text string format: \mk..\rt etc. should be stack machine; include
-overline, underline, radical etc.
-
-spline: need to be able to compute n-D splines, w/ each component a spline
-under tension as function of polygonal arc length parameter (Alan Cline
-approach).  Must support closed curves.  Too hard to use a sophisticated
-`nonlinear spline' approach (see 1997 CAGD paper).
+overline, underline, radical etc.  Cf. Alan Hershey's typesetting.
 
 Break out spline() as subroutine(s), cf. fitpack?  Similarly with plot
 frame / axis drawing.  For this, check into NCAR Graphics package,
 `autograph' routines; need contouring routines or app also (use plplot for
 this)
 
-libplot: add support for splines, raster objects, compound objects
-
-spline the Hershey fonts
+libplot: spline the Hershey fonts
 
 ode: extend parser to plot functions as well as solve differential equations
 
@@ -119,11 +112,10 @@ ode: need popen() for output; cf. gnuplot
 graph: add `boxes', `steps', `impulses', `bars' plot types (as in gnuplot).
 Boxes, bars should properly support --fill-fraction option.
 
-graph: add gnuplot-style `key', maybe arbitrarily positioned arrows, text
-strings also
-
 Write a sort of pic2plot.c, which could be linked with libplot to yield
 pic2fig, pic2ps, pic2X, etc.
+
+Private colormap for libplot X driver?
 
 graph: add support for polar/spherical plots, 3-D (surface) plotting
 

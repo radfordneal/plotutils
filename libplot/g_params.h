@@ -16,7 +16,8 @@ struct param_record
 
 struct param_record _plot_params[NUM_DEVICE_DRIVER_PARAMETERS] =
 {
-  {"DISPLAY", NULL, NULL, true}, /* X */
+  {"BITMAPSIZE", NULL, NULL, true}, /* X */
+  {"DISPLAY", NULL, NULL, true}, /* X, XDrawable */
   {"HPGL_ASSIGN_COLORS", "no", NULL, true}, /* hpgl */
   {"HPGL_OPAQUE_MODE", "no", NULL, true}, /* hpgl */
   {"HPGL_PENS", NULL, NULL, true}, /* hpgl, default is version-dependent */

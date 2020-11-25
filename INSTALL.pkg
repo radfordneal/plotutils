@@ -1,89 +1,155 @@
-This file explains how to install release 2.0 of the GNU plotutils
-(plotting utilities) package.  The file README summarizes the contents of
-the package.  Please send bug reports to <bug-gnu-utils@gnu.org>, and
-suggestions for longer-range improvements to both <bug-gnu-utils@gnu.org>
-and the principal author and current maintainer, Robert Maier
-<rsm@math.arizona.edu>.
+This file explains how to install the GNU plotutils (plotting utilities)
+package.  The file README summarizes the contents of the package.  Please
+send bug reports to <bug-gnu-utils@gnu.org>, and suggestions for
+longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
+author and current maintainer, Robert Maier <rsm@math.arizona.edu>.
 
-These are package-specific installation instructions; please read them
-in full.  Before doing so, please glance through the generic installation
-instructions in the file INSTALL.  The instructions in that file can be
-summed up as follows.  On most systems, the installation process is simple.
-You build a GNU package by typing `./configure' and then `make'.  To
-install the package, you then type `make install'.  A documentation file,
-in `info' format, is produced and installed as part of this process.  You
-may also produce a copy of the documentation for the package, in dvi
-format, by typing `make dvi'.  This assumes that you have the TeX document
-formatter installed.
+These are package-specific installation instructions: please read them.
+Before doing so, glance through the generic installation instructions in
+the file INSTALL.  The instructions in that file may be summed up as
+follows.  You build a GNU package by typing `./configure' and then `make'.
+After building, you may run validation tests on the package by typing `make
+check'.  To install the package, you type `make install'.  A documentation
+file, in `info' format, is installed as part of this process.  You may
+produce a copy of the documentation for the package, in dvi format, by
+typing `make dvi'.  This assumes that you have the TeX document formatter
+installed.
 
-The rest of this file summarizes problems that you may encounter, which 
-are not mentioned in the INSTALL file.
+----------------------------------------------------------------------
 
-On Silicon Graphics systems running Irix 6.x, when you build this package
-you may possibly get error messages about `GP overflow'.  If so, you should
-do `make CFLAGS="-O -multigot"' instead of just `make'.
+Problems not mentioned in the INSTALL file include the following.
 
-The INSTALL file recommends that you do `make check' to run validation
-tests on the plotting utilities before you install them.  Validation tests
-of this package on old NeXT machines have been known to fail for more or
-less innocuous reasons (incorrect formatting of floating-point numbers).
-If any of the validation tests should fail on any other system, please
-report it to <bug-gnu-utils@gnu.org>.
+1. You may already have a version of GNU libplot, the graphics library that
+comes with the package, installed on your system.  Check to see if there
+are any files named libplot.* in the library installation directory, which
+by default is /usr/local/lib.  If so, 
+YOU SHOULD MOVE OR RENAME THEM BEFORE BUILDING THE PACKAGE.  
+The reason is that the installation scripts may erroneously try
+to link with them.  This problem will be fixed in a later release.
 
-There are potential problems having to do with the installation of the
-libplot function library, which the utilities `graph', `plot', and
+2. If the installation process has any problem preparing or installing the
+documentation files (in `info' format), you should install the current
+release of the GNU texinfo package, which contains the current version of
+the GNU `makeinfo' program.  That should fix the problem.
+
+3. On Suns running some versions of Solaris, you may get a message like
+"Segmentation Fault printf: line too long" or "Segmentation Fault" during
+the installation process.  This is due to a bug in Sun's `printf' command.
+The fix is to obtain and install the GNU shellutils package, which includes
+a working version of `printf'.
+
+4. On DEC Alphas running OSF 3.2 (though apparently not OSF 4.x), the same
+`printf segmentation fault problem' mentioned in (3) occurs.  The same fix
+(installing the GNU shellutils package) should work.  It has been reported
+that renaming /usr/ucb/printf, for the duration of the installation, will
+also work around the problem.
+
+5. On Suns running SunOS and some versions of Solaris, if gcc is used as
+the compiler, it may be necessary to modify by hand a line in the file
+`./libtool', which `./configure' creates.  The line is
+
+	archive_cmds="\$CC -shared -o \$lib\$libobjs"
+
+and it should be changed to read
+
+	archive_cmds="ld -o \$lib\$libobjs"
+
+This line is approximately line #125 in the libtool file.  If this line is
+not modified, when linking the programs `graph', `plot', and `tek2plot',
+you may get error messages like "ld: Undefined symbol", followed by a long
+list of undefined symbols.
+
+6. On Silicon Graphics systems running Irix 6.x, you may get error messages
+about `GP overflow'.  If so, you should do `make distclean' and start over,
+this time doing two things differently.  (1) After running `./configure',
+modify, by hand, the file `./libtool'.  In that file, change the line
+"archive_cmds=...", which will be located at about line #125, to include
+the options `-multigot -shared', rather than just `-shared'.
+(2) Do `make CFLAGS="-O -multigot"' instead of just `make'.
+
+7. On old NeXT machines, one or more of the validation tests performed by
+doing `make check' may fail on account of incorrect formatting of
+floating-point numbers.  This is more or less harmless.  But if any of the
+validation tests should fail on any other system, please report it to
+<bug-gnu-utils@gnu.org>.
+
+8. On some IBM systems, e.g. systems running AIX 4.1, if you are using
+`gcc' as your compiler you may get numerous warning messages during
+compilation of the form "decimal constant is so large that it is unsigned".
+You may safely ignore them.  (If you are interested, they are due to the
+quantity MAXINT being defined by IBM in the system file <values.h> in a
+bizarre way.)
+
+9. On many systems, there are potential problems having to do with the
+installation of GNU libplot, which the utilities `graph', `plot', and
 `tek2plot' are linked with.  On systems that support DLL's (dynamically
 linked libraries), this library is installed as a DLL.  By default, it is
 installed in /usr/local/lib.  On some systems you may need to run a command
 (perhaps `ldconfig') to let your system know that a new DLL has been
 installed.  On some systems you may need to add /usr/local/lib to your
-LD_LIBRARY_PATH environment variable if you wish to write programs that
-will be linked at run-time with the DLL.  On some systems you may need to
-add /usr/local/lib to your LD_LIBRARY_PATH environment variable merely to
-use `graph', `plot', and `tek2plot' after they have been installed.  You
-will be cautioned about problems of this sort, if any, at installation time.
+LD_LIBRARY_PATH environment variable in order to use `graph', `plot', and
+`tek2plot' after they have been installed.  You will be cautioned about
+problems of this sort, if any, at installation time.
 
-A less serious potential installation problem has to do with the the header
-file ./include/plot.h, which contains definitions that are useful in any
-program linked with libplot.  As part of the installation process, plot.h
-is installed in a place on your system where the gcc C compiler will find it.
+10. As part of the installation process, the header file ./include/plot.h is
+installed in a place on your system where the gcc C compiler will find it.
 If you wish to use cc as well as (or instead of) gcc, you should copy
 plot.h manually to the directory /usr/include, where cc will find it.
 plot.h is not installed in /usr/include by default, since many
-administrators prefer not to add files to that directory.  Incidentally,
-plot.h is written for ANSI C compilers.  If you use it with a pre-ANSI C
-compiler that does not support the `const' keyword, you should use the
--DNO_CONST_SUPPORT option.
+administrators prefer not to add files to that directory.
 
-The remainder of this file discusses possible installation problems related
-to support for the X Window System.  Note that if for any reason you wish
-to omit the X Window System support, you may begin by doing 
-`./configure --without-x' instead of `./configure'.
+----------------------------------------------------------------------
 
-One possible problem has to do with X widget sets.  By default this package
-uses Athena widgets, which are supported on most but not all machines.
-Some machines provide Motif widgets instead of Athena widgets.  On such
-machines (e.g. Hewlett-Packard workstations running HP/UX, and some IBM
-workstations) you should begin by doing `./configure --with-motif' instead
-of just `./configure' to ensure that the software is configured correctly.
+The remainder of this file discusses installation issues related to the
+X Window System.  If for any reason you wish to omit the X Window System
+support, you may begin by doing `./configure --without-x' instead of
+`./configure'.
 
-Many systems with Motif widgets also have Athena widgets, but have them in
-nonstandard places.  On such systems, `./configure --with-motif' may be the
-best thing to do.
+1. To make maximum use of the X support in this package, you will need to
+have the 35 standard Postscript fonts installed on your X server.  For
+instructions on installing Type 1 versions of these fonts, clones of which
+are included in the package, see the file ./INSTALL.fonts.
 
-Older Hewlett-Packard workstations, running HP/UX 9.xx or earlier, require
-special treatment.  They have Motif widgets, but the location of the Motif
-files must be specified explicitly.  On such machines you should do
+2. Also, to make maximum use of the support for the `xfig' drawing editor,
+you will need to make a small change to the source for `xfig', and
+recompile it.  (The change makes it use the full set of 35 standard
+Postscript fonts.)  For this too, see the file ./INSTALL.fonts.
+
+3. There is a possible installation problem having to do with X widget
+sets.  By default this package uses Athena widgets, which are supported on
+most but not all machines.  Some machines provide Motif widgets instead of
+Athena widgets.  On such machines (e.g. Hewlett-Packard systems running
+HP/UX, and some IBM systems) you should begin by doing `./configure
+--with-motif' instead of just `./configure' to ensure that the software is
+configured correctly.
+
+4. Hewlett-Packard HP/UX systems that are running HP/UX 9.xx or earlier
+have Motif widgets, but the Motif files are stored in unusual places.
+On such systems, besides doing `./configure --with-motif' you should do
 
 	make CFLAGS="-O -I/usr/include/Motif1.2 -L/usr/lib/Motif1.2"
 
 rather than just `make'.
 
-Some older Sun workstations [running SunOS 4.1.3, with OpenWindows 3.0]
-have an altogether different X-related problem.  The `Xt' and `Xmu'
-libraries may not link correctly.  If so, you will get error messages
-dealing with "undefined symbols".  To solve this problem, please contact
-your local Sun office and request the following patches:
+5. On at least some recent HP/UX systems, it may be possible to use Athena
+widgets rather than Motif widgets.  As noted, the Athena widgets are not
+included in most releases of HP/UX.  However, HP made them available at an
+ftp site, and recommended that they be installed in the tree
+/usr/contrib/X11R5/{include,lib}.  If you have a recent HP/UX system and
+have installed Athena widgets as HP recommends, and wish to use them
+instead of Motif widgets, you should do `./configure' and then
+
+	make CFLAGS="-O -L/usr/local/X11R5/lib -L/usr/contrib/X11R5/lib
+			-I/usr/contrib/X11R5/include"
+
+rather than just `make'.
+
+6. On Suns that are running SunOS 4.1.x with the OpenWindows 3.0 version of
+the X Window System, the Xmu and Xt libraries may not link correctly.
+If so, you will get error messages dealing with "undefined symbols" when
+linking the programs `graph', `plot', and `tek2plot'.  To solve this
+problem, please contact your local Sun office and request the following
+patches:
 
   Patch i.d.      Description
   100512-02       4.1.x OpenWindows 3.0 libXt Jumbo patch
@@ -93,28 +159,10 @@ your local Sun office and request the following patches:
 If you are using Sun's cc as your compiler, you may be able to work around
 this problem not by contacting Sun, but simply by typing
 
-    make XLIBS="-lXaw -Bstatic -lXmu -lXt -Bdynamic -lXext -lX11"
+    make X_TOOLKIT_LIBS="-lXaw -Bstatic -lXmu -lXt -Bdynamic"
 
 rather than `make'.  If you are using gcc as your compiler, this will not
-work; you will need to contact Sun.  Also, it has been reported that on
-Suns running SunOS 4.1.3, if gcc is used as the compiler, it may be
-necessary to change the line in the file ./libtool reading
-
-	archive_cmds="\$CC -shared -o \$lib\$libobjs"
-
-after running `./configure', to read
-
-	archive_cmds="ld -o \$lib\$libobjs"
-
-If you need to do this on a Sun running SunOS 4.1.3 in order to compile and
-install the package, please report it to <bug-gnu-utils@gnu.org>.
-
-To make maximum use of the X support in this package, you will need to have
-the 35 standard Postscript fonts installed on your X server.  For
-instructions on installing Type 1 versions of these fonts, clones of which
-are included in the package, see the file ./INSTALL.fonts.
-
-Also, to make maximum use of the support for the `xfig' drawing editor, you
-will need to make a small change to the source for `xfig', and recompile
-it.  (The change makes it use the full set of 35 standard Postscript
-fonts.)  For this too, see the file ./INSTALL.fonts.
+work; but it is possible to work around the problem by extracting the two
+files named `sharedlib.o' from libXmu.a and libXt.a and adding them to the
+list of objects to be linked.  This is tricky, and contacting Sun to
+request the two patches, instead, is recommended.

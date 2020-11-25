@@ -113,6 +113,8 @@ struct option long_options[] =
   /* The most important option */
   {"display-type",	ARG_REQUIRED,	NULL, 'T'},
   /* Other frequently used options */
+  { "bg-color",		ARG_REQUIRED,	NULL, 'q' << 8 },
+  { "bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8 },
   { "font-name",	ARG_REQUIRED,	NULL, 'F' },
   { "line-width",	ARG_REQUIRED,	NULL, 'W' },
   { "pen-color",	ARG_REQUIRED,	NULL, 'C' << 8 },
@@ -167,21 +169,29 @@ Color ansi_color[16] =
   {0xffff, 0xffff, 0xffff}		/* white \033[1;37m */
 };
 
-/* used if user requests a single page */
-bool single_page_is_requested = false;
-int requested_page = 0;
-/* page count */
-int current_page = 0;
+/* global variables set on command line, used in Tek parsing routine */
+bool position_indiv_chars = false; /* user may set this */
+bool single_page_is_requested = false; /* set if user uses -p option */
+bool use_tek_fonts = false;	/* fonts tekfont0..tekfont3 available? */
+char *bg_color = NULL;		/* initial bg color, can be spec'd by user */
+char *font_name = NULL;		/* initial font name, can be spec'd by user */
+char *pen_color = NULL;		/* initial pen color, can be spec'd by user */
+double line_width = -1.0;	/* initial line width, <0 means default */
+int requested_page = 0;		/* user sets this via -p option */
 
-/* used if user makes it clear that non-monospaced font is used */
-bool position_indiv_chars = false;
-/* native Tek fonts tekfont0..tekfont3 are not installed everywhere */
-bool use_tek_fonts = false;
+/* variables used in parser */
+bool plotter_open = false;
+bool plotter_opened = false;
+bool tek_page_is_nonempty = false;
+int cur_X = 0, cur_Y = 0;	/* graphics cursor position in Tek coors */
+int current_page = 0;		/* page count */
 
 /* forward references */
 bool getpoint __P((int *xcoor, int *ycoor, FILE *stream, int *badstatus, int *margin));
 bool read_plot __P((FILE *in_stream));
 int read_byte __P((FILE *stream, int *badstatus));
+void begin_page __P((void));
+void end_page __P((void));
 void set_font_size __P ((int new_fontsize));
 void unread_byte __P((int byte, FILE *in_stream, int *badstatus));
 /* from libcommon */
@@ -201,22 +211,19 @@ main (argc, argv)
      char *argv[];
 #endif
 {
-  int option;
-  int opt_index;
-  int errcnt = 0;		/* errors encountered */
-  bool show_version = false;	/* show version message? */
   bool show_fonts = false;	/* show a list of fonts? */
   bool show_usage = false;	/* show usage message? */
-  char *font_name = NULL;	/* initial font name, can be spec'd by user */
-  char *pen_color = NULL;	/* initial pen color, can be spec'd by user */
-  double line_width = -1.0;	/* initial line width, <0 means default */
-  double local_line_width;
-  int local_page_number;
-  int retval;			/* return value */
+  bool show_version = false;	/* show version message? */
   char *display_type = "meta";	/* default libplot output format */
+  double local_line_width;	/* temporary storage */
+  int errcnt = 0;		/* errors encountered */
   int handle;			/* libplot handle for Plotter object */
+  int local_page_number;	/* temporary storage */
+  int opt_index;		/* long option index */
+  int option;			/* option character */
+  int retval;			/* return value */
 
-  while ((option = getopt_long(argc, argv, "p:OF:W:T:", long_options, &opt_index)) != EOF) 
+  while ((option = getopt_long(argc, argv, "Op:F:W:T:", long_options, &opt_index)) != EOF) 
     {
       if (option == 0)
 	option = long_options[opt_index].val;
@@ -266,6 +273,13 @@ main (argc, argv)
 	  break;
 
 	  /*---------------- Long options below here ----------------*/
+	case 'q' << 8:		/* Set the initial pen color */
+	  bg_color = (char *)xmalloc (strlen (optarg) + 1);
+	  strcpy (bg_color, optarg);
+	  break;
+	case 'B' << 8:		/* Bitmap size */
+	  parampl ("BITMAPSIZE", optarg);
+	  break;
 	case 'C' << 8:		/* Set the initial pen color */
 	  pen_color = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (pen_color, optarg);
@@ -331,33 +345,7 @@ main (argc, argv)
     }
   else
     selectpl (handle);
-  if (openpl () < 0)
-    {
-      fprintf (stderr, "%s: error: could not open plot device\n", progname);
-      return 1;
-    }
 
-  /* standard initializations */
-  space (0, 0, TEK_WIDTH - 1, TEK_WIDTH - 1);
-  erase();
-
-  /* optionally initialize pen color, font, font size, and line width */
-  if (pen_color)
-    pencolorname (pen_color);
-  if (use_tek_fonts)
-    fontname ("tekfont0");
-  else
-    {
-      if (font_name)
-	fontname (font_name);
-      else
-	fontname (DEFAULT_FONT_NAME);
-      /* `large' is default size */
-      ffontsize ((double)(TekChar[0].hsize) / CHAR_WIDTH);
-    }
-  if (line_width >= 0.0)
-    flinewidth (line_width * TEK_WIDTH);
-  
   retval = 0;
   if (optind < argc)
     /* input files (or stdin) named explicitly on the command line */
@@ -381,20 +369,19 @@ main (argc, argv)
 	    }
 	  if (read_plot (data_file) == false)
 	    {
-		  fprintf (stderr, "%s: error: could not parse input file `%s'\n",
+		  fprintf (stderr, "%s: could not parse input file `%s'\n",
 			   progname, argv[optind]);
 		  retval = 1;
-		  break;	/* break out of for loop */
+		  continue;	/* back to top of for loop */
 	    }
 
 	  if (data_file != stdin) /* Don't close stdin */
 	    if (fclose (data_file) < 0)
 	      {
 		fprintf (stderr, 
-			 "%s: could not close input file `%s'\n",
+			 "%s: error: could not close input file `%s'\n",
 			 progname, argv[optind]);
-		retval = 1;
-		continue;	/* back to top of for loop */
+		return 1;	/* exit immediately */
 	      }
 	}
     } /* endfor */
@@ -403,16 +390,34 @@ main (argc, argv)
     {
       if (read_plot (stdin) == false)
 	{
-	  fprintf (stderr, "%s: error: could not parse input\n", progname);
+	  fprintf (stderr, "%s: could not parse input\n", progname);
 	  retval = 1;
 	}
     }
 
-  if (closepl () < 0)
+  /* if nothing was emitted ... */
+  if (plotter_opened == false)
     {
-      fprintf (stderr, "%s: error: could not close plot device\n",
-	       progname);
-      retval = 1;
+      if (single_page_is_requested == false)
+	/* output a blank page */
+	{
+	  begin_page ();
+	  end_page ();
+	}
+      else
+	{
+	  if (requested_page >= current_page)
+	    {
+	      fprintf (stderr, "%s: requested page does not exist\n", progname);
+	      retval = 1;
+	    }
+	  else
+	    /* page must have been seen, but was empty; output a blank page */
+	    {
+	      begin_page ();
+	      end_page ();
+	    }
+	}
     }
 
   return retval;
@@ -692,8 +697,9 @@ getpoint (xcoor, ycoor, in_stream, badstatus, margin)
 }
 
 
-/* read a Tektronix file and make appropriate libplot calls, paying
-   attention to several global variables */
+/* Parse a Tektronix stream and make appropriate libplot calls, paying
+   attention to several global variables.  Will output at least one
+   openpl()..closepl(). */
 bool 
 #ifdef _HAVE_PROTOS
 read_plot (FILE *in_stream)
@@ -708,7 +714,6 @@ read_plot (in_stream)
   int pen = PENUP;		/* pen up or pen down */
   int linetype = 0;		/* in range 0..7, 0 means "solid" */
   int fontsize = 0;		/* in range 0..3, 0 means large  */
-  int cur_X = 0, cur_Y = 0;	/* graphics cursor position in Tek coors */
   int margin = MARGIN1;		/* MARGIN1=left side, MARGIN2=halfway across */
   char text[TEXT_BUFFER_SIZE];	/* for storage of text strings */
   int badstatus = 0;		/* 0=OK, 1=parse error, 2=eof */
@@ -720,7 +725,7 @@ read_plot (in_stream)
 
       c = read_byte (in_stream, &badstatus);
       if (badstatus)
-	break;			/* only exit from loop */
+	break;			/* parse error or eof; exit from while loop */
 
       switch (Tparsestate[c])
 	{
@@ -815,6 +820,8 @@ read_plot (in_stream)
 	    *cp = '\0';		/* null-terminate string, and output it */
 	    if (current_page == requested_page || !single_page_is_requested)
 	      {
+		if (plotter_open == false)
+		  begin_page ();
 		if (position_indiv_chars)
 		  /* string consists of a single char */
 		  {
@@ -830,6 +837,7 @@ read_plot (in_stream)
 		  }
 		move (cur_X, cur_Y);
 	      }
+
 	  } /* end of CASE_PRINT */
 	  break;
 
@@ -846,9 +854,17 @@ read_plot (in_stream)
 	      if (current_page == requested_page || !single_page_is_requested)
 		{
 		  if (pen == PENDOWN)
-		    cont (x, y + YOFFSET);
+		    {
+		      if (plotter_open == false)
+			begin_page ();
+		      cont (x, y + YOFFSET);
+		    }
 		  else
-		    move (x, y + YOFFSET);
+		    {
+		      /* N.B. Don't begin a new page just for a move() */ 
+		      if (plotter_open == true)
+			move (x, y + YOFFSET);
+		    }
 		}
 	      cur_X = x;
 	      cur_Y = y;
@@ -867,7 +883,11 @@ read_plot (in_stream)
 	       so there's no chance of a infinite loop (see parsetable) */
 	    {
 	      if (current_page == requested_page || !single_page_is_requested)
-		point (x, y + YOFFSET);
+		{
+		  if (plotter_open == false)
+		    begin_page ();
+		  point (x, y + YOFFSET);
+		}
 	      cur_X = x;
 	      cur_Y = y;
 	    }
@@ -884,7 +904,11 @@ read_plot (in_stream)
 	    {
 	      /* assume intensity is > 0 */
 	      if (current_page == requested_page || !single_page_is_requested)
-		point (x, y + YOFFSET);
+		{
+		  if (plotter_open == false)
+		    begin_page ();
+		  point (x, y + YOFFSET);
+		}
 	      cur_X = x;
 	      cur_Y = y;
 	    }
@@ -914,9 +938,17 @@ read_plot (in_stream)
 	  if (current_page == requested_page || !single_page_is_requested)
 	    {
 	      if (pen == PENDOWN)
-		cont (x, y + YOFFSET);
+		{
+		  if (plotter_open == false)
+		    begin_page ();
+		  cont (x, y + YOFFSET);
+		}
 	      else
-		move (x, y + YOFFSET);
+		{
+		  /* N.B. Don't begin a new page just for a move() */
+		  if (plotter_open == true)
+		    move (x, y + YOFFSET);
+		}
 	    }
 	  cur_X = x;
 	  cur_Y = y;
@@ -1040,22 +1072,40 @@ read_plot (in_stream)
 
 	  /****************************************/
 
-	  /* Miscellaneous: functions we interpret as `erase page',
+	  /* Miscellaneous: functions we interpret as `next page',
 	     `set font size', and `set line type'. */
 
 	case CASE_PAGE:		/* page function, clears bypass cond. */
+	  /* do closepl to flush out page (if nonempty) */
+	  if (plotter_open == true)
+	    end_page ();
+
 	  if (single_page_is_requested && current_page == requested_page)
-	    return true;	/* in this case, end of parse */
+	    {
+	      badstatus = 2;	/* requested page is finished, so signal eof */
+	      break;		/* exit from while loop */
+	    }
+
+	  /* now beginning parse of a new Tektronix page */
 	  current_page++;
-	  if (!single_page_is_requested)
-	    erase();
+
+	  /* special case: if only a single page is requested, and line
+	     mode and font size have changed due to commands on previous
+	     Tek pages, output them */
 	  if (single_page_is_requested && current_page == requested_page)
-	    /* begin by setting line mode and font size (may have changed) */
 	    {
 	      if (linetype != 0)
-		linemod (linemodes[linetype]);
+		{
+		  if (plotter_open == false)
+		    begin_page ();
+		  linemod (linemodes[linetype]);
+		}
 	      if (fontsize != 0)
-		set_font_size (fontsize);
+		{
+		  if (plotter_open == false)
+		    begin_page ();
+		  set_font_size (fontsize);
+		}
 	    }
 	  cur_X = 0;
 	  cur_Y = TEKHOME;		/* home pos. depends on fontsize */
@@ -1064,7 +1114,11 @@ read_plot (in_stream)
 	case CASE_CHAR_SIZE:	/* select font size */
 	  fontsize = c & 03;
 	  if (current_page == requested_page || !single_page_is_requested)
-	    set_font_size (fontsize);
+	    {
+	      if (plotter_open == false)
+		begin_page ();
+	      set_font_size (fontsize);
+	    }
 	  Tparsestate = curstate;
 	  break;
 	  
@@ -1074,6 +1128,8 @@ read_plot (in_stream)
 	  if (c != linetype)
 	    if (current_page == requested_page || !single_page_is_requested)
 	      {
+		if (plotter_open == false)
+		  begin_page ();
 		linetype = c;
 		linemod (linemodes[linetype]);
 	      }
@@ -1142,6 +1198,8 @@ read_plot (in_stream)
 	      {
 		int intensity, color_index;
 
+		if (plotter_open == false)
+		  begin_page ();
 		intensity = ansi[0] - '0';
 		color_index = ansi[3] - '0';
 		pencolor (ansi_color[8 * intensity + color_index].red,
@@ -1185,9 +1243,17 @@ read_plot (in_stream)
 	}
     }
 
+  /* end parsing of this Tektronix stream */
+
+  if (plotter_open == true)	/* close plotter, i.e. end page if any */
+    end_page ();
+
+  current_page++;		/* bump page count for next file if any */
+
   return (badstatus == 2 ? true : false); /* OK to end parse at EOF */
 }
 
+
 void
 #ifdef _HAVE_PROTOS
 set_font_size (int new_fontsize)
@@ -1219,4 +1285,64 @@ set_font_size (new_fontsize)
   else
     /* we presumably are using a scalable font */
     ffontsize ((double)(TekChar[new_fontsize].hsize) / CHAR_WIDTH);
+}
+
+void
+#ifdef _HAVE_PROTOS
+begin_page (void)
+#else
+begin_page ()
+#endif
+{
+  if (openpl () < 0)
+    {
+      fprintf (stderr, 
+	       "%s: error: could not open plot device\n", 
+	       progname);
+      exit (1);
+    }
+  plotter_open = true;
+  plotter_opened = true;
+
+  /* set background color, set affine map from user frame to device frame */
+  if (bg_color)
+    bgcolorname (bg_color);
+  erase();
+  space (0, 0, TEK_WIDTH - 1, TEK_WIDTH - 1);
+  /* optionally initialize pen color, font, fontsize, line width */
+  if (pen_color)
+    pencolorname (pen_color);
+  if (use_tek_fonts)
+    fontname ("tekfont0");
+  else
+    {
+      if (font_name)
+	fontname (font_name);
+      else
+	fontname (DEFAULT_FONT_NAME);
+      /* `large' is default size */
+      ffontsize ((double)(TekChar[0].hsize) / CHAR_WIDTH);
+    }
+  if (line_width >= 0.0)
+    flinewidth (line_width * TEK_WIDTH);
+
+  /* move to current position on page */
+  move (cur_X, cur_Y + YOFFSET);
+}
+
+void
+#ifdef _HAVE_PROTOS
+end_page (void)
+#else
+end_page ()
+#endif
+{
+  if (closepl () < 0)
+    {
+      fprintf (stderr, 
+	       "%s: error: could not close plot device\n",
+	       progname);
+      exit (1);
+    }
+  plotter_open = false;
 }

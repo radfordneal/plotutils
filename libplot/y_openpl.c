@@ -36,19 +36,19 @@ _y_openpl ()
 
       /* initialize the data members specifying the drawable (a Pixmap or
          Window), and the X display with which it is associated */
-      dpy = (Display *)_get_plot_param ("X_DRAWABLE_DISPLAY");
+      dpy = (Display *)_get_plot_param ("XDRAWABLE_DISPLAY");
       if (dpy == NULL)
 	{
-	  _plotter->error("X_DRAWABLE_DISPLAY parameter is NULL, can't initialize");
+	  _plotter->error("XDRAWABLE_DISPLAY parameter is NULL, can't initialize");
 	  return -1;
 	}
       else
 	_plotter->dpy = dpy;
-      drawable_p1 = (Drawable *)_get_plot_param ("X_DRAWABLE_DRAWABLE1");
-      drawable_p2 = (Drawable *)_get_plot_param ("X_DRAWABLE_DRAWABLE2");
+      drawable_p1 = (Drawable *)_get_plot_param ("XDRAWABLE_DRAWABLE1");
+      drawable_p2 = (Drawable *)_get_plot_param ("XDRAWABLE_DRAWABLE2");
       if (drawable_p1 == NULL && drawable_p2 == NULL)
 	{
-	  _plotter->error("X_DRAWABLE_DRAWABLE parameters are NULL, can't initialize");
+	  _plotter->error("XDRAWABLE_DRAWABLE parameters are NULL, can't initialize");
 	  return -1;
 	}
       else
@@ -135,6 +135,7 @@ _y_openpl ()
   /* flag Plotter as open (and having been opened at least once) */
   _plotter->open = true;
   _plotter->opened = true;
+  (_plotter->page_number)++;
 
   /* Create an initial drawing state with default attributes, including the
      just-computed foreground and background colors, and an X GC.  The

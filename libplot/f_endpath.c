@@ -47,8 +47,8 @@ _f_endpath (void)
 _f_endpath ()
 #endif
 {
-  int i;
-  bool closed, polyline_subtype;
+  int i, polyline_subtype;
+  bool closed; 
   const char *format;
     
   if (!_plotter->open)

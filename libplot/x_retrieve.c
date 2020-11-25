@@ -54,12 +54,12 @@
 
 /* An XLFD template, with holes into which we can punch the base name (a
    string with exactly three hyphens in it) and the integer size in terms
-   of decipoints */
-static const char *_xlfd_template = "-*-%s-*-*-%d-*-*-*-*-*-*";
+   of pixels */
+static const char *_xlfd_template = "-*-%s-*-%d-*-*-*-*-*-*-*";
 
 /* XLFD template for an affinely transformed font (with holes for the base
-   name and for four dimensions, in terms of points) */
-static const char *_xlfd_template_with_scaling = "-*-%s-*-*-[%s %s %s %s]-*-*-*-*-*-*";
+   name and for four dimensions, in terms of pixels) */
+static const char *_xlfd_template_with_scaling = "-*-%s-*-[%s %s %s %s]-*-*-*-*-*-*-*";
 
 #define NUM_XLFD_FIELDS 14
 #define FIELD_FOUNDRY 0
@@ -150,8 +150,11 @@ _x_retrieve_font ()
 	    || !_plotter->drawstate->transform.nonreflection))
       /* failure was probably due to server being a pre-X11R6 server */
       {
+	/* Warning commented out; it confused too many end-users. */
+	/*
 	_plotter->warning ("cannot retrieve rotated or anamorphically transformed X font");
-	_plotter->warning ("will use default Hershey vector font instead");
+	_plotter->warning ("using default Hershey vector font instead");
+	*/
 	_plotter->font_warning_issued = true;
       }
   
@@ -249,17 +252,17 @@ _x_retrieve_font_internal(name, size, rotation)
 	  && _plotter->drawstate->transform.nonreflection)
 	/* case 1: zero text rotation, uniformly scaled */
 	{
-	  int size_in_decipoints;
+	  int size_in_pixels;
 	  
-	  size_in_decipoints = 
-	    IROUND(10.0 * _plotter->drawstate->transform.m[0] * user_size);
+	  size_in_pixels = 
+	    IROUND(_plotter->drawstate->transform.m[0] * user_size);
 	  
-	  /* if integer size in terms of decipoints is zero, bail */
-	  if (size_in_decipoints == 0)
+	  /* if integer size in terms of pixels is zero, bail */
+	  if (size_in_pixels == 0)
 	    return false;
 	  /* otherwise punch size into the template */
 	  sprintf (x_name, _xlfd_template, _ps_font_info[i].x_name, 
-		   size_in_decipoints);
+		   size_in_pixels);
 	}
       else
 	/* case 2: nonzero font rotation, or non-uniform scaling */
@@ -324,16 +327,16 @@ _x_retrieve_font_internal(name, size, rotation)
       && _plotter->drawstate->transform.nonreflection)
     /* case 1: zero text rotation, uniformly scaled */
     {
-      int size_in_decipoints;
+      int size_in_pixels;
 
-      size_in_decipoints = 
-	IROUND(10.0 * _plotter->drawstate->transform.m[0] * user_size);
+      size_in_pixels = 
+	IROUND(_plotter->drawstate->transform.m[0] * user_size);
 
-      /* if integer size in terms of decipoints is zero, bail */
-      if (size_in_decipoints == 0)
+      /* if integer size in terms of pixels is zero, bail */
+      if (size_in_pixels == 0)
 	return false;
-      /* otherwise punch size in decipoints into the template */
-      sprintf (x_name, _xlfd_template, name, size_in_decipoints);
+      /* otherwise punch size into the template */
+      sprintf (x_name, _xlfd_template, name, size_in_pixels);
     }
   else
     /* case 2: nonzero font rotation, or non-uniform scaling */
@@ -566,11 +569,11 @@ _set_x_font_dimensions(font)
 	    
 	    descent_success = 
 	      XGetFontProperty (_plotter->drawstate->x_font_struct, 
-				raw_descent_atom, &font_raw_descent);
+				raw_descent_atom, &font_raw_descent) ? true : false;
 	    
 	    ascent_success = 
 	      XGetFontProperty (_plotter->drawstate->x_font_struct, 
-				raw_ascent_atom, &font_raw_ascent);
+				raw_ascent_atom, &font_raw_ascent) ? true : false;
 
 	    /* If no success, we assume this is a pre-XLFD font (and that
 	       the transformation from user coordinates to device
@@ -600,9 +603,9 @@ _set_x_font_dimensions(font)
 	}
     }
   
-  /* if we reached this point, font doesn't have an XLFD name (so no pixel
-     size field, and hence no rotation), or perhaps there's no FONT
-     property at all (a bad situation) */
+  /* if we reached here, font doesn't have an XLFD name (so no pixel size
+     field, and hence no rotation), or perhaps there's no FONT property at
+     all (a bad situation) */
 
   _plotter->drawstate->font_is_iso8859 = false;
 

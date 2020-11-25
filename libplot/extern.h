@@ -593,6 +593,7 @@ typedef struct lib_state
   double text_rotation;		/* degrees counterclockwise, for labels */
   Color fgcolor;		/* foreground color */
   Color fillcolor;		/* fill color */
+  Color bgcolor;		/* background color */
   bool points_are_connected;	/* if not set, polyline displayed as points */
   double device_line_width;	/* line width in device coordinates */
   int quantized_device_line_width; /* line width, quantized to integer */
@@ -641,7 +642,7 @@ extern State _meta_default_drawstate, _tek_default_drawstate, _hpgl_default_draw
 #define PL_X11_DRAWABLE 6	/* X11 Drawable */
 
 /* recognized device driver parameters (key/value) are in g_params.h */
-#define NUM_DEVICE_DRIVER_PARAMETERS 16
+#define NUM_DEVICE_DRIVER_PARAMETERS 17
 
 /* This elides the argument prototypes if the compiler does not support
    them. The name P__ is chosen in hopes that it will not collide with any
@@ -659,6 +660,8 @@ typedef struct
   int (*alabel) P__ ((int x_justify, int y_justify, const char *s));
   int (*arc) P__ ((int xc, int yc, int x0, int y0, int x1, int y1));
   int (*arcrel) P__ ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+  int (*bgcolor) P__ ((int red, int green, int blue));
+  int (*bgcolorname) P__ ((const char *name));
   int (*box) P__ ((int x0, int y0, int x1, int y1));
   int (*boxrel) P__ ((int dx0, int dy0, int dx1, int dy1));
   int (*capmod) P__ ((const char *s));
@@ -767,6 +770,7 @@ typedef struct
   int type;			/* device type: one of PL_* above */
   bool open;			/* whether or not plotter is open */
   bool opened;			/* whether or not plotter has been opened */
+  int page_number;		/* number of times it has been opened */
   FILE *instream;		/* input stream if any */
   FILE *outstream;		/* output stream if any */
   FILE *errstream;		/* error stream if any */
@@ -775,6 +779,7 @@ typedef struct
   /* capabilities */            /* capabilities: 0/1/2 = no/yes/maybe */
   int have_wide_lines;	
   int have_solid_fill;
+  int have_settable_bg;
   int have_hershey_fonts;
   int have_ps_fonts;
   int have_pcl_fonts;
@@ -802,7 +807,7 @@ typedef struct
 
   /* PRIVATE DATA MEMBERS (device driver-specific) */
   /* elements specific to the metafile device driver */
-  bool portable_output;	/* portable or binary format? */
+  bool portable_output;		/* portable, not binary output format? */
   /* elements specific to the Tektronix device driver */
   tek_display_type display_type; /* which sort of Tektronix? */
   int mode;			/* one of MODE_* */
@@ -967,6 +972,8 @@ extern double _g_ftextangle P__ ((double angle));
 extern int _g_alabel P__ ((int x_justify, int y_justify, const char *s));
 extern int _g_arc P__ ((int xc, int yc, int x0, int y0, int x1, int y1));
 extern int _g_arcrel P__ ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+extern int _g_bgcolor P__ ((int red, int green, int blue));
+extern int _g_bgcolorname P__ ((const char *name));
 extern int _g_box P__ ((int x0, int y0, int x1, int y1));
 extern int _g_boxrel P__ ((int dx0, int dy0, int dx1, int dy1));
 extern int _g_capmod P__ ((const char *s));
@@ -1219,6 +1226,7 @@ extern double _m_ftextangle P__ ((double angle));
 extern int _m_alabel P__ ((int x_justify, int y_justify, const char *s));
 extern int _m_arc P__ ((int xc, int yc, int x0, int y0, int x1, int y1));
 extern int _m_arcrel P__ ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+extern int _m_bgcolor P__ ((int red, int green, int blue));
 extern int _m_box P__ ((int x0, int y0, int x1, int y1));
 extern int _m_boxrel P__ ((int dx0, int dy0, int dx1, int dy1));
 extern int _m_capmod P__ ((const char *s));
@@ -1466,6 +1474,7 @@ extern double _x_ftextangle P__ ((double angle));
 extern int _x_alabel P__ ((int x_justify, int y_justify, const char *s));
 extern int _x_arc P__ ((int xc, int yc, int x0, int y0, int x1, int y1));
 extern int _x_arcrel P__ ((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
+extern int _x_bgcolor P__ ((int red, int green, int blue));
 extern int _x_box P__ ((int x0, int y0, int x1, int y1));
 extern int _x_boxrel P__ ((int dx0, int dy0, int dx1, int dy1));
 extern int _x_capmod P__ ((const char *s));

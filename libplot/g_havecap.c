@@ -22,6 +22,8 @@ _g_havecap (s)
     return _plotter->have_wide_lines;
   else if (strcasecmp (s, "SOLID_FILL") == 0)
     return _plotter->have_solid_fill;
+  else if (strcasecmp (s, "SETTABLE_BACKGROUND") == 0)
+    return _plotter->have_settable_bg;
   else if (strcasecmp (s, "HERSHEY_FONTS") == 0)
     return _plotter->have_hershey_fonts;
   else if (strcasecmp (s, "PS_FONTS") == 0)

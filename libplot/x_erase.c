@@ -13,6 +13,7 @@ _x_erase ()
 #endif
 {
   int window_width, window_height;
+  XColor rgb;
 
   if (!_plotter->open)
     {
@@ -20,8 +21,28 @@ _x_erase ()
       return -1;
     }
 
+  rgb.red = _plotter->drawstate->bgcolor.red;
+  rgb.green = _plotter->drawstate->bgcolor.green;
+  rgb.blue = _plotter->drawstate->bgcolor.blue;
+
+  /* allocate color cell */
+  if (XAllocColor (_plotter->dpy, _plotter->cmap, &rgb) == 0)
+    {
+      _plotter->warning ("color request failed, couldn't allocate color cell");
+      return -1;
+    }
+
+  /* if X server's internal representation of background color is different
+     from what we have on file, set background color in X GC */
+  if (_plotter->drawstate->x_bgcolor != rgb.pixel)
+    {
+      _plotter->drawstate->x_bgcolor = rgb.pixel;
+      XSetBackground (_plotter->dpy, _plotter->drawstate->gc, rgb.pixel);
+    }
+
+  /* compute rectangle size; note flipped-y convention */
   window_width = (_plotter->imax - _plotter->imin) + 1;
-  window_height = (_plotter->jmax - _plotter->jmin) + 1;
+  window_height = (_plotter->jmin - _plotter->jmax) + 1;
 
   /* erase by filling rectangle with background color */
   XSetForeground (_plotter->dpy, _plotter->drawstate->gc, 
@@ -39,7 +60,7 @@ _x_erase ()
 		    0, 0,
 		    (unsigned int)window_width, (unsigned int)window_height);
 
-  /* restore `foreground color' attribute */
+  /* restore foreground color in X GC */
   XSetForeground (_plotter->dpy, _plotter->drawstate->gc, 
 		  _plotter->drawstate->x_fgcolor);
 

@@ -1,5 +1,3 @@
-#define NO_OF_LINEMODES 5	/* see linemode.h */
-
 #define PLOT_SIZE 4096.0	/* we use floating point libplot
 				   coordinates in the range [0,PLOT_SIZE] */
 
@@ -56,6 +54,13 @@ typedef struct
   int green;
   int blue;
 } Color;
+
+#define NO_OF_LINEMODES 5	/* see linemode.c */
+#define MAX_COLOR_NAME_LEN 32	/* long enough for all known colors */
+
+/* types of line */
+extern char *linemodes[NO_OF_LINEMODES];
+extern char *colorstyle[NO_OF_LINEMODES];
 
 extern const char	*progname; /* Program name */
 
@@ -122,6 +127,7 @@ set_plotter_parameters __P ((double plot_line_width, char *point_label_font_name
 extern void
 initialize_plotter __P((char *display_type,
 			bool save_screen, 
+			char *bg_color,
 			double frame_line_width,
 			char *frame_color,
 			char *title, char *title_font_name, 

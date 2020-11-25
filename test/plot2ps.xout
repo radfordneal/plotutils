@@ -1,14 +1,19 @@
 %!PS-Adobe-3.0 EPSF-3.0
 %%Creator: GNU libplot drawing library
 %%Title: PostScript plot file
-%%CreationDate: Sun Jan 11 14:37:13 1998
+%%CreationDate: Tue Apr 21 21:23:43 1998
 %%Pages: 1
 %%PageOrder: Ascend
 %%BoundingBox: 85 203 455 591
-%%DocumentFonts: Times-Roman 
+%%DocumentNeededResources: font Times-Roman 
 %%EndComments
 
-%%BeginProcSet: plotps.pro
+%%BeginProlog
+%%EndProlog
+
+%%Page: 1 1
+%%PageBoundingBox: 85 203 455 591
+%%BeginPageSetup
 /DrawDict 50 dict def
 DrawDict begin
 
@@ -452,14 +457,9 @@ x exch get /tailx exch def
 brushRightArrow { tipx tipy tailx taily arrowhead } if
 end
 } dup 0 4 dict put def
-%%EndProcSet
-%%EndProlog
 
-%%BeginSetup
 /Times-Roman reencodeISO def
-%%EndSetup
-
-%%Page: 1 1
+%%EndPageSetup
 
 %I Idraw 8
 
@@ -16317,8 +16317,9 @@ End
 
 End %I eop
 
-%%Trailer
-
 end
 showpage
+%%PageTrailer
+
 %%EOF
+

@@ -1,6 +1,6 @@
 /* This file is the point-reader half of GNU graph.  Included here are
-   routines that will read one or more points from an input stream.  The
-   input stream may be in ascii format (a sequence of floating-point
+   routines that will read one or more points from an input file.  The
+   input file may be in ascii format (a sequence of floating-point
    numbers, separated by whitespace), or in binary format (a sequence of
    doubles).  Gnuplot table format is also supported.
 
@@ -28,46 +28,46 @@
    new polyline, should be moved to without drawing a line segment.  By
    convention, the final seven fields, and have_?_errorbar, are the same
    for each point in a polyline.  We use the term `dataset' to refer to the
-   sequence of points in an input stream that gives rise to a single
+   sequence of points in an input file that gives rise to a single
    polyline.
 
-   A dataset may be read from an input stream by calling read_dataset().
+   A dataset may be read from an input file by calling read_dataset().
    The return value indicates whether the dataset ended with an explicit
    end-of-dataset separator, i.e., whether another dataset is expected to
    follow, or whether, instead, the dataset terminated because the end of
-   the stream was reached.  If the input stream is in ascii format, two
+   the stream was reached.  If the input file is in ascii format, two
    \n's in succession serves as a separator between datasets.  If, instead,
-   the input stream is in binary format (a sequence of doubles), then a
-   single MAXDOUBLE serves as a dataset separator.  If the input stream is
+   the input file is in binary format (a sequence of doubles), then a
+   single MAXDOUBLE serves as a dataset separator.  If the input file is
    in gnuplot `table' format, then two \n's in succession serves as a
    separator.  But there are always two \n's before EOF; this is different
    from ascii format.
 
    [A single point, rather than an entire dataset, may be read from an
-   input stream by calling read_point().  See comments in the code in
+   input file by calling read_point().  See comments in the code in
    regard to its return value.]
 
    Before any points are read, the point-reader must first be initialized
    by a call to initialize_reader().  It sets various reader parameters;
    for example, the initial linemode and symbol type, and the format of the
-   input stream.  reset_reader() should be called after completing the
+   input file.  reset_reader() should be called after completing the
    reading of each dataset.  Besides breaking the polyline, it increments
    the linemode by unity (if the reader's `autobump' flag is set).  Also,
-   after finishing with an input stream, and before switching to another
-   input stream as a source of points, set_reader_parameters() is normally
+   after finishing with an input file, and before switching to another
+   input file as a source of points, set_reader_parameters() is normally
    called.  It updates the parameters of the reader that may differ from
    stream to stream.
 
-   Note that directives in the input stream, specifying a change of
+   Note that directives in the input file, specifying a change of
    linemode / symbol type, are supported.  Any such directive automatically
    terminates a dataset, and begins a new one.  This is in agreement with
    the convention that every point in a polyline have the same linemode,
    and the same plotting symbol.  During the reading of an ascii-format
-   input stream, a string of the form "#m=%d,S=%d" will be interpreted as a
+   input file, a string of the form "#m=%d,S=%d" will be interpreted as a
    directive to change to a specified linemode / symbol type.  Here the two
    %d's are the new linemode and symbol type, respectively.  There is
    currently no way of changing to a specific linemode / symbol type during
-   the reading of a input stream that is in binary format. */
+   the reading of a input file that is in binary format. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -262,10 +262,10 @@ set_reader_parameters (input_type, auto_abscissa, delta_x, abscissa,
    supported).  Return value is 0 if a data point was read, and 1 if no
    data point could be read due to EOF or garbage in file.  A return value
    of 2 indicates that no point was read, but an explicit end-of-dataset
-   indicator was seen in the input stream.  For an ascii stream this is two
+   indicator was seen in the input file.  For an ascii stream this is two
    newlines in succession; for a double stream this is a MAXDOUBLE.  A
    return value of 3 is special: it indicates that no point was read, but a
-   `set linemode / symbol type' directive was seen in the input stream.  By
+   `set linemode / symbol type' directive was seen in the input file.  By
    convention we break any polyline under construction when such a
    directive is seen.  A return value of 4 signifies a `soft EOF' (we
    already returned an end-of-dataset, and this EOF shouldn't be
@@ -295,7 +295,7 @@ read_point (input, point)
   point->fill_fraction = reader.fill_fraction;
   point->use_color = reader.use_color;
   point->have_x_errorbar = false; /* not supported yet */
-  point->have_y_errorbar = (reader.input_type == T_ASCII_ERRORBAR);
+  point->have_y_errorbar = (reader.input_type == T_ASCII_ERRORBAR ? true : false);
   
  head:
 
@@ -432,13 +432,12 @@ read_point_ascii (input, point)
   two_newlines = skip_whitespace (input);
   if (two_newlines)
     return 2;			/* end of dataset */
-
-  lookahead = getc (input);
-  if (lookahead == EOF)
-    return 1;			/* EOF */
-  ungetc (lookahead, input);
+  if (feof (input))
+    return 1;
 
   /* process linemode / symbol type directive */
+  lookahead = getc (input);
+  ungetc (lookahead, input);
   if (lookahead == (int)'#')
     {
       int new_symbol, new_linemode;
@@ -487,7 +486,7 @@ read_point_ascii (input, point)
   else 
     {
       if (!reader.auto_abscissa)
-	fprintf (stderr, "%s: ascii-format input file terminated prematurely\n", progname);
+	fprintf (stderr, "%s: input file terminated prematurely\n", progname);
       return 1;			/* couldn't get y coor, effectively EOF */
     }
 }
@@ -511,13 +510,12 @@ read_point_ascii_errorbar (input, point)
   two_newlines = skip_whitespace (input);
   if (two_newlines)
     return 2;			/* end of dataset */
-
-  lookahead = getc (input);
-  if (lookahead == EOF)
-    return 1;			/* EOF */
-  ungetc (lookahead, input);
+  if (feof (input))
+    return 1;
 
   /* process linemode / symbol type directive */
+  lookahead = getc (input);
+  ungetc (lookahead, input);
   if (lookahead == (int)'#')
     {
       int new_symbol, new_linemode;
@@ -667,14 +665,21 @@ read_point_binary (input, point, input_type)
       break;
     }
 
-  if (items_read == 1)
-    return 0;			/* got a pair of floats */
-  else 
+  if (items_read != 1)		/* didn't get a pair of floats */
     {
       if (!reader.auto_abscissa)
-	fprintf (stderr, "%s: binary-format input file terminated prematurely\n", progname);
+	fprintf (stderr, "%s: binary input file terminated prematurely\n", progname);
       return 1;			/* effectively EOF */
     }
+  if (point->x != point->x || point->y != point->y)
+    {
+      fprintf (stderr, "%s: encountered a NaN (not-a-number) in binary input file\n",
+	       progname);
+      return 1;			/* effectively EOF */
+    }
+
+  return 0;			/* got a pair of floats */
+
 }
 
 static int
@@ -695,12 +700,11 @@ read_point_gnuplot (input, point)
   /* skip whitespace, up to but not including 2nd newline */
   two_newlines = skip_whitespace (input);
   if (two_newlines)
-    /* end-of-dataset indicator */
-    return 2;
+    return 2;			/* end of dataset */
+  if (feof (input))
+    return 4;			/* `soft' EOF (won't bump linemode) */
 
   lookahead = getc (input);
-  if (lookahead == EOF)
-    return 4;			/* `soft' EOF (won't bump linemode) */
   ungetc (lookahead, input);
   switch (lookahead)
     {
@@ -714,7 +718,6 @@ read_point_gnuplot (input, point)
       while (c != '\n');
       ungetc ((int)'\n', input); /* push back \n at the end of C line */
       goto head;
-      break;
 
     case 'i':			/* read coordinates */
     case 'o':
@@ -759,7 +762,7 @@ read_point_gnuplot (input, point)
 
 
 /* read_dataset() reads an entire dataset (a sequence of points) from an
-   input stream, and stores it.  The length of the block in which the
+   input file, and stores it.  The length of the block in which the
    points are stored, and the number of points, are passed back.  
 
    Return value = 1 means the dataset terminated with an EOF, and return
@@ -767,7 +770,7 @@ read_point_gnuplot (input, point)
    marker.  An end-of-dataset marker is two newlines in succession for an
    ascii stream, and a MAXDOUBLE for a stream of doubles.  Return value 3
    is special: it signals that a `set linemode / symbol type' directive was
-   seen in the input stream.  By convention, we interpret such a directive
+   seen in the input file.  By convention, we interpret such a directive
    as ending a dataset.  Return value 4 signifies a `soft EOF' (we already
    returned an end-of-dataset, and this EOF shouldn't be interpreted as
    terminating an additional [null] dataset).  The distinction between a
@@ -811,7 +814,7 @@ read_dataset (input, p_addr, length, no_of_points)
   return success;		/* return value = 1, 2, 3, or 4 */
 }
 
-/* read_file() reads all possible datasets from an input stream, and stores
+/* read_file() reads all possible datasets from an input file, and stores
    them.  The length of the block in which the data points are stored, and
    the number of points, are passed back.  */
 
@@ -852,7 +855,7 @@ read_file (input, p_addr, length, no_of_points)
 
 
 /* read_and_plot_dataset() reads an entire dataset (a sequence of points)
-   from an input stream; it calls plot_point() on each point as it is read.
+   from an input file; it calls plot_point() on each point as it is read.
    So plotting is accomplished in real time.  
 
    Return value = 1 means the dataset terminated with an EOF, and return
@@ -860,7 +863,7 @@ read_file (input, p_addr, length, no_of_points)
    marker.  An end-of-dataset marker is two newlines in succession for an
    ascii stream, and a MAXDOUBLE for a stream of doubles.  Return value 3
    is special: it signals that a `set linemode / symbol type' directive was
-   seen in the input stream.  By convention, we interpret such a directive
+   seen in the input file.  By convention, we interpret such a directive
    as ending a dataset.  Return value 4 signifies a `soft EOF' (we already
    returned an end-of-dataset, and this EOF shouldn't be interpreted as
    terminating an additional [null] dataset). */
@@ -933,10 +936,10 @@ read_and_plot_file (input)
 }
 
 
-/* skip_whitespace() skips whitespace in an ascii-format input stream,
+/* skip_whitespace() skips whitespace in an ascii-format input file,
    up to but not including a second newline.  Return value indicates
    whether or not two newlines were in fact seen.  (For ascii-format
-   input streams, two newlines signals an end-of-dataset.) */
+   input files, two newlines signals an end-of-dataset.) */
 
 static bool
 #ifdef _HAVE_PROTOS
@@ -963,5 +966,5 @@ skip_whitespace (stream)
     return false;
   
   ungetc (lookahead, stream);
-  return (nlcount == 2);
+  return (nlcount == 2 ? true : false);
 }

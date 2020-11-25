@@ -182,7 +182,7 @@ stat            : SEP
                 | STEP cexpr ',' cexpr ',' cexpr SEP
                         {
 			double savstep;
-			int savconf;
+			bool savconflag;
 
                         lfree($7);
                         tstart = $2->lx_u.lxu_value;
@@ -192,11 +192,11 @@ stat            : SEP
                         savstep = tstep;
                         tstep = $6->lx_u.lxu_value;
                         lfree($6);
-                        savconf = conflag;
+                        savconflag = conflag;
                         conflag = true;
                         solve();
                         tstep = savstep;
-                        conflag = savconf;
+                        conflag = savconflag;
                         sawstep = true;
                         }
                 | EXAM IDENT SEP

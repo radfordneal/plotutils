@@ -6,4 +6,4 @@
 SUBDIRS = lib spline double ode ode-examples libplot plot tek2plot graph include info doc fonts test
 
 # files with nonstandard names in this directory
-EXTRA_DIST = ABOUT-GNU COMPAT INSTALL.pkg INSTALL.fonts KNOWN_BUGS ONEWS PROBLEMS
+EXTRA_DIST = COMPAT INSTALL.pkg INSTALL.fonts KNOWN_BUGS ONEWS PROBLEMS

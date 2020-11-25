@@ -26,8 +26,11 @@ _m_fconcat (m0, m1, m2, m3, m4, m5)
   if (_plotter->outstream)
     {
       if (_plotter->portable_output)
-	fprintf (_plotter->outstream, "%c %g %g %g %g %g %g\n",
-		 FCONCAT, m0, m1, m2, m3, m4, m5);
+	{
+	  putc (FCONCAT, _plotter->outstream);
+	  fprintf (_plotter->outstream, " %g %g %g %g %g %g\n",
+		   m0, m1, m2, m3, m4, m5);
+	}
       else
 	{
 	  putc (FCONCAT, _plotter->outstream);

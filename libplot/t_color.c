@@ -45,7 +45,7 @@ _t_set_pen_color()
 
 /* _kermit_pseudocolor quantizes to one of kermit's native 16 colors.
    (They provide a [rather strange] partition of the color cube; see
-   colordb.h.) */
+   t_color2.c.) */
 
 /* find closest known point within the RGB color cube, using Euclidean
    distance as our metric */

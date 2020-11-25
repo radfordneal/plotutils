@@ -3,7 +3,7 @@
 bin_PROGRAMS = tek2plot
 
 tek2plot_SOURCES = tek2plot.c Tektable.c
-tek2plot_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ../libplot/libplot.la $(X_LIBS) $(X_PRE_LIBS) $(XLIBS) $(X_EXTRA_LIBS)
+tek2plot_LDADD = ../lib/libcommon.a ../lib/libfontlist.a ../libplot/libplot.la $(X_LIBS) $(X_TOOLKIT_LIBS) $(X_PRE_LIBS) $(X_BASIC_LIBS) $(X_EXTRA_LIBS)
 noinst_HEADERS = Tekparse.h
 
 INCLUDES = -I$(srcdir)/../include

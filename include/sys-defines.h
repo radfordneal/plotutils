@@ -92,6 +92,13 @@ extern void free __P((void));
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
           
+/* <sys/param.h> on DEC Alphas gratuitously defines this; undefine it 
+   since it's defined in plot.h */
+#ifdef FSCALE
+#undef FSCALE
+#endif
+
+/* we are logical */
 #ifndef __cplusplus
 #ifdef __STDC__
 typedef enum { false = 0, true = 1 } bool;

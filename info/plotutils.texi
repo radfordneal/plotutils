@@ -25,8 +25,8 @@
 @end iftex
 
 @ifinfo
-This file documents version @value{VERSION} of the GNU plotting
-utilities package.  Last updated @value{UPDATED}.
+This file documents version 2.1 of the GNU plotting
+utilities package.
 
 Copyright @copyright{} 1989--1998 Free Software Foundation, Inc.
 
@@ -48,7 +48,7 @@ by the Foundation.
 @titlepage
 @title The GNU Plotting Utilities
 @subtitle Programs and functions for drawing and data plotting
-@subtitle Version @value{VERSION}, @value{UPDATED}
+@subtitle Version 2.1
 @author Robert S. Maier and Nicholas B. Tufillaro
 @page
 @vskip 0pt plus 1filll
@@ -72,7 +72,7 @@ by the Foundation.
 
 @node Top, Plotutils Intro, (dir), (dir)
 @ifinfo
-This is the documentation for version @value{VERSION} of the GNU
+This is the documentation for version 2.1 of the GNU
 plotting utilities package.  The package consists of programs and
 functions for data plotting and vector graphics.
 @end ifinfo
@@ -160,17 +160,19 @@ if you have a legacy application that produces drawings in Tektronix
 format.
 
 Among the other GNU plotting utilities, @code{spline} does spline
-interpolation of data.  It normally uses either cubic spline
-interpolation or exponential splines in tension, but like @code{graph}
-it can function as a real-time filter under some circumstances.
-@code{ode} provides the ability to integrate an ordinary differential
-equation or a system of ordinary differential equations, when provided
-with an explicit expression for each equation.  It supplements the
-plotting program @code{gnuplot}, which can plot functions but not
-integrate ordinary differential equations.  The final plotting utility,
-@code{double}, is a filter for converting, scaling and cutting binary or
-ASCII data streams.  It is still under development and is not yet
-documented.
+interpolation of scalar or vector-valued data.  It normally uses either
+cubic spline interpolation or exponential splines in tension, but like
+@code{graph} it can function as a real-time filter under some
+circumstances.  Besides splining datasets, it can construct curves,
+either open or closed, through arbitrarily chosen points in
+@math{d}-dimensional space.  @code{ode} provides the ability to
+integrate an ordinary differential equation or a system of ordinary
+differential equations, when provided with an explicit expression for
+each equation.  It supplements the plotting program @code{gnuplot},
+which can plot functions but not integrate ordinary differential
+equations.  The final plotting utility, @code{double}, is a filter for
+converting, scaling and cutting binary or ASCII data streams.  It is
+still under development and is not yet documented.
 
 Distributed along with the plotting utilities is GNU @code{libplot}, the
 function library for device-independent two-dimensional vector graphics
@@ -330,12 +332,13 @@ emulate a Tektronix 4014 terminal is the DOS version of @code{kermit}.
 which it is invoked.  We have already mentioned the @code{PAGESIZE}
 environment variable, which affects the operation of @code{graph -T ps},
 @code{graph -T fig}, and @code{graph -T hpgl}.  The @code{DISPLAY} and
-@code{TERM} environment variables affect the operation of @code{graph -T
-X} and @code{graph -T tek}, respectively.  There are also several
-environment variables that affect the operation of @code{graph -T hpgl}.
-For a complete discussion of the effects of the environment on
-@code{graph}, see @ref{graph Environment}.  The following remarks apply
-irrespective of which display device is specified.
+@code{BITMAPSIZE} environment variables affect the operation of
+@code{graph -T X}, and the @code{TERM} environment variable affects the
+operation of @code{graph -T tek}.  There are also several environment
+variables that affect the operation of @code{graph -T hpgl}.  For a
+complete discussion of the effects of the environment on @code{graph},
+see @ref{graph Environment}.  The following remarks apply irrespective
+of which display device is specified.
 
 By default, successive points in the dataset are joined by solid line
 segments, which form a polygonal line or polyline that we call simply a
@@ -576,20 +579,23 @@ position, the plot will be shifted slightly downward and to the left.
 
 The `graphics display', within which the plotting box is located, is an
 abstraction.  For @code{graph -T X}, it is a square window on an @w{X
-display}.  For @code{graph -T tek}, it is a square region occupying the
-central part of a Tektronix display.  (Tektronix displays are 4/3 times
-as wide as they are high.)  For @code{graph -T ps}, @w{by default} it is
-a square region centered on an 8.5@dmn{in} by 11@dmn{in} page (@w{US
-letter} size), occupying the full width of the page with allowance being
-made for margins.  For @code{graph -T fig}, @w{by default} it is a
-square region of the same size, positioned in the upper left corner of
-an @code{xfig} display.  For @code{graph -T hpgl}, @w{by default} it is
-a square region of the same size, position and orientation on the page
-are controlled by environment variables.  The page size used by
-@code{graph -T ps}, @code{graph -T fig}, and @code{graph -T hpgl} may be
-altered by setting the environment variable @code{PAGESIZE}.  For
-example, setting it to "a4" would position the graphics display
-appropriately on an A4-size page (21@dmn{cm} by 29.7@dmn{cm}).
+display}, the size of which may be set by using the @code{--bitmap-size}
+option, or by setting the @code{BITMAPSIZE} environment variable.  For
+@code{graph -T tek}, it is a square region occupying the central part of
+a Tektronix display.  (Tektronix displays are 4/3 times as wide as they
+are high.)  For @code{graph -T ps}, @w{by default} it is a square region
+centered on an 8.5@dmn{in} by 11@dmn{in} page (@w{US letter} size),
+occupying the full width of the page with allowance being made for
+margins.  For @code{graph -T fig}, @w{by default} it is a square region
+of the same size, positioned in the upper left corner of an @code{xfig}
+display.  For @code{graph -T hpgl}, @w{by default} it is a square region
+of the same size, with position and orientation on the page being
+controlled by environment variables.  The page size used by @code{graph
+-T ps}, @code{graph -T fig}, and @code{graph -T hpgl} may be set by
+using the @code{--page-size} option, or by setting the environment
+variable @code{PAGESIZE}.  For example, setting @code{PAGESIZE} to "a4"
+would position the graphics display appropriately on an A4-size page
+(21@dmn{cm} by 29.7@dmn{cm}).
 
 Changing the width of the plotting box may have unforeseen consequences.
 @w{A number} of command-line options specify sizes or dimensions as
@@ -827,7 +833,7 @@ The inclusion of multiple datasets within a single binary file is
 supported.  If a binary file contains more than a single dataset,
 successive datasets should be separated by a single occurrence of the
 the largest possible number.  For single precision datasets this is the
-quantity @code{MAXFLOAT}, for single precision datasets it is the
+quantity @code{MAXFLOAT}, for double precision datasets it is the
 quantity @code{MAXDOUBLE}, and for integer datasets it is the quantity
 @code{MAXINT}.  On most machines @code{MAXFLOAT} is approximately
 3.4x10^38, @code{MAXDOUBLE} is approximately 1.8x10^308, and
@@ -839,7 +845,7 @@ The inclusion of multiple datasets within a single binary file is
 supported.  If a binary file contains more than a single dataset,
 successive datasets should be separated by a single occurrence of the
 the largest possible number.  For single precision datasets this is the
-quantity @code{MAXFLOAT}, for single precision datasets it is the
+quantity @code{MAXFLOAT}, for double precision datasets it is the
 quantity @code{MAXDOUBLE}, and for integer datasets it is the quantity
 @code{MAXINT}.  On most machines @code{MAXFLOAT} is approximately
 $3.4\times10^{38}$, @code{MAXDOUBLE} is approximately
@@ -911,7 +917,7 @@ variables, so there is a section discussing them as well.
 * Multiplot Options::	Options for drawing several plots at once
 * Raw graph Options::	Options relevant only to raw graph
 * Info Options::	Options requesting information (e.g., ---help)
-* graph Environment::   Environment variables and X resources
+* graph Environment::   Environment variables
 @end menu
 
 @node Plot Options, Dataset Options, graph Invocation, graph Invocation
@@ -933,11 +939,13 @@ which may be one of the strings "X", "ps", "fig", "hpgl", "tek", and
 @code{idraw}-editable Postscript, the format used by the @code{xfig}
 drawing editor, the Hewlett--Packard Graphics Language, Tektronix
 format, and device-independent GNU metafile format.
+
 @item -f @var{font_size}
 @itemx --font-size @var{font_size}
 (Float, default 0.0525.)  Set the size of the font used for the axis and
 tick labels, as a fraction of the size of the `plotting box' (the box
 that frames the plot), to be @var{font_size}.
+
 @item -F @var{font_name}
 @itemx --font-name @var{font_name}
 (String, default "Helvetica" except for @code{graph -T hpgl} and
@@ -948,6 +956,7 @@ be overridden with the @samp{--title-font-name} option (see below).
 Font names are case-insensitive.  For a list of available fonts, see
 @ref{Text Fonts}.  If the specified font is not available, the default
 font will be used.
+
 @item -g @var{grid_style}
 @itemx --grid-style @var{grid_style}
 (Integer, default 2.)  Set the grid style for the plot to be
@@ -970,6 +979,7 @@ a multiplot) to be @var{height}.  @w{A value} of 1.0 will produce a
 plotting box that fills the available area.  Note that tick marks and
 labels are outside the plotting box, so that values less than 1.0 are
 generally used.
+
 @item -K @var{clip_mode}
 @itemx --clip-mode @var{clip_mode}
 (Integer, default 1.) Set the clip mode for the plot to @var{clip_mode}.
@@ -982,6 +992,7 @@ box.  Clip @w{mode 1} means that it will be plotted if no more than one of
 the two points is outside, and clip @w{mode 2} means that it will be plotted
 even if both are outside.  In all cases the line segment will be clipped
 to the plotting box.
+
 @item -L @var{top_label}
 @itemx --top-label @var{top_label}
 (String, default empty.)  Place the text string @var{top_label} above
@@ -991,21 +1002,25 @@ be used to specify the size of the font.  The font is normally the same
 as the font used for labelling axes and tick labels, as selected by the
 @samp{-F} option.  But this may be overridden with the
 @samp{--title-font-name} option.
+
 @item -l @var{x|y}
 @itemx --toggle-log-axis @var{x|y}
 Set the specified axis to be a log axis rather than a linear axis, or
 vice versa.  By default, both axes are linear axes.
+
 @item -N @var{x|y}
 @itemx --toggle-no-ticks @var{x|y}
 Toggle the presence of ticks and tick labels on the specified axis.
 This applies to the grid styles that normally include ticks and tick
 labels, i.e., grid styles 1, 2, 3, @w{and 4}.
+
 @item -R @var{x|y}
 @itemx --toggle-round-to-next-tick @var{x|y}
 Toggle the rounding of the limits of the specified axis, so that they
 are integer multiples of the spacing between labeled tick marks.  By
 default this does not take place if the user uses the @samp{-x} or
 @samp{-y} options to set axis limits explicitly.
+
 @item -r @var{right}
 @itemx --right-shift @var{right}
 (Float, default 0.2.)  Move the plot to the right by a fractional amount
@@ -1014,12 +1029,14 @@ display, in the case of a multiplot).  This produces a margin on the
 left side of the plotting box.  @w{A value} of 0.5 will produce a margin
 half the width of the available area.  Note that the tick marks and
 labels are drawn in the margin.
+
 @item -s
 @itemx --save-screen
 Save the screen.  This option requests that @code{graph} not erase the
 display device before it begins to plot.  This is relevant only to
-@code{graph -T tek} and raw @code{graph}.  @w{It may} be employed to
-perform a crude sort of multiplotting.
+@code{graph -T tek}.  @w{It may} be employed to perform a crude sort of
+multiplotting.
+
 @item -T @var{tick_size}
 @itemx --tick-size @var{tick_size}
 (Float, default .02.) Set the fractional size of the tick marks on each
@@ -1027,6 +1044,7 @@ axis to be @var{tick_size}.  @w{A value} of 1.0 produces tick marks on the x
 axis whose length is equal to the width of the plotting box.  @w{A negative}
 @var{tick_size} will yield tick marks that extend outside the box,
 rather than inside.  
+
 @item -t
 @itemx --toggle-transpose-axes
 Transpose the abscissa and ordinate.  This causes the axes to be
@@ -1037,6 +1055,7 @@ pairs, and such options as @samp{-x} and @samp{-X} apply to the
 option is in force, so that the data points are read with error bars,
 the orientation of the error bars will be switched between vertical and
 horizontal.
+
 @item -u @var{up}
 @itemx --upward-shift @var{up}
 (Float, default 0.2.)  Move the plot up by a fractional amount @var{up}
@@ -1045,6 +1064,7 @@ case of a multiplot).  This produces a margin below the plotting box.
 @w{A value} of 0.5 will produce a margin half the height of the
 available area.  Note that the tick marks and labels are drawn in the
 margin.
+
 @item -w @var{width}
 @itemx --width-of-plot @var{width}
 (Float, default 0.6.) Set the fractional width of the plot with respect
@@ -1053,6 +1073,7 @@ multiplot) to be @var{width}.  @w{A value} of 1.0 will produce a plotting
 box that fills the available area.  Note that the tick marks and labels
 are outside the plotting box, so values less than 1.0 are generally
 used.
+
 @item -x [@var{lower_limit} [@var{upper_limit} [@var{spacing}]]]
 @itemx --x-limits [@var{lower_limit} [@var{upper_limit} [@var{spacing}]]]
 (Floats.) The arguments @var{lower_limit} and @var{upper_limit} specify
@@ -1061,18 +1082,21 @@ the limits of the @w{@math{x} axis}, and the optional argument
 any of the three arguments is missing, it is computed from the data.
 The arguments @var{lower_limit} and @var{upper_limit} must be present if
 @code{graph} is to act as a real-time filter.
+
 @item -y [@var{lower_limit} [@var{upper_limit} [@var{spacing}]]]
 @itemx --y-limits [@var{lower_limit} [@var{upper_limit} [@var{spacing}]]]
 (Floats.)  The arguments specify the limits of the @math{y} axis, and
 the spacing of labeled ticks along it, as for the @w{@math{x} axis} (see
 above).  The arguments @var{lower_limit} and @var{upper_limit} must be
 present if @code{graph} is to act as a real-time filter.
+
 @item -X @var{x_label}
 @itemx --x-title @var{x_label}
 (String, default empty.)  Set the label for the @math{x} axis to be the text
 string @var{x_label}.  The string may include escape sequences
 (@pxref{Text String Format}).  The @samp{-F} and @samp{-f} options may
 be used to specify the name of the font and the size of the font.
+
 @item -Y @var{y_label}
 @itemx --y-title @var{y_label}
 (String, default empty.) Set the label for the @math{y} axis to be the
@@ -1084,11 +1108,29 @@ displays do not support rotated labels, and require the
 @samp{--toggle-rotate-y-label} option.  The @samp{-F} and @samp{-f}
 options may be used to specify the name of the font and the size of the
 font.
+
+@item --bg-color @var{name}
+(String, default "white".)  Set the color used for the plot background
+to be @var{name}.  This is relevant only to @code{graph -T X}.  @w{An
+unrecognized} name sets the color to the default.  For information on
+what names are recognized, see @ref{Color Names}.
+
+@item --bitmap-size @var{bitmap_size}
+(String, default "570x570".)  Set the size of the graphics display, in
+terms of pixels, to be @var{bitmap_size}.  This is relevant only to
+@code{graph -T X}, for which the graphics display is an @w{X window}.
+The use of a square window, rather than a rectangular window, is
+recommended.  The environment variable @code{BITMAPSIZE} may equally
+well be used to specify the window size.  For backward compatibility,
+the @w{X resource} @code{Xplot.geometry}, which may be set by the user,
+may be used instead.
+
 @item --frame-color @var{name}
 (String, default "black".)  Set the color used for drawing the plot
 frame, and for drawing monochrome datasets @w{(if any)} to be
 @var{name}.  @w{An unrecognized} name sets the color to the default.
 For information on what names are recognized, see @ref{Color Names}.
+
 @item --frame-line-width @var{frame_line_width}
 (Float, default @minus{}1.0.)  Set the width of lines in the plot frame,
 as a fraction of the width of the display, to @var{frame_line_width}.
@@ -1103,7 +1145,7 @@ invisible).
 default width, and @code{graph -T hpgl} does not support @w{doing so} if
 the environment variable @code{HPGL_VERSION} is set to a value less than
 "2" (the default).  
-@code{idraw}.
+
 @item --max-line-length @var{max_line_length}
 (Integer, default 500.) Set the maximum number of points that a
 polygonal line drawn through any dataset may contain, before it is
@@ -1119,6 +1161,7 @@ buffer sizes.  The environment variable @code{MAX_LINE_LENGTH} may
 also be used to specify the maximum line length.  This option has no
 effect in @code{graph -T tek} or raw @code{graph}, since they draw
 polylines in real time.
+
 @item --page-size @var{pagesize}
 (String, default "letter".)  Set the size of the page on which the plot
 will be positioned.  This is relevant only to @code{graph -T ps},
@@ -1137,6 +1180,14 @@ width equal to the width of the specified page.  @code{graph -T hpgl}, fine
 control over the positioning of the graphics display on the page may be
 accomplished by setting certain environment variables (@pxref{graph
 Environment}).
+
+@item --pen-colors @var{colors}
+(String, default "1=red:2=green:3=blue:4=magenta:5=cyan".)  Set the
+colors of the pens used for drawing plots, as numbered, to be
+@var{colors}.  The format should be self-explanatory.  @w{An
+unrecognized} name sets the corresponding color to the default.  For
+information on what names are recognized, see @ref{Color Names}.
+
 @item --rotate @var{angle}
 (Integer, default 0.)  Set the rotation angle of the plot on the page,
 relative to the default orientation.  This is currently relevant only to
@@ -1145,6 +1196,7 @@ landscape orientations.  Recognized values for @var{angle} are 0, 90,
 180, @w{and 270}.  @w{"no" and} "yes" are equivalent to @w{0 and 90},
 respectively.  The environment variable @code{ROTATE} may equally well
 be used to specify the rotation angle.
+
 @item --title-font-name @var{title_font_name}
 (String, default "Helvetica" except for @code{graph -T hpgl} and
 @code{graph -T tek}, for which "HersheySerif" is the default.)  Set the
@@ -1155,17 +1207,20 @@ labelling the axes and the ticks along the axes, as specified by the
 to override this.  Font names are case-insensitive; for a list of
 available fonts, see @ref{Text Fonts}.  @w{If the} font is not
 available, the default font will be used.
+
 @item --title-font-size @var{title_font_size}
 (Float, default 0.07.)  Set the size of the font for the top
 label (`title'), as specified by the @samp{-L} option, to
 @var{title_font_size}.  The size is expressed as a fraction of the size
 of the plotting box.
+
 @item --toggle-rotate-y-label
 Position the label on the @math{y} axis (which is set with the @samp{-Y}
 option) horizontally instead of vertically, or vice versa.  By default
 the label is rotated, so that it is positioned parallel to the
 @w{@math{y} axis}.  But some display devices (e.g., old @w{X Window}
 System displays) cannot handle rotated text.
+
 @item --toggle-switch-axis-end @var{x|y}
 Set the end of the indicated axis through which the other axis passes to
 be the opposite of what is currently the case.  E.g.,
@@ -1196,13 +1251,13 @@ This specifies which format the subsequent input file(s) are in.
 
 @table @samp
 @item a  
-ASCII format.  Each input file consists of pairs of floating point
-numbers, interpreted as the @math{x} @w{and @math{y}} coordinates of the
-data points in a dataset.  The @math{x} @w{and @math{y}} coordinates of
-a point need not appear on the same line, and points need not appear on
-different lines.  But if a blank line occurs (i.e., two newlines in
-succession are seen), @w{it is} interpreted as the end of a dataset, and
-the beginning of the next.
+ASCII format.  Each input file is a sequence of floating point numbers,
+interpreted as the @math{x} @w{and @math{y}} coordinates of the
+successive data points in a dataset.  The @math{x} @w{and @math{y}}
+coordinates of a point need not appear on the same line, and points need
+not appear on different lines.  But if a blank line occurs (i.e., two
+newlines in succession are seen), @w{it is} interpreted as the end of a
+dataset, and the beginning of the next.
 @item e
 ASCII format, including error bars.  Similar to @samp{a} format, except
 that triples (@math{x},@math{y},@i{error}) appear instead of pairs
@@ -1267,12 +1322,13 @@ $2^{31}-1$.
 (Floats, defaults 1.0 and 0.0.) Automatically generate abscissa
 (@math{x}) values.  Irrespective of data format (@samp{a}, @samp{e},
 @samp{f}, @samp{d}, @w{or @samp{i}}), this option specifies that the
-abscissa (@math{x}) values are missing: the dataset(s) to be read
-contain only ordinate (@math{y}) values.  The difference between
-successive @w{@math{x} values} will be @var{step_size}, and the first
-@w{@math{x} value} will be @var{lower_limit}.  To return to reading
-abscissa values from the input you may specify @samp{-a 0}, which
-disables automatic generation of the abscissa and returns
+abscissa (@math{x}) values are missing from the input file: the
+dataset(s) to be read contain only ordinate (@math{y}) values.  The
+increment from each @w{@math{x} value} to the next will be
+@var{step_size}, and the first @w{@math{x} value} will be
+@var{lower_limit}.  @w{To return} to reading abscissa values from the
+input, i.e., for subsequent input files, you may specify @samp{-a 0},
+which disables automatic generation of the abscissa values and returns
 @var{step_size} and @var{lower_limit} to their default values.
 @item -B
 @itemx --toggle-auto-bump
@@ -1470,23 +1526,20 @@ package, and exit.
 @end table
 
 @node graph Environment, , Info Options, graph Invocation
-@section Environment variables and X Window System resources
+@section Environment variables
 
 The behavior of @code{graph} is affected by several environment
-variables and @w{X Window} System resources.  We have already mentioned
-the environment variables @code{PAGESIZE}, @code{ROTATE}, and
-@code{MAX_LINE_LENGTH}.  They simply serve as backups for the options
-@samp{--page-size}, @samp{--rotate}, and @samp{--max-line-length}.  The
-remaining environment variables are specific to individual display
-devices.  They control device driver parameters.
+variables.  We have already mentioned the environment variables
+@code{BITMAPSIZE}, @code{PAGESIZE}, @code{MAX_LINE_LENGTH}, and
+@code{ROTATE}.  They simply serve as backups for the options
+@samp{--bitmap-size}, @samp{--page-size}, @samp{--max-line-length}, and
+@samp{--rotate}.  The remaining environment variables are specific to
+individual display devices.  They control device driver parameters.
 
-@code{graph -T X}, which pops up a window on an @w{X Window} System display
-and draws graphics @w{in it}, checks the @code{DISPLAY} environment
-variable.  The value of this variable determines the display on which
-the window will be @w{popped up}.  @code{graph -T X} also looks at the @w{X
-resource} @code{Xplot.geometry}.  @w{It will} use the value of this
-resource, which may be set by the user, as the size of the window @w{in
-terms} of pixels.  The default value is "570x570".
+@code{graph -T X}, which pops up a window on an @w{X Window} System
+display and draws graphics @w{in it}, checks the @code{DISPLAY}
+environment variable.  The value of this variable determines the display
+on which the window will be @w{popped up}.
 
 @code{graph -T hpgl}, which produces Hewlett--Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -1559,7 +1612,7 @@ to switch between the two modes.
 @menu
 * plot Examples::	How to use a plot filter
 * plot Invocation::	Command-line options
-* plot Environment::    Environment variables and X resources
+* plot Environment::    Environment variables
 @end menu
 
 @node plot Examples, plot Invocation, plot, plot
@@ -1611,7 +1664,7 @@ plot -T ps < test.plot | lpr
 @end example
 
 @noindent
-To edit it with the idraw drawing editor, you would do
+To edit it with the @code{idraw} drawing editor, you would do
 
 @example
 @group
@@ -1634,11 +1687,12 @@ xfig test.fig
 @code{plot} may behave differently depending on the environment in which
 it is invoked.  In particular, @code{plot -T ps}, @code{plot -T fig},
 and @code{plot -T hpgl} are affected by the environment variable
-@code{PAGESIZE}.  @code{plot -T X} and @code{plot -T tek} are affected
-by the environment variables @code{DISPLAY} and @code{TERM},
-respectively.  There are also several environment variables that affect
-the operation of @code{plot -T hpgl}.  For a complete discussion of the
-effects of the environment on @code{plot}, see @ref{plot Environment}.
+@code{PAGESIZE}.  @code{plot -T X} is affected by the environment
+variables @code{DISPLAY} and @code{BITMAPSIZE}, and @code{plot -T tek}
+is affected by the environment variable @code{TERM}.  There are also
+several environment variables that affect the operation of @code{plot -T
+hpgl}.  For a complete discussion of the effects of the environment on
+@code{plot}, see @ref{plot Environment}.
 
 @node plot Invocation, plot Environment, plot Examples, plot
 @section @code{plot} command-line options
@@ -1679,6 +1733,27 @@ which may be one of the strings "X", "ps", "fig", "hpgl", "tek", and
 @code{idraw}-editable Postscript, the format used by the @code{xfig}
 drawing editor, the Hewlett--Packard Graphics Language, Tektronix
 format, and device-independent GNU metafile format.
+
+@item -p @var{n}
+@itemx --page-number @var{n}
+(Positive integer.) Display only page number @var{n}, within the
+metafile or sequence of metafiles that is being translated.  Metafiles
+may consist of one or more pages, numbered beginning @w{with 1}.  @w{By
+default}, @code{plot} translates all pages.  For example, @code{plot -T
+X} displays each page in its own @w{X window}.  This option may be used
+to override the default behavior and select a particular page for
+display.
+
+@item --bitmap-size @var{bitmap_size}
+(String, default "570x570".)  Set the size of the graphics display, in
+terms of pixels, to be @var{bitmap_size}.  This is relevant only to
+@code{plot -T X}, for which the graphics display is an @w{X window}.
+The use of a square window, rather than a rectangular window, is
+recommended.  The environment variable @code{BITMAPSIZE} may equally
+well be used to specify the window size.  For backward compatibility,
+the @w{X resource} @code{Xplot.geometry}, which may be set by the user,
+may be used instead.
+
 @item --max-line-length @var{max_line_length}
 (Integer, default 500.) Set the maximum number of points that a
 polygonal line may contain, before it is flushed to the display device,
@@ -1693,6 +1768,7 @@ buffer sizes.  The environment variable @code{MAX_LINE_LENGTH} may also
 be used to specify the maximum line length.  This option has no effect
 in @code{plot -T tek} or raw @code{plot}, since they draw polylines in
 real time.
+
 @item --page-size @var{pagesize}
 (String, default "letter".) Set the size of the page on which the plot
 will be positioned.  This is relevant only to @code{plot -T ps},
@@ -1711,6 +1787,7 @@ width equal to the width of the specified page.  For @code{plot -T hpgl},
 fine control over the positioning of the graphics display on the page
 may be accomplished by setting certain environment variables
 (@pxref{plot Environment}).
+
 @item --rotate @var{angle}
 (Integer, default 0.)  Set the rotation angle of the plot on the page,
 relative to the default orientation.  This is currently relevant only to
@@ -1728,11 +1805,18 @@ plotting old metafiles in the pre-GNU `plot(5)' format, which did not
 include such directives.
 
 @table @samp
+@item --bg-color @var{name}
+(String, default "white".)  Set the color used for the drawing
+background to be @var{name}.  This is relevant only to @code{plot -T
+X}.  @w{An unrecognized} name sets the color to the default.  For
+information on what names are recognized, see @ref{Color Names}.
+
 @item -f @var{font_size}
 @itemx --font-size @var{font_size}
 (Float, default 0.0525.)  Set the initial size of the font used
 for rendering text, as a fraction of the width of the display device, to
 @var{font_size}.
+
 @item -F @var{font_name}
 @itemx --font-name @var{font_name}
 (String, default "Helvetica" except for @code{plot -T hpgl} and
@@ -1741,6 +1825,7 @@ initially used for text (i.e., for `labels') to @var{font_name}.  Font
 names are case-insensitive.  For a list of available fonts, see
 @ref{Text Fonts}.  If the specified font is not available, the default
 font will be used.
+
 @item -W @var{line_width}
 @itemx --line-width @var{line_width}
 (Float, default @minus{}1.0.)  Set the width of lines, as a fraction of
@@ -1755,6 +1840,7 @@ others, a zero-width line is invisible).
 width, and @code{plot -T hpgl} does not support @w{doing so} if the
 environment variable @code{HPGL_VERSION} is set to a value less than "2"
 (the default).
+
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
 unrecognized name sets the pen color to the default.  For information on
@@ -1777,23 +1863,32 @@ format the input @w{is in}.  There are two types: binary (the default)
 and portable (human-readable).  The binary format is machine-dependent.
 @xref{Metafiles}.
 
-For compatibility with older software, the reading of input files in the
-pre-GNU `plot(5)' metafile format is also supported.  This is a binary
-format, with each integer argument represented as exactly two bytes.
-The order of the two bytes is machine dependent.  You may specify that
-the input is in plot(5) format rather than the ordinary GNU metafile
-format by using either the @samp{-h} option (``high byte first'') or the
-@samp{-l} option (``low byte first'').
+For compatibility with older plotting software, the reading of input
+files in the pre-GNU `plot(5)' format is also supported.  This is
+normally a binary format, with each integer in the metafile represented
+as a pair of bytes.  The order of the two bytes is machine dependent.
+You may specify that input file(s) are in plot(5) format rather than
+ordinary GNU metafile format by using either the @samp{-h} option
+(``high byte first'') or the @samp{-l} option (``low byte first''),
+whichever is appropriate.  Some non-GNU systems support an ASCII
+(human-readable) variant of plot(5) format.  You may specify that the
+input is in this format by using the @samp{-A} option.  Irrespective of
+the variant, a file in plot(5) format includes only one page of
+graphics.
 
 @table @samp
 @item -h
 @itemx --high-byte-first-input
-Input is assumed to be in the traditional `plot(5)' metafile format,
-with the high-order byte of each integer occurring first.
+Input file(s) are assumed to be in traditional `plot(5)' metafile
+format, with the high-order byte of each integer occurring first.
 @item -l
 @itemx --low-byte-first-input
-Input is assumed to be in the traditional `plot(5)' metafile format,
-with the low-order byte of each integer occurring first.
+Input file(s) are assumed to be in traditional `plot(5)' metafile
+format, with the low-order byte of each integer occurring first.
+@item -A
+@itemx --ascii-input
+Input file(s) are assumed to be in the ASCII variant of traditional
+`plot(5)' metafile format.
 @end table
 
 The following options request information.
@@ -1816,23 +1911,20 @@ package, and exit.
 @end table
 
 @node plot Environment, , plot Invocation, plot
-@section Environment variables and X Window System resources
+@section Environment variables
 
-The behavior of @code{plot} is affected by several environment variables
-and @w{X Window} System resources.  We have already mentioned the
-environment variables @code{PAGESIZE}, @code{ROTATE}, and
-@code{MAX_LINE_LENGTH}.  They simply serve as backups for the options
-@samp{--page-size}, @samp{--rotate}, and @samp{--max-line-length}.  The
-remaining environment variables are specific to individual display
-devices.  They control device driver parameters.
+The behavior of @code{plot} is affected by several environment
+variables.  We have already mentioned the environment variables
+@code{BITMAPSIZE}, @code{PAGESIZE}, @code{MAX_LINE_LENGTH}, and
+@code{ROTATE}.  They simply serve as backups for the options
+@samp{--bitmap-size}, @samp{--page-size}, @samp{--max-line-length}, and
+@samp{--rotate}.  The remaining environment variables are specific to
+individual display devices.  They control device driver parameters.
 
-@code{plot -T X}, which pops up a window on an @w{X Window} System display
-and draws graphics @w{in it}, checks the @code{DISPLAY} environment
-variable.  The value of this variable determines the display on which
-the window will be @w{popped up}.  @code{plot -T X} also looks at the @w{X
-resource} @code{Xplot.geometry}.  @w{It will} use the value of this
-resource, which may be set by the user, as the size of the window @w{in
-terms} of pixels.  The default value is "570x570".
+@code{plot -T X}, which pops up a window on an @w{X Window} System
+display and draws graphics @w{in it}, checks the @code{DISPLAY}
+environment variable.  The value of this variable determines the display
+on which the window will be @w{popped up}.
 
 @code{plot -T hpgl}, which produces Hewlett--Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -1905,7 +1997,7 @@ key sequence `@w{ALT minus}' may be employed manually within
 @menu
 * tek2plot Examples::         How to use tek2plot
 * tek2plot Invocation::       Command-line options
-* tek2plot Environment::      Environment variables and X resources
+* tek2plot Environment::      Environment variables
 @end menu
 
 @node tek2plot Examples, tek2plot Invocation, tek2plot, tek2plot
@@ -1966,21 +2058,22 @@ which may be one of the strings "X", "ps", "fig", "hpgl", "tek", and
 @code{idraw}-editable Postscript, the format used by the @code{xfig}
 drawing editor, the Hewlett--Packard Graphics Language, Tektronix
 format, and device-independent GNU metafile format.
+
 @item -p @var{n}
 @itemx --page-number @var{n}
 (Nonnegative integer.) Display only page number @var{n}, within the
 Tektronix file or sequence of Tektronix files that is being translated.
 Tektronix files may consist of one or more pages, numbered beginning
-with zero.  @w{By default}, @code{tek2plot -T X}, @code{tek2plot -T tek}, 
-and @code{tek2plot -T meta} display these pages in succession,
-finally displaying the last page.  @w{By default}, the other variants of
-@code{tek2plot} display only the last page.  This option may be used to
-override the default behavior and select a particular page for display.
+with zero.  @w{By default}, @code{tek2plot} displays all nonempty pages
+in succession.  For example, @code{tek2plot -T X} displays each page in
+its own @w{X window}.  This option may be used to override the default
+behavior and select a particular page for display.
 
 Most Tektronix files consist of either one page (page #0) or two pages
 (@w{an empty} @w{page #0}, and @w{page #1}).  Tektronix files produced
 by the GNU plotting utilities (e.g., by @code{graph -T tek}) are
 normally of the latter sort.
+
 @item -F @var{font_name}
 @itemx --font-name @var{font_name}
 (String, default "Courier" except for @code{tek2plot -T hpgl}, for which
@@ -1991,6 +2084,7 @@ Courier family is chosen, the @samp{--position-chars} option (see below)
 should probably be used.  For a list of available fonts, see @ref{Text
 Fonts}.  If the specified font is not available, the default font will
 be used.
+
 @item -W @var{line_width}
 @itemx --line-width @var{line_width}
 (Float, default @minus{}1.0.)  Set the width of lines, as a fraction of
@@ -2004,6 +2098,23 @@ others, a zero-width line is invisible).
 @code{tek2plot -T hpgl} does not support drawing lines with other than a
 default width if the environment variable @code{HPGL_VERSION} is set to
 a value less than "2" (the default).
+
+@item --bg-color @var{name}
+(String, default "white".)  Set the color used for the background to be
+@var{name}.  This is relevant only to @code{tek2plot -T X}.  @w{An
+unrecognized} name sets the color to the default.  For information on
+what names are recognized, see @ref{Color Names}.
+
+@item --bitmap-size @var{bitmap_size}
+(String, default "570x570".)  Set the size of the graphics display, in
+terms of pixels, to be @var{bitmap_size}.  This is relevant only to
+@code{plot -T X}, for which the graphics display is an @w{X window}.
+The use of a square window, rather than a rectangular window, is
+recommended.  The environment variable @code{BITMAPSIZE} may equally
+well be used to specify the window size.  For backward compatibility,
+the @w{X resource} @code{Xplot.geometry}, which may be set by the user,
+may be used instead.
+
 @item --max-line-length @var{max_line_length}
 (Integer, default 500.) Set the maximum number of points that a
 polygonal line may contain, before it is flushed to the display device,
@@ -2016,6 +2127,7 @@ devices (e.g., old Postscript printers and HP-GL plotters) have limited
 buffer sizes.  The environment variable @code{MAX_LINE_LENGTH} may also
 be used to specify the maximum line length.  This option has no effect
 in raw @code{tek2plot}, which has no buffer limitations.
+
 @item --page-size @var{pagesize}
 (String, default "letter".) Set the size of the page on which the plot
 will be positioned.  This is relevant only to @code{tek2plot -T ps},
@@ -2035,10 +2147,12 @@ display will be a square region located in the upper left corner of an
 page.  For @code{tek2plot -T hpgl}, fine control over the positioning of
 the graphics display on the page may be accomplished by setting certain
 environment variables (@pxref{tek2plot Environment}).
+
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
 unrecognized name sets the pen color to the default.  For information on
 what color names are recognized, see @ref{Color Names}.
+
 @item --position-chars
 Position the characters in each text string individually on the display.
 @w{If the} text font is not a member of the Courier family, and
@@ -2046,6 +2160,7 @@ especially if it is not a fixed-width font, this option is recommended.
 @w{It will} improve the appearance of text strings, at the price of
 making it difficult to edit the output file with @code{xfig} or
 @code{idraw}.
+
 @item --rotate @var{angle}
 (Integer, default 0.)  Set the rotation angle of the plot on the page,
 relative to the default orientation.  This is currently relevant only to
@@ -2054,6 +2169,7 @@ landscape orientations.  Recognized values for @var{angle} are 0, 90,
 180, @w{and 270}.  @w{"no" and} "yes" are equivalent to @w{0 and 90},
 respectively.  The environment variable @code{ROTATE} may equally well
 be used to specify the rotation angle.
+
 @item --use-tek-fonts
 Use the bitmap fonts that were used on the original Tektronix 4010/4014
 terminal.  This option is relevant only to @code{tek2plot -T X}.  The
@@ -2061,10 +2177,16 @@ four relevant bitmap fonts are distributed as part of the plotting
 utilities package under the names @code{tekfont0}@dots{}@code{tekfont3}.
 They may readily be installed on any modern @w{X Windows} server.  For
 this option to work properly, you must also select a window size of
-"1024x1024" pixels, by setting the @code{Xplot.geometry} resource.
-@xref{tek2plot Environment}.  The reason for this restriction is that
-bitmap fonts, unlike the scalable fonts that the plotting utilities
-normally use, may not be rescaled.
+1024x1024 pixels, either by using the @code{--bitmap-size 1024x1024}
+option or by setting the value of the @code{Xplot.geometry} resource.
+The reason for this restriction is that bitmap fonts, unlike the
+scalable fonts that the plotting utilities normally use, may not be
+rescaled.
+
+This option is useful only if you have a file in Tektronix format that
+draws text using native Tektronix fonts.  Tektronix files produced by
+the GNU plotting utilities (e.g., by @code{graph -T tek}) @w{do not} use
+native Tektronix fonts to draw text.
 @end table
 
 The following option is relevant only to raw @code{tek2plot}, i.e.,
@@ -2098,27 +2220,23 @@ package, and exit.
 @end table
 
 @node tek2plot Environment, , tek2plot Invocation, tek2plot
-@section Environment variables and X Window System resources
+@section Environment variables
 
 The behavior of @code{tek2plot} is affected by several environment
-variables and @w{X Window} System resources, which are the same as those
-that affect @code{graph} and @code{plot}.  For convenience, we list them
-here.
+variables, which are the same as those that affect @code{graph} and
+@code{plot}.  For convenience, we list them here.
 
-We have already mentioned the environment variables @code{PAGESIZE},
-@code{ROTATE}, and @code{MAX_LINE_LENGTH}.  They simply serve as backups
-for the options @samp{--page-size}, @samp{--rotate}, and
-@samp{--max-line-length}.  The remaining environment variables are
-specific to individual display devices.  They control device driver
-parameters.
+We have already mentioned the environment variables @code{BITMAPSIZE},
+@code{PAGESIZE}, @code{MAX_LINE_LENGTH}, and @code{ROTATE}.  They simply
+serve as backups for the options @samp{--bitmap-size},
+@samp{--page-size}, @samp{--max-line-length}, and @samp{--rotate}.  The
+remaining environment variables are specific to individual display
+devices.  They control device driver parameters.
 
 @code{tek2plot -T X}, which pops up a window on an @w{X Window} System
 display and draws graphics @w{in it}, checks the @code{DISPLAY}
 environment variable.  The value of this variable determines the display
-on which the window will be @w{popped up}.  @code{tek2plot -T X} also
-looks at the @w{X resource} @code{Xplot.geometry}.  @w{It will} use the
-value of this resource, which may be set by the user, as the size of the
-window @w{in terms} of pixels.  The default value is "570x570".
+on which the window will be @w{popped up}.
 
 @code{tek2plot -T hpgl}, which produces Hewlett--Packard Graphics
 Language output, is affected by several environment variables.  The most
@@ -2165,18 +2283,24 @@ the @code{ROTATE} environment variable to "yes".
 
 @menu
 * spline Examples::         How to use spline
+* Advanced Use of spline::  More sophisticated uses
 * spline Invocation::       Command-line options
 @end menu
 
-@node spline Examples, spline Invocation, spline, spline
+@node spline Examples, Advanced Use of spline, spline, spline
 @section How to use @code{spline}
 
 GNU @code{spline} is a program for interpolating between the data points
 in one or more datasets.  Each dataset would consist of values for an
-independent variable and a single dependent variable.  When discussing
-interpolation, we call these variables `@math{t}' and `@math{x}',
-respectively.  The simplest case is when there is only a single dataset,
-in ASCII format.  For example, the input file could contain the lines
+independent variable and a dependent variable, which may be a vector of
+specified fixed length.  When discussing interpolation, we call these
+variables `@math{t}' and `@math{y}', respectively.  @w{To emphasize:}
+@w{@math{t} is a scalar}, but @w{in general} the dependent variable
+@w{@math{y} may} be a vector.
+
+The simplest case is when there is a single input file, which is in
+ASCII format, and the @w{vector @math{y}} is one-dimensional.  This is
+the default.  For example, the input file could contain the dataset
 
 @example
 @group
@@ -2187,16 +2311,16 @@ in ASCII format.  For example, the input file could contain the lines
 @end example
 
 @noindent
-which are the coordinates @math{(t,x)} of the data points (0,0), (1,1),
+which are the coordinates @math{(t,y)} of the data points (0,0), (1,1),
 and (2,0).  Data points do not need to be on different lines, nor do the
-@math{t} @w{and @math{x}} coordinates of a data point need to be on the
+@math{t} @w{and @math{y}} coordinates of a data point need to be on the
 same line.  However, there should be no blank lines in the input if it
-is to be viewed as forming a single dataset.  Also, the @math{t}
-coordinates should be monotonically increasing: the dataset must have an
-interpretation as a function.
+is to be viewed as forming a single dataset.  Also, @w{by default} the
+@math{t} coordinate should be monotonically increasing, so that
+@w{@math{y} may} be viewed as a function @w{of @math{t}}.
 
-You would construct a curve (an `interpolating spline') passing through
-the points in such a dataset by doing
+You would construct a spline (the graph of an `interpolating function')
+passing through the points in this dataset by doing
 
 @example
 spline input_file > output_file
@@ -2223,15 +2347,15 @@ altogether.  @code{spline} will read from standard input if no files are
 specified on the command line, or if the special name @w{name @samp{-}}
 is specified.
 
-What exactly does @code{spline} do?  First, it fits a curve through the
-points in the dataset.  Then it splits the interval over which the
-independent @w{variable @math{t}} ranges into 100 sub-intervals, and
-computes the @w{@math{x} values} at each of the 101 subdivision points.
-@w{It then} outputs each of the pairs @math{(t, x)}.  These are the
-coordinates of 101 points that lie along a curve that interpolates
-between the points in the dataset.  If there is more than one dataset in
-the input (separated by blank lines), each dataset is interpolated
-separately.
+What exactly does @code{spline} do?  First, it fits a curve (the graph
+of an interpolating function) through the points in the dataset.  Then
+it splits the interval over which the independent @w{variable @math{t}}
+ranges into 100 sub-intervals, and computes the @w{@math{y} values} at
+each of the 101 subdivision points.  @w{It then} outputs each of the
+pairs @math{(t, y)}.  These are the coordinates of 101 points that lie
+along a curve that interpolates between the points in the dataset.  If
+there is more than one dataset in the input (separated by blank lines),
+each dataset is interpolated separately.
 
 You may use the @samp{-n} option to replace `100' by any other integer.
 You may also use the @samp{-t} option to specify an interpolation
@@ -2248,16 +2372,16 @@ with @w{@math{t} values} spaced regularly between 1.0 and 1.5 (rather
 than between 0.0 and 2.0).  The data points will lie along a curve
 passing through (0,0), (1,1), and (2,0).  This curve will be a parabola.
 
-In general, the interpolating curve will be a piecewise cubic spline.
-That is, between each pair of adjacent `nodes' (points in the input
-dataset), @math{x} will be a cubic function @w{of @math{t}}.  This
-function will differ, depending on which pair of nodes @w{@math{t} lies}
-between.  At each node, both the slope and curvature of the cubic pieces
+In general, the interpolating function will be a piecewise cubic spline.
+That is, between each pair of adjacent `knots' (points in the input
+dataset), @w{@math{y} will} be a cubic function @w{of @math{t}}.  This
+function will differ, depending on which pair of knots @w{@math{y} lies}
+between.  At each knot, both the slope and curvature of the cubic pieces
 to either side will match.  In mathematical terms, the interpolating
 curve will be twice continuously differentiable.
 
-@code{spline} supports `adding tension' to the interpolating curve.  @w{A
-nonzero} value for the tension may be specified with the @samp{-T}
+@code{spline} supports `adding tension' to the interpolating curve.  
+@w{A nonzero} value for the tension may be specified with the @samp{-T}
 option.  For example, a spline under considerable tension may be
 computed and displayed by doing
 
@@ -2268,9 +2392,9 @@ echo 0 0 1 0 2 0 | spline -T 10 | graph -T X
 @noindent
 As the tension parameter is increased to positive infinity, the spline
 will converge to a polygonal line.  You are supposed to think of the
-spline as being drawn taut.  Actually, tension may be negative @w{as
-well} as positive.  @w{A spline} with negative tension will tend to bow
-outward, @w{in fact} to oscillate sinusoidally.  But as the tension
+spline as being drawn taut.  Actually, tension may be negative 
+@w{as well} as positive.  @w{A spline} with negative tension will tend to 
+bow outward, @w{in fact} to oscillate sinusoidally.  But as the tension
 decreases to negative infinity, the spline, though oscillatory, will
 again converge to a polygonal line.
 
@@ -2289,22 +2413,22 @@ will be unaffected by linear scaling of the data.
 In mathematical terms, a spline under tension will satisfy the
 differential equation 
 @ifinfo
-@math{x''''=sgn(tension)*(tension^2)x''} 
+@math{y''''=sgn(tension)*(tension^2)y''} 
 @end ifinfo
 @tex
-$$x''''={\rm sgn}({\sl tension}){\sl tension}^2\thinspace x''$$
+$$y''''={\rm sgn}({\sl tension}){\sl tension}^2\thinspace y''$$
 @end tex
-between each successive pair of nodes.  If the tension equals zero,
-which is the default, the fourth derivative of @math{x} with respect
-@w{to @math{t}} will equal zero at every point.  In this case, @math{x}
+between each successive pair of knots.  If the tension equals zero,
+which is the default, the fourth derivative of @math{y} with respect
+@w{to @math{t}} will equal zero at every point.  In this case, @math{y}
 as a function @w{of @math{t}} will reduce to a cubic polynomial between
-each successive pair of nodes.  But if the tension is nonzero, @math{x}
+each successive pair of knots.  But if the tension is nonzero, @math{y}
 will not be a polynomial function @w{of @math{t}}.  @w{It may} be expressed
 @w{in terms} of exponential functions, however.
 
 Irrespective of whether or not the spline is under tension, you may
 specify the @samp{-p} option if you wish the spline to be a periodic
-function @w{of @math{t}}.  This will only work if the @math{x} values for
+function @w{of @math{t}}.  This will only work if the @math{y} values for
 the first and last points in the dataset are equal.  Otherwise, it would
 make no sense to compute a periodic interpolation.
 
@@ -2317,27 +2441,147 @@ if the @samp{-f} option is specified, @code{spline} will indeed function
 as a filter.  @w{A different} interpolation algorithm (cubic Bessel
 interpolation, which is local rather than global) will be used.  @w{If
 @samp{-f}} is specified, @samp{-p} may not be specified.  Also, if
-@samp{-f} is specified then an interpolation interval must be requested
-explicitly with the @samp{-t} option.
+@samp{-f} is specified then an interpolation interval (@w{a range} of
+@w{@math{t} values}) must be requested explicitly with the @samp{-t}
+option.
 
 Cubic Bessel interpolation is inherently less smooth than the
 construction of a global cubic spline.  If the @samp{-f} option is
-specified, the slope of the spline at each node will be chosen by
-fitting a parabola through that node, and the two adjacent nodes.  The
+specified, the slope of the spline at each knot will be chosen by
+fitting a parabola through that knot, and the two adjacent knots.  The
 slopes of the two interpolating segments to either side of each interior
-node will match at that node, but typically their curvatures will not.
+knot will match at that knot, but typically their curvatures will not.
 In mathematical terms, the interpolating curve will be continuously
 differentiable, but in general not twice continuously differentiable.
 This loss of differentiability is the price that is paid for functioning
 as a real-time filter.
 
-The algorithms used by @code{spline} are similar to those discussed in
-@w{D. Kincaid} and @w{W. Cheney}, @cite{Numerical Analysis} (2nd ed.,
-Brooks/Cole, 1996), section 6.4, and @w{C. de Boor}, @cite{A Practical
-Guide to Splines} (Springer-Verlag, 1978), @w{Chapter 4}.
+@node Advanced Use of spline, spline Invocation, spline Examples, spline
+@section Advanced use of @code{spline}
 
-@node spline Invocation, , spline Examples, spline
+The preceding section explains how @code{spline} may be employed to
+interpolate a function @math{y} of a scalar variable @math{t}, in the
+case when @math{y} is a scalar.  In this section we explain how to
+perform more sophisticated interpolations.  This includes
+multidimensional interpolations, and interpolations that are splinings of
+curves, rather than of functions.
+
+@code{spline} can handle the case when @w{@math{y} is} a vector of
+arbitrary specified dimensionality.  The dimension may be specified with
+the @samp{-d} option.  For example, an input file could contain the
+multidimensional dataset
+
+@example
+@group
+0.0  0.0  1.0
+1.0  1.0  0.0
+2.0  0.0  1.0
+@end group
+@end example
+
+@noindent
+which are the coordinates @math{(t,y)} of the data points (0,0,1),
+(1,1,0), and (2,0,1).  You would construct a spline (the graph of an
+interpolating function) passing through the points in this dataset by
+doing
+
+@example
+spline -d 2 input_file > output_file
+@end example
+
+@noindent
+The option @samp{-d 2} is used because in this example, the dependent
+variable @math{y} is a two-dimensional vector.  Each of the components
+of @math{y} will be interpolated independently, and the output file will
+contain points that lie along the graph of the resulting interpolating
+function.
+
+When doing multidimensional splining, you may use any of the options
+that apply in the default one-dimensional case.  For example, the
+@samp{-f} option may be employed to request real-time cubic Bessel
+interpolation.  As in the one-dimensional case, if the @samp{-f} option
+is used then the @samp{-t} option must be used @w{as well}, to specify
+an interpolation interval (@w{a range} of @w{@math{t} values}).  The
+@code{-p} option may be employed to obtain a periodic spline, i.e., the
+graph of a periodic vector-valued function.  For this, the first and
+last dataset @w{@math{y} values} must be the same.
+
+@code{spline} may also be used to draw a curve through arbitrarily
+chosen points in the plane, or @w{in general} through arbitrarily chosen
+points in @math{d}-dimensional space.  This is not the same as splining,
+@w{at least} as the term is conventionally defined.  The reason is that
+`splining' refers to construction of a function, rather than the
+construction of a curve that may or may not be the graph of a function.
+Not every curve is the graph of a function.
+
+The following example shows how one may `spline a curve'.  The command
+
+@example
+echo 0 0 1 0 1 1 0 1 | spline -d 2 -a -s | graph -T X
+@end example
+
+@noindent
+will construct a curve in the plane through the four points (0,0),
+(1,0), (1,1), and (0,1), and graph it on an @w{X Window} System display.
+The @samp{-d 2} option specifies that the dependent variable @math{y} is
+two-dimensional.  The @samp{-a} option specifies that @w{@math{t}
+values} are missing from the input, and should be automatically
+generated.  @w{By default}, the first @w{@math{t} value} @w{is 0}, the
+second @w{is 1}, etc.  The @samp{-s} option specifies that the
+@w{@math{t} values} should be stripped from the output.
+
+The same technique may be used to spline a closed curve.  For example,
+doing
+
+@example
+echo 0 0 1 0 0 1 0 0 | spline -d 2 -a -s -p | graph -T X
+@end example
+
+@noindent
+will construct and graph a closed, lozenge-shaped curve through the
+three points (0,0), (1,0), and (0,1).  The construction of a closed
+curve is guaranteed by the @samp{-p} (i.e., @samp{--periodic}) option,
+and by the repetition of the initial point (0,0) at the end of the
+sequence.
+
+When splining a curve, whether open or closed, you may wish to
+substitute the @samp{-A} option for the @samp{-a} option.  Like the
+@samp{-a} option, the @samp{-A} option specifies that @w{@math{t}
+values} are missing from the input and should be automatically
+generated.  However, the first @w{@math{t} value} will be zero, and the
+increment from one @w{@math{t} value} to the next will be the distance
+between the corresponding values @w{of @math{y}}.  This scheme for
+generating @w{@math{t} values}, when constructing a curve through a
+sequence of points, is the scheme that is used in the @w{well known}
+FITPACK subroutine library.  @w{It is} probably the best approach when
+the distances between successive points fluctuate considerably.
+
+A curve through a sequence of points in the plane, whether open or
+closed, may cross itself.  Some interesting visual effects may be
+obtained by adding negative tension to such a curve.  For example,
+doing
+
+@example
+echo 0 0 1 0 1 1 0 0 | spline -d 2 -a -s -p -T -14 -n 500 | graph -T X
+@end example
+
+@noindent
+will construct a closed curve through the three points (0,0), (1,0), 
+and (0,1), which is wound into curlicues.  The @samp{-n 500} option is
+included because there are so many windings.  @w{It specifies} that 501
+points should be generated, which is enough to draw a smooth curve.
+
+@noindent
+@node spline Invocation, , Advanced Use of spline, spline
 @section @code{spline} command-line options
+
+@code{spline} is a general-purpose program for interpolating
+vector-valued functions of a scalar @w{variable @math{t}}, and for
+interpolating curves in @math{d}-dimensional space.  The algorithms used
+by @code{spline} are similar to those discussed in @w{D. Kincaid} and
+@w{[E.] W.} Cheney, @cite{Numerical Analysis} (2nd ed., Brooks/Cole,
+1996), section 6.4, and @w{C. de Boor}, @cite{A Practical Guide to
+Splines} (Springer-Verlag, 1978), @w{Chapter 4}.
 
 The options to @code{spline} are listed below.  There are three sorts of
 option:
@@ -2358,13 +2602,16 @@ and default value of the argument.
 Besides options, the command line may include the names of one or more
 input files. If no files are listed, the standard input is read.  Unless
 the @samp{-a} option is used (see below), the input is expected to be a
-sequence of data points, given as alternating @math{t} @w{and @math{x}}
-coordinates.  There may be more than one dataset per input file.  If the
-files are in ASCII format (the default), datasets are separated by blank
-lines.
+sequence of data points, given as alternating @math{t} @w{and @math{y}}
+values.  @w{@math{t} is} the scalar independent variable, and
+@w{@math{y} is} the vector-valued dependent variable.  The
+dimensionality @w{of @math{y}} is specified with the @samp{-d} option
+(the default @w{is @math{1}}).
 
-The following options specify the type of interpolation to be performed
-on each dataset.
+There may be more than one dataset per input file.  If the files are in
+ASCII format (the default), datasets are separated by blank lines.  The
+following options specify the type of interpolation to be performed on
+each dataset.
 
 @table @samp
 @item -f
@@ -2372,24 +2619,26 @@ on each dataset.
 Use a local interpolation algorithm (the cubic Bessel algorithm), so
 that @code{spline} may be used as a real-time filter.  The slope of the
 interpolating curve at each point in a dataset will be chosen by fitting
-a parabola through that point and the two adjacent points in the
-dataset.  If @samp{-f} is specified then the @samp{-t} option, otherwise
-optional, must be used @w{as well}.  Also, if @samp{-f} is specified then
-the @samp{-k}, @samp{-p}, and @samp{-T} options may not be used.  
+a quadratic function through that point and the two adjacent points in
+the dataset.  If @samp{-f} is specified then the @samp{-t} option,
+otherwise optional, must be used @w{as well}.  Also, if @samp{-f} is
+specified then the @samp{-k}, @samp{-p}, and @samp{-T} options may not
+be used.
 
 If @samp{-f} is @emph{not} specified, then a different (global)
 interpolation algorithm will be used.
 @item -k @var{k}
 @itemx --boundary-condition @var{k}
 (Float, default 1.0.) Set the boundary condition parameter for each
-constructed spline to @w{be @var{k}}.  The spline will satisfy the two
-boundary conditions @math{x''[0]=kx''[1]} and @math{x''[n]=kx''[n-1]}.
-Here @math{x[0]} and @math{x[1]} signify the ordinate values at the
-first two points of a dataset, and @math{x[n-1]} and @math{x[n]} the
-ordinate values at the last two points.  Setting @var{k} to zero will
-yield a `natural' spline, i.e., one that has zero curvature at the two
-ends of the dataset.  The @samp{-k} option may not be used if @samp{-f}
-or @samp{-p} is specified.
+constructed spline to @w{be @var{k}}.  In each of its components, the
+spline will satisfy the two boundary conditions @math{y''[0]=ky''[1]}
+and @math{y''[n]=ky''[n-1]}.  Here @math{y[0]} and @math{y[1]} signify
+the values of a specified component of the vector-valued dependent
+variable @math{y} at the first two points of a dataset, and
+@math{y[n-1]} and @math{y[n]} the values at the last two points.
+Setting @var{k} to zero will yield a `natural' spline, i.e., one that
+has zero curvature at the two ends of the dataset.  The @samp{-k} option
+may not be used if @samp{-f} or @samp{-p} is specified.
 @item -n @var{n}
 @itemx --number-of-intervals @var{n}
 (Integer, default 100.)  Subdivide the interval over which interpolation
@@ -2397,7 +2646,7 @@ occurs into @var{n} subintervals.  The number of data points computed,
 and written to the output, will be @math{n+1}.
 @item -p
 @itemx --periodic
-Construct a periodic spline.  If this option is specified, the @math{x}
+Construct a periodic spline.  If this option is specified, the @math{y}
 values for the first and last points in each dataset must be equal.  The
 @samp{-f} and @samp{-k} options may not be used if @samp{-p} is
 specified.
@@ -2407,15 +2656,15 @@ specified.
 @var{tension}.  Between each pair of successive points in a dataset, the
 constructed spline will satisfy the differential equation
 @ifinfo
-@math{x''''=sgn(tension)*(tension^2)x''}.  
+@math{y''''=sgn(tension)*(tension^2)y''}
 @end ifinfo
 @tex
-$x''''={\rm sgn}({\sl tension}){\sl tension}^2\thinspace x''$.
+$y''''={\rm sgn}({\sl tension}){\sl tension}^2\thinspace y''$
 @end tex
-If @var{tension} equals zero, the spline will be piecewise cubic.  As
-@var{tension} increases to positive infinity, the spline will converge
-to a polygonal line.  The @samp{-T} option may not be used if @samp{-f}
-is specified.
+in each of its components.  If @var{tension} equals zero, the spline
+will be piecewise cubic.  As @var{tension} increases to positive
+infinity, the spline will converge to a polygonal line.  The @samp{-T}
+option may not be used if @samp{-f} is specified.
 @item -t @var{tmin} @var{tmax} [@var{tspacing}]
 @itemx --t-limits @var{tmin} @var{tmax} [@var{tspacing}]
 For each dataset, set the interval over which interpolation occurs to be
@@ -2433,6 +2682,10 @@ The following options specify the format of the input file(s) and the
 output file.
 
 @table @samp
+@item -d @var{dimension}
+@itemx --y-dimension @var{dimension}
+(Integer, default 1.)  Set the dimensionality of the dependent variable
+@math{y} in the input and output files to be @var{dimension}. 
 @item -I @var{data-format}
 @itemx --input-format @var{data-format}
 (Character, default @samp{a}.)  Set the data format for the input file(s)
@@ -2440,62 +2693,74 @@ to be @var{data-format}.  The possible data formats are as follows.
 
 @table @samp
 @item a  
-ASCII format.  Each file consists of pairs of floating point numbers,
-interpreted as the @math{t} @w{and @math{x}} coordinates of the data
-points in a dataset.  The @math{t} @w{and @math{x}} coordinates of a
-point need not appear on the same line, and points need not appear on
-different lines.  But if a blank line occurs (i.e., two newlines in
-succession are seen), @w{it is} interpreted as the end of a dataset, and
-the beginning of the next.
+ASCII format.  Each file is a sequence of floating point numbers,
+interpreted as the @math{t} @w{and @math{y}} coordinates of the
+successive data points in a dataset.  If @math{y} is
+@math{d}-dimensional, there will be @math{d+1} numbers for each point.
+The @math{t} @w{and @math{y}} coordinates of a point need not appear on
+the same line, and points need not appear on different lines.  But if a
+blank line occurs (i.e., two newlines in succession are seen), @w{it is}
+interpreted as the end of a dataset, and the beginning of the next.
 @ifinfo
 @item f
-Single precision binary format.  Each file is a sequence of single
-precision floating point numbers, interpreted as forming pairs
-(@math{t},@math{x}).  Successive datasets are separated by a single
-occurrence of the quantity @code{MAXFLOAT}, which is the largest
-possible single precision floating point number.  On most machines this
-is approximately 3.4x10^38.
+Single precision binary format.  Each file is a sequence of floating
+point numbers, interpreted as the @math{t} @w{and @math{y}} coordinates
+of the successive data points in a dataset.  If @math{y} is
+@math{d}-dimensional, there will be @math{d+1} numbers for each point.
+Successive datasets are separated by a single occurrence of the quantity
+@code{MAXFLOAT}, which is the largest possible single precision floating
+point number.  On most machines this is approximately 3.4x10^38.
 @end ifinfo
 @tex
 @item f
-Single precision binary format.  Each file is a sequence of single
-precision floating point numbers, interpreted as forming pairs
-(@math{t},@math{x}).  Successive datasets are separated by a single
-occurrence of the quantity @code{MAXFLOAT}, which is the largest
-possible single precision floating point number.  On most machines this
-is approximately $3.4\times10^{38}$.
+Single precision binary format.  Each file is a sequence of floating
+point numbers, interpreted as the @math{t} @w{and @math{y}} coordinates
+of the successive data points in a dataset.  If @math{y} is
+@math{d}-dimensional, there will be @math{d+1} numbers for each point.
+Successive datasets are separated by a single occurrence of the quantity
+@code{MAXFLOAT}, which is the largest possible single precision floating
+point number.  On most machines this is approximately
+$3.4\times10^{38}$.
 @end tex
 @ifinfo
 @item d
 Double precision binary format.  Each file is a sequence of double
-precision floating point numbers, interpreted as forming pairs
-(@math{t},@math{x}).  Successive datasets are separated by a single
-occurrence of the quantity @code{MAXDOUBLE}, which is the largest
-possible double precision floating point number.  On most machines this
-is approximately 1.8x10^308.
+precision floating point numbers, interpreted as the @math{t} @w{and
+@math{y}} coordinates of the successive data points in a dataset.  If
+@math{y} is @math{d}-dimensional, there will be @math{d+1} numbers for
+each point.  Successive datasets are separated by a single occurrence of
+the quantity @code{MAXDOUBLE}, which is the largest possible double
+precision floating point number.  On most machines this is approximately
+1.8x10^308.
 @end ifinfo
 @tex
 @item d
 Double precision binary format.  Each file is a sequence of double
-precision floating point numbers, interpreted as forming pairs
-(@math{t},@math{x}).  Successive datasets are separated by a single
-occurrence of the quantity @code{MAXDOUBLE}, which is the largest
-possible double precision floating point number.  On most machines this
-is approximately $1.8\times10^{308}$.
+precision floating point numbers, interpreted as the @math{t} @w{and
+@math{y}} coordinates of the successive data points in a dataset.  If
+@math{y} is @math{d}-dimensional, there will be @math{d+1} numbers for
+each point.  Successive datasets are separated by a single occurrence of
+the quantity @code{MAXDOUBLE}, which is the largest possible double
+precision floating point number.  On most machines this is approximately
+$1.8\times10^{308}$.
 @end tex
 @ifinfo
 @item i
 Integer binary format.  Each file is a sequence of integers, interpreted
-as forming pairs (@math{t},@math{x}).  Successive datasets are separated
-by a single occurrence of the quantity @code{MAXINT}, which is the
-largest possible integer.  On most machines this is 2^31-1.
+as the @math{t} @w{and @math{y}} coordinates of the successive data
+points in a dataset.  If @math{y} is @math{d}-dimensional, there will be
+@math{d+1} numbers for each point.  Successive datasets are separated by
+a single occurrence of the quantity @code{MAXINT}, which is the largest
+possible integer.  On most machines this is 2^31-1.
 @end ifinfo
 @tex
 @item i
 Integer binary format.  Each file is a sequence of integers, interpreted
-as forming pairs (@math{t},@math{x}).  Successive datasets are separated
-by a single occurrence of the quantity @code{MAXINT}, which is the
-largest possible integer.  On most machines this is $2^{31}-1$.
+as the @math{t} @w{and @math{y}} coordinates of the successive data
+points in a dataset.  If @math{y} is @math{d}-dimensional, there will be
+@math{d+1} numbers for each point.  Successive datasets are separated by
+a single occurrence of the quantity @code{MAXINT}, which is the largest
+possible integer.  On most machines this is $2^{31}-1$.
 @end tex
 @end table
 
@@ -2503,15 +2768,23 @@ largest possible integer.  On most machines this is $2^{31}-1$.
 @itemx --auto-abscissa [@var{step_size} [@var{lower_limit}]]
 (Floats, defaults 1.0 and 0.0.)  Automatically generate values for the
 independent @w{variable (@math{t})}.  Irrespective of data format
-(@samp{a}, @samp{e}, @samp{f}, @samp{d}, @w{or @samp{i}}), this option
-specifies that the values of the independent variable (@math{t}) are
-missing: the dataset(s) to be read contain only values of the dependent
-@w{variable (@math{x})}.  The difference between successive @w{@math{t}
-values} will be @var{step_size}, and the first @w{@math{t} value} will
-be @var{lower_limit}.  To return to reading the values @w{of @math{t}}
-from the input you may specify @samp{-a 0}, which disables automatic
-generation @w{of @math{t}} and returns @var{step_size} and
-@var{lower_limit} to their default values.
+(@samp{a}, @samp{f}, @samp{d}, @w{or @samp{i}}), this option specifies
+that the values of the independent variable (@math{t}) are missing from
+the input file: the dataset(s) to be read contain only values of the
+dependent @w{variable (@math{y})}, @w{so that} if @math{y} is
+@math{d}-dimensional, there will be only @w{@math{d} numbers} for each
+point.  The increment from each @w{@math{t} value} to the next will be
+@var{step_size}, and the first @w{@math{t} value} will be
+@var{lower_limit}.
+
+@item -A 
+@itemx --auto-dist-abscissa
+Automatically generate values for the independent @w{variable
+(@math{t})}.  This is a variant form of the @samp{-a} option.  The
+increment from each @w{@math{t} value} to the next will be the distance
+between the corresponding @w{@math{y}} values, and the first @w{@math{t}
+value} will be 0.0.  This option is useful when interpolating curves
+rather than functions (@pxref{Advanced Use of spline}).
 
 @item -O @var{data-format}
 @itemx --output-format @var{data-format}
@@ -2519,15 +2792,25 @@ generation @w{of @math{t}} and returns @var{step_size} and
 to be @var{data-format}.  The interpretation of the @var{data-format}
 argument is the same as for the @samp{-I} option.
 @item -P @var{significant-digits}
+
 @itemx --precision @var{significant-digits}
 (Integer, default 6.)  Set the numerical precision for the @math{t} and
-@math{x} coordinates in the output file to be @var{significant-digits}.
-This takes effect only if the output file is written in @samp{a} format,
+@math{y} values in the output file to be @var{significant-digits}.  This
+takes effect only if the output file is written in @samp{a} format,
 i.e., in ASCII@.
+
+@item -s
+@itemx --suppress-abscissa
+Omit the independent variable @math{t} from the output file; for each
+point, supply only the dependent @w{variable @math{y}}.  If @math{y} is
+@math{d}-dimensional, there will be only @w{@math{d} numbers} for each
+point, @w{not @math{d+1}}.  This option is useful when interpolating
+curves rather than functions (@pxref{Advanced Use of spline}).
 @end table
 
 @noindent
 The following options request information.
+
 @table @samp
 @item --help
 Print a list of command-line options, and then exit.
@@ -3768,7 +4051,6 @@ It is a useful exercise to solve this problem with @code{ode} using
 various numerical schemes, stepsizes, and relative single-step error
 bounds, and compare the generated solution curves with the actual
 solution.
-
 @end enumerate
 
 There are several rough and ready heuristic checks you can perform on
@@ -3784,7 +4066,6 @@ either the stepsize is not small enough or the numerical scheme is not
 suited to the problem.  In practice, you would proceed as follows.
 
 @itemize @bullet
-
 @item
 If using an adaptive stepsize, superimpose the solution curves for
 successively smaller bounds on the relative single-step error (obtained
@@ -3795,7 +4076,6 @@ and your accuracy is sufficient.
 @item
 If employing a constant stepsize, perform a similar analysis by
 successively halving the stepsize.
-
 @end itemize
 
 The following example is one that you may wish to experiment with.  Make
@@ -4081,7 +4361,6 @@ statement were interpreted correctly, or in determining the time or
 space expense of a particular calculation.  @samp{@t{push "y"}} means to
 load @t{y}'s value on the stack, which is all that is required to
 compute its derivative in this case.
-
 @end enumerate
 
 The grammar for the @code{ode} input language contains four types of
@@ -4127,7 +4406,6 @@ a number.
 @t{SEP}
 
 A separator: a semicolon or a (non-escaped) newline.
-
 @end enumerate
 
 In the @code{ode} input language, upper and lower-case letters are
@@ -4169,14 +4447,17 @@ Physics Instruction}, Addison--Wesley, 1990.
 @chapter @code{libplot}, a Function Library
 
 @code{libplot} is a library of functions for device-independent
-two-dimensional vector graphics.  The graphical objects which it can
-draw include paths, circles and ellipses, points, markers, and `adjusted
-labels' (justified text strings).  @w{A @emph{path}} is a sequence of
-line segments, circular arcs, and/or elliptic arcs, which may be open or
-closed.  User-specified filling of paths, circles, and ellipses is
-supported (fill color, @w{as well} as pen color, may be specified).
-There is support for maintaining a Postscript-style stack of graphics
-contexts, i.e., @w{a stack} of drawing attribute sets.  User-specifiable
+two-dimensional vector graphics.  This chapter documents version 1.0 of
+@code{libplot}.
+
+The graphical objects which @code{libplot} can draw include paths,
+circles and ellipses, points, markers, and `adjusted labels' (justified
+text strings).  @w{A @emph{path}} is a sequence of line segments,
+circular arcs, and/or elliptic arcs, which may be open or closed.
+User-specified filling of paths, circles, and ellipses is supported
+(fill color, @w{as well} as pen color, may be specified).  There is
+support for maintaining a Postscript-style stack of graphics contexts,
+i.e., @w{a stack} of drawing attribute sets.  User-specifiable
 attributes other than pen color and fill color include path-related
 attributes such as line type and line width, and text-related attributes
 such as font name, font size, and text angle.
@@ -4260,24 +4541,32 @@ definitions must be placed at the head of the output file.
 The most important operations supported by any Plotter are @code{openpl}
 and @code{closepl}, which open and @w{close it}.  Graphics may be drawn,
 and drawing attributes set, only within an
-@code{openpl}@dots{}@code{closepl} pair.  In principle, any Plotter may
-be opened and closed arbitrarily many times.  The graphics produced by
-each @code{openpl}@dots{}@code{closepl} pair constitute a `page'.  An
-@w{X Plotter} displays each page in a separate @w{X window}, and an
+@code{openpl}@dots{}@code{closepl} pair.  The graphics produced by each
+@code{openpl}@dots{}@code{closepl} sequence constitute a `page'.  In
+principle, any Plotter may be opened and closed arbitrarily many times.
+An @w{X Plotter} displays each page in a separate @w{X window}, and an
 HP-GL Plotter renders each page as a separate physical page.  @w{X
 Drawable} Plotters and Tektronix Plotters manipulate a single drawable
 or display, on which pages are displayed in succession.
 
-There is a minor problem with extending these semantics to Postscript
-and Fig Plotters.  The @code{closepl} operation ensures that all
-graphical objects that have been drawn are written to the output.  But
-output files in Postscript and Fig format may not be concatenated.  For
-this reason, all Plotters support an additional operation:
-@code{outfile}.  The output stream for a Plotter, if it has one, may be
-altered by invoking @code{outfile} @w{on it}.  @code{outfile} may only
-be invoked outside an @code{openpl}@dots{}@code{closepl} pair.  By using
+There is a problem with extending these semantics to Postscript and Fig
+Plotters, which do not draw in real time.  In the present release of
+@code{libplot}, the @code{closepl} operation writes the preceding page
+of graphics to the output stream.  Successive pages will, @w{in effect},
+be concatenated.  @w{In consequence}, @w{a multipage} output file in
+Postscript format will not obey the so-called Document Structuring
+Conventions for Postscript files, and a multipage file in Fig format
+will not be a legitimate Fig file @w{at all}.
+
+@w{On account} of this potential problem with Postscript and Fig
+Plotters, all Plotters support an additional operation: @code{outfile}.
+The output stream for a Plotter, if it has one, may be altered by
+invoking @code{outfile} @w{on it}.  @code{outfile} may only be invoked
+outside an @code{openpl}@dots{}@code{closepl} pair.  By using
 @code{outfile}, a programmer may produce multipage graphics output from
-Postscript and Fig Plotters.  Its use in other contexts is deprecated.
+Postscript and Fig Plotters by directing output to a sequence of output
+streams, one per page.  The use of @code{outfile} in other contexts is
+deprecated.
 
 There are several other basic operations which any Plotter supports.
 The `graphics display' @w{drawn in} by a Plotter is a square or
@@ -4329,8 +4618,17 @@ refer to the Plotter.  Before using a Plotter that you have created
 you must select the Plotter by calling @code{selectpl}.  Only one
 Plotter may be selected at a time, but by calling @code{selectpl} you
 may switch from Plotter to Plotter at any time, even when the selected
-Plotter is open.  A Plotter that is not currently selected may be
+Plotter is open.  @w{A Plotter} that is not currently selected may be
 deleted, and its storage freed, by calling @code{deletepl}.
+
+@strong{Warning:} Though at present the use of @code{deletepl} is
+optional, that will change in future releases.  @w{At present}, Plotters
+that do not do real-time output (i.e., Postscript, Fig, and HP-GL
+Plotters) @w{write out} graphics at the conclusion of each page, i.e.,
+when @code{closepl} is called.  Our plan is for these Plotters to
+@w{write out} graphics only when the plot is finished, and
+@code{deletepl} is called.  You should get into the habit of calling
+@code{deletepl} whenever you are finished using a Plotter.
 
 Strictly speaking, you do not need to call @code{newpl},
 @code{selectpl}, or @code{deletepl} in order to draw graphics.  That is
@@ -4367,10 +4665,20 @@ You would use
 @end example
 
 @noindent
-(or perhaps @samp{-lplot -lXm -lXt -lXext -lX11 -lm}, @samp{-lplot -lXm
--lXt -lXext -lX11 -lm -lc -lgen}, or @samp{-lplot -lXm -lXt -lXext -lX11
--lm -lc -lPW}, on systems that provide Motif widgets instead of Athena
-widgets).  Note that on most systems @code{libplot} is installed as a
+or, in recent versions of the @w{X Window} System,
+
+@example
+-lplot -lXaw -lXmu -lXt -lSM -lICE -lXext -lX11 -lm
+@end example
+
+@noindent
+(Alternatively, you may need to use @samp{-lplot -lXm -lXt -lXext -lX11
+-lm}, @samp{-lplot -lXm -lXt -lXext -lX11 -lm -lc -lgen}, or
+@samp{-lplot -lXm -lXt -lXext -lX11 -lm -lc -lPW}, on systems that
+provide Motif widgets instead of Athena widgets.  In recent versions of
+the @w{X Window} System, you may need to insert @samp{-lSM -lICE} also.)
+
+Note that on most systems @code{libplot} is installed as a
 DLL (dynamically linked library, or `shared' library).  This means that
 the linking with your application will take place at run time rather
 than compile time.  The environment variable @code{LD_LIBRARY_PATH}
@@ -4414,13 +4722,11 @@ int main ()
 @{
   int handle;        
 
-  @{
   /* create a Postscript Plotter that writes to standard output */
   handle = newpl ("ps", stdin, stdout, stderr);	
-  selectpl (handle);             /* select the Plotter */
-  @}
+  selectpl (handle);          /* select the Plotter */
 
-  if (openpl () < 0)           /* open Plotter */
+  if (openpl () < 0)          /* open Plotter */
     @{
       fprintf (stderr, "Couldn't open Plotter\n");
       return 1;
@@ -4456,15 +4762,15 @@ function to create a Postscript Plotter.  The three arguments
 @code{stdin}, @code{stdout}, @code{stderr} require a bit of explanation.
 Currently, Plotters are write-only: they are not interactive, so they do
 not read from an input stream.  So the second argument to @code{newpl}
-is a dummy.  If non-NULL, the third and fourth arguments must be an
+is a dummy.  The third and fourth arguments, if non-NULL, must be an
 output stream and an error stream, both of which are opened for writing.
-This is the case for Plotters other than @w{X Plotters}, @w{at least}.
 The graphical objects that are drawn between any
 @code{openpl}@dots{}@code{closepl} pair will be written to the output
 stream, and error messages (@w{if any}) will be written to the error
-stream, provided that it is non-NULL.  All plotters other than @w{X
-Plotters} and @w{X Drawable} Plotters use an output stream to draw
-graphics.
+stream, provided that it is non-NULL.  This is the case for Plotters
+other than @w{X Plotters} and @w{X Drawable} Plotters, @w{at least}.
+All plotters other than @w{X Plotters} and @w{X Drawable} Plotters use
+an output stream to draw graphics.
 
 The application draws the @w{``C'' curve} recursively, and (since a
 Postscript Plotter is selected) writes a Postscript file to standard
@@ -4491,23 +4797,23 @@ piped to the @code{plot} utility and converted to any other supported
 output format, or displayed in an @w{X window}.  @xref{plot}.
 
 If you specify "Xdrawable" as the Plotter type, you will need to create
-at least one @w{X drawable} (i.e., window or a pixmap), and by invoking
-the @code{parampl} function before @code{newpl} is called, pass it to
-@code{libplot} as a driver parameter.  For a list of supported driver
-parameters, @ref{Driver Parameters}.
+@w{at least} one @w{X drawable} (i.e., window or a pixmap), and by
+invoking the @code{parampl} function before @code{newpl} is called, pass
+it to @code{libplot} as a driver parameter.  For a list of supported
+driver parameters, @ref{Driver Parameters}.
 
 @node Functions, Driver Parameters, C Programming, libplot
 @section The functions in @code{libplot}: A detailed listing
 
 The functions in GNU @code{libplot} include the three Plotter
 manipulation functions discussed in the previous section (@code{newpl},
-@code{selectpl}, and @code{deletepl}), which are specific to the 
-@w{C binding}.  The also include 80 basic functions: @code{parampl}, 
-@w{a function} that sets low-level options for subsequently created Plotters
-(@ref{Driver Parameters}), and 79 functions that operate on the
+@code{selectpl}, and @code{deletepl}), which are specific to the @w{C
+binding}.  They also include 82 basic functions: @code{parampl}, @w{a
+function} that sets low-level options for subsequently created Plotters
+(@ref{Driver Parameters}), and 81 functions that operate on the
 currently selected Plotter.
 
-These 80 functions are divided into the four sets tabulated below.
+These 82 functions are divided into the four sets tabulated below.
 
 @iftex
 @enumerate
@@ -4563,45 +4869,72 @@ affects Postscript, Fig, and HP-GL Plotters.
 For most parameters, the value should be a @code{char *}, i.e., a
 string.  @xref{Driver Parameters}.
 @item int @t{openpl} ();
-@t{openpl} opens a Plotter.  Depending on the type of the Plotter, @w{it
-may} write initialization commands to an output stream.  @w{A negative}
-return value indicates the Plotter could not be opened.
+@t{openpl} opens a Plotter, i.e., begins a page of graphics.  Depending
+on the type of the Plotter, @w{it may} write initialization commands to
+an output stream.  @w{A negative} return value indicates the Plotter
+could not be opened.
 
 An @w{X Plotter}, which has no output stream, pops up a window on its
 @w{X Window} System display instead.  Currently, @w{a new} window is
-@w{popped up} with each invocation of @code{openpl}.  Future releases
-may support window re-use.
+@w{popped up} for each page of graphics, i.e., with each invocation of
+@code{openpl}.  Future releases may support window re-use.
 @item int @t{erase} ();
 @t{erase} clears all previously plotted objects from the graphics
-display.  This is useful for Plotters that are persistent, in the sense
-that objects drawn within an @code{openpl}@dots{}@code{closepl} pair are
-still visible and are liable to be overwritten when @code{openpl} is
-next invoked.  For such Plotters, you may wish to invoke @t{erase}
+display, and fills it with the background color @w{(if any)}.  This is
+useful for Plotters that are persistent, in the sense that objects drawn
+within an @code{openpl}@dots{}@code{closepl} pair are still visible and
+are liable to be overwritten when @code{openpl} is next invoked, and a
+new page is begun.  For such Plotters, you may wish to invoke @t{erase}
 immediately after @t{openpl}.  Currently, only @w{X Drawable} Plotters
 and Tektronix Plotters are persistent.  Future releases may support
 persistence for @w{X Plotters} also.
+@item int @t{bgcolor} (int @var{red}, int @var{green}, int @var{blue});   
+@t{bgcolor} sets the background color for the graphics display, using a
+48-bit RGB color model.  The arguments @var{red}, @var{green} and
+@var{blue} specify the red, green and blue intensities of the background
+color.  Each is an integer in the range @t{0x0000}@dots{}@t{0xffff},
+i.e., 0@dots{}65535.  The choice (0, 0, 0) signifies black, and the
+choice (65535, 65535, 65535) signifies white.  
+
+@t{bgcolor} has an effect only on @w{X Plotters} and @w{X Drawable}
+Plotters.  Its effect is simple: the next time the @t{erase} operation
+is invoked on such a Plotter, its display will be filled with the
+specified color. 
+@item int @t{bgcolorname} (const char *@var{name});
+@t{bgcolorname} sets the background color for the the graphics display
+to be @var{name}.  For information on what color names are recognized,
+see @ref{Color Names}.  Unrecognized colors are interpreted as "white".
+
+@t{bgcolorname} has an effect only on @w{X Plotters} and @w{X Drawable}
+Plotters.  Its effect is simple: the next time the @t{erase} operation
+is invoked on such a Plotter, its display will be filled with the
+specified color.
 @item int @t{space} (int @var{x0}, int @var{y0}, int @var{x1}, int @var{y1});
 @itemx int @t{fspace} (double @var{x0}, double @var{y0}, double @var{x1}, double @var{y1});
 @t{space} and @t{fspace} take two pairs of arguments, specifying the
 positions of the lower left corner and upper right corner of the
 graphics display, in user coordinates.  In other words, calling
 @t{space} or @t{fspace} sets the affine transformation from user
-coordinates to device coordinates.
+coordinates to device coordinates.  One of these operations must be
+invoked at the beginning of each page of graphics, i.e., immediately
+after @t{openpl} is invoked.
 @item int @t{space2} (int @var{x0}, int @var{y0}, int @var{x1}, int @var{y1}, int @var{x2}, int @var{y2});
 @itemx int @t{fspace2} (double @var{x0}, double @var{y0}, double @var{x1}, double @var{y1}, double @var{x2}, double @var{y2});
 @t{space2} and @t{fspace2} are extended versions of @t{space} and
-@t{fspace}.  Their arguments are the three defining vertices of an
-`affine window' (a drawing parallelogram), in user coordinates.  The
-specified vertices are the lower left, the lower right, and the upper
-left.  This window will be mapped affinely onto the graphics display.
+@t{fspace}, which may be used instead.  Their arguments are the three
+defining vertices of an `affine window' (a drawing parallelogram), in
+user coordinates.  The specified vertices are the lower left, the lower
+right, and the upper left.  This window will be mapped affinely onto the
+graphics display.
 @item int @t{havecap} (const char *@var{s});
 @t{havecap} tests whether or not a Plotter has a specified capability.
 The return value is @w{0, 1}, @w{or 2}, signifying no/yes/maybe.  For
 unrecognized capabilities the return value is zero.  Capabilities
-include "SOLID_FILL" and "WIDE_LINES" (i.e., lines with a non-default
-width).  They also include "HERSHEY_FONTS", "PS_FONTS", and "PCL_FONTS",
-which indicate whether or not fonts of a particular class are supported.
-@xref{Text Fonts}.
+include "SOLID_FILL", "WIDE_LINES" (i.e., the ability to draw lines with
+a non-default width), and "SETTABLE_BACKGROUND" (the ability to set the
+color of the background).  They also include "HERSHEY_FONTS",
+"PS_FONTS", and "PCL_FONTS", which indicate whether or not fonts of a
+particular class are supported.  @xref{Text Fonts}.
 @item int @t{flushpl} ();
 @t{flushpl} flushes (i.e., pushes onward) all plotting commands to the
 display device.  This is useful only if the currently selected Plotter
@@ -4610,20 +4943,21 @@ previously plotted objects have been sent to the display and are visible
 to the user.  @w{It has} no effect on Plotters that do not do real-time
 plotting.
 @item int @t{closepl} ();
-@t{closepl} closes a Plotter.  If the currently selected Plotter does
-not do real-time plotting (i.e., if it is a Postscript, Fig, or HP-GL
-Plotter), it writes the plotted objects to the output stream.  @w{A
-negative} return value indicates the Plotter could not be closed.
+@t{closepl} closes a Plotter, i.e., terminates a page of graphics.  If
+the currently selected Plotter does not do real-time plotting (i.e., if
+it is a Postscript, Fig, or HP-GL Plotter), it writes the plotted
+objects to the output stream.  @w{A negative} return value indicates the
+Plotter could not be closed.
 @item FILE *@t{outfile} (FILE *@var{fp});
 @t{outfile}, which must be called outside a @t{openpl}@dots{}@t{closepl}
 pair, redirects all graphics output from a Plotter to the stream
 @var{fp}.  The previous output stream is returned.
 
-This operation is useful on Plotters that may not meaningfully be opened
-more than once, i.e., Postscript and Fig Plotters.  On other Plotters,
-its use is deprecated.  On Plotters that do not have an output stream in
-the conventional sense, i.e., @w{X Plotters} and @w{X Drawable}
-Plotters, it has no effect.
+This operation is useful on Plotters that are designed to be opened only
+once, i.e., Postscript and Fig Plotters.  On other Plotters, its use is
+deprecated.  On Plotters that do not have an output stream in the
+conventional sense, i.e., @w{X Plotters} and @w{X Drawable} Plotters, it
+has no effect.
 @end table
 
 @node Drawing Functions, Attribute Functions, Setup Functions, Functions
@@ -4942,9 +5276,9 @@ linemodes correspond more or less to the following bit patterns:
 all paths, circles, and ellipses subsequently drawn on the graphics
 display.  @w{A negative} value means that a default width should be
 used.  This default width depends on the type of Plotter.  The
-interpretation of zero line width is does also (for some types of
-Plotter, a zero-width line is the thinnest line that can be drawn;
-@w{for others}, a zero-width line is invisible).
+interpretation of zero line width does also (for some types of Plotter,
+a zero-width line is the thinnest line that can be drawn; @w{for
+others}, a zero-width line is invisible).
 
 Tektronix Plotters do not support drawing with other than a default
 width, and HP-GL Plotters do not support doing so if the parameter
@@ -5073,20 +5407,24 @@ flexibility: @w{an application} programmer may allow non-critical driver
 parameters to be specified by the user, via environment variables.
 
 The following are the currently recognized parameters.  The most
-important parameters are @code{DISPLAY}, which affects @w{X Plotters},
-and @code{PAGESIZE}, which affects Postscript, Fig, and HP-GL Plotters.
-These two parameters are listed first and the others alphabetically.
-Many of the parameters, such as the several whose names begin with
-"HPGL", affect only a single type of Plotter.
+important parameters are @code{DISPLAY} and @code{BITMAPSIZE}, which
+affect @w{X Plotters}, and @code{PAGESIZE}, which affects Postscript,
+Fig, and HP-GL Plotters.  These three parameters are listed first and
+the others alphabetically.  Many of the parameters, such as the several
+whose names begin with "HPGL", affect only a single type of Plotter.
 
 @table @code
 @item DISPLAY
 (Default NULL.)  The X Window System display on which the graphics
 display will be @w{popped up}, as an @w{X window}.  This is relevant
-only to @w{X Plotters}.  The size of the window in terms of pixels is
-currently specified only by the @w{X resource} Xplot.geometry (see
-below).  @w{In future} releases @w{it will} be possible to specify the
-size of the window by setting a driver parameter.
+only to @w{X Plotters}.
+
+@item BITMAPSIZE
+(Default "570x570".)  The size of the graphics display in terms of
+pixels.  This is relevant only to @w{X Plotters}.  @w{If this} parameter
+is not set, its value will automatically be taken from the @w{X
+resource} @code{Xplot.geometry}.  This is for backward compatibility.
+
 @item PAGESIZE
 (Default "letter".)  The size of the page on which the graphics display
 will be positioned.  This is relevant only to Postscript, Fig, and HP-GL
@@ -5103,6 +5441,7 @@ upper left corner of an @code{xfig} display, with width equal to the
 width of the specified page.  For HP-GL Plotters, fine control over the
 positioning of the graphics display on the page may be accomplished by
 setting the @code{HPGL_XOFFSET} and @code{HPGL_YOFFSET} parameters.
+
 @item HPGL_ASSIGN_COLORS
 (Default "no".)  Relevant only to HP-GL Plotters, and only if the value
 of @code{HPGL_VERSION} @w{is "2"}.  @w{"no" means} to draw with a fixed
@@ -5112,6 +5451,7 @@ means that pen colors will not restricted to the palette specified in
 range #1@dots{}#31, @w{as needed}.  Not all HP-GL/2 devices allow the
 assignment of colors to logical pens.  In particular, HP-GL/2 pen
 plotters @w{do not}.  @w{So this} parameter should be used with caution.
+
 @item HPGL_OPAQUE_MODE
 (Default "no".)  Relevant only to HP-GL Plotters, and only if the value
 of @code{HPGL_VERSION} @w{is "2"}.  "yes" means that @w{pen #0} should
@@ -5120,6 +5460,7 @@ and the filling of objects with opaque white.  Not all HP-GL/2 devices
 allow the use of @w{pen #0} as an opaque white pen.  In particular,
 HP-GL/2 pen plotters @w{do not}.  @w{So this} parameter should be used
 with caution.
+
 @item HPGL_PENS
 (Default "1=black:2=red:3=green:4=yellow:5=blue:6=magenta:7=cyan" if the
 value of @code{HPGL_VERSION} @w{is "2"} and "1=black" if the value of
@@ -5129,20 +5470,24 @@ self-explanatory.  The color for any pen in the range #1@dots{}#31 may
 be specified.  For information on what color names are recognized, see
 @ref{Color Names}.  @w{Pen #1} must always be present, though it need
 not be black.  Any other pen in the range #1@dots{}#31 may be omitted.
+
 @item HPGL_VERSION
 (Default "2".)  Relevant only to HP-GL Plotters.  @w{"1" means} that the
 output should be generic HP-GL, @w{"1.5" means} that the output should
 be suitable for the HP7550A pen plotter (HP-GL with some HP-GL/2
 extensions), and "2" means that the output should be modern HP-GL/2.
+
 @item HPGL_XOFFSET
 (Default "0.0cm".)  Relevant only to HP-GL Plotters.  An adjustment, in
 the @w{@math{x} direction}, of the position of the graphics display on
 the page.  @w{It may} be specified in centimeters, millimeters, or
 inches.  For example, an offset could be specified as "2cm" or "1.2in".
+
 @item HPGL_YOFFSET
 (Default "0.0cm".)  Relevant only to HP-GL Plotters.  An adjustment, in
 the @w{@math{y} direction}, of the position of the graphics display on
 the page.
+
 @item MAX_LINE_LENGTH
 (Default "500".)  The maximum number of points that a path may contain,
 before it is flushed to the display device.  If this flushing occurs,
@@ -5155,11 +5500,13 @@ Plotters.  @w{It is} not relevant to Tektronix or Metafile Plotters,
 since they draw paths in real time.  The reason for splitting long paths
 is that some display devices (e.g., old Postscript printers and HP-GL
 plotters) have limited buffer sizes.
+
 @item META_PORTABLE
 (Default "no".)  Relevant only to Metafile Plotters.  "yes" means that
 the output should be in a portable (human-readable) version of the
 metafile format, rather than the default (binary) version.
 @xref{Metafiles}.
+
 @item ROTATE
 (Default "0".)  Currently relevant only to HP-GL Plotters.  The angle,
 in degrees, by which the graphics display should be rotated on the page
@@ -5170,6 +5517,7 @@ between portrait and landscape orientations.  For HP-GL output devices
 this is frequently a concern, since some HP-GL devices (``plotters'')
 draw with a default landscape orientation, and others (``printers'')
 draw with a default portrait orientation.
+
 @item TERM
 (Default NULL.)  Relevant only to Tektronix Plotters.  If the value is
 @code{xterm}, @code{xterms}, or @code{kterm}, @w{it is} taken as a sign
@@ -5193,16 +5541,19 @@ the case (the 16 @code{ansi.sys} colors will be supported).  After
 drawing graphics, the Plotter will emit an escape sequence that returns
 the emulator to VT100 mode.  The key sequence `@w{ALT minus}' may be
 employed manually within @code{kermit} to switch between the two modes.
+
 @item VANISH_ON_DELETE
 (Default "no".)  Relevant only to X Plotters.  If the value is "yes",
 when a Plotter is deleted, the window or windows that it has @w{popped
 up} will vanish.  Otherwise, each such window will remain on the screen
 until it is removed by the user (by typing @samp{q} @w{in it}, or by
 clicking with a mouse).
+
 @item XDRAWABLE_DISPLAY
 (Default NULL.)  Relevant only to X Drawable Plotters.  The value should
 be a @code{Display *}, a pointer to the @w{X display} with which the
 drawable(s) to be @w{drawn in} are associated.
+
 @item XDRAWABLE_DRAWABLE1
 @itemx XDRAWABLE_DRAWABLE2
 (Default NULL.)  Relevant only to X Drawable Plotters.  If set, the
@@ -5217,14 +5568,6 @@ both an @w{X window} and its background pixmap.  If two drawables are
 specified, they must have the same dimensions and depth, and be
 associated with the same @w{X display}.
 @end table
-
-There is is one other low-level parameter worth mentioning.  An @w{X
-Plotter} always checks the value of the @w{X resource}
-@code{Xplot.geometry}.  It uses this value, which is a string that may
-be set by the user, as the size of its graphics display @w{in terms} of
-pixels.  The default value is "570x570".  In future releases it will be
-possible to set the size of an @w{X Plotter} graphics display by setting
-a driver parameter.
 
 @node Appendices, , libplot, Top
 @ifinfo
@@ -5285,6 +5628,7 @@ divided into typefaces as follows.
 
 @itemize @bullet
 @item HersheySerif
+
 @enumerate
 @item HersheySerif
 @item HersheySerif-Italic
@@ -5293,20 +5637,25 @@ divided into typefaces as follows.
 @item HersheyCyrillic
 @item HersheyEUC
 @end enumerate
+
 @item HersheySans
+
 @enumerate
 @item HersheySans
 @item HersheySans-Oblique
 @item HersheySans-Bold
 @item HersheySans-BoldOblique
 @end enumerate
+
 @item HersheyScript
+
 @enumerate
 @item HersheyScript
 @item HersheyScript
 @item HersheyScript-Bold
 @item HersheyScript-Bold
 @end enumerate
+
 @item HersheyGothic-English
 @item HersheyGothic-German
 @item HersheyGothic-Italian
@@ -5324,61 +5673,77 @@ The 35 Postscript fonts are divided into typefaces as follows.
 
 @itemize @bullet
 @item Helvetica
+
 @enumerate
 @item	Helvetica
 @item	Helvetica-Oblique
 @item	Helvetica-Bold
 @item	Helvetica-BoldOblique
 @end enumerate
+
 @item	Helvetica-Narrow
+
 @enumerate
 @item	Helvetica-Narrow
 @item	Helvetica-Narrow-Oblique
 @item	Helvetica-Narrow-Bold
 @item	Helvetica-Narrow-BoldOblique
 @end enumerate
+
 @item   Times
+
 @enumerate
 @item	Times-Roman
 @item	Times-Italic
 @item	Times-Bold
 @item	Times-BoldItalic
 @end enumerate
+
 @item AvantGarde
+
 @enumerate
 @item	AvantGarde-Book
 @item	AvantGarde-BookOblique
 @item	AvantGarde-Demi
 @item	AvantGarde-DemiOblique
 @end enumerate
+
 @item Bookman
+
 @enumerate
 @item	Bookman-Light
 @item	Bookman-LightItalic
 @item	Bookman-Demi
 @item	Bookman-DemiItalic
 @end enumerate
+
 @item Courier
+
 @enumerate
 @item	Courier
 @item	Courier-Oblique
 @item	Courier-Bold
 @item	Courier-BoldOblique
 @end enumerate
+
 @item NewCenturySchlbk
+
 @enumerate
 @item	NewCenturySchlbk-Roman
 @item	NewCenturySchlbk-Italic
 @item	NewCenturySchlbk-Bold
 @item	NewCenturySchlbk-BoldItalic
 @end enumerate
+
 @item Palatino
+
 @enumerate
 @item	Palatino-Roman
 @item	Palatino-Italic
 @item	Palatino-Bold
 @item	Palatino-BoldItalic
 @end enumerate
+
 @item	ZapfChancery-MediumItalic
 @item	ZapfDingbats
 @item	Symbol
@@ -5393,84 +5758,106 @@ The 45 @w{PCL 5} fonts are divided into typefaces as follows.
 
 @itemize @bullet
 @item Univers
+
 @enumerate
 @item	Univers
 @item	Univers-Oblique
 @item	Univers-Bold
 @item	Univers-BoldOblique
 @end enumerate
+
 @item UniversCondensed
+
 @enumerate
 @item	UniversCondensed
 @item	UniversCondensed-Oblique
 @item	UniversCondensed-Bold
 @item	UniversCondensed-BoldOblique
 @end enumerate
+
 @item   CGTimes
+
 @enumerate
 @item	CGTimes-Roman
 @item	CGTimes-Italic
 @item	CGTimes-Bold
 @item	CGTimes-BoldItalic
 @end enumerate
+
 @item Albertus
+
 @enumerate
 @item	AlbertusMedium
 @item	AlbertusMedium
 @item	AlbertusExtraBold
 @item	AlbertusExtraBold
 @end enumerate
+
 @item AntiqueOlive
+
 @enumerate
 @item AntiqueOlive
 @item AntiqueOlive-Italic
 @item AntiqueOlive-Bold
 @end enumerate
+
 @item   Arial
+
 @enumerate
 @item	Arial-Roman
 @item	Arial-Italic
 @item	Arial-Bold
 @item	Arial-BoldItalic
 @end enumerate
+
 @item   ClarendonCondensed
 @item   Coronet
 @item Courier
+
 @enumerate
 @item	Courier
 @item	Courier-Italic
 @item	Courier-Bold
 @item	Courier-BoldItalic
 @end enumerate
+
 @item Garamond
+
 @enumerate
 @item	Garamond
 @item	Garamond-Italic
 @item	Garamond-Bold
 @item	Garamond-BoldItalic
 @end enumerate
+
 @item LetterGothic
+
 @enumerate
 @item	LetterGothic-Roman
 @item	LetterGothic-Italic
 @item	LetterGothic-Bold
 @item	LetterGothic-BoldItalic
 @end enumerate
+
 @item   Marigold
 @item CGOmega
+
 @enumerate
 @item	CGOmega-Roman
 @item	CGOmega-Italic
 @item	CGOmega-Bold
 @item	CGOmega-BoldItalic
 @end enumerate
+
 @item TimesNewRoman
+
 @enumerate
 @item	TimesNewRoman
 @item	TimesNewRoman-Italic
 @item	TimesNewRoman-Bold
 @item	TimesNewRoman-BoldItalic
 @end enumerate
+
 @item	Wingdings
 @item	Symbol
 @end itemize
@@ -6186,8 +6573,8 @@ Manual}.
 [0356] braceleftbt
 @item "\bv" 
 [0357] braceex
-@item NONE 
-[0360] applelogo
+@item "\eu"
+[0360] euro
 @item "\ra" 
 [0361] angleright
 @item "\is" 
@@ -6606,9 +6993,9 @@ bitmap, La@TeX{}, and Postscript formats are supported.
 
 Several of the GNU plotting utilities were inspired by Unix plotting
 utilities.  A @code{graph} utility and various plot filters were present
-in the first releases of Unix from Bell Laboratories, going at least as
-far back as the @w{Version 4} distribution (1973).  Most of the work on
-tying them together and breaking out device-dependent versions of
+in the first releases of Unix from Bell Laboratories, going @w{at least}
+as far back as the @w{Version 4} distribution (1973).  Most of the work
+on tying them together and breaking out device-dependent versions of
 @code{libplot} was performed by @email{llc@@research.att.com, Lorinda
 Cherry}.  By the time of @w{Version 7} Unix (1979) and the subsequent
 Berkeley releases, the package consisting of @code{graph}, @code{plot},
@@ -6626,21 +7013,20 @@ of the programs and provided editorial support for the documentation.
 @email{interran@@uluru.stanford.edu, John Interrante}, of the InterViews
 team at Stanford, generously provided the @code{idraw} Postscript
 prologue now included in @code{libplot}, and helpful comments.  The
-package as it stood in 1991 was distributed under the name `GNU
-graphics'.
+package as it stood in 1991 was distributed under the name `GNU graphics'.
 
 In 1995 @email{rsm@@math.arizona.edu, Robert Maier} took over
 development of the package, and designed and wrote the current,
-maximally device-independent, standalone version of @code{libplot}.  He
-also rewrote @code{graph} from scratch, turning it into a real-time
+maximally device-independent, standalone version of @code{libplot}.
+He also rewrote @code{graph} from scratch, turning it into a real-time
 filter that would use the new library.  He fleshed out @code{spline}
 too, by adding support for splines in tension, periodicity, and cubic
 Bessel interpolation.
 
 Most development work on @code{ode} was performed by
 @email{nbt@@reed.edu, Nick Tufillaro} in 1978--1994, on a sequence of
-platforms that extended back to a PDP-11 running @w{Version 4} Unix.  In
-1997 Robert modified Nick's 1994 version to agree with GNU conventions
+platforms that extended back to a PDP-11 running @w{Version 4} Unix.
+In 1997 Robert modified Nick's 1994 version to agree with GNU conventions
 on coding and command-line parsing, extended it to support the full set
 of special functions supported by @code{gnuplot}, and extended the
 exception handling.
@@ -6652,16 +7038,19 @@ are @w{of course} based on the characters digitized in the mid to late
 symbols were taken from the SLAC Unified Graphics System developed by
 @w{Robert C.} Beach in the mid-1970's, and from the fonts designed by
 @email{wolff@@inf.fu-berlin.de, Thomas Wolff} for Ghostscript.  The
-table-driven parser used in @code{tek2plot} was written at Berkeley in
-the mid-1980's by @email{moy@@parc.xerox.com, Edward Moy}.  Arthur
-Smith, formerly of LASSP at Cornell, provided code for his @code{xplot}
-utility.  @email{toy@@rtp.ericsson.se, Ray Toy} helped with the tick
-mark spacing code in @code{graph} and was the first to incorporate GNU
-@code{getopt}.  Peter Karnow of URW and @email{turk@@apple.com, Ken
-Turkowski} of Apple developed the `sagitta' algorithm used in an
-extended form in @code{libplot} for drawing circular and elliptic arcs.
-@email{beebe@@math.utah.edu, Nelson Beebe} exhaustively tested the
-package installation process.
+interpolation algorithms used in @code{spline} are based on the
+algorithms of @email{cline@@cs.utexas.edu, @w{Alan K.} Cline}, as
+described in his papers in the Apr.@: 1974 issue of @cite{Communications
+of the ACM}.  The table-driven parser used in @code{tek2plot} was
+written at Berkeley in the mid-1980's by @email{moy@@parc.xerox.com,
+Edward Moy}.  The `sagitta' algorithm used in an extended form in
+@code{libplot} for drawing circular and elliptic arcs was developed by
+Peter Karnow of URW and @email{turk@@apple.com, Ken Turkowski} of Apple.
+@email{toy@@rtp.ericsson.se, Ray Toy} helped with the tick mark spacing
+code in @code{graph} and was the first to incorporate GNU @code{getopt}.
+Arthur Smith, formerly of LASSP at Cornell, provided code for his
+@code{xplot} utility.  @email{beebe@@math.utah.edu, Nelson Beebe}
+exhaustively tested the package installation process.
 
 Robert Maier wrote the documentation, which now incorporates Nick
 Tufillaro's @code{ode} manual.  Julie Sussmann checked over the

@@ -44,6 +44,7 @@ _t_openpl ()
   /* flag device as open */
   _plotter->open = true;
   _plotter->opened = true;
+  (_plotter->page_number)++;
 
   /* send graphics initialization commands to output stream if necessary */
 

@@ -27,6 +27,7 @@ _initialize_buffer (bufp)
   bufp->len = INITIAL_OUTBUF_LEN;
   bufp->current = bufp->base;
   bufp->contents = 0;
+  *(bufp->base) = '\0';
 }
 
 /* UPDATE_BUFFER must be called after each sprintf() and other object write
@@ -70,4 +71,5 @@ _reset_buffer (bufp)
 {
   bufp->current = bufp->base;
   bufp->contents = 0;
+  *(bufp->base) = '\0';
 }
