@@ -1,56 +1,67 @@
-/* This file contains the openpl method, which is a standard part of
-   libplot.  It opens a Plotter object. */
-
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_m_openpl (S___(Plotter *_plotter))
+_m_begin_page (S___(Plotter *_plotter))
 #else
-_m_openpl (S___(_plotter))
-     S___(Plotter *_plotter;) 
+_m_begin_page (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  bool not_previously_opened;
-
-  if (_plotter->open)
-    {
-      _plotter->error (R___(_plotter) 
-		       "openpl: invalid operation");
-      return -1;
-    }
-
-  /* flag device as open */
-  _plotter->open = true;
-  not_previously_opened = _plotter->opened ? false : true;
-  _plotter->opened = true;
-  (_plotter->page_number)++;
-
-  /* space() not invoked yet, to set the user frame->device frame map */
-  _plotter->space_invoked = false;
-
-  if (not_previously_opened)
+  if (_plotter->data->page_number == 1)
     /* emit metafile header, i.e. magic string */
     {
-      _plotter->write_string (R___(_plotter) PLOT_MAGIC);
+      _write_string (_plotter->data, PLOT_MAGIC);
 
       /* format type 1 = GNU binary, type 2 = GNU portable */
       if (_plotter->meta_portable_output)
-	_plotter->write_string (R___(_plotter) " 2\n");
+	_write_string (_plotter->data, " 2\n");
       else
-	_plotter->write_string (R___(_plotter) " 1\n");
+	_write_string (_plotter->data, " 1\n");
     }
-
-  _meta_emit_byte (R___(_plotter) (int)O_OPENPL);
-  _meta_emit_terminator (S___(_plotter));
   
-  /* create drawing state, add it as the first member of the linked list;
-     use generic method because we don't want to emit an op code */
-  _g_savestate (S___(_plotter));
+  _m_emit_op_code (R___(_plotter) O_OPENPL);
+  _m_emit_terminator (S___(_plotter));
 
-  /* frames in page are numbered starting with zero */
-  _plotter->frame_number = 0;
+  /* reset page-specific, i.e. picture-specific, dynamic variables */
+  _plotter->meta_pos.x = 0.0;
+  _plotter->meta_pos.y = 0.0;
+  _plotter->meta_position_is_unknown = false;
+  _plotter->meta_m_user_to_ndc[0] = 1.0;
+  _plotter->meta_m_user_to_ndc[1] = 0.0;
+  _plotter->meta_m_user_to_ndc[2] = 0.0;
+  _plotter->meta_m_user_to_ndc[3] = 1.0;
+  _plotter->meta_m_user_to_ndc[4] = 0.0;
+  _plotter->meta_m_user_to_ndc[5] = 0.0;
+  _plotter->meta_fill_rule_type = FILL_ODD_WINDING;
+  _plotter->meta_line_type = L_SOLID;
+  _plotter->meta_points_are_connected = true;  
+  _plotter->meta_cap_type = CAP_BUTT;  
+  _plotter->meta_join_type = JOIN_MITER;  
+  _plotter->meta_miter_limit = DEFAULT_MITER_LIMIT;  
+  _plotter->meta_line_width = 0.0;
+  _plotter->meta_line_width_is_default = true;
+  _plotter->meta_dash_array = (const double *)NULL;
+  _plotter->meta_dash_array_len = 0;
+  _plotter->meta_dash_offset = 0.0;  
+  _plotter->meta_dash_array_in_effect = false;  
+  _plotter->meta_pen_type = 1;  
+  _plotter->meta_fill_type = 0;
+  _plotter->meta_orientation = 1;  
+  _plotter->meta_font_name = (const char *)NULL;
+  _plotter->meta_font_size = 0.0;
+  _plotter->meta_font_size_is_default = true;
+  _plotter->meta_text_rotation = 0.0;  
+  _plotter->meta_fgcolor.red = 0;
+  _plotter->meta_fgcolor.green = 0;
+  _plotter->meta_fgcolor.blue = 0;
+  _plotter->meta_fillcolor_base.red = 0;
+  _plotter->meta_fillcolor_base.green = 0;
+  _plotter->meta_fillcolor_base.blue = 0;
+  _plotter->meta_bgcolor.red = 65535;
+  _plotter->meta_bgcolor.green = 65535;
+  _plotter->meta_bgcolor.blue = 65535;
 
-  return 0;
+  return true;
 }

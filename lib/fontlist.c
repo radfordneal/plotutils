@@ -45,14 +45,20 @@ struct plPSFontInfoStruct
   const char *ps_name_alt2;	/* 2nd alternative PS font name, if non-NULL */
   const char *x_name;		/* the X Windows font name */
   const char *x_name_alt;	/* alternative X Windows font name */
+  const char *css_family;	/* CSS font family */
+  const char *css_generic_family; /* CSS generic font family */
+  const char *css_style;	/* CSS font style */
+  const char *css_weight;	/* CSS font weight */
+  const char *css_stretch;	/* CSS font stretch */
   int pcl_typeface;		/* the PCL typeface number */
-  int pcl_spacing;		/* 0=fixed width, 1=variable */
-  int pcl_posture;		/* 0=upright, 1=italic, etc. */
-  int pcl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
-  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
+  int hpgl_spacing;		/* 0=fixed width, 1=variable */
+  int hpgl_posture;		/* 0=upright, 1=italic, etc. */
+  int hpgl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
+  int hpgl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
   int font_ascent;		/* the font's ascent (from bounding box) */
   int font_descent;		/* the font's descent (from bounding box) */
   int font_cap_height;		/* the font's cap height */
+  int font_x_height;		/* the font's x height */
   short width[256];		/* per-character width information */
   short offset[256];		/* per-character left edge information */
   int typeface_index;		/* default typeface for the font */
@@ -67,13 +73,20 @@ struct plPCLFontInfoStruct
   const char *ps_name_alt;	/* alternative PS font name, if non-NULL */
   const char *substitute_ps_name; /* replacement name (for use in a PS file) */
   const char *x_name;		/* the X Windows font name */
+  const char *css_family;	/* CSS font family */
+  const char *css_generic_family; /* CSS generic font family */
+  const char *css_style;	/* CSS font style */
+  const char *css_weight;	/* CSS font weight */
+  const char *css_stretch;	/* CSS font stretch */
   int pcl_typeface;		/* the PCL typeface number */
-  int pcl_spacing;		/* 0=fixed width, 1=variable */
-  int pcl_posture;		/* 0=upright, 1=italic, etc. */
-  int pcl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
-  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
+  int hpgl_spacing;		/* 0=fixed width, 1=variable */
+  int hpgl_posture;		/* 0=upright, 1=italic, etc. */
+  int hpgl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
+  int hpgl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
   int font_ascent;		/* the font's ascent (from bounding box) */
   int font_descent;		/* the font's descent (from bounding box) */
+  int font_cap_height;		/* the font's cap height */
+  int font_x_height;		/* the font's x height */
   short width[256];		/* per-character width information */
   short offset[256];		/* per-character left edge information */
   int typeface_index;		/* default typeface for the font */
@@ -84,21 +97,20 @@ struct plPCLFontInfoStruct
 struct plStickFontInfoStruct 
 {
   const char *ps_name;		/* the postscript font name */
-				/* no x_name field */  
   bool basic;			/* basic stick font (supp. on all devices)? */
   int pcl_typeface;		/* the PCL typeface number */
-  int pcl_spacing;		/* 0=fixed width, 1=variable */
-  int pcl_posture;		/* 0=upright, 1=italic, etc. */
-  int pcl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
-  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1 */
+  int hpgl_spacing;		/* 0=fixed width, 1=variable */
+  int hpgl_posture;		/* 0=upright, 1=italic, etc. */
+  int hpgl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
+  int hpgl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1 */
   int font_ascent;		/* the font's ascent (from bounding box) */
   int font_descent;		/* the font's descent (from bounding box) */
   int raster_width_lower;	/* width of abstract raster (lower half) */
   int raster_height_lower;	/* height of abstract raster (lower half) */
   int raster_width_upper;	/* width of abstract raster (upper half) */
   int raster_height_upper;	/* height of abstract raster (upper half) */
-  int hp_charset_lower;		/* old HP character set number (lower half) */
-  int hp_charset_upper;		/* old HP character set number (upper half) */
+  int hpgl_charset_lower;	/* old HP character set number (lower half) */
+  int hpgl_charset_upper;	/* old HP character set number (upper half) */
   int kerning_table_lower;	/* number of a kerning table (lower half) */
   int kerning_table_upper;	/* number of a kerning table (upper half) */
   char width[256];		/* per-character width information */
@@ -111,13 +123,23 @@ struct plStickFontInfoStruct
 
 /* List of Plotter types we support getting font information from,
    NULL-terminated.  This list also appears in the program text below. */
+#ifdef INCLUDE_PNG_SUPPORT
 #ifndef X_DISPLAY_MISSING
 static const char *_known_devices[] =
-{ "X", "pnm", "gif", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "tek", "meta", NULL };
+{ "X", "png", "pnm", "gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", "meta", NULL };
 #else
 static const char *_known_devices[] =
-{ "pnm", "gif", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "tek", "meta", NULL };
+{ "png", "pnm", "gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", "meta", NULL };
 #endif
+#else  /* not INCLUDE_PNG_SUPPORT */
+#ifndef X_DISPLAY_MISSING
+static const char *_known_devices[] =
+{ "X", "pnm", "gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", "meta", NULL };
+#else
+static const char *_known_devices[] =
+{ "pnm", "gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", "meta", NULL };
+#endif
+#endif /* not INCLUDE_PNG_SUPPORT */
 
 int
 #ifdef _HAVE_PROTOS
@@ -142,19 +164,35 @@ display_fonts (display_type, progname)
 
   if (found == false || strcmp (display_type, "meta") == 0)
     {
+#ifdef INCLUDE_PNG_SUPPORT
 #ifndef X_DISPLAY_MISSING
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
 where \"format\" is the output format:\n\
-X, pnm, gif, ai, ps, cgm, fig, pcl, hpgl, or tek.\n",
+X, png, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
 	       progname);
 #else  /* X_DISPLAY_MISSING */
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
 where \"format\" is the output format:\n\
-pnm, gif, ai, ps, cgm, fig, pcl, hpgl, or tek.\n",
+png, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
 	       progname);
 #endif /* X_DISPLAY_MISSING */
+#else  /* not INCLUDE_PNG_SUPPORT */
+#ifndef X_DISPLAY_MISSING
+      fprintf (stderr, "\
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format:\n\
+X, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+	       progname);
+#else  /* X_DISPLAY_MISSING */
+      fprintf (stderr, "\
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format:\n\
+pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+	       progname);
+#endif /* X_DISPLAY_MISSING */
+#endif /* not INCLUDE_PNG_SUPPORT */
       return 0;
     }
 

@@ -4,11 +4,6 @@
    or less.  The bounding box information is stored in terms of device
    units, in the page's plOutbuf structure. */
 
-/* These functions need to be (non-public) members of the Plotter class,
-   since macros such as XD() and YD(), which they use to convert user units
-   to device units, access data members of the class.  They are still
-   mostly written as if they aren't class members, though. */
-
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -18,22 +13,23 @@
 
 /* WARNING: This is not completely accurate, due to the nonzero width of
    the pen used to draw the ellipse.  Notoriously, the outer boundary of a
-   `wide ellipse' isn't an ellipse at all: it's an eighth-order curve (see
-   Foley and van Damm).  Here we approximate it as an ellipse, with
-   semimajor and semiminor axes in the user frame increased by one-half of
-   the line width.  This approximation is good unless the line width is
-   large. */
+   `wide ellipse' isn't an ellipse at all: in general it's an eighth-order
+   curve (see Foley and van Damm), though it's a fourth-order curve if the
+   axes are aligned with the coordinate axes.  Here we approximate it as an
+   ellipse, with semimajor and semiminor axes in the user frame increased
+   by one-half of the line width.  This approximation is good unless the
+   line width is large. */
 void
 #ifdef _HAVE_PROTOS
-_set_ellipse_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth)
+_set_ellipse_bbox (plOutbuf *bufp, double x, double y, double rx, double ry, double costheta, double sintheta, double linewidth, double m[6])
 #else
-_set_ellipse_bbox (R___(_plotter) bufp, x, y, rx, ry, costheta, sintheta, linewidth)
-     S___(Plotter *_plotter;) 
+_set_ellipse_bbox (bufp, x, y, rx, ry, costheta, sintheta, linewidth, m)
      plOutbuf *bufp;
      double x, y;
      double rx, ry;
      double costheta, sintheta;
      double linewidth;
+     double m[6];
 #endif
 {
   double ux, uy, vx, vy;
@@ -51,11 +47,11 @@ _set_ellipse_bbox (R___(_plotter) bufp, x, y, rx, ry, costheta, sintheta, linewi
      are forward images of the semiaxes, i.e. they are conjugate radial
      vectors in the device frame */
 
-  ux = XDV(rx * costheta, rx * sintheta);
-  uy = YDV(rx * costheta, rx * sintheta);
+  ux = XDV_INTERNAL(rx * costheta, rx * sintheta, m);
+  uy = YDV_INTERNAL(rx * costheta, rx * sintheta, m);
 
-  vx = XDV(-ry * sintheta, ry * costheta);
-  vy = YDV(-ry * sintheta, ry * costheta);
+  vx = XDV_INTERNAL(-ry * sintheta, ry * costheta, m);
+  vy = YDV_INTERNAL(-ry * sintheta, ry * costheta, m);
 
   /* angle by which the conjugate radial vectors should be mixed, in order
      to yield vectors along the major and minor axes in the device frame */
@@ -89,22 +85,30 @@ _set_ellipse_bbox (R___(_plotter) bufp, x, y, rx, ry, costheta, sintheta, linewi
 		     + ry_device * ry_device * costheta_device * costheta_device);
 
   /* record these displacements, for bounding box */
-  _update_bbox (bufp, XD(x,y) + xdeviation, YD(x,y) + ydeviation);
-  _update_bbox (bufp, XD(x,y) + xdeviation, YD(x,y) - ydeviation);
-  _update_bbox (bufp, XD(x,y) - xdeviation, YD(x,y) + ydeviation);
-  _update_bbox (bufp, XD(x,y) - xdeviation, YD(x,y) - ydeviation);
+  _update_bbox (bufp, 
+		XD_INTERNAL(x,y,m) + xdeviation, 
+		YD_INTERNAL(x,y,m) + ydeviation);
+  _update_bbox (bufp, 
+		XD_INTERNAL(x,y,m) + xdeviation, 
+		YD_INTERNAL(x,y,m) - ydeviation);
+  _update_bbox (bufp, 
+		XD_INTERNAL(x,y,m) - xdeviation, 
+		YD_INTERNAL(x,y,m) + ydeviation);
+  _update_bbox (bufp, 
+		XD_INTERNAL(x,y,m) - xdeviation, 
+		YD_INTERNAL(x,y,m) - ydeviation);
 }
 
 /* update bounding box due to drawing of a line end (args are in user coors) */
 void
 #ifdef _HAVE_PROTOS
-_set_line_end_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle)
+_set_line_end_bbox (plOutbuf *bufp, double x, double y, double xother, double yother, double linewidth, int capstyle, double m[6])
 #else
-_set_line_end_bbox (R___(_plotter) bufp, x, y, xother, yother, linewidth, capstyle)
-     S___(Plotter *_plotter;)
+_set_line_end_bbox (bufp, x, y, xother, yother, linewidth, capstyle, m)
      plOutbuf *bufp;
      double x, y, xother, yother, linewidth;
      int capstyle;
+     double m[6];
 #endif
 {
   plVector v, vrot;
@@ -120,10 +124,10 @@ _set_line_end_bbox (R___(_plotter) bufp, x, y, xother, yother, linewidth, capsty
       _vscale (&vrot, halfwidth);
       xs = x + vrot.x;
       ys = y + vrot.y;
-      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       xs = x - vrot.x;
       ys = y - vrot.y;
-      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       break;
     case CAP_PROJECT:
       v.x = xother - x;
@@ -134,14 +138,13 @@ _set_line_end_bbox (R___(_plotter) bufp, x, y, xother, yother, linewidth, capsty
       _vscale (&vrot, halfwidth);
       xs = x - v.x + vrot.x;
       ys = y - v.y + vrot.y;
-      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       xs = x - v.x - vrot.x;
       ys = y - v.y - vrot.y;
-      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       break;
     case CAP_ROUND:
-      _set_ellipse_bbox (R___(_plotter) 
-			 bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
+      _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0, m);
       break;
     case CAP_TRIANGULAR:
       /* add projecting vertex */
@@ -150,17 +153,17 @@ _set_line_end_bbox (R___(_plotter) bufp, x, y, xother, yother, linewidth, capsty
       _vscale (&v, halfwidth);
       xs = x + v.x;
       ys = y + v.y;
-      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       /* add other two vertices */
       vrot.x = yother - y;
       vrot.y = x - xother;
       _vscale (&vrot, halfwidth);
       xs = x + vrot.x;
       ys = y + vrot.y;
-      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       xs = x - vrot.x;
       ys = y - vrot.y;
-      _update_bbox (bufp, XD(xs,ys), YD(xs,ys));
+      _update_bbox (bufp, XD_INTERNAL(xs,ys,m), YD_INTERNAL(xs,ys,m));
       break;
     }
 }
@@ -168,14 +171,14 @@ _set_line_end_bbox (R___(_plotter) bufp, x, y, xother, yother, linewidth, capsty
 /* update bounding box due to drawing of a line join (args are in user coors)*/
 void
 #ifdef _HAVE_PROTOS
-_set_line_join_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit)
+_set_line_join_bbox (plOutbuf *bufp, double xleft, double yleft, double x, double y, double xright, double yright, double linewidth, int joinstyle, double miterlimit, double m[6])
 #else
-_set_line_join_bbox (R___(_plotter) bufp, xleft, yleft, x, y, xright, yright, linewidth, joinstyle, miterlimit)
-     S___(Plotter *_plotter;)
+_set_line_join_bbox (bufp, xleft, yleft, x, y, xright, yright, linewidth, joinstyle, miterlimit, m)
      plOutbuf *bufp;
      double xleft, yleft, x, y, xright, yright, linewidth;
      int joinstyle;
      double miterlimit;
+     double m[6];
 #endif
 {
   plVector v1, v2, vsum;
@@ -194,7 +197,7 @@ _set_line_join_bbox (R___(_plotter) bufp, xleft, yleft, x, y, xright, yright, li
       v1len = VLENGTH(v1);
       v2len = VLENGTH(v2);
       if (v1len == 0.0 || v2len == 0.0)
-	_update_bbox (bufp, XD(x,y), YD(x,y));
+	_update_bbox (bufp, XD_INTERNAL(x,y,m), YD_INTERNAL(x,y,m));
       else
 	{
 	  double cosphi;
@@ -208,10 +211,8 @@ _set_line_join_bbox (R___(_plotter) bufp, xleft, yleft, x, y, xright, yright, li
 	      || (cosphi > (1.0 - 2.0 / (miterlimit * miterlimit))))
 	    /* bevel rather than miter */
 	    {
-	      _set_line_end_bbox (R___(_plotter) 
-				  bufp, x, y, xleft, yleft, linewidth, CAP_BUTT);
-	      _set_line_end_bbox (R___(_plotter) 
-				  bufp,x, y, xright, yright, linewidth, CAP_BUTT);
+	      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, CAP_BUTT, m);
+	      _set_line_end_bbox (bufp,x, y, xright, yright, linewidth, CAP_BUTT, m);
 	    }
 	  else
 	    {
@@ -221,7 +222,7 @@ _set_line_join_bbox (R___(_plotter) bufp, xleft, yleft, x, y, xright, yright, li
 	      _vscale (&vsum, mitrelen);
 	      x -= vsum.x;
 	      y -= vsum.y;
-	      _update_bbox (bufp, XD(x,y), YD(x,y));
+	      _update_bbox (bufp, XD_INTERNAL(x,y,m), YD_INTERNAL(x,y,m));
 	    }
 	}
       break;
@@ -232,18 +233,15 @@ _set_line_join_bbox (R___(_plotter) bufp, xleft, yleft, x, y, xright, yright, li
       _vscale (&vsum, 0.5 * linewidth);
       x -= vsum.x;
       y -= vsum.y;
-      _update_bbox (bufp, XD(x,y), YD(x,y));
+      _update_bbox (bufp, XD_INTERNAL(x,y,m), YD_INTERNAL(x,y,m));
       /* fall through */
     case JOIN_BEVEL:
-      _set_line_end_bbox (R___(_plotter) 
-			  bufp, x, y, xleft, yleft, linewidth, CAP_BUTT);
-      _set_line_end_bbox (R___(_plotter) 
-			  bufp, x, y, xright, yright, linewidth, CAP_BUTT);
+      _set_line_end_bbox (bufp, x, y, xleft, yleft, linewidth, CAP_BUTT, m);
+      _set_line_end_bbox (bufp, x, y, xright, yright, linewidth, CAP_BUTT, m);
       break;
     case JOIN_ROUND:
       halfwidth = 0.5 * linewidth;
-      _set_ellipse_bbox (R___(_plotter) 
-			 bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0);
+      _set_ellipse_bbox (bufp, x, y, halfwidth, halfwidth, 1.0, 0.0, 0.0, m);
       break;
     }
 }
@@ -260,18 +258,19 @@ _set_line_join_bbox (R___(_plotter) bufp, xleft, yleft, x, y, xright, yright, li
 
 void
 #ifdef _HAVE_PROTOS
-_set_bezier2_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2)
+_set_bezier2_bbox (plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double device_line_width, double m[6])
 #else
-_set_bezier2_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2)
-     S___(Plotter *_plotter;) 
+_set_bezier2_bbox (bufp, x0, y0, x1, y1, x2, y2, device_line_width, m)
      plOutbuf *bufp;
      double x0, y0, x1, y1, x2, y2;
+     double device_line_width;
+     double m[6];
 #endif
 {
   double a_x, b_x, t_x;
   double a_y, b_y, t_y;  
   double x, y, xdevice, ydevice;
-  double device_halfwidth = 0.5 * _plotter->drawstate->device_line_width;
+  double device_halfwidth = 0.5 * device_line_width;
   
   /* compute coeffs of linear equation at+b=0, for both x and y coors */
   a_x = x0 - 2 * x1 + x2;
@@ -285,8 +284,8 @@ _set_bezier2_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2)
 	{
 	  x = QUAD_COOR(t_x, x0, x1, x2);
 	  y = QUAD_COOR(t_x, y0, y1, y2);
-	  xdevice = XD(x,y);
-	  ydevice = YD(x,y);
+	  xdevice = XD_INTERNAL(x,y,m);
+	  ydevice = YD_INTERNAL(x,y,m);
 	  _update_bbox (bufp, xdevice + device_halfwidth, ydevice);
 	  _update_bbox (bufp, xdevice - device_halfwidth, ydevice);
 	}
@@ -298,8 +297,8 @@ _set_bezier2_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2)
 	{
 	  x = QUAD_COOR(t_y, x0, x1, x2);
 	  y = QUAD_COOR(t_y, y0, y1, y2);
-	  xdevice = XD(x,y);
-	  ydevice = YD(x,y);
+	  xdevice = XD_INTERNAL(x,y,m);
+	  ydevice = YD_INTERNAL(x,y,m);
 	  _update_bbox (bufp, xdevice, ydevice + device_halfwidth);
 	  _update_bbox (bufp, xdevice, ydevice - device_halfwidth);
 	}
@@ -318,18 +317,19 @@ _set_bezier2_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2)
 
 void
 #ifdef _HAVE_PROTOS
-_set_bezier3_bbox (R___(Plotter *_plotter) plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3)
+_set_bezier3_bbox (plOutbuf *bufp, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3, double device_line_width, double m[6])
 #else
-_set_bezier3_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2, x3, y3)
-     S___(Plotter *_plotter;) 
+_set_bezier3_bbox (bufp, x0, y0, x1, y1, x2, y2, x3, y3, device_line_width, m)
      plOutbuf *bufp;
      double x0, y0, x1, y1, x2, y2, x3, y3;
+     double device_line_width;
+     double m[6];
 #endif
 {
   double a_x, b_x, c_x, s_x, t_x;
   double a_y, b_y, c_y, s_y, t_y;  
   double x, y, xdevice, ydevice;
-  double device_halfwidth = 0.5 * _plotter->drawstate->device_line_width;
+  double device_halfwidth = 0.5 * device_line_width;
   double sqrt_disc;
   
   /* compute coeffs of quad. equation at^2+bt+c=0, for both x and y coors */
@@ -348,8 +348,8 @@ _set_bezier3_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2, x3, y3)
 	{
 	  x = CUBIC_COOR(s_x, x0, x1, x2, x3);
 	  y = CUBIC_COOR(s_x, y0, y1, y2, y3);
-	  xdevice = XD(x,y);
-	  ydevice = YD(x,y);
+	  xdevice = XD_INTERNAL(x,y,m);
+	  ydevice = YD_INTERNAL(x,y,m);
 	  _update_bbox (bufp, xdevice + device_halfwidth, ydevice);
 	  _update_bbox (bufp, xdevice - device_halfwidth, ydevice);
 	}
@@ -357,8 +357,8 @@ _set_bezier3_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2, x3, y3)
 	{
 	  x = CUBIC_COOR(t_x, x0, x1, x2, x3);
 	  y = CUBIC_COOR(t_x, y0, y1, y2, y3);
-	  xdevice = XD(x,y);
-	  ydevice = YD(x,y);
+	  xdevice = XD_INTERNAL(x,y,m);
+	  ydevice = YD_INTERNAL(x,y,m);
 	  _update_bbox (bufp, xdevice + device_halfwidth, ydevice);
 	  _update_bbox (bufp, xdevice - device_halfwidth, ydevice);
 	}
@@ -372,8 +372,8 @@ _set_bezier3_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2, x3, y3)
 	{
 	  x = CUBIC_COOR(s_y, x0, x1, x2, x3);
 	  y = CUBIC_COOR(s_y, y0, y1, y2, y3);
-	  xdevice = XD(x,y);
-	  ydevice = YD(x,y);
+	  xdevice = XD_INTERNAL(x,y,m);
+	  ydevice = YD_INTERNAL(x,y,m);
 	  _update_bbox (bufp, xdevice, ydevice + device_halfwidth);
 	  _update_bbox (bufp, xdevice, ydevice - device_halfwidth);
 	}
@@ -381,8 +381,8 @@ _set_bezier3_bbox (R___(_plotter) bufp, x0, y0, x1, y1, x2, y2, x3, y3)
 	{
 	  x = CUBIC_COOR(t_y, x0, x1, x2, x3);
 	  y = CUBIC_COOR(t_y, y0, y1, y2, y3);
-	  xdevice = XD(x,y);
-	  ydevice = YD(x,y);
+	  xdevice = XD_INTERNAL(x,y,m);
+	  ydevice = YD_INTERNAL(x,y,m);
 	  _update_bbox (bufp, xdevice, ydevice + device_halfwidth);
 	  _update_bbox (bufp, xdevice, ydevice - device_halfwidth);
 	}

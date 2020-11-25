@@ -2,7 +2,7 @@
 #include "extern.h"
 
 /* Authors: Keith Packard and Bob Scheifler, mid to late 1980s.
-   Hacked by Robert S. Maier <rsm@math.arizona.edu>, 1998-99 */
+   Hacked by Robert S. Maier <rsm@math.arizona.edu>, 1998-2000. */
 
 /* This module exports the miPolyArc() function and its reentrant
    counterpart miPolyArc_r.  They scan-convert wide polyarcs, either solid
@@ -1378,23 +1378,12 @@ miComputeArcs (pGC, parcs, narcs)
 {
   bool		isDashed, isDoubleDash;
   miPolyArcs	*arcs;
-  int		start, i, j, k = 0, nexti, nextk = 0;
-  int		angle2;
-  double	a0, a1;
+  int		i, start, k, nextk;
   miArcData	*data;
-  miArcData	*arc;
-  miArc		xarc;
-  int		paintType, paintTypeStart, prevPaintType, joinPaintType;
   int		numPixels;
-  bool		arcsJoin, selfJoin;
-  int	        dashNum = 0;	/* absolute number of dash, starts with 0 */
-  int           dashIndex = 0;	/* index into array (i.e. dashNum % length) */
-  int		dashRemaining;
+  int		paintType, paintTypeStart, prevPaintType;
+  int	        dashNum, dashIndex, dashRemaining;
   int		dashNumStart, dashIndexStart, dashRemainingStart;
-  int		startAngle, spanAngle, endAngle;
-  bool		backwards;
-  int		prevDashAngle, dashAngle;
-  dashMap	map;
   
   isDashed = (pGC->lineStyle == (int)MI_LINE_SOLID ? false : true);
   isDoubleDash = (pGC->lineStyle == (int)MI_LINE_DOUBLE_DASH ? true : false);
@@ -1425,6 +1414,9 @@ miComputeArcs (pGC, parcs, narcs)
   data = (miArcData *) mi_xmalloc (narcs * sizeof (miArcData));
   for (i = 0; i < narcs; i++) 
     {
+      double a0, a1;
+      int angle2;
+
       a0 = todeg (parcs[i].angle1);
       angle2 = parcs[i].angle2;
       if (angle2 > FULLCIRCLE)
@@ -1440,20 +1432,24 @@ miComputeArcs (pGC, parcs, narcs)
       data[i].y1 = parcs[i].y + (double) parcs[i].height / 2*(1 - miDsin (a1));
     }
   
-  /* perform initial offsetting into the dash array */
-  paintType = 0;
+  /* initialize paint type and dashing state (latter is not used in `solid'
+     case) */
+  paintType = 1;
+  dashNum = 0;
+  dashIndex = 0;
   dashRemaining = 0;
   if (isDashed) 
+    /* take offsetting into account */
     {
       int dashOffset = 0;
 
+      /* alter paint type (for first dash) and dashing state */
       miStepDash (pGC->dashOffset, &dashNum, &dashIndex,
 		  pGC->dash, pGC->numInDashList, &dashOffset);
-      /* compute paint type of first dash */
       paintType = (dashNum & 1) ? 0 : 1 + ((dashNum / 2) % (numPixels - 1));
       dashRemaining = (int)(pGC->dash[dashIndex]) - dashOffset;	
     }
-  /* save dashing state (will reset at each unjoined arc) */
+  /* save paint type and dashing state (will reset at each unjoined arc) */
   paintTypeStart = paintType;
   dashNumStart = dashNum;
   dashIndexStart = dashIndex;
@@ -1463,6 +1459,8 @@ miComputeArcs (pGC, parcs, narcs)
      after each arc, and stop when first such is seen */
   for (i = narcs - 1; i >= 0; i--) 
     {
+      int j;
+
       j = i + 1;
       if (j == narcs)
 	j = 0;
@@ -1478,13 +1476,22 @@ miComputeArcs (pGC, parcs, narcs)
     }
 
   /* iterate forward over all successive pairs of arcs (wrap if necessary) */
+
   start = i + 1;
   if (start == narcs)
     start = 0;
   i = start;
-  prevPaintType = 1; /* initting unneeded; first thing drawn won't be a join */
+  k = nextk = 0;
+  /* keep compiler happy by initting prevPaintType too; actually
+     unnecessary because first thing drawn won't be a join */
+  prevPaintType = paintType;
+  
   for (;;) 
     {
+      int j, nexti;
+      miArcData *arc;
+      bool arcsJoin;
+
       j = i + 1;
       if (j == narcs)
 	j = 0;
@@ -1494,6 +1501,12 @@ miComputeArcs (pGC, parcs, narcs)
 
       if (isDashed) 
 	{
+	  int		startAngle, spanAngle, endAngle;
+	  int		dashAngle, prevDashAngle;
+	  bool		backwards, selfJoin;
+	  dashMap	map;
+	  miArc		xarc;
+
 	  /*
 	   * precompute an approximation map for use in dashing
 	   */
@@ -1638,12 +1651,11 @@ miComputeArcs (pGC, parcs, narcs)
 	{
 	  nextk = 0;
 	  if (isDashed) 
-	    /* re-initialize dash variables */
+	    /* re-initialize paint type and dashing state */
 	    {
+	      paintType = paintTypeStart;
 	      dashNum = dashNumStart;
 	      dashIndex = dashIndexStart;
-	      paintType =	/* paintTypeStart */
-		(dashNum & 1) ? 0 : 1 + ((dashNum / 2) % (numPixels - 1));
 	      dashRemaining = dashRemainingStart;
 	    }
 	}
@@ -1667,6 +1679,8 @@ miComputeArcs (pGC, parcs, narcs)
 	  && (paintType != 0 || isDoubleDash))
 	/* arcs join, and both are `on' */
 	{
+	  int joinPaintType;
+
 	  joinPaintType = paintType;
 	  if (isDoubleDash) 
 	    {
@@ -1690,7 +1704,7 @@ miComputeArcs (pGC, parcs, narcs)
 		       RIGHT_END, nextk, paintType);
 	      arc->join = arcs[prevPaintType].njoins;
 	    }
-	} 
+	}
       else 
 	/* arcs don't join (or if they do, at least one is `off') */
 	{
@@ -1705,23 +1719,21 @@ miComputeArcs (pGC, parcs, narcs)
 	      arc->cap = arcs[prevPaintType].ncaps;
 	    }
 	  if (isDashed && arcsJoin == false)
-	    /* re-initialize dash variables */
+	    /* re-initialize paint type and dashing state */
 	    {
+	      paintType = paintTypeStart;
 	      dashNum = dashNumStart;
 	      dashIndex = dashIndexStart;
-	      paintType =	/* paintTypeStart */
-		(dashNum & 1) ? 0 : 1 + ((dashNum / 2) % (numPixels - 1));
 	      dashRemaining = dashRemainingStart;
 	    }
 	  nextk = arcs[paintType].narcs;
 	  if (nexti == start) 
 	    {
 	      nextk = 0;
-	      /* re-initialize dash variables */
+	      /* re-initialize paint type and dashing state */
+	      paintType = paintTypeStart;
 	      dashNum = dashNumStart;
 	      dashIndex = dashIndexStart;
-	      paintType =	/* paintTypeStart */
-		(dashNum & 1) ? 0 : 1 + ((dashNum / 2) % (numPixels - 1));
 	      dashRemaining = dashRemainingStart;
 	    }
 	  /*

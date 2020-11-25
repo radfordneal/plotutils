@@ -23,6 +23,11 @@ _plot_xmalloc (size)
       perror ("out of memory");
       exit (EXIT_FAILURE);
     }
+
+#ifdef DEBUG_MALLOC
+  fprintf (stderr, "malloc (%d) = %p\n", size, p);
+#endif
+
   return p;
 }
 
@@ -44,6 +49,11 @@ _plot_xcalloc (nmemb, size)
       perror ("out of memory");
       exit (EXIT_FAILURE);
     }
+
+#ifdef DEBUG_MALLOC
+  fprintf (stderr, "calloc (%d, %d) = %p\n", nmemb, size, p);
+#endif
+
   return p;
 }
 
@@ -57,12 +67,19 @@ _plot_xrealloc (p, size)
      size_t size;
 #endif
 {
-  p = (voidptr_t) realloc (p, size);
-  if (p == (voidptr_t)NULL)
+  voidptr_t q;
+
+  q = (voidptr_t) realloc (p, size);
+  if (q == (voidptr_t)NULL)
     {
       fputs ("libplot: ", stderr);
       perror ("out of memory");
       exit (EXIT_FAILURE);
     }
-  return p;
+
+#ifdef DEBUG_MALLOC
+  fprintf (stderr, "realloc (%p, %d) = %p\n", p, size, q);
+#endif
+
+  return q;
 }

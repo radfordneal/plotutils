@@ -1,14 +1,30 @@
 dnl Configure template for the GNU plotutils package.
-dnl Copyright (C) 1989-99 Free Software Foundation, Inc.
+dnl Copyright (C) 1989-2000 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(graph/graph.c)
-AM_INIT_AUTOMAKE(plotutils, 2.3)
+AM_INIT_AUTOMAKE(plotutils, 2.4)
 AM_CONFIG_HEADER(config.h)
+
+dnl Did installer set the CFLAGS and CXXFLAGS environ variables before
+dnl running configure?  Our default CFLAGS and CXXFLAGS differ from
+dnl autoconf's, but we won't override installer-specified values.
+if test "x$CFLAGS" = "x"; then
+  CFLAGS_NOT_SET_BY_INSTALLER="yes"
+else
+  CFLAGS_NOT_SET_BY_INSTALLER="no"
+fi
+if test "x$CXXFLAGS" = "x"; then
+  CXXFLAGS_NOT_SET_BY_INSTALLER="yes"
+else
+  CXXFLAGS_NOT_SET_BY_INSTALLER="no"
+fi
 
 dnl We now use libtool to make and installed a shared library.  This should
 dnl invoke the tests AC_PROG_CC, AC_OBJEXT, AC_PROG_INSTALL, and
 dnl AC_PROG_MAKE_SET, or equivalents, so we don't perform them explicitly.
+dnl Note: this can apparently alter CFLAGS, on a few platforms, e.g., on
+dnl SCO OpenServer 5 (i.e. *-*-sco3.2v5*), "-belf" is added.
 AM_PROG_LIBTOOL
 
 dnl Determine extension (e.g. ".exe") on executables, if any.
@@ -139,11 +155,21 @@ dnl If found, add it to LIBS, but precede it by -lc because some of its
 dnl definitions may conflict with the standard library.  Similarly check
 dnl for -lgen, which some versions of Motif on Solaris need.
 
-AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"; AC_CHECK_LIB(Xp, XpQueryExtension, X_BASIC_LIBS="-lXp $X_BASIC_LIBS", , -lXext -lX11) AC_CHECK_LIB(Xpm, XpmReadFileToPixmap, X_BASIC_LIBS="-lXpm $X_BASIC_LIBS", , -lXext -lX11) AC_CHECK_LIB(gen, regex, LIBS="$LIBS -lc -lgen", LIBS="$LIBS") AC_CHECK_LIB(PW, regex, LIBS="$LIBS -lc -lPW", LIBS="$LIBS") AC_DEFINE(USE_MOTIF), X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS")
+AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], if test "x${with_motif}" = "xyes"; then X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"; AC_CHECK_LIB(Xp, XpQueryExtension, X_BASIC_LIBS="-lXp $X_BASIC_LIBS", , -lXext -lX11) AC_CHECK_LIB(Xpm, XpmReadFileToPixmap, X_BASIC_LIBS="-lXpm $X_BASIC_LIBS", , -lXext -lX11) AC_CHECK_LIB(gen, regex, LIBS="$LIBS -lc -lgen", LIBS="$LIBS") AC_CHECK_LIB(PW, regex, LIBS="$LIBS -lc -lPW", LIBS="$LIBS") AC_DEFINE(USE_MOTIF) else X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS"; fi, X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS")
 
-dnl Our Makefile.am files test the automake variable NO_X to determine
-dnl whether X should be supported.
+dnl The libplot/libplotter Makefile.am files test the automake variable
+dnl NO_X to determine whether X should be supported.
 AM_CONDITIONAL(NO_X, test "x$no_x" = "xyes")
+
+dnl Check for png.h and for libpng, and if both are available, define the
+dnl config.h variable INCLUDE_PNG_SUPPORT; otherwise define the automake
+dnl variable NO_PNG.  Latter is used in libplot/Makefile.am and
+dnl libplotter/Makefile.am.
+AC_CHECK_HEADERS(png.h, png_support="yes", png_support="no")
+AC_CHECK_LIB(png, png_set_tRNS, AC_DEFINE(HAVE_LIBPNG), png_support="no", -lz -lm)
+AC_ARG_WITH(libpng, [  --without-libpng        omit PNG support even if libpng is present], if test "x${with_libpng}" = "xno"; then png_support="no"; fi)
+if test "x${png_support}" = "xyes"; then AC_DEFINE(INCLUDE_PNG_SUPPORT) fi
+AM_CONDITIONAL(NO_PNG, test "x${png_support}" = "xno")
 
 dnl Font options.  The ps_fonts_in_pcl variable is used by test/plot2hpgl.test.
 AC_ARG_ENABLE(ps-fonts-in-pcl,
@@ -184,16 +210,34 @@ dnl distributed.)
 AC_ARG_ENABLE(libxmi, [  --enable-libxmi         build the libxmi scan-conversion library], echo enabling construction of the libxmi scan-conversion library; no_libxmi="no", no_libxmi="yes")
 AM_CONDITIONAL(NO_LIBXMI, test "x$no_libxmi" = "xyes")
 
-dnl Override default "-g -O2" or "-g", for libplot/libplotter especially.
+dnl Override default autoconf value "-g -O2" or "-g" for CFLAGS and
+dnl CXXFLAGS, set by AC_PROG_CC and AC_PROG_CXX.  Provided, that is,
+dnl installer didn't set CFLAGS via an environment variable before running
+dnl configure.  We don't use "-g" when compiling libplot or libplotter,
+dnl since debugging versions of those libraries would be huge.  Perhaps we
+dnl should use it when compiling the executables, though?
+
+dnl Note: on a very few platforms where libtool adds a command-line option
+dnl to CFLAGS (see above; this includes SCO OpenServer 5, where "-belf" is
+dnl added), this way of doing things will not work, i.e., the installer
+dnl will need to add by hand the option that libtool would have added.
+dnl E.g., on SCO OpenServer5 the installer may need to set the environment
+dnl variable CFLAGS to "-O -belf" or "-O2 -belf".
+
+if test "x$CFLAGS_NOT_SET_BY_INSTALLER" = "xyes"; then
 if test "x$GCC" = "xyes"; then
   CFLAGS="-O2"
 else
   CFLAGS="-O"
 fi
+fi
+
+if test "x$CXXFLAGS_NOT_SET_BY_INSTALLER" = "xyes"; then
 if test "x$GXX" = "xyes"; then
   CXXFLAGS="-O2"
 else
   CXXFLAGS="-O"
+fi
 fi
 
 dnl Check for gcc strength-reduce bug (taken from WINE config).  Could do

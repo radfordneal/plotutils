@@ -1,26 +1,15 @@
-/* This file contains the openpl method, which is a standard part of
-   libplot.  It opens a Plotter object. */
-
 #include "sys-defines.h"
 #include "extern.h"
 #include "xmi.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_i_openpl (S___(Plotter *_plotter))
+_i_begin_page (S___(Plotter *_plotter))
 #else
-_i_openpl (S___(_plotter))
+_i_begin_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  const char *bg_color_name_s;
-  
-  if (_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "openpl: invalid operation");
-      return -1;
-    }
-
   /* With each call to openpl(), we reset the dynamic GIF-specific data
      members of the GIFPlotter.  The data members, and the values that are
      set, are the same as are used in initializing the GIFPlotter (see
@@ -37,31 +26,6 @@ _i_openpl (S___(_plotter))
   _plotter->i_hot.y = 0;  
   _plotter->i_header_written = false;
 
-  /* invoke generic method, to e.g. create drawing state */
-  _g_openpl (S___(_plotter));
-
-  /* if there's a user-specified background color, set it in
-     device-independent part of drawing state */
-  bg_color_name_s = (const char *)_get_plot_param (R___(_plotter) "BG_COLOR");
-  if (bg_color_name_s)
-    _plotter->bgcolorname (R___(_plotter) bg_color_name_s);
-
-  /* if there's a user-specified transparent color, set it in Plotter */
-  {
-    const char *transparent_name_s;
-    const plColorNameInfo *info;
-
-    transparent_name_s = (const char *)_get_plot_param (R___(_plotter) "TRANSPARENT_COLOR");
-    if (transparent_name_s && _string_to_color (R___(_plotter) transparent_name_s, &info))
-      /* have 24-bit RGB */
-      {
-	_plotter->i_transparent = true;
-	_plotter->i_transparent_color.red = info->red;
-	_plotter->i_transparent_color.green = info->green;
-	_plotter->i_transparent_color.blue = info->blue;
-      }
-  }
-
   /* Create new image, consisting of bitmap and colormap; initialized to
      background color.  First entries in color table will be (1)
      transparent color [if there is one, and we're animating] and (2)
@@ -74,7 +38,7 @@ _i_openpl (S___(_plotter))
   /* GIF file header not yet written */
   _plotter->i_header_written = false;
 
-  return 0;
+  return true;
 }
 
 /* Internal function: Create new image, consisting of bitmap and colormap;

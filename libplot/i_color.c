@@ -65,30 +65,15 @@ _i_set_fill_color(S___(_plotter))
 {
   int red_long, green_long, blue_long;
   int red, green, blue;
-  double red_d, green_d, blue_d;
-  double desaturate;
 
   if (_plotter->drawstate->fill_type == 0)
-    /* don't do anything, fill color will be ignored when writing objects*/
+    /* don't do anything, fill color will be ignored when writing objects */
     return;
 
-  /* scale each RGB from a 16-bit quantity to range [0.0,1.0] */
-  red_d = ((double)((_plotter->drawstate->fillcolor).red))/0xFFFF;
-  green_d = ((double)((_plotter->drawstate->fillcolor).green))/0xFFFF;
-  blue_d = ((double)((_plotter->drawstate->fillcolor).blue))/0xFFFF;
-
-  /* fill_type, if nonzero, specifies the extent to which the nominal fill
-     color should be desaturated.  1 means no desaturation, 0xffff means
-     complete desaturation (white). */
-  desaturate = ((double)_plotter->drawstate->fill_type - 1.)/0xFFFE;
-  red_d = red_d + desaturate * (1.0 - red_d);
-  green_d = green_d + desaturate * (1.0 - green_d);
-  blue_d = blue_d + desaturate * (1.0 - blue_d);
-
-  /* restore each RGB to a 16-bit quantity (48 bits in all) */
-  red_long = IROUND(0xFFFF * red_d);
-  green_long = IROUND(0xFFFF * green_d);
-  blue_long = IROUND(0xFFFF * blue_d);
+  /* 48-bit RGB */
+  red_long = _plotter->drawstate->fillcolor.red;
+  green_long = _plotter->drawstate->fillcolor.green;
+  blue_long = _plotter->drawstate->fillcolor.blue;
 
   /* 24-bit RGB (as used in GIFs) */
   red = (((unsigned int)red_long) >> 8) & 0xff;

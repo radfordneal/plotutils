@@ -1,7 +1,3 @@
-/* This file contains the openpl method, which is a standard part of
-   libplot.  It opens a Plotter object, i.e., begins the drawing of
-   a page of graphics.  */
-
 /* This implementation is for XPlotters.  When invoked, it pops up a
    plotting window on the default screen of the specified X display.  When
    the corresponding closepl method is invoked, the window is `spun off',
@@ -9,7 +5,11 @@
 
 /* This file also contains the internal functions _y_maybe_get_new_colormap
    and _y_maybe_handle_x_events.  They override the corresponding functions
-   in the XDrawablePlotter superclass, which are no-ops. */
+   in the XDrawablePlotter superclass, which are no-ops.
+
+   The function _y_maybe_handle_x_events is very important: it contains our
+   hand-crafted loop for processing X events, which is called by an
+   XPlotter after any libplot drawing operation is invoked on it. */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -58,9 +58,9 @@ static const String _xplot_fallback_resources[] =
 };
 
 /* Support for command-line mimicry.  Our fake argument vector,
-   _fake_argv[], currently needs space for our fake application name,
+   _fake_argv[], needs space for our fake application name,
    i.e. XPLOT_APP_NAME, the three options "-display", "-geometry", "-bg",
-   and a final NULL. */
+   each with an argument, and a final NULL. */
 #define MAX_FAKE_ARGV_LENGTH 8
 
 /* Translations for the canvas widget, before and after the Plotter is
@@ -96,10 +96,10 @@ static char * _plot_strerror ____P ((int errnum));
 #define strerror _plot_strerror
 #endif
 
-/* This is called by the child process in y_closepl.c, immediately after
-   forking takes place.  It alters the translation table for the canvas
-   widget so that Foldup() will be invoked when `q' is pressed or a mouse
-   click is seen. */
+/* This is called by the child process produced in y_closepl.c, immediately
+   after forking takes place.  It alters the translation table for the
+   canvas widget so that Foldup() will be invoked when `q' is pressed or a
+   mouse click is seen. */
 void
 #ifdef _HAVE_PROTOS
 _y_set_data_for_quitting (S___(Plotter *_plotter))
@@ -150,11 +150,11 @@ static const XtActionsRec _xplot_actions[] =
   {(String)"Foldup",	Foldup},
 };
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_y_openpl (S___(Plotter *_plotter))
+_y_begin_page (S___(Plotter *_plotter))
 #else
-_y_openpl (S___(_plotter))
+_y_begin_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
@@ -162,17 +162,10 @@ _y_openpl (S___(_plotter))
   Dimension window_height, window_width;
   Screen *screen_struct;	/* screen structure */
   String fake_argv[MAX_FAKE_ARGV_LENGTH];
-  Visual *visual;
-  const char *bg_color_name_s, *double_buffer_s;
+  const char *double_buffer_s;
   int fake_argc;
   int screen;			/* screen number */
   
-  if (_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "openpl: invalid operation");
-      return -1;
-    }
-
   /* To permit openpl..closepl to be invoked repeatedly, we don't use the
      convenience routine XtAppInitialize(), since that function starts out
      by calling XtToolkitInitialize(), which shouldn't be called more than
@@ -192,7 +185,7 @@ _y_openpl (S___(_plotter))
   if (_plotter->y_app_con == (XtAppContext)NULL)
     {
       _plotter->error (R___(_plotter) "can't create X application context");
-      return -2;
+      return false;
     }
   /* set fallback resources to be used by canvas widget (currently, only
      the window size); specific to application context */
@@ -213,12 +206,12 @@ _y_openpl (S___(_plotter))
   {
     const char *display_s;
 	
-    display_s = (char *)_get_plot_param (R___(_plotter) "DISPLAY");
+    display_s = (char *)_get_plot_param (_plotter->data, "DISPLAY");
     if (display_s == NULL || *display_s == '\0')
       {
 	_plotter->error (R___(_plotter)
 			 "can't open Plotter, DISPLAY parameter is null");
-	return -1;
+	return false;
       }
     fake_argv[fake_argc++] = (String)"-display";
     fake_argv[fake_argc++] = (String)display_s;
@@ -230,7 +223,7 @@ _y_openpl (S___(_plotter))
   {
     char *bitmap_size_s;
 	
-    bitmap_size_s = (char *)_get_plot_param (R___(_plotter) "BITMAPSIZE");
+    bitmap_size_s = (char *)_get_plot_param (_plotter->data, "BITMAPSIZE");
     if (bitmap_size_s && _bitmap_size_ok (bitmap_size_s))
       {
 	fake_argv[fake_argc++] = (String)"-geometry";
@@ -238,32 +231,51 @@ _y_openpl (S___(_plotter))
       }
   }
 
-  /* Take argument of "-bg" option from BG_COLOR parameter, if set.  Could
-     be improved because use of widget "-bg" option means that we recognize
-     only the color names known to the X server, not the slightly expanded
-     set in g_colorname.h.  FIXME. */
+  /* Take argument of "-bg" option from BG_COLOR parameter, if set;
+     otherwise use default color (white). */
   {
     const char *bg_color_s;
 	
-    bg_color_s = (char *)_get_plot_param (R___(_plotter) "BG_COLOR");
+    bg_color_s = (char *)_get_plot_param (_plotter->data, "BG_COLOR");
     if (bg_color_s)
       {
-	const plColorNameInfo *info;
+	plColor color;
+	char rgb[8];		/* enough room for "#FFFFFF", incl. NUL */
 
-	if (_plotter->bg_color_warning_issued == false 
-	    && _string_to_color (R___(_plotter) bg_color_s, &info) == false)
+	if (_string_to_color (bg_color_s, &color, _plotter->data->color_name_cache))
+	  /* color is in our database */
 	  {
-	    char *buf;
-		
-	    buf = (char *)_plot_xmalloc (strlen (bg_color_s) + 100);
-	    sprintf (buf, "substituting \"white\" for undefined background color \"%s\"", 
-		     bg_color_s);
-	    _plotter->warning (R___(_plotter) buf);
-	    free (buf);
-	    _plotter->bg_color_warning_issued = true;
+	    if (_plotter->data->emulate_color)
+	      /* replace by grayscale approximation */
+	      {
+		int gray;
 
-	    bg_color_s = "white";
+		gray = _grayscale_approx (color.red, color.green, color.blue);
+		sprintf (rgb, "#%02X%02X%02X", gray, gray, gray);
+	      }
+	    else
+	      sprintf (rgb, "#%02X%02X%02X",
+		       color.red, color.green, color.blue);
+	    bg_color_s = rgb;
 	  }
+	else
+	  /* color is not in our database */
+	  {
+	    if (_plotter->x_bg_color_warning_issued == false)
+	      {
+		char *buf;
+		
+		buf = (char *)_plot_xmalloc (strlen (bg_color_s) + 100);
+		sprintf (buf, "substituting \"white\" for undefined background color \"%s\"", 
+			 bg_color_s);
+		_plotter->warning (R___(_plotter) buf);
+		free (buf);
+		_plotter->x_bg_color_warning_issued = true;
+		
+		bg_color_s = "white";
+	      }
+	  }
+
 	fake_argv[fake_argc++] = (String)"-bg";
 	fake_argv[fake_argc++] = (String)bg_color_s;
       }
@@ -285,14 +297,14 @@ _y_openpl (S___(_plotter))
 		      XrmParseCommand), used in setting display resources */
 		   NULL, (Cardinal)0, 
 		   /* pass fake command-line (contains a fake argv[0] to
-		      specify app name, and besides "-display", options may
-		      include "-geometry", "-bg") */
+		      specify app name, and besides "-display", options
+		      may include "-geometry", "-bg") */
 		   &fake_argc, fake_argv);
   if (_plotter->x_dpy == (Display *)NULL)
     {
       char *display_s;
 
-      display_s = (char *)_get_plot_param (R___(_plotter) "DISPLAY");
+      display_s = (char *)_get_plot_param (_plotter->data, "DISPLAY");
       if (display_s == NULL)	/* shouldn't happen */
 	_plotter->error (R___(_plotter)
 			 "can't open null X Window System display");
@@ -306,19 +318,18 @@ _y_openpl (S___(_plotter))
 	  _plotter->error (R___(_plotter) buf);
 	  free (buf);
 	}
-      return -2;
+      return false;
     }
   
   /* display was opened, so determine its default screen, visual, colormap */
   screen = DefaultScreen (_plotter->x_dpy);
   screen_struct = ScreenOfDisplay (_plotter->x_dpy, screen);
-  visual = DefaultVisualOfScreen (screen_struct);
+  _plotter->x_visual = DefaultVisualOfScreen (screen_struct);
   _plotter->x_cmap = DefaultColormapOfScreen (screen_struct);
   _plotter->x_cmap_type = CMAP_ORIG; /* original cmap (not a private one) */
   
-  /* find out how long polylines can get */
-  _plotter->hard_polyline_length_limit = 
-    XMaxRequestSize(_plotter->x_dpy) / 2;
+  /* find out how long polylines can get on this X display */
+  _plotter->x_max_polyline_len = XMaxRequestSize(_plotter->x_dpy) / 2;
   
   /* For every invocation of openpl(), we create a toplevel Shell widget,
      associated with default screen of the opened display.  (N.B. could
@@ -387,11 +398,14 @@ _y_openpl (S___(_plotter))
   XtSetArg (wargs[1], XtNheight, &window_height);
 #endif
   XtGetValues (_plotter->y_canvas, wargs, (Cardinal)2);
-  _plotter->imin = 0;
-  _plotter->imax = (int)window_width - 1;
+  _plotter->data->imin = 0;
+  _plotter->data->imax = (int)window_width - 1;
   /* note flipped-y convention for this device: min > max */
-  _plotter->jmin = (int)window_height - 1;
-  _plotter->jmax = 0;
+  _plotter->data->jmin = (int)window_height - 1;
+  _plotter->data->jmax = 0;
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
 
   /* request backing store for Label widget's window */
   if (DoesBackingStore(screen_struct))
@@ -407,16 +421,16 @@ _y_openpl (S___(_plotter))
 
   /* determine whether to use double buffering */
   _plotter->x_double_buffering = DBL_NONE;
-  double_buffer_s = (const char *)_get_plot_param (R___(_plotter) 
+  double_buffer_s = (const char *)_get_plot_param (_plotter->data, 
 						   "USE_DOUBLE_BUFFERING");
 
-  /* we don't distinguish "fast" from "yes" any more */
-  if (strcmp (double_buffer_s, "yes") == 0)
-    double_buffer_s = "fast";
+  /* backward compatibility: "fast" now means the same as "yes" */
+  if (strcmp (double_buffer_s, "fast") == 0)
+    double_buffer_s = "yes";
 
 #ifdef HAVE_X11_EXTENSIONS_XDBE_H
 #ifdef HAVE_DBE_SUPPORT
-  if (strcmp (double_buffer_s, "fast") == 0)
+  if (strcmp (double_buffer_s, "yes") == 0)
     /* check whether X server supports DBE extension */
     {
       int major_version, minor_version;
@@ -434,7 +448,7 @@ _y_openpl (S___(_plotter))
 	  bool ok = false;
 	  int i, num_visuals = sv_info->count;
 	  XdbeVisualInfo *vis_info = sv_info->visinfo;
-	  VisualID visual_id = XVisualIDFromVisual (visual);
+	  VisualID visual_id = XVisualIDFromVisual (_plotter->x_visual);
 
 	  /* See whether default visual supports double buffering.  If not,
 	     could invoke XGetVisualInfo() to check the depth and perflevel
@@ -447,7 +461,8 @@ _y_openpl (S___(_plotter))
 	     Maybe someday... That enhancement would be important for Xsgi,
 	     which typically has a default 8-plane PseudoColor visual that
 	     does _not_ support double buffering, and various other
-	     visuals, including some 12-plane and 15-plane ones that do. */
+	     visuals, including some 8-plane and 12-plane ones that do (and
+	     some 15-plane and 24-plane ones that don't). */
 
 	  for (i = 0; i < num_visuals; i++)
 	    /* check visual ID for each visual in list */
@@ -476,7 +491,7 @@ _y_openpl (S___(_plotter))
 #ifdef HAVE_X11_EXTENSIONS_MULTIBUF_H
 #ifdef HAVE_MBX_SUPPORT
   if (_plotter->x_double_buffering == DBL_NONE
-      && strcmp (double_buffer_s, "fast") == 0)
+      && strcmp (double_buffer_s, "yes") == 0)
     /* check whether X server supports the (obsolete) MBX extension, as a
        substitute for DBE */
     {
@@ -498,7 +513,7 @@ _y_openpl (S___(_plotter))
 	  if (num == 2)
 	    /* Yow, got a pair of multibuffers.  We'll write graphics to
 	       the first (`x_drawable3'), and interchange them on each
-	       erase().  See x_erase.c. */
+	       erase().  See y_erase.c. */
 	    {
 	      _plotter->x_drawable3 = multibuf[0];
 	      _plotter->y_drawable4 = multibuf[1];	      
@@ -514,8 +529,8 @@ _y_openpl (S___(_plotter))
 #endif /* HAVE_X11_EXTENSIONS_MULTIBUF_H */
 
   if (_plotter->x_double_buffering == DBL_NONE)
-    /* user didn't request server-supported double buffering, or did but it
-       couldn't be obtained */
+    /* user didn't request double buffering, or did but special support for
+       double buffering isn't contained in the X server */
     {
       Pixmap bg_pixmap;
 
@@ -531,8 +546,7 @@ _y_openpl (S___(_plotter))
 	 (of two) into which we'll draw.  If user didn't request double
 	 buffering, we'll use it as the 2nd of two drawables into which
 	 we'll draw, the other being the window. */
-      if (strcmp (double_buffer_s, "yes") == 0
-	  || strcmp (double_buffer_s, "fast") == 0)
+      if (strcmp (double_buffer_s, "yes") == 0)
 	{
 	  _plotter->x_drawable3 = (Drawable)bg_pixmap;
 	  _plotter->x_double_buffering = DBL_BY_HAND;
@@ -544,31 +558,21 @@ _y_openpl (S___(_plotter))
 	}
     }
 
-  /* Invoke generic method; among other things, this invokes savestate() to
-     create a drawing state (see x_savestate.c).  The drawing state won't
-     be ready for drawing graphics, since it won't contain an X font or a
-     meaningful line width.  To retrieve an X font and set the line width,
-     the user will need to invoke space() after openpl(). */
-  _g_openpl (S___(_plotter));
+  /* add X GC's to drawing state (which was constructed by openpl() before
+     begin_page() was called), so we can at least fill with solid color */
+  _x_add_gcs_to_first_drawing_state (S___(_plotter));
 
-  /* set background color (possibly user-specified) in drawing state */
-  bg_color_name_s = (const char *)_get_plot_param (R___(_plotter) "BG_COLOR");
-  if (bg_color_name_s)
-    _plotter->bgcolorname (R___(_plotter) bg_color_name_s);
-  
   /* If not double-buffering, clear both pixmap and window by filling them
-     with the background color, via XFillRectangle (the just-created
-     drawing state, with the mentioned attributes, is used for this).
-     If double buffering, do something similar (see the code). */
-  _plotter->erase (S___(_plotter));
+     with the drawing state's background color, via XFillRectangle.  If
+     double buffering, do something similar (see y_erase.c). */
+  _y_erase_page (S___(_plotter));
   
   /* If double buffering, must invoke `erase' one more time to clear both
      graphics buffer and window, since what `erase' does in that case is
      (1) copy the graphics buffer to window, and (2) clear the graphics
-     buffer.  Incidentally, invoking `erase' bumps _plotter->frame_number,
-     but that's not too important. */
+     buffer. */
   if (_plotter->x_double_buffering != DBL_NONE) 
-    _plotter->erase (S___(_plotter));
+    _y_erase_page (S___(_plotter));
 
   if (_plotter->x_double_buffering == DBL_NONE
       || _plotter->x_double_buffering == DBL_BY_HAND)
@@ -590,9 +594,14 @@ _y_openpl (S___(_plotter))
 
   /* do an XSync on the display (this will cause the background color to
    show up if it hasn't already) */
-  _plotter->flushpl (S___(_plotter));
+  _x_flush_output (S___(_plotter));
 
-  return 0;
+  /* Note: at this point the drawing state, which we added X GC's to, a few
+     lines above, won't be ready for drawing graphics, since it won't
+     contain an X font or meaningful line width.  To retrieve an X font and
+     set the line width, user will need to invoke space() after openpl().  */
+
+  return true;
 }
 
 static bool 
@@ -642,7 +651,7 @@ _y_maybe_get_new_colormap (S___(_plotter))
 			 "unable to create private colormap");
       _plotter->warning (R___(_plotter) 
 			 "color supply exhausted, can't create new colors");
-      _plotter->x_color_warning_issued = true;
+      _plotter->x_colormap_warning_issued = true;
     }
   else
     /* got a new colormap */
@@ -666,7 +675,8 @@ _y_maybe_get_new_colormap (S___(_plotter))
    operations.  It overrides the XDrawablePlotter-specific version, which
    is a no-op.  It does two things.
 
-   1. It invokes XFlush() to flush the X output buffer.  This makes most
+   1. Provided an XPlotter's X_AUTO_FLUSH parameter is "yes" (the default),
+      it invokes XFlush() to flush the X output buffer.  This makes most
       drawing operations more or less unbuffered: as the libplot functions
       are invoked, the graphics are sent to the X display.
 
@@ -680,36 +690,45 @@ _y_maybe_get_new_colormap (S___(_plotter))
    (To speed up drawing, we perform #2 only once per
    X_EVENT_HANDLING_PERIOD invocations of this function.)
 
-   #2 is accomplished by the local event loop:
+   #2 is accomplished by an hand-crafted event loop, the heart of which is
+   the line
 
-       while (XtAppPending (_xplotters[i]->y_app_con))
+       if (XtAppPending (_xplotters[i]->y_app_con))
          XtAppProcessEvent (_xplotters[i]->y_app_con, XtIMAll);
 
    which, for Plotter number i, flushes the X output buffer, checks for
-   events and processes them.  
+   events and processes them.  This line is executed as many times as we
+   think safe.  Thereby hangs a tale.
 
    Nathan Salwen <salwen@physics.harvard.edu> has discovered that before
-   invoking XtAppPending(), we must manually check, using Xlib calls and
-   select(), whether there are events waiting (either in the X input
+   invoking XtAppPending(), we should really check, using Xlib calls and
+   select(), whether there are events waiting (either in the libX11 input
    buffer, or on the network socket).  The reason is that if no events are
    available, XtAppPending() may block, at least on some systems.  This
    does not agree with Xt documentation, but happens nonetheless.  And it
    is not what we want.
 
    The reason for XtAppPending's unfortunate behavior is apparently the
-   following: it invokes the Xlib function XEventsQueued(), first with
+   following.  
+
+   XtAppPending() invokes the Xlib function XEventsQueued(), first with
    mode=QueuedAfterReading [which returns the number of events in the input
    queue if nonempty; if empty, tries to extract more events from the
    socket] and then with mode=QueuedAfterFlush [which flushes the output
    buffer with XFlush() and checks if there is anything in the input queue;
    if not, it tries to extract more events from the socket].  (N.B. If,
    alternatively, it used mode=QueuedAlready, it would look only at the
-   number of events in the input queue.)  And when trying to extract events
-   from the socket, XEventsQueued() calls select() in such a way that it
-   can block.
+   number of events in the input queue.)  And sadly, when trying to extract
+   events from the socket, XEventsQueued() calls select() in such a way
+   that it can block.
 
    So before invoking XtAppPending() we call select() ourselves to check
-   whether data is available, and we don't allow it to block. */
+   whether data is available on the network socket, and we don't allow it
+   to block.  We invoke XtAppPending and XtAppProcessEvent only if we're
+   absolutely sure they won't block.
+
+   Thanks also to Massimo Santini <santini@dsi.unimi.it> for helping to
+   clear up the problem. */
 
 #define X_EVENT_HANDLING_PERIOD 4
 
@@ -728,7 +747,7 @@ _y_maybe_handle_x_events(S___(_plotter))
      solid, zero-width paths should appear on the display as they're drawn
      (see x_cont.c). */
     {
-      if (_plotter->drawstate->points_in_path == 0
+      if (_plotter->drawstate->path == (plPath *)NULL
 	  || (_plotter->drawstate->line_type == L_SOLID
 	      && !_plotter->drawstate->dash_array_in_effect
 	      && _plotter->drawstate->points_are_connected
@@ -740,7 +759,6 @@ _y_maybe_handle_x_events(S___(_plotter))
     /* process all XPlotters' events, if any are available */
     {
       int i;
-      bool have_data;
 
 #ifdef PTHREAD_SUPPORT
 #ifdef HAVE_PTHREAD_H
@@ -749,34 +767,46 @@ _y_maybe_handle_x_events(S___(_plotter))
 #endif
 #endif
 
-      for (i = 0; i < _xplotters_len; i++)
+  /* loop over XPlotters */
+  for (i = 0; i < _xplotters_len; i++)
+    {
+      if (_xplotters[i] != NULL
+	  && _xplotters[i]->data->opened /* paranoia */
+	  && _xplotters[i]->data->open
+	  && _xplotters[i]->y_app_con != NULL) /* paranoia */
+	/* XPlotter is open */
 	{
-	  have_data = false;	/* default */
-
-	  if (_xplotters[i] != NULL
-	      && _xplotters[i]->opened
-	      && _xplotters[i]->open
-	      && _xplotters[i]->y_app_con != NULL) /* paranoia */
+	  /* Our handcrafted event handling loop.  Check for pending X
+	     events, either in the libX11 input queue or on the network
+	     socket itself, and pull them off and process them one by one,
+	     trying very hard not to generate a call to select() that would
+	     block.  We loop until no more events are available. */
+	  for ( ; ; )
 	    {
+	      bool have_data;
+	  
+	      have_data = false; /* default */
+
 	      if (QLength(_xplotters[i]->x_dpy) > 0)
 		/* one or more events has already been pulled off the
-		   socket and is in the input queue, so we'll invoke
-		   XtAppPending() */
+		   socket and are in the libX11 input queue; so we can
+		   safely invoke XtAppPending(), and it will return `true' */
 		have_data = true;
-	    
+	      
 	      else
-		/* input queue is empty, so check whether data is available
-                   on the socket itself */
+		/* libX11 input queue is empty, so check whether data is
+		   available on the socket by doing a non-blocking select() */
 		{
 		  int connection_number;
 		  int maxfds, select_return;
 		  fd_set readfds;
 		  struct timeval timeout;
 		  
-		  timeout.tv_sec = 0;	/* make select() non-blocking! */
+		  timeout.tv_sec = 0; /* make select() non-blocking! */
 		  timeout.tv_usec = 0;
 		  
-		  connection_number = ConnectionNumber(_xplotters[i]->x_dpy);
+		  connection_number = 
+		    ConnectionNumber(_xplotters[i]->x_dpy);
 		  maxfds = 1 + connection_number;
 		  FD_ZERO (&readfds);
 		  FD_SET (connection_number, &readfds);
@@ -786,26 +816,47 @@ _y_maybe_handle_x_events(S___(_plotter))
 		  if (select_return < 0 && errno != EINTR)
 		    {
 		      _plotter->error (R___(_plotter) strerror (errno));
-		      continue;	/* on to next Plotter */
+		      break;	/* on to next Plotter */
 		    }
 		  if (select_return > 0)
 		    /* have data waiting on the socket, waiting to be
-		       pulled off, so we'll invoke XtAppPending() */
+		       pulled off, so we'll invoke XtAppPending() to move
+		       it into the libX11 input queue */
 		    have_data = true;
 		}
+	      
+	      if (have_data == false)
+		/* no data, so on to next XPlotter */
+		break;
+	      
+	      /* Since we got here, we have waiting input data: at least
+		 one event is either already in the libX11 queue or still
+		 on the socket.  So we can safely call XtAppPending() to
+		 read event(s) from the queue, if nonempty, or from the
+		 socket.  In the latter case (the case of an empty queue),
+		 XtAppPending() will call XEventsQueued(), which will, in
+		 turn, do a [potentially blocking!] select().  But the way
+		 we've done things, we should get an event without
+		 blocking.
+		 
+		 After invoking XtAppPending, we invoke XtAppProcessEvent,
+		 which could also potentially block, except that if an
+		 event is pending, it won't.  So all should be well.
 
-	      if (have_data)
-		/* Call XtAppPending() to read event(s) from queue, if
-		   nonempty, or from the socket itself.  In the latter
-		   case, XtAppPending() will call XEventsQueued(), which
-		   will, in turn, call select().  One way or the other, we
-		   should get at least one event, without blocking. */
-		{
-		  while (XtAppPending (_xplotters[i]->y_app_con))
-		    XtAppProcessEvent (_xplotters[i]->y_app_con, XtIMAll);
-		}
+		 (Possibly irrelevant side comment.  XtAppPending will
+		 flush the output buffer if no events are pending.) */
+
+	      if (XtAppPending (_xplotters[i]->y_app_con))
+		/* XtAppPending should always return true, but we invoke it
+		   anyway to be on the safe side.  Note: it also checks for
+		   timer and other types of event, besides X events. */
+		XtAppProcessEvent (_xplotters[i]->y_app_con, XtIMAll);
 	    }
+	  /* end of for() loop, i.e. of our hand-crafted event loop */
 	}
+      /* end of if() test for a open XPlotter */
+    }
+  /* end of loop over XPlotters */
 
 #ifdef PTHREAD_SUPPORT
 #ifdef HAVE_PTHREAD_H

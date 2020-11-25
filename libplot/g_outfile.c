@@ -15,29 +15,29 @@
 
 FILE *
 #ifdef _HAVE_PROTOS
-_g_outfile(R___(Plotter *_plotter) FILE *outfile)
+_API_outfile(R___(Plotter *_plotter) FILE *outfile)
 #else
-_g_outfile(R___(_plotter) outfile)
+_API_outfile(R___(_plotter) outfile)
      S___(Plotter *_plotter;) 
      FILE *outfile;
 #endif
 {
   FILE *oldoutfile;
   
-  if (_plotter->open)
+  if (_plotter->data->open)
     {
       _plotter->error (R___(_plotter) 
 		       "outfile: invalid operation");
       return (FILE *)NULL;
     }
 
-  oldoutfile = _plotter->outfp;
-  _plotter->outfp = outfile;
+  oldoutfile = _plotter->data->outfp;
+  _plotter->data->outfp = outfile;
 #ifdef LIBPLOTTER
-  _plotter->outstream = NULL;
+  _plotter->data->outstream = NULL;
 #endif
 
-  _plotter->page_number = 0;	/* reset */
+  _plotter->data->page_number = 0;	/* reset */
 
   return oldoutfile;
 }

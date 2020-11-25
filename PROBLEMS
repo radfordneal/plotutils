@@ -1,14 +1,60 @@
-This is a list of minor problems with the GNU plotting utilities `graph',
-`plot', `tek2plot', `plotfont', and `pic2plot', and with GNU libplot, the
-library that they are built on.  We classify them as problems rather than
-bugs.
+These release notes list minor problems with the GNU libplot graphics
+library, and with the sample command-line utilities `graph', `plot',
+`tek2plot', `plotfont', and `pic2plot', which are built on it.  We classify
+them as problems rather than bugs.
 
 Most of them are due to idiosyncrasies of (or bugs in) the display devices
 and application software that libplot must produce output for.
 
 ======================================================================
 
-`graph -T X' and the libplot X driver
+The libplot SVG driver and `graph -T svg'
+-----------------------------------------
+
+The SVG specification is to some extent a moving target; consult the W3
+Consortium's Web pages on SVG ( http://www.w3.org/Graphics/SVG ) for more
+information.  In this release, the SVG produced by libplot's SVG driver
+complies with the 3 March 2000 version of the SVG specification.
+
+However, as of this writing, many SVG viewers fail to implement crucial
+parts of the specification (those dealing with text, in particular).  So
+the following sorts of problem may be encountered when viewing SVG output.
+
+1. Text strings, such as the graph labels in the output of `graph -T svg',
+may be incorrectly positioned in the horizontal and/or vertical directions.
+If this occurs, it is because your SVG viewer does not support the
+`text-anchor' and/or `baseline-identifier' SVG attributes, which determine
+horizontal and vertical positioning, respectively.
+
+2. The font used for a text string may not be the one you have selected.
+libplot's SVG driver attempts to give the SVG viewer enough information to
+select an appropriate font.  For example, `graph -T svg' by default uses a
+Helvetica font.  Its SVG output contains the font specification
+
+      font-family:'Helvetica',sans-serif;
+
+Similarly, if a Times-Bold font is to be used, the SVG output contains the
+font specification
+
+     font-family:Times-Bold,'Times Roman',serif; font-weight:bold
+
+In all cases, both the font's family name and its Postscript name, if
+different, will be supplied in the SVG output.  In nearly all cases, a
+`generic name' such as `serif' will be supplied too. However, some SVG
+viewers have been observed to fail to retrieve a matching font, or any font
+at all (!), even when they are helped out in this way.
+
+3. If you switch fonts in the middle of a text string, the substrings may
+not line up properly.  If this occurs, it is because your SVG viewer is
+using fonts whose metrics are different from what libplot's SVG driver
+expects.  SVG supports the creation of compound (multi-font) text strings,
+via <tspan>..</tspan> constructs.  However, libplot's SVG driver does not
+currently use these constructs.  Support for them will be added to later
+releases of the driver.
+
+----------------------------------------------------------------------
+
+The libplot X driver and `graph -T X'
 -------------------------------------
 
 1. Old (pre-X11R6) X Window System servers do not support rotation,
@@ -50,7 +96,7 @@ it with industry-standard X11; in particular, X11R6.
 
 ----------------------------------------------------------------------
 
-`graph -T ps' and the libplot PS driver
+The libplot PS driver and `graph -T ps'
 ---------------------------------------
 
 1. There are a lot of buggy Postscript interpreters out there.  If you
@@ -113,7 +159,7 @@ Wingdings internally as `Tidbits'.)
 
 ----------------------------------------------------------------------
 
-`graph -T cgm' and libplot's CGM driver
+The libplot CGM driver and `graph -T cgm'
 ----------------------------------------
 
 1. There are many older CGM viewers and interpreters, such as the free but
@@ -150,7 +196,18 @@ fact, RALCGM may crash.  The problem is in RALCGM, not in libplot.  This
 bug is not a major problem, since such extraordinarily long text strings
 almost never occur.
 
-3. There are some commercial viewers and interpreters which are advertised
+3. If a CGM output file produced by libplot's CGM driver contains any text
+string for which the font size is effectively zero, the RALCGM viewer will
+not be able to display the CGM file correctly.  In fact, RALCGM may crash.
+You can verify this by doing
+
+echo 0 0 1 1 2 0 | \
+     CGM_MAX_VERSION=1 graph -T cgm --font-size 0.000000001 | ralcgm -dx
+
+When you attempt to view the output file, you will probably get a
+segmentation fault.  But the bug is in RALCGM, not in libplot.
+
+4. There are some commercial viewers and interpreters which are advertised
 as able to handle version-3 CGM files, but which in fact cannot do so.  The
 CGM import filter used by Adobe Illustrator (as of version 7.0, at least)
 is in this category.  It does not recognize the so-called custom line
@@ -172,11 +229,20 @@ will look alike.  There seems to be no way around this.
 Since Illustrator's CGM import filter is so buggy, it is recommended that
 when generating a graphics file for import into Illustrator, rather than
 generating a CGM file, you use the `-T ai' option to generate Illustrator's
-native format.
+native format.  Whether this is necessary for the most recent versions of
+Illustrator (8.0 and 9.0) has not been checked.
+
+5. As noted, some CGM viewers provide only partial support for the modern
+version-3 CGM file format.  When dealing with such a viewer, it may be
+useful for you to know which CGM primitives are output by libplot's CGM
+driver.  A list appears in the file libplot/README-cgm.  If you have full
+documentation on the CGM primitives supported by your viewer, the list
+should help you decide whether it is necessary to reduce the CGM version
+number from 3 to 2, or to 1.
 
 ----------------------------------------------------------------------
 
-`graph -T fig' and libplot's xfig driver
+The libplot xfig driver and `graph -T fig'
 ----------------------------------------
 
 1. At least as of xfig release 3.2, the `fig2dev' program that `xfig' uses
@@ -204,7 +270,7 @@ be anisotropically transformed.
 
 This does not affect `graph -T fig', since it never uses anisotropically
 transformed fonts.  However, if an application that uses libplot's xfig
-driver calls the setup function space() or space2() so as to define a
+driver calls the control function space() or space2() so as to define a
 user-frame drawing window that is not square, the affine map from the user
 frame to the device frame will involve a non-uniform scaling, and possibly
 even a shearing.  So in the device frame, any Postscript font will need to
@@ -212,7 +278,7 @@ be anamorphically transformed.
 
 ----------------------------------------------------------------------
 
-`graph -T pcl', `graph -T hpgl' and libplot's PCL 5 and HP-GL/2 drivers
+libplot's PCL 5 and HP-GL/2 drivers, and `graph -T pcl' and `graph -T hpgl' 
 -----------------------------------------------------------------------
 
 The following remarks apply when producing either PCL 5 or HP-GL/2 output.
@@ -223,12 +289,12 @@ switches the printer back to PCL 5 mode.)
 
 1. The default treatment of colors in PCL 5 and HP-GL/2 output is not
 optimal, because the basic HP-GL/2 drawing model is not very powerful.
-There's a set of seven `logical pens', whose colors are black, red, green,
-yellow, blue, magenta, and cyan.  Any line or curve can be drawn by any of
-the pens, and any region bounded by a curve can be filled, to any specified
-intensity (quantized in units of 10% or so) by any pen color.  And that's
-just about it: in the basic drawing model, those are the only pen colors
-and fill colors that can be produced.
+HP-GL/2 supports a set of seven `logical pens', whose colors are black,
+red, green, yellow, blue, magenta, and cyan.  Any line or curve can be
+drawn by any of the pens, and any region bounded by a curve can be filled,
+to any specified intensity (quantized in units of 10% or so) by any pen
+color.  And that's just about it: in the basic drawing model, those are the
+only pen colors and fill colors that can be produced.
 
 The situation is even worse than it sounds, because when PCL 5 or HP-GL/2
 output is directed to a monochrome display device such as an HP LaserJet,
@@ -275,7 +341,28 @@ affect the 44 other LaserJet fonts.
 
 ----------------------------------------------------------------------
 
-`graph -T tek' and libplot's Tektronix driver
+libplot's ReGIS driver and `graph -T regis' 
+-------------------------------------------
+
+`graph -T regis' (along with libplot's ReGIS driver, which it uses)
+currently contains incomplete support for the filling of regions.  If the
+region to be filled extends beyond the edge of the ReGIS display, ideally
+it should be clipped, then filled.  At present, filling is not performed at
+all (since the clipping code has not yet been written).
+
+In normal operation, this problem should not affect the output of `graph -T
+regis' at all.  But it is really a bug, not just a problem.
+
+`graph -T regis' also does not support the 35 standard Postscript fonts;
+the Hershey fonts must be used instead.  (The default font is HersheySerif
+rather than Helvetica.)  The fact that the ZapfDingbats font is not
+supported means that `graph -T regis' does not support marker symbols
+greater than or equal to 32, or more accurately it does not select them
+from the font (ZapfDingbats) that one would expect.
+
+----------------------------------------------------------------------
+
+libplot's Tektronix driver and `graph -T tek'
 ---------------------------------------------
 
 `graph -T tek' (along with libplot's Tektronix driver, which it uses) does
@@ -292,7 +379,8 @@ would expect.
 Filling of regions is not supported because Tektronix storage tubes did not
 support filling, for obvious reasons.  The Tektronix emulator in the MS-DOS
 version of kermit apparently supports a restricted sort of region filling,
-but there are currently no plans to extend libplot to use it.
+but there are currently no plans to extend libplot's Tektronix driver to
+use it.
 
 The 35 Postscript fonts could in principle be supported by libplot's
 Tektronix driver, if Type 1 or TrueType rasterizer code were added to
@@ -327,15 +415,15 @@ cannot display sheared line segments: their `lines', no matter how thick,
 are always drawn as rectangles.
 
 X Windows does not support sheared thick lines.  Nor do the xfig or idraw
-drawing editors, or the HP-GL and HP-GL/2 languages.  However, Postscript
-does supports them.
+drawing editors, or the HP-GL and HP-GL/2 languages.  However, the
+Postscript and SVG file formats do support them.
 
-As a consequence, libplot's PS driver is currently the only one of its
-drivers that displays sheared thick lines correctly.  The problem is
-evident only for unusually thick lines, of course.
+As a consequence, libplot's PS and SVG drivers are currently the only ones
+that display sheared thick lines correctly.  The problem is evident only
+for unusually thick lines, of course.
 
 A related problem is that a constant-width polyline (polygonal line) drawn
 in the user frame should, ideally, be drawn in the device frame in an
 unusual way: the thickness of each line segment should depend on direction.
 I.e., some segments of a device-frame polyline should be thicker than
-others.  The is supported properly only by libplot's PS driver.
+others.  This too is supported only by libplot's PS and SVG drivers.

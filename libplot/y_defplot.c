@@ -1,11 +1,7 @@
 /* This file defines the initialization for any XPlotter object, including
    both private data and public methods.  There is a one-to-one
    correspondence between public methods and user-callable functions in the
-   C API.
-
-   This is identical to the initialization for an XDrawablePlotter, except
-   that it has _y_openpl, _y_erase, _y_closepl instead of _x_openpl,
-   _x_erase, _x_closepl. */
+   C API. */
 
 #include "sys-defines.h"
 #include <signal.h>		/* for kill() */
@@ -39,32 +35,26 @@ pthread_mutex_t _xplotters_mutex = PTHREAD_MUTEX_INITIALIZER;
    an XPlotter struct. */
 const Plotter _y_default_plotter = 
 {
-  /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _y_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _x_endpath,  _g_endsubpath, _y_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _g_fbox, _g_fboxrel, _g_fcircle, _g_fcirclerel, _g_fconcat, _x_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _x_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _g_flinewidth, _x_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _x_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _y_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _x_restorestate, _x_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _y_initialize, _y_terminate,
+  /* page manipulation */
+  _y_begin_page, _y_erase_page, _y_end_page,
+  /* drawing state manipulation */
+  _x_push_state, _x_pop_state,
+  /* internal path-painting methods (endpath() is a wrapper for the first) */
+  _x_paint_path, _x_paint_paths, _x_path_is_flushable, _x_maybe_prepaint_segments,
+  /* internal methods for drawing of markers and points */
+  _g_paint_marker, _x_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_falabel_hershey, _x_falabel_ps, _x_falabel_pcl, _g_falabel_stick, _x_falabel_other,
-  _g_flabelwidth_hershey, _x_flabelwidth_ps, _x_flabelwidth_pcl, _g_flabelwidth_stick, _x_flabelwidth_other,
+  _g_paint_text_string_with_escapes, _x_paint_text_string,
+  _x_get_text_width,
   /* private low-level `retrieve font' method */
   _x_retrieve_font,
-  /* private low-level `sync font' method */
-  _g_set_font,
-  /* private low-level `sync line attributes' method */
-  _x_set_attributes,
-  /* private low-level `sync color' methods */
-  _x_set_pen_color,
-  _x_set_fill_color,
-  _x_set_bg_color,
-  /* private low-level `sync position' method */
-  _g_set_position,
+  /* `flush output' method, called only if Plotter handles its own output */
+  _x_flush_output,
   /* internal error handlers */
   _g_warning,
   _g_error,
-  /* low-level output routines */
-  _g_write_byte,
-  _g_write_bytes,
-  _g_write_string
 };
 #endif /* not LIBPLOTTER */
 
@@ -157,8 +147,11 @@ _y_initialize (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* tag field, differs in derived classes */
-  _plotter->type = PL_X11;
+  _plotter->data->type = PL_X11;
 #endif
+
+  /* output model */
+  _plotter->data->output_model = PL_OUTPUT_VIA_CUSTOM_ROUTINES_TO_NON_STREAM;
 
   /* initialize data members specific to this derived class */
   _plotter->y_app_con = (XtAppContext)NULL;
@@ -177,7 +170,7 @@ _y_initialize (S___(_plotter))
   {
     const char *vanish_s;
 
-    vanish_s = (const char *)_get_plot_param (R___(_plotter)
+    vanish_s = (const char *)_get_plot_param (_plotter->data,
 					      "X_AUTO_FLUSH");
     if (strcasecmp (vanish_s, "no") == 0)
       _plotter->y_auto_flush = false;
@@ -189,13 +182,14 @@ _y_initialize (S___(_plotter))
   {
     const char *vanish_s;
 
-    vanish_s = (const char *)_get_plot_param (R___(_plotter)
+    vanish_s = (const char *)_get_plot_param (_plotter->data,
 					      "VANISH_ON_DELETE");
     if (strcasecmp (vanish_s, "yes") == 0)
       _plotter->y_vanish_on_delete = true;
     else
       _plotter->y_vanish_on_delete = false;
   }
+
 }
 
 /* The private `terminate' method, which is invoked when a Plotter is
@@ -212,10 +206,6 @@ _y_terminate (S___(_plotter))
 #endif
 {
   int i, j;
-
-  /* if specified plotter is open, close it */
-  if (_plotter->open)
-    _plotter->closepl (S___(_plotter));
 
   /* kill forked-off processes that are maintaining XPlotter's popped-up
      windows, provided that the VANISH_ON_DELETE parameter was set to "yes"
@@ -340,6 +330,10 @@ XPlotter::XPlotter (PlotterParams &parameters)
 
 XPlotter::~XPlotter ()
 {
+  /* if luser left the Plotter open, close it */
+  if (_plotter->data->open)
+    _API_closepl ();
+
   _y_terminate ();
 
   /* remove from _xplotters sparse array */

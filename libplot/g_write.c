@@ -1,63 +1,62 @@
-/* These are the lowest-level output routines in libplot/libplotter.  Most
-   Plotters that write to output streams use these.  MetaPlotters use the
-   special routines in m_emit.c. */
+/* These are the lowest-level output routines in libplot/libplotter.
+   Plotters that write to output streams use these. */
 
 #include "sys-defines.h"
 #include "extern.h"
 
 void
 #ifdef _HAVE_PROTOS
-_g_write_byte (R___(Plotter *_plotter) unsigned char c)
+_write_byte (const plPlotterData *data, unsigned char c)
 #else
-_g_write_byte (R___(_plotter) c)
-     S___(Plotter *_plotter;)
+_write_byte (data, c)
+     const plPlotterData *data;
      unsigned char c;
 #endif
 {
-  if (_plotter->outfp)
-    putc ((int)c, _plotter->outfp);
+  if (data->outfp)
+    putc ((int)c, data->outfp);
 #ifdef LIBPLOTTER
-  else if (_plotter->outstream)
-    _plotter->outstream->put (c);
+  else if (data->outstream)
+    data->outstream->put (c);
 #endif
 }
 
 void
 #ifdef _HAVE_PROTOS
-_g_write_bytes (R___(Plotter *_plotter) int n, const unsigned char *c)
+_write_bytes (const plPlotterData *data, int n, const unsigned char *c)
 #else
-_g_write_bytes (R___(_plotter) n, c)
-     S___(Plotter *_plotter;) 
+_write_bytes (data, n, c)
+     const plPlotterData *data;
      int n;
      const unsigned char *c;
 #endif
 {
   int i;
 
-  if (_plotter->outfp)
+  if (data->outfp)
     {
       for (i = 0; i < n; i++)
-	putc ((int)(c[i]), _plotter->outfp);
+	putc ((int)(c[i]), data->outfp);
     }
 #ifdef LIBPLOTTER
-  else if (_plotter->outstream)
-    _plotter->outstream->write(c, n);
+  else if (data->outstream)
+    data->outstream->write(c, n);
 #endif
 }
 
 void
 #ifdef _HAVE_PROTOS
-_g_write_string (R___(Plotter *_plotter) const char *s)
+_write_string (const plPlotterData *data, const char *s)
 #else
-_g_write_string (R___(_plotter) s)
-     S___(Plotter *_plotter;) 
+_write_string (data, s)
+     const plPlotterData *data;
      const char *s;
 #endif
 {
-  if (_plotter->outfp)
-    fputs (s, _plotter->outfp);
+  if (data->outfp)
+    fputs (s, data->outfp);
 #ifdef LIBPLOTTER
-  else if (_plotter->outstream)
-    (*(_plotter->outstream)) << s;
+  else if (data->outstream)
+    (*(data->outstream)) << s;
 #endif
 }

@@ -1,4 +1,4 @@
-.TH TEK2PLOT 1 "Dec 1998" "FSF" "GNU Plotting Utilities"
+.TH TEK2PLOT 1 "Jun 2000" "FSF" "GNU Plotting Utilities"
 .SH NAME
 tek2plot \- translate Tektronix files to other graphics formats
 .\" Not all man macros define SB
@@ -47,12 +47,15 @@ is encountered, the standard input is read.
 Select 
 .I type
 as the output format or display type.
-It may be "X", "pnm", "gif", "ai", "ps", "cgm", "fig",
-"pcl", "hpgl", "tek", and "meta" (the default).
+It may be "X", "png", "pnm", "gif", "svg", "ai", "ps", "cgm", "fig",
+"pcl", "hpgl", "regis", "tek", or "meta" (the default).
 These refer respectively
-to the X Window System, 
-portable anymap format (PBM/PGM/PPM), a pseudo-GIF format that
+to the X Window System,
+PNG (Portable Network Graphics) format,
+portable anymap format (PBM/PGM/PPM), 
+a pseudo-GIF format that
 does not use LZW encoding,
+the new XML-based Scalable Vector Graphics format,
 the format used by Adobe Illustrator, Postscript or
 Encapsulated Postscript (EPS) that can be edited with
 .BR idraw (1),
@@ -60,8 +63,13 @@ CGM format (by default, confirming to the WebCGM profile),
 the format used by the 
 .BR xfig (1) 
 drawing editor, the Hewlett\-Packard PCL 5 printer
-language, the Hewlett\-Packard Graphics Language, Tektronix format,
-and device-independent GNU metafile format itself.
+language, the Hewlett\-Packard Graphics Language, 
+ReGIS graphics format (which can be displayed 
+by the
+.BR dxterm (1)
+terminal emulator or by a VT330 or VT340 terminal),
+Tektronix format itself,
+and device-independent GNU metafile format.
 Unless \fItype\fP\^ is "X", an output file is produced and written
 to standard output.
 .IP ""
@@ -93,14 +101,15 @@ For example,
 .B tek2plot \-T X
 displays each Tektronix page in its own X window.
 If the 
+.BR "\-T png" ,
 .BR "\-T pnm" ,
 .BR "\-T gif" ,
 .BR "\-T ai" ,
 or
 .B \-T fig
 option is used, the default behavior is to output only the first nonempty
-Tektronix page, since files in those output formats
-may contain only a single page of graphics.
+Tektronix page, since files in those output formats contain only a single
+page of graphics.
 .IP ""
 Most Tektronix files consist of either one page (page #0) or two
 pages (an empty page #0, and page #1).
@@ -116,9 +125,11 @@ are normally of the latter sort.
 Use the font \fIname\fP\^ for rendering the native Textronix fonts,
 if it is available.
 The default font is "Courier" except for 
+.BR "tek2plot \-T png" ,
 .BR "tek2plot \-T pnm" ,
 .BR "tek2plot \-T gif" ,
 .BR "tek2plot \-T hpgl" , 
+.BR "tek2plot \-T regis" , 
 and
 .BR "tek2plot \-T tek" , 
 for which it is "HersheySerif".
@@ -152,19 +163,37 @@ format-dependent (in some output formats, a zero-width line is the thinnest
 line that can be drawn; in others, a zero-width line is invisible).
 .TP
 .BI \-\-bg\-color " name"
-Set the color used for the background
-to be 
+Set the color used for the background to be 
 .IR name .
 This is relevant only to 
 .BR "tek2plot \-T X" ,
+.BR "tek2plot \-T png" ,
 .BR "tek2plot \-T pnm" ,
 .BR "tek2plot \-T gif" ,
+.BR "tek2plot \-T svg" ,
+.BR "tek2plot \-T cgm" ,
 and
-.BR "tek2plot \-T cgm" .
+.BR "tek2plot \-T regis" .
 An unrecognized name sets the color to the default, which is "white".
 The environment variable
 .SB BG_COLOR
 can equally well be used to specify the background color.
+If the 
+.B \-T svg
+or
+.B \-T cgm
+option is used, an output file without a background may be produced
+by setting the background color to "none".
+.IP ""
+If the 
+.B \-T png
+or
+.B \-T gif
+option is used, a transparent PNG file
+or a transparent pseudo-GIF, respectively, may be produced by
+setting the 
+.SB TRANSPARENT_COLOR
+environment variable to the name of the background color.
 .TP
 .BI \-\-bitmap\-size " bitmap_size"
 Set the size of the graphics display in which the plot will be drawn,
@@ -172,15 +201,16 @@ in terms of pixels, to be
 .IR bitmap_size .
 The default is "570x570".
 This is relevant only to 
-.BR "graph \-T X" , 
-.BR "graph \-T pnm" , 
+.BR "plot \-T X" , 
+.BR "plot \-T png" , 
+.BR "plot \-T pnm" , 
 and
-.BR "graph \-T gif" .
+.BR "plot \-T gif" .
 If you choose a rectangular (non-square) window size, the fonts in the 
 plot will be scaled anisotropically, i.e., by different factors in the 
 horizontal and vertical directions.
 For 
-.BR "graph \-T X" , 
+.BR "plot \-T X" , 
 this requires an X11R6 display.
 Any font that cannot be scaled in this way will be replaced by a default
 scalable font, such as the vector font "HersheySerif".
@@ -193,6 +223,22 @@ For backward compatibility, the
 X resource 
 .B Xplot.geometry
 may be used instead.
+.TP
+.BI \-\-emulate\-color " option"
+If 
+.I option
+is 
+.IR yes ,
+replace each color in the output by an appropriate shade of gray.
+This is seldom useful, except when using `
+.B plotfont -T pcl
+to prepare output for a PCL 5 device.
+(Many monochrome PCL 5 devices, such as monochrome
+LaserJets, do a poor job of emulating color on their own.)
+You may equally well request color emulation by setting the environment
+variable
+.SB EMULATE_COLOR
+to "yes".
 .TP
 .BI \-\-max\-line\-length " max_line_length"
 Set the maximum number of points that a
@@ -213,6 +259,7 @@ can also be used to specify the maximum line length.
 Set the size of the plot, by specifying the size of a page
 on which the plot will be positioned.
 This is relevant only to
+.BR "tek2plot \-T svg" ,
 .BR "tek2plot \-T ai" ,
 .BR "tek2plot \-T ps" ,
 .BR "tek2plot \-T cgm" ,
@@ -229,14 +276,14 @@ The environment variable
 .SB PAGESIZE 
 can equally well be used to specify the page size.
 .IP ""
-The graphics display within which the plot is drawn will be a square region
+The graphics display in which the plot is drawn will be a square region
 that would occupy nearly the full width of the specified page.
 For all of the above except
-.B "tek2plot \-T cgm"
-and
 .BR "tek2plot \-T hpgl" , 
 the graphics display will be centered on the page.
 For all of the above except
+.B "tek2plot \-T svg"
+and
 .BR "tek2plot \-T cgm" , 
 user-specified positioning of the graphics display on the page is supported.
 For example, the page size could be specified as "letter,xoffset=1in",
@@ -245,9 +292,12 @@ Offsets may be specified in inches, centimeters, or millimeters,
 and are relative to the default position of the graphics display on the page.
 .IP ""
 Specifying an offset vector has no effect on
+.B "tek2plot \-T svg"
+or
 .BR "tek2plot \-T cgm" .
-In CGM format it is possible to specify the size of a graphics display, but
-not the position of a graphics display on a page.
+In SVG format and WebCGM format it is possible to specify the default size
+of a graphics display, but not the position of a graphics display on a
+page.
 .TP
 .BI \-\-pen\-color " name"
 Set the pen color to be 
@@ -312,7 +362,7 @@ option is omitted or if
 is used.
 In this case 
 .B tek2plot
-outputs a graphics metafile,
+outputs a GNU graphics metafile,
 which must be translated to other formats with
 .BR plot (1).
 .TP
@@ -337,20 +387,24 @@ the
 .B \-T 
 option.
 .BR "tek2plot \-T X" ,
+.BR "tek2plot \-T svg" ,
 .BR "tek2plot \-T ai" ,
 .BR "tek2plot \-T ps" ,
 .BR "tek2plot \-T cgm" ,
 and 
 .B tek2plot \-T fig
 each support the 35 standard Postscript fonts.
-.B tek2plot \-T pcl
+.BR "tek2plot \-T svg" ,
+.BR "tek2plot \-T pcl" ,
 and 
 .B tek2plot \-T hpgl
-support the 45 standard PCL 5 fonts
-and a number of Hewlett\-Packard vector fonts.
+support the 45 standard PCL 5 fonts, and the latter two support
+a number of Hewlett\-Packard vector fonts.
 All seven support a set of 22 Hershey vector fonts, as do
+.BR "tek2plot \-T png" ,
 .BR "tek2plot \-T pnm" ,
 .BR "tek2plot \-T gif" ,
+.BR "tek2plot \-T regis" ,
 and
 .BR "tek2plot \-T tek" .
 .B tek2plot
@@ -383,6 +437,7 @@ The environment variables
 .SB BITMAPSIZE,
 .SB PAGESIZE,
 .SB BG_COLOR,
+.SB EMULATE_COLOR,
 .SB MAX_LINE_LENGTH
 and
 .SB ROTATION
@@ -390,6 +445,7 @@ serve as backups for the options
 .BR \-\-bitmap\-size , 
 .BR \-\-page\-size ,
 .BR \-\-bg\-color , 
+.BR \-\-emulate\-color , 
 .BR \-\-max\-line\-length ,
 and
 .BR \-\-rotation ,
@@ -404,6 +460,19 @@ display and draws graphics in it, checks the
 environment variable.
 Its value determines the display that will be used.
 .LP
+.BR "tek2plot \-T png"
+and
+.BR "tek2plot \-T gif" ,
+which produce output in PNG format and pseudo-GIF format respectively,
+are affected by the 
+.SB INTERLACE
+environment variable.
+If its value is "yes", the output will be interlaced.
+Also, if the 
+.SB TRANSPARENT_COLOR
+environment variable is set to the name of a color, that color will
+be treated as transparent in the output.
+.LP
 .BR "tek2plot \-T pnm" ,
 which produces output in portable anymap (PBM/PGM/PPM) format,
 is affected by the 
@@ -411,17 +480,6 @@ is affected by the
 environment variable.
 If its value is "yes", the output will be in a human-readable format
 rather than binary (the default).
-.LP
-.BR "tek2plot \-T gif" ,
-which produces output in pseudo-GIF format,
-is affected by the 
-.SB INTERLACE
-environment variable.
-If its value is "yes", the output will an interlaced pseudo-GIF file.
-Also, if the 
-.SB TRANSPARENT_COLOR
-environment variable is set to the name of a color, that color will
-be treated as transparent in the output.
 .LP
 .BR "tek2plot \-T cgm" ,
 which produces output in CGM (Computer Graphics Metafile) format,
@@ -473,6 +531,25 @@ width (the
 .B \-W
 option will not work).
 .LP
+The position of the 
+.B tek2plot \-T hpgl
+graphics display on the page
+can be rotated 90 degrees counterclockwise by setting the
+.SB HPGL_ROTATE
+environment variable to "yes".
+This is not the same as the rotation obtained with the 
+.B \-\-rotation
+option, since it both rotates the graphics display and repositions its
+lower left corner toward another corner of the page.  Besides "no" and
+"yes", recognized values for 
+.SB HPGL_ROTATE
+are "0", "90", "180", and "270".  
+"no" and "yes" are equivalent to "0" and
+"90", respectively.
+"180" and "270" are supported only if 
+.SB HPGL_VERSION
+is "2" (the default).
+.LP
 By default, 
 .B tek2plot \-T hpgl
 will draw with a fixed set of pens.
@@ -495,7 +572,7 @@ By setting
 you may specify a
 color for any pen in the range #1.\|.\|.#31.
 All color names recognized
-by the X Windows System may be used.
+by the X Window System may be used.
 Pen #1 must always be present, though it need not be black.
 Any other pen in the range #1.\|.\|.#31 may be omitted.
 .LP

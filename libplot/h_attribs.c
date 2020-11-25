@@ -12,8 +12,9 @@
    (measured in the device frame, in scaled HP-GL coordinates. */
 #define MIN_DASH_UNIT (MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE * (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT))
 
-/* HP-GL's native line types, indexed into by our internal line style number
-   (L_SOLID/L_DOTTED/ L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED/L_DOTDOTDASHED).
+/* HP-GL's native line types, indexed into by our internal line style
+   number (L_SOLID/L_DOTTED/
+   L_DOTDASHED/L_SHORTDASHED/L_LONGDASHED/L_DOTDOTDASHED/L_DOTDOTDOTDASHED).
    We use HP-GL's native line types only if we aren't emitting HP-GL/2,
    since HP-GL/2 supports programmatic definition of line styles. */
 static const int _hpgl_line_type[] =
@@ -44,14 +45,24 @@ _h_set_attributes (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
+  double desired_hpgl_pen_width;
+  double width, height, diagonal_p1_p2_distance;
+
+  /* first, compute desired linewidth in scaled HP-GL coors (i.e. as
+     fraction of diagonal distance between P1,P2) */
+  width = (double)(HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
+  height = (double)(HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
+  diagonal_p1_p2_distance = sqrt (width * width + height * height);
+  desired_hpgl_pen_width 
+    = _plotter->drawstate->device_line_width / diagonal_p1_p2_distance;
+
   /* if plotter's policy on dashing lines needs to be adjusted, do so */
 
   if (_plotter->hpgl_version == 2
       && (_plotter->drawstate->dash_array_in_effect
 	  || (_plotter->hpgl_line_type != 
 	      _hpgl_line_type[_plotter->drawstate->line_type])
-	  || (_plotter->hpgl_pen_width != _plotter->drawstate->hpgl_pen_width)))
-
+	  || (_plotter->hpgl_pen_width != desired_hpgl_pen_width)))
     /* HP-GL/2 case, and we need to emit HP-GL/2 instructions that define a
        new line type.  Why?  Several possibilities: (1) user called
        linedash(), in which case we always define the line type here, or
@@ -79,7 +90,7 @@ _h_set_attributes (S___(_plotter))
 	  if (num_dashes > 0)
 	    dashbuf = (double *)_plot_xmalloc (num_dashes * sizeof(double));
 	  else
-	    dashbuf = NULL;
+	    dashbuf = NULL;	/* solid line */
 	  
 	  dash_cycle_length = 0.0;
 	  for (i = 0; i < num_dashes; i++)
@@ -126,8 +137,8 @@ _h_set_attributes (S___(_plotter))
       if (num_dashes == 0 || dash_cycle_length == 0.0)
 	/* just switch to solid line type */
 	{
-	  strcpy (_plotter->page->point, "LT;");
-	  _update_buffer (_plotter->page);      
+	  strcpy (_plotter->data->page->point, "LT;");
+	  _update_buffer (_plotter->data->page);      
 	  _plotter->hpgl_line_type = HPGL_L_SOLID;
 	}
       else
@@ -136,16 +147,16 @@ _h_set_attributes (S___(_plotter))
 	  bool odd_length = (num_dashes & 1 ? true : false);
 
 	  /* create user-defined line type */
-	  sprintf (_plotter->page->point, "UL%d",
+	  sprintf (_plotter->data->page->point, "UL%d",
 		   SPECIAL_HPGL_LINE_TYPE);
-	  _update_buffer (_plotter->page);      
+	  _update_buffer (_plotter->data->page);      
 	  for (i = 0; i < num_dashes; i++)
 	    {
-	      sprintf (_plotter->page->point, ",%.3f", 
+	      sprintf (_plotter->data->page->point, ",%.3f", 
 		       /* dash length as frac of iteration interval */
 		       100.0 * (odd_length ? 0.5 : 1.0) 
 		       * dashbuf[i] / dash_cycle_length);
-	      _update_buffer (_plotter->page);      
+	      _update_buffer (_plotter->data->page);      
 	    }
 	  if (odd_length)
 	    /* if an odd number of dashes, emit the dash array twice
@@ -154,15 +165,15 @@ _h_set_attributes (S___(_plotter))
 	    {
 	      for (i = 0; i < num_dashes; i++)
 		{
-		  sprintf (_plotter->page->point, ",%.3f", 
+		  sprintf (_plotter->data->page->point, ",%.3f", 
 			   /* dash length as frac of iteration interval */
 			   100.0 * (odd_length ? 0.5 : 1.0) 
 			   * dashbuf[i] / dash_cycle_length);
-		  _update_buffer (_plotter->page);      
+		  _update_buffer (_plotter->data->page);      
 		}
 	    }
-	  sprintf (_plotter->page->point, ";");
-	  _update_buffer (_plotter->page);      
+	  sprintf (_plotter->data->page->point, ";");
+	  _update_buffer (_plotter->data->page);      
 	  
 	  /* switch to new line type */
 	  {
@@ -174,9 +185,9 @@ _h_set_attributes (S___(_plotter))
 	    height = (double)(HPGL_SCALED_DEVICE_TOP-HPGL_SCALED_DEVICE_BOTTOM);
 	    diagonal_p1_p2_distance = sqrt (width * width + height * height);
 	    iter_interval = 100 * (odd_length ? 2 : 1) * (dash_cycle_length/diagonal_p1_p2_distance);
-	    sprintf (_plotter->page->point, "LT%d,%.4f;", 
+	    sprintf (_plotter->data->page->point, "LT%d,%.4f;", 
 		     SPECIAL_HPGL_LINE_TYPE, iter_interval);
-	    _update_buffer (_plotter->page);
+	    _update_buffer (_plotter->data->page);
 	    if (_plotter->drawstate->dash_array_in_effect)
 	      _plotter->hpgl_line_type = SPECIAL_HPGL_LINE_TYPE;
 	    else
@@ -198,10 +209,12 @@ _h_set_attributes (S___(_plotter))
 	   _hpgl_line_type[_plotter->drawstate->line_type])
 	  ||			/* special case #1, mapped to "shortdashed" */
 	  (_plotter->drawstate->dash_array_in_effect
+	   && _plotter->drawstate->dash_array_len == 2
 	   && (_plotter->drawstate->dash_array[1]
 	       == _plotter->drawstate->dash_array[0]))
 	  ||			/* special case #2, mapped to "dotted" */
 	  (_plotter->drawstate->dash_array_in_effect
+	   && _plotter->drawstate->dash_array_len == 2
 	   && (_plotter->drawstate->dash_array[1]
 	       > (3 - FUZZ) * _plotter->drawstate->dash_array[0])
 	   && (_plotter->drawstate->dash_array[1]
@@ -213,6 +226,7 @@ _h_set_attributes (S___(_plotter))
       int line_type;
 
       if (_plotter->drawstate->dash_array_in_effect
+	  && _plotter->drawstate->dash_array_len == 2
 	  && (_plotter->drawstate->dash_array[1]
 	      == _plotter->drawstate->dash_array[0]))
 	/* special case #1, user-specified dashing (equal on/off lengths):
@@ -229,6 +243,7 @@ _h_set_attributes (S___(_plotter))
 	  line_type = L_SHORTDASHED;
 	}
       else if (_plotter->drawstate->dash_array_in_effect
+	       && _plotter->drawstate->dash_array_len == 2
 	       && (_plotter->drawstate->dash_array[1]
 		   > (3 - FUZZ) * _plotter->drawstate->dash_array[0])
 	       && (_plotter->drawstate->dash_array[1]
@@ -285,30 +300,30 @@ _h_set_attributes (S___(_plotter))
 	{
 	case L_SOLID:
 	  /* "solid" */
-	  strcpy (_plotter->page->point, "LT;");
+	  strcpy (_plotter->data->page->point, "LT;");
 	  break;
 	case L_DOTTED:
 	  /* "dotted": emulate dots by selecting shortdashed pattern with a
 	     short iteration interval */
-	  sprintf (_plotter->page->point, 
+	  sprintf (_plotter->data->page->point, 
 		   "LT%d,%.4f;",
 		   HPGL_L_SHORTDASHED,
 		   0.5 * iter_interval);
 	  break;
 	case L_DOTDOTDOTDASHED:
 	  /* not a native line type before HP-GL/2; use "dotdotdashed" */
-	  sprintf (_plotter->page->point, 
+	  sprintf (_plotter->data->page->point, 
 		   "LT%d,%.4f;", 
 		   HPGL_L_DOTDOTDASHED,
 		   iter_interval);
 	  break;
 	default:
-	  sprintf (_plotter->page->point, 
+	  sprintf (_plotter->data->page->point, 
 		   "LT%d,%.4f;", 
 		   _hpgl_line_type[_plotter->drawstate->line_type], 
 		   iter_interval);
 	}
-      _update_buffer (_plotter->page);
+      _update_buffer (_plotter->data->page);
       _plotter->hpgl_line_type = 
 	_hpgl_line_type[_plotter->drawstate->line_type];
     }
@@ -322,10 +337,10 @@ _h_set_attributes (S___(_plotter))
 	  || (_plotter->hpgl_join_style 
 	      != _hpgl_join_style[_plotter->drawstate->join_type]))
 	{
-	  sprintf (_plotter->page->point, "LA1,%d,2,%d;", 
+	  sprintf (_plotter->data->page->point, "LA1,%d,2,%d;", 
 		   _hpgl_cap_style[_plotter->drawstate->cap_type],
 		   _hpgl_join_style[_plotter->drawstate->join_type]);
-	  _update_buffer (_plotter->page);
+	  _update_buffer (_plotter->data->page);
 	  _plotter->hpgl_cap_style = 
 	    _hpgl_cap_style[_plotter->drawstate->cap_type];
 	  _plotter->hpgl_join_style = 
@@ -339,11 +354,16 @@ _h_set_attributes (S___(_plotter))
       && _plotter->hpgl_miter_limit != _plotter->drawstate->miter_limit)
     {
       double new_limit = _plotter->drawstate->miter_limit;
+      int new_limit_integer;
       
-      if (new_limit > 32767.0)	/* parameter is `clamped real' */
+      if (new_limit > 32767.0)	/* clamp */
 	new_limit = 32767.0;
-      sprintf (_plotter->page->point, "LA3,%.4f;", new_limit);
-      _update_buffer (_plotter->page);
+      else if (new_limit < 1.0)
+	new_limit = 1.0;
+      new_limit_integer = (int)new_limit; /* floor */
+      
+      sprintf (_plotter->data->page->point, "LA3,%d;", new_limit_integer);
+      _update_buffer (_plotter->data->page);
       _plotter->hpgl_miter_limit = _plotter->drawstate->miter_limit;
     }
 
@@ -351,14 +371,12 @@ _h_set_attributes (S___(_plotter))
      device-frame version of our line width), update it (HP-GL/2 only) */
   if (_plotter->hpgl_version == 2)
     {
-      if (_plotter->hpgl_pen_width != _plotter->drawstate->hpgl_pen_width)
+      if (_plotter->hpgl_pen_width != desired_hpgl_pen_width)
 	{
-	  sprintf (_plotter->page->point, "PW%.4f;", 
-		   100.0 * _plotter->drawstate->hpgl_pen_width);
-	  _update_buffer (_plotter->page);
-	  _plotter->hpgl_pen_width = _plotter->drawstate->hpgl_pen_width;
+	  sprintf (_plotter->data->page->point, "PW%.4f;", 
+		   100.0 * desired_hpgl_pen_width);
+	  _update_buffer (_plotter->data->page);
+	  _plotter->hpgl_pen_width = desired_hpgl_pen_width;
 	}
     }
-
-  return;
 }

@@ -1,6 +1,3 @@
-/* This file contains the erase method, which is a standard part of
-   libplot.  It erases all objects on the graphics device display. */
-
 /* This version is for XDrawablePlotters, and should be identical to
    y_erase.c (the version for XPlotters) except that XPlotter-specific
    lines are commented out.  (Search for #if 0...#endif.)  The function
@@ -20,35 +17,27 @@
    frames.  This is a heuristic.  This quantity must be >= 0. */
 #define NUM_KEPT_FRAMES 16
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_x_erase (S___(Plotter *_plotter))
+_x_erase_page (S___(Plotter *_plotter))
 #else
-_x_erase (S___(_plotter))
+_x_erase_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
   bool head_found;
   int window_width, window_height;
-  int i, current_frame;
+  int i, current_frame_number, current_page_number;
   plColorRecord *cptr, **link = NULL;
   plDrawState *stateptr;
 
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "erase: invalid operation");
-      return -1;
-    }
-
-  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
   /* set the foreground color in the GC we use for erasing,
-     to be the user-specified background color */
-  _plotter->set_bg_color (S___(_plotter));
+     to be the background color in the drawing state */
+  _x_set_bg_color (S___(_plotter));
 
   /* compute rectangle size; note flipped-y convention */
-  window_width = (_plotter->imax - _plotter->imin) + 1;
-  window_height = (_plotter->jmin - _plotter->jmax) + 1;
+  window_width = (_plotter->data->imax - _plotter->data->imin) + 1;
+  window_height = (_plotter->data->jmin - _plotter->data->jmax) + 1;
 
   if (_plotter->x_double_buffering != DBL_NONE)
     {
@@ -153,12 +142,12 @@ _x_erase (S___(_plotter))
     }
 
 #if 0
-  /* If an X Plotter, update background color of canvas widget,
+  /* If an X Plotter, update background color of y_canvas widget,
      irrespective of whether or not we're double buffering.  This fixes
      things so that if the window is resized to a larger size, the new
      portions of the window will be filled with the correct color. */
   {
-    Arg wargs[10];		/* werewolves */
+    Arg wargs[1];		/* werewolves */
 
 #ifdef USE_MOTIF
     XtSetArg (wargs[0], XmNbackground, _plotter->drawstate->x_gc_bgcolor);
@@ -166,7 +155,7 @@ _x_erase (S___(_plotter))
     XtSetArg (wargs[0], XtNbackground, _plotter->drawstate->x_gc_bgcolor);
 #endif
     XtSetValues (_plotter->y_toplevel, wargs, (Cardinal)1);
-    XtSetValues (_plotter->canvas, wargs, (Cardinal)1);
+    XtSetValues (_plotter->y_canvas, wargs, (Cardinal)1);
   }
 #endif /* 0 */
 
@@ -188,16 +177,21 @@ _x_erase (S___(_plotter))
      In both cases, if a cached cell is to be preserved, it must contain a
      genuine pixel value (the `allocated' flag must be set).
 
-     Side comment: for XDrawable Plotters, unlike XPlotters, it makes no
-     sense to reset the frame number to zero at the conclusion of each
-     openpl..closepl, since we've only got one connection to the X display.
-     So we don't (see x_openpl.c).
-   */	   
+     We also insist that for a cell to be preserved, it have a `page number
+     stamp' equal to the current page number.  That's because XDrawable
+     Plotters, unlike X Plotters, don't free the color cell cache in
+     end_page(), i.e., when closepl() is called.  That's because X Drawable
+     Plotters are `persistent' in the sense the graphics remain visible
+     until the next reopening, and beyond.  So the cache may include cells
+     left over from previous pages, which get freed only here, when erase()
+     is called. */
+
   cptr = _plotter->x_colorlist;
   _plotter->x_colorlist = NULL;
   i = 0;
   head_found = false;
-  current_frame = _plotter->frame_number;
+  current_frame_number = _plotter->data->frame_number;
+  current_page_number = _plotter->data->page_number;
   while (cptr)
     {
       plColorRecord *cptrnext;
@@ -205,11 +199,15 @@ _x_erase (S___(_plotter))
       cptrnext = cptr->next;
       if (cptr->allocated)
 	{
-	  if (((_plotter->x_double_buffering == DBL_NONE)
-	      && i < NUM_KEPT_COLORS)
+	  if ((_plotter->x_double_buffering == DBL_NONE
+	       && cptr->page_number == current_page_number
+	       && i < NUM_KEPT_COLORS)
 	      ||
-	      ((_plotter->x_double_buffering != DBL_NONE)
-	       && cptr->frame >= current_frame - NUM_KEPT_FRAMES))
+	      (_plotter->x_double_buffering != DBL_NONE
+	       && cptr->page_number == current_page_number
+	       && cptr->frame_number >= current_frame_number - NUM_KEPT_FRAMES))
+	    /* cached cell contains a genuine pixel value, and it meets our
+	       criteria, so preserve it */
 	    {
 	      if (head_found)
 		*link = cptr;
@@ -252,8 +250,5 @@ _x_erase (S___(_plotter))
      XDrawablePlotters, which is overridden for XPlotters) */
   _maybe_handle_x_events (S___(_plotter));
 
-  /* on to next frame */
-  _plotter->frame_number++;
-
-  return 0;
+  return true;
 }

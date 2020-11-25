@@ -8,12 +8,6 @@ the MS-DOS version of `kermit'.  They are recognized by the environment
 variable TERM equalling "xterm" (or "xterms" or "kterm"), and "kermit" (or
 "ansi.sys, "ansi.sysk", "ansisys", or "ansisysk"), respectively.
 
-If there is any chance that you will be displaying output on a genuine
-Tektronix storage tube, you should compile with the -DGENUINE_TEKTRONIX
-option.  The only change that will make is adding a 1-second delay after
-each `erase screen' command, if neither of the two above sorts of emulator
-is being used.  Tektronix storage tubes take that long to clear.
-
 Some historical comments on the Tektronix 4010/4014 follow. 
 
 A Tektronix 4010 had what was effectively a 1024x780 display, as did the

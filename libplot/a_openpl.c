@@ -1,36 +1,22 @@
-/* This file contains the openpl method, which is a standard part of
-   libplot.  It opens a Plotter object. */
-
-/* This version is for Plotters that do not plot in real time, but emit a
-   page of graphics when closepl() is called. */
-
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_a_openpl (S___(Plotter *_plotter))
+_a_begin_page (S___(Plotter *_plotter))
 #else
-_a_openpl (S___(_plotter))
+_a_begin_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
   int i;
 
-  if (_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "openpl: invalid operation");
-      return -1;
-    }
+  /* The following resetting code should duplicate what is done in
+     erase_page(). */
 
-  /* Prepare buffer in which we'll cache graphics code for this page.
-     Although we won't be emitting graphics in real time, we don't maintain
-     a linked list of buffers, one per page; we don't need to. */
-  _plotter->page = _new_outbuf ();
-  
   /* initialize `font used' array for this page */
   for (i = 0; i < NUM_PS_FONTS; i++)
-    _plotter->page->ps_font_used[i] = false;
+    _plotter->data->page->ps_font_used[i] = false;
 
   /* With each call to openpl(), we reset our knowledge of Illustrator's
      internal state, i.e. the dynamic AI-specific data members of the
@@ -56,8 +42,5 @@ _a_openpl (S___(_plotter))
   _plotter->ai_line_width = 1.0;    
   _plotter->ai_fill_rule_type = 0; /* i.e. nonzero winding number rule */
 
-  /* invoke generic method, to e.g. create a drawing state */
-  _g_openpl (S___(_plotter));
-
-  return 0;
+  return true;
 }

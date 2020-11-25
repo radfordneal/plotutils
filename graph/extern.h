@@ -69,7 +69,7 @@ extern voidptr_t xrealloc ____P ((voidptr_t p, size_t length));
 
 typedef struct MultigrapherStruct Multigrapher;
 
-extern Multigrapher * new_multigrapher ____P((const char *display_type, const char *bg_color, const char *bitmap_size, const char *max_line_length, const char *meta_portable, const char *page_size, const char *rotation_angle, bool save_screen));
+extern Multigrapher * new_multigrapher ____P((const char *display_type, const char *bg_color, const char *bitmap_size, const char *emulate_color, const char *max_line_length, const char *meta_portable, const char *page_size, const char *rotation_angle, bool save_screen));
 
 extern int delete_multigrapher ____P((Multigrapher *multigrapher));
 

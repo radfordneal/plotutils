@@ -8,10 +8,10 @@
    state.  The X11-specific part also includes `non-opaque' representations
    of the attributes, which can be easily queried.  They are updated too.
 
-   Any invoker should pass a `hint' to this method, indicating which of the
-   two graphics contexts (the one used for drawing, and the one used for
-   filling) should be updated.  The only attribute we set in the latter is
-   the fill rule; all the other attributes listed above are set in the
+   Any invoker should pass an argument to this method, indicating which of
+   the two graphics contexts (the one used for drawing, and the one used
+   for filling) should be updated.  The only attribute we set in the latter
+   is the fill rule; all the other attributes listed above are set in the
    former. */
 
 #include "sys-defines.h"
@@ -22,10 +22,11 @@
 
 void
 #ifdef _HAVE_PROTOS
-_x_set_attributes (S___(Plotter *_plotter))
+_x_set_attributes (R___(Plotter *_plotter) int x_gc_type)
 #else
-_x_set_attributes (S___(_plotter))
+_x_set_attributes (R___(_plotter) x_gc_type)
      S___(Plotter *_plotter;)
+     int x_gc_type;		/* which of our X GC's to modify */
 #endif
 {
   int i;
@@ -36,10 +37,7 @@ _x_set_attributes (S___(_plotter))
        x_savestate.c); do nothing */
     return;
 
-  /* examine `hint', which is passed as an element of the X-specific part
-     of the drawing state */
-
-  if (_plotter->drawstate->x_gc_type == X_GC_FOR_DRAWING)
+  if (x_gc_type == X_GC_FOR_DRAWING)
     /* update attributes in GC used for drawing */
     {
       XGCValues gcv;
@@ -264,7 +262,7 @@ _x_set_attributes (S___(_plotter))
 	}
     }
   
-  else if (_plotter->drawstate->x_gc_type == X_GC_FOR_FILLING)
+  else if (x_gc_type == X_GC_FOR_FILLING)
     /* update attributes in GC used for filling */
     {
       XGCValues gcv;

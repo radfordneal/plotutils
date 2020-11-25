@@ -13,7 +13,8 @@
 #define point(x,y) pl_point(x,y)
 #define space(x0,y0,x1,y1) pl_space(x0,y0,x1,y1)
 
-/* 43 additional functions in GNU libplot */
+/* 46 additional functions in GNU libplot, plus 1 obsolete function
+   [pl_outfile]. */
 #define outfile(outfile) pl_outfile(outfile)
 #define alabel(x_justify,y_justify,s) pl_alabel(x_justify,y_justify,s)
 #define arcrel(dxc,dyc,dx0,dy0,dx1,dy1) pl_arcrel(dxc,dyc,dx0,dy0,dx1,dy1)
@@ -26,6 +27,7 @@
 #define boxrel(dx0,dy0,dx1,dy1) pl_boxrel(dx0,dy0,dx1,dy1)
 #define capmod(s) pl_capmod(s)
 #define circlerel(dx,dy,r) pl_circlerel(dx,dy,r)
+#define closepath() pl_closepath()
 #define color(red,green,blue) pl_color(red,green,blue)
 #define colorname(name) pl_colorname(name)
 #define contrel(dx,dy) pl_contrel(dx,dy)
@@ -34,6 +36,7 @@
 #define ellipse(x,y,rx,ry,angle) pl_ellipse(x,y,rx,ry,angle)
 #define ellipserel(dx,dy,rx,ry,angle) pl_ellipserel(dx,dy,rx,ry,angle)
 #define endpath() pl_endpath()
+#define endsubpath() pl_endsubpath()
 #define fillcolor(red,green,blue) pl_fillcolor(red,green,blue)
 #define fillcolorname(name) pl_fillcolorname(name)
 #define fillmod(s) pl_fillmod(s)
@@ -50,8 +53,10 @@
 #define marker(x,y,type,size) pl_marker(x,y,type,size)
 #define markerrel(dx,dy,type,size) pl_markerrel(dx,dy,type,size)
 #define moverel(x,y) pl_moverel(x,y)
+#define orientation(direction) pl_orientation(direction)
 #define pencolor(red,green,blue) pl_pencolor(red,green,blue)
 #define pencolorname(name) pl_pencolorname(name)
+#define pentype(level) pl_pentype(level)
 #define pointrel(dx,dy) pl_pointrel(dx,dy)
 #define restorestate() pl_restorestate()
 #define savestate() pl_savestate()
@@ -92,11 +97,12 @@
 #define fspace(x0,y0,x1,y1) pl_fspace(x0,y0,x1,y1)
 #define fspace2(x0,y0,x1,y1,x2,y2) pl_fspace2(x0,y0,x1,y1,x2,y2)
 
-/* 5 floating point operations with no integer counterpart (GNU additions) */
+/* 6 floating point operations with no integer counterpart (GNU additions) */
 #define fconcat(m0,m1,m2,m3,m4,m5) pl_fconcat(m0,m1,m2,m3,m4,m5)
 #define fmiterlimit(limit) pl_fmiterlimit(limit)
 #define frotate(theta) pl_frotate(theta)
 #define fscale(x,y) pl_fscale(x,y)
+#define fsetmatrix(m0,m1,m2,m3,m4,m5) pl_fsetmatrix(m0,m1,m2,m3,m4,m5)
 #define ftranslate(x,y) pl_ftranslate(x,y)
 
 /* 4 functions specific to the C binding (for construction/destruction of

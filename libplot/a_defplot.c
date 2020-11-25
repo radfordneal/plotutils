@@ -11,32 +11,26 @@
    an AIPlotter struct. */
 const Plotter _a_default_plotter = 
 {
-  /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _a_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _a_endpath, _g_endsubpath, _g_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _g_fbox, _g_fboxrel, _g_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _a_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _a_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _a_initialize, _a_terminate,
+  /* page manipulation */
+  _a_begin_page, _a_erase_page, _a_end_page,
+  /* drawing state manipulation */
+  _g_push_state, _g_pop_state,
+  /* internal path-painting methods (endpath() is a wrapper for the first) */
+  _a_paint_path, _a_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  /* internal methods for drawing of markers and points */
+  _g_paint_marker, _a_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_falabel_hershey, _a_falabel_ps, _a_falabel_pcl, _g_falabel_stick, _g_falabel_other,
-  _g_flabelwidth_hershey, _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, _g_flabelwidth_other,
+  _g_paint_text_string_with_escapes, _a_paint_text_string,
+  _g_get_text_width,
   /* private low-level `retrieve font' method */
   _g_retrieve_font,
-  /* private low-level `sync font' method */
-  _g_set_font,
-  /* private low-level `sync line attributes' method */
-  _a_set_attributes,
-  /* private low-level `sync color' methods */
-  _a_set_pen_color,
-  _a_set_fill_color,
-  _g_set_bg_color,
-  /* private low-level `sync position' method */
-  _g_set_position,
+  /* `flush output' method, called only if Plotter handles its own output */
+  _g_flush_output,
   /* error handlers */
   _g_warning,
   _g_error,
-  /* low-level output routines */
-  _g_write_byte,
-  _g_write_bytes,
-  _g_write_string
 };
 #endif /* not LIBPLOTTER */
 
@@ -70,55 +64,61 @@ _a_initialize (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* tag field, differs in derived classes */
-  _plotter->type = PL_AI;
+  _plotter->data->type = PL_AI;
 #endif
 
+  /* output model */
+  _plotter->data->output_model = PL_OUTPUT_ONE_PAGE;
+
   /* user-queryable capabilities: 0/1/2 = no/yes/maybe */
-  _plotter->have_wide_lines = 1;
-  _plotter->have_dash_array = 1;
-  _plotter->have_solid_fill = 1;
-  _plotter->have_odd_winding_fill = 1;
-  _plotter->have_nonzero_winding_fill = 1;
-  _plotter->have_settable_bg = 0;
-  _plotter->have_ps_fonts = 1;
-  _plotter->have_pcl_fonts = 1;
-  _plotter->have_stick_fonts = 0;
-  _plotter->have_extra_stick_fonts = 0;
+  _plotter->data->have_wide_lines = 1;
+  _plotter->data->have_dash_array = 1;
+  _plotter->data->have_solid_fill = 1;
+  _plotter->data->have_odd_winding_fill = 1;
+  _plotter->data->have_nonzero_winding_fill = 1;
+  _plotter->data->have_settable_bg = 0;
+  _plotter->data->have_escaped_string_support = 0;
+  _plotter->data->have_ps_fonts = 1;
+  _plotter->data->have_pcl_fonts = 1;
+  _plotter->data->have_stick_fonts = 0;
+  _plotter->data->have_extra_stick_fonts = 0;
+  _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user);
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->default_font_type = F_POSTSCRIPT;
-  _plotter->pcl_before_ps = false;
-  _plotter->issue_font_warning = true;
-  _plotter->have_horizontal_justification = true;
-  _plotter->have_vertical_justification = false;
+  _plotter->data->default_font_type = F_POSTSCRIPT;
+  _plotter->data->pcl_before_ps = false;
+  _plotter->data->issue_font_warning = true;
+  _plotter->data->have_horizontal_justification = true;
+  _plotter->data->have_vertical_justification = false;
 
-  /* path and polyline-related parameters (also internal); note that we
-     don't set max_unfilled_polyline_length, because it was set by the
+  /* path-related parameters (also internal); note that we
+     don't set max_unfilled_path_length, because it was set by the
      superclass initialization */
-  _plotter->have_mixed_paths = true;
-  _plotter->allowed_arc_scaling = AS_ANY;
-  _plotter->allowed_ellarc_scaling = AS_ANY;  
-  _plotter->allowed_quad_scaling = AS_NONE;  
-  _plotter->allowed_cubic_scaling = AS_ANY;  
-  _plotter->flush_long_polylines = true;
-  _plotter->hard_polyline_length_limit = INT_MAX;
+  _plotter->data->have_mixed_paths = true;
+  _plotter->data->allowed_arc_scaling = AS_NONE;
+  _plotter->data->allowed_ellarc_scaling = AS_NONE;
+  _plotter->data->allowed_quad_scaling = AS_NONE;
+  _plotter->data->allowed_cubic_scaling = AS_ANY;
+  _plotter->data->allowed_box_scaling = AS_NONE;
+  _plotter->data->allowed_circle_scaling = AS_NONE;
+  _plotter->data->allowed_ellipse_scaling = AS_NONE;
 
   /* dimensions */
-  _plotter->display_model_type = (int)DISP_MODEL_PHYSICAL;
-  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_REAL;
-  _plotter->flipped_y = false;
-  _plotter->imin = 0;
-  _plotter->imax = 0;  
-  _plotter->jmin = 0;
-  _plotter->jmax = 0;  
-  _plotter->xmin = 0.0;
-  _plotter->xmax = 0.0;  
-  _plotter->ymin = 0.0;
-  _plotter->ymax = 0.0;  
-  _plotter->page_data = (plPageData *)NULL;
+  _plotter->data->display_model_type = (int)DISP_MODEL_PHYSICAL;
+  _plotter->data->display_coors_type = (int)DISP_DEVICE_COORS_REAL;
+  _plotter->data->flipped_y = false;
+  _plotter->data->imin = 0;
+  _plotter->data->imax = 0;  
+  _plotter->data->jmin = 0;
+  _plotter->data->jmax = 0;  
+  _plotter->data->xmin = 0.0;
+  _plotter->data->xmax = 0.0;  
+  _plotter->data->ymin = 0.0;
+  _plotter->data->ymax = 0.0;  
+  _plotter->data->page_data = (plPageData *)NULL;
 
   /* initialize data members specific to this derived class */
   _plotter->ai_version = AI_VERSION_5;
@@ -150,7 +150,7 @@ _a_initialize (S___(_plotter))
   {
     const char *version_s;
     
-    version_s = (const char *)_get_plot_param (R___(_plotter) "AI_VERSION");
+    version_s = (const char *)_get_plot_param (_plotter->data, "AI_VERSION");
     if (strcmp (version_s, "3") == 0)
       _plotter->ai_version = AI_VERSION_3;
     else if (strcmp (version_s, "5") == 0)
@@ -166,10 +166,10 @@ _a_initialize (S___(_plotter))
   }
   /* AI didn't support even-odd fill until version 5 */
   if (_plotter->ai_version == AI_VERSION_3)
-    _plotter->have_odd_winding_fill = 0;
+    _plotter->data->have_odd_winding_fill = 0;
 
   /* determine page type, and user-specified viewport offset if any */
-  _set_page_type (R___(_plotter) &xoffset, &yoffset);
+  _set_page_type (_plotter->data, &xoffset, &yoffset);
   
   /* Determine range of device coordinates over which the viewport will
      extend (and hence the transformation from user to device coordinates;
@@ -177,15 +177,18 @@ _a_initialize (S___(_plotter))
   {
     double xmid, ymid, viewport_size;
     
-    viewport_size = _plotter->page_data->viewport_size;
-    xmid = 0.5 * _plotter->page_data->xsize + xoffset;
-    ymid = 0.5 * _plotter->page_data->ysize + yoffset;
+    viewport_size = _plotter->data->page_data->viewport_size;
+    xmid = 0.5 * _plotter->data->page_data->xsize + xoffset;
+    ymid = 0.5 * _plotter->data->page_data->ysize + yoffset;
 
-    _plotter->xmin = 72 * (xmid - 0.5 * viewport_size);
-    _plotter->xmax = 72 * (xmid + 0.5 * viewport_size);    
-    _plotter->ymin = 72 * (ymid - 0.5 * viewport_size);
-    _plotter->ymax = 72 * (ymid + 0.5 * viewport_size);    
+    _plotter->data->xmin = 72 * (xmid - 0.5 * viewport_size);
+    _plotter->data->xmax = 72 * (xmid + 0.5 * viewport_size);    
+    _plotter->data->ymin = 72 * (ymid - 0.5 * viewport_size);
+    _plotter->data->ymax = 72 * (ymid + 0.5 * viewport_size);    
   }
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
 }
 
 /* The private `terminate' method, which is invoked when a Plotter is
@@ -201,10 +204,6 @@ _a_terminate (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  /* if specified plotter is open, close it */
-  if (_plotter->open)
-    _plotter->closepl (S___(_plotter));
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
   _g_terminate (S___(_plotter));
@@ -273,6 +272,10 @@ AIPlotter::AIPlotter (PlotterParams &parameters)
 
 AIPlotter::~AIPlotter ()
 {
+  /* if luser left the Plotter open, close it */
+  if (_plotter->data->open)
+    _API_closepl ();
+
   _a_terminate ();
 }
 #endif

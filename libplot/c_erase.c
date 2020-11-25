@@ -1,37 +1,24 @@
-/* This file contains the erase method, which is a standard part of
-   libplot.  It erases all objects on the graphics device display. */
-
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_c_erase (S___(Plotter *_plotter))
+_c_erase_page (S___(Plotter *_plotter))
 #else
-_c_erase (S___(_plotter))
+_c_erase_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
   int i;
 
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "erase: invalid operation");
-      return -1;
-    }
-
-  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
-  _reset_outbuf (_plotter->page); /* discard all objects */
-
   /* reinitialize `font used' array(s) for this page */
   for (i = 0; i < NUM_PS_FONTS; i++)
-    _plotter->page->ps_font_used[i] = false;
+    _plotter->data->page->ps_font_used[i] = false;
 
   /* deallocate table of user-specified line types, if any */
-  if (_plotter->page->extra)
+  if (_plotter->data->page->extra)
     {
-      plCGMCustomLineType *linetype_ptr = (plCGMCustomLineType *)_plotter->page->extra;
+      plCGMCustomLineType *linetype_ptr = (plCGMCustomLineType *)_plotter->data->page->extra;
       plCGMCustomLineType *old_linetype_ptr;
 
       while (linetype_ptr)
@@ -43,7 +30,7 @@ _c_erase (S___(_plotter))
 	  linetype_ptr = linetype_ptr->next;
 	  free (old_linetype_ptr);
 	}
-      _plotter->page->extra = (voidptr_t)NULL;
+      _plotter->data->page->extra = (voidptr_t)NULL;
     }
 
   /* reset other page-specific, i.e. picture-specific, CGMPlotter
@@ -107,11 +94,7 @@ _c_erase (S___(_plotter))
   /* copy the bg color currently in the drawing state to the CGM-specific
      part of the CGMPlotter; it'll be written to the output file at the
      head of the picture */
-  _plotter->set_bg_color (S___(_plotter));
+  _c_set_bg_color (S___(_plotter));
 
-  /* on to next frame (for a CGM Plotter, which doesn't plot in real time,
-     only the last frame in the page is meaningful) */
-  _plotter->frame_number++;
-
-  return 0;
+  return true;
 }

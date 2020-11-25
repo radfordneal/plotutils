@@ -1,6 +1,3 @@
-/* This file contains the closepl method, which is a standard part of
-   libplot.  It closes a Plotter object. */
-
 #include "sys-defines.h"
 #include "extern.h"
 #include "i_rle.h"		/* use miGIF RLE (non-LZW) compression */
@@ -15,34 +12,24 @@
 /* forward references */
 static bool _same_colormap ____P((plColor cmap1[256], plColor cmap2[256], int num1, int num2));
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_i_closepl(S___(Plotter *_plotter))
+_i_end_page (S___(Plotter *_plotter))
 #else
-_i_closepl(S___(_plotter))
+_i_end_page (S___(_plotter))
      S___(Plotter *_plotter;) 
 #endif
 {
-  int retval;
-
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "closepl: invalid operation");
-      return -1;
-    }
-
-  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
   /* Output current frame as a GIF image, preceded by a GIF header if
      necessary.  This applies only if this is page #1. */
 #ifdef LIBPLOTTER
-  if (_plotter->outfp || _plotter->outstream)
+  if (_plotter->data->outfp || _plotter->data->outstream)
 #else
-  if (_plotter->outfp)
+  if (_plotter->data->outfp)
 #endif
     /* have an output stream */
     {
-      if (_plotter->page_number == 1)
+      if (_plotter->data->page_number == 1)
 	{
 	  if (_plotter->i_header_written == false)
 	    {
@@ -58,30 +45,7 @@ _i_closepl(S___(_plotter))
   /* delete image: deallocate frame's canvas, reset frame's color table */
   _i_delete_image (S___(_plotter));
 
-  /* pop drawing states in progress, if any, off the stack */
-  if (_plotter->drawstate->previous != NULL)
-    {
-      while (_plotter->drawstate->previous)
-	_plotter->restorestate (S___(_plotter));
-    }
-  
-  /* remove zeroth drawing state too, so we can start afresh */
-
-  /* elements of state that are strings are freed separately */
-  free ((char *)_plotter->drawstate->line_mode);
-  free ((char *)_plotter->drawstate->join_mode);
-  free ((char *)_plotter->drawstate->cap_mode);
-  free ((char *)_plotter->drawstate->font_name);
-  
-  free (_plotter->drawstate);
-  _plotter->drawstate = NULL;
-
-  /* attempt to flush (will test whether stream is jammed) */
-  retval = _plotter->flushpl (S___(_plotter));
-
-  _plotter->open = false;	/* flag device as closed */
-
-  return retval;
+  return true;
 }
 
 void
@@ -139,9 +103,9 @@ _i_write_gif_header (S___(_plotter))
   if (_plotter->i_transparent 
       || (_plotter->i_animation && _plotter->i_iterations > 0)
       || (_plotter->i_animation && _plotter->i_delay > 0))
-    _plotter->write_string (R___(_plotter) "GIF89a");
+    _write_string (_plotter->data, "GIF89a");
   else
-    _plotter->write_string (R___(_plotter) "GIF87a");
+    _write_string (_plotter->data, "GIF87a");
 
   /* Logical Screen Descriptor Block */
 
@@ -162,21 +126,21 @@ _i_write_gif_header (S___(_plotter))
   packed_bits |= (IMAX(_plotter->i_bit_depth - 1, 0));
 
   /* write 1 byte of packed bits */
-  _plotter->write_byte (R___(_plotter) (unsigned char)packed_bits);
+  _write_byte (_plotter->data, (unsigned char)packed_bits);
 
   /* Background Color Index (if there's no global color table this field
      should be set to 0)  */
-  _plotter->write_byte (R___(_plotter) _plotter->drawstate->i_bg_color_index);
+  _write_byte (_plotter->data, _plotter->drawstate->i_bg_color_index);
 
   /* Pixel Aspect Ratio (0 = field unused) */
-  _plotter->write_byte (R___(_plotter) (unsigned char)0);
+  _write_byte (_plotter->data, (unsigned char)0);
 
   /* Global Color Table (expanded to next higher power of 2, with min=2) */
   for (i = 0; i < (1 << IMAX(_plotter->i_bit_depth, 1)); ++i)
     {
-      _plotter->write_byte (R___(_plotter) (unsigned char)_plotter->i_colormap[i].red);
-      _plotter->write_byte (R___(_plotter) (unsigned char)_plotter->i_colormap[i].green);
-      _plotter->write_byte (R___(_plotter) (unsigned char)_plotter->i_colormap[i].blue);
+      _write_byte (_plotter->data, (unsigned char)_plotter->i_colormap[i].red);
+      _write_byte (_plotter->data, (unsigned char)_plotter->i_colormap[i].green);
+      _write_byte (_plotter->data, (unsigned char)_plotter->i_colormap[i].blue);
       /* stash table (for comparison with color tables of later frames) */
       _plotter->i_global_colormap[i] = _plotter->i_colormap[i];
     }
@@ -188,24 +152,24 @@ _i_write_gif_header (S___(_plotter))
   if (_plotter->i_animation && _plotter->i_iterations > 0)
     {
       /* Extension Introducer */
-      _plotter->write_byte (R___(_plotter) (unsigned char)'!');
+      _write_byte (_plotter->data, (unsigned char)'!');
 
       /* Application Extension Label */
-      _plotter->write_byte (R___(_plotter) (unsigned char)0xff);
+      _write_byte (_plotter->data, (unsigned char)0xff);
 
       /* Block Size (fixed at 11) */
-      _plotter->write_byte (R___(_plotter) (unsigned char)11);
+      _write_byte (_plotter->data, (unsigned char)11);
       /* Application Identifier (8 bytes) and Auth. Code (3 bytes) */
-      _plotter->write_string (R___(_plotter) "NETSCAPE2.0");
+      _write_string (_plotter->data, "NETSCAPE2.0");
 
       /* Block Size (fixed at 3) */
-      _plotter->write_byte (R___(_plotter) (unsigned char)0x03);
+      _write_byte (_plotter->data, (unsigned char)0x03);
       /* Block, 3 bytes long */
-      _plotter->write_byte (R___(_plotter) (unsigned char)0x01);/* what is this? */
+      _write_byte (_plotter->data, (unsigned char)0x01);/* what is this? */
       _i_write_short_int (R___(_plotter) (unsigned int)(_plotter->i_iterations));
 
       /* Block Terminator (0-length data block) */
-      _plotter->write_byte (R___(_plotter) (unsigned char)0x00);
+      _write_byte (_plotter->data, (unsigned char)0x00);
     }
 }
 
@@ -231,13 +195,13 @@ _i_write_gif_image (S___(_plotter))
       unsigned char packed_byte;
 
       /* Extension Introducer */
-      _plotter->write_byte (R___(_plotter) (unsigned char)'!');
+      _write_byte (_plotter->data, (unsigned char)'!');
 
       /* Graphic Control Label */
-      _plotter->write_byte (R___(_plotter) (unsigned char)0xf9);
+      _write_byte (_plotter->data, (unsigned char)0xf9);
 
       /* Block Size (fixed at 4) */
-      _plotter->write_byte (R___(_plotter) (unsigned char)4);
+      _write_byte (_plotter->data, (unsigned char)4);
 
       /* Packed fields: Reserved (3 bits), Disposal Method (3 bits),
 	 User Input Flag (1 bit), Transparency Flag (final 1 bit) */
@@ -248,23 +212,23 @@ _i_write_gif_image (S___(_plotter))
 	packed_byte |= (DISP_RESTORE_TO_BACKGROUND << 2);
       else
 	packed_byte |= (DISP_UNSPECIFIED << 2);
-      _plotter->write_byte (R___(_plotter) packed_byte);
+      _write_byte (_plotter->data, packed_byte);
 
       /* Delay time in hundredths of a second [the same for all frames]
 	 (2-byte unsigned int) */
       _i_write_short_int (R___(_plotter) (unsigned int)(_plotter->i_delay));
 
       /* Transparent Color Index [the same for all frames] */ 
-     _plotter->write_byte (R___(_plotter) (unsigned char)_plotter->i_transparent_index);
+     _write_byte (_plotter->data, (unsigned char)_plotter->i_transparent_index);
 
       /* Block Terminator (0-length data block) */
-      _plotter->write_byte (R___(_plotter) (unsigned char)0);
+      _write_byte (_plotter->data, (unsigned char)0);
     }
 
   /* Image Descriptor */
 
   /* Image Separator */
-  _plotter->write_byte (R___(_plotter) (unsigned char)',');
+  _write_byte (_plotter->data, (unsigned char)',');
 
   /* Image Left and Top Positions (w/ respect to logical screen;
      2-byte unsigned ints) */
@@ -295,16 +259,16 @@ _i_write_gif_image (S___(_plotter))
     packed_bits |= 0x40;
 
   /* write one byte of packed bits */
-  _plotter->write_byte (R___(_plotter) (unsigned char)packed_bits);
+  _write_byte (_plotter->data, (unsigned char)packed_bits);
 
   /* Local Color Table (expanded to next higher power of 2, with min=2) */
   if (write_local_table)
     {
       for (i = 0; i < (1 << IMAX(_plotter->i_bit_depth, 1)); ++i)
 	{
-	  _plotter->write_byte (R___(_plotter) (unsigned char)_plotter->i_colormap[i].red);
-	  _plotter->write_byte (R___(_plotter) (unsigned char)_plotter->i_colormap[i].green);
-	  _plotter->write_byte (R___(_plotter) (unsigned char)_plotter->i_colormap[i].blue);
+	  _write_byte (_plotter->data, (unsigned char)_plotter->i_colormap[i].red);
+	  _write_byte (_plotter->data, (unsigned char)_plotter->i_colormap[i].green);
+	  _write_byte (_plotter->data, (unsigned char)_plotter->i_colormap[i].blue);
 	}
     }
 
@@ -317,7 +281,7 @@ _i_write_gif_image (S___(_plotter))
      bit longer than the floored version, "because of some algorithmic
      constraints".  See i_rle.c.) */
   min_code_size = IMAX(_plotter->i_bit_depth, 2);
-  _plotter->write_byte (R___(_plotter) (unsigned char)min_code_size);
+  _write_byte (_plotter->data, (unsigned char)min_code_size);
 
   /* initialize pixel scanner */
   _i_start_scan (S___(_plotter));
@@ -330,10 +294,10 @@ _i_write_gif_image (S___(_plotter))
     int pixel;
       
 #ifdef LIBPLOTTER
-    rle = _rle_init (_plotter->outfp, _plotter->outstream,
+    rle = _rle_init (_plotter->data->outfp, _plotter->data->outstream,
 		     _plotter->i_bit_depth);
 #else
-    rle = _rle_init (_plotter->outfp,
+    rle = _rle_init (_plotter->data->outfp,
 		     _plotter->i_bit_depth);
 #endif
     while ((pixel = _i_scan_pixel (S___(_plotter))) != -1)
@@ -342,7 +306,7 @@ _i_write_gif_image (S___(_plotter))
   }
 
   /* Block Terminator */
-  _plotter->write_byte (R___(_plotter) (unsigned char)0);
+  _write_byte (_plotter->data, (unsigned char)0);
 }
 
 void
@@ -354,7 +318,7 @@ _i_write_gif_trailer (S___(_plotter))
 #endif
 {
   /* Trailer Block */
-  _plotter->write_byte (R___(_plotter) (unsigned char)';');
+  _write_byte (_plotter->data, (unsigned char)';');
 }
 
 /* reset scanner variables (first pixel scanned is (0,0), i.e. upper
@@ -467,7 +431,7 @@ _i_write_short_int (R___(_plotter) i)
   bytes[0] = (unsigned char)(i & 0xff);
   bytes[1] = (unsigned char)((i >> 8) & 0xff);
 
-  _plotter->write_bytes (R___(_plotter) 2, bytes);
+  _write_bytes (_plotter->data, 2, bytes);
 }
 
 /* tear down image, i.e. deallocate libxmi canvas and reset colormap */

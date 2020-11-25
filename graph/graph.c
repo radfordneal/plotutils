@@ -49,6 +49,7 @@ struct option long_options[] =
   {"bg-color",		ARG_REQUIRED,	NULL, 'q' << 8},
   {"bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8},
   {"blankout",		ARG_REQUIRED,	NULL, 'b' << 8},  
+  {"emulate-color",	ARG_REQUIRED,	NULL, 'e' << 8},  
   {"frame-line-width",	ARG_REQUIRED,	NULL, 'W' << 8},
   {"frame-color",	ARG_REQUIRED,	NULL, 'C' << 8},
   {"max-line-length",	ARG_REQUIRED,	NULL, 'M' << 8},
@@ -144,6 +145,7 @@ main (argc, argv)
   const char *display_type = "meta";/* libplot output format */
   const char *bg_color = NULL;	/* color of background, if non-NULL */
   const char *bitmap_size = NULL;
+  const char *emulate_color = NULL;
   const char *max_line_length = NULL;
   const char *meta_portable = NULL;
   const char *page_size = NULL;
@@ -327,6 +329,9 @@ main (argc, argv)
 	case 'O':		/* portable format, ARG NONE */
 	  meta_portable = "yes";
 	  break;
+	case 'e' << 8:		/* emulate color, ARG NONE */
+	  emulate_color = xstrdup (optarg);
+	  break;
 	case 'V' << 8:		/* Version, ARG NONE		*/
 	  show_version = true;
 	  continue_parse = false;
@@ -413,9 +418,6 @@ main (argc, argv)
 	      else if (local_font_size < 0.0)
 		fprintf (stderr, "%s: ignoring negative font size `%f'\n",
 			 progname, local_font_size);
-	      else if (local_font_size == 0.0)
-		fprintf (stderr, "%s: ignoring zero font size\n",
-			 progname);
 	      else
 		font_size = local_font_size;
 	    }
@@ -967,7 +969,7 @@ main (argc, argv)
 		  if (first_graph_of_multigraph)
 		    /* haven't created multigrapher yet, do so now */
 		    {
-		      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+		      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 			{
 			  fprintf (stderr, 
 				   "%s: error: couldn't open graphing device\n", progname);
@@ -1183,7 +1185,7 @@ main (argc, argv)
 		  if (first_graph_of_multigraph)
 		    /* need to create the multigrapher */
 		    {
-		      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+		      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 			{
 			  fprintf (stderr, 
 				   "%s: error: couldn't open graphing device\n", 
@@ -1423,7 +1425,7 @@ main (argc, argv)
 	  if (first_graph_of_multigraph)
 	    /* still haven't created multigrapher, do so now */
 	    {
-	      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+	      if ((multigrapher = new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
 		{
 		  fprintf (stderr, 
 			   "%s: error: couldn't open graphing device\n", progname);

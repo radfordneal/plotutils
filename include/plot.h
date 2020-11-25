@@ -12,17 +12,28 @@
 #ifndef _PLOT_H_
 #define _PLOT_H_ 1
 
+/***********************************************************************/
+
+/* Version of GNU libplot/libplotter which this header file accompanies.
+   This information is included beginning with version 4.0.
+
+   The PL_LIBPLOT_VER_STRING macro is compiled into the library, as
+   `pl_libplot_ver'.  The PL_LIBPLOT_VER macro is not compiled into it.
+   Both are available to applications that include this header file. */
+
+#define PL_LIBPLOT_VER_STRING "4.0"
+#define PL_LIBPLOT_VER         400
+
+extern const char pl_libplot_ver[8];   /* need room for 99.99aa */
+
+/***********************************************************************/
+
 /* The functions in the new C binding deal with `plPlotter' and
    `plPlotterParams' objects.  They are the same as the `Plotter' and
    `PlotterParams' objects of the C++ binding.  Internally, they are called
    `plPlotterStruct' and `plPlotterParamsStruct'. */
 typedef struct plPlotterStruct plPlotter;
 typedef struct plPlotterParamsStruct plPlotterParams;
-
-/***********************************************************************/
-
-/* This version of plot.h accompanies GNU libplot version 3.0 */
-#define LIBPLOT_VERSION "3.0"
 
 /* support C++ */
 #ifdef ___BEGIN_DECLS
@@ -105,9 +116,8 @@ int pl_openpl_r ___P((plPlotter *plotter));
 int pl_point_r ___P((plPlotter *plotter, int x, int y));
 int pl_space_r ___P((plPlotter *plotter, int x0, int y0, int x1, int y1));
 
-/* 43 additional functions in GNU libplot, plus an obsolete one
-   [pl_outfile_r] and two [pl_endsubpath_r, pl_orientation_r] that have not
-   yet been implemented. */
+/* 46 additional functions in GNU libplot, plus 1 obsolete function
+   [pl_outfile_r]. */
 FILE* pl_outfile_r ___P((plPlotter *plotter, FILE* outfile));/* OBSOLETE */
 int pl_alabel_r ___P((plPlotter *plotter, int x_justify, int y_justify, ___const char *s));
 int pl_arcrel_r ___P((plPlotter *plotter, int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
@@ -120,6 +130,7 @@ int pl_bgcolorname_r ___P((plPlotter *plotter, ___const char *name));
 int pl_boxrel_r ___P((plPlotter *plotter, int dx0, int dy0, int dx1, int dy1));
 int pl_capmod_r ___P((plPlotter *plotter, ___const char *s));
 int pl_circlerel_r ___P((plPlotter *plotter, int dx, int dy, int r));
+int pl_closepath_r ___P((plPlotter *plotter));
 int pl_color_r ___P((plPlotter *plotter, int red, int green, int blue));
 int pl_colorname_r ___P((plPlotter *plotter, ___const char *name));
 int pl_contrel_r ___P((plPlotter *plotter, int x, int y));
@@ -189,11 +200,12 @@ int pl_fpointrel_r ___P((plPlotter *plotter, double dx, double dy));
 int pl_fspace_r ___P((plPlotter *plotter, double x0, double y0, double x1, double y1));
 int pl_fspace2_r ___P((plPlotter *plotter, double x0, double y0, double x1, double y1, double x2, double y2));
 
-/* 5 floating point operations with no integer counterpart (GNU additions) */
+/* 6 floating point operations with no integer counterpart (GNU additions) */
 int pl_fconcat_r ___P((plPlotter *plotter, double m0, double m1, double m2, double m3, double m4, double m5));
 int pl_fmiterlimit_r ___P((plPlotter *plotter, double limit));
 int pl_frotate_r ___P((plPlotter *plotter, double theta));
 int pl_fscale_r ___P((plPlotter *plotter, double x, double y));
+int pl_fsetmatrix_r ___P((plPlotter *plotter, double m0, double m1, double m2, double m3, double m4, double m5));
 int pl_ftranslate_r ___P((plPlotter *plotter, double x, double y));
 
 /* THE OLD (non-thread-safe) C API */
@@ -233,9 +245,8 @@ int pl_openpl ___P((void));
 int pl_point ___P((int x, int y));
 int pl_space ___P((int x0, int y0, int x1, int y1));
 
-/* 43 additional functions in GNU libplot, plus an obsolete one
-   [pl_outfile] and two [pl_endsubpath, pl_orientation_r] that have not
-   yet been implemented. */
+/* 46 additional functions in GNU libplot, plus 1 obsolete function
+   [pl_outfile]. */
 FILE* pl_outfile ___P((FILE* outfile));/* OBSOLETE */
 int pl_alabel ___P((int x_justify, int y_justify, ___const char *s));
 int pl_arcrel ___P((int dxc, int dyc, int dx0, int dy0, int dx1, int dy1));
@@ -248,6 +259,7 @@ int pl_bgcolorname ___P((___const char *name));
 int pl_boxrel ___P((int dx0, int dy0, int dx1, int dy1));
 int pl_capmod ___P((___const char *s));
 int pl_circlerel ___P((int dx, int dy, int r));
+int pl_closepath ___P((void));
 int pl_color ___P((int red, int green, int blue));
 int pl_colorname ___P((___const char *name));
 int pl_contrel ___P((int x, int y));
@@ -317,11 +329,12 @@ int pl_fpointrel ___P((double dx, double dy));
 int pl_fspace ___P((double x0, double y0, double x1, double y1));
 int pl_fspace2 ___P((double x0, double y0, double x1, double y1, double x2, double y2));
 
-/* 5 floating point operations with no integer counterpart (GNU additions) */
+/* 6 floating point operations with no integer counterpart (GNU additions) */
 int pl_fconcat ___P((double m0, double m1, double m2, double m3, double m4, double m5));
 int pl_fmiterlimit ___P((double limit));
 int pl_frotate ___P((double theta));
 int pl_fscale ___P((double x, double y));
+int pl_fsetmatrix ___P((double m0, double m1, double m2, double m3, double m4, double m5));
 int pl_ftranslate ___P((double x, double y));
 
 
@@ -357,8 +370,8 @@ extern int (*libplot_error_handler) ___P((___const char *msg));
 
 /* Useful definitions, included in both plot.h and plotter.h. */
 
-#ifndef _LIBPLOT_USEFUL_DEFS
-#define _LIBPLOT_USEFUL_DEFS 1
+#ifndef _PL_LIBPLOT_USEFUL_DEFS
+#define _PL_LIBPLOT_USEFUL_DEFS 1
 
 /* Symbol types for the marker() function, extending over the range 0..31.
    (1 through 5 are the same as in the GKS [Graphical Kernel System].)
@@ -380,9 +393,8 @@ enum
 /* ONE-BYTE OPERATION CODES FOR GNU METAFILE FORMAT. These are now defined
    as enums rather than ints.  Cast them to ints if necessary.
 
-   There are 80 currently used op codes, including 30 that are used only in
-   binary metafiles, not in portable metafiles.  The first 10 date back
-   to Unix plot(5) format. */
+   There are 85 currently recognized op codes.  The first 10 date back to
+   Unix plot(5) format. */
 
 enum
 {  
@@ -398,7 +410,7 @@ enum
   O_POINT	=	'p',
   O_SPACE	=	's',
   
-/* 39 op codes that are GNU extensions, plus 2 that are not yet implemented */
+/* 42 op codes that are GNU extensions */
   O_ALABEL	=	'T',
   O_ARCREL	=	'A',
   O_BEZIER2	=       'q',
@@ -410,6 +422,7 @@ enum
   O_BOXREL	=	'H',
   O_CAPMOD	=	'K',
   O_CIRCLEREL	=	'G',
+  O_CLOSEPATH	=	'k',
   O_CLOSEPL	=	'x',	/* not an op code in Unix plot(5) */
   O_COMMENT	=	'#',
   O_CONTREL	=	'N',
@@ -418,7 +431,7 @@ enum
   O_ELLIPSE	=	'+',
   O_ELLIPSEREL	=	'=',
   O_ENDPATH	=	'E',
-  O_ENDSUBPATH	=	']',	/* NOT YET IMPLEMENTED */
+  O_ENDSUBPATH	=	']',
   O_FILLTYPE	=	'L',
   O_FILLCOLOR	=	'D',
   O_FILLMOD	=	'g',
@@ -432,7 +445,7 @@ enum
   O_MARKERREL	=	'Z',
   O_MOVEREL	=	'M',
   O_OPENPL	=	'o',	/* not an op code in Unix plot(5) */
-  O_ORIENTATION	=	'b',	/* NOT YET IMPLEMENTED */
+  O_ORIENTATION	=	'b',
   O_PENCOLOR	=	'-',
   O_PENTYPE	=	'h',
   O_POINTREL	=	'P',
@@ -441,9 +454,8 @@ enum
   O_SPACE2	=	':',
   O_TEXTANGLE	=	'R',
 
-/* 30 floating point counterparts to some of the above.  Used only in
-   binary GNU metafile format, not in portable (human-readable) metafile
-   format, so they are not even slightly mnemonic. */
+/* 30 floating point counterparts to many of the above.  They are not even
+   slightly mnemonic. */
   O_FARC	=	'1',
   O_FARCREL	=	'2',
   O_FBEZIER2	=       '`',
@@ -475,12 +487,13 @@ enum
   O_FSPACE2	=	';',
   O_FTEXTANGLE	=	'(',
 
-/* 2 op codes for floating point operations with no integer counterpart */
+/* 3 op codes for floating point operations with no integer counterpart */
   O_FCONCAT		=	'\\',
-  O_FMITERLIMIT		=	'i'
+  O_FMITERLIMIT		=	'i',
+  O_FSETMATRIX		=	'j'
 };
 
-#endif /* not _LIBPLOT_USEFUL_DEFS */
+#endif /* not _PL_LIBPLOT_USEFUL_DEFS */
 
 /***********************************************************************/
 

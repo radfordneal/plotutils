@@ -11,9 +11,9 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_flinewidth(R___(Plotter *_plotter) double new_line_width)
+_API_flinewidth(R___(Plotter *_plotter) double new_line_width)
 #else
-_g_flinewidth(R___(_plotter) new_line_width)
+_API_flinewidth(R___(_plotter) new_line_width)
      S___(Plotter *_plotter;)
      double new_line_width;
 #endif
@@ -21,19 +21,23 @@ _g_flinewidth(R___(_plotter) new_line_width)
   double device_line_width, min_sing_val, max_sing_val;
   int quantized_device_line_width;
 
-  if (!_plotter->open)
+  if (!_plotter->data->open)
     {
       _plotter->error (R___(_plotter) 
 		       "flinewidth: invalid operation");
       return -1;
     }
 
-  if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
+  _API_endpath (S___(_plotter)); /* flush path if any */
 
   if (new_line_width < 0.0)	/* reset to default */
-    new_line_width = _plotter->drawstate->default_line_width;
-
+    {
+      new_line_width = _plotter->drawstate->default_line_width;
+      _plotter->drawstate->line_width_is_default = true;
+    }
+  else
+    _plotter->drawstate->line_width_is_default = false;
+  
   /* set the new linewidth in the drawing state */
   _plotter->drawstate->line_width = new_line_width;
   
@@ -59,6 +63,11 @@ _g_flinewidth(R___(_plotter) new_line_width)
   _plotter->drawstate->device_line_width = device_line_width;
   _plotter->drawstate->quantized_device_line_width 
     = quantized_device_line_width;
+
+  /* flag linewidth as having been invoked on this page (so that fsetmatrix
+     will no longer automatically adjust the line width to a reasonable
+     value) */
+  _plotter->data->linewidth_invoked = true;
 
   return 0;
 }

@@ -3,13 +3,18 @@
    There is provision for user-specifiable warning/error message handlers
    (not yet documented). */
 
+/* All libplot warnings and error messages go through these functions, with
+   the exception of libpng error messages produced by PNG Plotters (see
+   z_write.c; they're different because they need to be produced by
+   callbacks). */
+
 #include "sys-defines.h"
 #include "extern.h"
 
 /* mutex for locking the warning/error message subsystem */
 #ifdef PTHREAD_SUPPORT
 #ifdef HAVE_PTHREAD_H
-static pthread_mutex_t _message_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t _message_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 #endif
 
@@ -35,11 +40,11 @@ _g_warning (R___(_plotter) msg)
 
   if (libplot_warning_handler != NULL)
     (*libplot_warning_handler)(msg);
-  else if (_plotter->errfp)
-    fprintf (_plotter->errfp, "libplot: %s\n", msg);
+  else if (_plotter->data->errfp)
+    fprintf (_plotter->data->errfp, "libplot: %s\n", msg);
 #ifdef LIBPLOTTER
-  else if (_plotter->errstream)
-    (*(_plotter->errstream)) << "libplot: " << msg << '\n';
+  else if (_plotter->data->errstream)
+    (*(_plotter->data->errstream)) << "libplot: " << msg << '\n';
 #endif
 
 #ifdef PTHREAD_SUPPORT
@@ -68,11 +73,11 @@ _g_error (R___(_plotter) msg)
 
   if (libplot_error_handler != NULL)
     (*libplot_error_handler)(msg);
-  else if (_plotter->errfp)
-    fprintf (_plotter->errfp, "libplot: error: %s\n", msg);
+  else if (_plotter->data->errfp)
+    fprintf (_plotter->data->errfp, "libplot error: %s\n", msg);
 #ifdef LIBPLOTTER
-  else if (_plotter->errstream)
-    (*(_plotter->errstream)) << "libplot: error: " << msg << '\n';
+  else if (_plotter->data->errstream)
+    (*(_plotter->data->errstream)) << "libplot error: " << msg << '\n';
 #endif
 
 #ifdef PTHREAD_SUPPORT

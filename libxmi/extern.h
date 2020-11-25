@@ -11,6 +11,7 @@
 #define mi_xmalloc _mi_xmalloc
 #define mi_xcalloc _mi_xcalloc
 #define mi_xrealloc _mi_xrealloc
+#define miAddSpansToPaintedSet _miAddSpansToPaintedSet
 #define miDrawArcs_r_internal _miDrawArcs_r_internal
 #define miDrawArcs_internal _miDrawArcs_internal
 #define miDrawLines_internal _miDrawLines_internal

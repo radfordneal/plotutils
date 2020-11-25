@@ -16,10 +16,10 @@ static bool _string_to_inches ____P ((const char *offset_s, double *offset));
 
 void
 #ifdef _HAVE_PROTOS
-_set_page_type(R___(Plotter *_plotter) double *xoffset, double *yoffset)
+_set_page_type(plPlotterData *data, double *xoffset, double *yoffset)
 #else
-_set_page_type(R___(_plotter) xoffset, yoffset)
-     S___(Plotter *_plotter;)
+_set_page_type(data, xoffset, yoffset)
+     plPlotterData *data;
      double *xoffset, *yoffset;
 #endif
 {
@@ -29,7 +29,7 @@ _set_page_type(R___(_plotter) xoffset, yoffset)
   
   /* examine user-specified value for PAGESIZE parameter, or the default
      value if we can't parse the user-specified value */
-  pagesize = (const char *)_get_plot_param (R___(_plotter) "PAGESIZE");
+  pagesize = (const char *)_get_plot_param (data, "PAGESIZE");
   if (!_parse_page_type (pagesize, &pagedata, 
 			 &local_xoffset, &local_yoffset))
     {
@@ -39,7 +39,7 @@ _set_page_type(R___(_plotter) xoffset, yoffset)
     }
 
   /* set page data in Plotter; pass back viewport offset vector */
-  _plotter->page_data = pagedata;
+  data->page_data = pagedata;
   *xoffset = local_xoffset;
   *yoffset = local_yoffset;
 }

@@ -40,6 +40,24 @@
    chordal deviation.
 */
 
+/* Maximum number of times a circular or elliptic arc is recursively
+   subdivided, when it is being approximated by an inscribed polyline.  The
+   polyline will contain no more than 2**MAX_ARC_SUBDIVISIONS line
+   segments.  MAX_ARC_SUBDIVISIONS must be no larger than
+   TABULATED_ARC_SUBDIVISIONS below (the size of the tables in g_arc.h). */
+#define MAX_ARC_SUBDIVISIONS 5 	/* to avoid buffer overflow on HP7550[A|B] */
+
+#define TABULATED_ARC_SUBDIVISIONS 15	/* length of each table entry */
+
+/* Types of circular/elliptic arc.  These index into the doubly indexed
+   table of `relative chordal deviations' below. */
+#define NUM_ARC_TYPES 3
+
+#define QUARTER_ARC 0
+#define HALF_ARC 1
+#define THREE_QUARTER_ARC 2
+#define USER_DEFINED_ARC -1	/* does not index into table */
+
 static const double _chord_table[NUM_ARC_TYPES][TABULATED_ARC_SUBDIVISIONS] =
 {
   {	/* Quarter Arc */

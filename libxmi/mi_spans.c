@@ -37,12 +37,13 @@
 #include "mi_spans.h"
 #include "mi_api.h"
 
-/* spans in a Spans are sorted by y, so these give ymin, ymax for a Spans */
+/* spans in a Spans are sorted by y, so these give ymin, ymax for a
+   nonempty Spans */
 #define YMIN(spans) (spans->points[0].y)
 #define YMAX(spans) (spans->points[spans->count-1].y)
 
 /* internal functions */
-static SpanGroup * miNewSpanGroup ____P((void));
+static SpanGroup * miNewSpanGroup ____P((miPixel pixel));
 static int miUniquifySpansX ____P((const Spans *spans, miPoint *newPoints, unsigned int *newWidths));
 static void miAddSpansToSpanGroup ____P((const Spans *spans, SpanGroup *spanGroup));
 static void miDeleteSpanGroup ____P((SpanGroup *spanGroup));
@@ -64,6 +65,7 @@ miNewPaintedSet ()
   miPaintedSet *paintedSet;
 
   paintedSet = (miPaintedSet *)mi_xmalloc (sizeof(miPaintedSet));
+  paintedSet->groups = (SpanGroup **)NULL; /* pointer-to-SpanGroup slots */
   paintedSet->size = 0;		/* slots allocated */
   paintedSet->ngroups = 0;	/* slots filled */
 
@@ -119,8 +121,7 @@ miAddSpansToPaintedSet (spans, paintedSet, pixel)
 
       /* create a SpanGroup for this pixel value */
       i = paintedSet->ngroups;
-      paintedSet->groups[i] = miNewSpanGroup ();
-      paintedSet->groups[i]->pixel = pixel;
+      paintedSet->groups[i] = miNewSpanGroup (pixel);
       paintedSet->ngroups++;
     }
   
@@ -202,22 +203,28 @@ miUniquifyPaintedSet (paintedSet)
     return;
 
   for (i = 0; i < paintedSet->ngroups; i++)
-    if (paintedSet->groups[i]->count > 0)
-      miUniquifySpanGroup (paintedSet->groups[i]);
+    {
+      if (paintedSet->groups[i]->count > 0)
+	{
+	  miUniquifySpanGroup (paintedSet->groups[i]);
+	}
+    }
 }
 
 
 /* Create and initialize a SpanGroup, i.e. an unsorted list of Spans's. */
 static SpanGroup *
 #ifdef _HAVE_PROTOS
-miNewSpanGroup (void)
+miNewSpanGroup (miPixel pixel)
 #else
-miNewSpanGroup ()
+miNewSpanGroup (pixel)
+     miPixel pixel;
 #endif
 {
   SpanGroup *spanGroup;
 
   spanGroup = (SpanGroup *)mi_xmalloc (sizeof(SpanGroup));
+  spanGroup->pixel = pixel;	/* pixel to be used */
   spanGroup->size = 0;		/* slots allocated */
   spanGroup->count = 0;		/* slots filled */
   spanGroup->group = (Spans *)NULL; /* slots for Spans's */
@@ -306,6 +313,9 @@ miSubtractSpans (spanGroup, sub)
   int		extra;
   bool		gross_change = false;
 
+  if (sub->count == 0)		/* nothing to do */
+    return;
+
   /* y range of Spans to be subtracted */
   ymin = YMIN(sub);
   ymax = YMAX(sub);
@@ -314,6 +324,9 @@ miSubtractSpans (spanGroup, sub)
   spans = spanGroup->group;
   for (i = spanGroup->count; i > 0; i--, spans++) 
     {
+      if (spans->count == 0)
+	continue;
+
       /* look only at Spans's with y ranges that overlap with `sub' */
       if (YMIN(spans) <= ymax && ymin <= YMAX(spans)) 
 	{
@@ -455,6 +468,8 @@ miSubtractSpans (spanGroup, sub)
 	{
 	  int ymin_spans, ymax_spans;
 
+	  if (spans->count == 0)
+	    continue;
 	  ymin_spans = YMIN(spans);
 	  ymax_spans = YMAX(spans);
 	  if (ymin_spans < ymin)
@@ -491,6 +506,14 @@ miUniquifySpanGroup (spanGroup)
 
   if (spanGroup->count == 0) 
     return;
+
+  /* Special case : ymin > ymax, so the Spans's in the SpanGroup, no matter
+     how numerous, must be empty (and can't contain point or width arrays).  */
+  if (spanGroup->ymin > spanGroup->ymax)
+    {
+      spanGroup->count = 0;
+      return;
+    }
 
   /* Yuck.  Gross.  Radix sort into y buckets, then sort x and uniquify */
   /* This seems to be the fastest thing to do.  I've tried sorting on

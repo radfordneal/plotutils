@@ -7,9 +7,9 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_flinedash (R___(Plotter *_plotter) int n, const double *dashes, double offset)
+_API_flinedash (R___(Plotter *_plotter) int n, const double *dashes, double offset)
 #else
-_g_flinedash (R___(_plotter) n, dashes, offset)
+_API_flinedash (R___(_plotter) n, dashes, offset)
      S___(Plotter *_plotter;) 
      int n;
      const double *dashes;
@@ -19,15 +19,15 @@ _g_flinedash (R___(_plotter) n, dashes, offset)
   double *dash_array;
   int i;
 
-  if (!_plotter->open)
+  if (!_plotter->data->open)
     {
       _plotter->error (R___(_plotter)
 		       "flinedash: invalid operation");
       return -1;
     }
 
-  if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
+  if (_plotter->drawstate->path)
+    _API_endpath (S___(_plotter)); /* flush path if any */
 
   /* sanity checks */
   if (n < 0 || (n > 0 && dashes == NULL))

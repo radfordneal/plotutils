@@ -251,7 +251,7 @@ pl_alabel (x_justify, y_justify, s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->alabel (_old_api_plotter, x_justify, y_justify, s);
+  return _API_alabel (_old_api_plotter, x_justify, y_justify, s);
 }
 
 int
@@ -264,7 +264,7 @@ pl_arc (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->arc (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_arc (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -277,7 +277,7 @@ pl_arcrel (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->arcrel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_arcrel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -290,7 +290,7 @@ pl_bezier2 (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->bezier2 (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_bezier2 (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -303,7 +303,7 @@ pl_bezier2rel (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->bezier2rel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_bezier2rel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -316,7 +316,7 @@ pl_bezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->bezier3 (_old_api_plotter, x0, y0, x1, y1, x2, y2, x3, y3);
+  return _API_bezier3 (_old_api_plotter, x0, y0, x1, y1, x2, y2, x3, y3);
 }
 
 int
@@ -329,7 +329,7 @@ pl_bezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->bezier3rel (_old_api_plotter, x0, y0, x1, y1, x2, y2, x3, y3);
+  return _API_bezier3rel (_old_api_plotter, x0, y0, x1, y1, x2, y2, x3, y3);
 }
 
 int
@@ -342,7 +342,7 @@ pl_bgcolor (red, green, blue)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->bgcolor (_old_api_plotter, red, green, blue);
+  return _API_bgcolor (_old_api_plotter, red, green, blue);
 }
 
 int
@@ -355,7 +355,7 @@ pl_bgcolorname (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->bgcolorname (_old_api_plotter, s);
+  return _API_bgcolorname (_old_api_plotter, s);
 }
 
 int
@@ -368,7 +368,7 @@ pl_box (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->box (_old_api_plotter, x0, y0, x1, y1);
+  return _API_box (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -381,7 +381,7 @@ pl_boxrel (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->boxrel (_old_api_plotter, x0, y0, x1, y1);
+  return _API_boxrel (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -394,7 +394,7 @@ pl_capmod (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->capmod (_old_api_plotter, s);
+  return _API_capmod (_old_api_plotter, s);
 }
 
 int
@@ -407,7 +407,7 @@ pl_circle (x, y, r)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->circle (_old_api_plotter, x, y, r);
+  return _API_circle (_old_api_plotter, x, y, r);
 }
 
 int
@@ -420,7 +420,19 @@ pl_circlerel (x, y, r)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->circlerel (_old_api_plotter, x, y, r);
+  return _API_circlerel (_old_api_plotter, x, y, r);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_closepath (void)
+#else
+pl_closepath ()
+#endif
+{
+  if (_old_api_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _API_closepath (_old_api_plotter);
 }
 
 int
@@ -432,7 +444,7 @@ pl_closepl ()
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->closepl (_old_api_plotter);
+  return _API_closepl (_old_api_plotter);
 }
 
 int
@@ -445,7 +457,7 @@ pl_color (red, green, blue)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->color (_old_api_plotter, red, green, blue);
+  return _API_color (_old_api_plotter, red, green, blue);
 }
 
 int
@@ -458,7 +470,7 @@ pl_colorname (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->colorname (_old_api_plotter, s);
+  return _API_colorname (_old_api_plotter, s);
 }
 
 int
@@ -471,7 +483,7 @@ pl_cont (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->cont (_old_api_plotter, x, y);
+  return _API_cont (_old_api_plotter, x, y);
 }
 
 int
@@ -484,7 +496,7 @@ pl_contrel (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->contrel (_old_api_plotter, x, y);
+  return _API_contrel (_old_api_plotter, x, y);
 }
 
 int
@@ -497,7 +509,7 @@ pl_ellarc (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->ellarc (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_ellarc (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -510,7 +522,7 @@ pl_ellarcrel (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->ellarcrel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_ellarcrel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -523,7 +535,7 @@ pl_ellipse (x, y, rx, ry, angle)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->ellipse (_old_api_plotter, x, y, rx, ry, angle);
+  return _API_ellipse (_old_api_plotter, x, y, rx, ry, angle);
 }
 
 int
@@ -536,7 +548,7 @@ pl_ellipserel (x, y, rx, ry, angle)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->ellipserel (_old_api_plotter, x, y, rx, ry, angle);
+  return _API_ellipserel (_old_api_plotter, x, y, rx, ry, angle);
 }
 
 int
@@ -548,7 +560,7 @@ pl_endpath ()
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->endpath (_old_api_plotter);
+  return _API_endpath (_old_api_plotter);
 }
 
 int
@@ -560,7 +572,7 @@ pl_endsubpath ()
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->endsubpath (_old_api_plotter);
+  return _API_endsubpath (_old_api_plotter);
 }
 
 int
@@ -572,7 +584,7 @@ pl_erase ()
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->erase (_old_api_plotter);
+  return _API_erase (_old_api_plotter);
 }
 
 int
@@ -585,7 +597,7 @@ pl_farc (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->farc (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_farc (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -598,7 +610,7 @@ pl_farcrel (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->farcrel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_farcrel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -611,7 +623,7 @@ pl_fbezier2 (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fbezier2 (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_fbezier2 (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -624,7 +636,7 @@ pl_fbezier2rel (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fbezier2rel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_fbezier2rel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -637,7 +649,7 @@ pl_fbezier3 (x0, y0, x1, y1, x2, y2, x3, y3)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fbezier3 (_old_api_plotter, x0, y0, x1, y1, x2, y2, x3, y3);
+  return _API_fbezier3 (_old_api_plotter, x0, y0, x1, y1, x2, y2, x3, y3);
 }
 
 int
@@ -650,7 +662,7 @@ pl_fbezier3rel (x0, y0, x1, y1, x2, y2, x3, y3)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fbezier3rel (_old_api_plotter, x0, y0, x1, y1, x2, y2, x3, y3);
+  return _API_fbezier3rel (_old_api_plotter, x0, y0, x1, y1, x2, y2, x3, y3);
 }
 
 int
@@ -663,7 +675,7 @@ pl_fbox (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fbox (_old_api_plotter, x0, y0, x1, y1);
+  return _API_fbox (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -676,7 +688,7 @@ pl_fboxrel (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fboxrel (_old_api_plotter, x0, y0, x1, y1);
+  return _API_fboxrel (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -689,7 +701,7 @@ pl_fcircle (x, y, r)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fcircle (_old_api_plotter, x, y, r);
+  return _API_fcircle (_old_api_plotter, x, y, r);
 }
 
 int
@@ -702,7 +714,7 @@ pl_fcirclerel (x, y, r)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fcirclerel (_old_api_plotter, x, y, r);
+  return _API_fcirclerel (_old_api_plotter, x, y, r);
 }
 
 int
@@ -715,7 +727,7 @@ pl_fconcat (m0, m1, m2, m3, m4, m5)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fconcat (_old_api_plotter, m0, m1, m2, m3, m4, m5);
+  return _API_fconcat (_old_api_plotter, m0, m1, m2, m3, m4, m5);
 }
 
 int
@@ -728,7 +740,7 @@ pl_fcont (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fcont (_old_api_plotter, x, y);
+  return _API_fcont (_old_api_plotter, x, y);
 }
 
 int
@@ -741,7 +753,7 @@ pl_fcontrel (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fcontrel (_old_api_plotter, x, y);
+  return _API_fcontrel (_old_api_plotter, x, y);
 }
 
 int
@@ -754,7 +766,7 @@ pl_fellarc (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fellarc (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_fellarc (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -767,7 +779,7 @@ pl_fellarcrel (xc, yc, x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fellarcrel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
+  return _API_fellarcrel (_old_api_plotter, xc, yc, x0, y0, x1, y1);
 }
 
 int
@@ -780,7 +792,7 @@ pl_fellipse (x, y, rx, ry, angle)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fellipse (_old_api_plotter, x, y, rx, ry, angle);
+  return _API_fellipse (_old_api_plotter, x, y, rx, ry, angle);
 }
 
 int
@@ -793,7 +805,7 @@ pl_fellipserel (x, y, rx, ry, angle)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fellipserel (_old_api_plotter, x, y, rx, ry, angle);
+  return _API_fellipserel (_old_api_plotter, x, y, rx, ry, angle);
 }
 
 double
@@ -806,7 +818,7 @@ pl_ffontname (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->ffontname (_old_api_plotter, s);
+  return _API_ffontname (_old_api_plotter, s);
 }
 
 double
@@ -819,7 +831,7 @@ pl_ffontsize (size)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->ffontsize (_old_api_plotter, size);
+  return _API_ffontsize (_old_api_plotter, size);
 }
 
 int
@@ -832,7 +844,7 @@ pl_fillcolor (red, green, blue)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fillcolor (_old_api_plotter, red, green, blue);
+  return _API_fillcolor (_old_api_plotter, red, green, blue);
 }
 
 int
@@ -845,7 +857,7 @@ pl_fillcolorname (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fillcolorname (_old_api_plotter, s);
+  return _API_fillcolorname (_old_api_plotter, s);
 }
 
 int
@@ -858,7 +870,7 @@ pl_fillmod (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fillmod (_old_api_plotter, s);
+  return _API_fillmod (_old_api_plotter, s);
 }
 
 int
@@ -871,7 +883,7 @@ pl_filltype (level)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->filltype (_old_api_plotter, level);
+  return _API_filltype (_old_api_plotter, level);
 }
 
 double
@@ -884,7 +896,7 @@ pl_flabelwidth (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->flabelwidth (_old_api_plotter, s);
+  return _API_flabelwidth (_old_api_plotter, s);
 }
 
 int
@@ -897,7 +909,7 @@ pl_fline (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fline (_old_api_plotter, x0, y0, x1, y1);
+  return _API_fline (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -912,7 +924,7 @@ pl_flinedash (n, dashes, offset)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->flinedash (_old_api_plotter, n, dashes, offset);
+  return _API_flinedash (_old_api_plotter, n, dashes, offset);
 }
 
 int
@@ -925,7 +937,7 @@ pl_flinerel (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->flinerel (_old_api_plotter, x0, y0, x1, y1);
+  return _API_flinerel (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -938,7 +950,7 @@ pl_flinewidth (size)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->flinewidth (_old_api_plotter, size);
+  return _API_flinewidth (_old_api_plotter, size);
 }
 
 int
@@ -950,7 +962,7 @@ pl_flushpl ()
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->flushpl (_old_api_plotter);
+  return _API_flushpl (_old_api_plotter);
 }
 
 int
@@ -965,7 +977,7 @@ pl_fmarker (x, y, type, size)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fmarker (_old_api_plotter, x, y, type, size);
+  return _API_fmarker (_old_api_plotter, x, y, type, size);
 }
 
 int
@@ -980,7 +992,7 @@ pl_fmarkerrel (x, y, type, size)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fmarkerrel (_old_api_plotter, x, y, type, size);
+  return _API_fmarkerrel (_old_api_plotter, x, y, type, size);
 }
 
 int
@@ -993,7 +1005,7 @@ pl_fmiterlimit (limit)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fmiterlimit (_old_api_plotter, limit);
+  return _API_fmiterlimit (_old_api_plotter, limit);
 }
 
 int
@@ -1006,7 +1018,7 @@ pl_fmove (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fmove (_old_api_plotter, x, y);
+  return _API_fmove (_old_api_plotter, x, y);
 }
 
 int
@@ -1019,7 +1031,7 @@ pl_fmoverel (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fmoverel (_old_api_plotter, x, y);
+  return _API_fmoverel (_old_api_plotter, x, y);
 }
 
 int
@@ -1032,7 +1044,7 @@ pl_fontname (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fontname (_old_api_plotter, s);
+  return _API_fontname (_old_api_plotter, s);
 }
 
 int
@@ -1045,7 +1057,7 @@ pl_fontsize (size)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fontsize (_old_api_plotter, size);
+  return _API_fontsize (_old_api_plotter, size);
 }
 
 int
@@ -1058,7 +1070,7 @@ pl_fpoint (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fpoint (_old_api_plotter, x, y);
+  return _API_fpoint (_old_api_plotter, x, y);
 }
 
 int
@@ -1071,7 +1083,7 @@ pl_fpointrel (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fpointrel (_old_api_plotter, x, y);
+  return _API_fpointrel (_old_api_plotter, x, y);
 }
 
 int
@@ -1084,7 +1096,7 @@ pl_frotate (theta)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->frotate (_old_api_plotter, theta);
+  return _API_frotate (_old_api_plotter, theta);
 }
 
 int
@@ -1097,7 +1109,20 @@ pl_fscale (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fscale (_old_api_plotter, x, y);
+  return _API_fscale (_old_api_plotter, x, y);
+}
+
+int
+#ifdef _HAVE_PROTOS
+pl_fsetmatrix (double m0, double m1, double m2, double m3, double m4, double m5)
+#else
+pl_fsetmatrix (m0, m1, m2, m3, m4, m5)
+     double m0, m1, m2, m3, m4, m5;
+#endif
+{
+  if (_old_api_plotters_len == 0)
+    _create_and_select_default_plotter ();
+  return _API_fsetmatrix (_old_api_plotter, m0, m1, m2, m3, m4, m5);
 }
 
 int
@@ -1110,7 +1135,7 @@ pl_fspace (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fspace (_old_api_plotter, x0, y0, x1, y1);
+  return _API_fspace (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -1123,7 +1148,7 @@ pl_fspace2 (x0, y0, x1, y1, x2, y2)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->fspace2 (_old_api_plotter, x0, y0, x1, y1, x2, y2);
+  return _API_fspace2 (_old_api_plotter, x0, y0, x1, y1, x2, y2);
 }
 
 double
@@ -1136,7 +1161,7 @@ pl_ftextangle (angle)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->ftextangle (_old_api_plotter, angle);
+  return _API_ftextangle (_old_api_plotter, angle);
 }
 
 int
@@ -1149,7 +1174,7 @@ pl_ftranslate (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->ftranslate (_old_api_plotter, x, y);
+  return _API_ftranslate (_old_api_plotter, x, y);
 }
 
 int
@@ -1162,7 +1187,7 @@ pl_havecap (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->havecap (_old_api_plotter, s);
+  return _API_havecap (_old_api_plotter, s);
 }
 
 int
@@ -1175,7 +1200,7 @@ pl_joinmod (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->joinmod (_old_api_plotter, s);
+  return _API_joinmod (_old_api_plotter, s);
 }
 
 int
@@ -1188,7 +1213,7 @@ pl_label (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->label (_old_api_plotter, s);
+  return _API_label (_old_api_plotter, s);
 }
 
 int
@@ -1201,7 +1226,7 @@ pl_labelwidth (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->labelwidth (_old_api_plotter, s);
+  return _API_labelwidth (_old_api_plotter, s);
 }
 
 int
@@ -1214,7 +1239,7 @@ pl_line (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->line (_old_api_plotter, x0, y0, x1, y1);
+  return _API_line (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -1227,7 +1252,7 @@ pl_linerel (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->linerel (_old_api_plotter, x0, y0, x1, y1);
+  return _API_linerel (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -1240,7 +1265,7 @@ pl_linewidth (size)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->linewidth (_old_api_plotter, size);
+  return _API_linewidth (_old_api_plotter, size);
 }
 
 int
@@ -1255,7 +1280,7 @@ pl_linedash (n, dashes, offset)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->linedash (_old_api_plotter, n, dashes, offset);
+  return _API_linedash (_old_api_plotter, n, dashes, offset);
 }
 
 int
@@ -1268,7 +1293,7 @@ pl_linemod (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->linemod (_old_api_plotter, s);
+  return _API_linemod (_old_api_plotter, s);
 }
 
 int
@@ -1281,7 +1306,7 @@ pl_marker (x, y, type, size)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->marker (_old_api_plotter, x, y, type, size);
+  return _API_marker (_old_api_plotter, x, y, type, size);
 }
 
 int
@@ -1294,7 +1319,7 @@ pl_markerrel (x, y, type, size)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->markerrel (_old_api_plotter, x, y, type, size);
+  return _API_markerrel (_old_api_plotter, x, y, type, size);
 }
 
 int
@@ -1307,7 +1332,7 @@ pl_move (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->move (_old_api_plotter, x, y);
+  return _API_move (_old_api_plotter, x, y);
 }
 
 int
@@ -1320,7 +1345,7 @@ pl_moverel (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->moverel (_old_api_plotter, x, y);
+  return _API_moverel (_old_api_plotter, x, y);
 }
 
 int
@@ -1332,7 +1357,7 @@ pl_openpl ()
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->openpl (_old_api_plotter);
+  return _API_openpl (_old_api_plotter);
 }
 
 int
@@ -1345,7 +1370,7 @@ pl_orientation (direction)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->orientation (_old_api_plotter, direction);
+  return _API_orientation (_old_api_plotter, direction);
 }
 
 FILE *
@@ -1358,7 +1383,7 @@ pl_outfile (outfile)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->outfile (_old_api_plotter, outfile);
+  return _API_outfile (_old_api_plotter, outfile);
 }
 
 int
@@ -1371,7 +1396,7 @@ pl_pencolor (red, green, blue)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->pencolor (_old_api_plotter, red, green, blue);
+  return _API_pencolor (_old_api_plotter, red, green, blue);
 }
 
 int
@@ -1384,7 +1409,7 @@ pl_pencolorname (s)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->pencolorname (_old_api_plotter, s);
+  return _API_pencolorname (_old_api_plotter, s);
 }
 
 int
@@ -1397,7 +1422,7 @@ pl_pentype (level)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->pentype (_old_api_plotter, level);
+  return _API_pentype (_old_api_plotter, level);
 }
 
 int
@@ -1410,7 +1435,7 @@ pl_point (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->point (_old_api_plotter, x, y);
+  return _API_point (_old_api_plotter, x, y);
 }
 
 int
@@ -1423,7 +1448,7 @@ pl_pointrel (x, y)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->pointrel (_old_api_plotter, x, y);
+  return _API_pointrel (_old_api_plotter, x, y);
 }
 
 int
@@ -1435,7 +1460,7 @@ pl_restorestate ()
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->restorestate (_old_api_plotter);
+  return _API_restorestate (_old_api_plotter);
 }
 
 int
@@ -1447,7 +1472,7 @@ pl_savestate ()
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->savestate (_old_api_plotter);
+  return _API_savestate (_old_api_plotter);
 }
 
 int
@@ -1460,7 +1485,7 @@ pl_space (x0, y0, x1, y1)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->space (_old_api_plotter, x0, y0, x1, y1);
+  return _API_space (_old_api_plotter, x0, y0, x1, y1);
 }
 
 int
@@ -1473,7 +1498,7 @@ pl_space2 (x0, y0, x1, y1, x2, y2)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->space2 (_old_api_plotter, x0, y0, x1, y1, x2, y2);
+  return _API_space2 (_old_api_plotter, x0, y0, x1, y1, x2, y2);
 }
 
 int
@@ -1486,7 +1511,7 @@ pl_textangle (angle)
 {
   if (_old_api_plotters_len == 0)
     _create_and_select_default_plotter ();
-  return _old_api_plotter->textangle (_old_api_plotter, angle);
+  return _API_textangle (_old_api_plotter, angle);
 }
 
 /* END OF WRAPPERS */

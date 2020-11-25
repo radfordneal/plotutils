@@ -1,5 +1,5 @@
-This is release 2.3 of the GNU plotutils (plotting utilities) package,
-including release 3.0 of GNU libplot: a thread-safe function library for
+This is release 2.4 of the GNU plotutils (plotting utilities) package,
+including release 4.0 of GNU libplot: a thread-safe function library for
 exporting two-dimensional vector graphics files, and for displaying
 animated vector graphics under the X Window System.  The Web page for the
 package is: http://www.gnu.org/software/plotutils/plotutils.html .
@@ -9,14 +9,19 @@ instructions for installing a GNU package, and the file INSTALL.pkg
 contains package-specific instructions.  Please read them _in full_,
 as well as this file, before attempting to install the package.
 
+Also in the top-level source directory, the file COMPAT contains release
+notes, and comments on compatibility with previous versions.  The file
+PROBLEMS is worth looking at too.
+
 Please send bug reports to <bug-gnu-utils@gnu.org>, and suggestions for
 longer-range improvements to both <bug-gnu-utils@gnu.org> and the principal
 author and current maintainer, Robert Maier <rsm@math.arizona.edu>.
 
 NOTE: Neither the `pic2plot' program nor the `libplotter' C++ class library
-is built by default, since they require a working C++ compiler.
-For details, see INSTALL.pkg.  Also, the libxmi scan-conversion library
-isn't built by default; see comments below.
+is built by default, since they require a working C++ compiler.  For
+details, see INSTALL.pkg.  Also, a standalone version of the `libxmi'
+scan-conversion library isn't built by default, since `libxmi' is
+distributed as a separate package; see comments below.
 
 ----------------------------------------------------------------------
 
@@ -50,15 +55,15 @@ The contents of the plotutils package are:
 		segments, may be drawn.  There is support for color (both
 		pen color and fill color for objects).
 
-		Output formats include X11, PNM (i.e. PBM/PGM/PPM),
-		pseudo-GIF, Adobe Illustrator, Postscript and Encapsulated
-		Postscript (editable with the idraw drawing editor), CGM
-		(by default, binary version-3 CGM output that complies with
-		the WebCGM profile for Web-based vector graphics), Fig
-		(editable with the xfig drawing editor), PCL 5, HP-GL and
-		HP-GL/2, Tektronix, and GNU metafile format.  GNU metafile
-		format may be translated into any of the other formats with
-		the `plot' utility (see below).
+		Output formats include X11, PNG, PNM (i.e. PBM/PGM/PPM),
+		pseudo-GIF, SVG, Adobe Illustrator, Postscript and
+		Encapsulated Postscript (editable with the idraw drawing
+		editor), CGM (by default, binary version-3 CGM output that
+		complies with the WebCGM profile for Web-based vector
+		graphics), Fig (editable with the xfig drawing editor), PCL
+		5, HP-GL and HP-GL/2, Regis, Tektronix, and GNU metafile
+		format.  GNU metafile format may be translated into any of
+		the other formats with the `plot' utility (see below).
 
 		NOTE: pseudo-GIF format is not the same as GIF format,
 		since it does not use the LZW coding scheme.  So it does
@@ -69,7 +74,7 @@ The contents of the plotutils package are:
 
 		libplot includes extensive support for accurate sizing and
 		positioning of text.  This includes the placement of
-		subscripts and superscripts.  Its X11, Illustrator,
+		subscripts and superscripts.  Its X11, SVG, Illustrator,
 		Postscript, CGM, and Fig drivers all support the 35
 		standard Postscript fonts, and its PCL 5 and HP-GL/2
 		drivers support the 45 standard LaserJet fonts.  In
@@ -108,6 +113,12 @@ The contents of the plotutils package are:
 		header file for libxmi, xmi.h, will also be installed, as
 		will the documentation (in texinfo format).
 		
+		The reason `libxmi' isn't built by default is that it's
+		also distributed as a separate package.  Actually, what
+		isn't built by default is a standalone version of libxmi.
+		libplot/libplotter always contains an internal libxmi
+		module, which helps it produce output in bitmap formats.
+
 3. Sample command-line programs based on libplot, including the following.
 
 	graph.  A full-featured scientific plotting program for plotting
@@ -139,11 +150,17 @@ The contents of the plotutils package are:
 				arbitrarily.  It uses the 35 standard
 				Postscript fonts.
 
+		graph -T png    A variant that produces output in PNG
+				(Portable Network Graphics) format.  Output
+				in this format can be viewed with the free
+				image display application `xv'.
+
 		graph -T pnm	A variant that produces output in 
 				`Portable Anymap' format (PBM/PGM/PPM,
 				whichever is appropriate).  Output
-				in this format can be viewed with the
-				free image display application `xv'.
+				in this format can be viewed with `xv',
+                                or translated to other formats with the
+				`netpbm' package.
 
 		graph -T gif	A variant that produces output in a
 				pseudo-GIF format that can be displayed
@@ -152,6 +169,12 @@ The contents of the plotutils package are:
 				run-length encoding, so it does not
 				transgress the well known Unisys LZW
 				patent.
+
+		graph -T svg    A variant that produces output in SVG
+		                (scalable vector graphics) format.  SVG is
+		                a new XML-based graphics format that
+                                has been endorsed by the W3 Consortium
+				for Web use.  See http://www.w3.org .
 
 		graph -T ai	A variant that produces output in a
 				format that can be viewed or edited
@@ -168,7 +191,7 @@ The contents of the plotutils package are:
 				drawing editor, or its successor
 				`drawtool'.  See http://www.vectaport.com .
 
-		graph -Tcgm 	A variant that produces CGM vector graphics
+		graph -T cgm 	A variant that produces CGM vector graphics
 				files (Computer Graphics Metafiles, as
 				defined by ISO 8632:1992).  By default, its
 				output files are binary version-3 CGM files
@@ -203,6 +226,15 @@ The contents of the plotutils package are:
 				standard PCL 5 fonts that are built into
 				many non-Postscript printers, such as
 				LaserJets.
+
+		graph -T regis  A variant that produces ReGIS graphics 
+				output, suitable for viewing on a
+				DECwindows dxterm or a DEC graphics
+				terminal, such as a VT340, VT330, VT241, or
+				VT240.  (This variant lacks the Postscript
+				fonts of the other variants though, like
+				them, it has a complete set of vector
+				Hershey fonts.)
 
 		graph -T tek	A variant that produces Tektronix output,
 				suitable for viewing, e.g., on an X Windows
@@ -251,16 +283,16 @@ The contents of the plotutils package are:
 		another format or uses it to drive a display device.
 
 		Since this distribution includes `graph -T X', `graph -T
-		pnm', `graph -T gif', `graph -T ai', `graph -T ps', `graph
-		-T cgm', `graph -T fig', `graph -T pcl', `graph -T hpgl',
-		and `graph -T tek', all of which can drive display devices
-		directly, `plot' is only occasionally useful.  It may be
-		used, though, to produce graphical output in more than one
-		format at once.  To do this, you would pipe the output of a
-		datapoint-generating program to the raw variant of `graph',
-		and then use the `tee' command to direct the output of raw
-		`graph', which is in metafile format, to two separate
-		invocations of `plot'.
+		png', `graph -T pnm', `graph -T gif', `graph -T ai', `graph
+		-T ps', `graph -T cgm', `graph -T fig', `graph -T pcl',
+		`graph -T hpgl', `graph -T regis', and `graph -T tek', all
+		of which can drive display devices directly, `plot' is only
+		occasionally useful.  It may be used, though, to produce
+		graphical output in more than one format at once.  To do
+		this, you would pipe the output of a datapoint-generating
+		program to the raw variant of `graph', and then use the
+		`tee' command to direct the output of raw `graph', which is
+		in metafile format, to two separate invocations of `plot'.
 	
 		`plot' may also be useful as a post-processor for older
 		programs that produce output in the traditional plot(5)
@@ -284,8 +316,8 @@ The contents of the plotutils package are:
 		implementation of the pic-to-troff translator.  However,
 		since it is built on top of libplot, it supports some new
 		features.  It supports all the output formats that libplot
-		supports: X11, PNM, GIF, AI, PS, WebCGM, Fig, PCL, HP-GL,
-		Tek, and Metafile.
+		supports: X11, PNG, PNM, GIF, SVG, AI, PS, WebCGM, Fig,
+		PCL, HP-GL, Tek, and Metafile.
 
 	tek2plot.  This is a utility program that emulates a Tektronix 4014
 		terminal in the sense that it reads a stream of Tektronix

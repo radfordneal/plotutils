@@ -1,31 +1,19 @@
-/* This file contains the erase method, which is a standard part of
-   libplot.  It erases all objects on the graphics device display. */
-
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_i_erase (S___(Plotter *_plotter))
+_i_erase_page (S___(Plotter *_plotter))
 #else
-_i_erase (S___(_plotter))
+_i_erase_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "erase: invalid operation");
-      return -1;
-    }
-
-  if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
   /* If we're animating, emit the GIF header, and emit the just-finished
      frame as one of the images in the animated GIF.  But don't do this
      for the zeroth frame unless it's nonempty. */
-  if (_plotter->i_animation && _plotter->page_number == 1 && _plotter->outfp
-      && (_plotter->frame_number > 0 || _plotter->i_frame_nonempty))
+  if (_plotter->i_animation && _plotter->data->page_number == 1 && _plotter->data->outfp
+      && (_plotter->data->frame_number > 0 || _plotter->i_frame_nonempty))
     {
       if (_plotter->i_header_written == false)
 	{
@@ -46,11 +34,8 @@ _i_erase (S___(_plotter))
      and (2) background color. */
   _i_new_image (S___(_plotter));
   
-  /* on to next frame */
-  _plotter->frame_number++;
-
-  /* frame starts empty */
+  /* next frame will start empty */
   _plotter->i_frame_nonempty = false;
 
-  return 0;
+  return true;
 }

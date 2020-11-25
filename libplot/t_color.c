@@ -34,7 +34,7 @@ _t_set_pen_color(S___(_plotter))
 			     _plotter->drawstate->fgcolor.blue);
       if (new_kermit_fgcolor != _plotter->tek_kermit_fgcolor)
 	{
-	  _plotter->write_string (R___(_plotter) 
+	  _write_string (_plotter->data, 
 				  _kermit_fgcolor_escapes[new_kermit_fgcolor]);
 	  _plotter->tek_kermit_fgcolor = new_kermit_fgcolor;
 	}
@@ -59,7 +59,7 @@ _t_set_bg_color(S___(_plotter))
 			     _plotter->drawstate->bgcolor.blue);
       if (new_kermit_bgcolor != _plotter->tek_kermit_bgcolor)
 	{
-	  _plotter->write_string (R___(_plotter)
+	  _write_string (_plotter->data,
 				  _kermit_bgcolor_escapes[new_kermit_bgcolor]);
 	  _plotter->tek_kermit_bgcolor = new_kermit_bgcolor;
 	}

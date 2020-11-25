@@ -1,11 +1,39 @@
 /* This file contains a low-level method for adjusting the font of an HP-GL
-   or HP-GL/2 plotter to agree with an HPGLPlotter's notion of what it
-   should be, prior to plotting a label.
+   or PCL device to agree with an HPGL or PCL Plotter's notion of what it
+   should be, prior to plotting a label.  Note: The `PCL 5' output by any
+   PCL Plotter is simply a wrapped version of HP-GL/2.
 
-   This is used if the current font is a Stick, PCL, or PS font.
-   Pre-HP-GL/2 plotters only support Stick fonts.  Only a few recent HP
-   devices (e.g. LaserJet 4000 series laser printers) support PS fonts in
-   PCL format. */
+   Before HP-GL/2 (introduced c. 1990), HP-GL devices supported only Stick
+   fonts.  In modern PCL5 printers, the suite of 45 PCL fonts is accessible
+   too.  Only a few modern high-end PCL5/PS printers (e.g. LaserJet 4000
+   series laser printers) also support PS fonts in PCL mode.  PS fonts are
+   supported by HP-GL/2 and PCL Plotters if the `--enable-ps-fonts-in-pcl'
+   option is specified at configure time.
+
+   After selecting the font, this method invokes the HP-GL DR/SR/SL
+   instructions to size and slant the font, as needed.
+
+   The font selection itself is accomplished in either of two ways.
+   
+   1. In versions of HP-GL prior to HP-GL/2, 7-bit font halves are selected
+   with `CS' and `CA' instructions.  They must be switched between when the
+   label is plotted via SO/SI; see h_text.c.  The HP-GL device will usually
+   supply the upper font half in the Roman-8 encoding, and that too will
+   need to be taken into account when the label is plotted.
+
+   2. In HP-GL/2, a single 8-bit font is selected with the HP-GL/2 `SD'
+   instruction.  In principle, no switching between 7-bit font halves is
+   needed.
+
+   In practice, it's more complicated than that.  For ISO-Latin-1 PCL
+   fonts, the SD instruction allegedly allows the ISO-Latin-1 encoding to
+   be requested.  But it doesn't work!  One or two characters in the lower
+   half (!) don't come out right.  So instead, we use the `SD' instruction
+   to retrieve an 8-bit version that uses the Roman-8 encoding, and the
+   `AD' instruction to retrieve an alternative 8-bit version that uses the
+   ISO-Latin-1 encoding.  We'll use the former for characters in the lower
+   half, and the latter for characters in the upper half.  This is bizarre,
+   but it works.  See additional comments in h_text.c. */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -31,8 +59,7 @@ _h_set_font (S___(_plotter))
   double theta, sintheta, costheta;
   
   /* sanity check, should be unnecessary */
-  if (_plotter->hpgl_version == 0 /* i.e. generic HP-GL */
-      || _plotter->drawstate->font_type == F_HERSHEY)
+  if (_plotter->drawstate->font_type == F_HERSHEY)
     return;
 
   if (_plotter->drawstate->font_type == F_STICK)
@@ -82,18 +109,18 @@ _h_set_font (S___(_plotter))
       if (_plotter->hpgl_rel_label_run != new_relative_label_run
 	  || _plotter->hpgl_rel_label_rise != new_relative_label_rise)
 	{    
-	  sprintf (_plotter->page->point, "DR%.3f,%.3f;",
+	  sprintf (_plotter->data->page->point, "DR%.3f,%.3f;",
 		   new_relative_label_run, new_relative_label_rise);
-	  _update_buffer (_plotter->page);
+	  _update_buffer (_plotter->data->page);
 	  _plotter->hpgl_rel_label_run = new_relative_label_run;
 	  _plotter->hpgl_rel_label_rise = new_relative_label_rise;
 	}
     }
 
-  /* emit command to change font, if needed */
+  /* emit command to change font, if needed (see below) */
   if (_plotter->hpgl_version == 2)
     font_changed = _hpgl2_maybe_update_font (S___(_plotter));
-  else				/* 1, i.e. "1.5", i.e. HP7550A */
+  else				/* 0 or 1, i.e. generic HP-GL or HP7550A */
     font_changed = _hpgl_maybe_update_font (S___(_plotter));
 
   /* compute character slant (device frame) */
@@ -110,25 +137,27 @@ _h_set_font (S___(_plotter))
      of the horizontal and vertical distances between scaling points P1 and
      P2, and specify them with the SR instruction.  
 
-     The 0.5 and 0.7 = 1.4 * 0.5 factors are undocumented HP magic.  The
-     arguments of the SR instruction should apparently be 0.5 times the
-     font size, and 0.7 times the font size.  This convention must have
-     been introduced by HP to adapt the SR instruction, which dates back to
-     fixed-width plotter fonts (Stick fonts) to modern outline fonts.
-     Fixed-width plotter fonts did not have a font size in the modern
-     sense; they had a character width and a character height.  (The former
-     being the width of the character proper, which occupied the left 2/3
-     of a character cell, and the latter being what we would nowadays call
-     a cap height.)
+     The two arguments of the SR instruction (the horizontal and vertical
+     character sizes) should apparently be 0.5 times the font size, and 0.7
+     times the font size.
+     
+     Why? The 0.5 and 0.7 = 1.4 * 0.5 factors are undocumented HP magic.
+     This convention must have been introduced by HP to adapt the SR
+     instruction, which dates back to fixed-width plotter fonts (i.e., the
+     original Stick font), to modern outline fonts.  Fixed-width plotter
+     fonts did not have a font size in the modern sense: they had a
+     character width and a character height.  (The former being the width
+     of the character proper, which occupied the left 2/3 of a character
+     cell, and the latter being what we would nowadays call a cap height.)
 
      The convention probably arose because Stick fonts look best if the
      aspect ratio is 1.4 (= 0.7/0.5), i.e. if the `character height' is 1.4
-     times the `character width'.  I do not know where the 0.5 came from.
-     Possibly back in stick font days, the font size was defined to be
-     4/3 times the width of a character cell, or equivalently the width
+     times the `character width'.  I am not sure where the 0.5 came from.
+     Possibly back in stick font days, the nominal font size was defined to
+     be 4/3 times the width of a character cell, or equivalently the width
      of a character cell was chosen to be 3/4 times the nominal font size.
-     This would make the maximum character width 
-     (2/3)x(3/4) = (1/2) times the font size. */
+     This would make the maximum character width (2/3)x(3/4) = (1/2) times
+     the nominal font size. */
 
   {
     int orientation = _plotter->drawstate->transform.nonreflection ? 1 : -1;
@@ -148,9 +177,9 @@ _h_set_font (S___(_plotter))
 	(new_relative_char_width != _plotter->hpgl_rel_char_width
 	 || new_relative_char_height != _plotter->hpgl_rel_char_height))
       {
-	sprintf (_plotter->page->point, "SR%.3f,%.3f;", 
+	sprintf (_plotter->data->page->point, "SR%.3f,%.3f;", 
 		 new_relative_char_width, new_relative_char_height);
-	_update_buffer (_plotter->page);
+	_update_buffer (_plotter->data->page);
 	_plotter->hpgl_rel_char_width = new_relative_char_width;
 	_plotter->hpgl_rel_char_height = new_relative_char_height;
       }
@@ -159,14 +188,14 @@ _h_set_font (S___(_plotter))
   /* update slant angle if necessary */
   if (tan_slant != _plotter->hpgl_tan_char_slant)
     {
-      sprintf (_plotter->page->point, "SL%.3f;", tan_slant);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "SL%.3f;", tan_slant);
+      _update_buffer (_plotter->data->page);
       _plotter->hpgl_tan_char_slant = tan_slant;
     }
 }
 
-/* If needed, emit a font-change command, HP-GL/2 style.  Return value
-   indicates whether font was changed. */
+/* If needed, emit a new-style (HP-GL/2) `SD' font-selection command.
+   Return value indicates whether font was changed. */
 
 bool
 #ifdef _HAVE_PROTOS
@@ -195,14 +224,14 @@ _hpgl2_maybe_update_font (S___(_plotter))
 	(_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       
       /* #1: symbol set */
-      symbol_set = _pcl_font_info[master_font_index].pcl_symbol_set;
+      symbol_set = _pcl_font_info[master_font_index].hpgl_symbol_set;
       /* #2: spacing */
-      spacing = _pcl_font_info[master_font_index].pcl_spacing;
+      spacing = _pcl_font_info[master_font_index].hpgl_spacing;
       /* #3, #4 are pitch and height (we use defaults) */
       /* #5: posture */
-      posture = _pcl_font_info[master_font_index].pcl_posture;
+      posture = _pcl_font_info[master_font_index].hpgl_posture;
       /* #6: stroke weight */
-      stroke_weight = _pcl_font_info[master_font_index].pcl_stroke_weight;
+      stroke_weight = _pcl_font_info[master_font_index].hpgl_stroke_weight;
       /* #7: typeface */
       typeface = _pcl_font_info[master_font_index].pcl_typeface;  
       /* ISO-Latin-1 after reencoding (if any)? */
@@ -214,14 +243,14 @@ _hpgl2_maybe_update_font (S___(_plotter))
 	(_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       
       /* #1: symbol set */
-      symbol_set = _ps_font_info[master_font_index].pcl_symbol_set;
+      symbol_set = _ps_font_info[master_font_index].hpgl_symbol_set;
       /* #2: spacing */
-      spacing = _ps_font_info[master_font_index].pcl_spacing;
+      spacing = _ps_font_info[master_font_index].hpgl_spacing;
       /* #3, #4 are pitch and height (we use defaults) */
       /* #5: posture */
-      posture = _ps_font_info[master_font_index].pcl_posture;
+      posture = _ps_font_info[master_font_index].hpgl_posture;
       /* #6: stroke weight */
-      stroke_weight = _ps_font_info[master_font_index].pcl_stroke_weight;
+      stroke_weight = _ps_font_info[master_font_index].hpgl_stroke_weight;
       /* #7: typeface */
       typeface = _ps_font_info[master_font_index].pcl_typeface;  
       /* ISO-Latin-1 after reencoding (if any)? */
@@ -233,14 +262,14 @@ _hpgl2_maybe_update_font (S___(_plotter))
 	(_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
       
       /* #1: symbol set */
-      symbol_set = _stick_font_info[master_font_index].pcl_symbol_set;
+      symbol_set = _stick_font_info[master_font_index].hpgl_symbol_set;
       /* #2: spacing */
-      spacing = _stick_font_info[master_font_index].pcl_spacing;
+      spacing = _stick_font_info[master_font_index].hpgl_spacing;
       /* #3, #4 are pitch and height (we use defaults) */
       /* #5: posture */
-      posture = _stick_font_info[master_font_index].pcl_posture;
+      posture = _stick_font_info[master_font_index].hpgl_posture;
       /* #6: stroke weight */
-      stroke_weight = _stick_font_info[master_font_index].pcl_stroke_weight;
+      stroke_weight = _stick_font_info[master_font_index].hpgl_stroke_weight;
       /* #7: typeface */
       typeface = _stick_font_info[master_font_index].pcl_typeface;  
       /* ISO-Latin-1 after reencoding (if any)? */
@@ -248,74 +277,78 @@ _hpgl2_maybe_update_font (S___(_plotter))
       break;
     }
   
-  if (symbol_set != _plotter->pcl_symbol_set
-      || spacing != _plotter->pcl_spacing
-      || posture != _plotter->pcl_posture
-      || stroke_weight != _plotter->pcl_stroke_weight
-      || typeface != _plotter->pcl_typeface)
+  if (symbol_set != _plotter->hpgl_symbol_set
+      || spacing != _plotter->hpgl_spacing
+      || posture != _plotter->hpgl_posture
+      || stroke_weight != _plotter->hpgl_stroke_weight
+      || typeface != _plotter->hpgl_pcl_typeface)
     font_change = true;
   
   if (font_change)
     {
       if (spacing == FIXED_SPACING)
-				/* fixed-width font */
-	sprintf (_plotter->page->point, 
+	/* fixed-width font */
+	sprintf (_plotter->data->page->point, 
 		 /* #4 (nominal point size) not needed but included anyway */
 		 "SD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
 		 symbol_set, spacing, 
 		 (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
 		 posture, stroke_weight, typeface);
-      else			/* variable-width font */
-	sprintf (_plotter->page->point, 
-		 /* #3 (nominal chars per inch) not needed but included anyway*/
+      else
+	/* variable-width font */
+	sprintf (_plotter->data->page->point, 
+		 /* #3 (nominal chars per inch) not needed but incl'd anyway */
 		 "SD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
 		 symbol_set, spacing, 
 		 (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
 		 posture, stroke_weight, typeface);
-      _update_buffer (_plotter->page);
+      _update_buffer (_plotter->data->page);
 
       /* A hack.  Due to HP's idiosyncratic definition of `ISO-Latin-1
-	 encoding' for PCL fonts, for ISO-Latin-1 PCL fonts we normally map
-	 characters in the lower half into HP's Roman-8 encoding, and
-	 characters in the upper half into HP's ISO-Latin-1 encoding.  We
-	 implement this by using two fonts: standard and alternative.  See
-	 h_alab_pcl.c for the DFA that switches back and forth (if
-	 necessary) when the label is rendered. */
+	 encoding' for PCL fonts, when plotting a label in an ISO-Latin-1
+	 PCL font we'll map characters in the lower half into HP's Roman-8
+	 encoding, and characters in the upper half into HP's ISO-Latin-1
+	 encoding.  We implement this by using two fonts: standard and
+	 alternative.  See h_text.c for the DFA that switches back and
+	 forth (if necessary) when the label is rendered. */
       if (_plotter->drawstate->font_type == F_PCL
 	  && font_is_iso_latin_1
 	  && symbol_set == PCL_ROMAN_8)
 	{
 	  if (spacing == FIXED_SPACING)
 	    /* fixed-width font */
-	    sprintf (_plotter->page->point, 
+	    sprintf (_plotter->data->page->point, 
 		     /* #4 (nominal point size) not needed but included anyway */
 		     "AD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
 		     PCL_ISO_8859_1, spacing, 
 		     (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
 		     posture, stroke_weight, typeface);
-	  else			/* variable-width font */
-	    sprintf (_plotter->page->point, 
-		     /* #3 (nominal chars per inch) not needed but included anyway*/
+	  else
+	    /* variable-width font */
+	    sprintf (_plotter->data->page->point, 
+		    /* #3 (nominal chars per inch) not needed but included anyway */
 		     "AD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
 		     PCL_ISO_8859_1, spacing, 
 		     (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
 		     posture, stroke_weight, typeface);
-	  _update_buffer (_plotter->page);
+	  _update_buffer (_plotter->data->page);
 	}
 
-      _plotter->pcl_symbol_set = symbol_set;
-      _plotter->pcl_spacing = spacing;
-      _plotter->pcl_posture = posture;
-      _plotter->pcl_stroke_weight = stroke_weight;
-      _plotter->pcl_typeface = typeface;
+      _plotter->hpgl_symbol_set = symbol_set;
+      _plotter->hpgl_spacing = spacing;
+      _plotter->hpgl_posture = posture;
+      _plotter->hpgl_stroke_weight = stroke_weight;
+      _plotter->hpgl_pcl_typeface = typeface;
     }
 
   return font_change;		/* was font changed? */
 }
 
-/* If needed, emit an old-style (pre-HP-GL/2) `CS' font-change command.
-   (This is used only for Stick fonts, which is all that pre-HP/GL-2
-   devices had.)  Return value indicates whether font was changed. */
+/* If needed, emit an old-style (pre-HP-GL/2) `CS' font-selection command,
+   and also a `CA' font-change command to make the upper half of the
+   selected font available via SO/SI.  Return value indicates whether font
+   was changed.  (This is used only for Stick fonts, which is all that
+   pre-HP/GL-2 HP-GL devices had.)  */
 
 bool
 #ifdef _HAVE_PROTOS
@@ -336,23 +369,23 @@ _hpgl_maybe_update_font (S___(_plotter))
   new_hpgl_charset_lower = _stick_font_info[master_font_index].hpgl_charset_lower;
   new_hpgl_charset_upper = _stick_font_info[master_font_index].hpgl_charset_upper;
 
-  /* select charset for lower half of font */
+  /* using `CS', select charset for lower half of font */
   if (new_hpgl_charset_lower != _plotter->hpgl_charset_lower)
     {
-      sprintf (_plotter->page->point, "CS%d;", new_hpgl_charset_lower);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "CS%d;", new_hpgl_charset_lower);
+      _update_buffer (_plotter->data->page);
       _plotter->hpgl_charset_lower = new_hpgl_charset_lower;
       font_change = true;
     }
 
-  /* select charset for upper half, if we have a genuine one (a negative
-     value for the upper charset is our way of flagging that this is a
-     7-bit font; see h_alab_pcl.c) */
+  /* using `CA', select charset for upper half, if we have a genuine one (a
+     negative value for the upper charset is our way of flagging that this
+     is a 7-bit font; see comment in h_text.c) */
   if (new_hpgl_charset_upper >= 0 
       && new_hpgl_charset_upper != _plotter->hpgl_charset_upper)
     {
-      sprintf (_plotter->page->point, "CA%d;", new_hpgl_charset_upper);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "CA%d;", new_hpgl_charset_upper);
+      _update_buffer (_plotter->data->page);
       _plotter->hpgl_charset_upper = new_hpgl_charset_upper;
       font_change = true;
     }

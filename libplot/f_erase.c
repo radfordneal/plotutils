@@ -1,38 +1,17 @@
-
-/* This file contains the erase method, which is a standard part of
-   libplot.  It erases all objects on the graphics device display.
-
-   A FigPlotter simply resets the output buffer, discarding all objects
-   written to it, and forgets all user-defined colors.  */
-
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_f_erase (S___(Plotter *_plotter))
+_f_erase_page (S___(Plotter *_plotter))
 #else
-_f_erase (S___(_plotter))
+_f_erase_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "erase: invalid operation");
-      return -1;
-    }
-
-  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
-  _reset_outbuf (_plotter->page);
-
   /* reset our knowledge of xfig's internal state */
   _plotter->fig_drawing_depth = FIG_INITIAL_DEPTH;
-  _plotter->fig_num_usercolors = 0;
+  _plotter->fig_num_usercolors = 0; /* forget user-defined colors */
 
-  /* on to next frame (for a Fig Plotter, which doesn't plot in real time,
-     only the last frame in the page is meaningful) */
-  _plotter->frame_number++;
-
-  return 0;
+  return true;
 }

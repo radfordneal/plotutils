@@ -1,5 +1,9 @@
 #include <config.h>		/* built by autoconf */
 
+#ifndef NULL
+#define NULL 0
+#endif
+
 /**********************************************************************/
 /* SUPPORT ANCIENT C/C++ COMPILERS.                                   */
 /**********************************************************************/
@@ -66,10 +70,10 @@
 /**********************************************************************/
 
 /**********************************************************************/
-/* If compiling libplot/libplotter, add support for multithreading,
-   provided that libc includes pthread functions and pthread.h is present.
-   (This comes first, because defining _REENTRANT may alter system header
-   files.) */
+/* If libxmi is being compiling as part of the libplot/libplotter
+   distribution, add support for multithreading, provided that libc
+   includes pthread functions and pthread.h is present.  (This comes first,
+   because defining _REENTRANT may alter system header files.) */
 /**********************************************************************/
 
 #ifdef LIBPLOT
@@ -233,20 +237,14 @@ extern __C_LINKAGE void free ____P((voidptr_t ptr));
 #endif /* not STDC_HEADERS */
 
 /**************************************************************************/
-/* Define NULL (necessary on some noncompliant or very old platforms?)    */
-/**************************************************************************/
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-/**************************************************************************/
 /* In both C and C++, support the `bool' datatype.                        */
+/* This assumes that if a C++ compiler is being used, HAVE_BOOL is        */
+/* defined if the compiler is a modern one.                               */
 /**************************************************************************/
 
 /* we are logical */
 #ifdef __cplusplus
-#ifndef HAVE_BOOL	/* old C++ compiler, must declare bool */
+#ifndef HAVE_BOOL		/* old C++ compiler, must declare bool */
 typedef enum { false = 0, true = 1 } bool;
 #endif
 #else  /* not __cplusplus */
@@ -258,7 +256,7 @@ typedef int bool;
 #define true 1
 #endif
 #endif /* not __cplusplus */
-
+  
 /**************************************************************************/
 /* Define numerical constants (unofficial, so may not be in math.h).      */
 /**************************************************************************/

@@ -17,7 +17,8 @@
    (apparently constructed by Fontographer from TrueType or Intellifont
    originals).  Of these fonts, only the four Univers and four CGTimes
    fonts were available on the LaserJet III.  The same 45 fonts are
-   available on the LaserJet 5 and 6.
+   available on the LaserJet 5 and 6, and more recent LaserJets such
+   as the 2100-series, the 4000-series, and the 8000-series.
    
    Each plPCLFontInfoStruct includes these elements:
 
@@ -26,6 +27,7 @@
         if non-NULL.  This feature is used only to support the 
 	Tidbits-is-Wingdings botch.
    (1c) X name.
+   (1.5abcde) CSS font properties.
    (2) PCL typeface number.
    (3) PCL info: fixedwidth(0) / proportional(1).
    (4) PCL info: upright(0) / italic(1) / condensed(4) / cond. italic(5) /
@@ -40,14 +42,14 @@
 	Note: even for ISO-Latin-1 fonts we do NOT specify `14'; we
 	specify `277' instead, since we use HP's Roman-8 for the lower
 	half of the font and HP's Latin 1 for the upper half.  See 
-	comments in h_alab_pcl.c.
+	comments in h_text.c.
    (7) and (8) normalized font ascent and descent (from font bounding box).
-   (9) normalized cap height
+   (9ab) normalized cap height and x height (latter not yet implemented)
    (10) the character width information (array, size 256).
    (11) the character offset, or `left edge' information (array, size 256).  
         [Our HP/GL-2, i.e. PCL 5 driver needs this, since HP-GL/2 and PCL 5 
 	rendering begin at the left edge of the bounding box, unlike 
-	PS rendering.  We shift	rightward to compensate.  See h_alab_pcl.c.]
+	PS rendering.  We shift	rightward to compensate.  See h_text.c.]
    (12) a typeface id (an index into the _ps_typeface_info[] array below).
    (13) a font index (which font within the typeface this is).
    (14) an `iso8859-1' flag (refers to character set after re-encoding if any;
@@ -65,8 +67,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "univers-medium-r-normal",
+  "Univers", "sans-serif", "normal", "normal", "normal",
   4148, 1, 0, 0, 277,
   987, 250,
+  688, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -136,8 +140,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "univers-medium-o-normal",
+  "Univers", "sans-serif", "oblique", "normal", "normal",
   4148, 1, 1, 0, 277,
   989, 250,
+  688, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -207,8 +213,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "univers-bold-r-normal",
+  "Univers", "sans-serif", "normal", "bold", "normal",
   4148, 1, 0, 3, 277,
   976, 250,
+  688, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -278,8 +286,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "univers-bold-o-normal",
+  "Univers", "sans-serif", "oblique", "bold", "normal",
   4148, 1, 1, 3, 277,
   976, 250,
+  688, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -349,8 +359,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "univers-medium-r-condensed",
+  "Univers", "sans-serif", "normal", "normal", "condensed",
   4148, 1, 4, 0, 277,
   932, 250,
+  688, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -420,8 +432,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "univers-medium-o-condensed",
+  "Univers", "sans-serif", "oblique", "normal", "condensed",
   4148, 1, 5, 0, 277,
   933, 250,
+  688, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -491,8 +505,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "univers-bold-r-condensed",
+  "Univers", "sans-serif", "normal", "bold", "condensed",
   4148, 1, 4, 3, 277,
   950, 250,
+  688, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -562,8 +578,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "univers-bold-o-condensed",
+  "Univers", "sans-serif", "oblique", "bold", "condensed",
   4148, 1, 5, 3, 277,
   950, 250,
+  688, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -633,8 +651,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "cg times-medium-r-normal",
+  "CG Times", "serif", "normal", "normal", "normal",
   4101, 1, 0, 0, 277,
   910, 250,
+  679, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -704,8 +724,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "cg times-medium-i-normal",
+  "CG Times", "serif", "italic", "normal", "normal",
   4101, 1, 1, 0, 277,
   910, 250,
+  679, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -775,8 +797,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "cg times-bold-r-normal",
+  "CG Times", "serif", "normal", "bold", "normal",
   4101, 1, 0, 3, 277,
   944, 250,
+  685, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -846,8 +870,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "cg times-bold-i-normal",
+  "CG Times", "serif", "italic", "bold", "normal",
   4101, 1, 1, 3, 277,
   944, 250,
+  685, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -917,8 +943,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "albertus-semibold-r-normal",
+  "Albertus", "serif", "normal", "600", "normal",
   4362, 1, 0, 1, 277,
   997, 250,
+  764, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -994,8 +1022,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "albertus-extrabold-r-normal",
+  "Albertus", "serif", "normal", "800", "normal",
   4362, 1, 0, 4, 277,
   1017, 260,
+  764, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -1071,8 +1101,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "antique olive-medium-r-normal",
+  "Antique Olive", "sans-serif", "normal", "normal", "normal",
   4168, 1, 0, 0, 277,
   1038, 250,
+  750, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1142,8 +1174,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "antique olive-medium-i-normal",
+  "Antique Olive", "sans-serif", "oblique", "normal", "normal",
   4168, 1, 1, 0, 277,
   1035, 250,
+  750, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1213,8 +1247,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "antique olive-bold-r-normal",
+  "Antique Olive", "sans-serif", "normal", "bold", "normal",
   4168, 1, 0, 3, 277,
   1055, 250,
+  750, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1284,8 +1320,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "arial-medium-r-normal",
+  "Arial", "sans-serif", "normal", "normal", "normal",
   16602, 1, 0, 0, 277,
   913, 216,
+  715, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1355,8 +1393,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "arial-medium-i-normal",
+  "Arial", "sans-serif", "oblique", "normal", "normal",
   16602, 1, 1, 0, 277,
   913, 213,
+  715, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1426,8 +1466,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "arial-bold-r-normal",
+  "Arial", "sans-serif", "normal", "bold", "normal",
   16602, 1, 0, 3, 277,
   924, 211,
+  715, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1497,8 +1539,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "arial-bold-i-normal",
+  "Arial", "sans-serif", "oblique", "bold", "normal",
   16602, 1, 1, 3, 277,
   924, 221,
+  715, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1568,8 +1612,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "clarendon-medium-r-condensed",
+  "Clarendon", "serif", "normal", "normal", "condensed",
   4140, 1, 4, 3, 277,
   970, 261,
+  694, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1639,8 +1685,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "coronet-medium-r-normal",
+  "Coronet", "cursive", "normal", "normal", "normal",
   4116, 1, 1, 0, 277,
   898, 257,
+  744, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1710,8 +1758,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "courier-medium-r-normal",
+  "Courier", "monospace", "normal", "normal", "normal",
   4099, 0, 0, 0, 277,
   856, 253,
+  560, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1785,8 +1835,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
 #endif
   NULL,
   "courier-medium-o-normal",
+  "Courier", "monospace", "oblique", "normal", "normal",
   4099, 0, 1, 0, 277,
   856, 253,
+  560, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1856,8 +1908,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "courier-bold-r-normal",
+  "Courier", "monospace", "normal", "bold", "normal",
   4099, 0, 0, 3, 277,
   856, 237,
+  560, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1931,8 +1985,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
 #endif
   NULL,
   "courier-bold-o-normal",
+  "Courier", "monospace", "oblique", "bold", "normal",
   4099, 0, 1, 3, 277,
   856, 237,
+  560, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2002,8 +2058,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "garamond-medium-r-normal",
+  "Garamond", "serif", "normal", "normal", "normal",
   4197, 1, 0, 0, 277,		/* Garamond Antiqua */
   1023, 260,
+  695, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2073,8 +2131,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "garamond-medium-i-normal",
+  "Garamond", "serif", "italic", "normal", "normal",
   4197, 1, 1, 0, 277,		/* Garamond Kursiv */
   984, 261,
+  695, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2144,8 +2204,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "garamond-bold-r-normal",
+  "Garamond", "serif", "normal", "bold", "normal",
   4197, 1, 0, 3, 277,		/* Garamond Halbfett */
   1010, 261,
+  695, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2215,8 +2277,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "garamond-bold-i-normal",
+  "Garamond", "serif", "italic", "bold", "normal",
   4197, 1, 1, 3, 277,		/* Garamond Kursiv Halbfett */
   1016, 264,
+  697, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2286,8 +2350,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "letter gothic-medium-r-normal",
+  "Letter Gothic", "monospace", "normal", "normal", "normal",
   4102, 0, 0, 0, 277,
   946, 308,
+  721, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2357,8 +2423,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "letter gothic-medium-i-normal",
+  "Letter Gothic", "monospace", "oblique", "normal", "normal",
   4102, 0, 1, 0, 277,
   947, 308,
+  721, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2428,8 +2496,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "letter gothic-bold-r-normal",
+  "Letter Gothic", "monospace", "normal", "bold", "normal",
   4102, 0, 0, 3, 277,
   988, 308,
+  721, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2499,8 +2569,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "marigold-medium-r-normal",
+  "Marigold", NULL, "normal", "normal", "normal",
   4297, 1, 0, 0, 277,
   770, 302,
+  450, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2570,8 +2642,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "cg omega-medium-r-normal",
+  "CG Omega", "serif", "normal", "normal", "normal",
   4113, 1, 0, 0, 277,
   895, 250,
+  683, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2641,8 +2715,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "cg omega-medium-i-normal",
+  "CG Omega", "serif", "oblique", "normal", "normal",
   4113, 1, 1, 0, 277,
   911, 250,
+  683, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2712,8 +2788,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "cg omega-bold-r-normal",
+  "CG Omega", "serif", "normal", "bold", "normal",
   4113, 1, 0, 3, 277,
   924, 250,
+  686, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2783,8 +2861,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "cg omega-bold-i-normal",
+  "CG Omega", "serif", "oblique", "bold", "normal",
   4113, 1, 1, 3, 277,
   923, 250,
+  686, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2854,8 +2934,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "times new roman-medium-r-normal",
+  "Times New Roman", "serif", "normal", "normal", "normal",
   16901, 1, 0, 0, 277,
   913, 219,
+  662, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2925,8 +3007,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "times new roman-medium-i-normal",
+  "Times New Roman", "serif", "italic", "normal", "normal",
   16901, 1, 1, 0, 277,
   913, 216,
+  662, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2996,8 +3080,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "times new roman-bold-r-normal",
+  "Times New Roman", "serif", "normal", "bold", "normal",
   16901, 1, 0, 3, 277,
   913, 226,
+  662, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3067,8 +3153,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "times new roman-bold-i-normal",
+  "Times New Roman", "serif", "italic", "bold", "normal",
   16901, 1, 1, 3, 277,
   913, 216,
+  662, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3139,8 +3227,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   "Tidbits",
   "Tidbits",			/* use "Tidbits" in any output PS file */
   "wingdings-medium-r-normal",
+  "Wingdings", NULL, "normal", "normal", "normal",
   31402, 1, 0, 0, 18540,	
   895, 210,
+  723, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3213,8 +3303,10 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   "symbol-medium-r-normal",
+  "Symbol", NULL, "normal", "normal", "normal",
   16686, 1, 0, 0, 621,
   945, 284,
+  685, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3287,7 +3379,9 @@ const struct plPCLFontInfoStruct _pcl_font_info[] = {
   NULL,
   NULL,
   NULL,
+  NULL, NULL, NULL, NULL, NULL,
   0, 0, 0, 0, 0,
+  0, 0,
   0, 0,
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
@@ -3392,18 +3486,18 @@ const struct plTypefaceInfoStruct _pcl_typeface_info[] =
 };
 
 
-/* Known stick fonts (i.e., device-resident vector fonts) that are
+/* Known Stick fonts (i.e., device-resident HP vector fonts) that are
    supported by HP-GL or HP-GL/2.  These structures, one per font, are
    similar to the ones for the PCL fonts, but units are different, as is
-   the interpretation of character `width'.  Each character in any stick
+   the interpretation of character `width'.  Each character in any Stick
    font is defined on an abstract raster, of width equal to one-half the
    font size (by definition).  Widths below are measured in terms of raster
    units.  Each width is really the width of a (nominal) bounding box for
    the character.  This is NOT the same as the character cell width, i.e.,
-   the logical width of the character in the PS sense.  
+   the logical width of the character in the PS sense.
 
    The reason that we tabulate bounding box widths here is that HP
-   originally had no notion of logical width at all.  For the stick fonts
+   originally had no notion of logical width at all.  For the Stick fonts
    as for the PCL fonts, native HP-GL or HP-GL/2 rendering begins at the
    `first ink' for the character, i.e., at the left edge of the bounding
    box, _not_ at the left edge of the character cell for the character (as
@@ -3414,27 +3508,29 @@ const struct plTypefaceInfoStruct _pcl_typeface_info[] =
    measures the offset from the left edge of the character cell to the left
    edge of the bounding box, and the right edge of the bounding box to the
    right edge of the character cell.  This was a later addition of HP's,
-   for HP-GL/2.  Apparently, HP added it to make the device-resident
-   metrics for the Stick fonts similar to those for the PCL fonts.  This
-   offset, in HP-GL/2, is the same for all characters in a character set.
+   for the (lamebrained) HP-GL/2 emulation performed by LaserJets.
+   Apparently, HP added it to make the device-resident metrics for the
+   Stick fonts similar to those for the PCL fonts.  This offset, in
+   LaserJets, must be the same for all characters in a character set.
 
    So relative to PS-style rendering, the `offset' field is the amount in
-   abstract raster units by which the HP-GL/2 renderer automatically shifts
+   abstract raster units by which a LaserJet renderer automatically shifts
    leftwards before rendering the character, to make the first ink appear
    at the current point.  (In a sense, the abstract raster on which each
    character is defined has an unoccupied border to its left, of width
    equal to this offset.)  We undo this leftward shift before rendering any
    string, by shifting rightwards.  This `rightward shift' procedure is the
-   same as the one we use for the PCL fonts (see h_alab_pcl.c, where stick
+   same as the one we use for the PCL fonts (see h_text.c, where stick
    fonts as well as PCL fonts are rendered).
 
-   For example, the fixed-width stick font (`Stick') is defined on a 32x32
-   abstract raster.  Each character has nominal bounding box width of 32.
-   The abstract raster is effectively the left 2/3 of a character cell, and
-   the character cell width of each character is 48, in these units.  The
-   `offset' is 8, since 8 + 32 + 8 = 48.  The nominal font size [measured
-   horizontally] is 64 = 2 * 32, in accordance with the HP convention that
-   the nominal font size equals twice the raster width.
+   For example, the standard fixed-width Stick font (whose name is also
+   `Stick') is defined on a 32x32 abstract raster.  Each character has
+   nominal bounding box width of 32.  The abstract raster is effectively
+   the left 2/3 of a character cell, and the character cell width of each
+   character is 48, in these units.  The `offset' is 8, since 8 + 32 + 8 =
+   48.  The nominal font size [measured horizontally] is 64 = 2 * 32, in
+   accordance with the HP convention that the nominal font size equals
+   twice the raster width.
 
    Similarly, the variable-width `Arc' font is defined on an abstract
    raster, of notional size 28x36.  Most characters are narrower than 28
@@ -3453,13 +3549,14 @@ const struct plTypefaceInfoStruct _pcl_typeface_info[] =
    maybe 10/7?) times its width.  The value 1.4 is HP magic; we use it when
    we select a stick font, in h_font.c.
 
-   The above explanation is fully valid only for HP-GL/2.  In pre-HP-GL/2
-   (i.e. the version of HP-GL used on the HP7550A and other late HP-GL
-   devices), stick fonts were handled differently.  Instead of the distance
-   between any two successive character's bounding boxes being a fixed
+   The preceding explanation is fully valid only for the (lamebrained)
+   HP-GL/2 emulation performed by LaserJets.  In genuine HP-GL/2 (and also
+   in earlier versions of HP-GL, such as the HP7550A version), Stick fonts
+   were handled in a more sophisticated way.  Instead of the distance
+   between any two successive characters' bounding boxes being a fixed
    amount, namely 2 * offset, this distance was computed from
-   device-resident lookup tables.  I.e, the character sets in pre-HP-GL/2
-   were automatically kerned.
+   device-resident lookup tables.  I.e., the character sets in HP-GL/2 were
+   automatically kerned.
 
    There were at least three device-resident `spacing tables': 
    (1) a trivial spacing table for the fixed width character sets (which we
@@ -3477,19 +3574,20 @@ const struct plTypefaceInfoStruct _pcl_typeface_info[] =
    by L. W. Hennessee, A. K. Frankel, M. A. Overton, and R. B. Smith,
    Hewlett-Packard Journal, Nov. 1981, pp. 16-25.
 
-   (There was an additional difference between HP-GL/2 and pre-HP-GL/2.
-   In pre-HP-GL/2, the width of each space character [i.e. ASCII SP]
-   was 3/2 times as wide.  Yes, even for the fixed-width character sets;
-   the spacing tables compensated for that.)
+   (There was an additional difference between LaserJet HP-GL/2 emulation
+   and true HP-GL[/2].  In true HP-GL[/2], the width of each space
+   character [i.e., ASCII SP] was 3/2 times as wide.  Yes, even for the
+   fixed-width character sets; the spacing tables compensated for that.)
 
    Below in this file, after the fonts and the character width information,
    we include the relevant kerning tables and spacing tables.  Each font
-   half (i.e. the lower half or upper half of a font) uses a kerning table.
-   A kerning table maps each character in a 128-character character set to
-   its row class and column class.  The kerning table also includes a
-   pointer to the appropriate spacing table, which as noted is indexed by
-   row class and column class.  So when computing the spacing between two
-   successive characters in a label, double indirection must be used. */
+   half (i.e., the lower half or upper half of a font) uses a kerning
+   table.  A kerning table maps each character in a 7-bit (i.e.,
+   128-character) character set to its row class and column class.  The
+   kerning table also includes a pointer to the appropriate spacing table,
+   which as noted is indexed by row class and column class.  So when
+   computing the spacing between two successive characters in a label,
+   double indirection must be used. */
 
 /* IMPORTANT: The fonts in this array may be referred to elsewhere in the
    code by number.  If you change the numbering of Stick fonts, i.e., the
@@ -3506,7 +3604,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   28, 36,			/* raster size = 28x36 (for upper half) */
   10, 17,			/* charset numbers (pre-HP-GL/2) */
-  6, 7,				/* kerning tables (pre-HP-GL/2) */
+  6, 7,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3554,7 +3652,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   28, 36,			/* raster size = 28x36 (for upper half) */
   10, 17,			/* charset numbers (pre-HP-GL/2) */
-  6, 7,				/* kerning tables (pre-HP-GL/2) */
+  6, 7,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3602,7 +3700,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   28, 36,			/* raster size = 28x36 (for upper half) */
   10, 17,			/* charset numbers (pre-HP-GL/2) */
-  6, 7,				/* kerning tables (pre-HP-GL/2) */
+  6, 7,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3650,7 +3748,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   28, 36,			/* raster size = 28x36 (for upper half) */
   10, 17,			/* charset numbers (pre-HP-GL/2) */
-  6, 7,				/* kerning tables (pre-HP-GL/2) */
+  6, 7,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3692,13 +3790,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "ArcANK",			/* #4 (our numbering) */
   false,			/* not basic font */
-  49, 1, 0, 0, 267,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  49, 1, 0, 0, 11,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 40.0 / 64.0), /* 40 = height of top of parenthesis */
   (int)(1000 * 1.4 * 9.0 / 64.0), /* 9 = depth of descender of `p' and `q' */
   28, 36,			/* raster size = 28x36 (for lower half)*/
   30, 36,			/* raster size = 30x36 (for upper half) */
   16, 18,			/* charset numbers (pre-HP-GL/2) */
-  8, 9,				/* kerning tables (pre-HP-GL/2) */
+  8, 9,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3740,13 +3838,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "ArcANK-Oblique",		/* #5 */
   false,			/* not basic font */
-  49, 1, 0, 0, 267,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  49, 1, 0, 0, 11,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 40.0 / 64.0),
   (int)(1000 * 1.4 * 9.0 / 64.0), 
   28, 36,			/* raster size = 28x36 (for lower half)*/
   30, 36,			/* raster size = 30x36 (for upper half) */
   16, 18,			/* charset numbers (pre-HP-GL/2) */
-  8, 9,				/* kerning tables (pre-HP-GL/2) */
+  8, 9,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3788,13 +3886,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "ArcANK-Bold",		/* #6 */
   false,			/* not basic font */
-  49, 1, 0, 3, 267,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  49, 1, 0, 3, 11,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 40.0 / 64.0),
   (int)(1000 * 1.4 * 9.0 / 64.0), 
   28, 36,			/* raster size = 28x36 (for lower half)*/
   30, 36,			/* raster size = 30x36 (for upper half) */
   16, 18,			/* charset numbers (pre-HP-GL/2) */
-  8, 9,				/* kerning tables (pre-HP-GL/2) */
+  8, 9,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3836,13 +3934,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "ArcANK-BoldOblique",	/* #7 */
   false,			/* not basic font */
-  49, 1, 0, 3, 267,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  49, 1, 0, 3, 11,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 40.0 / 64.0),
   (int)(1000 * 1.4 * 9.0 / 64.0),
   28, 36,			/* raster size = 28x36 (for lower half)*/
   30, 36,			/* raster size = 30x36 (for upper half) */
   16, 18,			/* charset numbers (pre-HP-GL/2) */
-  8, 9,				/* kerning tables (pre-HP-GL/2) */
+  8, 9,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3890,7 +3988,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half) */
   28, 36,			/* raster size = 28x36 (for upper half) */
   15, -1,			/* charset numbers (pre-HP-GL/2) */
-  10, 11,			/* kerning tables (pre-HP-GL/2) */
+  10, 11,			/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3938,7 +4036,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   0, 7,				/* charset numbers (pre-HP-GL/2) */
-  0, 1,				/* kerning tables (pre-HP-GL/2) */
+  0, 1,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3986,7 +4084,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   0, 7,				/* charset numbers (pre-HP-GL/2) */
-  0, 1,				/* kerning tables (pre-HP-GL/2) */
+  0, 1,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4034,7 +4132,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   0, 7,				/* charset numbers (pre-HP-GL/2) */
-  0, 1,				/* kerning tables (pre-HP-GL/2) */
+  0, 1,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4082,7 +4180,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   0, 7,				/* charset numbers (pre-HP-GL/2) */
-  0, 1,				/* kerning tables (pre-HP-GL/2) */
+  0, 1,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4124,13 +4222,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "StickANK",			/* #13 (our numbering) */
   false,			/* not basic font */
-  48, 0, 0, 0, 267,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  48, 0, 0, 0, 11,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 36.0 / 64.0), /* 36 = height of top of parenthesis */
   (int)(1000 * 1.4 * 8.0 / 64.0), /* 8 = depth of descender of `p' and `q' */
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   6, 8,				/* charset numbers (pre-HP-GL/2) */
-  2, 3,				/* kerning tables (pre-HP-GL/2) */
+  2, 3,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4172,13 +4270,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "StickANK-Oblique",		/* #14 */
   false,			/* not basic font */
-  48, 0, 0, 0, 267,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  48, 0, 0, 0, 11,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 36.0 / 64.0), 
   (int)(1000 * 1.4 * 8.0 / 64.0), 
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   6, 8,				/* charset numbers (pre-HP-GL/2) */
-  2, 3,				/* kerning tables (pre-HP-GL/2) */
+  2, 3,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4220,13 +4318,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "StickANK-Bold",		/* #15 */
   false,			/* not basic font */
-  48, 0, 0, 3, 267,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  48, 0, 0, 3, 11,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 36.0 / 64.0),
   (int)(1000 * 1.4 * 8.0 / 64.0), 
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   6, 8,				/* charset numbers (pre-HP-GL/2) */
-  2, 3,				/* kerning tables (pre-HP-GL/2) */
+  2, 3,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4268,13 +4366,13 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
 {
   "StickANK-BoldOblique",	/* #16 */
   false,			/* not basic font */
-  48, 0, 0, 3, 267,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  48, 0, 0, 3, 11,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 36.0 / 64.0),
   (int)(1000 * 1.4 * 8.0 / 64.0), 
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   6, 8,				/* charset numbers (pre-HP-GL/2) */
-  2, 3,				/* kerning tables (pre-HP-GL/2) */
+  2, 3,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4322,7 +4420,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   5, -1,			/* charset numbers (pre-HP-GL/2) */
-  4, 5,				/* kerning tables (pre-HP-GL/2) */
+  4, 5,				/* kerning tables */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4369,7 +4467,7 @@ const struct plStickFontInfoStruct _stick_font_info[] = {
   0, 0,
   0, 0,
   0, 0,
-  0, 0,				/* kerning tables (pre-HP-GL/2) */
+  0, 0,				/* kerning tables */
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
@@ -4430,23 +4528,23 @@ const struct plTypefaceInfoStruct _stick_typeface_info[] =
 };
 
 /* Kerning information for upper and lower halves of the Stick fonts, in
-   pre-HP-GL/2, e.g., in the HP7550A pen plotter.  For background info, see
-   "Firmware Determines Plotter Personality", by L. W. Hennessee,
-   A. K. Frankel, M. A. Overton, and R. B. Smith, Hewlett-Packard Journal,
-   Nov. 1981, pp. 16-25.
+   HP-GL/2 and pre-HP-GL/2, e.g., in the HP7550A pen plotter.  For
+   background info, see "Firmware Determines Plotter Personality", by
+   L. W. Hennessee, A. K. Frankel, M. A. Overton, and R. B. Smith,
+   Hewlett-Packard Journal, Nov. 1981, pp. 16-25.
 
    Each kerning table specifies (1) an HP spacing table [see below], and
-   (2) a map that takes each character in the 128-character font half to
-   the appropriate row class and column class, i.e. `right edge class' and
-   `left edge class'.  Each of HP's spacing tables is indexed by row class
-   and column class.
+   (2) a map that takes each character in a 128-character font half to the
+   appropriate row class and column class, i.e., to its `right edge class'
+   and `left edge class'.  Each of HP's spacing tables is indexed by row
+   class and column class.
 
    The map from characters to row/column classes depends on our reencoding,
    if any.  I.e., HP wouldn't necessarily recognize the kerning tables,
    unlike the underlying spacing tables.  For example, several of the
    kerning tables identified as `upper half' are indexed by characters in
    the upper half of the ISO-Latin-1 encoding.  We elsewhere map our
-   ISO-Latin-1 fonts into HP's native Roman-8 encoding (see h_stick.h),
+   ISO-Latin-1 fonts into HP's native Roman-8 encoding (see h_roman8.h),
    which is why we index by ISO-Latin-1 rather than Roman-8 here. */
 
 /* our numbering of HP's spacing tables (see below) */
@@ -4952,40 +5050,39 @@ const struct plStickFontSpacingTableStruct _stick_kerning_tables[] =
 };
 
 /* The following are HP's device-resident spacing tables, as used in the
-   HP7550A pen plotter.  Order agrees with the SPACING_* definitions above.
-   There are three, because there are three distinct sorts of old-style
-   128-character HP character set: (1) fixed width, (2) variable width, and
-   (3) variable width Japanese Katakana.  Characters in the three different
-   sorts of character set are defined on abstract rasters of different
-   sizes.  Nominal character cell widths are 48 units, 42 units, and 45
-   units, respectively.  Nominal `raster widths' are 2/3 of these: 32
-   units, 28 units, and 30 units, respectively.  Character cell and raster
-   widths are to be taken literally only for the fixed-width character
-   sets.  But font size, measured horizontally, is always twice the nominal
-   raster width, i.e., 4/3 times the nominal character cell width. */
+   pre-HP-GL/2 HP7550A pen plotter, and presumably in HP-GL/2 devices as
+   well.  Order agrees with the SPACING_* definitions above.  There are
+   three, because there are three distinct sorts of old-style 7-bit HP
+   character set: (1) fixed width, (2) variable width, and (3) variable
+   width Japanese Katakana.  Characters in the three different sorts of
+   character set are defined on abstract rasters of different sizes.
+   Nominal character cell widths are 48 units, 42 units, and 45 units,
+   respectively.  Nominal `raster widths' are 2/3 of these: 32 units, 28
+   units, and 30 units, respectively.  Character cell and raster widths are
+   to be taken literally only for the fixed-width character sets.  But font
+   size, measured horizontally, is always twice the nominal raster width,
+   i.e., 4/3 times the nominal character cell width. */
 
-/* 2x2 spacing table for the fixed-width character sets of pre-HP-GL/2,
-   which we use in our Stick, StickSymbol, etc. fonts.  In these units,
-   character cell width equals 48, and font size (measured horizontally)
-   equals 64.
+/* 2x2 spacing table for fixed-width character sets, which we use in our
+   Stick, StickSymbol, etc. fonts.  In these units, character cell width
+   equals 48, and font size (measured horizontally) equals 64.
   
-   This spacing table is a kludge.  In pre-HP-GL/2 the width tables for the
-   `fixed width' character sets don't list every character as having width
-   48 (the nominal width for the space character is 48, but all other
-   characters have width 32).  So this spacing table is employed to fix
-   things up: e.g., the spacing between any two non-space characters is
-   made equal to 16 units. */
+   This spacing table is a kludge.  The width tables for the `fixed width'
+   character sets don't list every character as having width 48 (the
+   nominal width for the space character is 48, but all other characters
+   have width 32).  So this spacing table is employed to fix things up:
+   e.g., the spacing between any two non-space characters is made equal to
+   16 units. */
 const short _fixed_width_spacings[] =
 {
     0,  8,
     8, 16
 };
 
-/* 24x21 spacing table for the variable-width character sets of pre-HP-GL/2
-   (other than variable-width Katakana), which we use in our Arc,
-   ArcSymbol, etc., fonts.  In these units, nominal character cell width
-   (see above) equals 42, and font size (measured horizontally) equals
-   56. */
+/* 24x21 spacing table for variable-width character sets (other than
+   variable-width Katakana), which we use in our Arc, ArcSymbol, etc.,
+   fonts.  In these units, nominal character cell width (see above) equals
+   42, and font size (measured horizontally) equals 56. */
 const short _variable_width_spacings[] =
 {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -5014,10 +5111,10 @@ const short _variable_width_spacings[] =
   0,11, 9, 9, 6,10, 9, 8, 9, 9, 8, 9,11, 8,11, 8, 9,10, 9, 9, 9
 };
 
-/* 11x12 spacing table for the variable-width Katakana character set of
-   pre-HP-GL/2, which we use as the upper half of our ArcANK font.  In
-   these units, nominal character cell width (see above) equals 45, and
-   font size (measured horizontally) equals 60. */
+/* 11x12 spacing table for the variable-width Katakana character set, which
+   we use as the upper half of our ArcANK font.  In these units, nominal
+   character cell width (see above) equals 45, and font size (measured
+   horizontally) equals 60. */
 const short _variable_width_katakana_spacings[] =
 {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 

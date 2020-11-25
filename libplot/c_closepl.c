@@ -1,62 +1,27 @@
-/* This file contains the closepl method, which is a standard part of
-   libplot.  It closes a Plotter object. */
-
 /* This version is used for CGMPlotters, which emit graphics only after all
    pages of graphics have been drawn, and the Plotter is deleted.  Such
    Plotters maintain a linked list of pages (graphics are only written to
    the output stream when a Plotter is deleted, and the appropriate
-   `terminate' method is invoked).  So this version simply finalizes the
-   current page by invoking endpath() etc.; it doesn't write anything
-   out. */
+   `terminate' method is invoked). */
 
 #include "sys-defines.h"
 #include "extern.h"
 
-#define NUM_BASIC_PS_FONTS 13
-
-int
+bool
 #ifdef _HAVE_PROTOS
-_c_closepl(S___(Plotter *_plotter))
+_c_end_page (S___(Plotter *_plotter))
 #else
-_c_closepl(S___(_plotter))
+_c_end_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
   int i, fullstrength, red, green, blue;
 
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "closepl: invalid operation");
-      return -1;
-    }
-
-  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
-  /* pop drawing states in progress, if any, off the stack */
-  if (_plotter->drawstate->previous != NULL)
-    {
-      while (_plotter->drawstate->previous)
-	_plotter->restorestate (S___(_plotter));
-    }
-  
-  /* remove zeroth drawing state too, so we can start afresh */
-
-  /* elements of state that are strings are freed separately */
-  free ((char *)_plotter->drawstate->line_mode);
-  free ((char *)_plotter->drawstate->join_mode);
-  free ((char *)_plotter->drawstate->cap_mode);
-  free ((char *)_plotter->drawstate->font_name);
-  
-  free (_plotter->drawstate);
-  _plotter->drawstate = NULL;
-
-  _plotter->open = false;	/* flag device as closed */
-
   /* update CGM profile for this page to take into account number of
      user-defined line types (nonzero only if output file can include
      version-3 constructs; see c_attribs.c) */
   {
-    plCGMCustomLineType *line_type_ptr = (plCGMCustomLineType *)_plotter->page->extra;
+    plCGMCustomLineType *line_type_ptr = (plCGMCustomLineType *)_plotter->data->page->extra;
     int num_line_types = 0;
     bool violates_profile = false;
 
@@ -82,7 +47,7 @@ _c_closepl(S___(_plotter))
     {
       for (i = 0; i < NUM_PS_FONTS; i++)
 	{
-	  if (_plotter->page->ps_font_used[i] == true)
+	  if (_plotter->data->page->ps_font_used[i] == true)
 	    {
 	      _plotter->cgm_page_version = IMAX(_plotter->cgm_page_version, 3);
 	      break;
@@ -115,7 +80,9 @@ _c_closepl(S___(_plotter))
   /* copy the background color from the CGM Plotter into the `bgcolor'
      element of the plOutbuf for this page (we'll use it when writing the
      page header into the CGM output file, see c_defplot.c) */
-  _plotter->page->bg_color = _plotter->cgm_bgcolor;
+  _plotter->data->page->bg_color = _plotter->cgm_bgcolor;
+  _plotter->data->page->bg_color_suppressed = 
+    _plotter->cgm_bgcolor_suppressed; /* color is really "none"? */
 
-  return 0;
+  return true;
 }

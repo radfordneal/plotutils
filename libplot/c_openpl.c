@@ -1,55 +1,27 @@
-/* This file contains the openpl method, which is a standard part of
-   libplot.  It opens a Plotter object. */
-
 /* This version is for CGM Plotters, which graphics only after all pages of
    graphics have been drawn, and the Plotter is deleted. */
 
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_c_openpl (S___(Plotter *_plotter))
+_c_begin_page (S___(Plotter *_plotter))
 #else
-_c_openpl (S___(_plotter))
+_c_begin_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  plOutbuf *new_page;
-  const char *bg_color_name_s;
   int i;
 
-  if (_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "openpl: invalid operation");
-      return -1;
-    }
-
-  /* prepare buffer in which we'll cache code for this page */
-  new_page = _new_outbuf ();
-
-  /* CGM Plotters use the `extra' field of the Outbuf (a void pointer; it
-     points to the head of a linked list of user-defined line types for the
-     page) */
-  new_page->extra = (voidptr_t)NULL;
-
-  if (_plotter->opened == false) /* first page */
-    {
-      _plotter->page = new_page;
-      /* Save a pointer to the first page, since we'll be caching
-	 all pages until the Plotter is deleted. */
-      _plotter->first_page = new_page;
-    }
-  else
-    /* add new page to tail of list, update pointer to current page */
-    {
-      _plotter->page->next = new_page;
-      _plotter->page = new_page;
-    }
+  /* CGM Plotters use the `extra' field of their single plOutbuf (a void
+     pointer; it points to the head of a linked list of user-defined line
+     types for the page) */
+  _plotter->data->page->extra = (voidptr_t)NULL;
 
   /* initialize `font used' array(s) for this page */
   for (i = 0; i < NUM_PS_FONTS; i++)
-    _plotter->page->ps_font_used[i] = false;
+    _plotter->data->page->ps_font_used[i] = false;
 
   /* reset page-specific, i.e. picture-specific, dynamic variables */
   _plotter->cgm_page_version = 1;
@@ -108,18 +80,9 @@ _c_openpl (S___(_plotter))
   _plotter->cgm_charset_upper = 0; /* dummy value (we use values 1..4) */
   _plotter->cgm_restricted_text_type = CGM_RESTRICTED_TEXT_TYPE_BASIC;
 
-  /* invoke generic method, to e.g. create drawing state */
-  _g_openpl (S___(_plotter));
+  /* copy background color to the CGM-specific part of the CGMPlotter;
+     it'll be written to the output file at the head of the picture */
+  _c_set_bg_color (S___(_plotter));
 
-  /* if there's a user-specified background color, set it in
-     device-independent part of drawing state */
-  bg_color_name_s = (const char *)_get_plot_param (R___(_plotter) "BG_COLOR");
-  if (bg_color_name_s)
-    _plotter->bgcolorname (R___(_plotter) bg_color_name_s);
-
-  /* copy it, also, to the CGM-specific part of the CGMPlotter; it'll be
-     written to the output file at the head of the picture */
-  _plotter->set_bg_color (S___(_plotter));
-
-  return 0;
+  return true;
 }

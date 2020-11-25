@@ -75,12 +75,14 @@ private:
   int plotter_line_type; // one of line_type::solid etc.
   int plotter_fill_fraction; // libplot fill fraction
   double plotter_line_thickness; // in virtual points
+  bool plotter_visible_pen;	// default is `yes'
   bool plotter_path_in_progress; // need to break?
   // internal functions, modify Plotter drawing state
   void set_line_type_and_thickness (const line_type &lt);
   void set_fill (double fill);
+  void set_pen_visibility (bool visible);
   // invoked by common_output dotting methods
-  void dot(const position &pos, const line_type &lt);
+  void dot (const position &pos, const line_type &lt);
 };
 
 output *
@@ -116,6 +118,7 @@ plot_output::start_picture(double sc, const position &ll,
   pl_openpl_r (plotter);
   plotter_line_type = line_type::solid;
   plotter_fill_fraction = 0;	// i.e. unfilled
+  plotter_visible_pen = true;
   plotter_path_in_progress = false;
 
   // Compute scale factor via compute_scale() method of output
@@ -153,68 +156,38 @@ plot_output::start_picture(double sc, const position &ll,
   if (font_name)
     pl_fontname_r (plotter, font_name);
   
-  // determine and set color(s)
-  if (!precision_dashing)
-    // set pen/fill color (will modify only by invoking pl_filltype_r)
-    {
-      if (pen_color_name)
-	pl_colorname_r (plotter, pen_color_name);
-    }
-  else
-    // set pen color; will invoke pl_pencolor_r and pl_fillcolor_r when
-    // drawing filled objects, to work around the `zero-width edge' problem
-    {
-      bool pen_color_found = false;
-      const Colornameinfo *color_p = _colornames;
+  // set pen/fill color (will modify later only by invoking pl_filltype_r)
+  if (pen_color_name)
+    pl_colorname_r (plotter, pen_color_name);
 
-      if (pen_color_name)
-	{
-	  while (color_p->name)
-	    {
-	      if (strcmp (pen_color_name, color_p->name) == 0)
-		{
-		  pen_color_found = true;
-		  break;
-		}
-	      color_p++;
-	    }
-	}
-      
-      if (pen_color_found)
-	{
-	  // convert from 8 to 16 bit intensities
-	  pen_red = 0x101 * color_p->red;
-	  pen_green = 0x101 * color_p->green;
-	  pen_blue = 0x101 * color_p->blue;
-	}
-      else
-	// black pen
-	pen_red = pen_green = pen_blue = 0;
-
-      pl_pencolor_r (plotter, pen_red, pen_green, pen_blue);
-    }
-
-  // initialize font size and line thickness (latter is dynamic, can
-  // be altered in pic file)
+  // initialize font size and line thickness from values that can be set on
+  // the command line (latter is dynamic, can be altered in pic file)
 
   font_size *= scale;
   line_width *= scale;
 
-  if (font_size > 0.0)
-    // font size is set on command line in terms of width of display,
-    // but libplot uses virtual inches
+  if (font_size >= 0.0)
+    // `font size', as set on command line, is in terms of display width,
+    // but libplot, according to our scaling, uses virtual inches; so we
+    // convert
     pl_ffontsize_r (plotter, DISPLAY_SIZE_IN_INCHES * font_size);
+  else
+    // use Plotter default; no need to issue a fontsize() instruction
+    {
+    }
 
   if (line_width >= 0.0)
     {
-      // line_width is set on command line in terms of width of display,
-      // but libplot uses virtual inches, and pic2plot uses virtual points
+      // `line_width', as set on command line, is in terms of display
+      // width, but libplot, according to our scaling, uses virtual inches;
+      // pic2plot, uses virtual points both internally and in pic scripts
       pl_flinewidth_r (plotter, DISPLAY_SIZE_IN_INCHES * line_width);
       default_plotter_line_thickness 
 	= DISPLAY_SIZE_IN_INCHES * POINTS_PER_INCH * line_width;
     }
   else
-    // use Plotter default, represented internally by pic2plot as -1
+    // use Plotter default, represented internally by pic2plot as -1;
+    // no need to issue a linewidth() instruction
     default_plotter_line_thickness = -1.0;
 
   /* store initial line thickness as a default, for later use */
@@ -234,11 +207,6 @@ plot_output::finish_picture()
 // Manipulate fill color (idempotent, so may not actually do anything,
 // i.e. may not break the path in progress, if any).
 
-// Two possibilities: (1) If we're not doing precision dashing, we invoke
-// pl_filltype_r.  (2) If we're doing precision dashing, we set the fill
-// color by computing it as an RGB, and set it as both our fill color and
-// pen color.  This is to avoid the zero edge thickness problem.
-
 void
 plot_output::set_fill (double fill)
 {
@@ -257,35 +225,9 @@ plot_output::set_fill (double fill)
 
   if (fill_fraction != plotter_fill_fraction)
     {
-      if (!precision_dashing)
-	// manipulate fill color by setting the fill fraction
-	pl_filltype_r (plotter, fill_fraction);
-      else
-	// doing precision dashing
-	{
-	  if (fill_fraction == 0)
-	    // not filling; reset pen color to default
-	    {
-	      pl_pencolor_r (plotter, pen_red, pen_green, pen_blue);
-	      pl_filltype_r (plotter, 0);
-	    }
-	  else
-	    // filling; set fill color, and pen color to be the same
-	    {
-	      double d_fill_red, d_fill_green, d_fill_blue;
-	      int fill_red, fill_green, fill_blue;
+      // manipulate fill color by setting the fill fraction
+      pl_filltype_r (plotter, fill_fraction);
 
-	      d_fill_red = 0xffff - fill * (0xffff - pen_red);
-	      d_fill_green = 0xffff - fill * (0xffff - pen_green);
-	      d_fill_blue = 0xffff - fill * (0xffff - pen_blue);
-	      fill_red = IROUND(d_fill_red);
-	      fill_green = IROUND(d_fill_green);
-	      fill_blue = IROUND(d_fill_blue);
-	      pl_color_r (plotter, fill_red, fill_green, fill_blue);
-	      pl_filltype_r (plotter, 1);
-	    }
-	}
-      
       plotter_fill_fraction = fill_fraction;
       plotter_path_in_progress = false;
     }
@@ -297,7 +239,7 @@ plot_output::set_fill (double fill)
 void
 plot_output::set_line_type_and_thickness (const line_type &lt)
 {
-  switch(lt.type)
+  switch (lt.type)
     {
     case line_type::solid:
     default:
@@ -334,15 +276,36 @@ plot_output::set_line_type_and_thickness (const line_type &lt)
 	}
       break;
     }
-  if (!(lt.thickness < 0.0 && plotter_line_thickness < 0.0)
-      && lt.thickness != plotter_line_thickness)
+  if (lt.thickness != plotter_line_thickness
+      &&
+      !(lt.thickness < 0.0 && plotter_line_thickness < 0.0))
+    // need to change (recall negative thickness means `default')
     {
       if (lt.thickness < 0)
-	pl_flinewidth_r (plotter, default_plotter_line_thickness / POINTS_PER_INCH);
+	pl_flinewidth_r (plotter, 
+			 default_plotter_line_thickness / POINTS_PER_INCH);
       else
 	pl_flinewidth_r (plotter, lt.thickness / POINTS_PER_INCH);
       plotter_line_thickness = lt.thickness;
       plotter_path_in_progress = false;
+    }
+}
+
+// Set pen visibility (true/false).  This is needed for precision dashing
+// around the boundary of any closed object; provided that it is filled, at
+// least.  When first drawing the closed object itself, pen visibility
+// needs to be set to `false'.
+void
+plot_output::set_pen_visibility (bool visible)
+{
+  if (visible != plotter_visible_pen)
+    {
+      if (visible)
+	pl_pentype_r (plotter, 1);
+      else
+	pl_pentype_r (plotter, 0);
+
+      plotter_visible_pen = visible;
     }
 }
 
@@ -366,8 +329,9 @@ plot_output::text(const position &center, text_piece *v, int n, double angle)
       pl_ftextangle_r (plotter, 180 * angle / M_PI);
       plotter_path_in_progress = false;
 
-      set_fill (-1.0);		// resets pen color to default
+      set_pen_visibility (true); // libplot may need this
     }
+
   for (int i = 0; i < n; i++)
     {
       pl_fmove_r (plotter, 
@@ -426,6 +390,7 @@ plot_output::line(const position &start, const position *v, int n,
     }
 
   set_fill (-1.0);		// unfilled, pic convention
+  set_pen_visibility (true);
 
   if (!precision_dashing || lt.type == line_type::solid)
     {
@@ -485,12 +450,12 @@ plot_output::line(const position &start, const position *v, int n,
 		// round dot spacings to integer, along line segment
 		int ndots = IROUND(dist/lt.dash_width);
 		if (ndots == 0)
-		  dot(from_point, lt);
+		  dot (from_point, lt);
 		else 
 		  {
 		    vec /= double(ndots);
 		    for (int j = 0; j <= ndots; j++)
-		      dot(from_point + vec*j, lt);
+		      dot (from_point + vec*j, lt);
 		  }
 		from_point = v[i];
 		to_point = v[i+1];
@@ -519,6 +484,7 @@ plot_output::spline(const position &start, const position *v, int n,
     }
 
   set_fill (-1.0);		// unfilled, pic convention
+  set_pen_visibility (true);
   set_line_type_and_thickness (lt);
 
   if (n == 1)
@@ -561,6 +527,7 @@ plot_output::arc (const position &start, const position &cent,
     }
 
   set_fill (-1.0);		// unfilled (pic convention)
+  set_pen_visibility (true);
 
   if (!precision_dashing || lt.type == line_type::solid)
     {
@@ -581,13 +548,13 @@ plot_output::arc (const position &start, const position &cent,
 	  // edge arc, with dashes
 	  if (plotter_path_in_progress)
 	    pl_endpath_r (plotter);
-	  dashed_arc(start, cent, end, lt);
+	  dashed_arc (start, cent, end, lt);
 	  pl_endpath_r (plotter);
 	  plotter_path_in_progress = false;
 	  break;
 	case line_type::dotted:
 	  // edge arc, with dots
-	  dotted_arc(start, cent, end, lt);
+	  dotted_arc (start, cent, end, lt);
 	  plotter_path_in_progress = false;
 	  break;
 	default:
@@ -616,7 +583,9 @@ plot_output::polygon(const position *v, int n,
   if (!precision_dashing || lt.type == line_type::solid)
     {
       set_fill (fill);
+      set_pen_visibility (true);
       set_line_type_and_thickness (lt);
+
       if (n == 4 
 	  && v[0].x == v[1].x && v[2].x == v[3].x
 	  && v[0].y == v[3].y && v[1].y == v[2].y)
@@ -639,12 +608,14 @@ plot_output::polygon(const position *v, int n,
       line_type slt;
 
       if (fill >= 0.0)
-	// fill polygon, by drawing/filling with zero edge width
+	// fill polygon, but don't edge it
 	{
 	  set_fill (fill);
 	  slt.type = line_type::solid;
 	  slt.thickness = 0.0;
 	  set_line_type_and_thickness (slt);
+	  set_pen_visibility (false); // edge will not be drawn
+
 	  pl_fmove_r (plotter, v[n-1].x, v[n-1].y);
 	  for (int i = 0; i < n; i++)
 	    pl_fcont_r (plotter, v[i].x, v[i].y);
@@ -653,7 +624,10 @@ plot_output::polygon(const position *v, int n,
 	}
 
       // draw polygon boundary (unfilled) 
+
       set_fill (-1.0);
+      set_pen_visibility (true);
+
       switch (lt.type) 
 	{
 	case line_type::dashed:
@@ -702,12 +676,12 @@ plot_output::polygon(const position *v, int n,
 		// round dot spacings to integer, along line segment
 		int ndots = IROUND(dist/lt.dash_width);
 		if (ndots == 0)
-		  dot(from_point, lt);
+		  dot (from_point, lt);
 		else 
 		  {
 		    vec /= double(ndots);
 		    for (int j = 0; j <= ndots; j++)
-		      dot(from_point + vec*j, lt);
+		      dot (from_point + vec*j, lt);
 		  }
 		from_point = v[i];
 		to_point = v[i+1];
@@ -735,7 +709,9 @@ plot_output::circle (const position &cent, double rad,
   if (!precision_dashing || lt.type == line_type::solid)
     {
       set_fill (fill);
+      set_pen_visibility (true);
       set_line_type_and_thickness (lt);
+
       pl_fcircle_r (plotter, cent.x, cent.y, rad);
       plotter_path_in_progress = false;
     }
@@ -745,19 +721,22 @@ plot_output::circle (const position &cent, double rad,
       line_type slt;
 
       if (fill >= 0.0)
-	// fill circle, by drawing/filling with zero edge width
+	// fill circle, but don't edge it
 	{
 	  set_fill (fill);
+	  set_pen_visibility (false); // edge will not be drawn
 	  slt = lt;
 	  slt.type = line_type::solid;
 	  slt.thickness = 0.0;
 	  set_line_type_and_thickness (slt);
+
 	  pl_fcircle_r (plotter, cent.x, cent.y, rad);
 	  plotter_path_in_progress = false;
 	}
 
       // draw circle boundary (unfilled)
       set_fill (-1.0);
+      set_pen_visibility (true);
       slt = lt;
       slt.type = line_type::solid;
       set_line_type_and_thickness (slt);
@@ -773,7 +752,7 @@ plot_output::circle (const position &cent, double rad,
 	  break;
 	case line_type::dotted:
 	  // edge circle, with dots
-	  dotted_circle(cent, rad, lt);
+	  dotted_circle (cent, rad, lt);
 	  break;
 	default:		// shouldn't happen
 	  break;
@@ -785,6 +764,7 @@ plot_output::circle (const position &cent, double rad,
 void
 plot_output::rounded_box(const position &cent, const distance &dim, double rad, const line_type &lt, double fill)
 {
+  static bool recursive = false;
   position tem, arc_start, arc_cent, arc_end;
   position line_start, line_end;
 
@@ -804,7 +784,12 @@ plot_output::rounded_box(const position &cent, const distance &dim, double rad, 
   if (!precision_dashing || lt.type == line_type::solid)
     {
       set_fill (fill);
-      set_line_type_and_thickness (lt);
+      if (!recursive)
+	// _not_ invoked recursively on account of precision dashing
+	{
+	  set_pen_visibility (true);
+	  set_line_type_and_thickness (lt);
+	}
 
       tem = cent - dim/2.0;
       arc_start = tem + position(0.0, rad);
@@ -860,14 +845,20 @@ plot_output::rounded_box(const position &cent, const distance &dim, double rad, 
 	{
 	  // fill rounded box (boundary solid, thickness 0) via recursive call
 	  set_fill (fill);
+	  set_pen_visibility (false); // edge will not be drawn
 	  line_type slt = lt;
 	  slt.type = line_type::solid;
 	  slt.thickness = 0.0;
+
+	  recursive = true;
 	  rounded_box(cent, dim, rad, slt, fill);
+	  recursive = false;
+
 	  plotter_path_in_progress = false;
 	}
 
       // draw rounded box boundary, unfilled
+      set_pen_visibility (true);
       set_line_type_and_thickness (lt);	// only thickness is relevant
       common_output::rounded_box(cent, dim, rad, lt, -1.0); //-1 means unfilled
       if (plotter_path_in_progress)
@@ -879,6 +870,7 @@ plot_output::rounded_box(const position &cent, const distance &dim, double rad, 
 }
 
 // Draw an ellipse object ("closed" in pic's sense).
+// No support for precision dashing, but there should be.
 void
 plot_output::ellipse(const position &cent, const distance &dim,
 		     const line_type &lt, double fill)
@@ -891,7 +883,9 @@ plot_output::ellipse(const position &cent, const distance &dim,
     }
 
   set_fill (fill);
+  set_pen_visibility (true);
   set_line_type_and_thickness (lt);
+
   pl_fellipse_r (plotter, cent.x, cent.y, 0.5 * dim.x, 0.5 * dim.y, 0.0);
   plotter_path_in_progress = false;
 }
@@ -903,15 +897,17 @@ plot_output::ellipse(const position &cent, const distance &dim,
 // Internal function, used for precision dotting; also invoked by
 // precision dotting methods in the common_output superclass.
 void
-plot_output::dot(const position &cent, const line_type &lt)
+plot_output::dot (const position &cent, const line_type &lt)
 // lt arg determines diameter of dot
 {
   line_type slt;
   
   set_fill (1.0);
+  set_pen_visibility (true);
   slt.type = line_type::solid;
   slt.thickness = 0.0;
   set_line_type_and_thickness (slt);
+
   pl_fcircle_r (plotter, cent.x, cent.y, 0.5 * lt.thickness / POINTS_PER_INCH);
   plotter_path_in_progress = false;
 }

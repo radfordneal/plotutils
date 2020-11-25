@@ -12,33 +12,42 @@
 /* Two other fields (font size and line width in user coordinates) play an
    important role at later times, e.g. a bad font size resets the font size
    to the default.  For that reason, those variables are filled in when
-   space() is called (see g_space.c).  They are computed using the two
-   quantities DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE and
-   DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (defined in extern.h). */
+   space() or fsetmatrix() is called (see g_concat.c).  They are computed
+   using the two quantities DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE
+   and DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE (defined in
+   extern.h). */
 
 #include "sys-defines.h"
 #include "extern.h"
+
+/* save keystrokes */
+#define DFSAFODS DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE
+#define DLWAFODS DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE
 
 const plDrawState _default_drawstate = {
 
 /***************** DEVICE-INDEPENDENT PART **************************/
 
-/* affine transformation from user coordinates to device coordinates */
-/* [DUMMY VALUES; filled in by initial call to space()] */
-  {
-    {1.0, 0.0, 0.0, 1.0, 0.0, 0.0}, /* PS-style transformation matrix */
-    true,			/* transformation scaling is uniform? */
-    true,			/* transf. preserves axis directions? */
-    true,			/* transf. doesn't involve a reflection? */
-  },
 /* graphics cursor position */
   {0.0, 0.0},			/* cursor position, in user coordinates */
-/* the state of any uncompleted path object */
-  (plGeneralizedPoint *)NULL,	/* array of accumulated points [here NULL]*/
-  0,				/* number of accumulated points */
-  0,				/* length of point storage buffer (bytes) */
-  false,			/* suppress endpath() while drawing a path? */
-  false,			/* path to be drawn is convex? (endpath hint)*/
+
+/* affine transformation from user coordinates to normalized device
+   coordinates, and affine transformation to actual device coordinates
+   (derived from it) */
+  {
+    {1.0, 0.0, 0.0, 1.0, 0.0, 0.0}, /* user->NDC transformation matrix */
+    {1.0, 0.0, 0.0, 1.0, 0.0, 0.0}, /* user->device transformation [dummy] */
+    true,			/* transf. scaling is uniform? [dummy] */
+    true,			/* transf. preserves axis dirs? [dummy] */
+    true			/* transf. doesn't reflect? [dummy] */
+  },
+
+/* the compound path being drawn, if any */
+  (plPath *)NULL,		/* simple path being drawn */
+  (plPath **)NULL,		/* previously drawn simple paths */
+  0,				/* number of previously drawn simple paths */
+  {0.0, 0.0},			/* starting point (used by closepath()) */
+
 /* modal drawing attributes */
   /* 1. path-related attributes */
   "even-odd",			/* fill mode ["even-odd" / "nonzero-winding"]*/
@@ -51,7 +60,8 @@ const plDrawState _default_drawstate = {
   "miter",			/* join mode [must be valid] */
   JOIN_MITER,			/* join type, one of JOIN_*, det'd by mode */
   DEFAULT_MITER_LIMIT,		/* miter limit for line joins */
-  0.0,				/* line width in user coors [set by space()] */
+  DLWAFODS,			/* line width in user coors [set by space()] */
+  true,				/* line width is (Plotter-specific) default? */
   1.0,				/* line width in device coordinates ["] */
   1,				/* line width, quantized to integer ["] */
   (double *)NULL,		/* array of dash on/off lengths */
@@ -62,40 +72,44 @@ const plDrawState _default_drawstate = {
   0,				/* fill type (0 = none, 1 = present,...) */
   1,				/* orientation of circles etc.(1=c'clockwise)*/
   /* 2. text-related attributes */
-  "HersheySerif",		/* font name [dummy, see g_savestate.c] */
-  0.0,				/* font size in user coordinates [dummy] */
+  "HersheySerif",		/* font name [dummy, see g_openpl.c] */
+  DFSAFODS,			/* font size in user coordinates [dummy] */
+  true,				/* font size is (Plotter-specific) default? */
   0.0,				/* degrees counterclockwise, for labels */
+  "HersheySerif",		/* true font name [dummy] */
   0.0,				/* true font size in user coordinates (") */  
   0.0,				/* font ascent in user coordinates (") */
   0.0,				/* font descent in user coordinates (") */
+  0.0,				/* font capital height in user coors (") */
   F_HERSHEY,			/* font type [dummy] */
   0,				/* typeface index (in fontdb.h typeface table; this is Hershey Serif typeface) [dummy] */
   1,				/* font index (within typeface; this is Roman variant of Hershey Serif typeface) [dummy] */
   true,				/* true means an ISO-Latin-1 font ["] */
-  /* color attributes (which affect both paths and text) */
-  {0, 0, 0},			/* pen color (= black) */
-  {0, 0, 0},			/* fill color (= black) */
-  {65535, 65535, 65535},	/* background color (= white) */
+  /* 3. color attributes (fgcolor and fillcolor are path-related; fgcolor
+     affects other primitives too) */
+  {0, 0, 0},			/* fg color, i.e., pen color (= black) */
+  {0, 0, 0},			/* base fill color (= black) */
+  {0, 0, 0},			/* true fill color (= black) */
+  {65535, 65535, 65535},	/* background color for display (= white) */
+  false,			/* no actual background color? */
+
 /* Default values for certain modal attributes, used when an out-of-range
    value is requested. (These two are special because unlike all others,
-   they're set by the initial call to space(), which also sets the line
-   width and font size fields above.  Incidentally, space() also invokes
-   linewidth(), so it will also set any device-dependent fields related to
-   line width. */
-  0.0,				/* line width in user coordinates */
-  0.0,				/* font size in user coordinates */
+   they're set by the initial call to space() or fsetmatrix(), which also
+   sets the line width and font size fields above. Incidentally, space()
+   and setmatrix() also invoke linewidth().) */
+  0.0,				/* default line width in user coordinates */
+  0.0,				/* default font size in user coordinates */
 
 /****************** DEVICE-DEPENDENT PART ***************************/
 
-/* elements specific to the HP-GL drawing state [DUMMY, computed by space()] */
+/* elements specific to the HP-GL drawing state [DUMMY] */
   0.001,			/* pen width (frac of diag dist betw P1,P2) */
 /* elements specific to the Fig drawing state [DUMMIES] */
   16,				/* font size in fig's idea of points */
   -1,				/* fig's fill level (-1 = transparent) */
   C_BLACK,			/* fig's fg color (0=black, see colordb2.c) */
   C_BLACK,			/* fig's fill color (see list in colordb2.c) */
-/* elements specific to the CGM Plotter drawing state */
-  CGM_OBJECT_OTHER,		/* hint to set_attributes() (object to draw) */
 /* elements specific to the PS drawing state [DUMMIES] */
   0.0,				/* RGB for PS fg color (floats) */
   0.0,
@@ -125,11 +139,9 @@ const plDrawState _default_drawstate = {
   (GC)NULL,			/* graphics context, for drawing */
   (GC)NULL,			/* graphics context, for filling */
   (GC)NULL,			/* graphics context, for erasing */
-  X_GC_FOR_DRAWING,		/* hint to set_attributes() (GC to alter) */
   {0, 0, 0},			/* pen color stored in GC (= black) */
   {0, 0, 0},			/* fill color stored in GC (= black) */
   {65535, 65535, 65535},	/* bg color stored in GC (= white) */
-  0,				/* fill level stored in GC (0 = transparent) */
   (unsigned long)0,		/* drawing pixel [dummy] */
   (unsigned long)0,		/* filling pixel [dummy] */
   (unsigned long)0,		/* erasing pixel [dummy] */

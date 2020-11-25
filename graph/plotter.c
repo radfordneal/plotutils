@@ -733,10 +733,10 @@ prepare_axis (axisp, trans, min, max, spacing, font_name, font_size, label, subs
 
 Multigrapher *
 #ifdef _HAVE_PROTOS
-new_multigrapher (const char *display_type, const char *bg_color, const char *bitmap_size, const char *max_line_length, const char *meta_portable, const char *page_size, const char *rotation_angle, bool save_screen)
+new_multigrapher (const char *display_type, const char *bg_color, const char *bitmap_size, const char *emulate_color, const char *max_line_length, const char *meta_portable, const char *page_size, const char *rotation_angle, bool save_screen)
 #else
-new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_portable, page_size, rotation_angle, save_screen)
-     const char *display_type, *bg_color, *bitmap_size, *max_line_length, *meta_portable, *page_size, *rotation_angle;
+new_multigrapher (display_type, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)
+     const char *display_type, *bg_color, *bitmap_size, *emulate_color, *max_line_length, *meta_portable, *page_size, *rotation_angle;
      bool save_screen;
 #endif
 {
@@ -750,6 +750,7 @@ new_multigrapher (display_type, bg_color, bitmap_size, max_line_length, meta_por
   plotter_params = pl_newplparams ();
   pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)bg_color);
   pl_setplparam (plotter_params, "BITMAPSIZE", (voidptr_t)bitmap_size);
+  pl_setplparam (plotter_params, "EMULATE_COLOR", (voidptr_t)emulate_color);
   pl_setplparam (plotter_params, "MAX_LINE_LENGTH", (voidptr_t)max_line_length);
   pl_setplparam (plotter_params, "META_PORTABLE", (voidptr_t)meta_portable);
   pl_setplparam (plotter_params, "PAGESIZE", (voidptr_t)page_size);

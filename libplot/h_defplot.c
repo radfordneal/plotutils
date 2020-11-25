@@ -36,32 +36,26 @@
    a HPGLPlotter struct. */
 const Plotter _h_default_plotter = 
 {
-  /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _h_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _h_endpath, _g_endsubpath, _g_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _h_fbox, _g_fboxrel, _h_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _h_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _h_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _h_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _h_initialize, _h_terminate,
+  /* page manipulation */
+  _h_begin_page, _h_erase_page, _h_end_page,
+  /* drawing state manipulation */
+  _g_push_state, _g_pop_state,
+  /* internal path-painting methods (endpath() is a wrapper for the first) */
+  _h_paint_path, _h_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  /* internal methods for drawing of markers and points */
+  _g_paint_marker, _h_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_falabel_hershey, _h_falabel_ps, _h_falabel_pcl, _h_falabel_stick, _g_falabel_other,
-  _g_flabelwidth_hershey, _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, _g_flabelwidth_other,
+  _g_paint_text_string_with_escapes, _h_paint_text_string,
+  _g_get_text_width,
   /* private low-level `retrieve font' method */
   _g_retrieve_font,
-  /* private low-level `sync font' method */
-  _h_set_font,
-  /* private low-level `sync line attributes' method */
-  _h_set_attributes,
-  /* private low-level `sync color' methods */
-  _h_set_pen_color,
-  _h_set_fill_color,
-  _g_set_bg_color,
-  /* private low-level `sync position' method */
-  _h_set_position,
+  /* `flush output' method, called only if Plotter handles its own output */
+  _g_flush_output,
   /* error handlers */
   _g_warning,
   _g_error,
-  /* low-level output routines */
-  _g_write_byte,
-  _g_write_bytes,
-  _g_write_string
 };
 #endif /* not LIBPLOTTER */
 
@@ -71,32 +65,26 @@ const Plotter _h_default_plotter =
    different initialization and termination routines. */
 const Plotter _q_default_plotter = 
 {
-  /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _h_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _h_endpath, _g_endsubpath, _g_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _h_fbox, _g_fboxrel, _h_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _h_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _h_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _h_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _q_initialize, _q_terminate,
+  /* page manipulation */
+  _h_begin_page, _h_erase_page, _h_end_page,
+  /* drawing state manipulation */
+  _g_push_state, _g_pop_state,
+  /* internal path-painting methods (endpath() is a wrapper for the first) */
+  _h_paint_path, _h_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  /* internal methods for drawing of markers and points */
+  _g_paint_marker, _h_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_falabel_hershey, _h_falabel_ps, _h_falabel_pcl, _h_falabel_stick, _g_falabel_other,
-  _g_flabelwidth_hershey, _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, _g_flabelwidth_other,
+  _g_paint_text_string_with_escapes, _h_paint_text_string,
+  _g_get_text_width,
   /* private low-level `retrieve font' method */
   _g_retrieve_font,
-  /* private low-level `sync font' method */
-  _h_set_font,
-  /* private low-level `sync line attributes' method */
-  _h_set_attributes,
-  /* private low-level `sync color' methods */
-  _h_set_pen_color,
-  _h_set_fill_color,
-  _g_set_bg_color,
-  /* private low-level `sync position' method */
-  _h_set_position,
+  /* `flush output' method, called only if Plotter handles its own output */
+  _g_flush_output,
   /* error handlers */
   _g_warning,
   _g_error,
-  /* low-level output routines */
-  _g_write_byte,
-  _g_write_bytes,
-  _g_write_string
 };
 #endif /* not LIBPLOTTER */
 
@@ -150,58 +138,66 @@ _h_initialize (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* tag field, differs in derived classes */
-  _plotter->type = PL_HPGL;
+  _plotter->data->type = PL_HPGL;
 #endif
+
+  /* output model */
+  _plotter->data->output_model = PL_OUTPUT_ONE_PAGE_AT_A_TIME;
 
   /* user-queryable capabilities: 0/1/2 = no/yes/maybe */
-  _plotter->have_wide_lines = 1;
-  _plotter->have_dash_array = 1;
-  _plotter->have_solid_fill = 1;
-  _plotter->have_odd_winding_fill = 1;
-  _plotter->have_nonzero_winding_fill = 1;
-  _plotter->have_settable_bg = 0;
-  _plotter->have_hershey_fonts = 1;
+  _plotter->data->have_wide_lines = 1;
+  _plotter->data->have_dash_array = 1;
+  _plotter->data->have_solid_fill = 1;
+  _plotter->data->have_odd_winding_fill = 1;
+  _plotter->data->have_nonzero_winding_fill = 1;
+  _plotter->data->have_settable_bg = 0;
+  _plotter->data->have_escaped_string_support = 0;
 #ifdef USE_PS_FONTS_IN_PCL
-  _plotter->have_ps_fonts = 1;
+  _plotter->data->have_ps_fonts = 1;
 #else
-  _plotter->have_ps_fonts = 0;
+  _plotter->data->have_ps_fonts = 0;
 #endif
-  _plotter->have_pcl_fonts = 1;
-  _plotter->have_stick_fonts = 1;
-  _plotter->have_extra_stick_fonts = 0;
+  _plotter->data->have_pcl_fonts = 1;
+  _plotter->data->have_stick_fonts = 1;
+  _plotter->data->have_extra_stick_fonts = 1;
+  _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user) */
-  _plotter->default_font_type = F_HERSHEY;
-  _plotter->pcl_before_ps = true;
-  _plotter->have_horizontal_justification = false;
-  _plotter->have_vertical_justification = false;
-  _plotter->kern_stick_fonts = false; /* in HP-GL/2, anyway (see below) */
-  _plotter->issue_font_warning = true;
+  _plotter->data->default_font_type = F_HERSHEY;
+  _plotter->data->pcl_before_ps = true;
+  _plotter->data->have_horizontal_justification = false;
+  _plotter->data->have_vertical_justification = false;
+  _plotter->data->kern_stick_fonts = true;
+  _plotter->data->issue_font_warning = true;
 
-  /* path and polyline-related parameters (also internal); note that we
-     don't set max_unfilled_polyline_length, because it was set by the
+  /* path-related parameters (also internal); note that we
+     don't set max_unfilled_path_length, because it was set by the
      superclass initialization */
-  _plotter->have_mixed_paths = true;
-  _plotter->allowed_arc_scaling = AS_UNIFORM;
-  _plotter->allowed_ellarc_scaling = AS_NONE;  
-  _plotter->allowed_quad_scaling = AS_NONE;  
-  _plotter->allowed_cubic_scaling = AS_NONE;
-  _plotter->flush_long_polylines = true;
-  _plotter->hard_polyline_length_limit = INT_MAX;
+  _plotter->data->have_mixed_paths = true;
+  _plotter->data->allowed_arc_scaling = AS_UNIFORM;
+  _plotter->data->allowed_ellarc_scaling = AS_NONE;  
+  _plotter->data->allowed_quad_scaling = AS_NONE;  
+  _plotter->data->allowed_cubic_scaling = AS_NONE;
+  _plotter->data->allowed_box_scaling = AS_AXES_PRESERVED;
+  _plotter->data->allowed_circle_scaling = AS_UNIFORM;
+  _plotter->data->allowed_ellipse_scaling = AS_NONE;
 
   /* dimensions */
-  _plotter->display_model_type = (int)DISP_MODEL_PHYSICAL;
-  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI;
-  _plotter->flipped_y = false;
-  _plotter->imin = 0;
-  _plotter->imax = 0;  
-  _plotter->jmin = 0;
-  _plotter->jmax = 0;  
-  _plotter->xmin = 0.0;
-  _plotter->xmax = 0.0;  
-  _plotter->ymin = 0.0;
-  _plotter->ymax = 0.0;  
-  _plotter->page_data = (plPageData *)NULL;
+  _plotter->data->display_model_type = (int)DISP_MODEL_PHYSICAL;
+  _plotter->data->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI;
+  _plotter->data->flipped_y = false;
+  _plotter->data->imin = 0;
+  _plotter->data->imax = 0;  
+  _plotter->data->jmin = 0;
+  _plotter->data->jmax = 0;  
+  _plotter->data->xmin = HPGL_SCALED_DEVICE_LEFT; 
+  _plotter->data->xmax = HPGL_SCALED_DEVICE_RIGHT;
+  _plotter->data->ymin = HPGL_SCALED_DEVICE_BOTTOM;
+  _plotter->data->ymax = HPGL_SCALED_DEVICE_TOP;
+  _plotter->data->page_data = (plPageData *)NULL;
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
 
   /* initialize data members specific to this derived class */
   /* parameters */
@@ -212,11 +208,13 @@ _h_initialize (S___(_plotter))
   _plotter->hpgl_p2.x = 0.0;
   _plotter->hpgl_p2.y = 8128.0;  
   _plotter->hpgl_plot_length = 10668.0;  
-  _plotter->hpgl_have_palette = false;
+  _plotter->hpgl_have_screened_vectors = false;
+  _plotter->hpgl_have_char_fill = false;
+  _plotter->hpgl_can_assign_colors = false;
   _plotter->hpgl_use_opaque_mode = true;  
   /* dynamic variables */
   	/* pen_color[] and pen_defined[] arrays also used */
-  _plotter->pen = 1;  
+  _plotter->hpgl_pen = 1;  
   _plotter->hpgl_free_pen = 2;  
   _plotter->hpgl_bad_pen = false;  
   _plotter->hpgl_pendown = false;  
@@ -225,13 +223,18 @@ _h_initialize (S___(_plotter))
   _plotter->hpgl_cap_style = HPGL_CAP_BUTT;
   _plotter->hpgl_join_style = HPGL_JOIN_MITER;
   _plotter->hpgl_miter_limit = 5.0; /* default HP-GL/2 value */
+  _plotter->hpgl_pen_type = HPGL_PEN_SOLID;
+  _plotter->hpgl_pen_option1 = 0.0;
+  _plotter->hpgl_pen_option2 = 0.0;
   _plotter->hpgl_fill_type = HPGL_FILL_SOLID_BI;
-  _plotter->hpgl_shading_level = 0.0;
-  _plotter->pcl_symbol_set = PCL_ROMAN_8;  
-  _plotter->pcl_spacing = 0;  
-  _plotter->pcl_posture = 0;  
-  _plotter->pcl_stroke_weight = 0;  
-  _plotter->pcl_typeface = STICK_TYPEFACE;  
+  _plotter->hpgl_fill_option1 = 0.0;
+  _plotter->hpgl_fill_option2 = 0.0;
+  _plotter->hpgl_char_rendering_type = HPGL_CHAR_FILL_SOLID_AND_MAYBE_EDGE;
+  _plotter->hpgl_symbol_set = PCL_ROMAN_8;  
+  _plotter->hpgl_spacing = 0;  
+  _plotter->hpgl_posture = 0;  
+  _plotter->hpgl_stroke_weight = 0;  
+  _plotter->hpgl_pcl_typeface = STICK_TYPEFACE;  
   _plotter->hpgl_charset_lower = HP_ASCII;
   _plotter->hpgl_charset_upper = HP_ASCII;
   _plotter->hpgl_rel_char_height = 0.0;
@@ -252,40 +255,42 @@ _h_initialize (S___(_plotter))
   {
     const char *version_s;
     
-    version_s = (const char *)_get_plot_param (R___(_plotter) "HPGL_VERSION");
+    version_s = (const char *)_get_plot_param (_plotter->data, "HPGL_VERSION");
     /* there are three subcases: "1", "1.5", and "2" (default, see above) */
     if (strcmp (version_s, "1") == 0) /* generic HP-GL, HP7220 or HP7475A */
       {
 	_plotter->hpgl_version = 0;
-	_plotter->have_wide_lines = 0;
-	_plotter->have_dash_array = 0;
-	_plotter->have_solid_fill = 0;
-	_plotter->have_odd_winding_fill = 1;
-	_plotter->have_nonzero_winding_fill = 0;
-	_plotter->have_ps_fonts = 0;
-	_plotter->have_pcl_fonts = 0;
-	_plotter->have_stick_fonts = 0;
-	_plotter->have_extra_stick_fonts = 0;
-	_plotter->kern_stick_fonts = true; /* not relevant in generic HP-GL */
+	_plotter->data->have_wide_lines = 0;
+	_plotter->data->have_dash_array = 0;
+	_plotter->data->have_solid_fill = 0;
+	_plotter->data->have_odd_winding_fill = 1;
+	_plotter->data->have_nonzero_winding_fill = 0;
+	_plotter->data->have_ps_fonts = 0;
+	_plotter->data->have_pcl_fonts = 0;
+	_plotter->data->have_stick_fonts = 1;
+	_plotter->data->have_extra_stick_fonts = 0;
+	_plotter->data->kern_stick_fonts = true;
+	_plotter->data->have_other_fonts = 0;
       }
     else if (strcmp (version_s, "1.5") == 0) /* HP7550A */
       {
 	_plotter->hpgl_version = 1;
-	_plotter->have_wide_lines = 0;
-	_plotter->have_dash_array = 0;
-	_plotter->have_solid_fill = 1;
-	_plotter->have_odd_winding_fill = 1;
-	_plotter->have_nonzero_winding_fill = 0;
-	_plotter->have_ps_fonts = 0;
-	_plotter->have_pcl_fonts = 0;
-	_plotter->have_stick_fonts = 1;
-	_plotter->have_extra_stick_fonts = 1;
-	_plotter->kern_stick_fonts = true; /* definitely relevant */
+	_plotter->data->have_wide_lines = 0;
+	_plotter->data->have_dash_array = 0;
+	_plotter->data->have_solid_fill = 1;
+	_plotter->data->have_odd_winding_fill = 1;
+	_plotter->data->have_nonzero_winding_fill = 0;
+	_plotter->data->have_ps_fonts = 0;
+	_plotter->data->have_pcl_fonts = 0;
+	_plotter->data->have_stick_fonts = 1;
+	_plotter->data->have_extra_stick_fonts = 1;
+	_plotter->data->kern_stick_fonts = true;
+	_plotter->data->have_other_fonts = 0;
       }
   }
 
   /* determine page type, and user-specified viewport offset if any */
-  _set_page_type (R___(_plotter) &xoffset, &yoffset);
+  _set_page_type (_plotter->data, &xoffset, &yoffset);
   
   /* Determine range of device coordinates over which the viewport will
      extend (and hence the transformation from user to device coordinates;
@@ -299,7 +304,7 @@ _h_initialize (S___(_plotter))
   {
     double x_llc, y_llc, x_urc, y_urc, viewport_size;
     
-    viewport_size = _plotter->page_data->viewport_size;
+    viewport_size = _plotter->data->page_data->viewport_size;
 
     /* by default, viewport lower left corner is (0,0) in HP-GL coordinates */
     x_llc = 0.0 + xoffset;
@@ -312,15 +317,10 @@ _h_initialize (S___(_plotter))
     _plotter->hpgl_p1.y = HPGL_UNITS_PER_INCH * y_llc;
     _plotter->hpgl_p2.y = HPGL_UNITS_PER_INCH * y_urc;
 
-    _plotter->xmin = HPGL_SCALED_DEVICE_LEFT; 
-    _plotter->xmax = HPGL_SCALED_DEVICE_RIGHT;
-    _plotter->ymin = HPGL_SCALED_DEVICE_BOTTOM;
-    _plotter->ymax = HPGL_SCALED_DEVICE_TOP;
-
   /* plot length (to be emitted in an HP-GL/2 `PS' instruction, important
      mostly for roll plotters; see h_openpl.c) */
   _plotter->hpgl_plot_length = 
-    _plotter->page_data->hpgl2_plot_length * HPGL_UNITS_PER_INCH;
+    _plotter->data->page_data->hpgl2_plot_length * HPGL_UNITS_PER_INCH;
   }
 
   /* determine whether to rotate the figure (e.g. horizontal instead of
@@ -328,7 +328,7 @@ _h_initialize (S___(_plotter))
   {
     const char *rotate_s;
 
-    rotate_s = (const char *)_get_plot_param (R___(_plotter) "HPGL_ROTATE");
+    rotate_s = (const char *)_get_plot_param (_plotter->data, "HPGL_ROTATE");
     /* four subcases: 0 (default), 90, 180, 270 (latter two only if "2") */
     if (strcasecmp (rotate_s, "yes") == 0
 	|| strcmp (rotate_s, "90") == 0)
@@ -346,7 +346,7 @@ _h_initialize (S___(_plotter))
   {
     const char *transparent_s;
 
-    transparent_s = (const char *)_get_plot_param (R___(_plotter) "HPGL_OPAQUE_MODE" );
+    transparent_s = (const char *)_get_plot_param (_plotter->data, "HPGL_OPAQUE_MODE" );
     if (strcasecmp (transparent_s, "no") == 0)
       _plotter->hpgl_use_opaque_mode = false;
   }
@@ -358,31 +358,31 @@ _h_initialize (S___(_plotter))
     {
       const char *palette_s;
 	  
-      palette_s = (const char *)_get_plot_param (R___(_plotter) "HPGL_ASSIGN_COLORS");
+      palette_s = (const char *)_get_plot_param (_plotter->data, "HPGL_ASSIGN_COLORS");
       if (strcasecmp (palette_s, "yes") == 0)
-	_plotter->hpgl_have_palette = true;
+	_plotter->hpgl_can_assign_colors = true;
     }
       
   /* initialize pen color array, typically 0..31 */
   for (i = 0; i < HPGL2_MAX_NUM_PENS; i++)
-    _plotter->pen_defined[i] = 0; /* pen absent, or at least undefined */
+    _plotter->hpgl_pen_defined[i] = 0; /* pen absent, or at least undefined */
       
   /* pen #0 (white pen, RGB=255,255,255) is always defined */
-  _plotter->pen_color[0].red = 255;
-  _plotter->pen_color[0].green = 255;
-  _plotter->pen_color[0].blue = 255;
-  _plotter->pen_defined[0] = 2; /* i.e. hard-defined */
+  _plotter->hpgl_pen_color[0].red = 255;
+  _plotter->hpgl_pen_color[0].green = 255;
+  _plotter->hpgl_pen_color[0].blue = 255;
+  _plotter->hpgl_pen_defined[0] = 2; /* i.e. hard-defined */
       
   /* determine initial palette, i.e. available pens in 1..31 range */
   {
     const char *pen_s;
 
-    pen_s = (const char *)_get_plot_param (R___(_plotter) "HPGL_PENS");
+    pen_s = (const char *)_get_plot_param (_plotter->data, "HPGL_PENS");
     
     if (pen_s == NULL 
 	|| _parse_pen_string (R___(_plotter) pen_s) == false
-	|| (_plotter->hpgl_have_palette == false 
-	    && _plotter->pen_defined[1] == 0))
+	|| (_plotter->hpgl_can_assign_colors == false 
+	    && _plotter->hpgl_pen_defined[1] == 0))
       /* Either user didn't assign a value, or it was bad; use default.
          Note that if no logical pens, we insist on pen #1 being present
          (for backward compatibility?). */
@@ -402,7 +402,7 @@ _h_initialize (S___(_plotter))
 	
     for (i = 2; i < HPGL2_MAX_NUM_PENS; i++)
       {
-	if (_plotter->pen_defined[i] == 0)
+	if (_plotter->hpgl_pen_defined[i] == 0)
 	  /* at least one pen with number > 1 is not yet defined */
 	  {
 	    /* record which such was encountered first */
@@ -413,7 +413,7 @@ _h_initialize (S___(_plotter))
       }
     if (!undefined_pen_seen)	
       /* too many pens specified, can't soft-define colors */
-      _plotter->hpgl_have_palette = false;
+      _plotter->hpgl_can_assign_colors = false;
   }
 }
 
@@ -444,58 +444,66 @@ _q_initialize (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* tag field, differs in derived classes */
-  _plotter->type = PL_PCL;
+  _plotter->data->type = PL_PCL;
 #endif
+
+  /* output model */
+  _plotter->data->output_model = PL_OUTPUT_ONE_PAGE_AT_A_TIME;
 
   /* user-queryable capabilities: 0/1/2 = no/yes/maybe */
-  _plotter->have_wide_lines = 1;
-  _plotter->have_dash_array = 1;
-  _plotter->have_solid_fill = 1;
-  _plotter->have_odd_winding_fill = 1;
-  _plotter->have_nonzero_winding_fill = 1;
-  _plotter->have_settable_bg = 0;
-  _plotter->have_hershey_fonts = 1;
+  _plotter->data->have_wide_lines = 1;
+  _plotter->data->have_dash_array = 1;
+  _plotter->data->have_solid_fill = 1;
+  _plotter->data->have_odd_winding_fill = 1;
+  _plotter->data->have_nonzero_winding_fill = 1;
+  _plotter->data->have_settable_bg = 0;
+  _plotter->data->have_escaped_string_support = 0;
 #ifdef USE_PS_FONTS_IN_PCL
-  _plotter->have_ps_fonts = 1;
+  _plotter->data->have_ps_fonts = 1;
 #else
-  _plotter->have_ps_fonts = 0;
+  _plotter->data->have_ps_fonts = 0;
 #endif
-  _plotter->have_pcl_fonts = 1;
-  _plotter->have_stick_fonts = 1;
-  _plotter->have_extra_stick_fonts = 0;
+  _plotter->data->have_pcl_fonts = 1;
+  _plotter->data->have_stick_fonts = 1;
+  _plotter->data->have_extra_stick_fonts = 0;
+  _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user) */
-  _plotter->default_font_type = F_PCL;
-  _plotter->pcl_before_ps = true;
-  _plotter->have_horizontal_justification = false;
-  _plotter->have_vertical_justification = false;
-  _plotter->kern_stick_fonts = false; /* in HP-GL/2 */
-  _plotter->issue_font_warning = true;
+  _plotter->data->default_font_type = F_PCL;
+  _plotter->data->pcl_before_ps = true;
+  _plotter->data->have_horizontal_justification = false;
+  _plotter->data->have_vertical_justification = false;
+  _plotter->data->kern_stick_fonts = false; /* in PCL5 printers' HP-GL/2 emulation */
+  _plotter->data->issue_font_warning = true;
 
-  /* path and polyline-related parameters (also internal); note that we
-     don't set max_unfilled_polyline_length, because it was set by the
+  /* path-related parameters (also internal); note that we
+     don't set max_unfilled_path_length, because it was set by the
      superclass initialization */
-  _plotter->have_mixed_paths = true;
-  _plotter->allowed_arc_scaling = AS_UNIFORM;
-  _plotter->allowed_ellarc_scaling = AS_NONE;  
-  _plotter->allowed_quad_scaling = AS_NONE;  
-  _plotter->allowed_cubic_scaling = AS_NONE;
-  _plotter->flush_long_polylines = true;
-  _plotter->hard_polyline_length_limit = INT_MAX;
+  _plotter->data->have_mixed_paths = true;
+  _plotter->data->allowed_arc_scaling = AS_UNIFORM;
+  _plotter->data->allowed_ellarc_scaling = AS_NONE;  
+  _plotter->data->allowed_quad_scaling = AS_NONE;  
+  _plotter->data->allowed_cubic_scaling = AS_ANY;
+  _plotter->data->allowed_box_scaling = AS_AXES_PRESERVED;
+  _plotter->data->allowed_circle_scaling = AS_UNIFORM;
+  _plotter->data->allowed_ellipse_scaling = AS_NONE;
 
   /* dimensions, differ in derived classes */
-  _plotter->display_model_type = (int)DISP_MODEL_PHYSICAL;
-  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI;
-  _plotter->flipped_y = false;
-  _plotter->imin = 0;
-  _plotter->imax = 0;  
-  _plotter->jmin = 0;
-  _plotter->jmax = 0;  
-  _plotter->xmin = 0.0;
-  _plotter->xmax = 0.0;  
-  _plotter->ymin = 0.0;
-  _plotter->ymax = 0.0;  
-  _plotter->page_data = (plPageData *)NULL;
+  _plotter->data->display_model_type = (int)DISP_MODEL_PHYSICAL;
+  _plotter->data->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI;
+  _plotter->data->flipped_y = false;
+  _plotter->data->imin = 0;
+  _plotter->data->imax = 0;  
+  _plotter->data->jmin = 0;
+  _plotter->data->jmax = 0;  
+  _plotter->data->xmin = HPGL_SCALED_DEVICE_LEFT; 
+  _plotter->data->xmax = HPGL_SCALED_DEVICE_RIGHT;
+  _plotter->data->ymin = HPGL_SCALED_DEVICE_BOTTOM;
+  _plotter->data->ymax = HPGL_SCALED_DEVICE_TOP;
+  _plotter->data->page_data = (plPageData *)NULL;
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
 
   /* initialize data members specific to this derived class */
   /* parameters */
@@ -506,11 +514,13 @@ _q_initialize (S___(_plotter))
   _plotter->hpgl_p2.x = 0.0;
   _plotter->hpgl_p2.y = 8128.0;  
   _plotter->hpgl_plot_length = 10668.0;  
-  _plotter->hpgl_have_palette = false;
+  _plotter->hpgl_have_screened_vectors = true; /* different from HPGLPlotter */
+  _plotter->hpgl_have_char_fill = true;	/* different from HPGLPlotter */
+  _plotter->hpgl_can_assign_colors = false;
   _plotter->hpgl_use_opaque_mode = true;  
   /* dynamic variables */
   	/* pen_color[] and pen_defined[] arrays also used */
-  _plotter->pen = 1;  
+  _plotter->hpgl_pen = 1;  
   _plotter->hpgl_free_pen = 2;  
   _plotter->hpgl_bad_pen = false;  
   _plotter->hpgl_pendown = false;  
@@ -522,13 +532,18 @@ _q_initialize (S___(_plotter))
    segments can have, if the join is to be mitered rather than beveled.
    Default HP-GL/2 value is 5.0. */
   _plotter->hpgl_miter_limit = 5.0;
+  _plotter->hpgl_pen_type = HPGL_PEN_SOLID;
+  _plotter->hpgl_pen_option1 = 0.0;
+  _plotter->hpgl_pen_option2 = 0.0;
   _plotter->hpgl_fill_type = HPGL_FILL_SOLID_BI;
-  _plotter->hpgl_shading_level = 0.0;
-  _plotter->pcl_symbol_set = PCL_ROMAN_8;  
-  _plotter->pcl_spacing = 0;  
-  _plotter->pcl_posture = 0;  
-  _plotter->pcl_stroke_weight = 0;  
-  _plotter->pcl_typeface = STICK_TYPEFACE;  
+  _plotter->hpgl_fill_option1 = 0.0;
+  _plotter->hpgl_fill_option2 = 0.0;
+  _plotter->hpgl_char_rendering_type = HPGL_CHAR_FILL_SOLID_AND_MAYBE_EDGE;
+  _plotter->hpgl_symbol_set = PCL_ROMAN_8;  
+  _plotter->hpgl_spacing = 0;  
+  _plotter->hpgl_posture = 0;  
+  _plotter->hpgl_stroke_weight = 0;  
+  _plotter->hpgl_pcl_typeface = STICK_TYPEFACE;  
   _plotter->hpgl_charset_lower = HP_ASCII;
   _plotter->hpgl_charset_upper = HP_ASCII;
   _plotter->hpgl_rel_char_height = 0.0;
@@ -543,7 +558,7 @@ _q_initialize (S___(_plotter))
   /* initialize certain data members from device driver parameters */
       
   /* determine page type, and user-specified viewport offset if any */
-  _set_page_type (R___(_plotter) &xoffset, &yoffset);
+  _set_page_type (_plotter->data, &xoffset, &yoffset);
   
   /* Determine range of device coordinates over which the viewport will
      extend (and hence the transformation from user to device coordinates;
@@ -557,29 +572,24 @@ _q_initialize (S___(_plotter))
   {
     double xmid, ymid, viewport_size;
     
-    viewport_size = _plotter->page_data->viewport_size;
-    xmid = 0.5 * _plotter->page_data->xsize + xoffset;
-    ymid = 0.5 * _plotter->page_data->ysize + yoffset;
+    viewport_size = _plotter->data->page_data->viewport_size;
+    xmid = 0.5 * _plotter->data->page_data->xsize + xoffset;
+    ymid = 0.5 * _plotter->data->page_data->ysize + yoffset;
     
     /* origin of HP-GL/2 coordinate system used by a PCL5 device is not at
        lower left corner of page; compensate */
-    xmid -= _plotter->page_data->pcl_hpgl2_xorigin;
-    ymid -= _plotter->page_data->pcl_hpgl2_yorigin;
+    xmid -= _plotter->data->page_data->pcl_hpgl2_xorigin;
+    ymid -= _plotter->data->page_data->pcl_hpgl2_yorigin;
 
     _plotter->hpgl_p1.x = HPGL_UNITS_PER_INCH * (xmid - 0.5 * viewport_size);
     _plotter->hpgl_p2.x = HPGL_UNITS_PER_INCH * (xmid + 0.5 * viewport_size);  
     _plotter->hpgl_p1.y = HPGL_UNITS_PER_INCH * (ymid - 0.5 * viewport_size);
     _plotter->hpgl_p2.y = HPGL_UNITS_PER_INCH * (ymid + 0.5 * viewport_size);  
 
-    _plotter->xmin = HPGL_SCALED_DEVICE_LEFT; 
-    _plotter->xmax = HPGL_SCALED_DEVICE_RIGHT;
-    _plotter->ymin = HPGL_SCALED_DEVICE_BOTTOM;
-    _plotter->ymax = HPGL_SCALED_DEVICE_TOP;
-
   /* plot length (to be emitted in an HP-GL/2 `PS' instruction, important
      mostly for roll plotters; see h_openpl.c) */
   _plotter->hpgl_plot_length = 
-    _plotter->page_data->hpgl2_plot_length * HPGL_UNITS_PER_INCH;
+    _plotter->data->page_data->hpgl2_plot_length * HPGL_UNITS_PER_INCH;
   }
 
   /* don't make use of HP-GL/2's plotting-area rotation facility; if we
@@ -590,13 +600,13 @@ _q_initialize (S___(_plotter))
   /* do we support the HP-GL/2 palette extension, i.e. can we define new
      logical pens as RGB triples? (user must request this with
      PCL_ASSIGN_COLORS) */
-  _plotter->hpgl_have_palette = false;
+  _plotter->hpgl_can_assign_colors = false;
   {
     const char *palette_s;
     
-    palette_s = (const char *)_get_plot_param (R___(_plotter) "PCL_ASSIGN_COLORS");
+    palette_s = (const char *)_get_plot_param (_plotter->data, "PCL_ASSIGN_COLORS");
     if (strcasecmp (palette_s, "yes") == 0)
-      _plotter->hpgl_have_palette = true;
+      _plotter->hpgl_can_assign_colors = true;
   }
       
   /* do we use the HP-GL/2 `BZ' instruction for drawing Beziers?  (the
@@ -604,21 +614,21 @@ _q_initialize (S___(_plotter))
   {
     const char *bezier_s;
     
-    bezier_s = (const char *)_get_plot_param (R___(_plotter) "PCL_BEZIERS");
+    bezier_s = (const char *)_get_plot_param (_plotter->data, "PCL_BEZIERS");
 
-    if (_plotter->hpgl_version == 2 && strcasecmp (bezier_s, "yes") == 0)
-      _plotter->allowed_cubic_scaling = AS_ANY;
+    if (strcasecmp (bezier_s, "yes") != 0)
+      _plotter->data->allowed_cubic_scaling = AS_NONE;
   }
 
   /* initialize pen color array, typically 0..31 */
   for (i = 0; i < HPGL2_MAX_NUM_PENS; i++)
-    _plotter->pen_defined[i] = 0; /* pen absent, or at least undefined */
+    _plotter->hpgl_pen_defined[i] = 0; /* pen absent, or at least undefined */
       
   /* pen #0 (white pen, RGB=255,255,255) is always defined */
-  _plotter->pen_color[0].red = 255;
-  _plotter->pen_color[0].green = 255;
-  _plotter->pen_color[0].blue = 255;
-  _plotter->pen_defined[0] = 2; /* i.e. hard-defined */
+  _plotter->hpgl_pen_color[0].red = 255;
+  _plotter->hpgl_pen_color[0].green = 255;
+  _plotter->hpgl_pen_color[0].blue = 255;
+  _plotter->hpgl_pen_defined[0] = 2; /* i.e. hard-defined */
       
   /* determine initial palette, i.e. available pens in 1..31 range; for a
      PCLPlotter we use the default HP-GL/2 pen string */
@@ -636,7 +646,7 @@ _q_initialize (S___(_plotter))
 	
     for (i = 2; i < HPGL2_MAX_NUM_PENS; i++)
       {
-	if (_plotter->pen_defined[i] == 0)
+	if (_plotter->hpgl_pen_defined[i] == 0)
 	  /* at least one pen with number > 1 is not yet defined */
 	  {
 	    /* record which such was encountered first */
@@ -647,7 +657,7 @@ _q_initialize (S___(_plotter))
       }
     if (!undefined_pen_seen)	
       /* too many pens specified, can't soft-define colors */
-      _plotter->hpgl_have_palette = false;
+      _plotter->hpgl_can_assign_colors = false;
   }
 }
 
@@ -676,7 +686,7 @@ _parse_pen_string (R___(_plotter) pen_s)
       int pen_num;
       bool got_digit;
       const char *tmp;
-      const plColorNameInfo *info;
+      plColor color;
 
       if (*charp == ':')	/* skip any ':' */
 	{
@@ -715,12 +725,10 @@ _parse_pen_string (R___(_plotter) pen_s)
 	}
 
       /* got color name string, parse it */
-      if (_string_to_color (R___(_plotter) name, &info))
+      if (_string_to_color (name, &color, _plotter->data->color_name_cache))
 	{
-	  _plotter->pen_color[pen_num].red = info->red;
-	  _plotter->pen_color[pen_num].green = info->green;
-	  _plotter->pen_color[pen_num].blue = info->blue;
-	  _plotter->pen_defined[pen_num] = 2; /* hard-defined */
+	  _plotter->hpgl_pen_color[pen_num] = color;
+	  _plotter->hpgl_pen_defined[pen_num] = 2; /* hard-defined */
 	}
       else			/* couldn't match color name string */
 	return false;
@@ -742,10 +750,6 @@ _h_terminate (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  /* if specified plotter is open, close it */
-  if (_plotter->open)
-    _plotter->closepl (S___(_plotter));
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
   _g_terminate (S___(_plotter));
@@ -760,10 +764,6 @@ _q_terminate (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  /* if specified plotter is open, close it */
-  if (_plotter->open)
-    _plotter->closepl (S___(_plotter));
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
   _h_terminate (S___(_plotter));
@@ -832,6 +832,10 @@ HPGLPlotter::HPGLPlotter (PlotterParams &parameters)
 
 HPGLPlotter::~HPGLPlotter ()
 {
+  /* if luser left the Plotter open, close it */
+  if (_plotter->data->open)
+    _API_closepl ();
+
   _h_terminate ();
 }
 #endif
@@ -898,6 +902,10 @@ PCLPlotter::PCLPlotter (PlotterParams &parameters)
 
 PCLPlotter::~PCLPlotter ()
 {
+  /* if luser left the Plotter open, close it */
+  if (_plotter->data->open)
+    _API_closepl ();
+
   _q_terminate ();
 }
 #endif
@@ -909,7 +917,7 @@ PCLPlotter::~PCLPlotter ()
    plotter.h. */
 
 /* Two forwarding functions called by any HPGLPlotter/PCLPlotter in
-   h_openpl.c and h_closepl.c, respectively.  See h_openpl.c and
+   begin_page() and end_page(), respectively.  See h_openpl.c and
    h_closepl.c for the forwarded-to functions _h_maybe_switch_to_hpgl(),
    _q_maybe_switch_to_hpgl(), _h_maybe_switch_from_hpgl(),
    _q_maybe_switch_from_hpgl().  The HPGLPlotter versions are no-ops, but
@@ -917,7 +925,8 @@ PCLPlotter::~PCLPlotter ()
    mode, and back to PCL 5 mode from HP-GL/2 mode. */
    
 /* Eject page (if page number > 1) and switch from PCL 5 mode to HP-GL/2
-   mode, if a PCL 5 printer (otherwise it's a no-op) */
+   mode, if a PCL 5 printer (otherwise it's a no-op).  Invoked by
+   begin_page(). */
 void
 #ifdef _HAVE_PROTOS
 _maybe_switch_to_hpgl (Plotter *_plotter)
@@ -926,14 +935,20 @@ _maybe_switch_to_hpgl (_plotter)
      Plotter *_plotter;
 #endif
 {
-  if (_plotter->type == PL_HPGL)
-    _h_maybe_switch_to_hpgl (_plotter);
-  else if (_plotter->type == PL_PCL)
-    _q_maybe_switch_to_hpgl (_plotter);
+  switch ((int)(_plotter->data->type))
+    {
+    case (int)PL_HPGL:
+    default:
+      _h_maybe_switch_to_hpgl (_plotter); /* no-op */
+      break;
+    case (int)PL_PCL:
+      _q_maybe_switch_to_hpgl (_plotter);
+      break;
+    }
 }
 
-/* Switch back to PCL 5 mode from HP-GL/2 mode, if a PCL 5 printer 
-   (otherwise it's a no-op) */
+/* Switch back to PCL 5 mode from HP-GL/2 mode, if a PCL 5 printer
+   (otherwise it's a no-op).  Invoked by end_page(). */
 void
 #ifdef _HAVE_PROTOS
 _maybe_switch_from_hpgl (Plotter *_plotter)
@@ -942,9 +957,15 @@ _maybe_switch_from_hpgl (_plotter)
      Plotter *_plotter;
 #endif
 {
-  if (_plotter->type == PL_HPGL)
-    _h_maybe_switch_from_hpgl (_plotter);
-  else if (_plotter->type == PL_PCL)
-    _q_maybe_switch_from_hpgl (_plotter);
+  switch ((int)(_plotter->data->type))
+    {
+    case (int)PL_HPGL:
+    default:
+      _h_maybe_switch_from_hpgl (_plotter); /* no-op */
+      break;
+    case (int)PL_PCL:
+      _q_maybe_switch_from_hpgl (_plotter);
+      break;
+    }
 }
 #endif /* not LIBPLOTTER */

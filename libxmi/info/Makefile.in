@@ -64,13 +64,11 @@ CC = @CC@
 CXX = @CXX@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
-LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LTALLOCA = @LTALLOCA@
 MAKEINFO = @MAKEINFO@
-NM = @NM@
 OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
@@ -94,7 +92,7 @@ TEXI2DVI = texi2dvi
 INFO_DEPS = libxmi.info
 DVIS = libxmi.dvi
 TEXINFOS = libxmi.texi
-DIST_COMMON =  Makefile.am Makefile.in mdate-sh
+DIST_COMMON =  Makefile.am Makefile.in mdate-sh texinfo.tex
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

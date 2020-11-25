@@ -8,9 +8,10 @@
 /* forward references */
 static int _idraw_pseudocolor ____P((int red, int green, int blue));
 
-/* we call this routine to evaluate _plotter->drawstate->ps_fgcolor lazily,
+/* We call this routine to evaluate _plotter->drawstate->ps_fgcolor lazily,
    i.e. only when needed (just before an object is written to the output
-   buffer) */
+   buffer).  It finds the best match from among idraw's "foreground
+   colors", i.e., pen colors.  See p_color2.c for the list of colors. */
 
 void
 #ifdef _HAVE_PROTOS
@@ -36,9 +37,12 @@ _p_set_pen_color(S___(_plotter))
   return;
 }
 
-/* we call this routine to evaluate _plotter->drawstate->ps_fillcolor lazily,
-   i.e. only when needed (just before an object is written to the output
-   buffer) */
+/* We call this routine to evaluate _plotter->drawstate->ps_fillcolor
+   lazily, i.e. only when needed (just before an object is written to the
+   output buffer).  It finds the best match from among the possible idraw
+   colors.  In idraw, the fill color is always an interpolation between a
+   "foreground color" and a "background color", both of which are selected
+   from a fixed set.  See p_color2.c. */
 
 void
 #ifdef _HAVE_PROTOS
@@ -49,7 +53,6 @@ _p_set_fill_color(S___(_plotter))
 #endif
 {
   double red, green, blue;
-  double desaturate;
 
   if (_plotter->drawstate->fill_type == 0)
     /* don't do anything, fill color will be ignored when writing objects*/
@@ -59,17 +62,12 @@ _p_set_fill_color(S___(_plotter))
   green = ((double)((_plotter->drawstate->fillcolor).green))/0xFFFF;
   blue = ((double)((_plotter->drawstate->fillcolor).blue))/0xFFFF;
 
-  /* fill_type, if nonzero, specifies the extent to which the nominal fill
-     color should be desaturated.  1 means no desaturation, 0xffff means
-     complete desaturation (white). */
-  desaturate = ((double)_plotter->drawstate->fill_type - 1.)/0xFFFE;
-
-  _plotter->drawstate->ps_fillcolor_red = red + desaturate * (1.0 - red);
-  _plotter->drawstate->ps_fillcolor_green = green + desaturate * (1.0 - green);
-  _plotter->drawstate->ps_fillcolor_blue = blue + desaturate * (1.0 - blue);
+  _plotter->drawstate->ps_fillcolor_red = red;
+  _plotter->drawstate->ps_fillcolor_green = green;
+  _plotter->drawstate->ps_fillcolor_blue = blue;
 
   /* next subroutine needs fields that this will fill in... */
-  _plotter->set_pen_color (S___(_plotter));
+  _p_set_pen_color (S___(_plotter));
 
   /* Quantize for idraw, in a complicated way; we can choose from among a
      finite discrete set of values for ps_idraw_bgcolor and
@@ -82,9 +80,10 @@ _p_set_fill_color(S___(_plotter))
   return;
 }
 
-/* Find closest known point within the RGB color cube, using Euclidean
-   distance as our metric.  Our convention: no non-white color should 
-   be mapped to white. */
+/* Find, within the RGB color cube, the idraw pen color ("foreground
+   color") that is closest to a specified color (our pen color).  Euclidean
+   distance is our metric.  Our convention: no non-white color should be
+   mapped to white. */
 static int
 #ifdef _HAVE_PROTOS
 _idraw_pseudocolor (int red, int green, int blue)

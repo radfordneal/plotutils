@@ -1,37 +1,22 @@
-/* This file contains the erase method, which is a standard part of
-   libplot.  It erases all objects on the graphics device display. */
-
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_a_erase (S___(Plotter *_plotter))
+_a_erase_page (S___(Plotter *_plotter))
 #else
-_a_erase (S___(_plotter))
+_a_erase_page (S___(_plotter))
      S___(Plotter *_plotter;) 
 #endif
 {
   int i;
 
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) 
-		       "erase: invalid operation");
-      return -1;
-    }
-
-  if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
-  /* if we have an output buffer, i.e., if we're not plotting in real time,
-     discard all objects */
-  if (_plotter->page)
-    _reset_outbuf (_plotter->page);
+  /* The following resetting code should duplicate what is done in
+     begin_page(). */
 
   /* reinitialize `font used' array for this page */
   for (i = 0; i < NUM_PS_FONTS; i++)
-    _plotter->page->ps_font_used[i] = false;
+    _plotter->data->page->ps_font_used[i] = false;
 
   /* reset other AIPlotter variables, as if the page had just been opened */
   _plotter->ai_pen_cyan = 0.0;
@@ -53,8 +38,5 @@ _a_erase (S___(_plotter))
   _plotter->ai_line_width = 1.0;    
   _plotter->ai_fill_rule_type = 0; /* i.e. nonzero winding number rule */
 
-  /* on to next frame */
-  _plotter->frame_number++;
-
-  return 0;
+  return true;
 }

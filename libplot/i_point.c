@@ -1,17 +1,18 @@
-/* This file contains the point method, which is a standard part of
-   libplot.  It plots an object: a point with coordinates x,y. */
+/* The internal point-drawing function, which point() is a wrapper around.
+   It draws a point at the current location.  There is no standard
+   definition of `point', so any Plotter is free to implement this as it
+   sees fit. */
 
 #include "sys-defines.h"
 #include "extern.h"
 #include "xmi.h"
 
-int
+void
 #ifdef _HAVE_PROTOS
-_i_fpoint (R___(Plotter *_plotter) double x, double y)
+_i_paint_point (S___(Plotter *_plotter))
 #else
-_i_fpoint (R___(_plotter) x, y)
+_i_paint_point (S___(_plotter))
      S___(Plotter *_plotter;)
-     double x, y;
 #endif
 {
   double xx, yy;
@@ -20,59 +21,48 @@ _i_fpoint (R___(_plotter) x, y)
   miPixel fgPixel, bgPixel, pixels[2];
   miPoint point, offset;
 
-  if (!_plotter->open)
+  if (_plotter->drawstate->pen_type != 0)
+    /* have a pen to draw with */
     {
-      _plotter->error (R___(_plotter) "fpoint: invalid operation");
-      return -1;
+      /* convert point to floating-point device coordinates */
+      xx = XD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y);
+      yy = YD(_plotter->drawstate->pos.x, _plotter->drawstate->pos.y);
+      
+      /* round to integer device (GIF) coordinates */
+      ixx = IROUND(xx);
+      iyy = IROUND(yy);
+      
+      /* compute background and foreground color for miGC */
+      _i_set_pen_color (S___(_plotter));
+      bgPixel.type = MI_PIXEL_INDEX_TYPE;
+      bgPixel.u.index = _plotter->drawstate->i_bg_color_index;
+      fgPixel.type = MI_PIXEL_INDEX_TYPE;
+      fgPixel.u.index = _plotter->drawstate->i_pen_color_index;
+      pixels[0] = bgPixel;
+      pixels[1] = fgPixel;
+      
+      /* construct an miGC (graphics context for the libxmi module); copy
+	 attributes from the Plotter's GC to it */
+      pGC = miNewGC (2, pixels);
+      _set_common_mi_attributes (_plotter->drawstate, (voidptr_t)pGC);
+      
+      point.x = ixx;
+      point.y = iyy;
+      miDrawPoints ((miPaintedSet *)_plotter->i_painted_set, 
+		    pGC, MI_COORD_MODE_ORIGIN, 1, &point);
+      
+      /* deallocate miGC */
+      miDeleteGC (pGC);
+      
+      /* copy from painted set to canvas, and clear */
+      offset.x = 0;
+      offset.y = 0;
+      miCopyPaintedSetToCanvas ((miPaintedSet *)_plotter->i_painted_set, 
+				(miCanvas *)_plotter->i_canvas, 
+				offset);
+      miClearPaintedSet ((miPaintedSet *)_plotter->i_painted_set);
+      
+      /* something was drawn in frame */
+      _plotter->i_frame_nonempty = true;
     }
-
-  if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-  
-  /* update our notion of position */
-  _plotter->drawstate->pos.x = x;
-  _plotter->drawstate->pos.y = y;
-
-  /* convert point to floating-point device coordinates */
-  xx = XD(x,y);
-  yy = YD(x,y);
-
-  /* round to integer device (GIF) coordinates */
-  ixx = IROUND(xx);
-  iyy = IROUND(yy);
-
-  /* compute background and foreground color for miGC */
-  _plotter->set_pen_color (S___(_plotter));
-  bgPixel.type = MI_PIXEL_INDEX_TYPE;
-  bgPixel.u.index = _plotter->drawstate->i_bg_color_index;
-  fgPixel.type = MI_PIXEL_INDEX_TYPE;
-  fgPixel.u.index = _plotter->drawstate->i_pen_color_index;
-  pixels[0] = bgPixel;
-  pixels[1] = fgPixel;
-  
-  /* construct an miGC (graphics context for the libxmi module); copy
-     attributes from the Plotter's GC to it */
-  pGC = miNewGC (2, pixels);
-  _set_common_mi_attributes (R___(_plotter) (voidptr_t)pGC);
-
-  point.x = ixx;
-  point.y = iyy;
-  miDrawPoints ((miPaintedSet *)_plotter->i_painted_set, 
-		pGC, MI_COORD_MODE_ORIGIN, 1, &point);
-
-  /* deallocate miGC */
-  miDeleteGC (pGC);
-
-  /* copy from painted set to canvas, and clear */
-  offset.x = 0;
-  offset.y = 0;
-  miCopyPaintedSetToCanvas ((miPaintedSet *)_plotter->i_painted_set, 
-			    (miCanvas *)_plotter->i_canvas, 
-			    offset);
-  miClearPaintedSet ((miPaintedSet *)_plotter->i_painted_set);
-
-  /* something was drawn in frame */
-  _plotter->i_frame_nonempty = true;
-
-  return 0;
 }

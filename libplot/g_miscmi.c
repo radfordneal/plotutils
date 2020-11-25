@@ -1,7 +1,7 @@
-/* This file contains a function called by bitmap Plotters such as PNM and
-   GIF Plotters, just before drawing.  It sets the attributes in the
-   graphics context (of type `miGC') used by the libxmi scan conversion
-   routines. */
+/* This file contains a function called by Bitmap Plotters (including PNM
+   Plotters), and GIF Plotters, just before drawing.  It sets the
+   attributes in the graphics context (of type `miGC') used by the libxmi
+   scan conversion routines. */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -17,50 +17,50 @@ static const int _mi_cap_style[] =
 
 void
 #ifdef _HAVE_PROTOS
-_set_common_mi_attributes (R___(Plotter *_plotter) voidptr_t ptr)
+_set_common_mi_attributes (plDrawState *drawstate, voidptr_t ptr)
 #else
-_set_common_mi_attributes (R___(_plotter) ptr)
-     S___(Plotter *_plotter;) 
-     voidptr_t ptr;		/* really an (miGC *) */
+_set_common_mi_attributes (drawstate, ptr)
+     plDrawState *drawstate;
+     voidptr_t ptr;
 #endif
 {
   int line_style, num_dashes, offset;
   unsigned int *dashbuf;
-  miGC *pGC;
   bool dash_array_allocated = false;
   miGCAttribute attributes[5];
   int values [5];
   unsigned int local_dashbuf[MAX_DASH_ARRAY_LEN];
+  miGC *pGC;
 
-  pGC = (miGC *)ptr;		/* convert to (miGC *) */
+  pGC = (miGC *)ptr;		/* recover passed libxmi GC */
 
   /* set all miGC attributes that are not dash related */
 
   /* set five integer-valued miGC attributes */
   attributes[0] = MI_GC_FILL_RULE;
-  values[0] = (_plotter->drawstate->fill_rule_type == FILL_NONZERO_WINDING ? 
+  values[0] = (drawstate->fill_rule_type == FILL_NONZERO_WINDING ? 
 	       MI_WINDING_RULE : MI_EVEN_ODD_RULE);
   attributes[1] = MI_GC_JOIN_STYLE;
-  values[1] = _mi_join_style[_plotter->drawstate->join_type];
+  values[1] = _mi_join_style[drawstate->join_type];
   attributes[2] = MI_GC_CAP_STYLE;
-  values[2] = _mi_cap_style[_plotter->drawstate->cap_type];
+  values[2] = _mi_cap_style[drawstate->cap_type];
   attributes[3] = MI_GC_ARC_MODE;
   values[3] = MI_ARC_CHORD;	/* libplot convention */
   attributes[4] = MI_GC_LINE_WIDTH;
-  values[4] = _plotter->drawstate->quantized_device_line_width;
+  values[4] = drawstate->quantized_device_line_width;
   miSetGCAttribs (pGC, 5, attributes, values);
 
   /* set a double-valued miGC attribute */
-  miSetGCMiterLimit (pGC, _plotter->drawstate->miter_limit);
+  miSetGCMiterLimit (pGC, drawstate->miter_limit);
 
   /* now determine and set dashing-related attributes */
 
-  if (_plotter->drawstate->dash_array_in_effect)
+  if (drawstate->dash_array_in_effect)
     /* have user-specified dash array */
     {
       int i;
       
-      num_dashes = _plotter->drawstate->dash_array_len;
+      num_dashes = drawstate->dash_array_len;
       if (num_dashes > 0)
 	/* non-solid line type */
 	{
@@ -71,7 +71,7 @@ _set_common_mi_attributes (R___(_plotter) ptr)
 	  /* compute minimum singular value of user->device coordinate map,
 	     which we use as a multiplicative factor to convert line widths
 	     (cf. g_linewidth.c), dash lengths, etc. */
-	  _matrix_sing_vals (_plotter->drawstate->transform.m, 
+	  _matrix_sing_vals (drawstate->transform.m, 
 			     &min_sing_val, &max_sing_val);
 	  
 	  line_style = MI_LINE_ON_OFF_DASH;
@@ -95,7 +95,7 @@ _set_common_mi_attributes (R___(_plotter) ptr)
 	      int dashlen;
 
 	      unrounded_dashlen = 
-		min_sing_val * _plotter->drawstate->dash_array[i];
+		min_sing_val * drawstate->dash_array[i];
 
 	      dashlen = IROUND(unrounded_dashlen);
 	      dashlen = IMAX(dashlen, 1);
@@ -111,7 +111,7 @@ _set_common_mi_attributes (R___(_plotter) ptr)
 	  if (odd_length)
 	    num_dashes *= 2;
 
-	  offset = IROUND(min_sing_val * _plotter->drawstate->dash_offset);
+	  offset = IROUND(min_sing_val * drawstate->dash_offset);
 	  if (dash_cycle_length > 0)
 	    /* choose an offset in range 0..dash_cycle_length-1 */
 	    {
@@ -131,7 +131,7 @@ _set_common_mi_attributes (R___(_plotter) ptr)
   else
     /* have one of the canonical line types */
     {
-      if (_plotter->drawstate->line_type == L_SOLID)
+      if (drawstate->line_type == L_SOLID)
 	{
 	  line_style = MI_LINE_SOLID;
 	  num_dashes = 0;
@@ -145,13 +145,13 @@ _set_common_mi_attributes (R___(_plotter) ptr)
 	  
 	  line_style = MI_LINE_ON_OFF_DASH;
 	  num_dashes =
-	    _line_styles[_plotter->drawstate->line_type].dash_array_len;
-	  dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
+	    _line_styles[drawstate->line_type].dash_array_len;
+	  dash_array = _line_styles[drawstate->line_type].dash_array;
 	  dashbuf = local_dashbuf; /* it is large enough */
 	  offset = 0;
 
 	  /* scale by line width in terms of pixels, if nonzero */
-	  scale = _plotter->drawstate->quantized_device_line_width;
+	  scale = drawstate->quantized_device_line_width;
 	  if (scale <= 0)
 	    scale = 1;
 

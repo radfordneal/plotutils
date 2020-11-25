@@ -72,7 +72,7 @@ _controlify (R___(_plotter) src)
   unsigned short *dest;
   unsigned char c, d;
   unsigned char esc[3];
-  int j = 0;
+  int j = 0;			/* index into destination string */
   int raw_fontnum, raw_symbol_fontnum;
   int previous_raw_fontnum;	/* implement depth-1 stack */
   unsigned short fontword, symbol_fontword;
@@ -316,8 +316,6 @@ _controlify (R___(_plotter) src)
 	}
       else			/* character is a backslash */
 	{
-	  int i;
-      
 	  c = *(src++);		/* grab next character */
 	  if (c == (unsigned char)'\0')	/* ASCII NUL ? */
 	    {
@@ -498,6 +496,7 @@ _controlify (R___(_plotter) src)
 	    }
 
 	  {
+	    int i;
 	    bool matched = false;
 
 	    /* is this an escape seq. for a control code? */
@@ -559,6 +558,7 @@ _controlify (R___(_plotter) src)
 		  && _plotter->drawstate->font_is_iso8859_1
 		  && raw_fontnum == 1))
 	    {
+	      int i;
 	      bool matched = false;
 
 	      for (i = 0; i < NUM_ISO_ESCAPES; i++) 
@@ -627,6 +627,7 @@ _controlify (R___(_plotter) src)
 	     `final s'. */
 	  if (_plotter->drawstate->font_type == F_HERSHEY)
 	    {
+	      int i;
 	      bool matched = false;
 
 	      for (i = 0; i < NUM_SPECIAL_ESCAPES; i++) 
@@ -650,6 +651,7 @@ _controlify (R___(_plotter) src)
 	    }
 
 	  {
+	    int i;
 	    bool matched = false;
 	    
 	    /* Irrespective of font type, is this an escape seq. for a char

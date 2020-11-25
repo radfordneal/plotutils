@@ -16,5 +16,7 @@ useful hints.)
 
 You may compile libxmi with a C++ compiler rather than a C compiler, by
 doing something like `CC=c++ ./configure' instead of just `./configure'.
-If you do so, be sure to add "-DHAVE_BOOL" to CFLAGS.  This will keep the
-Boolean datatype from being defined, as is necessary for a C compiler.
+
+If you do use a C++ compiler, you should probably add "-DHAVE_BOOL" to
+CFLAGS.  This will keep the Boolean datatype from being defined (for any
+modern C++ compiler, it is defined automatically).

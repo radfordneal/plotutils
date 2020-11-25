@@ -1,4 +1,4 @@
-This file describes possibly customizations of the libxmi library.  Please
+This file describes possible customizations of the libxmi library.  Please
 read the file README first; it describes what libxmi does.
 
 1. If desired, modify the default definition of `miPixel' in ./xmi.h by
@@ -20,9 +20,9 @@ read the file README first; it describes what libxmi does.
    color components, a change would be called for.
 
 3. The same, for the macro MI_DEFAULT_MERGE3_PIXEL().  This macro is used
-    when a "texture" pixel is available as part of a miCanvas, and must be
-    taken into account, besides the source pixel and the destination pixel
-    already on the miCanvas.
+   when a "texture" pixel is available as part of a miCanvas, and must be
+   taken into account, besides the source pixel and the destination pixel
+   already on the miCanvas.
 
 4. If desired, customize the definition of the `drawable' contained within
    an miCanvas by defining the symbol MI_CANVAS_DRAWABLE_TYPE.  If this is

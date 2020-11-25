@@ -1,4 +1,35 @@
-Version 1.1 released, 7/99.  (First official GNU release.)
+Version 1.2 of package released, 6/00.  (Library version is now 1.2.)
+
+Fixed bugs in mi_spans.c (in miUniquifySpanGroup, especially) dealing with
+empty SpanGroups.  They were causing memory allocation problems, and even
+segfaulting, whenever a region in one pixel color was completely covered by
+a region in another pixel color.
+
+libxmi now contains a version string, `mi_libxmi_ver'.  The xmi.h header
+file now contains both the version string and a numeric variant of it, as
+macros.  Cf. libpng.
+
+Fixed a bug in miDrawArcs[_r] that was affecting the drawing of solid arcs.
+(Sometimes they were incorrectly drawn in the background color, i.e., in
+pixel color #0 rather than pixel color #1.)
+
+The internal function `miAddSpansToPaintedSet' now has an underscore
+prepended to its name, so that it won't pollute the user-level namespace.
+Our policy: only the API functions should have external names that begin
+with a letter.  This is arranged via #defines in extern.h.
+
+At installation time, if CFLAGS is set, it will not be ignored.
+
+----------------------------------------------------------------------
+
+Version 1.1.1 of package released, 9/99.  (First official GNU release
+of package; library version is now 1.1.)
+
+No changes to source code; minor changes to packaging.
+
+----------------------------------------------------------------------
+
+Version 1.1 of package released, 7/99.  (Library version is now 1.1.)
 
 Changed first argument of miCopyPaintedSetToCanvas from (miPaintedSet *)
 to (const miPaintedSet *).
@@ -11,7 +42,7 @@ null pointer dereferencing.
 
 ----------------------------------------------------------------------
 
-Version 1.0 released, 6/99.
+Version 1.0 released, 6/99.  (Library version is now 1.0.)
 
 Wrote a texinfo manual.
 

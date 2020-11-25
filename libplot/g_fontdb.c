@@ -23,6 +23,7 @@
    (1) PS name, (1a) alternative PS name if any (may be NULL), 
    	(1c) 2nd alternative PS name if any (may be NULL),
    (2a) X name, (2b) alternative X name if any (may be NULL)
+   (2.5abcde) CSS font properties.
    (3) PCL typeface number.
    (4) PCL info: fixedwidth(0) / proportional(1).
    (5) PCL info: upright(0) / italic(1) / condensed(4) / cond. italic(5) /
@@ -35,7 +36,7 @@
 	these numbers are encoded base 32, as a number and a letter.  E.g.,
 	621 is written as 19M since 19*32+13, and 'M' is letter #13.)
    (8) and (9) (normalized) font ascent and descent (from font bounding box),
-   (10) the font cap height
+   (10ab) the font cap height and x height (latter not yet implemented)
    (11a) the font width information (an array, size 256),   
    (11b) the `left edge of glyph' information (an array, size 256),   
    (12) a typeface id (an index into the _ps_typeface_info[] array below)
@@ -58,9 +59,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "helvetica-medium-r-normal",
   NULL,
+  "Helvetica", "sans-serif", "normal", "normal", "normal",
   24580, 1, 0, 0, 14,
   931, 225,
-  718,
+  718, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -132,9 +134,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "helvetica-medium-o-normal",
   NULL,
+  "Helvetica", "sans-serif", "oblique", "normal", "normal",
   24580, 1, 1, 0, 14,
   931, 225,
-  718,
+  718, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -206,9 +209,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "helvetica-bold-r-normal",
   NULL,
+  "Helvetica", "sans-serif", "normal", "bold", "normal",
   24580, 1, 0, 3, 14,
   962, 228,
-  718,
+  718, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -280,9 +284,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "helvetica-bold-o-normal",
   NULL,
+  "Helvetica", "sans-serif", "oblique", "bold", "normal",
   24580, 1, 1, 3, 14,
   962, 228,
-  718,
+  718, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -354,9 +359,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "helvetica-medium-r-narrow",
   NULL,
+  "Helvetica", "sans-serif", "normal", "normal", "condensed",
   24580, 1, 4, 0, 14,
   931, 225,
-  718,
+  718, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -428,9 +434,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "helvetica-medium-o-narrow",
   NULL,
+  "Helvetica", "sans-serif", "oblique", "normal", "condensed",
   24580, 1, 5, 0, 14,
   931, 225,
-  718,
+  718, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -502,9 +509,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "helvetica-bold-r-narrow",
   NULL,
+  "Helvetica", "sans-serif", "normal", "bold", "condensed",
   24580, 1, 4, 3, 14,
   962, 228,
-  718,
+  718, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -576,9 +584,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "helvetica-bold-o-narrow",
   NULL,
+  "Helvetica", "sans-serif", "oblique", "bold", "condensed",
   24580, 1, 5, 3, 14,
   962, 228,
-  718,
+  718, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -650,9 +659,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "times-medium-r-normal",
   NULL,
+  "Times Roman", "serif", "normal", "normal", "normal",
   25093, 1, 0, 0, 14,
   898, 218,
-  662,
+  662, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -724,9 +734,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "times-medium-i-normal",
   NULL,
+  "Times Roman", "serif", "italic", "normal", "normal",
   25093, 1, 1, 0, 14,
   883, 217,
-  653,
+  653, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -798,9 +809,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "times-bold-r-normal",
   NULL,
+  "Times Roman", "serif", "normal", "bold", "normal",
   25093, 1, 0, 3, 14,
   935, 218,
-  676,
+  676, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -872,9 +884,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "times-bold-i-normal",
   NULL,
+  "Times Roman", "serif", "italic", "bold", "normal",
   25093, 1, 1, 3, 14,
   921, 218,
-  669,
+  669, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -946,9 +959,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc avant garde gothic-book-r-normal", /* as used e.g. by SGI */
   "avantgarde-book-r-normal",	/* as used e.g. by SunOS */
+  "Avant Garde", "sans-serif", "normal", "normal", "normal",
   24607, 1, 0, 0, 14,
   955, 222,
-  740,
+  740, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1020,9 +1034,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc avant garde gothic-book-o-normal",
   "avantgarde-book-o-normal",
+  "Avant Garde", "sans-serif", "oblique", "normal", "normal",
   24607, 1, 1, 0, 14,
   955, 222,
-  740,
+  740, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1094,9 +1109,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc avant garde gothic-demi-r-normal",
   "avantgarde-demi-r-normal",
+  "Avant Garde", "sans-serif", "normal", "bold", "normal",
   24607, 1, 0, 2, 14,
   1021, 251,
-  740,
+  740, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1168,9 +1184,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc avant garde gothic-demi-o-normal",
   "avantgarde-demi-o-normal",
+  "Avant Garde", "sans-serif", "oblique", "bold", "normal",
   24607, 1, 1, 2, 14,
   1021, 251,
-  740,
+  740, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1242,9 +1259,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc bookman-light-r-normal",	/* as used e.g. by SGI */
   "bookman-light-r-normal",	/* our former convention, from SunOS */
-  24607, 1, 0, -3, 14,
+  "Bookman", "serif", "normal", "300", "normal",
+  24623, 1, 0, -3, 14,
   908, 251,
-  681,
+  681, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1316,9 +1334,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc bookman-light-i-normal",
   "bookman-light-i-normal",
-  24607, 1, 1, -3, 14,
+  "Bookman", "serif", "italic", "300", "normal",
+  24623, 1, 1, -3, 14,
   883, 250,
-  681,
+  681, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1390,9 +1409,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc bookman-demi-r-normal",
   "bookman-demi-r-normal",
-  24607, 1, 0, 2, 14,
+  "Bookman", "serif", "normal", "bold", "normal",
+  24623, 1, 0, 2, 14,
   934, 250,
-  681,
+  681, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1464,9 +1484,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc bookman-demi-i-normal",
   "bookman-demi-i-normal",
-  24607, 1, 1, 2, 14,
+  "Bookman", "serif", "italic", "bold", "normal",
+  24623, 1, 1, 2, 14,
   941, 250,
-  681,
+  681, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1538,9 +1559,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "courier-medium-r-normal",
   NULL,
+  "Courier", "monospace", "normal", "normal", "normal",
   24579, 0, 0, 0, 14,
   805, 250,
-  562,
+  562, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1616,9 +1638,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
 #endif
   "courier-medium-o-normal",
   NULL,
+  "Courier", "monospace", "oblique", "normal", "normal",
   24579, 0, 1, 0, 14,
   805, 250,
-  562,
+  562, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1690,9 +1713,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "courier-bold-r-normal",
   NULL,
+  "Courier", "monospace", "normal", "bold", "normal",
   24579, 0, 0, 3, 14,
   801, 250,
-  562,
+  562, 0,
     {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1768,9 +1792,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
 #endif
   "courier-bold-o-normal",
   NULL,
+  "Courier", "monospace", "oblique", "bold", "normal",
   24579, 0, 1, 3, 14,
   801, 250,
-  562,
+  562, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1842,9 +1867,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "new century schoolbook-medium-r-normal",
   "newcenturyschlbk-medium-r-normal", /* name formerly used by DEC */
+  "New Century Schoolbook", "serif", "normal", "normal", "normal",
   24703, 1, 0, 0, 14,
   965, 250,
-  722,
+  722, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1916,9 +1942,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "new century schoolbook-medium-i-normal",
   "newcenturyschlbk-medium-i-normal",
+  "New Century Schoolbook", "serif", "italic", "normal", "normal",
   24703, 1, 1, 0, 14,
   958, 250,
-  722,
+  722, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1990,9 +2017,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "new century schoolbook-bold-r-normal",
   "newcenturyschlbk-bold-r-normal",
+  "New Century Schoolbook", "serif", "normal", "bold", "normal",
   24703, 1, 0, 3, 14,
   988, 250,
-  722,
+  722, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2064,9 +2092,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "new century schoolbook-bold-i-normal",
   "newcenturyschlbk-bold-i-normal",
+  "New Century Schoolbook", "serif", "italic", "bold", "normal",
   24703, 1, 1, 3, 14,
   991, 250,
-  722,
+  722, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2138,9 +2167,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "palatino-medium-r-normal",
   NULL,
+  "Palatino", "serif", "normal", "normal", "normal",
   24591, 1, 0, 0, 14,
   927, 283,
-  692,
+  692, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2212,9 +2242,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "palatino-medium-i-normal",
   NULL,
+  "Palatino", "serif", "italic", "normal", "normal",
   24591, 1, 1, 0, 14,
   918, 276,
-  692,
+  692, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2286,9 +2317,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "palatino-bold-r-normal",
   NULL,
+  "Palatino", "serif", "normal", "bold", "normal",
   24591, 1, 0, 3, 14,
   924, 266,
-  681,
+  681, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2360,9 +2392,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "palatino-bold-i-normal",
   NULL,
+  "Palatino", "serif", "italic", "bold", "normal",
   24591, 1, 1, 3, 14,
   926, 271,
-  681,
+  681, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2434,9 +2467,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc zapf chancery-medium-i-normal", /* as used e.g. by SGI */
   "zapfchancery-medium-i-normal", /* our former convention, from SunOS */
+  "Zapf Chancery", "cursive", "italic", "normal", "normal",
   45099, 1, 1, 0, 14,
   831, 314,
-  708,
+  708, 0,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2508,9 +2542,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "itc zapf dingbats-medium-r-normal",
   "zapfdingbats-medium-r-normal", /* our former convention, from SunOS etc. */
+  "Zapf Dingbats", NULL, "normal", "normal", "normal",
   45101, 1, 0, 0, 460,
   820, 143,
-  662,	/* cap height not in AFM file; this is Times-Roman value */
+  662, 0,	/* cap height not in AFM file; this is Times-Roman value */
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2582,9 +2617,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   "symbol-medium-r-normal",
   NULL,
+  "Symbol", NULL, "normal", "normal", "normal",
   45358, 1, 0, 0, 621,
   1010, 293,
-  662,	/* cap height not in AFM file; this is Times-Roman value */
+  662, 0,	/* cap height not in AFM file; this is Times-Roman value */
  {
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2656,9 +2692,10 @@ const struct plPSFontInfoStruct _ps_font_info[] = {
   NULL,
   NULL,
   NULL,
+  NULL, NULL, NULL, NULL, NULL,
   0, 0, 0, 0, 0,
   0, 0,
-  0,
+  0, 0,
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
@@ -2741,49 +2778,63 @@ const int _ps_font_to_cgm_font_id[] =
 const int _cgm_font_id_to_ps_font[] = 
 { 0, 1, 2, 3, 8, 9, 10, 11, 20, 21, 22, 23, 34, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
 
-/* The following are the most important CGM properties of the 35 Postscript
-   fonts, arranged according to the font id we use in CGM files, rather
-   than our internal numbering.  
+/* The following array contains the most important CGM properties of the 35
+   Postscript fonts, arranged according to the font id we use in CGM files,
+   rather than our internal numbering.
 
    The font properties that may be specified in a CGM file are taken from
    the `Minimum Font Description Subset' of ISO/IEC 9541.  For the 35
-   Postscript fonts, we take the values of the CGM properties from the file
-   `r_ps.fnt' in the RALCGM distribution.  The properties are: posture,
-   weight, proportionate width, `design group', and structure (always 1,
-   signifying a filled [non-outline] font).
+   Postscript fonts, we currently take the values of the CGM properties
+   from the file `r_ps.fnt' in the RALCGM distribution.  The properties
+   are: posture, weight, proportionate width, `design group', and structure
+   (always 1, signifying a filled [non-outline] font).
 
    According to the "CGM Handbook", posture 1 means upright, posture 2
-   means oblique, and posture 4 means italic.  I don't understand why the
-   italic fonts are specified as having oblique posture.
+   means oblique, and posture 4 means italic.  In `r_ps.fnt' the italic
+   fonts were specified as having oblique posture; I've corrected that.
 
-   Design group is a hierarchical classification.  Here is a partial list
-   of design groups (for a fuller list, see the file `f_dsn.fnt' in the
-   RALCGM distribution).
+   Design group is a hierarchical classification:
+
+   	class.subclass.specific_group
+
+   See the 12/87 ISO/IEC 9541-5 standard for the assigned design groups, or
+   alternatively Appendix A of "Font Technology", by Peter Karow (Springer,
+   1994).  (If both are unavailable, see the file `f_dsn.fnt' in the RALCGM
+   distribution, which dates to 1993 and is not quite complete.)  Each
+   component in a design group has a value in the range 0..255.  These are
+   the most relevant design groups:
+
+           1        Uncial
+
+           2        Inscriptional
+
+           3        Blackletter
 
 	   4         Serif
 	   4.1         Oldstyle
 	   4.1.1         Venetian
-	   4.1.2         Garalde
-	   4.1.3         Dutch / English	[NewCenturySchlbk]
+	   4.1.2         Garalde				[Garamond]
+	   4.1.3         Dutch / English
 	   4.2         Transitional
 	   4.2.1         Direct Line
-	   4.2.2         Modified
+	   4.2.2         Modified I				[Palatino]
+	   4.2.3         Modified II
 	   4.3         Modern
 	   4.3.1         Continental
 	   4.3.2         Fat Face
 	   4.4         Contemporary
 	   4.4.1         Eclectic
-	   4.4.2         Fine Serif		[AvantGarde,Palatino]
+	   4.4.2         Fine Serif
 	   4.4.3         Lettering
 	   4.5         Legibility
-	   4.5.1         Rounded (traditional)	[Times]
-	   4.5.2         Elliptical (square)	[Bookman]
+	   4.5.1         Rounded (traditional)			[Times]
+	   4.5.2         Super-elliptical (square)		[Bookman]
 	   4.6         Square Serif
 	   4.6.1         Monotone
-	   4.6.2         Clarendon
+	   4.6.2         Clarendon		[New Century Schoolbook]
 	   4.6.3         French Clarendon
 	   4.6.4         Short (stub)
-	   4.6.5         Typewriter		[Courier]
+	   4.6.5         Typewriter				[Courier]
 	   4.6.6         Dot Matrix
 	   4.7         Latin
 	   4.7.1         Solid
@@ -2806,22 +2857,243 @@ const int _cgm_font_id_to_ps_font[] =
 	   5         Sans Serif
 	   5.1         Gothic
 	   5.1.1         Grotesque
-	   5.1.2         Neo-grotesque		[Helvetica]
+	   5.1.2         Neo-grotesque			[Helvetica, Univers]
 	   5.1.3         Typewriter
+           5.2         Humanist
+           5.2.1         Classical			[Optima]
+           5.2.2         Non-classical
+           5.2.3         Typewriter
+           5.3         Stress variation
+           5.3.1         Broad Pen
+           5.3.2         Casual
+           5.3.3         Typewriter
+           5.3.4         Broad Pen, Curved Base Line
+           5.3.5         Broad Pen, Bent Base Line
+           5.4         Art Deco
+           5.4.1         Standard
+           5.4.2         Modified
+           5.4.3         Thin Line
+           5.4.4         Serif
+           5.4.5         Black, Italic
+           5.4.6         Outline
+           5.4.7         Extra Distorted with Some Stress Variation
+           5.4.8         Miscellaneous
+           5.5         Geometric
+           5.5.1         Round, straight stem ends	[AvantGarde]
+           5.5.2         Round, rounded stem ends
+           5.5.3         Super-elliptical
+           5.5.4         Stylized
+           5.5.5         Typewriter			[Letter Gothic]
+           5.5.6         Black Monotone
+           5.5.7         Extra Black Monotone
+           5.5.8         Extra Black with Stress Variation
+           5.5.9         Extra Black with Extra Stress Variation
+           5.5.10        Black, Round, Pointed Stem Ends
+           5.5.11        Extra White, Square
+           5.5.12        Black, Straight Lines
+           5.5.13        Miscellaneous
+	   5.6         Computer
+	   5.6.1         OCR
+	   5.6.2         Digital
+	   5.6.3         Modified OCR
+	   5.6.4         Modern OCR
+	   5.7         Free Form
+	   5.7.1         Solid
+	   5.7.2         Outline
+	   5.8         Miscellaneous
 	   
-	   8 Symbols and Ornaments		[Symbol,ZapfDingbats] 
+           6         Scripts
+           6.1         Joined
+           6.1.1         Formal
+           6.1.2         Informal
+           6.1.3         Monotone
+           6.2         Unjoined
+           6.2.1         Formal
+           6.2.2         Informal
+           6.2.3         Monotone
+           6.2.4         Brush
+           6.2.5         Cursive
+           6.2.6         Calligraphic
+           6.2.7         Ronde
+           6.3         Soft Brush
+           6.3.1         Kaisho
+           6.3.2         Kyokasho
+           6.3.3         Gyosho
+           6.3.4         Sosho
+           6.3.5         Miscellaneous
+           6.4         Kana
+           6.4.1         Old Style
+           6.4.2         New Style
+           6.5         Soucho
 
-*/
+           7         Ornamentals
+           7.1         Inline
+           7.1.1         Sans Serif
+           7.1.2         Serif
+           7.2         Outline
+           7.2.1         Sans Serif
+           7.2.2         Serif
+           7.3         Decorative
+           7.3.1         Sans Serif
+           7.3.2         Serif
+           7.4         Three-dimensional
+           7.4.1         Sans Serif
+           7.4.2         Serif
+           7.5         Tuscan
+           7.5.2         Serif
+           7.6         Stencil
+           7.6.1         Sans Serif
+           7.6.2         Serif
+           7.7         Reversed
+           7.7.1         Sans Serif
+           7.7.2         Serif
+           7.8         Engraved
+           7.8.1         Sans Serif
+           7.8.2         Serif
+           7.9         Miscellaneous
+           7.9.1         Sans Serif
+           7.9.2         Serif
+
+  	   8 Symbols and Ornaments		[Symbol,ZapfDingbats] 
+
+    If you are interested in font classification, the following additional
+    information may be useful.
+
+    The IBM Font Class/Subclass classification is similar to the ISO/IEC
+    9541 classification, but is less fine-grained.  The IBM Class/Subclass
+    for a TrueType or OpenType font are stored in the 2-byte `sFamilyClass'
+    field of its so-called OS/2 table.  The OS/2 table contains miscellaneous
+    metrics, including the 10-byte Panose font classification.  
+
+    (For Panose, see http://www.fonts.com/hp/panose .  In Panose, each byte
+    can take on a value in the range 0..15.  Windows uses the Panose bytes
+    bFamilyType, bSerifStyle, and bProportion when matching fonts; other
+    bytes include bWeight and bStrokeVariation.)
+
+    Apparently, it is IBM that assigns each font to an IBM Font
+    Class/Subclass.  The following table of registered values, giving
+    correspondences, is taken from the Microsoft TrueType Website.  See
+    http://microsoft.com/typography and/or http://microsoft.com/truetype .
+
+   1         Oldstyle Serifs (ISO 4.1, 4.4, 4.5, part of 4.2)
+   1.0         No classification
+   1.1         IBM Rounded Legibility (ISO 4.5.1, e.g. IBM Sonoran Serif)
+   1.2         Garalde (ISO 4.1.2, e.g. ITC Garamond)
+   1.3         Venetian (ISO 4.1.1, e.g. Goudy)
+   1.4         Modified Venetian (ISO 4.2.2, e.g. Allied Linotype Palatino)
+   1.5         Dutch Modern (ISO 4.1.3, e.g. Monotype Times New Roman)
+   1.6         Dutch Traditional (ISO 4.5, e.g. IBM Press Roman)
+   1.7         Contemporary (ISO 4.4, e.g. University)
+   1.8         Calligraphic
+   1.9-14      Reserved
+   1.15        Misc.
+
+   2         Transitional Serifs (ISO 4.2)
+   2.0         No classification
+   2.1         Direct line (ISO 4.2.1, e.g. Monotype Baskerville)
+   2.2         Script (similar to ISO 4.2.1, e.g. IBM Nasseem [Arabic])
+   2.3-14      Reserved
+   2.15        Misc.
+
+   3         Modern Serifs (ISO 4.3)
+   3.0         No classification
+   3.1         Italian (ISO 4.3.Italian, e.g. Monotype Bodoni)
+   3.2         Script (ISO 4.3.Italian, e.g. IBM Narkissim [Hebrew])
+   3.3-14      Reserved
+   3.15        Misc.
+
+   4         Clarendon Serifs (ISO 4.6, in part)
+   4.0         No classification
+   4.1         Clarendon (ISO 4.6.2, e.g. Allied Linotype Clarendon)
+   4.2         Modern (ISO 4.6.2, e.g. Monotype Century Schoolbook)
+   4.3         Traditional (ISO 4.6.2, e.g. Monotype Century)
+   4.4         Newspaper (ISO 4.6.2, e.g. Allied Linotype Excelsior)
+   4.5         Stub Serif (ISO 4.6.4, e.g. Cheltenham)
+   4.6         Monotone (ISO 4.6.1, e.g. ITC Korinna)
+   4.7         Typewriter (ISO 4.6.5, e.g. Prestige Elite)
+   4.8-14      Reserved
+   4.15        Miscellaneous
+
+   5         Slab Serifs (ISO 4.6, except for Clarendons)
+   5.0         No classification
+   5.1         Monotone (ISO 4.6.1, e.g. ITC Lubalin)
+   5.2         Humanist (ISO 4.6.1, e.g. Candida)
+   5.3         Geometric (ISO 4.6.1, e.g. Monotype Rockwell)
+   5.4         Swiss (ISO 4.6.1, e.g. Allied Linotype Serifa)
+   5.5         Typewriter (ISO 4.6.5, e.g. IBM Courier)
+   5.6-14      Reserved
+   5.15        Misc.
+
+   6         Reserved
+   7         Freeform Serifs ("remaining ISO Serif Class subclasses";
+                  "expresses a design freedom that does not generally fit
+                  within the other serif design classifications")
+   7.0         No classification
+   7.1         Modern (e.g. ITC Souvenir)
+   7.2-14      Reserved
+   7.15        Misc.
+
+   8         Sans Serif (ISO 5)
+   8.0         No classification
+   8.1         IBM Neo-grotesque Gothic (ISO 5.1.2, e.g. IBM Sonoran San Serif)
+   8.2         Humanist (ISO 5.2, e.g. Allied Linotype Optima)
+   8.3         Low-x Round Geometric (ISO 5.5.1 and 5.5.2, e.g. Fundicion Tipograficia Neufville Futura)
+   8.4         High-x Round Geometric (ISO 5.5.1 and 5.5.2, e.g. ITC Avant Garde Gothic)
+   8.5         Neo-grotesque Gothic (ISO 5.1.2, e.g. Allied Linotype Helvetica)
+   8.6         Modified Neo-grotesque Gothic (ISO 5.1.2, e.g. Allied Linotype Univers)
+   8.7-8       Reserved
+   8.9         Typewriter Gothic (ISO 5.5.5, e.g. IBM Letter Gothic)
+   8.10        Matrix (e.g. IBM Matrix Gothic)
+   8.11-14     Reserved
+   8.15        Misc.
+
+   9         Ornamentals (ISO 3 and ISO 7, mostly)
+   9.0         No classification
+   9.1         Engraver (ISO 7.1 and ISO 4.8, e.g. Copperplate)
+   9.2         Black Letter (ISO 3, e.g. Old English)
+   9.3         Decorative (ISO 7.3, e.g. Saphire)
+   9.4         Three Dimensional (ISO 7.4, e.g. Thorne Shaded)
+   9.5-14      Reserved
+   9.15        Misc.
+
+   10        Scripts (ISO 1 and ISO 6)
+   10.0        No classification
+   10.1        Uncial (ISO 1, e.g. Libra)
+   10.2        Brush Joined (ISO 6.1.2, e.g. Mistral)
+   10.3        Formal Joined (ISO 6.1.1, e.g. Coronet)
+   10.4        Monotone Joined (ISO 6.1.3, e.g. Kaufmann)
+   10.5        Calligraphic (ISO 6.2.6, e.g. Thompson Quillscript)
+   10.6        Brush Unjoined (ISO 6.2.4, e.g. Saltino)
+   10.7        Formal Unjoined (ISO 6.2.1, e.g. Virtuosa)
+   10.8        Monotone Unjoined (ISO 6.2.3, e.g. Gilles Gothic)
+   10.9-14     Reserved
+   10.15       Misc.
+
+   11        Reserved
+
+   12        Symbolic
+   12.0        No classification
+   12.1-2      Reserved
+   12.3        Mixed Serif (e.g. IBM Symbol)
+   12.4-5      Reserved
+   12.6        Oldstyle Serif (e.g. IBM Sonoran Pi Serif)
+   12.7        Neo-grotesque Sans Serif (IBM Sonoran Pi Sans Serif)
+   12.8-14     Reserved
+   12.15       Misc.
+
+   13        Reserved
+   14 Reserved */
 
 const plCGMFontProperties _cgm_font_properties[] = {
+  /* family, extrastyle, style, posture, weight, width, design_group, struct */
   { "Helvetica", "", "", 			1, 5, 5, { 5, 1, 2 }, 1 },
   { "Helvetica", "", "Oblique",			2, 5, 5, { 5, 1, 2 }, 1 },
   { "Helvetica", "", "Bold",			1, 7, 5, { 5, 1, 2 }, 1 },
   { "Helvetica", "", "BoldOblique",		2, 7, 5, { 5, 1, 2 }, 1 },
   { "Times", "", "Roman", 			1, 5, 5, { 4, 5, 1 }, 1 },
-  { "Times", "", "Italic", 			2, 5, 5, { 4, 5, 1 }, 1 },
+  { "Times", "", "Italic", 			4, 5, 5, { 4, 5, 1 }, 1 },
   { "Times", "", "Bold", 			1, 7, 5, { 4, 5, 1 }, 1 },
-  { "Times", "", "BoldItalic", 			2, 7, 5, { 4, 5, 1 }, 1 },
+  { "Times", "", "BoldItalic", 			4, 7, 5, { 4, 5, 1 }, 1 },
   { "Courier", "", "", 				1, 5, 5, { 4, 6, 5 }, 1 },
   { "Courier", "", "Oblique",			2, 5, 5, { 4, 6, 5 }, 1 },
   { "Courier", "", "Bold",			1, 7, 5, { 4, 6, 5 }, 1 },
@@ -2831,23 +3103,23 @@ const plCGMFontProperties _cgm_font_properties[] = {
   { "Helvetica", "Narrow", "Oblique",		2, 5, 3, { 5, 1, 2 }, 1 },
   { "Helvetica", "Narrow", "Bold",		1, 7, 3, { 5, 1, 2 }, 1 },
   { "Helvetica", "Narrow", "BoldOblique",	2, 7, 3, { 5, 1, 2 }, 1 },
-  { "AvantGarde", "", "Book", 			1, 5, 5, { 4, 4, 2 }, 1 },
-  { "AvantGarde", "", "BookOblique",		2, 5, 5, { 4, 4, 2 }, 1 },
-  { "AvantGarde", "", "Demi",			1, 6, 5, { 4, 4, 2 }, 1 },
-  { "AvantGarde", "", "DemiOblique",		2, 6, 5, { 4, 4, 2 }, 1 },
+  { "AvantGarde", "", "Book", 			1, 5, 5, { 5, 5, 1 }, 1 },
+  { "AvantGarde", "", "BookOblique",		2, 5, 5, { 5, 5, 1 }, 1 },
+  { "AvantGarde", "", "Demi",			1, 6, 5, { 5, 5, 1 }, 1 },
+  { "AvantGarde", "", "DemiOblique",		2, 6, 5, { 5, 5, 1 }, 1 },
   { "Bookman", "", "Light",			1, 4, 5, { 4, 5, 2 }, 1 },
-  { "Bookman", "", "LightItalic",		2, 4, 5, { 4, 5, 2 }, 1 },
+  { "Bookman", "", "LightItalic",		4, 4, 5, { 4, 5, 2 }, 1 },
   { "Bookman", "", "Demi", 			1, 6, 5, { 4, 5, 2 }, 1 },
-  { "Bookman", "", "DemiItalic",		2, 6, 5, { 4, 5, 2 }, 1 },
-  { "NewCenturySchlbk", "", "Roman",		1, 5, 5, { 4, 1, 3 }, 1 },
-  { "NewCenturySchlbk", "", "Italic", 		2, 5, 5, { 4, 1, 3 }, 1 },
-  { "NewCenturySchlbk", "", "Bold", 		1, 7, 5, { 4, 1, 3 }, 1 },
-  { "NewCenturySchlbk", "", "BoldItalic",	2, 7, 5, { 4, 1, 3 }, 1 },
-  { "Palatino", "", "Roman",			1, 5, 5, { 4, 4, 2 }, 1 },
-  { "Palatino", "", "Italic", 			2, 5, 5, { 4, 4, 2 }, 1 },
-  { "Palatino", "", "Bold", 			1, 7, 5, { 4, 4, 2 }, 1 },
-  { "Palatino", "", "BoldItalic",		2, 7, 5, { 4, 4, 2 }, 1 },
-  { "ZapfChancery", "", "MediumItalic",		2, 5, 5, { 6, 1, 1 }, 1 },
+  { "Bookman", "", "DemiItalic",		4, 6, 5, { 4, 5, 2 }, 1 },
+  { "NewCenturySchlbk", "", "Roman",		1, 5, 5, { 4, 6, 2 }, 1 },
+  { "NewCenturySchlbk", "", "Italic", 		4, 5, 5, { 4, 6, 2 }, 1 },
+  { "NewCenturySchlbk", "", "Bold", 		1, 7, 5, { 4, 6, 2 }, 1 },
+  { "NewCenturySchlbk", "", "BoldItalic",	4, 7, 5, { 4, 6, 2 }, 1 },
+  { "Palatino", "", "Roman",			1, 5, 5, { 4, 2, 2 }, 1 },
+  { "Palatino", "", "Italic", 			4, 5, 5, { 4, 2, 2 }, 1 },
+  { "Palatino", "", "Bold", 			1, 7, 5, { 4, 2, 2 }, 1 },
+  { "Palatino", "", "BoldItalic",		4, 7, 5, { 4, 2, 2 }, 1 },
+  { "ZapfChancery", "", "MediumItalic",		4, 5, 5, { 6, 1, 1 }, 1 },
   { "ZapfDingbats", "", "",			1, 5, 5, { 8, 0, 0 }, 1 }
 };
 

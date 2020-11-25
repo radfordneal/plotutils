@@ -16,10 +16,11 @@
 
 void
 #ifdef _HAVE_PROTOS
-_c_set_pen_color(S___(Plotter *_plotter))
+_c_set_pen_color(R___(Plotter *_plotter) int cgm_object_type)
 #else
-_c_set_pen_color(S___(_plotter))
+_c_set_pen_color(R___(_plotter) cgm_object_type)
      S___(Plotter *_plotter;) 
+     int cgm_object_type;
 #endif
 {
   int red_long, green_long, blue_long;
@@ -55,7 +56,7 @@ _c_set_pen_color(S___(_plotter))
       && (red != fullstrength || green != fullstrength || blue != fullstrength))
     _plotter->cgm_page_need_color = true;
 
-  switch (_plotter->drawstate->cgm_object_type)
+  switch (cgm_object_type)
     {
     case CGM_OBJECT_OPEN:
       if (_plotter->cgm_line_color.red != red 
@@ -65,20 +66,20 @@ _c_set_pen_color(S___(_plotter))
 	{
 	  data_len = 3 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 4,
 				    data_len, &byte_count,
 				    "LINECOLR");
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)red,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)green,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)blue,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update our knowledge of CGM's pen color */
 	  _plotter->cgm_line_color.red = red;
@@ -94,20 +95,20 @@ _c_set_pen_color(S___(_plotter))
 	{
 	  data_len = 3 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 29,
 				    data_len, &byte_count,
 				    "EDGECOLR");
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)red,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)green,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)blue,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update our knowledge of CGM's edge color */
 	  _plotter->cgm_edge_color.red = red;
@@ -123,20 +124,20 @@ _c_set_pen_color(S___(_plotter))
 	{
 	  data_len = 3 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 8,
 				    data_len, &byte_count,
 				    "MARKERCOLR");
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)red,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)green,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)blue,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update our knowledge of CGM's marker color */
 	  _plotter->cgm_marker_color.red = red;
@@ -152,20 +153,20 @@ _c_set_pen_color(S___(_plotter))
 	{
 	  data_len = 3 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 14,
 				    data_len, &byte_count,
 				    "TEXTCOLR");
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)red,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)green,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				     (unsigned int)blue,
 				     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update our knowledge of CGM's text color */
 	  _plotter->cgm_text_color.red = red;
@@ -180,16 +181,15 @@ _c_set_pen_color(S___(_plotter))
 
 void
 #ifdef _HAVE_PROTOS
-_c_set_fill_color(S___(Plotter *_plotter))
+_c_set_fill_color(R___(Plotter *_plotter) int cgm_object_type)
 #else
-_c_set_fill_color(S___(_plotter))
+_c_set_fill_color(R___(_plotter) cgm_object_type)
      S___(Plotter *_plotter;)
+     int cgm_object_type;
 #endif
 {
   int red_long, green_long, blue_long;
   int red, green, blue;
-  double red_d, green_d, blue_d;
-  double desaturate;
   int fullstrength;
   int byte_count, data_byte_count, data_len;
 
@@ -197,28 +197,15 @@ _c_set_fill_color(S___(_plotter))
     /* don't do anything, fill color will be ignored when writing objects*/
     return;
 
-  if (_plotter->drawstate->cgm_object_type != CGM_OBJECT_OPEN
-      && _plotter->drawstate->cgm_object_type != CGM_OBJECT_CLOSED)
+  if (cgm_object_type != CGM_OBJECT_OPEN
+      && cgm_object_type != CGM_OBJECT_CLOSED)
     /* don't do anything; won't be filling */
     return;
 
-  /* scale each RGB from a 16-bit quantity to range [0.0,1.0] */
-  red_d = ((double)((_plotter->drawstate->fillcolor).red))/0xFFFF;
-  green_d = ((double)((_plotter->drawstate->fillcolor).green))/0xFFFF;
-  blue_d = ((double)((_plotter->drawstate->fillcolor).blue))/0xFFFF;
-
-  /* fill_type, if nonzero, specifies the extent to which the nominal fill
-     color should be desaturated.  1 means no desaturation, 0xffff means
-     complete desaturation (white). */
-  desaturate = ((double)_plotter->drawstate->fill_type - 1.)/0xFFFE;
-  red_d = red_d + desaturate * (1.0 - red_d);
-  green_d = green_d + desaturate * (1.0 - green_d);
-  blue_d = blue_d + desaturate * (1.0 - blue_d);
-
-  /* restore each RGB to a 16-bit quantity (48 bits in all) */
-  red_long = IROUND(0xFFFF * red_d);
-  green_long = IROUND(0xFFFF * green_d);
-  blue_long = IROUND(0xFFFF * blue_d);
+  /* obtain each RGB as a 16-bit quantity (48 bits in all) */
+  red_long = _plotter->drawstate->fillcolor.red;
+  green_long = _plotter->drawstate->fillcolor.green;
+  blue_long = _plotter->drawstate->fillcolor.blue;
 
   /* 24-bit or 48-bit RGB (as used in CGMs) */
   switch (CGM_BINARY_BYTES_PER_COLOR_COMPONENT)
@@ -250,20 +237,20 @@ _c_set_fill_color(S___(_plotter))
     {
       data_len = 3 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
       byte_count = data_byte_count = 0;
-      _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+      _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				CGM_ATTRIBUTE_ELEMENT, 23,
 				data_len, &byte_count,
 				"FILLCOLR");
-      _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+      _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				 (unsigned int)red,
 				 data_len, &data_byte_count, &byte_count);
-      _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+      _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				 (unsigned int)green,
 				 data_len, &data_byte_count, &byte_count);
-      _cgm_emit_color_component (_plotter->page, false, _plotter->cgm_encoding,
+      _cgm_emit_color_component (_plotter->data->page, false, _plotter->cgm_encoding,
 				 (unsigned int)blue,
 				 data_len, &data_byte_count, &byte_count);
-      _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+      _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 				    &byte_count);
       /* update our knowledge of CGM's fill color */
       _plotter->cgm_fillcolor.red = red;
@@ -311,4 +298,8 @@ _c_set_bg_color(S___(_plotter))
   _plotter->cgm_bgcolor.red = red;
   _plotter->cgm_bgcolor.green = green;
   _plotter->cgm_bgcolor.blue = blue;
+
+  /* should the just-computed color be ignored, i.e., did the user really
+     specify "none" as the background color? */
+  _plotter->cgm_bgcolor_suppressed = _plotter->drawstate->bgcolor_suppressed;
 }

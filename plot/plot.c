@@ -2,7 +2,7 @@
    includes code to read a stream of commands, in GNU metafile format, and
    call libplot functions to draw the graphics.
 
-   Copyright (C) 1989-1999 Free Software Foundation, Inc. */
+   Copyright (C) 1989-2000 Free Software Foundation, Inc. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -67,16 +67,6 @@ plot_format input_format = GNU_OLD_BINARY;
    of erase()) from the output */
 bool merge_pages = false;
 
-/* Variable used for working around a problem libplot currently has, of not
-   recognizing absurdly large font size requests, which can crash X
-   servers.  (You used to be able to crash an X server by piping any EPS
-   file to `plot -TX', since the `S' on the first line was interepreted as
-   a font size request!)  We no longer process the `S' op code unless one
-   of the `space' commands is seen first.  This is a kludge but adds a
-   little safety, since a `space' command should appear very early in any
-   well-behaved metafile. */
-bool space_seen = false;
-
 /* Long options we recognize */
 
 #define	ARG_NONE	0
@@ -94,6 +84,7 @@ struct option long_options[] =
   /* Long options with (mostly) no equivalent short option alias */
   { "bg-color",		ARG_REQUIRED,	NULL, 'q' << 8 },
   { "bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8 },
+  { "emulate-color",	ARG_REQUIRED,	NULL, 'e' << 8},  
   { "max-line-length",	ARG_REQUIRED,	NULL, 'M' << 8 },
   { "merge-pages",	ARG_NONE,	NULL, 's' },
   { "page-number",	ARG_REQUIRED,	NULL, 'p' },
@@ -182,6 +173,9 @@ main (argc, argv)
 	  font_name = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (font_name, optarg);
 	  break;
+	case 'e' << 8:		/* emulate color by grayscale */
+	  pl_setplparam (plotter_params, "EMULATE_COLOR", (voidptr_t)optarg);
+	  break;
 	case 'C' << 8:		/* set the initial pen color */
 	  pen_color = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (pen_color, optarg);
@@ -214,9 +208,6 @@ main (argc, argv)
 	    else if (local_font_size < 0.0)
 	      fprintf (stderr, "%s: ignoring negative initial font size `%f'\n",
 		       progname, local_font_size);
-	    else if (local_font_size == 0.0)
-	      fprintf (stderr, "%s: ignoring zero initial font size\n",
-		       progname);
 	    else
 	      font_size = local_font_size;
 	    break;
@@ -456,12 +447,20 @@ read_plot (plotter, in_stream)
   /* peek at first instruction in file */
   instruction = getc (in_stream);
 
-  /* Switch away from GNU_OLD_BINARY to GNU_BINARY if a header line,
-     interpreted here as a comment, is seen at top of file.  See also
-     parsing of the COMMENT instruction below (we further switch to
+  /* Switch away from GNU_OLD_BINARY to GNU_BINARY if a GNU metafile magic
+     string, interpreted here as a comment, is seen at top of file.  See
+     also parsing of the COMMENT instruction below (we further switch to
      GNU_PORTABLE if the header line indicates we should). */
   if (input_format == GNU_OLD_BINARY && instruction == (int)O_COMMENT)
     input_format = GNU_BINARY;
+
+/* Note: we use `input_format' as a way of working around a problem:
+   absurdly large font size requests, which can crash X servers.  (You used
+   to be able to crash an X server by piping any EPS file to `plot -TX',
+   since the `S' on the first line was interepreted as an op code for a
+   font size request!)  We no longer process the `S' op code unless we've
+   seen a modern GNU metafile magic string at the beginning of the file.
+   This is a kludge but adds a little safety. */
 
   while (instruction != EOF)
     {
@@ -628,6 +627,10 @@ read_plot (plotter, in_stream)
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      pl_color_r (plotter, i0, i1, i2);
+	  break;
+	case (int)O_CLOSEPATH:
+	  if (!single_page_is_requested || current_page == requested_page)
+	    pl_closepath_r (plotter);
 	  break;
 	case (int)O_CLOSEPL:
 	  if (input_format != GNU_BINARY && input_format != GNU_PORTABLE)
@@ -804,10 +807,12 @@ read_plot (plotter, in_stream)
 	  break;
 	case (int)O_FONTSIZE:
 	  x0 = read_int (in_stream, &argerr);
-	  if (space_seen)	/* workaround, see comment above */
+	  if (input_format == GNU_BINARY || input_format == GNU_PORTABLE)
+	    /* workaround, see comment above */
 	    {
 	      if (!argerr)
-		if (!single_page_is_requested || current_page == requested_page)
+		if (!single_page_is_requested 
+		    || current_page == requested_page)
 		  pl_ffontsize_r (plotter, x0);
 	    }
 	  break;
@@ -948,7 +953,8 @@ read_plot (plotter, in_stream)
 		{
 		  if (maybe_openpl (plotter) < 0)
 		    {
-		      fprintf (stderr, "%s: error: could not open plot device\n", 
+		      fprintf (stderr, 
+			       "%s: error: could not open plot device\n", 
 			       progname);
 		      exit (EXIT_FAILURE);
 		    }
@@ -1028,7 +1034,6 @@ read_plot (plotter, in_stream)
 		pl_flinewidth_r (plotter, line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
-	  space_seen = true;
 	  break;
 	case (int)O_SPACE2:
 	  x0 = read_int (in_stream, &argerr);
@@ -1044,7 +1049,7 @@ read_plot (plotter, in_stream)
 	  if (parameters_initted == false && 
 	      ((!single_page_is_requested && current_page == 1)
 	      || (single_page_is_requested && current_page == requested_page)))
-	    /* insert these after the call to space(), if user insists on
+	    /* insert these after the call to space2(), if user insists on
 	       including them (should estimate sizes better) */
 	    {
 	      if (bg_color)
@@ -1062,7 +1067,6 @@ read_plot (plotter, in_stream)
 		pl_flinewidth_r (plotter, line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
-	  space_seen = true;
 	  break;
 	case (int)O_TEXTANGLE:
 	  x0 = read_int (in_stream, &argerr);
@@ -1234,7 +1238,8 @@ read_plot (plotter, in_stream)
 	  break;
 	case (int)O_FFONTSIZE:
 	  x0 = read_float (in_stream, &argerr);
-	  if (space_seen)	/* workaround, see comment above */
+	  if (input_format == GNU_BINARY || input_format == GNU_PORTABLE)
+	    /* workaround, see comment above */
 	    {
 	      if (!argerr)
 		if (!single_page_is_requested || current_page == requested_page)
@@ -1359,7 +1364,6 @@ read_plot (plotter, in_stream)
 		pl_flinewidth_r (plotter, line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
-	  space_seen = true;
 	  break;
 	case (int)O_FSPACE2:
 	  x0 = read_float (in_stream, &argerr);
@@ -1375,7 +1379,7 @@ read_plot (plotter, in_stream)
 	  if (parameters_initted == false && 
 	      ((!single_page_is_requested && current_page == 1)
 	      || (single_page_is_requested && current_page == requested_page)))
-	    /* insert these after the call to fspace(), if user insists on
+	    /* insert these after the call to fspace2(), if user insists on
 	       including them (should estimate sizes better) */
 	    {
 	      if (bg_color)
@@ -1393,7 +1397,6 @@ read_plot (plotter, in_stream)
 		pl_flinewidth_r (plotter, line_width * fabs (x1 - x0));
 	      parameters_initted = true;
 	    }
-	  space_seen = true;
 	  break;
 	case (int)O_FTEXTANGLE:
 	  x0 = read_float (in_stream, &argerr);
@@ -1402,7 +1405,7 @@ read_plot (plotter, in_stream)
 	      pl_ftextangle_r (plotter, x0);
 	  break;
 
-        /* floating point routine with no integer counterpart */
+        /* floating point routines with no integer counterpart */
 	case (int)O_FCONCAT:
 	  x0 = read_float (in_stream, &argerr);
 	  y0 = read_float (in_stream, &argerr);
@@ -1419,6 +1422,36 @@ read_plot (plotter, in_stream)
 	  if (!argerr)
 	    if (!single_page_is_requested || current_page == requested_page)
 	      pl_fmiterlimit_r (plotter, x0);
+	  break;
+	case (int)O_FSETMATRIX:
+	  x0 = read_float (in_stream, &argerr);
+	  y0 = read_float (in_stream, &argerr);
+	  x1 = read_float (in_stream, &argerr);
+	  y1 = read_float (in_stream, &argerr); 
+	  x2 = read_float (in_stream, &argerr);
+	  y2 = read_float (in_stream, &argerr); 
+	  if (!argerr)
+	    if (!single_page_is_requested || current_page == requested_page)
+	      pl_fsetmatrix_r (plotter, x0, y0, x1, y1, x2, y2);
+	  if (parameters_initted == false && 
+	      ((!single_page_is_requested && current_page == 1)
+	      || (single_page_is_requested && current_page == requested_page)))
+	    /* insert these after the call to fsetmatrix(), if user insists
+	       on including them (should estimate sizes better) */
+	    {
+	      if (pen_color)
+		pl_pencolorname_r (plotter, pen_color);
+	      if (font_name)
+		pl_fontname_r (plotter, font_name);
+	      if (x0 != 0.0)
+		{
+		  if (font_size >= 0.0)
+		    pl_ffontsize_r (plotter, font_size / fabs (x0));
+		  if (line_width >= 0.0)
+		    pl_flinewidth_r (plotter, line_width / fabs (x0));
+		}
+	      parameters_initted = true;
+	    }
 	  break;
 	case (int)O_FROTATE:	/* obsolete op code, to be removed */
 	  x0 = read_float (in_stream, &argerr);

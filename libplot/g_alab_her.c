@@ -1,11 +1,10 @@
-/* This file contains the internal method _falabel_hershey(), which plots a
+/* This file contains the internal method _alabel_hershey(), which plots a
    label using Hershey fonts.  Each character in a Hershey font is a
-   sequence of pen motions, so this function simply calls fmoverel() and
-   fcontrel() to `stroke' each character in the argument string.
+   sequence of pen motions, so this function calls _API_fmoverel() and
+   _API_fcontrel() to `stroke' each character in the argument string.
 
    The width of the string in user units is returned.  The internal method
-   _flabelwidth_hershey() is similar, but does not actually plot the label.
-*/
+   _flabelwidth_hershey() is similar, but does not actually plot the label.  */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -48,83 +47,16 @@
 
 /* forward references */
 static bool _composite_char ____P((unsigned char *composite, unsigned char *character, unsigned char *accent));
+static double _label_width_hershey ____P((const unsigned short *label));
 
-/* _draw_hershey_stroke() draws a stroke, taking into account the
-   transformation from Hershey units to user units, and also the current
-   transformation matrix (as set by the user).  _draw_stroke is similar,
-   but takes arguments in user units. */
-
-void
-#ifdef _HAVE_PROTOS
-_draw_hershey_stroke (R___(Plotter *_plotter) bool pendown, double deltax, double deltay)
-#else
-_draw_hershey_stroke (R___(_plotter) pendown, deltax, deltay)
-     S___(Plotter *_plotter;)
-     bool pendown;
-     double deltax, deltay;
-#endif
-{
-  _draw_stroke (R___(_plotter)
-		pendown,
-		HERSHEY_UNITS_TO_USER_UNITS (deltax),
-		HERSHEY_UNITS_TO_USER_UNITS (deltay));
-}
-
-void
-#ifdef _HAVE_PROTOS
-_draw_stroke (R___(Plotter *_plotter) bool pendown, double deltax, double deltay)
-#else
-_draw_stroke (R___(_plotter) pendown, deltax, deltay)
-     S___(Plotter *_plotter;)
-     bool pendown;
-     double deltax, deltay;
-#endif
-{
-  double dx, dy;
-  double theta;
-  
-  theta = M_PI * _plotter->drawstate->text_rotation / 180.0;
-  
-  dx = cos(theta) * deltax - sin(theta) * deltay;
-  dy = sin(theta) * deltax + cos(theta) * deltay;
-
-  if (pendown)
-    _plotter->fcontrel (R___(_plotter) dx, dy);
-  else
-    _plotter->fmoverel (R___(_plotter) dx, dy);
-}
-
-/* this is the version of the flabelwidth() method that is specific to the
-   case when the current Plotter font is a Hershey font; called in
-   g_flabelwidth () */
+/* An version of the alabel() method that is specific to the case when the
+   current Plotter font is a Hershey font.  It handles escape sequences for
+   subscripts, superscripts, shifts among Hershey fonts, etc.  */
 double
 #ifdef _HAVE_PROTOS
-_g_flabelwidth_hershey (R___(Plotter *_plotter) const unsigned char *s)
+_alabel_hershey (R___(Plotter *_plotter) const unsigned char *s, int x_justify, int y_justify)
 #else
-_g_flabelwidth_hershey (R___(_plotter) s)
-     S___(Plotter *_plotter;)
-     const unsigned char *s;
-#endif
-{
-  double label_width;
-  unsigned short *codestring;
-  
-  /* convert string to a codestring, including annotations */
-  codestring = _controlify (R___(_plotter) s);
-
-  label_width = _label_width_hershey (R___(_plotter) codestring);
-  free (codestring);
-  
-  return label_width;
-}
-
-/* this is the version of the falabel() method that is specific
-   to the case when the current Plotter font is a Hershey font */
-double
-#ifdef _HAVE_PROTOS
-_g_falabel_hershey (R___(Plotter *_plotter) const unsigned char *s, int x_justify, int y_justify)
-#else
-_g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
+_alabel_hershey (R___(_plotter) s, x_justify, y_justify)
      S___(Plotter *_plotter;)
      const unsigned char *s;
      int x_justify, y_justify;
@@ -141,8 +73,8 @@ _g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
   /* convert string to a codestring, including annotations */
   codestring = _controlify (R___(_plotter) s);
 
-  /* dimensions of the string, in user units */
-  label_width = _label_width_hershey (R___(_plotter) codestring);
+  /* dimensions of the string in user units */
+  label_width = HERSHEY_UNITS_TO_USER_UNITS(_label_width_hershey (codestring));
   label_height = HERSHEY_UNITS_TO_USER_UNITS(HERSHEY_HEIGHT);
   
   x_justify_c = (char)x_justify;
@@ -178,9 +110,13 @@ _g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
       y_offset = 0.0;
       break;
 
-    case 'c': 			/* current point is midway between bottom, top */
+    case 'c': 			/* current point midway between bottom, top */
       y_offset = 0.5 * ((double)HERSHEY_DESCENT - (double)HERSHEY_ASCENT) 
 		   / (double)HERSHEY_HEIGHT;
+      break;
+
+    case 'C':			/* current point is on cap line */
+      y_offset = - (double)HERSHEY_CAPHEIGHT / (double)HERSHEY_HEIGHT;
       break;
 
     case 't':			/* current point is at top */
@@ -198,8 +134,8 @@ _g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
     old_line_mode = (char *)_plot_xmalloc (strlen (_plotter->drawstate->line_mode) + 1);
     old_cap_mode = (char *)_plot_xmalloc (strlen (_plotter->drawstate->cap_mode) + 1);
     old_join_mode = (char *)_plot_xmalloc (strlen (_plotter->drawstate->join_mode) + 1);
-    oldposx = (_plotter->drawstate->pos).x;
-    oldposy = (_plotter->drawstate->pos).y;    
+    oldposx = _plotter->drawstate->pos.x;
+    oldposy = _plotter->drawstate->pos.y;    
 
     strcpy (old_line_mode, _plotter->drawstate->line_mode);
     strcpy (old_cap_mode, _plotter->drawstate->cap_mode);
@@ -208,18 +144,29 @@ _g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
     old_dash_array_in_effect = _plotter->drawstate->dash_array_in_effect;
     
     /* Our choices for rendering: solid lines, rounded capitals and joins,
-       a line width equal to slightly more than 1 Hershey unit, and
-       transparent filling. */
-    _plotter->linemod (R___(_plotter) "solid");
-    _plotter->capmod (R___(_plotter) "round");
-    _plotter->joinmod (R___(_plotter) "round");
-    _plotter->filltype (R___(_plotter) 0);
+       a line width equal to slightly more than 1 Hershey unit, and no
+       filling.  
+
+       We don't set the pen type: we allow it to be 0, which will mean no
+       stroking at all. */
+    _API_linemod (R___(_plotter) "solid");
+    _API_capmod (R___(_plotter) "round");
+    _API_joinmod (R___(_plotter) "round");
+    _API_filltype (R___(_plotter) 0);
     
-    /* move to take horizontal and vertical justification into account;
-       arguments here are in user units */
-    _draw_stroke (R___(_plotter) 
-		  false, 
-		  x_offset * label_width, y_offset * label_height);
+    /* move to take horizontal and vertical justification into account */
+    {
+      double theta, deltax, deltay, dx_just, dy_just;
+
+      theta = M_PI * _plotter->drawstate->text_rotation / 180.0;
+  
+      deltax = x_offset * label_width;
+      deltay = y_offset * label_height;
+      dx_just = cos(theta) * deltax - sin(theta) * deltay;
+      dy_just = sin(theta) * deltax + cos(theta) * deltay;
+      
+      _API_fmoverel (R___(_plotter) dx_just, dy_just);
+    }
     
     /* call stroker on the sequence of strokes obtained from each char (the
        stroker may manipulate the line width) */
@@ -228,10 +175,10 @@ _g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
     /* Restore original values of relevant drawing attributes, free
        storage.  endpath() will be invoked in here automatically, flushing
        the created polyline object comprising the stroked text. */
-    _plotter->linemod (R___(_plotter) old_line_mode);
-    _plotter->capmod (R___(_plotter) old_cap_mode);
-    _plotter->joinmod (R___(_plotter) old_join_mode);
-    _plotter->filltype (R___(_plotter) old_fill_type);
+    _API_linemod (R___(_plotter) old_line_mode);
+    _API_capmod (R___(_plotter) old_cap_mode);
+    _API_joinmod (R___(_plotter) old_join_mode);
+    _API_filltype (R___(_plotter) old_fill_type);
     _plotter->drawstate->dash_array_in_effect = old_dash_array_in_effect;
     
     free (old_line_mode);
@@ -239,23 +186,79 @@ _g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
     free (old_join_mode);
 
     /* return to original position */
-    _plotter->fmove (R___(_plotter) oldposx, oldposy);
+    _API_fmove (R___(_plotter) oldposx, oldposy);
   }
 
   /* amount by which to shift after printing label (user units) */
   postdx = x_displacement * label_width;
   theta = M_PI * _plotter->drawstate->text_rotation / 180.0;
-  dx = cos (theta) * postdx
-    - sin (theta) * 0;
-  dy = sin (theta) * postdx
-    + cos (theta) * 0;
+  dx = cos (theta) * postdx;
+  dy = sin (theta) * postdx;
 
-  _plotter->fmoverel (R___(_plotter) dx, dy);
+  _API_fmoverel (R___(_plotter) dx, dy);
 
   free (codestring);
 
   return label_width;		/* user units */
 }
+
+/* A version of the flabelwidth() method that is specific to the case when
+   the current Plotter font is a Hershey font. */
+double
+#ifdef _HAVE_PROTOS
+_flabelwidth_hershey (R___(Plotter *_plotter) const unsigned char *s)
+#else
+_flabelwidth_hershey (R___(_plotter) s)
+     S___(Plotter *_plotter;)
+     const unsigned char *s;
+#endif
+{
+  double label_width;
+  unsigned short *codestring;
+  
+  /* convert string to a codestring, including annotations */
+  codestring = _controlify (R___(_plotter) s);
+
+  label_width = HERSHEY_UNITS_TO_USER_UNITS(_label_width_hershey (codestring));
+  free (codestring);
+  
+  return label_width;
+}
+
+/* _draw_hershey_stroke() draws a stroke, taking into account the
+   transformation from Hershey units to user units, and also the angle in
+   user space at which the label should be plotted. */
+
+void
+#ifdef _HAVE_PROTOS
+_draw_hershey_stroke (R___(Plotter *_plotter) bool pendown, double deltax, double deltay)
+#else
+_draw_hershey_stroke (R___(_plotter) pendown, deltax, deltay)
+     S___(Plotter *_plotter;)
+     bool pendown;
+     double deltax, deltay;
+#endif
+{
+  double theta = M_PI * _plotter->drawstate->text_rotation / 180.0;
+  double dx, dy;
+
+  deltax = HERSHEY_UNITS_TO_USER_UNITS (deltax);
+  deltay = HERSHEY_UNITS_TO_USER_UNITS (deltay);
+
+  dx = cos(theta) * deltax - sin(theta) * deltay;
+  dy = sin(theta) * deltax + cos(theta) * deltay;
+
+  if (pendown)
+    _API_fcontrel (R___(_plotter) dx, dy);
+  else
+    _API_fmoverel (R___(_plotter) dx, dy);
+}
+
+/* _label_width_hershey() computes the width (total delta x) of a
+   controlified character string to be rendered in a vector font, in
+   Hershey units.  Parsing must take into account the many control
+   sequences which perform shifts, and initiate/terminate
+   subscripts/superscripts. */
 
 /* In addition to scaling the character sizes and the `width', we perform
    the following (dx, dy):
@@ -272,15 +275,11 @@ _g_falabel_hershey (R___(_plotter) s, x_justify, y_justify)
    [N.B. In Bob Beach's original UGS character stroke generator,
    the +1/6's here were +2/9 instead.  Better?] */
 
-/* _label_width_hershey() computes the width (total delta x) of a
-   controlified character string to be rendered in a vector font, in user
-   units */
-double
+static double
 #ifdef _HAVE_PROTOS
-_label_width_hershey (R___(Plotter *_plotter) const unsigned short *label) 
+_label_width_hershey (const unsigned short *label) 
 #else
-_label_width_hershey (R___(_plotter) label) 
-     S___(Plotter *_plotter;) 
+_label_width_hershey (label) 
      const unsigned short *label;
 #endif
 { 
@@ -432,7 +431,7 @@ _label_width_hershey (R___(_plotter) label)
       ptr++;			/* bump pointer in string */
     }
 
-  return HERSHEY_UNITS_TO_USER_UNITS (width);
+  return width;
 }  
 
 /* _draw_hershey_penup_stroke() draws a penup stroke, along a vector
@@ -569,7 +568,7 @@ _draw_hershey_string (R___(_plotter) string)
 	{
 	  if (line_width_type != 1)
 	    {
-	      _plotter->flinewidth (R___(_plotter)
+	      _API_flinewidth (R___(_plotter)
 				    HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
 	      line_width_type = 1;
 	    }
@@ -581,7 +580,7 @@ _draw_hershey_string (R___(_plotter) string)
 	{
 	  if (line_width_type != 2)
 	    {
-	      _plotter->flinewidth (R___(_plotter)
+	      _API_flinewidth (R___(_plotter)
 				    HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
 	      line_width_type = 2;
 	    }
@@ -632,7 +631,7 @@ _draw_hershey_string (R___(_plotter) string)
 		
 	  case C_POP_LOCATION:
 	    charsize = saved_charsize;
-	    _plotter->fmove (R___(_plotter)
+	    _API_fmove (R___(_plotter)
 			     saved_position_x, saved_position_y);
 	    break;
 		
@@ -661,6 +660,11 @@ _draw_hershey_string (R___(_plotter) string)
 				  false, charsize * HERSHEY_EM / 8.0, 0.0);
 	    break;
 		
+	  case C_RIGHT_TWELFTH_EM:
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, charsize * HERSHEY_EM / 12.0, 0.0);
+	    break;
+		
 	  case C_LEFT_ONE_EM:
 	    _draw_hershey_stroke (R___(_plotter)
 				  false, - charsize * HERSHEY_EM, 0.0);
@@ -684,6 +688,11 @@ _draw_hershey_string (R___(_plotter) string)
 	  case C_LEFT_EIGHTH_EM:
 	    _draw_hershey_stroke (R___(_plotter)
 				  false, - charsize * HERSHEY_EM / 8.0, 0.0);
+	    break;
+
+	  case C_LEFT_TWELFTH_EM:
+	    _draw_hershey_stroke (R___(_plotter)
+				  false, - charsize * HERSHEY_EM / 12.0, 0.0);
 	    break;
 		
 	    /* unrecognized control code, punt */
@@ -758,7 +767,7 @@ _draw_hershey_string (R___(_plotter) string)
 	      /* draw the character */
 	      if (line_width_type != 1)
 		{
-		  _plotter->flinewidth (R___(_plotter)
+		  _API_flinewidth (R___(_plotter)
 					HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
 		  line_width_type = 1;
 		}
@@ -829,7 +838,7 @@ _draw_hershey_string (R___(_plotter) string)
 					      0.0, charsize, oblique);
 		  if (line_width_type != 2)
 		    {
-		      _plotter->flinewidth (R___(_plotter)
+		      _API_flinewidth (R___(_plotter)
 					    HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
 		      line_width_type = 2;
 		    }
@@ -850,7 +859,7 @@ _draw_hershey_string (R___(_plotter) string)
 		    {
 		      if (line_width_type != 2)
 			{
-			  _plotter->flinewidth (R___(_plotter)  
+			  _API_flinewidth (R___(_plotter)  
 						HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_ORIENTAL_STROKE_WIDTH));
 			  line_width_type = 2;
 			}
@@ -858,7 +867,7 @@ _draw_hershey_string (R___(_plotter) string)
 		  else
 		      if (line_width_type != 1)
 			{
-			  _plotter->flinewidth (R___(_plotter)
+			  _API_flinewidth (R___(_plotter)
 						HERSHEY_UNITS_TO_USER_UNITS (HERSHEY_STROKE_WIDTH));
 			  line_width_type = 1;
 			}
@@ -875,7 +884,7 @@ _draw_hershey_string (R___(_plotter) string)
   
   if (line_width_type != 0)
     /* must restore old line width */
-    _plotter->flinewidth (R___(_plotter) old_line_width);
+    _API_flinewidth (R___(_plotter) old_line_width);
   
   return;
 }

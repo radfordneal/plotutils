@@ -1,15 +1,26 @@
 dnl Configure template for GNU libxmi.
 dnl This is hugely cut down from the template for the GNU plotutils package.
-dnl Copyright (C) 1989-99 Free Software Foundation, Inc.
+dnl Copyright (C) 1989-2000 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(xmi.h)
-AM_INIT_AUTOMAKE(libxmi, 1.1)
+AM_INIT_AUTOMAKE(libxmi, 1.2)
 AM_CONFIG_HEADER(config.h)
+
+dnl Did installer set the CFLAGS and CXXFLAGS environ variables before
+dnl running configure?  Our default CFLAGS and CXXFLAGS differ from
+dnl autoconf's, but we won't override installer-specified values.
+if test "x$CFLAGS" = "x"; then
+  CFLAGS_NOT_SET_BY_INSTALLER="yes"
+else
+  CFLAGS_NOT_SET_BY_INSTALLER="no"
+fi
 
 dnl We now use libtool to make and installed a shared library.  This should
 dnl invoke the tests AC_PROG_CC, AC_OBJEXT, AC_PROG_INSTALL, and
 dnl AC_PROG_MAKE_SET, or equivalents, so we don't perform them explicitly.
+dnl Note: this can apparently alter CFLAGS, on a few platforms, e.g., on
+dnl SCO OpenServer 5 (i.e. *-*-sco3.2v5*), "-belf" is added.
 AM_PROG_LIBTOOL
 
 dnl Determine extension (e.g. ".exe") on executables, if any.
@@ -33,11 +44,24 @@ AC_CHECK_FUNCS(memmove)
 dnl This may do some good.
 LIBS="$LIBS -lm"
 
-dnl Override default "-g -O2" or "-g".
+dnl Override default autoconf value "-g -O2" or "-g" for CFLAGS, set by
+dnl AC_PROG_CC.  Provided, that is, installer didn't set CFLAGS via an
+dnl environment variable before running configure.  We don't use "-g" when
+dnl compiling libxmi, since a debugging version of libxmi would be large.
+
+dnl Note: on a very few platforms where libtool adds a command-line option
+dnl to CFLAGS (see above; this includes SCO OpenServer 5, where "-belf" is
+dnl added), this way of doing things will not work, i.e., the installer
+dnl will need to add by hand the option that libtool would have added.
+dnl E.g., on SCO OpenServer5 the installer may need to set the environment
+dnl variable CFLAGS to "-O -belf" or "-O2 -belf".
+
+if test "x$CFLAGS_NOT_SET_BY_INSTALLER" = "xyes"; then
 if test "x$GCC" = "xyes"; then
   CFLAGS="-O2"
 else
   CFLAGS="-O"
+fi
 fi
 
 dnl Check for gcc strength-reduce bug (taken from WINE config).  Could do

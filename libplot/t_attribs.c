@@ -28,48 +28,48 @@ _t_set_attributes (S___(_plotter))
     default:
     case L_SOLID:
       /* ASCII ESC `, i.e. ^[` */
-      _plotter->write_string (R___(_plotter) "\033`");
+      _write_string (_plotter->data, "\033`");
       break;
     case L_DOTTED:
       /* ASCII ESC a, i.e. ^[a */
-      _plotter->write_string (R___(_plotter) "\033a");	
+      _write_string (_plotter->data, "\033a");	
       break;
       /* following two are interchanged in kermit emulator */
     case L_DOTDASHED:
       if (_plotter->tek_display_type == D_KERMIT)
 	/* ASCII ESC c, i.e. ^[c */
-	_plotter->write_string (R___(_plotter) "\033c"); 
+	_write_string (_plotter->data, "\033c"); 
       else
 	/* ASCII ESC b, i.e. ^[b */
-	_plotter->write_string (R___(_plotter) "\033b"); 
+	_write_string (_plotter->data, "\033b"); 
       break;
     case L_SHORTDASHED:
       if (_plotter->tek_display_type == D_KERMIT)
 	/* ASCII ESC b, i.e. ^[b */
-	_plotter->write_string (R___(_plotter) "\033b"); 
+	_write_string (_plotter->data, "\033b"); 
       else
 	/* ASCII ESC c, i.e. ^[c */
-	_plotter->write_string (R___(_plotter) "\033c"); 
+	_write_string (_plotter->data, "\033c"); 
       break;
     case L_LONGDASHED:
       /* in kermit emulator, the following switches to "dotlongdashed"
 	 rather than "longdashed", but we can live with that */
       /* ASCII ESC d, i.e. ^[d */
-      _plotter->write_string (R___(_plotter) "\033d");	
+      _write_string (_plotter->data, "\033d");	
       break;
     case L_DOTDOTDASHED:
       if (_plotter->tek_display_type == D_KERMIT)
 	/* ASCII ESC e, i.e. ^[e */
-	_plotter->write_string (R___(_plotter) "\033e"); 
+	_write_string (_plotter->data, "\033e"); 
       else
 	/* not supported on a genuine Tektronix, so punt */
 	/* ASCII ESC b, i.e. ^[b */
-	_plotter->write_string (R___(_plotter) "\033b"); 
+	_write_string (_plotter->data, "\033b"); 
       break;
     case L_DOTDOTDOTDASHED:
       /* not supported, so punt */
       /* ASCII ESC b, i.e. ^[b */
-      _plotter->write_string (R___(_plotter) "\033b");
+      _write_string (_plotter->data, "\033b");
       break;
     }
 

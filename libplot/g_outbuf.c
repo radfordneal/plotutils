@@ -45,6 +45,8 @@ _new_outbuf ()
   plOutbuf *bufp;
 
   bufp = (plOutbuf *)_plot_xmalloc(sizeof(plOutbuf));
+  bufp->header = (plOutbuf *)NULL;
+  bufp->trailer = (plOutbuf *)NULL;
   bufp->base = (char *)_plot_xmalloc(INITIAL_OUTBUF_LEN * sizeof(char));
   bufp->len = (unsigned long)INITIAL_OUTBUF_LEN;
   bufp->next = NULL;

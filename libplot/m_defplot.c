@@ -11,32 +11,26 @@
    a MetaPlotter struct. */
 const Plotter _m_default_plotter = 
 {
-  /* methods */
-  _m_alabel, _m_arc, _m_arcrel, _m_bezier2, _m_bezier2rel, _m_bezier3, _m_bezier3rel, _m_bgcolor, _g_bgcolorname, _m_box, _m_boxrel, _m_capmod, _m_circle, _m_circlerel, _m_closepl, _g_color, _g_colorname, _m_cont, _m_contrel, _m_ellarc, _m_ellarcrel, _m_ellipse, _m_ellipserel, _m_endpath, _m_endsubpath, _m_erase, _m_farc, _m_farcrel, _m_fbezier2, _m_fbezier2rel, _m_fbezier3, _m_fbezier3rel, _m_fbox, _m_fboxrel, _m_fcircle, _m_fcirclerel, _m_fconcat, _m_fcont, _m_fcontrel, _m_fellarc, _m_fellarcrel, _m_fellipse, _m_fellipserel, _m_ffontname, _m_ffontsize, _m_fillcolor, _g_fillcolorname, _m_fillmod, _m_filltype, _g_flabelwidth, _m_fline, _m_flinedash, _m_flinerel, _m_flinewidth, _g_flushpl, _m_fmarker, _m_fmarkerrel, _m_fmiterlimit, _m_fmove, _m_fmoverel, _m_fontname, _m_fontsize, _m_fpoint, _m_fpointrel, _g_frotate, _g_fscale, _m_fspace, _m_fspace2, _m_ftextangle, _g_ftranslate, _g_havecap, _m_joinmod, _m_label, _g_labelwidth, _m_line, _m_linedash, _m_linemod, _m_linerel, _m_linewidth, _m_marker, _m_markerrel, _m_move, _m_moverel, _m_openpl, _m_orientation, _g_outfile, _m_pencolor, _g_pencolorname, _m_pentype, _m_point, _m_pointrel, _m_restorestate, _m_savestate, _m_space, _m_space2, _m_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _m_initialize, _m_terminate,
+  /* page manipulation */
+  _m_begin_page, _m_erase_page, _m_end_page,
+  /* drawing state manipulation */
+  _g_push_state, _g_pop_state,
+  /* internal path-painting methods (endpath() is a wrapper for the first) */
+  _m_paint_path, _m_paint_paths, _m_path_is_flushable, _m_maybe_prepaint_segments,
+  /* internal methods for drawing of markers and points */
+  _m_paint_marker, _m_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_falabel_hershey, _g_falabel_ps, _g_falabel_pcl, _g_falabel_stick, _g_falabel_other,
-  _g_flabelwidth_hershey, _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, _g_flabelwidth_other,
+  _m_paint_text_string_with_escapes, _g_paint_text_string,
+  _g_get_text_width,
   /* internal `retrieve font' method */
   _g_retrieve_font,
-  /* private low-level `sync font' method */
-  _g_set_font,
-  /* private low-level `sync line attributes' method */
-  _g_set_attributes,
-  /* private low-level `sync color' methods */
-  _g_set_pen_color,
-  _g_set_fill_color,
-  _g_set_bg_color,
-  /* private low-level `sync position' method */
-  _g_set_position,
+  /* `flush output' method, called only if Plotter handles its own output */
+  _g_flush_output,
   /* internal `error handler' methods */
   _g_warning,
   _g_error,
-  /* low-level output routines */
-  _g_write_byte,
-  _g_write_bytes,
-  _g_write_string
 };
 #endif /* not LIBPLOTTER */
 
@@ -63,66 +57,113 @@ _m_initialize (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* tag field, differs in derived classes */
-  _plotter->type = PL_META;
+  _plotter->data->type = PL_META;
 #endif
 
+  /* output model */
+  _plotter->data->output_model = PL_OUTPUT_VIA_CUSTOM_ROUTINES_IN_REAL_TIME;
+
   /* user-queryable capabilities: 0/1/2 = no/yes/maybe */
-  _plotter->have_wide_lines = 2;
-  _plotter->have_dash_array = 2;
-  _plotter->have_solid_fill = 2;
-  _plotter->have_odd_winding_fill = 2;
-  _plotter->have_nonzero_winding_fill = 2;
-  _plotter->have_settable_bg = 2;
-  _plotter->have_hershey_fonts = 1;
-  _plotter->have_ps_fonts = 1;
-  _plotter->have_pcl_fonts = 1;
-  _plotter->have_stick_fonts = 1;
-  _plotter->have_extra_stick_fonts = 0;
+  _plotter->data->have_wide_lines = 2;
+  _plotter->data->have_dash_array = 2;
+  _plotter->data->have_solid_fill = 2;
+  _plotter->data->have_odd_winding_fill = 2;
+  _plotter->data->have_nonzero_winding_fill = 2;
+  _plotter->data->have_settable_bg = 2;
+  _plotter->data->have_escaped_string_support = 1;
+  _plotter->data->have_ps_fonts = 1;
+  _plotter->data->have_pcl_fonts = 1;
+  _plotter->data->have_stick_fonts = 1;
+  _plotter->data->have_extra_stick_fonts = 1;
+  _plotter->data->have_other_fonts = 1;
 
   /* text and font-related parameters (internal, not queryable by user);
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->default_font_type = F_HERSHEY;
-  _plotter->pcl_before_ps = false;
-  _plotter->have_horizontal_justification = true;
-  _plotter->have_vertical_justification = false;
-  _plotter->issue_font_warning = false;
+  _plotter->data->default_font_type = F_HERSHEY;
+  _plotter->data->pcl_before_ps = false;
+  _plotter->data->have_horizontal_justification = true;
+  _plotter->data->have_vertical_justification = true;
+  _plotter->data->issue_font_warning = true;
 
-  /* path and polyline-related parameters (also internal) */
-  _plotter->max_unfilled_polyline_length = MAX_UNFILLED_POLYLINE_LENGTH;
-  _plotter->have_mixed_paths = false;
-  _plotter->allowed_arc_scaling = AS_NONE;
-  _plotter->allowed_ellarc_scaling = AS_NONE;  
-  _plotter->allowed_quad_scaling = AS_NONE;  
-  _plotter->allowed_cubic_scaling = AS_NONE;  
-  _plotter->flush_long_polylines = false; /* avoid spurious endpath()'s */
-  _plotter->hard_polyline_length_limit = INT_MAX;
+  /* path-related parameters (also internal) */
+  _plotter->data->max_unfilled_path_length = MAX_UNFILLED_PATH_LENGTH;
+  _plotter->data->have_mixed_paths = true;
+  _plotter->data->allowed_arc_scaling = AS_ANY;
+  _plotter->data->allowed_ellarc_scaling = AS_ANY;
+  _plotter->data->allowed_quad_scaling = AS_ANY;  
+  _plotter->data->allowed_cubic_scaling = AS_ANY;  
+  _plotter->data->allowed_box_scaling = AS_ANY;
+  _plotter->data->allowed_circle_scaling = AS_ANY;
+  _plotter->data->allowed_ellipse_scaling = AS_ANY;
 
   /* dimensions */
-  _plotter->display_model_type = (int)DISP_MODEL_NONE;
-  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_REAL;
-  _plotter->flipped_y = false;
-  _plotter->imin = 0;
-  _plotter->imax = 0;  
-  _plotter->jmin = 0;
-  _plotter->jmax = 0;  
-  _plotter->xmin = 0.0;
-  _plotter->xmax = 0.0;  
-  _plotter->ymin = 0.0;
-  _plotter->ymax = 0.0;  
-  _plotter->page_data = (plPageData *)NULL;
+  _plotter->data->display_model_type = (int)DISP_MODEL_VIRTUAL;
+  _plotter->data->display_coors_type = (int)DISP_DEVICE_COORS_REAL;
+  _plotter->data->flipped_y = false;
+  _plotter->data->imin = 0;
+  _plotter->data->imax = 0;  
+  _plotter->data->jmin = 0;
+  _plotter->data->jmax = 0;  
+  _plotter->data->xmin = 0.0;
+  _plotter->data->xmax = 1.0;
+  _plotter->data->ymin = 0.0;
+  _plotter->data->ymax = 1.0;
+  _plotter->data->page_data = (plPageData *)NULL;
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
 
   /* initialize data members specific to this derived class */
+  /* parameters */
   _plotter->meta_portable_output = false;
-
+  /* dynamic variables */
+  _plotter->meta_pos.x = 0.0;
+  _plotter->meta_pos.y = 0.0;
+  _plotter->meta_position_is_unknown = false;
+  _plotter->meta_m_user_to_ndc[0] = 1.0;
+  _plotter->meta_m_user_to_ndc[1] = 0.0;
+  _plotter->meta_m_user_to_ndc[2] = 0.0;
+  _plotter->meta_m_user_to_ndc[3] = 1.0;
+  _plotter->meta_m_user_to_ndc[4] = 0.0;
+  _plotter->meta_m_user_to_ndc[5] = 0.0;
+  _plotter->meta_fill_rule_type = FILL_ODD_WINDING;
+  _plotter->meta_line_type = L_SOLID;
+  _plotter->meta_points_are_connected = true;  
+  _plotter->meta_cap_type = CAP_BUTT;  
+  _plotter->meta_join_type = JOIN_MITER;  
+  _plotter->meta_miter_limit = DEFAULT_MITER_LIMIT;  
+  _plotter->meta_line_width = 0.0;
+  _plotter->meta_line_width_is_default = true;
+  _plotter->meta_dash_array = (const double *)NULL;
+  _plotter->meta_dash_array_len = 0;
+  _plotter->meta_dash_offset = 0.0;  
+  _plotter->meta_dash_array_in_effect = false;  
+  _plotter->meta_pen_type = 1;  
+  _plotter->meta_fill_type = 0;
+  _plotter->meta_orientation = 1;  
+  _plotter->meta_font_name = (const char *)NULL;
+  _plotter->meta_font_size = 0.0;
+  _plotter->meta_font_size_is_default = true;
+  _plotter->meta_text_rotation = 0.0;  
+  _plotter->meta_fgcolor.red = 0;
+  _plotter->meta_fgcolor.green = 0;
+  _plotter->meta_fgcolor.blue = 0;
+  _plotter->meta_fillcolor_base.red = 0;
+  _plotter->meta_fillcolor_base.green = 0;
+  _plotter->meta_fillcolor_base.blue = 0;
+  _plotter->meta_bgcolor.red = 65535;
+  _plotter->meta_bgcolor.green = 65535;
+  _plotter->meta_bgcolor.blue = 65535;
+  
   /* initialize certain data members from device driver parameters */
       
   /* determine version of metafile format */
   {
     const char *portable_s;
     
-    portable_s = (const char *)_get_plot_param (R___(_plotter) 
+    portable_s = (const char *)_get_plot_param (_plotter->data, 
 						"META_PORTABLE");
     if (strcasecmp (portable_s, "yes") == 0)
       _plotter->meta_portable_output = true;
@@ -144,10 +185,6 @@ _m_terminate (S___(_plotter))
      S___(Plotter *_plotter;) 
 #endif
 {
-  /* if specified plotter is open, close it */
-  if (_plotter->open)
-    _plotter->closepl (S___(_plotter));
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass termination method */
   _g_terminate (S___(_plotter));
@@ -216,6 +253,10 @@ MetaPlotter::MetaPlotter (PlotterParams &parameters)
 
 MetaPlotter::~MetaPlotter ()
 {
+  /* if luser left the Plotter open, close it */
+  if (_plotter->data->open)
+    _API_closepl ();
+
   _m_terminate ();
 }
 #endif

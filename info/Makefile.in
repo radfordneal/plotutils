@@ -64,12 +64,10 @@ CC = @CC@
 CXX = @CXX@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
-LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LTALLOCA = @LTALLOCA@
-NM = @NM@
 OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
@@ -88,10 +86,10 @@ info_TEXINFOS = plotutils.texi
 # Use --no-split to avoid creating filenames > 14 chars.
 MAKEINFO = makeinfo --no-split
 
-man_MANS = ode.1 plot.1 spline.1 tek2plot.1
+man_MANS = ode.1 plot.1 spline.1 tek2plot.1 plotfont.1
 
 # why is this necessary?
-EXTRA_DIST = ode.1 plot.1 spline.1 tek2plot.1
+EXTRA_DIST = ode.1 plot.1 spline.1 tek2plot.1 plotfont.1
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

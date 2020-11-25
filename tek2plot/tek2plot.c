@@ -127,6 +127,7 @@ struct option long_options[] =
   /* Other frequently used options */
   { "bg-color",		ARG_REQUIRED,	NULL, 'q' << 8 },
   { "bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8 },
+  { "emulate-color",	ARG_REQUIRED,	NULL, 'e' << 8 },
   { "font-name",	ARG_REQUIRED,	NULL, 'F' },
   { "line-width",	ARG_REQUIRED,	NULL, 'W' },
   { "pen-color",	ARG_REQUIRED,	NULL, 'C' << 8 },
@@ -298,6 +299,9 @@ main (argc, argv)
 	  break;
 
 	  /*---------------- Long options below here ----------------*/
+	case 'e' << 8:		/* Emulate color via grayscale */
+	  pl_setplparam (plotter_params, "EMULATE_COLOR", (voidptr_t)optarg);
+	  break;
 	case 'q' << 8:		/* Set the initial background color */
 	  pl_setplparam (plotter_params, "BG_COLOR", (voidptr_t)optarg);
 	  break;

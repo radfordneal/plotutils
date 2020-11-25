@@ -1,53 +1,29 @@
-/* This file contains the point method, which is a standard part of
-   libplot.  It plots an object: a point with coordinates x,y. */
+/* The internal point-drawing function, which point() is a wrapper around.
+   It draws a point at the current location.  There is no standard
+   definition of `point', so any Plotter is free to implement this as it
+   sees fit. */
 
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+void
 #ifdef _HAVE_PROTOS
-_m_point (R___(Plotter *_plotter) int x, int y)
+_m_paint_point (S___(Plotter *_plotter))
 #else
-_m_point (R___(_plotter) x, y)
-     S___(Plotter *_plotter;) 
-     int x, y;
+_m_paint_point (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) 
-		       "point: invalid operation");
-      return -1;
-    }
+  _m_set_attributes (R___(_plotter) 
+		     PL_ATTR_TRANSFORMATION_MATRIX 
+		     | PL_ATTR_PEN_COLOR | PL_ATTR_PEN_TYPE);
+  _m_emit_op_code (R___(_plotter) O_FPOINT);
+  _m_emit_float (R___(_plotter) _plotter->drawstate->pos.x);
+  _m_emit_float (R___(_plotter) _plotter->drawstate->pos.y);
+  _m_emit_terminator (S___(_plotter));
 
-  _meta_emit_byte (R___(_plotter) (int)O_POINT);
-  _meta_emit_integer (R___(_plotter) x);
-  _meta_emit_integer (R___(_plotter) y);
-  _meta_emit_terminator (S___(_plotter));
-      
-  return 0;
+  _plotter->meta_pos = _plotter->drawstate->pos;
+
+  return;
 }
 
-int
-#ifdef _HAVE_PROTOS
-_m_fpoint (R___(Plotter *_plotter) double x, double y)
-#else
-_m_fpoint (R___(_plotter) x, y)
-     S___(Plotter *_plotter;) 
-     double x, y;
-#endif
-{
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) 
-		       "fpoint: invalid operation");
-      return -1;
-    }
-
-  _meta_emit_byte (R___(_plotter) _plotter->meta_portable_output ? (int)O_POINT : (int)O_FPOINT);
-  _meta_emit_float (R___(_plotter) x);
-  _meta_emit_float (R___(_plotter) y);
-  _meta_emit_terminator (S___(_plotter));
-      
-  return 0;
-}

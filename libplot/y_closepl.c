@@ -1,8 +1,3 @@
-/* This file contains the closepl method, which is a standard part of
-   libplot.  It closes a Plotter object. */
-
-/* This version is for XPlotters. */
-
 #ifdef HAVE_WAITPID
 #ifdef HAVE_SYS_WAIT_H
 #define _POSIX_SOURCE		/* for waitpid() */
@@ -29,11 +24,11 @@
 #endif /* HAVE_SYS_WAIT_H */
 #endif /* HAVE_WAITPID */
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_y_closepl (S___(Plotter *_plotter))
+_y_end_page (S___(Plotter *_plotter))
 #else
-_y_closepl (S___(_plotter))
+_y_end_page (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
@@ -43,17 +38,9 @@ _y_closepl (S___(_plotter))
   int window_width, window_height;
   pid_t forkval;
 
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) "closepl: invalid operation");
-      return -1;
-    }
-
-  _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
   /* compute rectangle size; note flipped-y convention */
-  window_width = (_plotter->imax - _plotter->imin) + 1;
-  window_height = (_plotter->jmin - _plotter->jmax) + 1;
+  window_width = (_plotter->data->imax - _plotter->data->imin) + 1;
+  window_height = (_plotter->data->jmin - _plotter->data->jmax) + 1;
 
   /* if either sort of server-supported double buffering is being used,
      create background pixmap for Label widget (it doesn't yet have one) */
@@ -162,13 +149,6 @@ _y_closepl (S___(_plotter))
 	       (unsigned int)window_width, (unsigned int)window_height,
 	       0, 0);
 
-  /* pop drawing states in progress, if any, off the stack */
-  if (_plotter->drawstate->previous != NULL)
-    {
-      while (_plotter->drawstate->previous)
-	_plotter->restorestate (S___(_plotter));
-    }
-  
   /* following two deallocations (of font records and color cell records)
      arrange things so that when drawing the next page of graphics, which
      will require another connection to the X server, the Plotter will
@@ -233,18 +213,18 @@ _y_closepl (S___(_plotter))
   _maybe_handle_x_events (S___(_plotter));
 
   /* flush out the X output buffer; wait till all requests have been
-     received and processed by server */
-  _plotter->flushpl (S___(_plotter));
+     received and processed by server (see x_flushpl.c) */
+  _x_flush_output (S___(_plotter));
 
   /* flush output streams for all Plotters before forking */
   _flush_plotter_outstreams (S___(_plotter));
   
-  /* DO IT */
+  /* DO IT, MAN! */
   forkval = fork ();
   if ((int)forkval > 0		/* fork succeeded, and we're the parent */
       || (int)forkval < 0)	/* fork failed */
     {
-      int retval = 0;
+      bool retval = true;
 
       if ((int)forkval < 0)
 	_plotter->error (R___(_plotter) "couldn't fork process");	
@@ -257,7 +237,7 @@ _y_closepl (S___(_plotter))
 	/* emphatically shouldn't happen */
 	{
 	  _plotter->error (R___(_plotter) "couldn't close connection to X display");
-	  retval = -1;
+	  retval = false;
 	}
 
       if ((int)forkval > 0)
@@ -274,28 +254,10 @@ _y_closepl (S___(_plotter))
 	  _plotter->y_num_pids++;
 	}
       
-      /* remove zeroth drawing state too, so we can start afresh */
-      
-      /* elements of state that are strings etc. are freed separately */
-      free ((char *)_plotter->drawstate->line_mode);
-      free ((char *)_plotter->drawstate->join_mode);
-      free ((char *)_plotter->drawstate->cap_mode);
-      free ((char *)_plotter->drawstate->font_name);
-
-      /* free graphics contexts, if we have them -- and to have them, must
-	 have at least one drawable (see x_savestate.c) */
-      if (_plotter->x_drawable1 || _plotter->x_drawable2)
-	{
-	  XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fg);
-	  XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_fill);
-	  XFreeGC (_plotter->x_dpy, _plotter->drawstate->x_gc_bg);
-	}
-
-      free (_plotter->drawstate);
-      _plotter->drawstate = (plDrawState *)NULL;
-      
-      _plotter->open = false;	/* flag Plotter as closed */
-
+      /* do teardown of X-specific elements of the first drawing state on
+	 the drawing state stack */
+      _x_delete_gcs_from_first_drawing_state (S___(_plotter));
+  
       return retval;
     }
 
@@ -324,8 +286,8 @@ _y_closepl (S___(_plotter))
       for (i = 0; i < _xplotters_len; i++)
 	if (_xplotters[i] != NULL
 	    && _xplotters[i] != _plotter
-	    && _xplotters[i]->opened
-	    && _xplotters[i]->open
+	    && _xplotters[i]->data->opened
+	    && _xplotters[i]->data->open
 	    && close (ConnectionNumber (_xplotters[i]->x_dpy)) < 0
 	    && errno != EINTR)
 	  /* shouldn't happen */
@@ -344,18 +306,18 @@ _y_closepl (S___(_plotter))
       else
 	{
 	  Arg wargs[2];		/* werewolves */
-	  Dimension window_height, window_width;
+	  Dimension our_window_height, our_window_width;
 
 #ifdef USE_MOTIF
-	  XtSetArg (wargs[0], XmNwidth, &window_width);
-	  XtSetArg (wargs[1], XmNheight, &window_height);
+	  XtSetArg (wargs[0], XmNwidth, &our_window_width);
+	  XtSetArg (wargs[1], XmNheight, &our_window_height);
 #else
-	  XtSetArg (wargs[0], XtNwidth, &window_width);
-	  XtSetArg (wargs[1], XtNheight, &window_height);
+	  XtSetArg (wargs[0], XtNwidth, &our_window_width);
+	  XtSetArg (wargs[1], XtNheight, &our_window_height);
 #endif
 	  XtGetValues (_plotter->y_canvas, wargs, (Cardinal)2);
-	  if ((_plotter->imax + 1 != (int)window_width)
-	      || (_plotter->jmin + 1 != (int)window_height))
+	  if ((_plotter->data->imax + 1 != (int)our_window_width)
+	      || (_plotter->data->jmin + 1 != (int)our_window_height))
 	    /* window changed size */
 	    need_redisplay = true;
 	}
@@ -381,12 +343,13 @@ _y_closepl (S___(_plotter))
 		    (unsigned int)0, (unsigned int)0, 
 		    True);
       
-      _plotter->open = false;	/* flag Plotter as closed */
+      _plotter->data->open = false; /* flag Plotter as closed (is this useful,
+				       or just pedantic?) */
       
       /* Manage the window.  We won't get any events associated with other
 	 windows i.e. with previous invocations of openpl..closepl on this
-	 Plotter, or with other Plotters, since we have our own application
-	 context. */
+	 Plotter, or with other Plotters, since there's a distinct
+	 application context for every openpl..closepl. */
       XtAppMainLoop (_plotter->y_app_con); /* shouldn't return */
 
       /* NOTREACHED */

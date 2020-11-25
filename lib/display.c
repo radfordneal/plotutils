@@ -97,19 +97,35 @@ display_usage (progname, omit_vals, appendage, fonts)
     fputs ("\n", stdout);
 
   if (fonts)
+#ifdef INCLUDE_PNG_SUPPORT
 #ifndef X_DISPLAY_MISSING
     fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
 where \"format\" is the output format:\n\
-X, pnm, gif, ai, ps, cgm, fig, pcl, hpgl, or tek.\n",
+X, png, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
 	     progname);
 #else  /* X_DISPLAY_MISSING */
     fprintf (stdout, "\n\
 To list available fonts, type `%s -T \"format\" --help-fonts',\n\
 where \"format\" is the output format:\n\
-gif, pnm, ai, ps, cgm, fig, pcl, hpgl, or tek.\n",
+png, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
 	     progname);
 #endif /* X_DISPLAY_MISSING */
+#else  /* not INCLUDE_PNG_SUPPORT */
+#ifndef X_DISPLAY_MISSING
+    fprintf (stdout, "\n\
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format:\n\
+X, pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+	     progname);
+#else  /* X_DISPLAY_MISSING */
+    fprintf (stdout, "\n\
+To list available fonts, type `%s -T \"format\" --help-fonts',\n\
+where \"format\" is the output format:\n\
+pnm, gif, svg, ai, ps, cgm, fig, pcl, hpgl, regis, or tek.\n",
+	     progname);
+#endif /* X_DISPLAY_MISSING */
+#endif
 
   if ((appendage != NULL) || fonts)
     fputs ("\n", stdout);
@@ -128,7 +144,7 @@ display_version (progname)
   fprintf (stdout, 
 	   "%s (GNU %s) %s\n", progname, PACKAGE, VERSION);
   fprintf (stdout, 
-	   "Copyright (C) 1989-1999 Free Software Foundation, Inc.\n");
+	   "Copyright (C) 1989-2000 Free Software Foundation, Inc.\n");
   fprintf (stdout, 
 	   "The GNU %s package comes with NO WARRANTY, to the extent permitted\n", PACKAGE);
   fprintf (stdout, 

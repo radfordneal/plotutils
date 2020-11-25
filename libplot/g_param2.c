@@ -24,6 +24,7 @@ const struct plParamRecord _known_params[NUM_PLOTTER_PARAMETERS] =
   {"CGM_ENCODING", (char *)"binary", true}, /* cgm */
   {"CGM_MAX_VERSION", (char *)"4", true}, /* cgm */
   {"DISPLAY", (char *)"", true}, /* X */
+  {"EMULATE_COLOR", (char *)"no", true}, /* all except meta */
   {"GIF_ANIMATION", (char *)"yes", true}, /* gif */
   {"GIF_DELAY", (char *)"0", true}, /* gif */
   {"GIF_ITERATIONS", (char *)"0", true}, /* gif */
@@ -33,7 +34,7 @@ const struct plParamRecord _known_params[NUM_PLOTTER_PARAMETERS] =
   {"HPGL_ROTATE", (char *)"no", true},	/* hpgl */
   {"HPGL_VERSION", (char *)"2", true},	/* hpgl */
   {"INTERLACE", (char *)"no", true}, /* gif */
-  {"MAX_LINE_LENGTH", (char *)MAX_UNFILLED_POLYLINE_LENGTH_STRING, true}, /* all but tek and meta */
+  {"MAX_LINE_LENGTH", (char *)MAX_UNFILLED_PATH_LENGTH_STRING, true}, /* all but tek and meta */
   {"META_PORTABLE", (char *)"no", true}, /* meta */
   {"PAGESIZE", (char *)"letter", true}, /* hpgl, pcl, fig, cgm, ps, ai */
   {"PCL_ASSIGN_COLORS", (char *)"no", true}, /* pcl */
@@ -52,7 +53,5 @@ const struct plParamRecord _known_params[NUM_PLOTTER_PARAMETERS] =
   {"XDRAWABLE_DISPLAY", NULL, false}, /* XDrawable, is a Display* */
   {"XDRAWABLE_DRAWABLE1", NULL, false}, /* XDrawable, is a Drawable* */
   {"XDRAWABLE_DRAWABLE2", NULL, false}, /* XDrawable, is a Drawable* */
-
-  /* Spares */
-  {"FOOBAR", (char *)"", true},
+  {"XDRAWABLE_VISUAL", NULL, false}, /* XDrawable, is a Visual* */
 };

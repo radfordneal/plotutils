@@ -1,6 +1,7 @@
 This directory contains libxmi, a machine-independent vector graphics
 rasterization library, and the sample program ./drawing.c.  The source code
-for libxmi is distributed under the GNU GPL (see the file ./COPYING).
+for libxmi is distributed under the GNU GPL (see the file ./COPYING).  The
+Web page for the package is: http://www.gnu.org/software/libxmi/libxmi.html .
 
 The file ./INSTALL explains how to install libxmi, and the file ./CUSTOMIZE
 explains how to customize it.  Please read this file first, though.
@@ -14,7 +15,7 @@ Kelleher, Joel McCormack, Todd Newman, Keith Packard, Robert Scheifler and
 Ken Whaley, who worked for Digital Equipment Corp., MIT, and/or the X
 Consortium.  Their contributions are copyright 1985-89 by the X Consortium.
 See ./README-X for X Consortium permission notices.  GNU extensions by
-Robert S. Maier <rsm@math.arizona.edu> copyright (c) 1998-1999 by the Free
+Robert S. Maier <rsm@math.arizona.edu> copyright (c) 1998-2000 by the Free
 Software Foundation.
 
 The public header file for libxmi is ./xmi.h.  It declares the eight

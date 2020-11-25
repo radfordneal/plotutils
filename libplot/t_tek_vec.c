@@ -85,7 +85,7 @@ _tek_vector (R___(_plotter) xx, yy)
   byte_buf[num_bytes++] = xx_low  | 0x40;  /* bits 0 through 4 of xx */
 
   /* invoke low-level output routine */
-  _plotter->write_bytes (R___(_plotter) num_bytes, byte_buf);
+  _write_bytes (_plotter->data, num_bytes, byte_buf);
 
   return;
 }
@@ -161,7 +161,7 @@ _tek_vector_compressed (R___(_plotter) xx, yy, oldxx, oldyy, force)
   byte_buf[num_bytes++] = xx_low    | 0x40; /* bits 6 through 2 of xx: Lo_X */
 
   /* invoke low-level output routine */
-  _plotter->write_bytes (R___(_plotter) num_bytes, byte_buf);
+  _write_bytes (_plotter->data, num_bytes, byte_buf);
 
   return;
 }

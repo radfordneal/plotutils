@@ -1,118 +1,123 @@
-/* This file contains the low-level _meta_emit_integer, _meta_emit_float,
-   _meta_emit_byte, and _meta_emit_string routines, which are used by
-   MetaPlotters.  They take into account the desired format (binary plot
-   format or ascii [human-readable] plot format.
+/* This file contains the internal _m_emit_integer, _m_emit_float,
+   _m_emit_op_code, and _m_emit_string routines, which are used by
+   MetaPlotters.  They take into account the desired format (binary
+   metafile format or ascii [human-readable] metafile format.
 
-   In releases prior to plotutils-2.0, we assumed that in binary plot
-   format, a short machine integer sufficed to represent any integer.  This
-   was the convention used in traditional plot(5) format, and can be traced
-   to the PDP-11.  Unfortunately it confined us to the range
-   -0x10000..0x7fff on modern two's complement machines.  Actually, the
-   parsing in `plot' always treated the arguments to pencolor(),
-   fillcolor(), and filltype() specially.  An argument of any of those
-   functions was treated as an unsigned integer, so it could be in the
-   range 0..0xffff.
+   In the unnumbered versions of libplot prior to version 0.0 (which was
+   released as part of plotutils-2.0, in 1/98), we assumed that in binary
+   metafile format, two bytes sufficed to represent any integer.  This was
+   the convention used in traditional plot(5) format, and can be traced to
+   the PDP-11.  Unfortunately it confined us to the range -0x10000..0x7fff
+   (assuming two's complement).  Actually, the parsing in our `plot'
+   utility always treated the arguments to pencolor(), fillcolor(), and
+   filltype() specially.  An argument of any of those functions was treated
+   as an unsigned integer, so it could be in the range 0..0xffff.
 
-   In plotutils-2.0, we switched in binary plot format to representing
-   integers as machine integers.  The parsing of metafiles by `plot' now
-   takes this into account.  `plot' has command-line options for backward
-   compatibility.
+   In version 0.0 of libplot, we switched in binary metafile format to
+   representing integers as machine integers.  The parsing of metafiles by
+   `plot' now takes this into account.  `plot' has command-line options for
+   backward compatibility with plot(5) format.
 
-   Our binary representation for floating-point numbers is simply the
-   machine representation for single-precision floating point.  plot(5)
-   format did not support floating point arguments, so there are no
+   Our representation for floating-point numbers in binary metafiles is
+   simply the machine representation for single-precision floating point.
+   plot(5) format did not support floating point arguments, so there are no
    concerns over backward compatibility. */
 
 #include "sys-defines.h"
 #include "extern.h"
 
-void
-#ifdef _HAVE_PROTOS
-_meta_emit_integer (R___(Plotter *_plotter) int x)
-#else
-_meta_emit_integer (R___(_plotter) x)
-     S___(Plotter *_plotter;) 
-     int x;
-#endif
-{
-  if (_plotter->outfp)
-    {
-      if (_plotter->meta_portable_output)
-	fprintf (_plotter->outfp, " %d", x);
-      else
-	fwrite ((voidptr_t) &x, sizeof(int), 1, _plotter->outfp);
-    }
-#ifdef LIBPLOTTER
-  else if (_plotter->outstream)
-    {
-      if (_plotter->meta_portable_output)
-	(*(_plotter->outstream)) << ' ' << x;
-      else
-	_plotter->outstream->write((char *)&x, sizeof(int));
-    }
-#endif
-}
-
-void
-#ifdef _HAVE_PROTOS
-_meta_emit_float (R___(Plotter *_plotter) double x)
-#else
-_meta_emit_float (R___(_plotter) x)
-     S___(Plotter *_plotter;) 
-     double x;
-#endif
-{
-  if (_plotter->outfp)
-    {
-      if (_plotter->meta_portable_output)
-	fprintf (_plotter->outfp, " %g", x);
-      else
-	{
-	  float f;
-	  
-	  f = FROUND(x);
-	  fwrite ((voidptr_t) &f, sizeof(float), 1, _plotter->outfp);
-	}
-    }
-#ifdef LIBPLOTTER
-  else if (_plotter->outstream)
-    {
-      if (_plotter->meta_portable_output)
-	(*(_plotter->outstream)) << ' ' << x;
-      else
-	{
-	  float f;
-	  
-	  f = FROUND(x);
-	  _plotter->outstream->write((char *)&f, sizeof(float));
-	}
-    }
-#endif
-}
-
 /* emit one unsigned character, passed as an int */
 void
 #ifdef _HAVE_PROTOS
-_meta_emit_byte (R___(Plotter *_plotter) int c)
+_m_emit_op_code (R___(Plotter *_plotter) int c)
 #else
-_meta_emit_byte (R___(_plotter) c)
+_m_emit_op_code (R___(_plotter) c)
      S___(Plotter *_plotter;) 
      int c;
 #endif
 {
-  if (_plotter->outfp)
-    putc (c, _plotter->outfp);
+  if (_plotter->data->outfp)
+    putc (c, _plotter->data->outfp);
 #ifdef LIBPLOTTER
-  else if (_plotter->outstream)
-    _plotter->outstream->put ((unsigned char)c);
+  else if (_plotter->data->outstream)
+    _plotter->data->outstream->put ((unsigned char)c);
 #endif
 }
 
 void
 #ifdef _HAVE_PROTOS
-_meta_emit_string (R___(Plotter *_plotter) const char *s)
+_m_emit_integer (R___(Plotter *_plotter) int x)
 #else
-_meta_emit_string (R___(_plotter) s)
+_m_emit_integer (R___(_plotter) x)
+     S___(Plotter *_plotter;) 
+     int x;
+#endif
+{
+  if (_plotter->data->outfp)
+    {
+      if (_plotter->meta_portable_output)
+	fprintf (_plotter->data->outfp, " %d", x);
+      else
+	fwrite ((voidptr_t) &x, sizeof(int), 1, _plotter->data->outfp);
+    }
+#ifdef LIBPLOTTER
+  else if (_plotter->data->outstream)
+    {
+      if (_plotter->meta_portable_output)
+	(*(_plotter->data->outstream)) << ' ' << x;
+      else
+	_plotter->data->outstream->write((char *)&x, sizeof(int));
+    }
+#endif
+}
+
+void
+#ifdef _HAVE_PROTOS
+_m_emit_float (R___(Plotter *_plotter) double x)
+#else
+_m_emit_float (R___(_plotter) x)
+     S___(Plotter *_plotter;) 
+     double x;
+#endif
+{
+  if (_plotter->data->outfp)
+    {
+      if (_plotter->meta_portable_output)
+	{
+	  /* treat equality with zero specially, since some printf's print
+	     negative zero differently from positive zero, and that may
+	     prevent regression tests from working properly */
+	  fprintf (_plotter->data->outfp, x == 0.0 ? " 0" : " %g", x);
+	}
+      else
+	{
+	  float f;
+	  
+	  f = FROUND(x);
+	  fwrite ((voidptr_t) &f, sizeof(float), 1, _plotter->data->outfp);
+	}
+    }
+#ifdef LIBPLOTTER
+  else if (_plotter->data->outstream)
+    {
+      if (_plotter->meta_portable_output)
+	(*(_plotter->data->outstream)) << ' ' << x;
+      else
+	{
+	  float f;
+	  
+	  f = FROUND(x);
+	  _plotter->data->outstream->write((char *)&f, sizeof(float));
+	}
+    }
+#endif
+}
+
+void
+#ifdef _HAVE_PROTOS
+_m_emit_string (R___(Plotter *_plotter) const char *s)
+#else
+_m_emit_string (R___(_plotter) s)
      S___(Plotter *_plotter;) 
      const char *s;
 #endif
@@ -127,7 +132,8 @@ _meta_emit_string (R___(_plotter) s)
     s = "(null)";
   
   if (strchr (s, '\n'))
-    /* don't grok multiline arg strings */
+    /* don't grok arg strings containing newlines; truncate at first
+       newline if any */
     {
       has_newline = true;
       t = (char *)_plot_xmalloc (strlen (s) + 1);      
@@ -142,38 +148,46 @@ _meta_emit_string (R___(_plotter) s)
       u = s;
     }
       
-  if (_plotter->outfp)
+  /* emit string, with appended newline if output format is binary (old
+     plot(3) convention, which makes sense only if there can be at most one
+     string among the command arguments, and it's positioned last) */
+  if (_plotter->data->outfp)
     {
-      fputs (u, _plotter->outfp);
-      putc ('\n', _plotter->outfp); /* append newline (plot(3) convention) */
+      fputs (u, _plotter->data->outfp);
+      if (_plotter->meta_portable_output == false)
+	putc ('\n', _plotter->data->outfp); 
     }
 #ifdef LIBPLOTTER
-  else if (_plotter->outstream)
-    (*(_plotter->outstream)) << u << '\n';
+  else if (_plotter->data->outstream)
+    {
+      (*(_plotter->data->outstream)) << u;
+      if (_plotter->meta_portable_output == false)
+	(*(_plotter->data->outstream)) << '\n';
+    }
 #endif
 
   if (has_newline)
     free (t);
 }
 
-/* this is invoked at the end of each directive, except the ones for which
-   the final argument is a string, which will be emitted with its own final
-   newline (an old plot(3) convention; see above) */
+/* End a directive that was begun by invoking _m_emit_op_code() (q.v.).  In
+   portable format, the terminator is a newline; in binary format, there is
+   no terminator. */
 void
 #ifdef _HAVE_PROTOS
-_meta_emit_terminator (S___(Plotter *_plotter))
+_m_emit_terminator (S___(Plotter *_plotter))
 #else
-_meta_emit_terminator (S___(_plotter))
+_m_emit_terminator (S___(_plotter))
      S___(Plotter *_plotter;) 
 #endif
 {
   if (_plotter->meta_portable_output)
     {
-      if (_plotter->outfp)
-	putc ('\n', _plotter->outfp);
+      if (_plotter->data->outfp)
+	putc ('\n', _plotter->data->outfp);
 #ifdef LIBPLOTTER
-      else if (_plotter->outstream)
-	(*(_plotter->outstream)) << '\n';
+      else if (_plotter->data->outstream)
+	(*(_plotter->data->outstream)) << '\n';
 #endif
     }
 }

@@ -1,42 +1,36 @@
-/* This file contains the point method, which is a standard part of
-   libplot.  It plots an object: a point with coordinates x,y. */
+/* The internal point-drawing function, which point() is a wrapper around.
+   It draws a point at the current location.  There is no standard
+   definition of `point', so any Plotter is free to implement this as it
+   sees fit. */
 
-/* So far as the PSPlotter class goes, we display a `point' as a small
-   circle (a marker symbol). */
+/* In the PSPlotter class, a `point' is displayed as a small filled circle
+   (one of libplot's standard marker symbols). */
 
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+void
 #ifdef _HAVE_PROTOS
-_p_fpoint (R___(Plotter *_plotter) double x, double y)
+_p_paint_point (S___(Plotter *_plotter))
 #else
-_p_fpoint (R___(_plotter) x, y)
+_p_paint_point (S___(_plotter))
      S___(Plotter *_plotter;)
-     double x, y;
 #endif
 {
   double norm;
 
-  if (!_plotter->open)
+  if (_plotter->drawstate->pen_type != 0)
+    /* have a pen to draw with */
     {
-      _plotter->error (R___(_plotter) "fpoint: invalid operation");
-      return -1;
+      /* compute size of a `point' in user coordinates */
+      norm = _matrix_norm (_plotter->drawstate->transform.m);
+      if (norm != 0.0)
+	{
+	  double user_size;
+	  
+	  user_size = POINT_PS_SIZE / _matrix_norm (_plotter->drawstate->transform.m);
+	  _plotter->paint_marker (R___(_plotter) 
+				 (int)M_FILLED_CIRCLE, user_size);
+	}
     }
-
-  if (_plotter->drawstate->points_in_path > 0)
-    _plotter->endpath (S___(_plotter)); /* flush polyline if any */
-
-  /* compute size of a `point' in user coordinates */
-  norm = _matrix_norm (_plotter->drawstate->transform.m);
-  if (norm != 0.0)
-    {
-      double user_size;
-
-      user_size = POINT_PS_SIZE / _matrix_norm (_plotter->drawstate->transform.m);
-      _plotter->fmarker (R___(_plotter) 
-			 x, y, (int)M_FILLED_CIRCLE, user_size);
-    }
-
-  return 0;
 }

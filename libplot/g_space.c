@@ -7,21 +7,45 @@
    coordinate axes, will be mapped affinely onto the drawing region on the
    display device.
 
+   Equivalently, the space method sets the transformation matrix attribute
+   that will be used for graphical objects that are subsequently drawn.
+   Any transformation matrix produced by invoking space() will necessarily
+   preserve coordinate axes.
+
    This file also contains the space2 method, which is a GNU extension to
    libplot.  The arguments to the space2 method are the vertices of an
    `affine window' (a drawing parallelogram), in user coordinates.  (The
    specified vertices are the lower left, the lower right, and the upper
    left.)  This window will be mapped affinely onto the drawing region on
-   the display device.
+   the display device.  Transformation matrices produced by invoking
+   space() do not necessarily preserve coordinate axes.
 
-   Invoking space (or space2, etc.) causes the default line width and
-   default font size, as expressed in user units, to be recomputed.  That
-   is because those two quantities are specified as a fraction of the size
-   of the display: in device terms, rather than in terms of user units.
-   The idea is that no matter what the arguments of space (etc.) were,
-   switching later to the default line width or default font size, by
-   e.g. passing an out-of-bounds argument to linewidth() or fontsize(),
-   should yield something reasonable. */
+   space and space2 are simply wrappers around the fsetmatrix() method. */
+
+/* This file also contains the fsetmatrix method, which is a GNU extension
+   to libplot.  Much as in Postscript, it sets the transformation matrix
+   from user coordinates to NDC (normalized device coordinates).  This, in
+   turn, determines the map from user coordinates to device coordinates.
+   The resulting transformation matrix will be used as an attribute of
+   objects that are subsequently drawn on the graphics display. */
+
+/* This file also contains the fconcat method, which is a GNU extension to
+   libplot.  fconcat is simply a wrapper around fsetmatrix.  As in
+   Postscript, it left-multiplies the transformation matrix from user
+   coordinates to NDC coordinates by a specified matrix.  That is, it
+   modifies the affine transformation from user coordinates to NDC and
+   hence to device coordinates, by requiring that the transformation
+   currently in effect be be preceded by a specified affine
+   transformation. */
+
+/* N.B. Invoking fsetmatrix causes the default line width and default font
+   size, which are expressed in user units, to be recomputed.  That is
+   because those two quantities are specified as a fraction of the size of
+   the display: in device terms, rather than in terms of user units.  The
+   idea is that no matter what the arguments of fsetmatrix are, switching
+   later to the default line width or default font size, by passing an
+   out-of-bounds argument to linewidth() or fontsize(), should yield a
+   reasonable result. */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -31,8 +55,9 @@ enum rotation_type { ROT_0, ROT_90, ROT_180, ROT_270 };
 
 /* potential roundoff error (absolute, for defining boundary of display) */
 #define ROUNDING_FUZZ 0.0000001
+
 /* potential roundoff error (relative, used for checking isotropy etc.) */
-#define FUZZ 0.0000001
+#define OTHER_FUZZ 0.0000001
 
 /* The vertices of the parallelogram in user space have coordinates (going
    counterclockwise) (x0,y0), (x1,y1), (x1,y1)+(x2,y2)-(x0,y0), and
@@ -40,31 +65,27 @@ enum rotation_type { ROT_0, ROT_90, ROT_180, ROT_270 };
 
 int
 #ifdef _HAVE_PROTOS
-_g_fspace2 (R___(Plotter *_plotter) double x0, double y0, double x1, double y1, double x2, double y2)
+_API_fspace2 (R___(Plotter *_plotter) double x0, double y0, double x1, double y1, double x2, double y2)
 #else
-_g_fspace2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
+_API_fspace2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
      S___(Plotter *_plotter;) 
      double x0, y0, x1, y1, x2, y2;
 #endif
 {
-  double s[6], t[6];
+  double s[6];
   double v0x, v0y, v1x, v1y, v2x, v2y;
   double cross;
-  double norm, min_sing_val, max_sing_val;
-  double device_x_left, device_x_right, device_y_bottom, device_y_top;
-  const char *rotation_s;
-  int rotation_angle;
 
-  if (!_plotter->open)
+  if (!_plotter->data->open)
     {
       _plotter->error (R___(_plotter) 
 		       "fspace2: invalid operation");
       return -1;
     }
 
-  /* First, compute affine transformation from user frame to NDC [normalized
+  /* Compute affine transformation from user frame to NDC [normalized
      device coordinates] frame.  The parallelogram in the user frame is
-     mapped to the square [0,1]x[0,1] in the NCD frame.  */
+     mapped to the square [0,1]x[0,1] in the NDC frame.  */
 
   v0x = x0;
   v0y = y0;
@@ -91,87 +112,285 @@ _g_fspace2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
   s[4] = - (v0x * v2y - v0y * v2x) / cross;
   s[5] = (v0x * v1y - v0y * v1x) / cross;
   
-  /* Second, compute the affine transformation from the NCD frame to the
-     device frame (the square [0,1]x[0,1] in the NCD frame is mapped to the
-     viewport in the device frame [a square or rectangular region]). */
+  return _API_fsetmatrix (R___(_plotter) 
+			  s[0], s[1], s[2], s[3], s[4], s[5]);
+}
+
+int
+#ifdef _HAVE_PROTOS
+_API_fspace (R___(Plotter *_plotter) double x0, double y0, double x1, double y1)
+#else
+_API_fspace (R___(_plotter) x0, y0, x1, y1)
+     S___(Plotter *_plotter;)
+     double x0, y0, x1, y1;
+#endif
+{
+  return _API_fspace2 (R___(_plotter) x0, y0, x1, y0, x0, y1);
+}
+
+int
+#ifdef _HAVE_PROTOS
+_API_fsetmatrix (R___(Plotter *_plotter) double m0, double m1, double m2, double m3, double m4, double m5)
+#else
+_API_fsetmatrix (R___(_plotter) m0, m1, m2, m3, m4, m5)
+     S___(Plotter *_plotter;) 
+     double m0, m1, m2, m3, m4, m5;
+#endif
+{
+  int i;
+  double s[6], t[6];
+  double norm, min_sing_val, max_sing_val;
+
+  if (!_plotter->data->open)
+    {
+      _plotter->error (R___(_plotter) 
+		       "fsetmatrix: invalid operation");
+      return -1;
+    }
+
+  /* linear transformation */
+  s[0] = m0;
+  s[1] = m1;
+  s[2] = m2;
+  s[3] = m3;
+
+  /* translation */
+  s[4] = m4;
+  s[5] = m5;
+
+  /* store new user->NDC map in drawing state */
+  for (i = 0; i < 6; i++)
+    _plotter->drawstate->transform.m_user_to_ndc[i] = s[i];
+
+  /* compute affine map from user frame to device frame, as product of this
+     map with the map from NDC frame to device frame; store in state */
+  _matrix_product (s, _plotter->data->m_ndc_to_device, t);
+  for (i = 0; i < 6; i++)
+    _plotter->drawstate->transform.m[i] = t[i];
+
+  /* compute related data, stored in drawing state for convenience */
+
+  /* does map preserve axis directions? */
+  _plotter->drawstate->transform.axes_preserved = 
+    (t[1] == 0.0 && t[2] == 0.0) ? true : false;
+
+#define IS_ZERO(arg) (IS_ZERO1(arg) && IS_ZERO2(arg))
+#define IS_ZERO1(arg) (FABS(arg) < OTHER_FUZZ * DMAX(t[0] * t[0], t[1] * t[1]))
+#define IS_ZERO2(arg) (FABS(arg) < OTHER_FUZZ * DMAX(t[2] * t[2], t[3] * t[3]))
+  /* if row vectors are of equal length and orthogonal... */
+  if (IS_ZERO(t[0] * t[0] + t[1] * t[1] - t[2] * t[2] - t[3] * t[3])
+      &&
+      IS_ZERO(t[0] * t[2] + t[1] * t[3]))
+    /* map's scaling is uniform */
+    _plotter->drawstate->transform.uniform = true;
+  else
+    /* map's scaling not uniform */
+    _plotter->drawstate->transform.uniform = false; 
+
+  /* determine whether map involves a reflection, by computing determinant */
+  {
+    double det;
+    
+    det = t[0] * t[3] - t[1] * t[2];
+    _plotter->drawstate->transform.nonreflection 
+      = ((_plotter->data->flipped_y ? -1 : 1) * det >= 0) ? true : false;
+  }
+  
+  /* DO SOME OTHER STUFF, ALL RELATED TO LINE WIDTHS AND FONT SIZES */
+
+  /* For scaling purposes, compute matrix norm of linear transformation
+     appearing in the affine map from the user frame to the NDC frame. */
+
+  /* This minimum singular value isn't really the norm.  But it's close
+     enough. */
+  _matrix_sing_vals (s, &min_sing_val, &max_sing_val);
+  norm = min_sing_val;
+
+  /* Set new default line width in user frame.  This default value will be
+     switched to, later, if the user calls linewidth() with a negative
+     (i.e. out-of-bound) argument. */
+
+  if (_plotter->data->display_coors_type 
+      == (int)DISP_DEVICE_COORS_INTEGER_LIBXMI)
+    /* using libxmi or a compatible rendering algorithm; so set default
+       line width to zero (interpreted as specifying a Bresenham line) */
+    _plotter->drawstate->default_line_width = 0.0;
+  else
+    /* not using libxmi or a compatible rendering algorithm; so set default
+       line width to a nonzero fraction of the display size */
+    {
+      if (norm == 0.0)		/* avoid division by 0 */
+	_plotter->drawstate->default_line_width = 0.0;
+      else
+	_plotter->drawstate->default_line_width 
+	  = DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE / norm;
+    }
+
+  if (_plotter->data->linewidth_invoked == false)
+  /* help out lusers who rely on us to initialize the linewidth to a
+     reasonable value, as if this were plot(3) rather than GNU libplot */
+    {
+      /* invoke API function flinewidth(), which computes a nominal
+	 device-frame line width, using the transformation matrix;
+	 specifying a negative linewidth switches to the default */
+      _API_flinewidth (R___(_plotter) -1.0);
+
+      /* pretend we haven't invoked flinewidth() yet, so that the luser can
+	 invoke space() and/or fsetmatrix() additional times, each time
+	 automatically resetting the linewidth */
+      _plotter->data->linewidth_invoked = false;
+    }
+  else
+    /* invoke API function merely to compute a new nominal device-frame
+       line width, from the current user-frame line width */
+    _API_flinewidth (R___(_plotter) _plotter->drawstate->line_width);
+
+  /* Similarly, set new default font size in user frame.  This default
+     value will be switched to, later, if the user calls fontsize() with
+     out-of-bound arguments. */
+
+  if (norm == 0.0)		/* avoid division by 0 */
+    _plotter->drawstate->default_font_size = 0.0;
+  else
+    _plotter->drawstate->default_font_size
+      = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE / norm;
+
+  /* Help out users who rely on us to choose a reasonable font size, as if
+     this were Unix plot(3) rather than GNU libplot.  We don't wish to
+     retrieve an actual font here, so we don't invoke _API_fontsize().
+     However, this size will be used by the Plotter-specific method
+     _paint_text(), which will first do the retrieval. */
+  if (_plotter->data->fontsize_invoked == false)
+    _plotter->drawstate->font_size = _plotter->drawstate->default_font_size;
+  
+  return 0;
+}
+
+int
+#ifdef _HAVE_PROTOS
+_API_fconcat (R___(Plotter *_plotter) double m0, double m1, double m2, double m3, double m4, double m5)
+#else
+_API_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5)
+     S___(Plotter *_plotter;) 
+     double m0, m1, m2, m3, m4, m5;
+#endif
+{
+  double m[6], s[6];
+
+  if (!_plotter->data->open)
+    {
+      _plotter->error (R___(_plotter) 
+		       "fconcat: invalid operation");
+      return -1;
+    }
+
+  m[0] = m0;
+  m[1] = m1;
+  m[2] = m2;
+  m[3] = m3;
+  m[4] = m4;
+  m[5] = m5;
+
+  /* compute new user->NDC affine map */
+  _matrix_product (m, _plotter->drawstate->transform.m_user_to_ndc, s);
+
+  /* set it in drawing state */
+  return _API_fsetmatrix (R___(_plotter) 
+			  s[0], s[1], s[2], s[3], s[4], s[5]);
+}
+
+/* Internal method, used by any Plotter at initialization time, or at
+   latest during the first invocation of openpl().  It computes the affine
+   transformation from the NDC frame to the device frame.  The square
+   [0,1]x[0,1] in the NDC frame is mapped to the viewport in the device
+   frame (a square or rectangular region). */
+
+bool
+#ifdef _HAVE_PROTOS
+_compute_ndc_to_device_map (plPlotterData *data)
+#else
+_compute_ndc_to_device_map (data)
+     plPlotterData *data;
+#endif
+{
+  double t[6];
+  double device_x_left, device_x_right, device_y_bottom, device_y_top;
+  const char *rotation_s;
+  int i, rotation_angle;
 
   /* begin by computing device coordinate ranges */
-  switch (_plotter->display_model_type)
+  switch (data->display_model_type)
     {
-    case (int)DISP_MODEL_NONE:
-    default:
-      /* Plotter has no device model, i.e., no knowledge of its output
-	 device, i.e., no notion of a device frame at all.  (E.g., generic
-	 and Metafile Plotters.)  So punt: pretend device frame is the same
-	 as the NCD frame. */
-	  device_x_left = device_y_bottom = 0.0;
-	  device_x_right = device_y_top = 1.0;
-	  break;
     case (int)DISP_MODEL_PHYSICAL:
       /* Plotter has a physical display, ranges in device coordinates of
-	 the viewport are known (they're computed from the PAGESIZE
-	 parameter when the Plotter is created, see ?_defplot.c).  E.g.,
-	 for AI, Fig, HPGL, PCL, and PS Plotters. */
+	 the viewport are known (they're expressed in inches, and are
+	 computed from the PAGESIZE parameter when the Plotter is created,
+	 see ?_defplot.c).  E.g., AI, Fig, HPGL, PCL, and PS Plotters. */
       {
-	device_x_left = _plotter->xmin;
-	device_x_right = _plotter->xmax;
-	device_y_bottom = _plotter->ymin;
-	device_y_top = _plotter->ymax;
+	device_x_left = data->xmin;
+	device_x_right = data->xmax;
+	device_y_bottom = data->ymin;
+	device_y_top = data->ymax;
       }
       break;
+
     case (int)DISP_MODEL_VIRTUAL:
+    default:
       /* Plotter has a display, but its size isn't specified in physical
-         units such as inches.  E.g., CGM, GIF, PNM, Tektronix, X, and X
-         Drawable Plotters.  CGM Plotters are a curious hybrid: the
-         PAGESIZE parameter is meaningful for them, at least insofar as
-         viewport size goes, but we regard a CGM display as `virtual'
-         because a CGM viewer or interpreter is free to ignore the
-         requested viewport size.  */
-      switch ((int)_plotter->display_coors_type)
-	{
-	case (int)DISP_DEVICE_COORS_REAL:
-	default:
-	  /* Real-coordinate virtual display device.  None of our Plotters
-	     currently falls into this class.  So punt: treat NCD space as
-	     device space. */
-	  device_x_left = device_y_bottom = 0.0;
-	  device_x_right = device_y_top = 1.0;
-	  break;
-	case (int)DISP_DEVICE_COORS_INTEGER_LIBXMI:
-	case (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI:
-	  /* Integer-coordinate virtual display device, whether using
-	     libxmi-compatible scan conversion or not.  Of the Plotters
-	     that have virtual displays (see above), GIF, PNM, X, and X
-	     Drawable Plotters use libxmi-compatible scan conversion;
-	     Tektronix Plotters and CGM Plotters do not.
-
-	     In both cases, compute device coordinate ranges from imin,
-	     imax, jmin, jmax, which are already available (see
-	     ?_defplot.c; e.g., for Plotters with adjustable-size displays,
-	     they are taken from the BITMAPSIZE parameter).  
-
-	     The subtraction/addition of 0.5-ROUNDING_FUZZ is magic.  */
+         units such as inches.  E.g., CGM, SVG, GIF, PNM, Tektronix, X, and
+         X Drawable Plotters.  CGM and SVG Plotters are hybrids of a sort:
+         the PAGESIZE parameter is meaningful for them, as far as nominal
+         viewport size goes, but we classify a CGM or SVG display as
+         `virtual' because a CGM or SVG viewer or interpreter is free to
+         ignore the requested viewport size.  */
+      {
+	switch ((int)data->display_coors_type)
 	  {
-	    /* test whether flipped-y convention is used */
-	    double sign = (_plotter->jmin < _plotter->jmax ? 1.0 : -1.0);
-	    
-	    device_x_left = (double)(_plotter->imin) - 0.5 + ROUNDING_FUZZ;
-	    device_x_right = (double)(_plotter->imax) + 0.5 - ROUNDING_FUZZ;
-	    device_y_bottom = (double)(_plotter->jmin)
-	      + sign * (- 0.5 + ROUNDING_FUZZ);
-	    device_y_top = (double)(_plotter->jmax) 
-	      + sign * (0.5 - ROUNDING_FUZZ);
+	  case (int)DISP_DEVICE_COORS_REAL:
+	  default:
+	    /* Real-coordinate virtual display device.  E.g., generic and
+	       Metafile Plotters; also SVG Plotters. */
+	    device_x_left = data->xmin;
+	    device_x_right = data->xmax;
+	    device_y_bottom = data->ymin;
+	    device_y_top = data->ymax;
+	    break;
+	  case (int)DISP_DEVICE_COORS_INTEGER_LIBXMI:
+	  case (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI:
+	    /* Integer-coordinate virtual display device, in the sense that
+	       we emit integer coordinates only (sometimes by choice).
+	       
+	       Of the Plotters that have virtual displays (see above), GIF,
+	       PNM, X, and X Drawable Plotters use libxmi-compatible scan
+	       conversion; Tektronix Plotters and CGM Plotters do not.
+	       
+	       In both cases, compute device coordinate ranges from imin,
+	       imax, jmin, jmax, which are already available (see
+	       ?_defplot.c; e.g., for Plotters with adjustable-size
+	       displays, they are taken from the BITMAPSIZE parameter).
+
+	       The subtraction/addition of 0.5-ROUNDING_FUZZ is magic.  */
+	    {
+	      /* test whether flipped-y convention is used */
+	      double sign = (data->jmin < data->jmax ? 1.0 : -1.0);
+	      
+	      device_x_left = (double)(data->imin) - 0.5 + ROUNDING_FUZZ;
+	      device_x_right = (double)(data->imax) + 0.5 - ROUNDING_FUZZ;
+	      device_y_bottom = (double)(data->jmin)
+		+ sign * (- 0.5 + ROUNDING_FUZZ);
+	      device_y_top = (double)(data->jmax) 
+		+ sign * (0.5 - ROUNDING_FUZZ);
+	    }
+	    break;
 	  }
-	  break;
-	}
+      }
       break;
     }
 
-  /* device coordinate ranges now known, so work out affine transformation
-     #2, from the NCD frame to the device frame; take ROTATION parameter
-     into account */
+  /* device coordinate ranges now known, so work out transformation from
+     NDC frame to device frame; take ROTATION parameter into account */
 
-  rotation_s = (const char *)_get_plot_param (R___(_plotter) "ROTATION");
+  rotation_s = (const char *)_get_plot_param (data, "ROTATION");
   if (rotation_s == NULL)
     rotation_s = (const char *)_get_default_plot_param ("ROTATION");
   if (strcmp (rotation_s, "90") == 0
@@ -187,170 +406,54 @@ _g_fspace2 (R___(_plotter) x0, y0, x1, y1, x2, y2)
     {
     case (int)ROT_0:
     default:
-      /* NCD point (0,0) [lower left corner] gets mapped into this */
+      /* NDC point (0,0) [lower left corner] gets mapped into this */
       t[4] = device_x_left;
       t[5] = device_y_bottom;
-      /* NCD vector (1,0) gets mapped into this */
+      /* NDC vector (1,0) gets mapped into this */
       t[0] = device_x_right - device_x_left;
       t[1] = 0.0;
-      /* NCD vector (0,1) gets mapped into this */
+      /* NDC vector (0,1) gets mapped into this */
       t[2] = 0.0;
       t[3] = device_y_top - device_y_bottom;
       break;
     case (int)ROT_90:
-      /* NCD point (0,0) [lower left corner] gets mapped into this */
+      /* NDC point (0,0) [lower left corner] gets mapped into this */
       t[4] = device_x_right;
       t[5] = device_y_bottom;
-      /* NCD vector (1,0) gets mapped into this */
+      /* NDC vector (1,0) gets mapped into this */
       t[0] = 0.0;
       t[1] = device_y_top - device_y_bottom;
-      /* NCD vector (0,1) gets mapped into this */
+      /* NDC vector (0,1) gets mapped into this */
       t[2] = device_x_left - device_x_right;
       t[3] = 0.0;
       break;
     case (int)ROT_180:
-      /* NCD point (0,0) [lower left corner] gets mapped into this */
+      /* NDC point (0,0) [lower left corner] gets mapped into this */
       t[4] = device_x_right;
       t[5] = device_y_top;
-      /* NCD vector (1,0) gets mapped into this */
+      /* NDC vector (1,0) gets mapped into this */
       t[0] = device_x_left - device_x_right;
       t[1] = 0.0;
-      /* NCD vector (0,1) gets mapped into this */
+      /* NDC vector (0,1) gets mapped into this */
       t[2] = 0.0;
       t[3] = device_y_bottom - device_y_top;
       break;
     case (int)ROT_270:
-      /* NCD point (0,0) [lower left corner] gets mapped into this */
+      /* NDC point (0,0) [lower left corner] gets mapped into this */
       t[4] = device_x_left;
       t[5] = device_y_top;
-      /* NCD vector (1,0) gets mapped into this */
+      /* NDC vector (1,0) gets mapped into this */
       t[0] = 0.0;
       t[1] = device_y_bottom - device_y_top;
-      /* NCD vector (0,1) gets mapped into this */
+      /* NDC vector (0,1) gets mapped into this */
       t[2] = device_x_right - device_x_left;
       t[3] = 0.0;
       break;
     }
   
-  /* compute affine transformation from the user frame to the device frame
-     as product of affine transformations #1 and #2 */
-  _matrix_product (s, t, _plotter->drawstate->transform.m);
+  /* set affine transformation in Plotter */
+  for (i = 0; i < 6; i++)
+    data->m_ndc_to_device[i] = t[i];
 
-  /* does map preserve axis directions? */
-  _plotter->drawstate->transform.axes_preserved = 
-    (_plotter->drawstate->transform.m[1] == 0.0 
-     && _plotter->drawstate->transform.m[2] == 0.0) ? true : false;
-
-#define IS_ZERO(arg) (IS_ZERO1(arg) && IS_ZERO2(arg))
-#define IS_ZERO1(arg) (fabs(arg) < FUZZ * DMAX(_plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[0], _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[1]))
-#define IS_ZERO2(arg) (fabs(arg) < FUZZ * DMAX(_plotter->drawstate->transform.m[2] * _plotter->drawstate->transform.m[2], _plotter->drawstate->transform.m[3] * _plotter->drawstate->transform.m[3]))
-  /* if row vectors are of equal length and orthogonal... */
-  if (IS_ZERO(_plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[0]
-	      + _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[1]
-	      - _plotter->drawstate->transform.m[2] * _plotter->drawstate->transform.m[2]
-	      - _plotter->drawstate->transform.m[3] * _plotter->drawstate->transform.m[3])
-      &&
-      IS_ZERO(_plotter->drawstate->transform.m[0] * _plotter->drawstate->transform.m[2] + 
-	      _plotter->drawstate->transform.m[1] * _plotter->drawstate->transform.m[3]))
-    _plotter->drawstate->transform.uniform = true; /* map's scaling is uniform */
-  else
-    _plotter->drawstate->transform.uniform = false; /* map's scaling not uniform */
-
-  /* determine whether map involves a reflection, by computing determinant */
-  {
-    double det;
-    
-    det = (_plotter->drawstate->transform.m[0] *
-	   _plotter->drawstate->transform.m[3]
-	   - (_plotter->drawstate->transform.m[1] *
-	      _plotter->drawstate->transform.m[2]));
-    _plotter->drawstate->transform.nonreflection 
-      = ((_plotter->flipped_y ? -1 : 1) * det >= 0) ? true : false;
-  }
-  
-  /* Compute matrix norm of linear transformation appearing in the affine
-     map from the user frame to the NCD frame. */
-
-  /* This minimum singular value isn't really the norm.  But it's the
-     nominal device-frame line width divided by the actual user-frame
-     line-width (see g_linewidth.c), and that's what we need. */
-  _matrix_sing_vals (s, &min_sing_val, &max_sing_val);
-  norm = min_sing_val;
-
-  /* First, compute default line width and font size.  Default values will
-     be switched to, later, if the user calls linewidth() or fontsize()
-     with out-of-bound arguments. */
-
-  if (_plotter->display_coors_type == (int)DISP_DEVICE_COORS_INTEGER_LIBXMI)
-    /* using libxmi or a compatible rendering algorithm; so set default
-       line width to zero (interpreted as specifying a Bresenham line) */
-    _plotter->drawstate->default_line_width = 0.0;
-  else
-    /* not using libxmi or a compatible rendering algorithm; so set default
-       line width to a nonzero fraction of the display size */
-    _plotter->drawstate->default_line_width 
-      = DEFAULT_LINE_WIDTH_AS_FRACTION_OF_DISPLAY_SIZE / norm;
-
-  _plotter->drawstate->default_font_size
-    = DEFAULT_FONT_SIZE_AS_FRACTION_OF_DISPLAY_SIZE / norm;
-
-  /* We wish to maintain backwards compatibility with traditional libplot,
-     where the user is _not_ required to make initial calls to linewidth()
-     and fontsize(), but _is_ required to make a single initial call to
-     space().  So when this function is called for the first time, we set
-     the line width and font size to the just-computed default values, and
-     compute the device-frame line width if we're keeping track of it.
-
-     On subsequent invocations, we update the device-frame line width if
-     we're keeping track of it.  But we never invoke fontsize() or
-     retrieve_font() to recompute and set the device-frame font size.
-     That's because on X and X Drawable Plotters, it wouldn't be wise: the
-     new device-frame font size may be so small or large as to be
-     unavailable on the X server, and the user may in fact be planning to
-     invoke fontsize() manually to select a font of an appropriate size.
-
-     Even if the user doesn't plan on doing that, it's OK not to invoke
-     fontsize() or retrieve_font() here, since it'll be invoked before
-     rendering any string (see g_alabel.c). */
-
-  if (_plotter->space_invoked == false)
-    /* first invocation of fspace2() on this page */
-    {
-      if (_plotter->display_model_type == DISP_MODEL_NONE)
-	/* no device-frame line width; just set user-frame line width */
-	_plotter->drawstate->line_width 
-	  = _plotter->drawstate->default_line_width;
-      else
-	/* invoke flinewidth(), because if we have a display model,
-	   flinewidth() may do some necessary things besides just set the
-	   user-frame line width; e.g. compute a device-frame line width */
-	_plotter->flinewidth (R___(_plotter) 
-			      _plotter->drawstate->default_line_width);
-
-      _plotter->drawstate->font_size = _plotter->drawstate->default_font_size;
-      _plotter->space_invoked = true;
-    }
-  else
-    /* a subsequent invocation of fspace2() */
-    {
-      if (_plotter->display_model_type != DISP_MODEL_NONE)
-	/* invoke flinewidth() as above, e.g. to update device-frame line
-           width */
-	_plotter->flinewidth (R___(_plotter) 
-			      _plotter->drawstate->line_width);
-    }
-
-  return 0;
-}
-
-int
-#ifdef _HAVE_PROTOS
-_g_fspace (R___(Plotter *_plotter) double x0, double y0, double x1, double y1)
-#else
-_g_fspace (R___(_plotter) x0, y0, x1, y1)
-     S___(Plotter *_plotter;)
-     double x0, y0, x1, y1;
-#endif
-{
-  return _plotter->fspace2 (R___(_plotter) x0, y0, x1, y0, x0, y1);
+  return true;
 }

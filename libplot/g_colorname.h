@@ -679,5 +679,5 @@ const plColorNameInfo _colornames[NUM_COLORNAMES + 1] =
   {"yellow3",		0xcd, 0xcd, 0x00},
   {"yellow4",		0x8b, 0x8b, 0x00},
   {"yellowgreen",	0x9a, 0xcd, 0x32},
-  {NULL,		   0,    0,    0},
+  {NULL,		   0,    0,    0}
 };

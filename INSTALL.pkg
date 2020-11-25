@@ -34,6 +34,14 @@ The most important points not mentioned in the file INSTALL are these.
     **********************************************************************
 
     **********************************************************************
+    By default, if the `libpng' library is found at installation time, then
+    support for PNG graphics will be included in libplot and all
+    command-line utilities.  If for any reason you wish to omit PNG support
+    despite libpng being present, you should add the `--without-libpng'
+    option to the `./configure' command.
+    **********************************************************************
+
+    **********************************************************************
     It is not unknown for one or more of the validation tests that are run
     by doing `make check' to fail for harmless reasons.  See B.7, below.
     **********************************************************************
@@ -99,10 +107,11 @@ programs after they have been installed.  You will be cautioned about
 problems of this sort, if any, at installation time.
 
 B.2. If you have a recent laser printer that can use the 35 standard
-Postscript fonts even when in PCL 5 or HP-GL/2 mode, such as a 4000-series
-HP LaserJet, you may wish to add the `--enable-ps-fonts-in-pcl' option to
-`./configure'.  No additional actions on your part, such as installing
-fonts, are required, since the Postscript fonts are internal to the printer.
+Postscript fonts even when in PCL 5 or HP-GL/2 mode, such as a 2100-series,
+4000-series, or 8000-series HP LaserJet, you may wish to add the
+`--enable-ps-fonts-in-pcl' option to `./configure'.  No additional actions
+on your part, such as installing fonts, are required, since the Postscript
+fonts, if present, are internal to the printer.
 
 B.3. By default, the 45 fonts that are built into recent HP LaserJets are
 available to the plotting utilities when you produce PCL 5 or HP-GL/2

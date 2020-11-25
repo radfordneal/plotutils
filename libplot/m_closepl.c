@@ -1,41 +1,24 @@
-/* This file contains the closepl method, which is a standard part of
-   libplot.  It closes a Plotter object. */
-
 #include "sys-defines.h"
 #include "extern.h"
 
-int
+bool
 #ifdef _HAVE_PROTOS
-_m_closepl (S___(Plotter *_plotter))
+_m_end_page (S___(Plotter *_plotter))
 #else
-_m_closepl (S___(_plotter))
-     S___(Plotter *_plotter;) 
+_m_end_page (S___(_plotter))
+     S___(Plotter *_plotter;)
 #endif
 {
-  int retval;
+  _m_emit_op_code (R___(_plotter) O_CLOSEPL);
+  _m_emit_terminator (S___(_plotter));
 
-  if (!_plotter->open)
-    {
-      _plotter->error (R___(_plotter) 
-		       "closepl: invalid operation");
-      return -1;
-    }
+  /* clean up device-specific Plotter members that are heap-allocated */
+  if (_plotter->meta_font_name != (const char *)NULL)
+    free ((char *)_plotter->meta_font_name);
 
-  /* pop drawing states in progress, if any, off the stack */
-  if (_plotter->drawstate->previous != NULL)
-    {
-      while (_plotter->drawstate->previous)
-	/* use generic method; we don't want to emit an op code */
-	_g_restorestate (S___(_plotter));
-    }
+  if (_plotter->meta_dash_array != (const double *)NULL)
+    free ((double *)_plotter->meta_dash_array);
 
-  _meta_emit_byte (R___(_plotter) (int)O_CLOSEPL);
-  _meta_emit_terminator (S___(_plotter));
-
-  /* attempt to flush (will test whether stream is jammed) */
-  retval = _plotter->flushpl (S___(_plotter));
-
-  _plotter->open = false;	/* flag device as closed */
-
-  return retval;
+  return true;
 }
+

@@ -1,8 +1,111 @@
-These are some notes on backward compatibility of the plotutils package, on
-both the user and programmer levels.
+These are some release notes that deal with backward compatibility of the
+plotutils package, on both the user and programmer levels.
 
-Release 2.3
------------
+Release 2.4, dated 6/2000
+-------------------------
+
+SVG output is now supported.  SVG is a new XML-based vector graphics format
+being developed by the W3 Consortium.
+
+The command-line plotting utilities now support `-T svg --bg-color none'
+and `-T cgm --bg-color none' options, to turn off the background (which by
+default is white) in SVG and WebCGM output.  This is useful when generating
+graphics files for use in Web pages.  Similarly, in libplot, SVG and CGM
+Plotters now allow the parameter `BG_COLOR' to equal "none".
+
+PNG output is now supported.  A PNG driver will be installed in libplot,
+and made available to the command-line plotting utilities, if libpng and
+libz are found at installation time.  The version number of libpng must be
+0.95 or larger (libpng 0.95 was released in March 1997).
+
+If the PNG driver is included, you must now include the additional options
+`-lpng -lz' when compiling and linking a program with libplot or
+libplotter.  `configure' now supports a `--without-libpng' option to
+disable PNG support.
+
+ReGIS output is now supported, for display on older graphics terminals like
+the VT340 (color), the VT330 (monochrome), and emulators.  The ReGIS driver
+contains a blemish: paths that extend beyond the boundary of a ReGIS
+display are never filled, even if filling is requested, because they need
+to be clipped against the boundary, and the required clipping code hasn't
+yet been written.
+
+Colors may now be specified, both on the command line and when using the
+libplot API, by their 24-bit RGB representation, expressed as six
+hexadecimal digits.  For example, "#ffffff" is equivalent to "white".
+
+The command-line plotting utilities now support an `--emulate-color yes'
+option, and all Plotters now support a corresponding parameter,
+"EMULATE_COLOR".  If emulation is performed, all colors in the output will
+be replaced by grayscale approximations.  This is particularly useful when
+producing PCL 5 output to be printed on a monochrome PCL 5 device, such as
+a monochrome LaserJet.  Many monochrome PCL 5 devices, on their own, do a
+poor job of emulating color (they print every nonwhite solid color as
+black).
+
+libplot now supports compound paths, i.e. paths that are made up of
+multiple simple paths, so long as the simple paths do not intersect each
+other (they are allowed to intersect themselves).  You draw each simple
+path of a compound path in the usual way, but you end each one by calling
+endsubpath().  The compound path is terminated and drawn by calling
+endpath().  Just as when traditional non-compound paths are drawn, the call
+to endpath() can usually be omitted.
+
+So the libplot API has been expanded to include endsubpath(), and
+orientation() too.  orientation() specifies the direction in which
+circles/ellipses/boxes are traversed.  (Specifying this, for any
+circle/ellipse/box that is a subpath of a compound path, affects the
+filling of the compound path by determining which points are `inside' or
+`outside'.)
+
+Handling of device-resident HP vector fonts ("stick fonts"), when drawing
+text strings in HP-GL/2 output, has been improved.  Previously, no account
+was taken of device-resident font kerning.  That's appropriate when
+producing PCL 5 output for a LaserJet with an HP-GL/2 emulation module,
+since LaserJets don't do sophisticated kerning of stick fonts, even when
+they support them.  But any full-featured HP-GL/2 plotter can do kerning of
+variable-width stick fonts.  So when producing HP-GL/2 output, we now take
+that into account when computing the width of text strings.  This affects
+the positioning of text strings on an output page.
+
+The StickANK and ArcANK HP vector fonts, which provide JIS ASCII and
+half-width Katakana, are now available when producing HP-GL/2 output.
+
+The miter limit (for line joins) which is placed in any HP-GL/2 or PCL 5
+output file is now always rounded to the closest integer, downward.  That's
+because at least one HP-GL/2 pen plotter (the HP 7550B, which was HP's
+first) had buggy firmware that couldn't parse a non-integer miter limit.
+
+When HPGL_VERSION is set to 1 or 1.5, the filling of solid regions now uses
+cross-hatching, instead of the filling with a single pen color that used to
+be used.  This occurs whenever the fill color is not one of the defined pen
+colors.  The algorithm employed, for emulating shading by cross-hatching,
+is the one used by HP's HP-GL/2 pen plotters.
+
+A new function, fsetmatrix(), has been added to the libplot/libplotter API,
+as an alternative to space().  It sets the transformation matrix from user
+coordinates to NDC (normalized device coordinates).  In NDC space, the
+graphics display, i.e. viewport, has corners (0,0), (1,0), (1,1), (0,1).
+space() and/or fsetmatrix() no longer need to be called at the beginning of
+each page of graphics.
+
+The alabel() function in the libplot/libplotter API now accepts a new
+vertical positioning option, `C', to request alignment of a text string's
+cap line with the present vertical position.
+
+Color drawing on X displays has been speeded up.  If the X display uses a
+truecolor `visual', pixel value computations are performed in libplot
+itself, rather than in the X server.  This removes the need to call
+XAllocColor() whenever a new pen color or fill color is selected (which
+used to require a round-trip to the server, slowing things down).  Also, a
+Plotter parameter `XDRAWABLE_VISUAL' has been added.  It should be set by
+the programmer if a non-default colormap is used.  libplot can determine
+from it whether or not the visual is of the truecolor class.
+
+Libplot version number is now 4.0.
+
+Release 2.3, dated 10/1999
+--------------------------
 
 CGM output is now supported.  By default, a CGM Plotter emits
 binary-encoded version-3 CGM format, conforming to the WebCGM profile.
@@ -55,8 +158,8 @@ code that is used by libplot's GIF and PNM drivers, which is based on the
 X11 sample server code.  libxmi is also distributed independently.  The
 libxmi version number is 1.1.
 
-Release 2.2
------------
+Release 2.2, dated 3/1999
+-------------------------
 
 Massive expansion of the C API, with new drivers, and introduction of
 libplotter (C++ class library).  Backward compatibility of the C API

@@ -41,35 +41,55 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_fmarker (R___(Plotter *_plotter) double x, double y, int type, double size)
+_API_fmarker (R___(Plotter *_plotter) double x, double y, int type, double size)
 #else
-_g_fmarker (R___(_plotter) x, y, type, size)
+_API_fmarker (R___(_plotter) x, y, type, size)
      S___(Plotter *_plotter;)
      double x, y;
      int type;
      double size;
 #endif
 {
+  bool drawn;
   char label_buf[2];
   double x_dev, y_dev, delta_x_dev, delta_y_dev;
   double delta_x_user = 0.0, delta_y_user = 0.0;
 
-  if (!_plotter->open)
+  if (!_plotter->data->open)
     {
       _plotter->error (R___(_plotter) 
 		       "fmarker: invalid operation");
       return -1;
     }
 
-  _plotter->fmove (R___(_plotter) x, y); /* on exit, will be at (x,y) */
+  _API_endpath (S___(_plotter)); /* flush path if any */
+
+  /* update our notion of position */
+  _plotter->drawstate->pos.x = x;
+  _plotter->drawstate->pos.y = y;
+
+  if (_plotter->drawstate->pen_type == 0)
+    /* no pen to draw with, so do nothing */
+    return 0;
+
+  /* attempt to draw marker in a Plotter-specific way */
+  drawn = _plotter->paint_marker (R___(_plotter) type, size);
+  if (drawn)
+    return 0;
+
+  /* Plotter couldn't do it, so draw the marker in a generic way, by
+     constructing it from other libplot primitives. */
 
   if (type < 0)			/* silently return if marker type < 0 */
     return 0;
-  type %= 256;			/* silently compute marker type mod 256 */
+  type %= 256;			/* compute marker type mod 256 */
 
-  if (_plotter->display_coors_type != (int)DISP_DEVICE_COORS_REAL)
+  /* begin by saving drawing attributes we may change */
+  _API_savestate (S___(_plotter));
+
+  if (_plotter->data->display_coors_type != (int)DISP_DEVICE_COORS_REAL)
     /* move temporarily to nearest point with integer device coordinates,
-       so that symbol will be symmetrically positioned */
+       so that marker will be symmetrically positioned */
     {
       x_dev = XD(x, y);
       y_dev = YD(x, y);
@@ -77,55 +97,42 @@ _g_fmarker (R___(_plotter) x, y, type, size)
       delta_y_dev = IROUND(y_dev) - y_dev;
       delta_x_user = XUV(delta_x_dev, delta_y_dev);
       delta_y_user = YUV(delta_x_dev, delta_y_dev);
-
+      
       _plotter->drawstate->pos.x += delta_x_user;
       _plotter->drawstate->pos.y += delta_y_user;
     }
-
+  
   if (type > 31)
+    /* plot a single character, in current font */
     {
-      /* savestate requires too much overhead here, should fix */
-      _plotter->savestate (S___(_plotter));
-      _plotter->ffontsize (R___(_plotter) size);
-      _plotter->textangle (R___(_plotter) 0);
+      _API_pentype (R___(_plotter) 1);
+      _API_ffontsize (R___(_plotter) size);
+      _API_textangle (R___(_plotter) 0);
       label_buf[0] = (char)type;
       label_buf[1] = '\0';
-      _plotter->alabel (R___(_plotter) 'c', 'c', label_buf);
-      _plotter->restorestate (S___(_plotter));
+      _API_alabel (R___(_plotter) 'c', 'c', label_buf);
     }
   else
+    /* plot a handcrafted marker symbol */
     {
-      /* begin by saving the relevant drawing attributes */
-      char *old_line_mode, *old_cap_mode, *old_join_mode;
-      int old_fill_type;
-      double old_line_width;
-      bool old_dash_array_in_effect;
-
-      old_line_mode = (char *)_plot_xmalloc (strlen (_plotter->drawstate->line_mode) + 1);
-      old_cap_mode = (char *)_plot_xmalloc (strlen (_plotter->drawstate->cap_mode) + 1);
-      old_join_mode = (char *)_plot_xmalloc (strlen (_plotter->drawstate->join_mode) + 1);
-
-      strcpy (old_line_mode, _plotter->drawstate->line_mode);
-      strcpy (old_cap_mode, _plotter->drawstate->cap_mode);
-      strcpy (old_join_mode, _plotter->drawstate->join_mode);
-
-      old_dash_array_in_effect = _plotter->drawstate->dash_array_in_effect;
-      old_line_width = _plotter->drawstate->line_width;
-      old_fill_type = _plotter->drawstate->fill_type;
-
-      /* attributes for drawing all our marker symbols */
-      _plotter->linemod (R___(_plotter) "solid");
-      _plotter->capmod (R___(_plotter) "butt");
-      _plotter->joinmod (R___(_plotter) "miter");
-      _plotter->flinewidth (R___(_plotter) LINE_SCALE * size);
+      _API_pentype (R___(_plotter) 1);
+      _API_linemod (R___(_plotter) "solid");
+      _API_capmod (R___(_plotter) "butt");
+      _API_joinmod (R___(_plotter) "miter");
+      _API_flinewidth (R___(_plotter) LINE_SCALE * size);
+      _API_fillcolor (R___(_plotter)
+		      _plotter->drawstate->fgcolor.red,
+		      _plotter->drawstate->fgcolor.green,
+		      _plotter->drawstate->fgcolor.blue);
 
       /* beautification kludge: if display is a bitmap device using libxmi
 	 or a compatible scan-conversion scheme, and line thickness is one
 	 pixel or less, but not zero, then change it to zero thickess
 	 (which will be interpreted as specifying a Bresenham line). */
-      if (_plotter->display_coors_type == (int)DISP_DEVICE_COORS_INTEGER_LIBXMI
+      if ((_plotter->data->display_coors_type == 
+	   (int)DISP_DEVICE_COORS_INTEGER_LIBXMI)
 	  && _plotter->drawstate->quantized_device_line_width == 1)
-	_plotter->flinewidth (R___(_plotter) 0.0);	
+	_API_flinewidth (R___(_plotter) 0.0);	
 
       size *= (0.5 * MAXIMUM_MARKER_DIMENSION);
 
@@ -136,375 +143,391 @@ _g_fmarker (R___(_plotter) x, y, type, size)
 	default:
 	  break;
 	case (int)M_DOT:		/* dot, GKS 1 */
-	  _plotter->filltype (R___(_plotter) 1);
-	  if (_plotter->display_model_type != (int)DISP_MODEL_VIRTUAL
-	      || _plotter->display_coors_type == (int)DISP_DEVICE_COORS_REAL)
-	  _plotter->fcirclerel (R___(_plotter) 0.0, 0.0, 
-				RELATIVE_DOT_SIZE * size);
+	  if (_plotter->data->display_model_type == (int)DISP_MODEL_PHYSICAL
+	      || 
+	      _plotter->data->display_coors_type ==(int)DISP_DEVICE_COORS_REAL)
+	    {
+	      _API_filltype (R___(_plotter) 1);
+	      _API_fcirclerel (R___(_plotter) 0.0, 0.0, 
+			       RELATIVE_DOT_SIZE * size);
+	    }
 	  else			/* see comment above */
-	    _plotter->fpointrel (R___(_plotter) 0.0, 0.0);
+	    _API_fpointrel (R___(_plotter) 0.0, 0.0);
 	  break;
-	case (int)M_PLUS:		/* plus, GKS 2 */
-	  _plotter->fmoverel (R___(_plotter) -size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 2 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, 2 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, -size);
+	case (int)M_PLUS:	/* plus, GKS 2 */
+	  _API_fmoverel (R___(_plotter) -size, 0.0);
+	  _API_fcontrel (R___(_plotter) 2 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) 0.0, 2 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, -size);
 	  break;
 	case (int)M_ASTERISK:	/* asterisk, GKS 3 */
 	  {
 	    double vert = 0.5 * size;
 	    double hori = 0.5 * M_SQRT3 * size;
 	    
-	    _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	    _plotter->fcontrel (R___(_plotter) 0.0, 2 * size);
-	    _plotter->fmoverel (R___(_plotter) 0.0, -size);
+	    _API_fmoverel (R___(_plotter) 0.0, -size);
+	    _API_fcontrel (R___(_plotter) 0.0, 2 * size);
+	    _API_fmoverel (R___(_plotter) 0.0, -size);
 
-	    _plotter->fcontrel (R___(_plotter) hori, vert);
-	    _plotter->fmoverel (R___(_plotter) -hori, -vert);
-	    _plotter->fcontrel (R___(_plotter) -hori, -vert);
-	    _plotter->fmoverel (R___(_plotter) hori, vert);
-	    _plotter->fcontrel (R___(_plotter) hori, -vert);
-	    _plotter->fmoverel (R___(_plotter) -hori, vert);
-	    _plotter->fcontrel (R___(_plotter) -hori, vert);
-	    _plotter->fmoverel (R___(_plotter) hori, -vert);
+	    _API_fcontrel (R___(_plotter) hori, vert);
+	    _API_fmoverel (R___(_plotter) -hori, -vert);
+	    _API_fcontrel (R___(_plotter) -hori, -vert);
+	    _API_fmoverel (R___(_plotter) hori, vert);
+	    _API_fcontrel (R___(_plotter) hori, -vert);
+	    _API_fmoverel (R___(_plotter) -hori, vert);
+	    _API_fcontrel (R___(_plotter) -hori, vert);
+	    _API_fmoverel (R___(_plotter) hori, -vert);
 	  }
 	  break;
-	case (int)M_CIRCLE:		/* circle, GKS 4 */
-	  _plotter->filltype (R___(_plotter) 0);
-	  _plotter->fcirclerel (R___(_plotter) 0.0, 0.0, size);
+	case (int)M_CIRCLE:	/* circle, GKS 4 */
+	  _API_filltype (R___(_plotter) 0);
+	  _API_fcirclerel (R___(_plotter) 0.0, 0.0, size);
 	  break;
-	case (int)M_CROSS:		/* cross, GKS 5 */
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) 2 * size, 2 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, - 2 * size);
-	  _plotter->fcontrel (R___(_plotter) -2 * size, 2 * size);
-	  _plotter->fmoverel (R___(_plotter) size, -size);
+	case (int)M_CROSS:	/* cross, GKS 5 */
+	  _API_fmoverel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) 2 * size, 2 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, - 2 * size);
+	  _API_fcontrel (R___(_plotter) -2 * size, 2 * size);
+	  _API_fmoverel (R___(_plotter) size, -size);
 	  break;
-	case (int)M_STAR:			/* star */
-	  _plotter->fmoverel (R___(_plotter) -size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 2 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, 2 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	  _plotter->fcontrel (R___(_plotter) size, size);
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) size, -size);
-	  _plotter->fmoverel (R___(_plotter) -size, size);
-	  _plotter->fcontrel (R___(_plotter) -size, size);
-	  _plotter->fmoverel (R___(_plotter) size, -size);
-	  _plotter->fcontrel (R___(_plotter) -size, -size);
-	  _plotter->fmoverel (R___(_plotter) size, size);
+	case (int)M_STAR:	/* star */
+	  _API_fmoverel (R___(_plotter) -size, 0.0);
+	  _API_fcontrel (R___(_plotter) 2 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) 0.0, 2 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, -size);
+	  _API_fcontrel (R___(_plotter) size, size);
+	  _API_fmoverel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) size, -size);
+	  _API_fmoverel (R___(_plotter) -size, size);
+	  _API_fcontrel (R___(_plotter) -size, size);
+	  _API_fmoverel (R___(_plotter) size, -size);
+	  _API_fcontrel (R___(_plotter) -size, -size);
+	  _API_fmoverel (R___(_plotter) size, size);
 	  break;
 	case (int)M_SQUARE:	/* square */
-	  _plotter->filltype (R___(_plotter) 0);
-	  _plotter->fboxrel (R___(_plotter) -size, -size, size, size);
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
+	  _API_filltype (R___(_plotter) 0);
+	  _API_fboxrel (R___(_plotter) -size, -size, size, size);
+	  _API_fmoverel (R___(_plotter) -size, -size);
 	  break;
 	case (int)M_DIAMOND:	/* diamond */
-	  _plotter->filltype (R___(_plotter) 0);
-	  _plotter->fmoverel (R___(_plotter) size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -size, size);
-	  _plotter->fcontrel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) size, -size);
-	  _plotter->fcontrel (R___(_plotter) size, size);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.0);
+	  _API_filltype (R___(_plotter) 0);
+	  _API_fmoverel (R___(_plotter) size, 0.0);
+	  _API_fcontrel (R___(_plotter) -size, size);
+	  _API_fcontrel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) size, -size);
+	  _API_fcontrel (R___(_plotter) size, size);
+	  _API_fmoverel (R___(_plotter) -size, 0.0);
 	  break;
 	case (int)M_TRIANGLE:	/* triangle */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
-	    _plotter->filltype (R___(_plotter) 0);
-	    _plotter->fmoverel (R___(_plotter) 0.0, size);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, -1.5 * size);
-	    _plotter->fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, 1.5 * size);
-	    _plotter->fmoverel (R___(_plotter) 0.0, -size);
+	    _API_filltype (R___(_plotter) 0);
+	    _API_fmoverel (R___(_plotter) 0.0, size);
+	    _API_fcontrel (R___(_plotter) halfwidth, -1.5 * size);
+	    _API_fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
+	    _API_fcontrel (R___(_plotter) halfwidth, 1.5 * size);
+	    _API_fmoverel (R___(_plotter) 0.0, -size);
 	  }	  
 	  break;
 	case (int)M_INVERTED_TRIANGLE: /* triangle, vertex down */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
-	    _plotter->filltype (R___(_plotter) 0);
-	    _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, 1.5 * size);
-	    _plotter->fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, -1.5 * size);
-	    _plotter->fmoverel (R___(_plotter) 0.0, size);
+	    _API_filltype (R___(_plotter) 0);
+	    _API_fmoverel (R___(_plotter) 0.0, -size);
+	    _API_fcontrel (R___(_plotter) halfwidth, 1.5 * size);
+	    _API_fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
+	    _API_fcontrel (R___(_plotter) halfwidth, -1.5 * size);
+	    _API_fmoverel (R___(_plotter) 0.0, size);
 	  }	  
 	  break;
-	case (int)M_FILLED_SQUARE:	/* filled square */
-	  _plotter->filltype (R___(_plotter) 1);
-	  _plotter->fboxrel (R___(_plotter) -size, -size, size, size);
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
+	case (int)M_FILLED_SQUARE: /* filled square */
+	  _API_filltype (R___(_plotter) 1);
+	  _API_fboxrel (R___(_plotter) -size, -size, size, size);
+	  _API_fmoverel (R___(_plotter) -size, -size);
 	  break;
-	case (int)M_FILLED_DIAMOND:	/* filled diamond */
-	  _plotter->filltype (R___(_plotter) 1);
-	  _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	  _plotter->fcontrel (R___(_plotter) size, size);
-	  _plotter->fcontrel (R___(_plotter) -size, size);
-	  _plotter->fcontrel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) size, -size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, size);
+	case (int)M_FILLED_DIAMOND: /* filled diamond */
+	  _API_filltype (R___(_plotter) 1);
+	  _API_fmoverel (R___(_plotter) 0.0, -size);
+	  _API_fcontrel (R___(_plotter) size, size);
+	  _API_fcontrel (R___(_plotter) -size, size);
+	  _API_fcontrel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) size, -size);
+	  _API_fmoverel (R___(_plotter) 0.0, size);
 	  break;
 	case (int)M_FILLED_TRIANGLE: /* filled triangle */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
-	    _plotter->filltype (R___(_plotter) 1);
-	    _plotter->fmoverel (R___(_plotter) 0.0, size);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, -1.5 * size);
-	    _plotter->fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, 1.5 * size);
-	    _plotter->fmoverel (R___(_plotter) 0.0, -size);
+	    _API_filltype (R___(_plotter) 1);
+	    _API_fmoverel (R___(_plotter) 0.0, size);
+	    _API_fcontrel (R___(_plotter) halfwidth, -1.5 * size);
+	    _API_fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
+	    _API_fcontrel (R___(_plotter) halfwidth, 1.5 * size);
+	    _API_fmoverel (R___(_plotter) 0.0, -size);
 	  }	  
 	  break;
-	case (int)M_FILLED_INVERTED_TRIANGLE: /* filled triangle, vertex down */
+	case (int)M_FILLED_INVERTED_TRIANGLE: /* filled triangle, vertex down*/
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
-	    _plotter->filltype (R___(_plotter) 1);
-	    _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, 1.5 * size);
-	    _plotter->fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, -1.5 * size);
-	    _plotter->fmoverel (R___(_plotter) 0.0, size);
+	    _API_filltype (R___(_plotter) 1);
+	    _API_fmoverel (R___(_plotter) 0.0, -size);
+	    _API_fcontrel (R___(_plotter) halfwidth, 1.5 * size);
+	    _API_fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
+	    _API_fcontrel (R___(_plotter) halfwidth, -1.5 * size);
+	    _API_fmoverel (R___(_plotter) 0.0, size);
 	  }	  
 	  break;
-	case (int)M_FILLED_CIRCLE:	/* filled circle */
-	  _plotter->filltype (R___(_plotter) 1);
-	  _plotter->fcirclerel (R___(_plotter) 0.0, 0.0, size);
+	case (int)M_FILLED_CIRCLE: /* filled circle */
+	  _API_filltype (R___(_plotter) 1);
+	  _API_fcirclerel (R___(_plotter) 0.0, 0.0, size);
 	  break;
 	case (int)M_STARBURST:	/* starburst */
-	  _plotter->fmoverel (R___(_plotter) -0.5 * size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 0.0, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) 0.0, size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -0.5 * size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 0.0, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) -0.5 * size, 0.0);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) 0.0, -size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fcontrel (R___(_plotter) 0.0, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) size, 0.0);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) 0.0, size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) -0.5 * size, 0.0);
+	  _API_fcontrel (R___(_plotter) 0.0, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -size, 0.0);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, -0.5 * size);
 	  break;
 	case (int)M_FANCY_PLUS:	/* ornate plus */
-	  _plotter->fmoverel (R___(_plotter) -size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 2 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, 2 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, -size);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, size);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.0);
+	  _API_fmoverel (R___(_plotter) -size, 0.0);
+	  _API_fcontrel (R___(_plotter) 2 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) 0.0, 2 * size);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fcontrel (R___(_plotter) -size, 0.0);
+	  _API_fmoverel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, -size);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) size, 0.0);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, size);
+	  _API_fmoverel (R___(_plotter) -size, 0.0);
 	  break;
-	case (int)M_FANCY_CROSS:	/* ornate cross */
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) 2 * size, 2 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, -2 * size);
-	  _plotter->fcontrel (R___(_plotter) -2 * size, 2 * size);
-	  _plotter->fmoverel (R___(_plotter) 2 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.5 * size);
+	case (int)M_FANCY_CROSS: /* ornate cross */
+	  _API_fmoverel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) 2 * size, 2 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, -2 * size);
+	  _API_fcontrel (R___(_plotter) -2 * size, 2 * size);
+	  _API_fmoverel (R___(_plotter) 2 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -size, 0.0);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, -size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) size, 0.0);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -size, 0.5 * size);
 	  break;
-	case (int)M_FANCY_SQUARE:	/* ornate square */
-	  _plotter->filltype (R___(_plotter) 0);
-	  _plotter->fboxrel (R___(_plotter) -0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -1.5 * size, -1.5 * size);	  
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 1.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -1.5 * size, 1.5 * size);	  
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 1.5 * size, -1.5 * size);	  
+	case (int)M_FANCY_SQUARE: /* ornate square */
+	  _API_filltype (R___(_plotter) 0);
+	  _API_fboxrel (R___(_plotter) -0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -1.5 * size, -1.5 * size);	  
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) 1.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) -1.5 * size, 1.5 * size);	  
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) 1.5 * size, -1.5 * size);	  
 	  break;
-	case (int)M_FANCY_DIAMOND:	/* diamond */
-	  _plotter->filltype (R___(_plotter) 0);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->endpath (S___(_plotter));
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -0.5 * size, -size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, size);
+	case (int)M_FANCY_DIAMOND: /* diamond */
+	  _API_filltype (R___(_plotter) 0);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_endpath (S___(_plotter));
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) -size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -0.5 * size, -size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, size);
 	  break;
-	case (int)M_FILLED_FANCY_SQUARE:	/* filled ornate square */
-	  _plotter->filltype (R___(_plotter) 1);
-	  _plotter->fboxrel (R___(_plotter) -0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -1.5 * size, -1.5 * size);	  
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 1.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -1.5 * size, 1.5 * size);	  
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 1.5 * size, -1.5 * size);	  
+	case (int)M_FILLED_FANCY_SQUARE: /* filled ornate square */
+	  _API_filltype (R___(_plotter) 1);
+	  _API_fboxrel (R___(_plotter) -0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -1.5 * size, -1.5 * size);	  
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) 1.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) -1.5 * size, 1.5 * size);	  
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) 1.5 * size, -1.5 * size);	  
 	  break;
 	case (int)M_FILLED_FANCY_DIAMOND: /* filled ornate diamond */
-	  _plotter->filltype (R___(_plotter) 1);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->endpath (S___(_plotter));
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -0.5 * size, -size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, size);
+	  _API_filltype (R___(_plotter) 1);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_endpath (S___(_plotter));
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) -size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -0.5 * size, -size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, size);
 	  break;
 	case (int)M_HALF_FILLED_SQUARE:	/* half_filled square */
-	  _plotter->filltype (R___(_plotter) NOMINAL_HALF);
-	  _plotter->fboxrel (R___(_plotter) -size, -size, size, size);
-	  _plotter->fmoverel (R___(_plotter) -size, -size);
+	  _API_filltype (R___(_plotter) NOMINAL_HALF);
+	  _API_fboxrel (R___(_plotter) -size, -size, size, size);
+	  _API_fmoverel (R___(_plotter) -size, -size);
 	  break;
-	case (int)M_HALF_FILLED_DIAMOND:	/* half_filled diamond */
-	  _plotter->filltype (R___(_plotter) NOMINAL_HALF);
-	  _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	  _plotter->fcontrel (R___(_plotter) size, size);
-	  _plotter->fcontrel (R___(_plotter) -size, size);
-	  _plotter->fcontrel (R___(_plotter) -size, -size);
-	  _plotter->fcontrel (R___(_plotter) size, -size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, size);
+	case (int)M_HALF_FILLED_DIAMOND: /* half_filled diamond */
+	  _API_filltype (R___(_plotter) NOMINAL_HALF);
+	  _API_fmoverel (R___(_plotter) 0.0, -size);
+	  _API_fcontrel (R___(_plotter) size, size);
+	  _API_fcontrel (R___(_plotter) -size, size);
+	  _API_fcontrel (R___(_plotter) -size, -size);
+	  _API_fcontrel (R___(_plotter) size, -size);
+	  _API_fmoverel (R___(_plotter) 0.0, size);
 	  break;
 	case (int)M_HALF_FILLED_TRIANGLE: /* half_filled triangle */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
-	    _plotter->filltype (R___(_plotter) NOMINAL_HALF);
-	    _plotter->fmoverel (R___(_plotter) 0.0, size);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, -1.5 * size);
-	    _plotter->fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, 1.5 * size);
-	    _plotter->fmoverel (R___(_plotter) 0.0, -size);
+	    _API_filltype (R___(_plotter) NOMINAL_HALF);
+	    _API_fmoverel (R___(_plotter) 0.0, size);
+	    _API_fcontrel (R___(_plotter) halfwidth, -1.5 * size);
+	    _API_fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
+	    _API_fcontrel (R___(_plotter) halfwidth, 1.5 * size);
+	    _API_fmoverel (R___(_plotter) 0.0, -size);
 	  }	  
 	  break;
 	case (int)M_HALF_FILLED_INVERTED_TRIANGLE: /* half_filled triangle, vertex down */
 	  {
 	    double halfwidth = 0.5 * M_SQRT3 * size;
 	    
-	    _plotter->filltype (R___(_plotter) NOMINAL_HALF);
-	    _plotter->fmoverel (R___(_plotter) 0.0, -size);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, 1.5 * size);
-	    _plotter->fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
-	    _plotter->fcontrel (R___(_plotter) halfwidth, -1.5 * size);
-	    _plotter->fmoverel (R___(_plotter) 0.0, size);
+	    _API_filltype (R___(_plotter) NOMINAL_HALF);
+	    _API_fmoverel (R___(_plotter) 0.0, -size);
+	    _API_fcontrel (R___(_plotter) halfwidth, 1.5 * size);
+	    _API_fcontrel (R___(_plotter) -2 * halfwidth, 0.0);
+	    _API_fcontrel (R___(_plotter) halfwidth, -1.5 * size);
+	    _API_fmoverel (R___(_plotter) 0.0, size);
 	  }	  
 	  break;
 	case (int)M_HALF_FILLED_CIRCLE:	/* half_filled circle */
-	  _plotter->filltype (R___(_plotter) NOMINAL_HALF);
-	  _plotter->fcirclerel (R___(_plotter) 0.0, 0.0, size);
+	  _API_filltype (R___(_plotter) NOMINAL_HALF);
+	  _API_fcirclerel (R___(_plotter) 0.0, 0.0, size);
 	  break;
 	case (int)M_HALF_FILLED_FANCY_SQUARE:  /* half-filled ornate square */
-	  _plotter->filltype (R___(_plotter) NOMINAL_HALF);
-	  _plotter->fboxrel (R___(_plotter) -0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -1.5 * size, -1.5 * size);	  
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 1.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -1.5 * size, 1.5 * size);	  
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 1.5 * size, -1.5 * size);	  
+	  _API_filltype (R___(_plotter) NOMINAL_HALF);
+	  _API_fboxrel (R___(_plotter) -0.5 * size, -0.5 * size, 0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -1.5 * size, -1.5 * size);	  
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) 1.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) -1.5 * size, 1.5 * size);	  
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) 1.5 * size, -1.5 * size);	  
 	  break;
 	case (int)M_HALF_FILLED_FANCY_DIAMOND: /* half-filled ornate diamond */
-	  _plotter->filltype (R___(_plotter) NOMINAL_HALF);
-	  _plotter->fmoverel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->endpath (S___(_plotter));
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, 0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) -0.5 * size, -size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.0);
-	  _plotter->fmoverel (R___(_plotter) size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) 0.0, size);
+	  _API_filltype (R___(_plotter) NOMINAL_HALF);
+	  _API_fmoverel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_endpath (S___(_plotter));
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) -size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, 0.5 * size);
+	  _API_fmoverel (R___(_plotter) -0.5 * size, -size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.0);
+	  _API_fmoverel (R___(_plotter) size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) 0.0, size);
 	  break;
-	case (int)M_OCTAGON:		/* octagon */
-	  _plotter->filltype (R___(_plotter) 0);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, -size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) -size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) size, -0.5 * size);
+	case (int)M_OCTAGON:	/* octagon */
+	  _API_filltype (R___(_plotter) 0);
+	  _API_fmoverel (R___(_plotter) -size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, -size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) size, 0.0);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) -size, 0.0);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) size, -0.5 * size);
 	  break;
-	case (int)M_FILLED_OCTAGON:	/* filled octagon */
-	  _plotter->filltype (R___(_plotter) 1);
-	  _plotter->fmoverel (R___(_plotter) -size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, -size);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) 0.0, size);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
-	  _plotter->fcontrel (R___(_plotter) -size, 0.0);
-	  _plotter->fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
-	  _plotter->fmoverel (R___(_plotter) size, -0.5 * size);
+	case (int)M_FILLED_OCTAGON: /* filled octagon */
+	  _API_filltype (R___(_plotter) 1);
+	  _API_fmoverel (R___(_plotter) -size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, -size);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, -0.5 * size);
+	  _API_fcontrel (R___(_plotter) size, 0.0);
+	  _API_fcontrel (R___(_plotter) 0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) 0.0, size);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, 0.5 * size);
+	  _API_fcontrel (R___(_plotter) -size, 0.0);
+	  _API_fcontrel (R___(_plotter) -0.5 * size, -0.5 * size);
+	  _API_fmoverel (R___(_plotter) size, -0.5 * size);
 	  break;
 	}
-
-      /* restore the original values of the relevant drawing attributes,
-	 and free storage */
-      _plotter->linemod (R___(_plotter) old_line_mode);
-      _plotter->capmod (R___(_plotter) old_cap_mode);
-      _plotter->joinmod (R___(_plotter) old_join_mode);
-      _plotter->flinewidth (R___(_plotter) old_line_width);
-      _plotter->filltype (R___(_plotter) old_fill_type);
-      _plotter->drawstate->dash_array_in_effect = old_dash_array_in_effect;
-      
-      free (old_line_mode);
-      free (old_cap_mode);
-      free (old_join_mode);
     }
   
-  if (_plotter->display_coors_type != (int)DISP_DEVICE_COORS_REAL)
+  if (_plotter->data->display_coors_type != (int)DISP_DEVICE_COORS_REAL)
     /* undo the small repositioning (see above) */
     {
       _plotter->drawstate->pos.x -= delta_x_user;
       _plotter->drawstate->pos.y -= delta_y_user;
     }
 
+  /* restore the original values of all drawing attributes */
+  _API_restorestate (S___(_plotter));
+
   return 0;
+}
+
+/* The paint_marker method, which is an internal function that is called
+   when the marker() method is invoked.  It plots an object: a marker of a
+   specified type, at a specified size, at the current location.
+
+   If this returns `false', marker() will construct the marker from other
+   libplot primitives, in a generic way. */
+
+/* Nearly all Plotters use this version, which does nothing but returns
+   `false'. */
+
+bool
+#ifdef _HAVE_PROTOS
+_g_paint_marker (R___(Plotter *_plotter) int type, double size)
+#else
+_g_paint_marker (R___(_plotter) type, size)
+     S___(Plotter *_plotter;)
+     int type;
+     double size;
+#endif
+{
+  return false;
 }

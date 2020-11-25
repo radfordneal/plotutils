@@ -90,28 +90,28 @@ _tek_mode(R___(_plotter) newmode)
 	{
 	case MODE_ALPHA:
 	  /* ASCII US, i.e. ^_ (enter alpha mode) */
-	  _plotter->write_byte (R___(_plotter) '\037');
+	  _write_byte (_plotter->data, '\037');
 	  break;
 	case MODE_PLOT:
 	  if ((_plotter->tek_mode_is_unknown) 
 	      || (_plotter->tek_mode == MODE_POINT)
 	      || (_plotter->tek_mode == MODE_INCREMENTAL))
 	    /* ASCII US, i.e. ^_ (enter alpha) */
-	    _plotter->write_byte (R___(_plotter) '\037');
+	    _write_byte (_plotter->data, '\037');
 	  /* ASCII GS, i.e. ^] (enter vector mode)*/
-	  _plotter->write_byte (R___(_plotter) '\035');
+	  _write_byte (_plotter->data, '\035');
 	  break;
 	case MODE_POINT:
 	  if ((_plotter->tek_mode_is_unknown) || 
 	      (_plotter->tek_mode == MODE_INCREMENTAL))
 	    /* ASCII US, i.e. ^_ (enter alpha) */
-	    _plotter->write_byte (R___(_plotter) '\037'); 
+	    _write_byte (_plotter->data, '\037'); 
 	  /* ASCII FS, i.e. ^\ (enter point mode) */
-	  _plotter->write_byte (R___(_plotter) '\034'); 
+	  _write_byte (_plotter->data, '\034'); 
 	  break;
 	case MODE_INCREMENTAL:
 	  /* ASCII RS, i.e. ^^ (enter incplot mode)*/
-	  _plotter->write_byte (R___(_plotter) '\036'); 
+	  _write_byte (_plotter->data, '\036'); 
 	  break;
 	default:
 	  break;

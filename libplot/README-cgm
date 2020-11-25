@@ -1,3 +1,96 @@
+By default, libplot's CGM driver emits version 3 CGM format, conforming to
+the WebCGM profile.  The output may include the following CGM primitives.
+For their semantics, see "The CGM Handbook" (cited below).  Many of the
+names should be self-explanatory.
+
+By setting the libplot parameter or environment variable CGM_MAX_VERSION to
+"2" or "1", you can produce a CGM file whose version is less than 3.  This
+is often desirable, because many CGM viewers can handle only version 1 CGM
+files.  If the CGM version is 2 or 1, the primitives below that are not
+allowed to appear in version 2 or 1 CGM files will be emulated using
+allowed primitives, or simply dropped (if appropriate).  The table
+indicates which primitives may appear only in version 2 and higher, 
+and 3 and higher.
+
+CGM Delimiter Elements:
+	 BEGMF
+	 BEGPIC
+	 BEGPICBODY
+	 ENDPIC
+	 ENDMF
+
+CGM Metafile Descriptor Elements:
+	 MFVERSION
+	 MFELEMLIST
+	 MFDESC
+	 VDCTYPE
+	 INTEGERPREC
+	 REALPREC
+	 COLRPREC
+	 COLRVALUEEXT
+	 FONTLIST
+	 CHARSETLIST
+	 CHARCODING
+	 FONTPROP (version 3 or higher)
+
+CGM Picture Descriptor Elements:
+	SCALEMODE
+	COLRMODE
+	LINEWIDTHMODE
+	EDGEWIDTHMODE
+	MARKERSIZEMODE
+	VDCEXT
+	BACKCOLR
+	LINEEDGETYPEDEF (version 3 or higher)
+
+CGM Control Elements:
+	VDCINTEGERPREC
+	MITRELIMIT (version 3 or higher)
+
+CGM Graphical Primitive Elements:
+	LINE
+	MARKER
+	RESTRTEXT
+	POLYGON
+	RECT
+	CIRCLE
+	ARCCTR
+	ELLIPSE
+	ELLIPARC
+	ARCCTRREV (version 2 or higher)
+	POLYBEZIER (version 3 or higher)
+
+CGM Attribute Elements:
+	LINETYPE
+	LINEWIDTH
+	LINECOLR
+	MARKERTYPE
+	MARKERSIZE
+	MARKERCOLR
+	TEXTFONTINDEX
+	TEXTPREC
+	TEXTCOLR
+	CHARHEIGHT
+	CHARORI
+	TEXTALIGN
+	CHARSETINDEX
+	ALTCHARSETINDEX
+	INTSTYLE
+	FILLCOLR
+	EDGETYPE
+	EDGEWIDTH
+	EDGECOLR
+	EDGEVIS
+	LINECAP (version 3 or higher)
+	LINEJOIN (version 3 or higher)
+	LINETYPEINITOFFSET (version 3 or higher)
+	EDGECAP (version 3 or higher)
+	EDGEJOIN (version 3 or higher)
+	EDGETYPEINITOFFSET (version 3 or higher)
+	RESTRTEXTTYPE (version 3 or higher)
+
+----------------------------------------------------------------------
+
 References used when writing the CGM driver include:
 
     The WebCGM profile, available at http://www.w3.org/TR/REC-WebCGM as an

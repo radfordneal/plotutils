@@ -64,13 +64,11 @@ CC = @CC@
 CXX = @CXX@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
-LD = @LD@
 LEX = @LEX@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LTALLOCA = @LTALLOCA@
 MAKEINFO = @MAKEINFO@
-NM = @NM@
 OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
@@ -91,9 +89,9 @@ include_HEADERS = xmi.h
 noinst_HEADERS = mi_api.h mi_arc.h mi_fllarc.h mi_fply.h mi_gc.h mi_line.h mi_ply.h mi_scanfill.h mi_spans.h mi_widelin.h mi_zerarc.h extern.h sys-defines.h
 
 
-libxmi_la_LDFLAGS = -version-info 1:1:1
+libxmi_la_LDFLAGS = -version-info 1:2:1
 
-libxmi_la_SOURCES = mi_alloc.c mi_api.c mi_arc.c mi_canvas.c mi_fllarc.c mi_fllrct.c mi_fplycon.c mi_gc.c mi_ply.c mi_plycon.c mi_plygen.c mi_plypnt.c mi_plyutil.c mi_spans.c mi_widelin.c mi_zerarc.c mi_zerolin.c
+libxmi_la_SOURCES = mi_alloc.c mi_api.c mi_arc.c mi_canvas.c mi_fllarc.c mi_fllrct.c mi_fplycon.c mi_gc.c mi_ply.c mi_plycon.c mi_plygen.c mi_plypnt.c mi_plyutil.c mi_spans.c mi_widelin.c mi_zerarc.c mi_zerolin.c mi_version.c
 
 
 EXTRA_DIST = CUSTOMIZE README-X VERSION drawing.c
@@ -113,7 +111,7 @@ libxmi_la_LIBADD =
 libxmi_la_OBJECTS =  mi_alloc.lo mi_api.lo mi_arc.lo mi_canvas.lo \
 mi_fllarc.lo mi_fllrct.lo mi_fplycon.lo mi_gc.lo mi_ply.lo mi_plycon.lo \
 mi_plygen.lo mi_plypnt.lo mi_plyutil.lo mi_spans.lo mi_widelin.lo \
-mi_zerarc.lo mi_zerolin.lo
+mi_zerarc.lo mi_zerolin.lo mi_version.lo
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -339,41 +337,6 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
-mi_alloc.lo mi_alloc.o : mi_alloc.c sys-defines.h ../config.h extern.h \
-	xmi.h mi_spans.h mi_api.h
-mi_api.lo mi_api.o : mi_api.c sys-defines.h ../config.h extern.h xmi.h \
-	mi_spans.h mi_gc.h mi_api.h
-mi_arc.lo mi_arc.o : mi_arc.c sys-defines.h ../config.h extern.h xmi.h \
-	mi_spans.h mi_gc.h mi_api.h mi_arc.h mi_fply.h mi_fllarc.h
-mi_canvas.lo mi_canvas.o : mi_canvas.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_api.h
-mi_fllarc.lo mi_fllarc.o : mi_fllarc.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_gc.h mi_api.h mi_fllarc.h
-mi_fllrct.lo mi_fllrct.o : mi_fllrct.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_gc.h mi_api.h
-mi_fplycon.lo mi_fplycon.o : mi_fplycon.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_api.h mi_fply.h
-mi_gc.lo mi_gc.o : mi_gc.c sys-defines.h ../config.h extern.h xmi.h \
-	mi_spans.h mi_gc.h mi_api.h
-mi_ply.lo mi_ply.o : mi_ply.c sys-defines.h ../config.h extern.h xmi.h \
-	mi_spans.h mi_gc.h mi_api.h
-mi_plycon.lo mi_plycon.o : mi_plycon.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_gc.h mi_api.h mi_scanfill.h
-mi_plygen.lo mi_plygen.o : mi_plygen.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_gc.h mi_api.h mi_scanfill.h \
-	mi_ply.h
-mi_plypnt.lo mi_plypnt.o : mi_plypnt.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_gc.h mi_api.h
-mi_plyutil.lo mi_plyutil.o : mi_plyutil.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_api.h mi_scanfill.h mi_ply.h
-mi_spans.lo mi_spans.o : mi_spans.c sys-defines.h ../config.h extern.h \
-	xmi.h mi_spans.h mi_api.h
-mi_widelin.lo mi_widelin.o : mi_widelin.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_gc.h mi_api.h mi_widelin.h
-mi_zerarc.lo mi_zerarc.o : mi_zerarc.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_gc.h mi_api.h mi_arc.h mi_zerarc.h
-mi_zerolin.lo mi_zerolin.o : mi_zerolin.c sys-defines.h ../config.h \
-	extern.h xmi.h mi_spans.h mi_gc.h mi_api.h mi_line.h
 
 info-am:
 info: info-recursive

@@ -10,20 +10,21 @@ const int _cgm_join_style[] =
 { CGM_JOIN_MITER, CGM_JOIN_ROUND, CGM_JOIN_BEVEL, CGM_JOIN_ROUND };
 
 /* CGM cap styles, indexed by internal number (butt/rd./project/triangular) */
+/* Note: we map libplot's triangular cap style to CGM's round cap style,
+   not CGM's triangular cap style, since the latter plots an equilateral
+   triangle, which is not libplot's convention. */
 const int _cgm_cap_style[] =
-{ CGM_CAP_BUTT, CGM_CAP_ROUND, CGM_CAP_PROJECTING, CGM_CAP_TRIANGULAR };
+{ CGM_CAP_BUTT, CGM_CAP_ROUND, CGM_CAP_PROJECTING, CGM_CAP_ROUND };
 
 void
 #ifdef _HAVE_PROTOS
-_c_set_attributes (S___(Plotter *_plotter))
+_c_set_attributes (R___(Plotter *_plotter) int object_type)
 #else
-_c_set_attributes (S___(_plotter))
+_c_set_attributes (R___(_plotter) object_type)
      S___(Plotter *_plotter;)
+     int object_type;		/* closed path? open path? marker? etc.*/
 #endif
 {
-  /* just before this function is called, a hint is passed, specifying
-     whether a closed path, an open path, or a marker etc. is to be drawn */
-  int object_type = _plotter->drawstate->cgm_object_type;
   int desired_width = _plotter->drawstate->quantized_device_line_width;
   int desired_line_type = CGM_L_SOLID; /* keep compiler happy */
   double desired_dash_offset = 0.0;
@@ -40,14 +41,14 @@ _c_set_attributes (S___(_plotter))
 	  
 	  data_len = CGM_BINARY_BYTES_PER_INTEGER;
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 3,
 				    data_len, &byte_count,
 				    "LINEWIDTH");
-	  _cgm_emit_integer (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_integer (_plotter->data->page, false, _plotter->cgm_encoding,
 			     desired_width,
 			     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update line width */
 	  _plotter->cgm_line_width = desired_width;
@@ -61,14 +62,14 @@ _c_set_attributes (S___(_plotter))
 	  
 	  data_len = CGM_BINARY_BYTES_PER_INTEGER;
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 28,
 				    data_len, &byte_count,
 				    "EDGEWIDTH");
-	  _cgm_emit_integer (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_integer (_plotter->data->page, false, _plotter->cgm_encoding,
 			     desired_width,
 			     data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update edge width */
 	  _plotter->cgm_edge_width = desired_width;
@@ -80,7 +81,8 @@ _c_set_attributes (S___(_plotter))
   
   /* determine line type */
 
-  if (_plotter->have_dash_array && _plotter->drawstate->dash_array_in_effect)
+  if (_plotter->data->have_dash_array 
+      && _plotter->drawstate->dash_array_in_effect)
     /* user specified a dash array, and this version of CGM supports them;
        so compute a CGM-style dash array, and maybe add a new line type to
        page-specific line type table */
@@ -102,7 +104,6 @@ _c_set_attributes (S___(_plotter))
 	     line widths (cf. g_linewidth.c), dash lengths, etc. */
 	  _matrix_sing_vals (_plotter->drawstate->transform.m, 
 			     &min_sing_val, &max_sing_val);
-	  
 
 	  /* double array length if odd (we don't trust CGM interpreters to
              handle odd-length dash arrays in the way that PS does) */
@@ -125,12 +126,27 @@ _c_set_attributes (S___(_plotter))
 	      if (odd_length)
 		dashbuf[i + num_dashes] = i_dashlen;
 	    }
-	  desired_dash_offset = 
-	    min_sing_val * _plotter->drawstate->dash_offset;
+	  
+	  /* compute offset as fraction of cycle length; must be in range
+	     [0.0,1.0] (CGM convention) */
+	  {
+	    int cycle_length = 0;
+
+	    for (i = 0; i < our_num_dashes; i++)
+	      cycle_length += dashbuf[i]; 
+	    /* cycle length now guaranteed to be > 0 */
+
+	    desired_dash_offset = 
+	      min_sing_val * _plotter->drawstate->dash_offset / cycle_length;
+	    desired_dash_offset -= IFLOOR(desired_dash_offset);
+
+	    if (desired_dash_offset < 0.0 || desired_dash_offset >= 1.0)
+	      desired_dash_offset = 0.0;
+	  }
 
 	  /* search table of user-defined, page-specific CGM line types;
 	     they're numbered -1, -2, -3, ... */
-	  line_type_ptr = (plCGMCustomLineType *)_plotter->page->extra;
+	  line_type_ptr = (plCGMCustomLineType *)_plotter->data->page->extra;
 	  old_line_type_ptr = (plCGMCustomLineType *)NULL;
 	  line_type = 0;
 	  matched_line_type = false;
@@ -184,7 +200,7 @@ _c_set_attributes (S___(_plotter))
 	      if (old_line_type_ptr != (plCGMCustomLineType *)NULL)
 		old_line_type_ptr->next = newguy;
 	      else
-		_plotter->page->extra = newguy;
+		_plotter->data->page->extra = newguy;
 
 	      /* new line type index is one less than most negative
 		 previously defined index */
@@ -243,14 +259,14 @@ _c_set_attributes (S___(_plotter))
 	  
 	  data_len = 2;		/* 2 bytes per index */
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 2,
 				    data_len, &byte_count,
 				    "LINETYPE");
-	  _cgm_emit_index (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_index (_plotter->data->page, false, _plotter->cgm_encoding,
 			   desired_line_type,
 			   data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update line type */
 	  _plotter->cgm_line_type = desired_line_type;
@@ -264,14 +280,14 @@ _c_set_attributes (S___(_plotter))
 	  
 	  data_len = 4;		/* 4 bytes per fixed-pt. real */
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 40,
 				    data_len, &byte_count,
 				    "LINETYPEINITOFFSET");
-	  _cgm_emit_real_fixed_point (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_real_fixed_point (_plotter->data->page, false, _plotter->cgm_encoding,
 				      desired_dash_offset,
 				      data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update dash offset, and CGM version needed for this page */
 	  _plotter->cgm_dash_offset = desired_dash_offset;
@@ -287,14 +303,14 @@ _c_set_attributes (S___(_plotter))
 	  
 	  data_len = 2;		/* 2 bytes per index */
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 27,
 				    data_len, &byte_count,
 				    "EDGETYPE");
-	  _cgm_emit_index (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_index (_plotter->data->page, false, _plotter->cgm_encoding,
 			   desired_line_type,
 			   data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update edge type */
 	  _plotter->cgm_edge_type = desired_line_type;
@@ -308,14 +324,14 @@ _c_set_attributes (S___(_plotter))
 	  
 	  data_len = 4;		/* 4 bytes per fixed-pt. real */
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_ATTRIBUTE_ELEMENT, 47,
 				    data_len, &byte_count,
 				    "EDGETYPEINITOFFSET");
-	  _cgm_emit_real_fixed_point (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_real_fixed_point (_plotter->data->page, false, _plotter->cgm_encoding,
 				      desired_dash_offset,
 				      data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update dash offset, and CGM version needed for this page */
 	  _plotter->cgm_edge_dash_offset = desired_dash_offset;
@@ -345,17 +361,17 @@ _c_set_attributes (S___(_plotter))
 	      /* set line cap style */
 	      data_len = 2 * 2;	/* 2 bytes per index */
 	      byte_count = data_byte_count = 0;
-	      _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	      _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 					CGM_ATTRIBUTE_ELEMENT, 37,
 					data_len, &byte_count,
 					"LINECAP");
-	      _cgm_emit_index (_plotter->page, false, _plotter->cgm_encoding,
+	      _cgm_emit_index (_plotter->data->page, false, _plotter->cgm_encoding,
 			       desired_cap_style,
 			       data_len, &data_byte_count, &byte_count);
-	      _cgm_emit_index (_plotter->page, false, _plotter->cgm_encoding,
+	      _cgm_emit_index (_plotter->data->page, false, _plotter->cgm_encoding,
 			       CGM_DASH_CAP_MATCH,
 			       data_len, &data_byte_count, &byte_count);
-	      _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	      _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					    &byte_count);
 	      /* update cap style, and CGM version needed for this page */
 	      _plotter->cgm_cap_style = desired_cap_style;
@@ -370,17 +386,17 @@ _c_set_attributes (S___(_plotter))
 	      
 	      data_len = 2 * 2;	/* 2 bytes per index */
 	      byte_count = data_byte_count = 0;
-	      _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	      _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 					CGM_ATTRIBUTE_ELEMENT, 44,
 					data_len, &byte_count,
 					"EDGECAP");
-	      _cgm_emit_index (_plotter->page, false, _plotter->cgm_encoding,
+	      _cgm_emit_index (_plotter->data->page, false, _plotter->cgm_encoding,
 			       desired_cap_style,
 			       data_len, &data_byte_count, &byte_count);
-	      _cgm_emit_index (_plotter->page, false, _plotter->cgm_encoding,
+	      _cgm_emit_index (_plotter->data->page, false, _plotter->cgm_encoding,
 			       CGM_DASH_CAP_MATCH,
 			       data_len, &data_byte_count, &byte_count);
-	      _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	      _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					    &byte_count);
 	      /* update edge cap style, and CGM version needed for this page */
 	      _plotter->cgm_edge_cap_style = desired_cap_style;
@@ -402,14 +418,14 @@ _c_set_attributes (S___(_plotter))
 	      /* set line join style */
 	      data_len = 2;	/* 2 bytes per index */
 	      byte_count = data_byte_count = 0;
-	      _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	      _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 					CGM_ATTRIBUTE_ELEMENT, 38,
 					data_len, &byte_count,
 					"LINEJOIN");
-	      _cgm_emit_index (_plotter->page, false, _plotter->cgm_encoding,
+	      _cgm_emit_index (_plotter->data->page, false, _plotter->cgm_encoding,
 			       desired_join_style,
 			       data_len, &data_byte_count, &byte_count);
-	      _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	      _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					    &byte_count);
 	      /* update join style, and CGM version needed for this page */
 	      _plotter->cgm_join_style = desired_join_style;
@@ -425,14 +441,14 @@ _c_set_attributes (S___(_plotter))
 	      /* do it over again, this time for edge join style */
 	      data_len = 2;	/* 2 bytes per index */
 	      byte_count = data_byte_count = 0;
-	      _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	      _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 					CGM_ATTRIBUTE_ELEMENT, 45,
 					data_len, &byte_count,
 					"EDGEJOIN");
-	      _cgm_emit_index (_plotter->page, false, _plotter->cgm_encoding,
+	      _cgm_emit_index (_plotter->data->page, false, _plotter->cgm_encoding,
 			       desired_join_style,
 			       data_len, &data_byte_count, &byte_count);
-	      _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	      _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					    &byte_count);
 	      /* update edge join style, and CGM version needed for this page*/
 	      _plotter->cgm_edge_join_style = desired_join_style;
@@ -450,14 +466,14 @@ _c_set_attributes (S___(_plotter))
 	  
 	  data_len = 4;	/* 4 bytes per fixed-point real */
 	  byte_count = data_byte_count = 0;
-	  _cgm_emit_command_header (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_header (_plotter->data->page, _plotter->cgm_encoding,
 				    CGM_CONTROL_ELEMENT, 19,
 				    data_len, &byte_count,
 				    "MITRELIMIT");
-	  _cgm_emit_real_fixed_point (_plotter->page, false, _plotter->cgm_encoding,
+	  _cgm_emit_real_fixed_point (_plotter->data->page, false, _plotter->cgm_encoding,
 				      desired_miter_limit,
 				      data_len, &data_byte_count, &byte_count);
-	  _cgm_emit_command_terminator (_plotter->page, _plotter->cgm_encoding,
+	  _cgm_emit_command_terminator (_plotter->data->page, _plotter->cgm_encoding,
 					&byte_count);
 	  /* update miter limit, and CGM version needed for this page */
 	  _plotter->cgm_miter_limit = desired_miter_limit;

@@ -1,8 +1,8 @@
 #include "sys-defines.h"
 #include "extern.h"
 
-/* _matrix_product computes the product of two PS-style transformation
-   matrices (i.e. matrix representations of affine transformations). */
+/* Computes the product of two PS-style transformation matrices
+   (i.e. matrix representations of affine transformations). */
 
 void
 #ifdef _HAVE_PROTOS
@@ -29,16 +29,46 @@ _matrix_product (m, n, product)
   return;
 }
 
+/* Computes the inverse of a PS-style transformation matrix, which should
+   be nonsingular for correct results. */
+
+void
+#ifdef _HAVE_PROTOS
+_matrix_inverse (const double m[6], double inverse[6])
+#else
+_matrix_inverse (m, inverse)
+     const double m[6];
+     double inverse[6];
+#endif
+{
+  double det = m[0] * m[3] - m[1] * m[2];
+
+  if (det == 0.0)
+    /* bogus */
+    inverse[0] = inverse[1] = inverse[2] = inverse[3]
+      = inverse[4] = inverse[5] = 0.0;
+  else
+    {
+      double invdet = 1.0 / det;
+      
+      inverse[0] = invdet * m[3];
+      inverse[1] = - invdet * m[1];
+      inverse[2] = - invdet * m[2];
+      inverse[3] = invdet * m[0];
+      inverse[4] = invdet * (m[2] * m[5] - m[3] * m[4]);
+      inverse[5] = invdet * (m[1] * m[4] - m[0] * m[5]);
+    }
+}
+
 /* _matrix_norm computes the matrix norm (in the l^2 sense) of the linear
    transformation part of a PS-style transformation matrix.  Actually we
    compute instead the geometric mean of the l^1 and l^infinity norms.  By
    Hadamard's 3-line theorem, this geometric mean is an upper bound on the
    true l^2 norm.
 
-   This function is called only by a_alab_ps.c, a_point.c, g_space.c,
-   m_space.c, p_alab_ps.c, and p_point.c, to select appropriate line widths
-   and font sizes.  For the purposes of those functions, the above
-   approximation should suffice. */
+   This function is called only to select appropriate line widths and font
+   sizes.  For the purposes of those functions, the above approximation
+   should suffice. */
 
 double 
 #ifdef _HAVE_PROTOS

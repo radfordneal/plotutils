@@ -38,6 +38,7 @@ struct option long_options[] =
   { "pen-color",	ARG_REQUIRED,	NULL, 'C' << 8 },
   { "bg-color",		ARG_REQUIRED,	NULL, 'q' << 8 },
   { "bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8 },
+  { "emulate-color",	ARG_REQUIRED,	NULL, 'e' << 8},  
   { "page-size",	ARG_REQUIRED,	NULL, 'P' << 8 },
   { "rotation",		ARG_REQUIRED,	NULL, 'r' << 8},
   /* Options relevant only to raw plotfont (refers to metafile output) */
@@ -129,6 +130,9 @@ main (argc, argv)
 	case 'F':		/* set the initial font */
 	  option_font_name = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (option_font_name, optarg);
+	  break;
+	case 'e' << 8:		/* Emulate color via grayscale */
+	  pl_setplparam (plotter_params, "EMULATE_COLOR", (char *)optarg);
 	  break;
 	case 'N' << 8:		/* Numbering Font name, ARG REQUIRED */
 	  numbering_font_name = xstrdup (optarg);

@@ -137,7 +137,7 @@ _copy_params_to_plotter (R___(_plotter) plotter_params)
     {
       if (!_known_params[j].is_string)
 	/* not a string, just copy the void pointer into the plotter */
-	_plotter->params[j] = plotter_params->plparams[j];
+	_plotter->data->params[j] = plotter_params->plparams[j];
 
       else
 	/* parameter value is a string, so use malloc and strcpy */
@@ -145,28 +145,28 @@ _copy_params_to_plotter (R___(_plotter) plotter_params)
 	  if (plotter_params->plparams[j])
 	    /* have user-specified value */
 	    {
-	      _plotter->params[j] = 
+	      _plotter->data->params[j] = 
 		(char *)_plot_xmalloc (strlen ((char *)plotter_params->plparams[j]) + 1);
-	      strcpy ((char *)_plotter->params[j], 
+	      strcpy ((char *)_plotter->data->params[j], 
 		      (char *)plotter_params->plparams[j]);
 	    }
 	  else if ((envs = getenv (_known_params[j].parameter)) != NULL)
 	    /* have value of environment variable */
 	    {
-	      _plotter->params[j] = 
+	      _plotter->data->params[j] = 
 		(char *)_plot_xmalloc (strlen (envs) + 1);
-	      strcpy ((char *)_plotter->params[j], envs);
+	      strcpy ((char *)_plotter->data->params[j], envs);
 	    }
 	  else if (_known_params[j].default_value)
 	    /* have default libplot value */
 	    {
-	      _plotter->params[j] = 
+	      _plotter->data->params[j] = 
 		(char *)_plot_xmalloc (strlen ((char *)_known_params[j].default_value) + 1);
-	      strcpy ((char *)_plotter->params[j], 
+	      strcpy ((char *)_plotter->data->params[j], 
 		      (char *)_known_params[j].default_value);
 	    }
 	  else			/* punt */
-	    _plotter->params[j] = NULL;
+	    _plotter->data->params[j] = NULL;
 	}
     }
 }
@@ -175,10 +175,10 @@ _copy_params_to_plotter (R___(_plotter) plotter_params)
    as stored in a Plotter instance. */
 voidptr_t
 #ifdef _HAVE_PROTOS
-_get_plot_param (R___(Plotter *_plotter) const char *parameter_name)
+_get_plot_param (const plPlotterData *data, const char *parameter_name)
 #else
-_get_plot_param (R___(_plotter) parameter_name)
-     S___(Plotter *_plotter;)
+_get_plot_param (data, parameter_name)
+     const plPlotterData *data;
      const char *parameter_name;
 #endif
 {
@@ -186,7 +186,7 @@ _get_plot_param (R___(_plotter) parameter_name)
 
   for (j = 0; j < NUM_PLOTTER_PARAMETERS; j++)
     if (strcmp (_known_params[j].parameter, parameter_name) == 0)
-      return _plotter->params[j];
+      return data->params[j];
 
   return (voidptr_t)NULL;		/* name not matched */
 }
@@ -205,9 +205,9 @@ _free_params_in_plotter (S___(_plotter))
 
   /* deallocate stored values of class variables */
   for (j = 0; j < NUM_PLOTTER_PARAMETERS; j++)
-    if (_known_params[j].is_string && _plotter->params[j] != NULL)
+    if (_known_params[j].is_string && _plotter->data->params[j] != NULL)
       /* stored parameter is a previously malloc'd string, so free it */
-      free (_plotter->params[j]);
+      free (_plotter->data->params[j]);
 
 }
 

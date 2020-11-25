@@ -7,16 +7,16 @@
 
 int
 #ifdef _HAVE_PROTOS
-_g_ftranslate (R___(Plotter *_plotter) double x, double y)
+_API_ftranslate (R___(Plotter *_plotter) double x, double y)
 #else
-_g_ftranslate (R___(_plotter) x, y)
+_API_ftranslate (R___(_plotter) x, y)
      S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
   double m0, m1, m2, m3, m4, m5;
 
-  if (!_plotter->open)
+  if (!_plotter->data->open)
     {
       _plotter->error (R___(_plotter)
 		       "ftranslate: invalid operation");
@@ -27,16 +27,16 @@ _g_ftranslate (R___(_plotter) x, y)
   m1 = m2 = 0.0;
   m4 = x;
   m5 = y;
-  _plotter->fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
+  _API_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
   
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_g_frotate (R___(Plotter *_plotter) double theta)
+_API_frotate (R___(Plotter *_plotter) double theta)
 #else
-_g_frotate (R___(_plotter) theta)
+_API_frotate (R___(_plotter) theta)
      S___(Plotter *_plotter;)
      double theta;
 #endif
@@ -44,7 +44,7 @@ _g_frotate (R___(_plotter) theta)
   double m0, m1, m2, m3, m4, m5;
   double radians = M_PI * theta / 180.0;
   
-  if (!_plotter->open)
+  if (!_plotter->data->open)
     {
       _plotter->error (R___(_plotter)
 		       "frotate: invalid operation");
@@ -55,23 +55,23 @@ _g_frotate (R___(_plotter) theta)
   m1 = sin (radians);
   m2 = - sin (radians);
   m4 = m5 = 0.0;
-  _plotter->fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
+  _API_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
 
   return 0;
 }
 
 int
 #ifdef _HAVE_PROTOS
-_g_fscale (R___(Plotter *_plotter) double x, double y)
+_API_fscale (R___(Plotter *_plotter) double x, double y)
 #else
-_g_fscale (R___(_plotter) x, y)
+_API_fscale (R___(_plotter) x, y)
      S___(Plotter *_plotter;)
      double x, y;
 #endif
 {
   double m0, m1, m2, m3, m4, m5;
 
-  if (!_plotter->open)
+  if (!_plotter->data->open)
     {
       _plotter->error (R___(_plotter)
 		       "fscale: invalid operation");
@@ -81,7 +81,7 @@ _g_fscale (R___(_plotter) x, y)
   m0 = x;
   m3 = y;
   m1 = m2 = m4 = m5 = 0.0;
-  _plotter->fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
+  _API_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5);
 
   return 0;
 }

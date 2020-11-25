@@ -37,37 +37,37 @@ _a_set_attributes (S___(_plotter))
       && _plotter->drawstate->fill_type > 0
       && _plotter->ai_fill_rule_type != desired_fill_rule)
     {
-      sprintf (_plotter->page->point, "%d XR\n", desired_fill_rule);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "%d XR\n", desired_fill_rule);
+      _update_buffer (_plotter->data->page);
       _plotter->ai_fill_rule_type = desired_fill_rule;
     }
   
   if (_plotter->ai_cap_style != desired_ai_cap_style)
     {
-      sprintf (_plotter->page->point, "%d J\n", desired_ai_cap_style);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "%d J\n", desired_ai_cap_style);
+      _update_buffer (_plotter->data->page);
       _plotter->ai_cap_style = desired_ai_cap_style;
     }
   
   if (_plotter->ai_join_style != desired_ai_join_style)
     {
-      sprintf (_plotter->page->point, "%d j\n", desired_ai_join_style);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "%d j\n", desired_ai_join_style);
+      _update_buffer (_plotter->data->page);
       _plotter->ai_join_style = desired_ai_join_style;
     }
 
   if (_plotter->drawstate->join_type == JOIN_MITER
       && _plotter->ai_miter_limit != desired_ai_miter_limit)
     {
-      sprintf (_plotter->page->point, "%.4g M\n", desired_ai_miter_limit);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "%.4g M\n", desired_ai_miter_limit);
+      _update_buffer (_plotter->data->page);
       _plotter->ai_miter_limit = desired_ai_miter_limit;
     }
 
   if (_plotter->ai_line_width != desired_ai_line_width)
     {
-      sprintf (_plotter->page->point, "%.4f w\n", desired_ai_line_width);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "%.4f w\n", desired_ai_line_width);
+      _update_buffer (_plotter->data->page);
       _plotter->ai_line_width = desired_ai_line_width;
       changed_width = true;
     }
@@ -143,8 +143,9 @@ _a_set_attributes (S___(_plotter))
 	      dash_array = _line_styles[_plotter->drawstate->line_type].dash_array;
 	      /* scale the array of integers by line width (actually by
 		 floored line width; see comments at head of file) */
-	      display_size_in_points = DMIN(_plotter->xmax - _plotter->xmin, 
-					    _plotter->ymax - _plotter->ymin);
+	      display_size_in_points = 
+		DMIN(_plotter->data->xmax - _plotter->data->xmin, 
+		     _plotter->data->ymax - _plotter->data->ymin);
 	      min_dash_unit = (MIN_DASH_UNIT_AS_FRACTION_OF_DISPLAY_SIZE 
 			       * display_size_in_points);
 	      scale = DMAX(min_dash_unit,
@@ -157,18 +158,18 @@ _a_set_attributes (S___(_plotter))
 	}
 
       /* emit dash array */
-      sprintf (_plotter->page->point, "[");
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "[");
+      _update_buffer (_plotter->data->page);
       for (i = 0; i < num_dashes; i++)
 	{
 	  if (i == 0)
-	    sprintf (_plotter->page->point, "%.4f", dashbuf[i]);
+	    sprintf (_plotter->data->page->point, "%.4f", dashbuf[i]);
 	  else
-	    sprintf (_plotter->page->point, " %.4f", dashbuf[i]);	  
-	  _update_buffer (_plotter->page);      
+	    sprintf (_plotter->data->page->point, " %.4f", dashbuf[i]);	  
+	  _update_buffer (_plotter->data->page);      
 	}
-      sprintf (_plotter->page->point, "] %.4f d\n", offset);
-      _update_buffer (_plotter->page);
+      sprintf (_plotter->data->page->point, "] %.4f d\n", offset);
+      _update_buffer (_plotter->data->page);
 
       /* Update our knowledge of AI's line type (i.e. dashing style). 
 	 This new value will be one of L_SOLID etc., or the pseudo value

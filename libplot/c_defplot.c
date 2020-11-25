@@ -43,32 +43,26 @@ static void _build_sdr_from_ui8s ____P((plOutbuf *sdr_buffer, int cgm_encoding, 
    a CGMPlotter struct. */
 const Plotter _c_default_plotter = 
 {
-  /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _c_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _c_endpath, _g_endsubpath, _c_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _c_fbox, _g_fboxrel, _c_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _c_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _g_flinewidth, _g_flushpl, _c_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _c_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _c_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _c_initialize, _c_terminate,
+  /* page manipulation */
+  _c_begin_page, _c_erase_page, _c_end_page,
+  /* drawing state manipulation */
+  _g_push_state, _g_pop_state,
+  /* internal path-painting methods (endpath() is a wrapper for the first) */
+  _c_paint_path, _c_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  /* internal methods for drawing of markers and points */
+  _c_paint_marker, _c_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_falabel_hershey, _c_falabel_ps, _g_falabel_pcl, _g_falabel_stick, _g_falabel_other,
-  _g_flabelwidth_hershey, _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, _g_flabelwidth_other,
+  _g_paint_text_string_with_escapes, _c_paint_text_string,
+  _g_get_text_width,
   /* private low-level `retrieve font' method */
   _g_retrieve_font,
-  /* private low-level `sync font' method */
-  _g_set_font,
-  /* private low-level `sync line attributes' method */
-  _c_set_attributes,
-  /* private low-level `sync color' methods */
-  _c_set_pen_color,
-  _c_set_fill_color,
-  _c_set_bg_color,
-  /* private low-level `sync position' method */
-  _g_set_position,
+  /* `flush output' method, called only if Plotter handles its own output */
+  _g_flush_output,
   /* error handlers */
   _g_warning,
   _g_error,
-  /* low-level output routines */
-  _g_write_byte,
-  _g_write_bytes,
-  _g_write_string
 };
 #endif /* not LIBPLOTTER */
 
@@ -98,57 +92,65 @@ _c_initialize (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* tag field, differs in derived classes */
-  _plotter->type = PL_CGM;
+  _plotter->data->type = PL_CGM;
 #endif
 
+  /* output model */
+  _plotter->data->output_model = PL_OUTPUT_PAGES_ALL_AT_ONCE;
+
   /* user-queryable capabilities: 0/1/2 = no/yes/maybe */
-  _plotter->have_wide_lines = 1;
-  _plotter->have_dash_array = 0;
-  _plotter->have_solid_fill = 1;
-  _plotter->have_odd_winding_fill = 1;
-  _plotter->have_nonzero_winding_fill = 0;
-  _plotter->have_settable_bg = 1;
-  _plotter->have_hershey_fonts = 1;
-  _plotter->have_ps_fonts = 1;
-  _plotter->have_pcl_fonts = 0;
-  _plotter->have_stick_fonts = 0;
-  _plotter->have_extra_stick_fonts = 0;
+  _plotter->data->have_wide_lines = 1;
+  _plotter->data->have_dash_array = 0;
+  _plotter->data->have_solid_fill = 1;
+  _plotter->data->have_odd_winding_fill = 1;
+  _plotter->data->have_nonzero_winding_fill = 0;
+  _plotter->data->have_settable_bg = 1;
+  _plotter->data->have_escaped_string_support = 0;
+  _plotter->data->have_ps_fonts = 1;
+  _plotter->data->have_pcl_fonts = 0;
+  _plotter->data->have_stick_fonts = 0;
+  _plotter->data->have_extra_stick_fonts = 0;
+  _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user);
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->default_font_type = F_POSTSCRIPT;
-  _plotter->pcl_before_ps = false;
-  _plotter->have_horizontal_justification = true;
-  _plotter->have_vertical_justification = true;
-  _plotter->issue_font_warning = true;
+  _plotter->data->default_font_type = F_POSTSCRIPT;
+  _plotter->data->pcl_before_ps = false;
+  _plotter->data->have_horizontal_justification = true;
+  _plotter->data->have_vertical_justification = true;
+  _plotter->data->issue_font_warning = true;
 
-  /* path and polyline-related parameters (also internal); note that we
-     don't set max_unfilled_polyline_length, because it was set by the
+  /* path-related parameters (also internal); note that we
+     don't set max_unfilled_path_length, because it was set by the
      superclass initialization */
-  _plotter->have_mixed_paths = false;
-  _plotter->allowed_arc_scaling = AS_NONE;
-  _plotter->allowed_ellarc_scaling = AS_NONE;
-  _plotter->allowed_quad_scaling = AS_NONE;  
-  _plotter->allowed_cubic_scaling = AS_NONE;  
-  _plotter->flush_long_polylines = true;
-  _plotter->hard_polyline_length_limit = INT_MAX;
+  _plotter->data->have_mixed_paths = false;
+  _plotter->data->allowed_arc_scaling = AS_NONE;
+  _plotter->data->allowed_ellarc_scaling = AS_NONE;
+  _plotter->data->allowed_quad_scaling = AS_NONE;  
+  _plotter->data->allowed_cubic_scaling = AS_NONE;  
+  _plotter->data->allowed_box_scaling = AS_AXES_PRESERVED;
+  _plotter->data->allowed_circle_scaling = AS_UNIFORM;
+  _plotter->data->allowed_ellipse_scaling = AS_ANY;
 
   /* dimensions */
-  _plotter->display_model_type = (int)DISP_MODEL_VIRTUAL;
-  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI;
-  _plotter->flipped_y = false;
+  _plotter->data->display_model_type = (int)DISP_MODEL_VIRTUAL;
+  _plotter->data->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_NON_LIBXMI;
+  _plotter->data->flipped_y = false;
       /* we choose viewport coor range to be 1/4 of the integer range */
-  _plotter->imin = - ((1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1);
-  _plotter->imax = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1;
-  _plotter->jmin = - ((1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1);
-  _plotter->jmax = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1;
-  _plotter->xmin = 0.0;
-  _plotter->xmax = 0.0;  
-  _plotter->ymin = 0.0;
-  _plotter->ymax = 0.0;  
-  _plotter->page_data = (plPageData *)NULL;
+  _plotter->data->imin = - ((1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1);
+  _plotter->data->imax = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1;
+  _plotter->data->jmin = - ((1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1);
+  _plotter->data->jmax = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1;
+  _plotter->data->xmin = 0.0;
+  _plotter->data->xmax = 0.0;  
+  _plotter->data->ymin = 0.0;
+  _plotter->data->ymax = 0.0;  
+  _plotter->data->page_data = (plPageData *)NULL;
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
 
   /* initialize data members specific to this derived class */
   /* parameters */
@@ -178,7 +180,7 @@ _c_initialize (S___(_plotter))
   _plotter->cgm_text_color.red = -1;
   _plotter->cgm_text_color.green = -1;
   _plotter->cgm_text_color.blue = -1;
-  _plotter->cgm_bgcolor.red = -1;
+  _plotter->cgm_bgcolor.red = -1; /* set in c_begin_page() */
   _plotter->cgm_bgcolor.green = -1;
   _plotter->cgm_bgcolor.blue = -1;
   /* other dynamic variables */
@@ -219,14 +221,14 @@ _c_initialize (S___(_plotter))
 
   /* determine page type, and hence viewport size (returned xoffset and
      yoffset make no sense in a CGM context, so we'll ignore them) */
-  _set_page_type (R___(_plotter) &xoffset, &yoffset);
+  _set_page_type (_plotter->data, &xoffset, &yoffset);
   
   /* determine CGM encoding */
   {
     const char* cgm_encoding_type;
     
     cgm_encoding_type = 
-      (const char *)_get_plot_param (R___(_plotter) "CGM_ENCODING");
+      (const char *)_get_plot_param (_plotter->data, "CGM_ENCODING");
     if (cgm_encoding_type != NULL)
       {
 	if (strcmp (cgm_encoding_type, "binary") == 0)
@@ -247,7 +249,7 @@ _c_initialize (S___(_plotter))
     const char* cgm_max_version_type;
     
     cgm_max_version_type = 
-      (const char *)_get_plot_param (R___(_plotter) "CGM_MAX_VERSION");
+      (const char *)_get_plot_param (_plotter->data, "CGM_MAX_VERSION");
     if (cgm_max_version_type != NULL)
       {
 	if (strcmp (cgm_max_version_type, "1") == 0)
@@ -281,8 +283,8 @@ _c_initialize (S___(_plotter))
      single elliptic (and circular!) arcs was only added in version 2. */
   if (_plotter->cgm_max_version >= 2)
     {
-      _plotter->allowed_arc_scaling = AS_UNIFORM;
-      _plotter->allowed_ellarc_scaling = AS_ANY;
+      _plotter->data->allowed_arc_scaling = AS_UNIFORM;
+      _plotter->data->allowed_ellarc_scaling = AS_ANY;
     }
 
   /* Bezier cubics were added to the standard in version 3.  Closed mixed
@@ -291,26 +293,24 @@ _c_initialize (S___(_plotter))
      only added in version 3. */
   if (_plotter->cgm_max_version >= 3)
     {
-      _plotter->allowed_cubic_scaling = AS_ANY;
-      _plotter->have_mixed_paths = true;
+      _plotter->data->allowed_cubic_scaling = AS_ANY;
+      _plotter->data->have_mixed_paths = true;
     }
 
   /* Beginning in version 3 CGM's, user can define line types, by
      specifying a precise dashing style. */
   if (_plotter->cgm_max_version >= 3)
-    _plotter->have_dash_array = 1;
+    _plotter->data->have_dash_array = 1;
 }
 
 /* Lists of metafile elements that we use, indexed by the CGM version less
-   unity, i.e., by 0,1,2,3 for CGM versions 1,2,3,4.  (An obsolescent
-   encoding-dependent metafile element specifying the metafile elements to
-   be used must be written to the metafile.)  We use a standard shorthand:
-   element class -1, and element id 1, 2, etc., specifies certain sets of
-   metafile elements.  E.g., class=-1 and id=0, together with class=-1 and
-   id=1, specifies all the version-1 metafile elements; in the clear text
-   encoding this is written as "DRAWINGSET DRAWINGPLUS". */
+   unity, i.e., by 0,1,2,3 for CGM versions 1,2,3,4.  We use a standard
+   shorthand: element class -1, and element id 0, 1, 2, etc., specifies
+   certain sets of metafile elements.  E.g., class=-1 and id=1 specifies
+   all the version-1 metafile elements; in the clear text encoding this is
+   written as "DRAWINGPLUS". */
 
-#define MAX_CGM_ELEMENT_LIST_LENGTH 5
+#define MAX_CGM_ELEMENT_LIST_LENGTH 1
 typedef struct
 {
   const char *text_string;
@@ -323,17 +323,13 @@ plCGMElementList;
 static const plCGMElementList _metafile_element_list[4] =
 {
   /* version 1 */
-  { "DRAWINGSET DRAWINGPLUS",
-    2, {-1, -1, 0, 0, 0},   {0, 1, 0, 0, 0} },
+  { "DRAWINGPLUS", 1, {-1}, {1} },
   /* version 2 */
-  { "DRAWINGSET DRAWINGPLUS VERSION2",
-    3, {-1, -1, -1, 0, 0},  {0, 1, 2, 0, 0} },
+  { "VERSION2",    1, {-1}, {2} },
   /* version 3 */
-  { "DRAWINGSET DRAWINGPLUS VERSION2 VERSION3",
-    4, {-1, -1, -1, -1, 0}, {0, 1, 2, 5, 0} },
+  { "VERSION3",    1, {-1}, {5} },
   /* version 4 */
-  { "DRAWINGSET DRAWINGPLUS VERSION2 VERSION3 VERSION4",
-    5, {-1, -1, -1, -1, -1}, {0, 1, 2, 5, 6} },
+  { "VERSION4",    1, {-1}, {6} }
 };
 
 /* CGM character sets, for upper and lower halves of both ISO-Latin-1 and
@@ -353,14 +349,14 @@ plCGMCharset;
 
 static const plCGMCharset _iso_latin_1_cgm_charset[2] =
 {
-  { 0, "std94", "4/2" },	/* ISO 8859-1 LH */
-  { 1, "std96", "4/1" }		/* ISO 8859-1 RH */
+  { 0, "std94", "4/2" },	/* ISO 8859-1 LH, tail is "A" */
+  { 1, "std96", "4/1" }		/* ISO 8859-1 RH, tail is "B" */
 };
 
 static const plCGMCharset _symbol_cgm_charset[2] =
 {
-  { 0, "std94", "2/10 3/10" },	/* Symbol LH */
-  { 0, "std94", "2/6 3/10" }	/* Symbol RH */
+  { 0, "std94", "2/10 3/10" },	/* Symbol LH, tail is "*:" */
+  { 0, "std94", "2/6 3/10" }	/* Symbol RH, tail is "&:" */
 };
 
 /* The private `terminate' method, which is invoked when a Plotter is
@@ -394,13 +390,9 @@ _c_terminate (S___(_plotter))
   bool doc_uses_fonts;
   int max_cgm_font_id;
 
-  /* if specified plotter is open, close it */
-  if (_plotter->open)
-    _plotter->closepl (S___(_plotter));
-
   /* if no pages of graphics (i.e. Plotter was never opened), CGM file
      won't contain any pictures, and won't satisfy any standard profile */
-  if (_plotter->first_page == (plOutbuf *)NULL)
+  if (_plotter->data->first_page == (plOutbuf *)NULL)
     _plotter->cgm_profile = 
       IMAX(_plotter->cgm_profile, CGM_PROFILE_NONE);
 
@@ -413,20 +405,21 @@ _c_terminate (S___(_plotter))
 #endif
 
 #ifdef LIBPLOTTER
-  if (_plotter->outfp || _plotter->outstream)
+  if (_plotter->data->outfp || _plotter->data->outstream)
 #else
-  if (_plotter->outfp)
+  if (_plotter->data->outfp)
 #endif
     /* have an output stream, will emit CGM commands */
     {
       plOutbuf *doc_header, *doc_trailer;
       int byte_count, data_byte_count, data_len, string_length;
-      const char *string_param;
       
       doc_header = _new_outbuf ();
 
       /* emit "BEGIN METAFILE" command */
       {
+	const char *string_param;
+
 	string_param = "CGM plot";
 	string_length = strlen (string_param);
 	data_len = CGM_BINARY_BYTES_PER_STRING(string_length);
@@ -554,7 +547,7 @@ _c_terminate (S___(_plotter))
 		 "\"ProfileId:%s\" \"ProfileEd:%s\" \"ColourClass:%s\" \"Source:GNU libplot %s\" \"Date:%04d%02d%02d\"", 
 		 profile_string, profile_edition_string,
 		 _plotter->cgm_need_color ? "colour" : "monochrome",
-		 LIBPLOT_VERSION,
+		 PL_LIBPLOT_VER_STRING,
 		 1900 + local_time_struct_ptr->tm_year,
 		 1 + local_time_struct_ptr->tm_mon,
 		 local_time_struct_ptr->tm_mday);
@@ -768,7 +761,7 @@ _c_terminate (S___(_plotter))
 
       /* determine fonts needed by document, by examining all pages */
       {
-	current_page = _plotter->first_page;
+	current_page = _plotter->data->first_page;
 	
 	for (i = 0; i < NUM_PS_FONTS; i++)
 	  ps_font_used_in_doc[i] = false;
@@ -1138,7 +1131,7 @@ _c_terminate (S___(_plotter))
       }
       
       /* WRITE DOCUMENT HEADER */
-      _plotter->write_bytes (R___(_plotter) 
+      _write_bytes (_plotter->data, 
 			     (int)(doc_header->contents),
 			     (unsigned char *)doc_header->base);
       _delete_outbuf (doc_header);
@@ -1146,7 +1139,7 @@ _c_terminate (S___(_plotter))
       /* loop over plOutbufs in which successive pages of graphics are
 	 stored; emit each page as a CGM picture, and delete each plOutbuf
 	 as we finish with it */
-      current_page = _plotter->first_page;
+      current_page = _plotter->data->first_page;
       i = 1;
 
       while (current_page)
@@ -1161,6 +1154,7 @@ _c_terminate (S___(_plotter))
 	  /* emit "BEGIN PICTURE" command */
 	  {
 	    char picture[32];
+	    const char *string_param;
 	    
 	    sprintf (picture, "picture_%d", i);
 	    string_param = picture;
@@ -1196,16 +1190,16 @@ _c_terminate (S___(_plotter))
 	       the VDC integer precision to our desired value (we can't do
 	       that until the beginning of the picture) */
 	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
-			     _plotter->imin,
+			     _plotter->data->imin,
 			     data_len, &data_byte_count, &byte_count);
 	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
-			     _plotter->jmin,
+			     _plotter->data->jmin,
 			     data_len, &data_byte_count, &byte_count);
 	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
-			     _plotter->imax,
+			     _plotter->data->imax,
 			     data_len, &data_byte_count, &byte_count);
 	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
-			     _plotter->jmax,
+			     _plotter->data->jmax,
 			     data_len, &data_byte_count, &byte_count);
 	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
 					  &byte_count);
@@ -1216,7 +1210,7 @@ _c_terminate (S___(_plotter))
 	   per VDC unit; it must be a floating-point real.  */
 	  {
 	    /* viewport size in inches; depends on PAGESIZE parameter */
-	    double viewport_size = _plotter->page_data->viewport_size;
+	    double viewport_size = _plotter->data->page_data->viewport_size;
 	    double scaling_factor;
 
 	    data_len = 6;	/* 2 bytes per enum, 4 per floating-pt. real */
@@ -1234,7 +1228,7 @@ _c_terminate (S___(_plotter))
 	       nominal physical width and height of VDC space be the
 	       viewport size determined by the PAGESIZE parameter. */
 	    scaling_factor = 
-	      (25.4 * viewport_size) / (_plotter->imax - _plotter->imin);
+	      (25.4 * viewport_size) / (_plotter->data->imax - _plotter->data->imin);
 
 	    /* yes, this needs to be a floating-point real, not fixed-point! */
 	    _cgm_emit_real_floating_point (current_page_header, false, _plotter->cgm_encoding,
@@ -1312,31 +1306,33 @@ _c_terminate (S___(_plotter))
 					  &byte_count);
 	  }
       
-	  /* emit "BACKGROUND COLOR" command (note that in a CGM file,
-	     background color is always a direct color specified by color
-	     components, never an indexed color).  The background color for
-	     any page is stored in the `bg_color' element of its plOutbuf
-	     at the time the page is closed; see g_closepl.c.  */
-	  {
-	    data_len = 3 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
-	    byte_count = data_byte_count = 0;
-	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
-				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 7,
-				      data_len, &byte_count,
-				      "BACKCOLR");
-	    _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
-				       (unsigned int)current_page->bg_color.red,
-				       data_len, &data_byte_count, &byte_count);
-	    _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
-				       (unsigned int)current_page->bg_color.green,
-				       data_len, &data_byte_count, &byte_count);
-	    _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
-				       (unsigned int)current_page->bg_color.blue,
-				       data_len, &data_byte_count, &byte_count);
-	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
-					  &byte_count);
-	  }
-
+	  if (current_page->bg_color_suppressed == false)
+	    /* user didn't specify "none" as background color, so emit
+	       "BACKGROUND COLOR" command.  (Note that in a CGM file,
+	       background color is always a direct color specified by color
+	       components, never an indexed color.)  The background color
+	       for any page is stored in the `bg_color' element of its
+	       plOutbuf at the time the page is closed; see g_closepl.c.  */
+	    {
+	      data_len = 3 * CGM_BINARY_BYTES_PER_COLOR_COMPONENT;
+	      byte_count = data_byte_count = 0;
+	      _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
+					CGM_PICTURE_DESCRIPTOR_ELEMENT, 7,
+					data_len, &byte_count,
+					"BACKCOLR");
+	      _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
+					 (unsigned int)current_page->bg_color.red,
+					 data_len, &data_byte_count, &byte_count);
+	      _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
+					 (unsigned int)current_page->bg_color.green,
+					 data_len, &data_byte_count, &byte_count);
+	      _cgm_emit_color_component (current_page_header, false, _plotter->cgm_encoding,
+					 (unsigned int)current_page->bg_color.blue,
+					 data_len, &data_byte_count, &byte_count);
+	      _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+					    &byte_count);
+	    }
+	  
 	  /* if user defined any line types, emit a sequence of "LINE AND
              EDGE TYPE DEFINITION" commands */
 	  {
@@ -1449,13 +1445,13 @@ _c_terminate (S___(_plotter))
 	    }
       
 	  /* write the page header */
-	  _plotter->write_bytes (R___(_plotter) 
+	  _write_bytes (_plotter->data, 
 				 (int)(current_page_header->contents),
 				 (unsigned char *)current_page_header->base);
 	  _delete_outbuf (current_page_header);
 
 	  /* WRITE THE PICTURE */
-	  _plotter->write_bytes (R___(_plotter) 
+	  _write_bytes (_plotter->data, 
 				 (int)(current_page->contents),
 				 (unsigned char *)current_page->base);
 
@@ -1476,7 +1472,7 @@ _c_terminate (S___(_plotter))
 	  }
 
 	  /* write page trailer */
-	  _plotter->write_bytes (R___(_plotter) 
+	  _write_bytes (_plotter->data, 
 				 (int)(current_page_trailer->contents),
 				 (unsigned char *)current_page_trailer->base);
 	  _delete_outbuf (current_page_trailer);
@@ -1504,7 +1500,7 @@ _c_terminate (S___(_plotter))
       }
       
       /* WRITE DOCUMENT TRAILER */
-      _plotter->write_bytes (R___(_plotter) 
+      _write_bytes (_plotter->data, 
 			     (int)(doc_trailer->contents),
 			     (unsigned char *)doc_trailer->base);
       _delete_outbuf (doc_trailer);
@@ -1512,7 +1508,7 @@ _c_terminate (S___(_plotter))
     }
   
   /* delete all plOutbufs in which document pages are stored */
-  current_page = _plotter->first_page;
+  current_page = _plotter->data->first_page;
   while (current_page)
     {
       plOutbuf *next_page;
@@ -1535,7 +1531,7 @@ _c_terminate (S___(_plotter))
 	      linetype_ptr = linetype_ptr->next;
 	      free (old_linetype_ptr);
 	    }
-	  _plotter->page->extra = (voidptr_t)NULL;
+	  _plotter->data->page->extra = (voidptr_t)NULL;
 	}
 
       _delete_outbuf (current_page);
@@ -1543,21 +1539,21 @@ _c_terminate (S___(_plotter))
     }
   
   /* flush output stream if any */
-  if (_plotter->outfp)
+  if (_plotter->data->outfp)
     {
-      if (fflush(_plotter->outfp) < 0
+      if (fflush(_plotter->data->outfp) < 0
 #ifdef MSDOS
 	  /* data can be caught in DOS buffers, so do an fsync() too */
-	  || fsync (_plotter->outfp) < 0
+	  || fsync (_plotter->data->outfp) < 0
 #endif
 	  )
 	_plotter->error (R___(_plotter) "output stream jammed");
     }
 #ifdef LIBPLOTTER
-  else if (_plotter->outstream)
+  else if (_plotter->data->outstream)
     {
-      _plotter->outstream->flush ();
-      if (!(*(_plotter->outstream)))
+      _plotter->data->outstream->flush ();
+      if (!(*(_plotter->data->outstream)))
 	_plotter->error (R___(_plotter) "output stream jammed");
     }
 #endif
@@ -1715,6 +1711,10 @@ CGMPlotter::CGMPlotter (PlotterParams &parameters)
 
 CGMPlotter::~CGMPlotter ()
 {
+  /* if luser left the Plotter open, close it */
+  if (_plotter->data->open)
+    _API_closepl ();
+
   _c_terminate ();
 }
 #endif

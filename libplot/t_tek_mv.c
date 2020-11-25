@@ -29,11 +29,11 @@ _tek_move (R___(_plotter) xx, yy)
     {
     case MODE_POINT:
       /* ASCII FS, i.e. ^\ (enter POINT mode)*/
-      _plotter->write_byte (R___(_plotter) '\034'); 
+      _write_byte (_plotter->data, '\034'); 
       break;
     case MODE_PLOT:
       /* ASCII GS, i.e. ^] (enter PLOT mode) */
-      _plotter->write_byte (R___(_plotter) '\035'); 
+      _write_byte (_plotter->data, '\035'); 
       break;
     default:			/* shouldn't happen */
       return;

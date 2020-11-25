@@ -40,32 +40,26 @@
    a PSPlotter struct. */
 const Plotter _p_default_plotter = 
 {
-  /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _p_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _p_endpath, _g_endsubpath, _p_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _g_fbox, _g_fboxrel, _p_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _p_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _p_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _p_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _p_initialize, _p_terminate,
+  /* page manipulation */
+  _p_begin_page, _p_erase_page, _p_end_page,
+  /* drawing state manipulation */
+  _g_push_state, _g_pop_state,
+  /* internal path-painting methods (endpath() is a wrapper for the first) */
+  _p_paint_path, _p_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  /* internal methods for drawing of markers and points */
+  _g_paint_marker, _p_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_falabel_hershey, _p_falabel_ps, _p_falabel_pcl, _g_falabel_stick, _g_falabel_other,
-  _g_flabelwidth_hershey, _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, _g_flabelwidth_other,
+  _g_paint_text_string_with_escapes, _p_paint_text_string,
+  _g_get_text_width,
   /* private low-level `retrieve font' method */
   _g_retrieve_font,
-  /* private low-level `sync font' method */
-  _g_set_font,
-  /* private low-level `sync line attributes' method */
-  _g_set_attributes,
-  /* private low-level `sync color' methods */
-  _p_set_pen_color,
-  _p_set_fill_color,
-  _g_set_bg_color,
-  /* private low-level `sync position' method */
-  _g_set_position,
+  /* `flush output' method, called only if Plotter handles its own output */
+  _g_flush_output,
   /* error handlers */
   _g_warning,
   _g_error,
-  /* low-level output routines */
-  _g_write_byte,
-  _g_write_bytes,
-  _g_write_string
 };
 #endif /* not LIBPLOTTER */
 
@@ -100,65 +94,73 @@ _p_initialize (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* tag field, differs in derived classes */
-  _plotter->type = PL_PS;
+  _plotter->data->type = PL_PS;
 #endif
 
+  /* output model */
+  _plotter->data->output_model = PL_OUTPUT_PAGES_ALL_AT_ONCE;
+  
   /* user-queryable capabilities: 0/1/2 = no/yes/maybe */
-  _plotter->have_wide_lines = 1;
-  _plotter->have_dash_array = 1;
-  _plotter->have_solid_fill = 1;
-  _plotter->have_odd_winding_fill = 1;
-  _plotter->have_nonzero_winding_fill = 1;
-  _plotter->have_settable_bg = 0;
-  _plotter->have_hershey_fonts = 1;
-  _plotter->have_ps_fonts = 1;
+  _plotter->data->have_wide_lines = 1;
+  _plotter->data->have_dash_array = 1;
+  _plotter->data->have_solid_fill = 1;
+  _plotter->data->have_odd_winding_fill = 1;
+  _plotter->data->have_nonzero_winding_fill = 1;
+  _plotter->data->have_settable_bg = 0;
+  _plotter->data->have_escaped_string_support = 0;
+  _plotter->data->have_ps_fonts = 1;
 #ifdef USE_LJ_FONTS_IN_PS
-  _plotter->have_pcl_fonts = 1;
+  _plotter->data->have_pcl_fonts = 1;
 #else
-  _plotter->have_pcl_fonts = 0;
+  _plotter->data->have_pcl_fonts = 0;
 #endif
-  _plotter->have_stick_fonts = 0;
-  _plotter->have_extra_stick_fonts = 0;
+  _plotter->data->have_stick_fonts = 0;
+  _plotter->data->have_extra_stick_fonts = 0;
+  _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user);
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->default_font_type = F_POSTSCRIPT;
-  _plotter->pcl_before_ps = false;
-  _plotter->have_horizontal_justification = false;
-  _plotter->have_vertical_justification = false;
-  _plotter->issue_font_warning = true;
+  _plotter->data->default_font_type = F_POSTSCRIPT;
+  _plotter->data->pcl_before_ps = false;
+  _plotter->data->have_horizontal_justification = false;
+  _plotter->data->have_vertical_justification = false;
+  _plotter->data->issue_font_warning = true;
 
-  /* path and polyline-related parameters (also internal); note that we
-     don't set max_unfilled_polyline_length, because it was set by the
+  /* path-related parameters (also internal); note that we
+     don't set max_unfilled_path_length, because it was set by the
      superclass initialization */
-  _plotter->have_mixed_paths = false;
-  _plotter->allowed_arc_scaling = AS_NONE;
-  _plotter->allowed_ellarc_scaling = AS_NONE;  
-  _plotter->allowed_quad_scaling = AS_NONE;  
-  _plotter->allowed_cubic_scaling = AS_NONE;  
-  _plotter->flush_long_polylines = true;
-  _plotter->hard_polyline_length_limit = INT_MAX;
+  _plotter->data->have_mixed_paths = false;
+  _plotter->data->allowed_arc_scaling = AS_NONE;
+  _plotter->data->allowed_ellarc_scaling = AS_NONE;  
+  _plotter->data->allowed_quad_scaling = AS_NONE;  
+  _plotter->data->allowed_cubic_scaling = AS_NONE;  
+  _plotter->data->allowed_box_scaling = AS_ANY;
+  _plotter->data->allowed_circle_scaling = AS_ANY;
+  _plotter->data->allowed_ellipse_scaling = AS_ANY;
 
+  /* color-related parameters (also internal) */
+  _plotter->data->emulate_color = false;
+  
   /* dimensions */
-  _plotter->display_model_type = (int)DISP_MODEL_PHYSICAL;
-  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_REAL;
-  _plotter->flipped_y = false;
-  _plotter->imin = 0;
-  _plotter->imax = 0;  
-  _plotter->jmin = 0;
-  _plotter->jmax = 0;  
-  _plotter->xmin = 0.0;
-  _plotter->xmax = 0.0;  
-  _plotter->ymin = 0.0;
-  _plotter->ymax = 0.0;  
-  _plotter->page_data = (plPageData *)NULL;
+  _plotter->data->display_model_type = (int)DISP_MODEL_PHYSICAL;
+  _plotter->data->display_coors_type = (int)DISP_DEVICE_COORS_REAL;
+  _plotter->data->flipped_y = false;
+  _plotter->data->imin = 0;
+  _plotter->data->imax = 0;  
+  _plotter->data->jmin = 0;
+  _plotter->data->jmax = 0;  
+  _plotter->data->xmin = 0.0;
+  _plotter->data->xmax = 0.0;  
+  _plotter->data->ymin = 0.0;
+  _plotter->data->ymax = 0.0;  
+  _plotter->data->page_data = (plPageData *)NULL;
 
   /* initialize certain data members from device driver parameters */
       
   /* determine page type, and user-specified viewport offset if any */
-  _set_page_type (R___(_plotter) &xoffset, &yoffset);
+  _set_page_type (_plotter->data, &xoffset, &yoffset);
   
   /* Determine range of device coordinates over which the viewport will
      extend (and hence the transformation from user to device coordinates;
@@ -166,15 +168,18 @@ _p_initialize (S___(_plotter))
   {
     double xmid, ymid, viewport_size;
     
-    viewport_size = _plotter->page_data->viewport_size;
-    xmid = 0.5 * _plotter->page_data->xsize + xoffset;
-    ymid = 0.5 * _plotter->page_data->ysize + yoffset;
+    viewport_size = _plotter->data->page_data->viewport_size;
+    xmid = 0.5 * _plotter->data->page_data->xsize + xoffset;
+    ymid = 0.5 * _plotter->data->page_data->ysize + yoffset;
 
-    _plotter->xmin = 72 * (xmid - 0.5 * viewport_size);
-    _plotter->xmax = 72 * (xmid + 0.5 * viewport_size);    
-    _plotter->ymin = 72 * (ymid - 0.5 * viewport_size);
-    _plotter->ymax = 72 * (ymid + 0.5 * viewport_size);    
+    _plotter->data->xmin = 72 * (xmid - 0.5 * viewport_size);
+    _plotter->data->xmax = 72 * (xmid + 0.5 * viewport_size);    
+    _plotter->data->ymin = 72 * (ymid - 0.5 * viewport_size);
+    _plotter->data->ymax = 72 * (ymid + 0.5 * viewport_size);    
   }
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
 }
 
 /* The private `terminate' method, which is invoked when a Plotter is
@@ -217,18 +222,14 @@ _p_terminate (S___(_plotter))
 #endif
   char *time_string, time_string_buffer[32];
 
-  /* if specified plotter is open, close it */
-  if (_plotter->open)
-    _plotter->closepl (S___(_plotter));
-
 #ifdef LIBPLOTTER
-  if (_plotter->outfp || _plotter->outstream)
+  if (_plotter->data->outfp || _plotter->data->outstream)
 #else
-  if (_plotter->outfp)
+  if (_plotter->data->outfp)
 #endif
     /* have an output stream */
     {
-      int num_pages = _plotter->page_number;
+      int num_pages = _plotter->data->page_number;
 
       /* First, prepare the document header (DSC lines, etc.), and write it
          to a plOutbuf.  The header is very long: most of it is simply the
@@ -272,11 +273,11 @@ _p_terminate (S___(_plotter))
 %%%%Pages: %d\n\
 %%%%PageOrder: Ascend\n\
 %%%%Orientation: Portrait\n",
-	       LIBPLOT_VERSION, time_string, num_pages);
+	       PL_LIBPLOT_VER_STRING, time_string, num_pages);
       _update_buffer (doc_header);
       
       /* emit the bounding box for the document */
-      _bbox_of_outbufs (_plotter->first_page, &x_min, &x_max, &y_min, &y_max);
+      _bbox_of_outbufs (_plotter->data->first_page, &x_min, &x_max, &y_min, &y_max);
       if (x_min > x_max || y_min > y_max) 
 	/* all pages empty */
 	sprintf (doc_header->point, "\
@@ -290,7 +291,7 @@ _p_terminate (S___(_plotter))
       
       /* determine fonts needed by document, by examining all pages */
       {
-	current_page = _plotter->first_page;
+	current_page = _plotter->data->first_page;
 	
 	for (i = 0; i < NUM_PS_FONTS; i++)
 	  ps_font_used_in_doc[i] = false;
@@ -590,13 +591,13 @@ end\n\
       _update_buffer (doc_trailer);
 
       /* WRITE DOCUMENT HEADER (and free its plOutbuf) */
-      _plotter->write_string (R___(_plotter) doc_header->base); 
+      _write_string (_plotter->data, doc_header->base); 
       _delete_outbuf (doc_header);
 
       /* now loop through pages, emitting each in turn */
       if (num_pages > 0)
 	{
-	  for (current_page = _plotter->first_page, n=1; 
+	  for (current_page = _plotter->data->first_page, n=1; 
 	       current_page; 
 	       current_page = current_page->next, n++)
 	    {
@@ -714,10 +715,10 @@ showpage\n\n");
 	      /* Page trailer is now ready */
 
 	      /* WRITE PS CODE FOR THIS PAGE, including header, trailer */
-	      _plotter->write_string (R___(_plotter) page_header->base); 
+	      _write_string (_plotter->data, page_header->base); 
 	      if (current_page->len > 0)
-		_plotter->write_string (R___(_plotter) current_page->base);
-	      _plotter->write_string (R___(_plotter) page_trailer->base);
+		_write_string (_plotter->data, current_page->base);
+	      _write_string (_plotter->data, page_trailer->base);
 
 	      /* free header, trailer plOutbufs */
 	      _delete_outbuf (page_trailer);
@@ -726,12 +727,12 @@ showpage\n\n");
 	}
       
       /* WRITE DOCUMENT TRAILER (and free its plOutbuf) */
-      _plotter->write_string (R___(_plotter) doc_trailer->base); 
+      _write_string (_plotter->data, doc_trailer->base); 
       _delete_outbuf (doc_trailer);
     }
   
   /* delete all plOutbufs in which document pages are stored */
-  current_page = _plotter->first_page;
+  current_page = _plotter->data->first_page;
   while (current_page)
     {
       plOutbuf *next_page;
@@ -742,21 +743,21 @@ showpage\n\n");
     }
   
   /* flush output stream if any */
-  if (_plotter->outfp)
+  if (_plotter->data->outfp)
     {
-      if (fflush(_plotter->outfp) < 0
+      if (fflush(_plotter->data->outfp) < 0
 #ifdef MSDOS
 	  /* data can be caught in DOS buffers, so do an fsync() too */
-	  || fsync (_plotter->outfp) < 0
+	  || fsync (_plotter->data->outfp) < 0
 #endif
 	  )
 	_plotter->error (R___(_plotter) "output stream jammed");
     }
 #ifdef LIBPLOTTER
-  else if (_plotter->outstream)
+  else if (_plotter->data->outstream)
     {
-      _plotter->outstream->flush ();
-      if (!(*(_plotter->outstream)))
+      _plotter->data->outstream->flush ();
+      if (!(*(_plotter->data->outstream)))
 	_plotter->error (R___(_plotter) "output stream jammed");
     }
 #endif
@@ -829,6 +830,10 @@ PSPlotter::PSPlotter (PlotterParams &parameters)
 
 PSPlotter::~PSPlotter ()
 {
+  /* if luser left the Plotter open, close it */
+  if (_plotter->data->open)
+    _API_closepl ();
+
   _p_terminate ();
 }
 #endif

@@ -3,41 +3,53 @@
    System distribution.  Those files are copyright (c) 1985-1989 by the X
    Consortium.  For the original authors, and an X Consortium permission
    notice, see the accompanying file README-X.  GNU extensions by 
-   Robert S. Maier <rsm@math.arizona.edu> copyright (c) 1998-99 by the 
+   Robert S. Maier <rsm@math.arizona.edu> copyright (c) 1998-2000 by the
    Free Software Foundation.
 
-   The eight drawing functions in libxmi's core API are declared below.
-   For each of them, the first argument is a pointer to a miPaintedSet.
-   Conceptually, a miPaintedSet is a set of points with integer
-   coordinates, each of which is painted some color (a miPixel).  The
-   coordinates of the points are unconstrained, i.e., the core drawing
+   The eight painting functions in libxmi's core API, namely 
+
+     the 5 drawing functions:
+       miDrawPoints, miDrawLines, miDrawRectangles, miDrawArcs, miDrawArcs_r
+
+     the 3 filling functions:     
+       miFillPolygon, miFillRectangles, miFillArcs  
+
+   are declared below.  The first argument of each of these is a pointer to
+   a miPaintedSet.  Conceptually, a miPaintedSet is a set of points with
+   integer coordinates, each of which is painted some color (a miPixel).
+   The coordinates of the points are unconstrained, i.e., the core painting
    functions perform no clipping.
 
-   Each of the core drawing functions takes as second argument a pointer to
-   a graphics context: a miGC.  A miGC is an opaque type that contains
-   high-level drawing parameters, such as the line width and line style,
-   that determine which points will be added to the miPaintedSet.  It also
-   specifies the colors (miPixels) that will be used when painting the
-   points.  The core drawing functions use the Painter's Algorithm, so that
-   if a point in an miPaintedSet is painted a second time, the new color
-   will replace the old.
+   Each of the core painting functions takes as second argument a pointer
+   to a graphics context: a miGC.  A miGC is an opaque type that contains
+   high-level drawing parameters that determine which points will be added
+   to the miPaintedSet.  (For example, the line width, line style, and dash
+   pattern, all of which are relevant to the drawing functions, though not
+   to the filling functions.)  It also specifies the colors (miPixels) that
+   will be used when painting the points.  The core painting functions use
+   the Painter's Algorithm, so that if a point in an miPaintedSet is
+   painted a second time, the new color will replace the old.
 
-   (Any miGC contains an array of colors, of length n>=2.  Color #1 is the
-   default color for painting, and colors 0,2,3,..,n-1 are used only when
-   dashing.  In normal (on/off) dashing, the colors of the `on' dashes will
-   cycle through 1,2,..,n-1.  In so-called double dashing, the `off' dashes
-   will be drawn too, in color #0.)
+   (By default, the painting performed by the core painting functions,
+   i.e. by both the drawing functions and the filling functions, is
+   `solid', i.e., non-interpolated.  In `solid' painting, the color used is
+   taken from the pixel array in the miGC.  Any miGC contains an array of
+   pixel colors, of length n>=2.  Color #1 is the default color for
+   painting, and colors 0,2,3,..,n-1 are used only by the drawing
+   functions, when drawing in a dashed mode.  In normal (on/off) dashing,
+   the colors of the `on' dashes will cycle through 1,2,..,n-1.  In
+   so-called double dashing, the `off' dashes will be drawn too, in color #0.)
 
-   After a miPaintedSet is built up by invoking one or more core drawing
+   After a miPaintedSet is built up by invoking one or more core painting
    functions, the next stage of the graphics pipeline is performed by
    calling miCopyPaintedSetToCanvas().  This transfers the pixels in the
    miPaintedSet onto a canvas structure called a miCanvas, which contains a
-   fixed-size drawable.  More sophisticated algorithms than the Painter's
-   Algorithm may be specified.  Besides the drawable, a miCanvas may
-   contain additional members, such as a stipple bitmap, a texture pixmap,
-   and binary and ternary pixel-merging functions.  These will affect how
-   the pixels from the miPaintedSet are combined with the ones that already
-   exist on the drawable. */
+   bounded, fixed-size drawable.  In the transfer, more sophisticated
+   algorithms than the Painter's Algorithm may be used.  Besides the
+   drawable, a miCanvas may contain additional members, such as a stipple
+   bitmap, a texture pixmap, and binary and ternary pixel-merging
+   functions.  These will affect how the pixels from the miPaintedSet are
+   combined with the ones that already exist on the drawable. */
 
 /* This file is written for ANSI C compilers.  If you use it with a
    pre-ANSI C compiler that does not support the `const' keyword, such as
@@ -47,8 +59,19 @@
 #ifndef _XMI_H_
 #define _XMI_H_ 1
 
-/* This version of xmi.h is appropriate for GNU libxmi version 1.1. */
-#define LIBXMI_VERSION "1.1"
+/***********************************************************************/
+
+/* Version of GNU libxmi which this header file accompanies.  This
+   information is included beginning with version 1.2.
+
+   The MI_LIBXMI_VER_STRING macro is compiled into the library, as
+   `mi_libxmi_ver'.  The MI_LIBXMI_VER macro is not compiled into it.  Both
+   are available to applications that include this header file. */
+
+#define MI_LIBXMI_VER_STRING "1.2"
+#define MI_LIBXMI_VER         120
+
+extern const char mi_libxmi_ver[8]; /* need room for 99.99aa */
 
 /**********************************************************************/
 
@@ -160,8 +183,8 @@ extern miGC * miNewGC ___P((int npixels, ___const miPixel *pixels)); /* npixels 
 extern void miDeleteGC ___P((miGC *pGC));
 extern miGC * miCopyGC ___P((___const miGC *pGC));
 
-/* Values for an miGC's miGCFillRule attribute (default=MI_EVEN_ODD_RULE). */
-enum { MI_EVEN_ODD_RULE, MI_WINDING_RULE };
+/* Values for an miGC's miGCLineStyle attribute (default=MI_LINE_SOLID). */
+enum { MI_LINE_SOLID, MI_LINE_ON_OFF_DASH, MI_LINE_DOUBLE_DASH };
 
 /* Values for an miGC's miGCJoinStyle attribute (default=MI_JOIN_MITER). */
 enum { MI_JOIN_MITER, MI_JOIN_ROUND, MI_JOIN_BEVEL, MI_JOIN_TRIANGULAR };
@@ -172,8 +195,8 @@ enum { MI_JOIN_MITER, MI_JOIN_ROUND, MI_JOIN_BEVEL, MI_JOIN_TRIANGULAR };
    drawn.  A polyline drawn in this way is called `continuable'. */
 enum { MI_CAP_NOT_LAST, MI_CAP_BUTT, MI_CAP_ROUND, MI_CAP_PROJECTING, MI_CAP_TRIANGULAR };
 
-/* Values for an miGC's miGCLineStyle attribute (default=MI_LINE_SOLID). */
-enum { MI_LINE_SOLID, MI_LINE_ON_OFF_DASH, MI_LINE_DOUBLE_DASH };
+/* Values for an miGC's miGCFillRule attribute (default=MI_EVEN_ODD_RULE). */
+enum { MI_EVEN_ODD_RULE, MI_WINDING_RULE };
 
 /* Values for an miGC's miGCArcMode attribute (default=MI_ARC_PIE_SLICE). */
 enum { MI_ARC_CHORD, MI_ARC_PIE_SLICE };
@@ -195,6 +218,14 @@ extern void miSetGCAttribs ___P((miGC *pGC, int nattributes, ___const miGCAttrib
 extern void miSetGCDashes ___P((miGC *pGC, int ndashes, ___const unsigned int *dashes, int offset));
 extern void miSetGCMiterLimit ___P((miGC *pGC, double miter_limit));
 extern void miSetGCPixels ___P((miGC *pGC, int npixels, ___const miPixel *pixels)); /* npixels >=2 */
+
+/* Additional functions that set miGC attributes: in particular, functions
+   that set the paint style that will be used.  Only in the case of `solid'
+   painting (the default) is the above pixel array relevant. */
+extern void miSetGCPaintSolid ___P((void));
+extern void miSetGCPaintInterpParallel ___P((miPoint pts[2], miPixel pixels[2]));
+extern void miSetGCPaintInterpTriangular ___P((miPoint pts[3], miPixel pixels[3]));
+extern void miSetGCPaintInterpElliptical ___P((void));
 
 /*********** DECLARATIONS OF PUBLIC DRAWING FUNCTIONS ******************/
 

@@ -56,6 +56,7 @@ struct option long_options[] =
   /* Long options, most with no equivalent short option alias */
   { "bg-color",		ARG_REQUIRED,	NULL, 'q' << 8 },
   { "bitmap-size",	ARG_REQUIRED,	NULL, 'B' << 8 },
+  { "emulate-color",	ARG_REQUIRED,	NULL, 'e' << 8 },
   { "font-name",	ARG_REQUIRED,	NULL, 'F' },
   { "font-size",	ARG_REQUIRED,	NULL, 'f' },
   { "line-width",	ARG_REQUIRED,	NULL, 'W' },
@@ -373,9 +374,6 @@ main (int argc, char **argv)
 	    else if (local_font_size < 0.0)
 	      fprintf (stderr, "%s: ignoring negative font size\n",
 		       progname);
-	    else if (local_font_size == 0.0)
-	      fprintf (stderr, "%s: ignoring zero font size\n",
-		       progname);
 	    else
 	      font_size = local_font_size;
 	    break;
@@ -399,13 +397,20 @@ main (int argc, char **argv)
 	    if (local_line_width >= 1.0)
 	      fprintf (stderr, "%s: ignoring too-large line thickness\n",
 		       progname);
-	    else if (local_line_width < 0.0)
-	      fprintf (stderr, "%s: ignoring negative line thickness\n",
-		       progname);
+
+	    /* N.B. We don't rule out negative line thickness, because it's
+	       interpreted as a request to use libplot's default line
+	       thickness.  (Which depends on output format; for example,
+	       with the `-T X' option it'll yield a zero-thickness X11
+	       line, which means a Bresenham line.) */
+
 	    else
 	      line_width = local_line_width;
 	    break;
 	  }
+	case 'e' << 8:		/* Emulate color via grayscale */
+	  pl_setplparam (plotter_params, "EMULATE_COLOR", (voidptr_t)optarg);
+	  break;
 	case 'C' << 8:		/* set the initial pen color */
 	  pen_color_name = (char *)xmalloc (strlen (optarg) + 1);
 	  strcpy (pen_color_name, optarg);

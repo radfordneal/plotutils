@@ -15,32 +15,26 @@ static bool _parse_bitmap_size ____P((const char *bitmap_size_s, int *width, int
    a GIFPlotter struct. */
 const Plotter _i_default_plotter = 
 {
-  /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bezier2, _g_bezier2rel, _g_bezier3, _g_bezier3rel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _i_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _i_endpath, _g_endsubpath, _i_erase, _g_farc, _g_farcrel, _g_fbezier2, _g_fbezier2rel, _g_fbezier3, _g_fbezier3rel, _g_fbox, _g_fboxrel, _g_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _i_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_fillmod, _g_filltype, _g_flabelwidth, _g_fline, _g_flinedash, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmiterlimit, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _i_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linedash, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _i_openpl, _g_orientation, _g_outfile, _g_pencolor, _g_pencolorname, _g_pentype, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* initialization (after creation) and termination (before deletion) */
   _i_initialize, _i_terminate,
+  /* page manipulation */
+  _i_begin_page, _i_erase_page, _i_end_page,
+  /* drawing state manipulation */
+  _g_push_state, _g_pop_state,
+  /* internal path-painting methods (endpath() is a wrapper for the first) */
+  _i_paint_path, _i_paint_paths, _g_path_is_flushable, _g_maybe_prepaint_segments,
+  /* internal methods for drawing of markers and points */
+  _g_paint_marker, _i_paint_point,
   /* internal methods that plot strings in Hershey, non-Hershey fonts */
-  _g_falabel_hershey, _g_falabel_ps, _g_falabel_pcl, _g_falabel_stick, _g_falabel_other,
-  _g_flabelwidth_hershey, _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, _g_flabelwidth_other,
+  _g_paint_text_string_with_escapes, _g_paint_text_string,
+  _g_get_text_width,
   /* private low-level `retrieve font' method */
   _g_retrieve_font,
-  /* private low-level `sync font' method */
-  _g_set_font,
-  /* private low-level `sync line attributes' method */
-  _g_set_attributes,
-  /* private low-level `sync color' methods */
-  _i_set_pen_color,
-  _i_set_fill_color,
-  _i_set_bg_color,
-  /* private low-level `sync position' method */
-  _g_set_position,
+  /* `flush output' method, called only if Plotter handles its own output */
+  _g_flush_output,
   /* error handlers */
   _g_warning,
   _g_error,
-  /* low-level output routines */
-  _g_write_byte,
-  _g_write_bytes,
-  _g_write_string
 };
 #endif /* not LIBPLOTTER */
 
@@ -67,61 +61,66 @@ _i_initialize (S___(_plotter))
 
 #ifndef LIBPLOTTER
   /* tag field, differs in derived classes */
-  _plotter->type = PL_GIF;
+  _plotter->data->type = PL_GIF;
 #endif
 
+  /* output model */
+  _plotter->data->output_model = PL_OUTPUT_VIA_CUSTOM_ROUTINES;
+
   /* user-queryable capabilities: 0/1/2 = no/yes/maybe */
-  _plotter->have_wide_lines = 1;
-  _plotter->have_dash_array = 1;
-  _plotter->have_solid_fill = 1;
-  _plotter->have_odd_winding_fill = 1;
-  _plotter->have_nonzero_winding_fill = 1;
-  _plotter->have_settable_bg = 1;
-  _plotter->have_hershey_fonts = 1;
-  _plotter->have_ps_fonts = 0;
-  _plotter->have_pcl_fonts = 0;
-  _plotter->have_stick_fonts = 0;
-  _plotter->have_extra_stick_fonts = 0;
+  _plotter->data->have_wide_lines = 1;
+  _plotter->data->have_dash_array = 1;
+  _plotter->data->have_solid_fill = 1;
+  _plotter->data->have_odd_winding_fill = 1;
+  _plotter->data->have_nonzero_winding_fill = 1;
+  _plotter->data->have_settable_bg = 1;
+  _plotter->data->have_escaped_string_support = 0;
+  _plotter->data->have_ps_fonts = 0;
+  _plotter->data->have_pcl_fonts = 0;
+  _plotter->data->have_stick_fonts = 0;
+  _plotter->data->have_extra_stick_fonts = 0;
+  _plotter->data->have_other_fonts = 0;
 
   /* text and font-related parameters (internal, not queryable by user);
      note that we don't set kern_stick_fonts, because it was set by the
      superclass initialization (and it's irrelevant for this Plotter type,
      anyway) */
-  _plotter->default_font_type = F_HERSHEY;
-  _plotter->pcl_before_ps = false;
-  _plotter->have_horizontal_justification = false;
-  _plotter->have_vertical_justification = false;
-  _plotter->issue_font_warning = true;
+  _plotter->data->default_font_type = F_HERSHEY;
+  _plotter->data->pcl_before_ps = false;
+  _plotter->data->have_horizontal_justification = false;
+  _plotter->data->have_vertical_justification = false;
+  _plotter->data->issue_font_warning = true;
 
-  /* path and polyline-related parameters (also internal); note that we
-     don't set max_unfilled_polyline_length, because it was set by the
+  /* path-related parameters (also internal); note that we
+     don't set max_unfilled_path_length, because it was set by the
      superclass initialization */
-  _plotter->have_mixed_paths = false;
-  _plotter->allowed_arc_scaling = AS_NONE;
-  _plotter->allowed_ellarc_scaling = AS_NONE;  
-  _plotter->allowed_quad_scaling = AS_NONE;  
-  _plotter->allowed_cubic_scaling = AS_NONE;  
-  _plotter->flush_long_polylines = true;
-  _plotter->hard_polyline_length_limit = INT_MAX;
+  _plotter->data->have_mixed_paths = false;
+  _plotter->data->allowed_arc_scaling = AS_AXES_PRESERVED;
+  _plotter->data->allowed_ellarc_scaling = AS_AXES_PRESERVED;
+  _plotter->data->allowed_quad_scaling = AS_NONE;  
+  _plotter->data->allowed_cubic_scaling = AS_NONE;  
+  _plotter->data->allowed_box_scaling = AS_NONE;
+  _plotter->data->allowed_circle_scaling = AS_NONE;
+  _plotter->data->allowed_ellipse_scaling = AS_AXES_PRESERVED;
 
   /* dimensions */
-  _plotter->display_model_type = (int)DISP_MODEL_VIRTUAL;
-  _plotter->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_LIBXMI;
-  _plotter->flipped_y = true;
-  _plotter->imin = 0;
-  _plotter->imax = 569;  
-  _plotter->jmin = 569;
-  _plotter->jmax = 0;
-  _plotter->xmin = 0.0;
-  _plotter->xmax = 0.0;  
-  _plotter->ymin = 0.0;
-  _plotter->ymax = 0.0;  
-  _plotter->page_data = (plPageData *)NULL;
+  _plotter->data->display_model_type = (int)DISP_MODEL_VIRTUAL;
+  _plotter->data->display_coors_type = (int)DISP_DEVICE_COORS_INTEGER_LIBXMI;
+  _plotter->data->flipped_y = true;
+  _plotter->data->imin = 0;
+  _plotter->data->imax = 569;  
+  _plotter->data->jmin = 569;
+  _plotter->data->jmax = 0;
+  _plotter->data->xmin = 0.0;
+  _plotter->data->xmax = 0.0;  
+  _plotter->data->ymin = 0.0;
+  _plotter->data->ymax = 0.0;  
+  _plotter->data->page_data = (plPageData *)NULL;
 
   /* initialize data members specific to this derived class */
   /* parameters */
-  _plotter->i_xn = _plotter->imax + 1;
-  _plotter->i_yn = _plotter->jmin + 1;
+  _plotter->i_xn = _plotter->data->imax + 1;
+  _plotter->i_yn = _plotter->data->jmin + 1;
   _plotter->i_num_pixels = (_plotter->i_xn) * (_plotter->i_yn);
   _plotter->i_animation = true;	/* default, can be turned off */
   _plotter->i_iterations = 0;
@@ -152,11 +151,26 @@ _i_initialize (S___(_plotter))
 
   /* initialize certain data members from device driver parameters */
 
+  /* is there a user-specified transparent color? */
+  {
+    const char *transparent_name_s;
+    plColor color;
+
+    transparent_name_s = (const char *)_get_plot_param (_plotter->data, "TRANSPARENT_COLOR");
+    if (transparent_name_s 
+	&& _string_to_color (transparent_name_s, &color, _plotter->data->color_name_cache))
+      /* have 24-bit RGB */
+      {
+	_plotter->i_transparent = true;
+	_plotter->i_transparent_color = color;
+      }
+  }
+
   /* produce an interlaced GIF? */
   {
     const char *interlace_s;
 
-    interlace_s = (const char *)_get_plot_param ( R___(_plotter) "INTERLACE" );
+    interlace_s = (const char *)_get_plot_param (_plotter->data, "INTERLACE" );
     if (strcasecmp (interlace_s, "yes") == 0)
       _plotter->i_interlace = true;
   }
@@ -165,7 +179,7 @@ _i_initialize (S___(_plotter))
   {
     const char *animate_s;
 
-    animate_s = (const char *)_get_plot_param ( R___(_plotter) "GIF_ANIMATION" );
+    animate_s = (const char *)_get_plot_param (_plotter->data, "GIF_ANIMATION" );
     if (strcasecmp (animate_s, "no") == 0)
       _plotter->i_animation = false;
   }
@@ -175,7 +189,7 @@ _i_initialize (S___(_plotter))
     const char *iteration_s;
     int num_iterations;
 
-    iteration_s = (const char *)_get_plot_param ( R___(_plotter) "GIF_ITERATIONS" );
+    iteration_s = (const char *)_get_plot_param (_plotter->data, "GIF_ITERATIONS" );
     if (sscanf (iteration_s, "%d", &num_iterations) > 0 
 	&& num_iterations >= 0 && num_iterations <= 65535)
       _plotter->i_iterations = num_iterations;
@@ -186,7 +200,7 @@ _i_initialize (S___(_plotter))
     const char *delay_s;
     int delay;
 
-    delay_s = (const char *)_get_plot_param ( R___(_plotter) "GIF_DELAY" );
+    delay_s = (const char *)_get_plot_param (_plotter->data, "GIF_DELAY" );
     if (sscanf (delay_s, "%d", &delay) > 0 
 	&& delay >= 0 && delay <= 65535)
       _plotter->i_delay = delay;
@@ -199,20 +213,23 @@ _i_initialize (S___(_plotter))
     const char *bitmap_size_s;
     int width = 1, height = 1;
 	
-    bitmap_size_s = (const char *)_get_plot_param (R___(_plotter) "BITMAPSIZE");
+    bitmap_size_s = (const char *)_get_plot_param (_plotter->data, "BITMAPSIZE");
     if (bitmap_size_s && _parse_bitmap_size (bitmap_size_s, &width, &height)
 	/* insist on range of 1..65535 for GIF format */
 	&& width >= 1 && height >= 1
 	&& width <= 65535 && height <= 65535)
       /* override defaults above */
       {
-	_plotter->imax = width - 1;
-	_plotter->jmin = height - 1;
+	_plotter->data->imax = width - 1;
+	_plotter->data->jmin = height - 1;
 	_plotter->i_xn = width;
 	_plotter->i_yn = height;
 	_plotter->i_num_pixels = width * height;
       }
   }
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
 }
 
 static bool 
@@ -253,10 +270,6 @@ _i_terminate (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  /* if specified plotter is open, close it */
-  if (_plotter->open)
-    _plotter->closepl (S___(_plotter));
-
   /* free storage used by libxmi's reentrant miDrawArcs_r() function */
   miDeleteEllipseCache ((miEllipseCache *)_plotter->i_arc_cache_data);
 
@@ -328,6 +341,10 @@ GIFPlotter::GIFPlotter (PlotterParams &parameters)
 
 GIFPlotter::~GIFPlotter ()
 {
+  /* if luser left the Plotter open, close it */
+  if (_plotter->data->open)
+    _API_closepl ();
+
   _i_terminate ();
 }
 #endif
