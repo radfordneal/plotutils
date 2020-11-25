@@ -1011,7 +1011,7 @@ set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const
   multigrapher->x_trans.output_min = 0.0;
   multigrapher->x_trans.output_max = (double)PLOT_SIZE;
   multigrapher->x_trans.output_range = multigrapher->x_trans.output_max - multigrapher->x_trans.output_min;
-  multigrapher->x_trans.output_min = 0.0;
+  multigrapher->y_trans.output_min = 0.0;
   multigrapher->y_trans.output_max = (double)PLOT_SIZE;
   multigrapher->y_trans.output_range = multigrapher->y_trans.output_max - multigrapher->y_trans.output_min;
 
