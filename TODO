@@ -55,11 +55,6 @@ everywhere, e.g. in PS files.
 
 graph: fix positioning of top labels, especially at large sizes
 
-libplot: PS driver should output a Level 2 PS page size command, e.g.
-	<</PageSize [595 842]>> setpagedevice
-for A4 paper.
-
-
 Major Enhancements (Possible, Probable, or Certain)
 ---------------------------------------------------
 

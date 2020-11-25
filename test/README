@@ -1,10 +1,25 @@
 This directory contains the files needed for validation tests of several of
 the plot utilities.  The tests are run by doing `make check'.
 
+Validation tests on NeXT machines have been known to fail for more or less
+innocuous reasons (incorrect formatting of floating-point numbers).  If any
+of the tests should fail on any other system, please report it.
+
+HOW THE TESTS ARE DONE
+
 Each .test script generates an .out output file, which is compared with the
 corresponding .xout (`expected output') file.  If there are any significant
 differences, the test fails.
 
-Validation tests on NeXT machines have been known to fail for more or less
-innocuous reasons (incorrect formatting of floating-point numbers).  If any
-of the tests should fail on any other system, please report it.
+SPECIAL FEATURES
+
+As a workaround for line end problems when installing with DJGPP under DOS,
+all occurrences of ^M in the .out file are removed before doing the
+comparison, yielding a .dos file.  (This removal should have no effect on
+other platforms.)
+
+The plot2hpgl.test file compares against either plot2hpgl.xout or
+plot2hpgl.yout.  The latter is used if the `--enable-ps-fonts-in-pcl'
+option was passed to `configure'.  In that case a different comparison file
+is needed, because `--enable-ps-fonts-in-pcl' allows the output from `plot
+-Thpgl' to contain any of the 35 PS fonts, such as Times-Roman.

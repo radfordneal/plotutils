@@ -14,8 +14,8 @@ START-INFO-DIR-ENTRY
 * Appendices: (plotutils)Appendices.    More info on the plotting utilities
 END-INFO-DIR-ENTRY
 
-   This file documents version 2.1.4 of the GNU plotting utilities
-package, including GNU libplot 1.4
+   This file documents version 2.1.5 of the GNU plotting utilities
+package, including GNU libplot 1.5
 
    Copyright (C) 1989-1998 Free Software Foundation, Inc.
 
@@ -36,8 +36,8 @@ translation approved by the Foundation.
 
 File: plotutils.info,  Node: Top,  Next: Plotutils Intro,  Prev: (dir),  Up: (dir)
 
-   This is the documentation for version 2.1.4 of the GNU plotting
-utilities package, including GNU libplot 1.4.  The package consists of
+   This is the documentation for version 2.1.5 of the GNU plotting
+utilities package, including GNU libplot 1.5.  The package consists of
 programs and functions for data plotting and vector graphics.
 
 * Menu:
@@ -58,32 +58,58 @@ File: plotutils.info,  Node: Plotutils Intro,  Next: graph,  Prev: Top,  Up: Top
 The GNU Plotting Utilities
 **************************
 
-   The GNU plotting utilities currently consist of seven user-level
-programs: `graph', `plot', `tek2plot', `plotfont', `spline', `ode', and
-`double'.  Distributed along with them is GNU `libplot', a function
-library for device-independent two-dimensional vector graphics,
-including vector graphics animations under the X Window System.
+   The GNU plotting utilities consist of seven command-line programs:
+the graphics programs `graph', `plot', `tek2plot', and `plotfont', and
+the mathematical programs `spline', `ode', and `double'.  Distributed
+with these programs is GNU `libplot', the library on which the graphics
+programs are based. `libplot' is a function library for
+device-independent two-dimensional vector graphics, including vector
+graphics animations under the X Window System.
 
-   `graph' is a program for plotting two-dimensional scientific data.
-It reads one or more data files containing datasets, and outputs a plot.
-The plot can be directed to a display device or to a file.  Six
-different display types or output formats are supported.  The
-corresponding commands are `graph -T X', `graph -T ps', `graph -T fig',
-`graph -T hpgl', `graph -T tek', and `graph'.
+   The graphics programs and `libplot' can produce output in the
+following seven formats.
 
-   `graph -T X' pops up a window on an X Window System display, and
-draws the plot in it.  `graph -T ps' produces a plot in encapsulated
-Postscript format that may be included in another document, edited with
-the `idraw' drawing editor, or sent directly to a printer.  `graph -T
-fig' produces output that may be displayed and edited with the `xfig'
-drawing editor.  `graph -T hpgl' produces a Hewlett-Packard Graphics
-Language (HP-GL or HP-GL/2) plot that may be sent to a Hewlett-Packard
-LaserJet printer or plotter, or included in another document.  `graph
--T tek' produces output that may be displayed on a Tektronix 4014
-terminal or emulator.  `graph' without a `-T' option (referred to as
-`raw `graph'') produces output in a device-independent format,
-a so-called GNU graphics metafile.  This metafile may be translated
-into other formats.
+X
+     If this output option is selected, there is no output file.
+     Output is directed to a popped-up window on an X Window System
+     display.
+
+PS
+     This is `idraw'-editable Postscript format.  Files in this format
+     may be sent to a Postscript printer, imported into another
+     document, or edited with the free `idraw' drawing editor.  See
+     *Note idraw::.
+
+Fig
+     This is a graphics format that may be displayed or edited with the
+     free `xfig' drawing editor.  See *Note xfig::.
+
+PCL 5
+     This is a powerful version of Hewlett-Packard's Printer Control
+     Language.  Files in this format may be sent to a LaserJet printer
+     or DesignJet plotter.
+
+HP-GL
+     This is Hewlett-Packard's Graphics Language (HP-GL/2 is also
+     supported).  Files in this format may be imported into a document
+     or sent to a plotter.
+
+Tek
+     This is the graphics format understood by Tektronix 4014 terminals
+     and emulators, including the emulators built into the `xterm'
+     program and some versions of `kermit'.
+
+Metafile
+     This is device-independent GNU metafile format.  The `plot' program
+     can translate it to any of the preceding formats.
+
+   Of the graphics programs, the most powerful is `graph', which is an
+application for plotting two-dimensional scientific data.  It reads one
+or more data files containing datasets, and outputs a plot.  The above
+output formats are supported.  The corresponding commands are `graph
+-T X', `graph -T ps', `graph -T fig', `graph -T pcl', `graph -T hpgl',
+`graph -T tek', and `graph'.  `graph' without a `-T' option (referred
+to as `raw `graph'') produces output in GNU metafile format.
 
    `graph' can read datasets in both ASCII and binary format, and
 datasets in the `table' format produced by the plotting program
@@ -100,85 +126,74 @@ support for multiplotting.  With a single invocation of `graph', you
 may produce a plot consisting of many sub-plots, either side by side or
 inset.  Each sub-plot will have its own axes and data.
 
-   `graph -T X', `graph -T tek', and raw `graph' have a feature which
+   `graph -T X', `graph -T tek', and raw `graph' have a feature that
 most plotting programs do not have.  They can accept input from a pipe,
 and plot data points in real time.  For this to occur, the user must
 specify ranges for both axes, so that `graph' does not need to wait
 until the end of the input before determining them.
 
    The `plot' program is a so-called plot filter.  It can translate GNU
-graphics metafiles (produced for example by raw `graph') into the six
-supported output formats.  The corresponding commands are `plot -T X',
-`plot -T ps', `plot -T fig', `plot -T hpgl', `plot -T tek', and `plot'.
-The `plot' program is useful if you wish to produce output in several
-different formats while invoking `graph' only once.  It is also useful
-if you wish to translate files in the traditional `plot(5)' format
-produced by, e.g., the non-GNU versions of `graph' provided with some
-operating systems.  GNU metafile format is compatible with the
-traditional `plot(5)' format.
+graphics metafiles (produced for example by raw `graph') into any
+supported output format.  The corresponding commands are `plot -T X',
+`plot -T ps', `plot -T fig', `plot -T pcl', `plot -T hpgl', `plot -T
+tek', and `plot'.  The `plot' program is useful if you wish to produce
+output in several different formats while invoking `graph' only once.
+It is also useful if you wish to translate files in the traditional
+`plot(5)' format produced by, e.g., the non-GNU versions of `graph'
+provided with some operating systems.  GNU metafile format is
+compatible with plot(5) format.
 
    The `tek2plot' program can translate from Tektronix format to any of
 the abovementioned output formats.  The corresponding commands are
 `tek2plot -T X', `tek2plot -T ps', `tek2plot -T fig', `tek2plot -T
-hpgl', and `tek2plot'.  `tek2plot' is useful if you have a legacy
-application that produces drawings in Tektronix format.
+pcl', `tek2plot -T hpgl', and `tek2plot'.  `tek2plot' is useful if you
+have a legacy application that produces drawings in Tektronix format.
 
    The `plotfont' program is a simple utility that displays a character
 map for any font that is available to `graph', `plot', or `tek2plot'.
 If the `-T X', `-T ps', or `-T fig' options are used, the 35 standard
-Postscript fonts are available, and if the `-T hpgl' option is used,
-the 45 standard PCL 5 fonts are available.  A set of 22 Hershey vector
+Postscript fonts are available, and if the `-T pcl' or `-T hpgl'
+options are used, the 45 standard PCL 5 fonts are available, as are a
+number of Hewlett-Packard vector fonts.  A set of 22 Hershey vector
 fonts, including Cyrillic fonts and a Japanese font, is always
 available.  When producing output for an X Window System display, any
-of these programs can use scalable X fonts.
+of the graphics programs can use scalable X fonts.
 
-   Among the other GNU plotting utilities, `spline' does spline
-interpolation of scalar or vector-valued data.  It normally uses either
-cubic spline interpolation or exponential splines in tension, but like
-`graph' it can function as a real-time filter under some circumstances.
-Besides splining datasets, it can construct curves, either open or
-closed, through arbitrarily chosen points in d-dimensional space.
-`ode' provides the ability to integrate an ordinary differential
-equation or a system of ordinary differential equations, when provided
-with an explicit expression for each equation.  It supplements the
-plotting program `gnuplot', which can plot functions but not integrate
-ordinary differential equations.  The final plotting utility, `double',
-is a filter for converting, scaling and cutting binary or ASCII data
+   Of the mathematical programs, `spline' does spline interpolation of
+scalar or vector-valued data.  It normally uses either cubic spline
+interpolation or exponential splines in tension, but like `graph' it
+can function as a real-time filter under some circumstances.  Besides
+splining datasets, it can construct curves, either open or closed,
+through arbitrarily chosen points in d-dimensional space.  `ode'
+provides the ability to integrate an ordinary differential equation or
+a system of ordinary differential equations, when provided with an
+explicit expression for each equation.  It supplements the plotting
+program `gnuplot', which can plot functions but not integrate ordinary
+differential equations.  The final plotting utility, `double', is a
+filter for converting, scaling and cutting binary or ASCII data
 streams.  It is still under development and is not yet documented.
 
-   Distributed along with the plotting utilities is GNU `libplot', the
-function library for device-independent two-dimensional vector graphics
-on which `graph', `plot', `tek2plot', and `plotfont' are based.
-`libplot' can draw graphics on X Window System displays, and perform
-smooth, double-buffered animation.  It can also generate graphical
-output in any of five additional formats.  This includes (1) output in
-Postscript format that may be included in another document, edited with
-the `idraw' drawing editor, or sent directly to a printer, (2) output
-that may be displayed and edited with the `xfig' drawing editor,
-(3) output in HP-GL or HP-GL/2 format that may be sent to a
-Hewlett-Packard LaserJet printer or plotter, (4) output that may be
-displayed on a Tektronix 4014 terminal or emulator, and (5) output in
-the device-independent GNU graphics metafile format.
-
-   `libplot' can draw such objects as lines, open and closed polylines,
-arcs (both circular and elliptic), circles and ellipses, points, marker
-symbols, and text strings.  The filling of objects other than points,
-marker symbols, and text strings is supported (fill color, as well as
-pen color, can be set arbitrarily).  The support for drawing text
-strings is extensive.  The X Window System, Postscript, and `xfig'
-drivers support the 35 standard Postscript fonts, and the HP-GL/2
-driver supports the 45 standard PCL 5 fonts.  All drivers, including
-the Tektronix and metafile drivers, support a set of 22 Hershey vector
-fonts.  Text strings may include subscripts and superscripts, and may
-include characters chosen from more than one font in a typeface.  Many
+   The `libplot' function library is discussed at length elsewhere in
+this documentation.  It can draw such objects as lines, open and closed
+polylines, arcs (both circular and elliptic), circles and ellipses,
+points, marker symbols, and text strings.  The filling of objects other
+than points, marker symbols, and text strings is supported (fill color,
+as well as pen color, can be set arbitrarily).  The support for drawing
+text strings is extensive.  The X Window System, Postscript, and `xfig'
+drivers support the 35 standard Postscript fonts, and the PCL 5 and
+HP-GL/2 drivers support both the 45 standard PCL 5 fonts and a number
+of Hewlett-Packard vector fonts.  All drivers, including the Tektronix
+and metafile drivers, support a set of 22 Hershey vector fonts.  Text
+strings may include subscripts and superscripts, and may include
+characters chosen from more than one font in a typeface.  Many
 non-alphanumeric characters may be included.  The entire collection of
 over 1700 `Hershey glyphs' digitized by Allen V. Hershey at the U.S.
 Naval Surface Weapons Center, which includes many curious symbols, is
 built into `libplot'.  Japanese text strings in the so-called EUC
 (Extended Unix Code) format can be also be drawn.  Such strings may
 include both syllabic characters (Hiragana and Katakana) and
-ideographic characters (Kanji).  A library of over 600 Japanese Kanji
-digitized by Dr. Hershey is built into `libplot'.
+ideographic characters (Kanji).  A library of over 600 Kanji is built
+into `libplot'.
 
    The drawing editors `idraw' and `xfig' are not distributed along
 with the GNU plotting utilities.  However, they are free software, and
@@ -253,8 +268,9 @@ drawing editor, or
      graph -T hpgl < ascii_data_file > plot.plt
 
 to produce a file `plot.plt' in the Hewlett-Packard Graphics Language
-(HP-GL/2) that you may send to a Hewlett-Packard LaserJet printer or
-plotter.
+(HP-GL/2) that you may send to a Hewlett-Packard plotter.  Similarly,
+`graph -T pcl' will produce a file in PCL 5 format that you may print
+on a LaserJet or other laser printer.
 
    You may use `graph -T X' to pop up a window on an X Window System
 display, and display the plot in it.  For that, you would do
@@ -282,13 +298,14 @@ terminal is the MS-DOS version of `kermit'.
    `graph' may behave differently depending on the environment in which
 it is invoked.  We have already mentioned the `PAGESIZE' environment
 variable, which affects the operation of `graph -T ps', `graph -T fig',
-and `graph -T hpgl'.  The `DISPLAY' and `BITMAPSIZE' environment
-variables affect the operation of `graph -T X', and the `TERM'
-environment variable affects the operation of `graph -T tek'.  There
-are also several environment variables that affect the operation of
-`graph -T hpgl'.  For a complete discussion of the effects of the
-environment on `graph', see *Note graph Environment::.  The following
-remarks apply irrespective of which display type is specified.
+`graph -T pcl', and `graph -T hpgl'.  The `DISPLAY' and `BITMAPSIZE'
+environment variables affect the operation of `graph -T X', and the
+`TERM' environment variable affects the operation of `graph -T tek'.
+There are also several environment variables that affect the operation
+of `graph -T pcl' and `graph -T hpgl'.  For a complete discussion of the
+effects of the environment on `graph', see *Note graph Environment::.
+The following remarks apply irrespective of which display type is
+specified.
 
    By default, successive points in the dataset are joined by solid line
 segments, which form a polygonal line or polyline that we call simply a
@@ -441,15 +458,17 @@ the plotting box, i.e., the square within which the plot is drawn).
    The font in which the labels specified with the `-X', `-Y', and `-L'
 options are drawn can be specified with the `-F' option.  For example,
 `-F Times-Roman' will make the labels appear in Times-Roman instead of
-the default font (which is Helvetica, unless `-T hpgl' or `-T tek' is
-specified).  Font names are case-insensitive, so `-F times-roman' will
-work equally well.  The available fonts include 35 Postscript fonts
-(for all variants of `graph' other than `graph -T hpgl' and `graph -T
-tek'), 45 PCL 5 fonts (for `graph -T hpgl'), and 22 Hershey vector
-fonts.  The Hershey fonts include HersheyCyrillic, for Russian, and
-HersheyEUC, for Japanese.  For a discussion of the available fonts, see
-*Note Text Fonts::.  The `plotfont' utility will produce a character
-map of any available font.  *Note plotfont::.
+the default font (which is Helvetica, unless `-T pcl', `-T hpgl' or `-T
+tek' is specified).  Font names are case-insensitive, so `-F
+times-roman' will work equally well.  The available fonts include 35
+Postscript fonts (for all variants of `graph' other than `graph -T
+pcl', `graph -T hpgl' and `graph -T tek'), 45 PCL 5 fonts and a number
+of Hewlett-Packard vector fonts (for `graph -T pcl' and `graph -T
+hpgl'), and 22 Hershey vector fonts.  The Hershey fonts include
+HersheyCyrillic, for Russian, and HersheyEUC, for Japanese.  For a
+discussion of the available fonts, see *Note Text Fonts::.  The
+`plotfont' utility will produce a character map of any available font.
+*Note plotfont::.
 
    The format of the labels drawn with the `-X', `-Y', and `-L' options
 may be quite intricate.  Subscripts, superscripts, square roots, and
@@ -500,14 +519,14 @@ are high.)  For `graph -T ps', by default it is a square region
 centered on an 8.5in by 11in page (US letter size), occupying the full
 width of the page with allowance being made for margins.  For `graph -T
 fig', by default it is a square region of the same size, positioned in
-the upper left corner of an `xfig' display.  For `graph -T hpgl',
-by default it is a square region of the same size, with position and
-orientation on the page being controlled by environment variables.  The
-page size used by `graph -T ps', `graph -T fig', and `graph -T hpgl'
-can be set by using the `--page-size' option, or by setting the
-environment variable `PAGESIZE'.  For example, setting `PAGESIZE' to
-"a4" would position the graphics display appropriately on an A4-size
-page (21cm by 29.7cm).
+the upper left corner of an `xfig' display.  For `graph -T pcl' and
+`graph -T hpgl', by default it is a square region of the same size,
+with position and orientation on the page being controlled by
+environment variables.  The page size used by `graph -T ps', `graph -T
+fig', `graph -T pcl', and `graph -T hpgl' can be set by using the
+`--page-size' option, or by setting the environment variable
+`PAGESIZE'.  For example, setting `PAGESIZE' to "a4" would position the
+graphics display appropriately on an A4-size page (21cm by 29.7cm).
 
    Changing the width of the plotting box may have unforeseen
 consequences.  A number of command-line options specify sizes or
@@ -825,11 +844,12 @@ after each `--reposition X Y' option.
 `-T TYPE'
 `--display-type TYPE'
      (String, default "meta".)  Select a display type or output format
-     of TYPE, which may be one of the strings "X", "ps", "fig", "hpgl",
-     "tek", and "meta".  These refer respectively to the
+     of TYPE, which may be one of the strings "X", "ps", "fig", "pcl",
+     "hpgl", "tek", and "meta".  These refer respectively to the
      X Window System, `idraw'-editable Postscript, the format used by
-     the `xfig' drawing editor, the Hewlett-Packard Graphics Language,
-     Tektronix format, and device-independent GNU metafile format.
+     the `xfig' drawing editor, the Hewlett-Packard PCL 5 printer
+     language, the Hewlett-Packard Graphics Language, Tektronix format,
+     and device-independent GNU metafile format.
 
 `-f FONT_SIZE'
 `--font-size FONT_SIZE'
@@ -839,16 +859,17 @@ after each `--reposition X Y' option.
 
 `-F FONT_NAME'
 `--font-name FONT_NAME'
-     (String, default "Helvetica" except for `graph -T hpgl' and `graph
-     -T tek', for which "HersheySerif" is the default.)  Set the font
-     used for the axis and tick labels, and for the plot title
-     (if any), to be FONT_NAME.  The choice of font for the plot title
-     may be overridden with the `--title-font-name' option (see below).
-     Font names are case-insensitive.  If the specified font is not
-     available, the default font will be used.  Which fonts are
-     available depends on which `-T' option is used.  For a list of all
-     fonts, see *Note Text Fonts::.  The `plotfont' utility will
-     produce a character map of any available font.  *Note plotfont::.
+     (String, default "Helvetica" except for `graph -T pcl', `graph -T
+     hpgl' and `graph -T tek', for which "HersheySerif" is the
+     default.)  Set the font used for the axis and tick labels, and for
+     the plot title (if any), to be FONT_NAME.  The choice of font for
+     the plot title may be overridden with the `--title-font-name'
+     option (see below).  Font names are case-insensitive.  If the
+     specified font is not available, the default font will be used.
+     Which fonts are available depends on which `-T' option is used.
+     For a list of all fonts, see *Note Text Fonts::.  The `plotfont'
+     utility will produce a character map of any available font.  *Note
+     plotfont::.
 
 `-g GRID_STYLE'
 `--grid-style GRID_STYLE'
@@ -1070,20 +1091,21 @@ after each `--reposition X Y' option.
 `--page-size PAGESIZE'
      (String, default "letter".)  Set the size of the page on which the
      plot will be positioned.  This is relevant only to `graph -T ps',
-     `graph -T fig', and `graph -T hpgl'.  "letter" means an 8.5in by
-     11in page.  Any ISO page size in the range "a0"..."a4" or ANSI
-     page size in the range "a"..."e" may be specified ("letter" is an
-     alias for "a" and "tabloid" is an alias for "b").  "legal" and
-     "ledger" are recognized page sizes also.  The environment variable
-     `PAGESIZE' can equally well be used to specify the page size.
+     `graph -T fig', `graph -T pcl', and `graph -T hpgl'.  "letter"
+     means an 8.5in by 11in page.  Any ISO page size in the range
+     "a0"..."a4" or ANSI page size in the range "a"..."e" may be
+     specified ("letter" is an alias for "a" and "tabloid" is an alias
+     for "b").  "legal" and "ledger" are recognized page sizes also.
+     The environment variable `PAGESIZE' can equally well be used to
+     specify the page size.
 
      For `graph -T ps', the graphics display within which the plot is
      drawn will be a square region centered on the specified page and
-     occupying its full width.  For `graph -T fig', the graphics
-     display will be a square region located in the upper left corner
-     of an `xfig' display, with width equal to the width of the
-     specified page.  `graph -T hpgl', fine control over the
-     positioning of the graphics display on the page can be
+     occupying its full width.  For `graph -T fig', the graphics display
+     will be a square region located in the upper left corner of an
+     `xfig' display, with width equal to the width of the specified
+     page.  For `graph -T pcl' and `graph -T hpgl', fine control over
+     the positioning of the graphics display on the page can be
      accomplished by setting certain environment variables (*note graph
      Environment::.).
 
@@ -1095,18 +1117,18 @@ after each `--reposition X Y' option.
      on what names are recognized, see *Note Color Names::.
 
 `--title-font-name FONT_NAME'
-     (String, default "Helvetica" except for `graph -T hpgl' and `graph
-     -T tek', for which "HersheySerif" is the default.)  Set the font
-     used for the plot title (`top label') to be FONT_NAME.  Normally
-     the font used for the plot title is the same as that used for
-     labelling the axes and the ticks along the axes, as specified by
-     the `-F' option.  But the `--title-font-name' option can be used
-     to override this.  Font names are case-insensitive.  If the
-     specified font is not available, the default font will be used.
-     Which fonts are available depends on which `-T' option is used.
-     For a list of all fonts, see *Note Text Fonts::.  The `plotfont'
-     utility will produce a character map of any available font.  *Note
-     plotfont::.
+     (String, default "Helvetica" except for `graph -T pcl', `graph -T
+     hpgl' and `graph -T tek', for which "HersheySerif" is the
+     default.)  Set the font used for the plot title (`top label') to be
+     FONT_NAME.  Normally the font used for the plot title is the same
+     as that used for labelling the axes and the ticks along the axes,
+     as specified by the `-F' option.  But the `--title-font-name'
+     option can be used to override this.  Font names are
+     case-insensitive.  If the specified font is not available, the
+     default font will be used.  Which fonts are available depends on
+     which `-T' option is used.  For a list of all fonts, see *Note
+     Text Fonts::.  The `plotfont' utility will produce a character map
+     of any available font.  *Note plotfont::.
 
 `--title-font-size FONT_SIZE'
      (Float, default 0.07.)  Set the size of the font for the top label
@@ -1326,17 +1348,17 @@ color/monochrome) that each dataset has.
      being performed in color or monochrome; see the `-m' option above.
 
 `--symbol-font-name SYMBOL_FONT_NAME'
-     (String, default "ZapfDingbats" unless `-T hpgl' or `-T tek' is
-     specified, in which case it is "HersheySerif".)  Set the symbol
-     font, from which plotting symbols numbered 32 and higher are
+     (String, default "ZapfDingbats" unless `-T pcl', `-T hpgl' or `-T
+     tek' is specified, in which case it is "HersheySerif".)  Set the
+     symbol font, from which plotting symbols numbered 32 and higher are
      selected, to be SYMBOL_FONT_NAME.  Font names are
      case-insensitive.  If the specified font is not available, the
      default font will be used.  Which fonts are available depends on
-     which `-T' option is used.  For example, if the `-T hpgl' is used
-     then normally the Wingdings font, which is an alternative source
-     of symbols, becomes available.  For a list of all fonts, see *Note
-     Text Fonts::.  The `plotfont' utility will produce a character map
-     of any available font.  *Note plotfont::.
+     which `-T' option is used.  For example, if the `-T pcl' or `-T
+     hpgl' option is used then normally the Wingdings font, which is an
+     alternative source of symbols, becomes available.  For a list of
+     all fonts, see *Note Text Fonts::.  The `plotfont' utility will
+     produce a character map of any available font.  *Note plotfont::.
 
 
 File: plotutils.info,  Node: Multiplot Options,  Next: Raw graph Options,  Prev: Dataset Options,  Up: graph Invocation
@@ -1405,13 +1427,14 @@ Informational options
      Print a table of available fonts, and then exit.  The table will
      depend on which display type or output format is specified with
      the `-T' option.  `graph -T X', `graph -T ps', and `graph -T fig'
-     each support the 35 standard Postscript fonts.  `graph -T hpgl'
-     supports the 45 standard PCL 5 fonts.  All four, together with
-     `graph -T tek', support a set of 22 Hershey vector fonts.  Raw
-     `graph' in principle supports any of these 102 fonts, since its
-     output must be translated to other formats with `plot'.  The
-     `plotfont' utility will produce a character map of any available
-     font.  *Note plotfont::.
+     each support the 35 standard Postscript fonts.  `graph -T pcl' and
+     `graph -T hpgl' support the 45 standard PCL 5 fonts and a number
+     of Hewlett-Packard vector fonts.  All five, together with `graph
+     -Ttek', support a set of 22 Hershey vector fonts.  Raw `graph'
+     in principle supports any of these fonts, since its output must be
+     translated to other formats with `plot'.  The `plotfont' utility
+     will produce a character map of any available font.  *Note
+     plotfont::.
 
 `--list-fonts'
      Like `--help-fonts', but lists the fonts in a single column to
@@ -1441,6 +1464,26 @@ device driver parameters.
 and draws graphics in it, checks the `DISPLAY' environment variable.
 The value of this variable determines the display on which the window
 will be popped up.
+
+   `graph -T pcl', which produces PCL 5 output for Hewlett-Packard
+printers and plotters, is affected by several environment variables.
+The position of the graphics display on the page can be adjusted by
+setting the `PCL_XOFFSET' and `PCL_YOFFSET' environment variables,
+which may be specified in centimeters, millimeters, or inches.  For
+example, an offset could be specified as "2cm" or "1.2in".  Also, the
+display can be rotated 90 degrees counterclockwise on the page by
+setting the `PCL_ROTATE' environment variable to "yes".  Besides "no"
+and "yes", recognized values for this variable are "0", "90", "180",
+and "270".  "no" and "yes" are equivalent to "0" and "90", respectively.
+
+   The variable `PCL_ASSIGN_COLORS' is also recognized.  It should be
+set to "yes" when producing PCL 5 output for a color printer or other
+color device.  This will ensure accurate color reproduction by giving
+the output device complete freedom in assigning colors, internally, to
+its "logical pens".  If it is "no" then the device will use a fixed set
+of colored pens, and will emulate other colors by shading.  The default
+is "no" because monochrome PCL 5 devices, which are much more common
+than colored ones, must use shading to emulate color.
 
    `graph -T hpgl', which produces Hewlett-Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -1587,13 +1630,14 @@ editor, you would do
      xfig test.fig
 
    `plot' may behave differently depending on the environment in which
-it is invoked.  In particular, `plot -T ps', `plot -T fig', and `plot
--T hpgl' are affected by the environment variable `PAGESIZE'.  `plot
--T X' is affected by the environment variables `DISPLAY' and
-`BITMAPSIZE', and `plot -T tek' is affected by the environment variable
-`TERM'.  There are also several environment variables that affect the
-operation of `plot -T hpgl'.  For a complete discussion of the effects
-of the environment on `plot', see *Note plot Environment::.
+it is invoked.  In particular, `plot -T ps', `plot -T fig', `plot -T
+pcl', and `plot -T hpgl' are affected by the environment variable
+`PAGESIZE'.  `plot -T X' is affected by the environment variables
+`DISPLAY' and `BITMAPSIZE', and `plot -T tek' is affected by the
+environment variable `TERM'.  There are also several environment
+variables that affect the operation of `plot -T pcl' and `plot -T
+hpgl'.  For a complete discussion of the effects of the environment on
+`plot', see *Note plot Environment::.
 
 
 File: plotutils.info,  Node: plot Invocation,  Next: plot Environment,  Prev: plot Examples,  Up: plot
@@ -1633,11 +1677,12 @@ type and default value of the argument.
 `-T TYPE'
 `--display-type TYPE'
      (String, default "meta".)  Select a display type or output format
-     of TYPE, which may be one of the strings "X", "ps", "fig", "hpgl",
-     "tek", and "meta".  These refer respectively to the
+     of TYPE, which may be one of the strings "X", "ps", "fig", "pcl",
+     "hpgl", "tek", and "meta".  These refer respectively to the
      X Window System, `idraw'-editable Postscript, the format used by
-     the `xfig' drawing editor, the Hewlett-Packard Graphics Language,
-     Tektronix format, and device-independent GNU metafile format.
+     the `xfig' drawing editor, the Hewlett-Packard PCL 5 printer
+     language, the Hewlett-Packard Graphics Language, Tektronix format,
+     and device-independent GNU metafile format.
 
 `-p N'
 `--page-number N'
@@ -1689,21 +1734,23 @@ type and default value of the argument.
 `--page-size PAGESIZE'
      (String, default "letter".) Set the size of the page on which the
      plot will be positioned.  This is relevant only to `plot -T ps',
-     `plot -T fig', and `plot -T hpgl'.  "letter" means an 8.5in by
-     11in page.  Any ISO page size in the range "a0"..."a4" or ANSI
-     page size in the range "a"..."e" may be specified ("letter" is an
-     alias for "a" and "tabloid" is an alias for "b").  "legal" and
-     "ledger" are recognized page sizes also.  The environment variable
-     `PAGESIZE' can equally well be used to specify the page size.
+     `plot -T fig', `plot -T pcl', and `plot -T hpgl'.  "letter" means
+     an 8.5in by 11in page.  Any ISO page size in the range "a0"..."a4"
+     or ANSI page size in the range "a"..."e" may be specified
+     ("letter" is an alias for "a" and "tabloid" is an alias for "b").
+     "legal" and "ledger" are recognized page sizes also.  The
+     environment variable `PAGESIZE' can equally well be used to
+     specify the page size.
 
      For `plot -T ps', the graphics display within which the plot is
      drawn will be a square region centered on the specified page and
      occupying its full width.  For `plot -T fig', the graphics display
      will be a square region located in the upper left corner of an
      `xfig' display, with width equal to the width of the specified
-     page.  For `plot -T hpgl', fine control over the positioning of
-     the graphics display on the page may be accomplished by setting
-     certain environment variables (*note plot Environment::.).
+     page.  For `plot -T pcl' and `plot -T hpgl', fine control over the
+     positioning of the graphics display on the page may be accomplished
+     by setting certain environment variables (*note plot
+     Environment::.).
 
    The following options set the initial values of additional drawing
 parameters.  All of these may be overridden by directives in the
@@ -1727,13 +1774,13 @@ such directives.
 
 `-F FONT_NAME'
 `--font-name FONT_NAME'
-     (String, default "Helvetica" except for `plot -T hpgl' and `plot
-     -T tek', for which "HersheySerif" is the default.)  Set the font
-     initially used for text (i.e., for `labels') to FONT_NAME.  Font
-     names are case-insensitive.  If the specified font is not
-     available, the default font will be used.  Which fonts are
-     available depends on which `-T' option is used.  For a list of all
-     fonts, see *Note Text Fonts::.  The `plotfont' utility will
+     (String, default "Helvetica" except for `plot -T pcl', `plot -T
+     hpgl' and `plot -T tek', for which "HersheySerif" is the default.)
+     Set the font initially used for text (i.e., for `labels') to
+     FONT_NAME.  Font names are case-insensitive.  If the specified
+     font is not available, the default font will be used.  Which fonts
+     are available depends on which `-T' option is used.  For a list of
+     all fonts, see *Note Text Fonts::.  The `plotfont' utility will
      produce a character map of any available font.  *Note plotfont::.
 
 `-W LINE_WIDTH'
@@ -1775,14 +1822,14 @@ portable (human-readable).  The binary format is machine-dependent.
    For compatibility with older plotting software, the reading of input
 files in the pre-GNU `plot(5)' format is also supported.  This is
 normally a binary format, with each integer in the metafile represented
-as a pair of bytes.  The order of the two bytes is machine dependent.
-You may specify that input file(s) are in plot(5) format rather than
-ordinary GNU metafile format by using either the `-h' option ("high
-byte first") or the `-l' option ("low byte first"), whichever is
-appropriate.  Some non-GNU systems support an ASCII (human-readable)
-variant of plot(5) format.  You may specify that the input is in this
-format by using the `-A' option.  Irrespective of the variant, a file
-in plot(5) format includes only one page of graphics.
+as a pair of bytes.  You may specify that input file(s) are in plot(5)
+format rather than ordinary GNU metafile format by using the `-l'
+option ("low byte first") or the `-h' option ("high byte first").  The
+former variant of plot(5) format is far more common than the latter.
+Some non-GNU systems support an ASCII (human-readable) variant of
+plot(5) format.  You may specify that the input is in the ASCII variant
+of plot(5) format by using the `-A' option.  Irrespective of the
+variant, a file in plot(5) format includes only one page of graphics.
 
 `-h'
 `--high-byte-first-input'
@@ -1808,12 +1855,12 @@ in plot(5) format includes only one page of graphics.
      Print a table of available fonts, and then exit.  The table will
      depend on which display type or output format is specified with
      the `-T' option.  `plot -T X', `plot -T ps', and `plot -T fig'
-     each support the 35 standard Postscript fonts.  `plot -T hpgl'
-     supports the 45 standard PCL 5 fonts.  All four, together with
-     `plot -T hpgl' and `plot -T tek', support a set of 22 Hershey
-     vector fonts.  Raw `plot' in principle supports any of these 102
-     fonts, since its output may be translated to any other format by a
-     later invocation of `plot'.
+     each support the 35 standard Postscript fonts.  `plot -T pcl' and
+     `plot -T hpgl' support the 45 standard PCL 5 fonts and a number of
+     Hewlett-Packard vector fonts.  All five, together with `plot -T
+     tek', support a set of 22 Hershey vector fonts.  Raw `plot'
+     in principle supports any of these fonts, since its output may be
+     translated to any other format by a later invocation of `plot'.
 
 `--list-fonts'
      Like `--help-fonts', but lists the fonts in a single column to
@@ -1842,6 +1889,26 @@ to individual display types.  They control device driver parameters.
 and draws graphics in it, checks the `DISPLAY' environment variable.
 The value of this variable determines the display on which the window
 will be popped up.
+
+   `plot -T pcl', which produces PCL 5 output for Hewlett-Packard
+printers and plotters, is affected by several environment variables.
+The position of the graphics display on the page can be adjusted by
+setting the `PCL_XOFFSET' and `PCL_YOFFSET' environment variables,
+which may be specified in centimeters, millimeters, or inches.  For
+example, an offset could be specified as "2cm" or "1.2in".  Also, the
+display can be rotated 90 degrees counterclockwise on the page by
+setting the `PCL_ROTATE' environment variable to "yes".  Besides "no"
+and "yes", recognized values for this variable are "0", "90", "180",
+and "270".  "no" and "yes" are equivalent to "0" and "90", respectively.
+
+   The variable `PCL_ASSIGN_COLORS' is also recognized.  It should be
+set to "yes" when producing PCL 5 output for a color printer or other
+color device.  This will ensure accurate color reproduction by giving
+the output device complete freedom in assigning colors, internally, to
+its "logical pens".  If it is "no" then the device will use a fixed set
+of colored pens, and will emulate other colors by shading.  The default
+is "no" because monochrome PCL 5 devices, which are much more common
+than colored ones, must use shading to emulate color.
 
    `plot -T hpgl', which produces Hewlett-Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -1971,7 +2038,7 @@ File: plotutils.info,  Node: tek2plot Invocation,  Next: tek2plot Environment,  
    The `tek2plot' program translates the Tektronix graphics files
 produced by many legacy applications to other formats.  The output
 format or display type is specified with the `-T' option.  The possible
-output formats are the same six formats that are supported by the GNU
+output formats are the same seven formats that are supported by the GNU
 `graph' and `plot' programs.
 
    Input file names may be specified anywhere on the command line.  That
@@ -1997,11 +2064,12 @@ type and default value of the argument.
 `-T TYPE'
 `--display-type TYPE'
      (String, default "meta".)  Select a display type or output format
-     of TYPE, which may be one of the strings "X", "ps", "fig", "hpgl",
-     "tek", and "meta".  These refer respectively to the
+     of TYPE, which may be one of the strings "X", "ps", "fig", "pcl",
+     "hpgl", "tek", and "meta".  These refer respectively to the
      X Window System, `idraw'-editable Postscript, the format used by
-     the `xfig' drawing editor, the Hewlett-Packard Graphics Language,
-     Tektronix format, and device-independent GNU metafile format.
+     the `xfig' drawing editor, the Hewlett-Packard PCL 5 printer
+     language, the Hewlett-Packard Graphics Language, Tektronix format,
+     and device-independent GNU metafile format.
 
 `-p N'
 `--page-number N'
@@ -2024,13 +2092,13 @@ type and default value of the argument.
 
 `-F FONT_NAME'
 `--font-name FONT_NAME'
-     (String, default "Courier" except for `tek2plot -T hpgl', for which
-     "HersheySerif" is the default.)  Set the font used for text to
-     FONT_NAME.  Font names are case-insensitive.  If a font outside
-     the Courier family is chosen, the `--position-chars' option (see
-     below) should probably be used.  For a list of all fonts, see
-     *Note Text Fonts::.  If the specified font is not available, the
-     default font will be used.
+     (String, default "Courier" except for `tek2plot -T pcl' and
+     `tek2plot -T hpgl', for which "HersheySerif" is the default.)  Set
+     the font used for text to FONT_NAME.  Font names are
+     case-insensitive.  If a font outside the Courier family is chosen,
+     the `--position-chars' option (see below) should probably be used.
+     For a list of all fonts, see *Note Text Fonts::.  If the specified
+     font is not available, the default font will be used.
 
 `-W LINE_WIDTH'
 `--line-width LINE_WIDTH'
@@ -2087,23 +2155,23 @@ type and default value of the argument.
 `--page-size PAGESIZE'
      (String, default "letter".) Set the size of the page on which the
      plot will be positioned.  This is relevant only to `tek2plot -T
-     ps', `tek2plot -T fig', and `tek2plot -T hpgl'.  "letter" means an
-     8.5in by 11in page.  Any ISO page size in the range "a0"..."a4" or
-     ANSI page size in the range "a"..."e" may be specified ("letter"
-     is an alias for "a" and "tabloid" is an alias for "b").  "legal"
-     and "ledger" are recognized page sizes also.  The environment
-     variable `PAGESIZE' can equally well be used to specify the page
-     size.
+     ps', `tek2plot -T fig', `tek2plot -T pcl', and `tek2plot -T hpgl'.
+     "letter" means an 8.5in by 11in page.  Any ISO page size in the
+     range "a0"..."a4" or ANSI page size in the range "a"..."e" may be
+     specified ("letter" is an alias for "a" and "tabloid" is an alias
+     for "b").  "legal" and "ledger" are recognized page sizes also.
+     The environment variable `PAGESIZE' can equally well be used to
+     specify the page size.
 
      For `tek2plot -T ps', the graphics display within which the plot is
      drawn will be a square region centered on the specified page and
      occupying its full width.  For `tek2plot -T fig', the graphics
      display will be a square region located in the upper left corner
      of an `xfig' display, with width equal to the width of the
-     specified page.  For `tek2plot -T hpgl', fine control over the
-     positioning of the graphics display on the page can be
-     accomplished by setting certain environment variables (*note
-     tek2plot Environment::.).
+     specified page.  For `tek2plot -T pcl' and `tek2plot -T hpgl', fine
+     control over the positioning of the graphics display on the page
+     can be accomplished by setting certain environment variables
+     (*note tek2plot Environment::.).
 
 `--pen-color NAME'
      (String, default "black".)  Set the pen color to be NAME.  An
@@ -2157,10 +2225,11 @@ which may be translated to other formats by invoking `plot'.
      depend on which display type or output format is specified with
      the `-T' option.  `tek2plot -T X', `tek2plot -T ps', and `tek2plot
      -T fig' each support the 35 standard Postscript fonts.  `tek2plot
-     -T hpgl' supports the 45 standard PCL 5 fonts.  All four, together
-     with `tek2plot -T hpgl', support a set of 22 Hershey vector fonts.
-     Raw `tek2plot' in principle supports any of these 102 fonts,
-     since its output must be translated to other formats with `plot'.
+     -T pcl' and `tek2plot -T hpgl' support the 45 standard PCL 5 fonts
+     and a number of Hewlett-Packard vector fonts.  All five support a
+     set of 22 Hershey vector fonts.  Raw `tek2plot' in principle
+     supports any of these fonts, since its output must be translated
+     to other formats with `plot'.
 
 `--list-fonts'
      Like `--help-fonts', but lists the fonts in a single column to
@@ -2192,6 +2261,26 @@ to individual display devices.  They control device driver parameters.
 display and draws graphics in it, checks the `DISPLAY' environment
 variable.  The value of this variable determines the display on which
 the window will be popped up.
+
+   `tek2plot -T pcl', which produces PCL 5 output for Hewlett-Packard
+printers and plotters, is affected by several environment variables.
+The position of the graphics display on the page can be adjusted by
+setting the `PCL_XOFFSET' and `PCL_YOFFSET' environment variables,
+which may be specified in centimeters, millimeters, or inches.  For
+example, an offset could be specified as "2cm" or "1.2in".  Also, the
+display can be rotated 90 degrees counterclockwise on the page by
+setting the `PCL_ROTATE' environment variable to "yes".  Besides "no"
+and "yes", recognized values for this variable are "0", "90", "180",
+and "270".  "no" and "yes" are equivalent to "0" and "90", respectively.
+
+   The variable `PCL_ASSIGN_COLORS' is also recognized.  It should be
+set to "yes" when producing PCL 5 output for a color printer or other
+color device.  This will ensure accurate color reproduction by giving
+the output device complete freedom in assigning colors, internally, to
+its "logical pens".  If it is "no" then the device will use a fixed set
+of colored pens, and will emulate other colors by shading.  The default
+is "no" because monochrome PCL 5 devices, which are much more common
+than colored ones, must use shading to emulate color.
 
    `tek2plot -T hpgl', which produces Hewlett-Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -2295,20 +2384,21 @@ you will get a map that illustrates its arrangment, which is called
 KOI8-R.  The KOI8-R arrangement is the standard for Unix and networking
 applications in the former Soviet Union.  So-called dingbats fonts, such
 as "ZapfDingbats" and "Wingdings", also have an individualistic layout.
-The Wingdings font is available when producing output in HP-GL or
-HP-GL/2 format.  If you do
+In most installations of the plotting utilities, the Wingdings font is
+not available when producing Postscript output.  However, it is
+available when producing output in PCL 5 or HP-GL/2 format.  If you do
 
      plotfont -T hpgl Wingdings > map.plt
 
 you will get a Wingdings character map, in HP-GL/2 format, that may be
-imported into any application that understands HP-GL/2.  In most
-installations of the plotting utilities, the Wingdings font is not
-available when producing Postscript output.
+imported into any application that understands HP-GL/2.  Similarly,
+`plot -T pcl Wingdings' will produce a Wingdings character map in PCL 5
+format, which may be printed on a LaserJet or other PCL 5 device.
 
-   In all, 102 fonts that are built into the plotting utilities.  *Note
-Text Fonts::.  If you are using the plotting utilities to display
-output on an X display, you are not restricted to the built-in fonts.
-Doing
+   In all, more than a hundred fonts are built into the plotting
+utilities.  *Note Text Fonts::.  If you are using the plotting
+utilities to display output on an X display, you are not restricted to
+the built-in fonts.  Doing
 
      plotfont -T X --help-fonts
 
@@ -2402,18 +2492,21 @@ type and default value of the argument.
      standard, and further encodes each character by setting the high
      bit on each of the two bytes.
 
-     In HersheyEUC, Japanese syllabic characters (Hiragana and
-     Katakana) are located on pages 35 and 36.  Japanese ideograms
-     (Kanji) are located on pages 48 and above.
+     In HersheyEUC, Roman characters are located on page 35, and
+     Japanese syllabic characters (Hiragana and Katakana) are located
+     on pages 36 and 37.  Greek and Cyrillic characters are located on
+     pages 38 and 39.  Japanese ideograms (Kanji) are located on pages
+     48 and above.
 
 `-T TYPE'
 `--display-type TYPE'
      (String, default "meta".)  Select a display type or output format
-     of TYPE, which may be one of the strings "X", "ps", "fig", "hpgl",
-     "tek", and "meta".  These refer respectively to the
+     of TYPE, which may be one of the strings "X", "ps", "fig", "pcl",
+     "hpgl", "tek", and "meta".  These refer respectively to the
      X Window System, `idraw'-editable Postscript, the format used by
-     the `xfig' drawing editor, the Hewlett-Packard Graphics Language,
-     Tektronix format, and device-independent GNU metafile format.
+     the `xfig' drawing editor, the Hewlett-Packard PCL 5 printer
+     language, the Hewlett-Packard Graphics Language, Tektronix format,
+     and device-independent GNU metafile format.
 
      Files to be edited by `xfig' may contain only a single page of
      graphics.  So if the `-T fig' option is used, a character map will
@@ -2445,31 +2538,31 @@ type and default value of the argument.
      used instead.
 
 `--numbering-font-name FONT_NAME'
-     (String, default "Helvetica" except for `plotfont -T hpgl' and
-     `plotfont -T tek', for which "HersheySerif" is the default.)  Set
-     the font used for the numbering of the characters in the character
-     map(s) to be FONT_NAME.
+     (String, default "Helvetica" except for `plotfont -T pcl',
+     `plotfont -T hpgl' and `plotfont -T tek', for which "HersheySerif"
+     is the default.)  Set the font used for the numbering of the
+     characters in the character map(s) to be FONT_NAME.
 
 `--page-size PAGESIZE'
      (String, default "letter".) Set the size of the page for which the
      character map(s) will be produced.  This is relevant only to
-     `plotfont -T ps', `plotfont -T fig', and `plotfont -T hpgl'.
-     "letter" means an 8.5in by 11in page.  Any ISO page size in the
-     range "a0"..."a4" or ANSI page size in the range "a"..."e" may be
-     specified ("letter" is an alias for "a" and "tabloid" is an alias
-     for "b").  "legal" and "ledger" are recognized page sizes also.
-     The environment variable `PAGESIZE' can equally well be used to
-     specify the page size.
+     `plotfont -T ps', `plotfont -T fig', `plotfont -T pcl' and
+     `plotfont -T hpgl'.  "letter" means an 8.5in by 11in page.  Any
+     ISO page size in the range "a0"..."a4" or ANSI page size in the
+     range "a"..."e" may be specified ("letter" is an alias for "a" and
+     "tabloid" is an alias for "b").  "legal" and "ledger" are
+     recognized page sizes also.  The environment variable `PAGESIZE'
+     can equally well be used to specify the page size.
 
      For `plotfont -T ps', the graphics display within which each
      character map is drawn will be a square region centered on the
      page, and occupying its full width.  For `plotfont -T fig', the
      graphics display will be a square region located in the upper left
      corner of an `xfig' display, with width equal to the width of the
-     specified page.  For `plotfont -T hpgl', fine control over the
-     positioning of the graphics display on the page can be
-     accomplished by setting certain environment variables (*note
-     plotfont Environment::.).
+     specified page.  For `plotfont -T pcl', `plotfont -T hpgl', fine
+     control over the positioning of the graphics display on the page
+     can be accomplished by setting certain environment variables
+     (*note plotfont Environment::.).
 
 `--pen-color NAME'
      (String, default "black".)  Set the pen color to be NAME.  An
@@ -2504,10 +2597,11 @@ which may be translated to other formats by invoking `plot'.
      depend on which display type or output format is specified with
      the `-T' option.  `plotfont -T X', `plotfont -T ps', and `plotfont
      -T fig' each support the 35 standard Postscript fonts.  `plotfont
-     -T hpgl' supports the 45 standard PCL 5 fonts.  All four, together
-     with `plotfont -T hpgl', support a set of 22 Hershey vector fonts.
-     Raw `plotfont' in principle supports any of these 102 fonts,
-     since its output must be translated to other formats with `plot'.
+     -T pcl' and `plotfont -T hpgl' support the 45 standard PCL 5 fonts
+     and a number of Hewlett-Packard vector fonts.  All five, together
+     with `plotfont -T tek', support a set of 22 Hershey vector fonts.
+     Raw `plotfont' in principle supports any of these fonts, since its
+     output must be translated to other formats with `plot'.
 
 `--list-fonts'
      Like `--help-fonts', but lists the fonts in a single column to
@@ -2539,6 +2633,26 @@ control device driver parameters.
 display and draws a character map in it, checks the `DISPLAY'
 environment variable.  The value of this variable determines the
 display on which the window will be popped up.
+
+   `plotfont -T pcl', which produces PCL 5 output for Hewlett-Packard
+printers and plotters, is affected by several environment variables.
+The position of the graphics display on the page can be adjusted by
+setting the `PCL_XOFFSET' and `PCL_YOFFSET' environment variables,
+which may be specified in centimeters, millimeters, or inches.  For
+example, an offset could be specified as "2cm" or "1.2in".  Also, the
+display can be rotated 90 degrees counterclockwise on the page by
+setting the `PCL_ROTATE' environment variable to "yes".  Besides "no"
+and "yes", recognized values for this variable are "0", "90", "180",
+and "270".  "no" and "yes" are equivalent to "0" and "90", respectively.
+
+   The variable `PCL_ASSIGN_COLORS' is also recognized.  It should be
+set to "yes" when producing PCL 5 output for a color printer or other
+color device.  This will ensure accurate color reproduction by giving
+the output device complete freedom in assigning colors, internally, to
+its "logical pens".  If it is "no" then the device will use a fixed set
+of colored pens, and will emulate other colors by shading.  The default
+is "no" because monochrome PCL 5 devices, which are much more common
+than colored ones, must use shading to emulate color.
 
    `plotfont -T hpgl', which produces Hewlett-Packard Graphics Language
 output, is affected by several environment variables.  The most
@@ -3369,12 +3483,12 @@ ps' to obtain a plot in encapsulated Postscript format, by typing
      step 0, 2*PI
      .
 
-You should note that of the six variants of `graph', `graph -T ps',
-`graph -T fig', and `graph -T hpgl' do not produce output in real time,
-even when the axis bounds are specified with the `-x' and `-y' options.
-So if `graph -T ps', `graph -T fig', or `graph -T hpgl' is used, the
-plot will be produced only when input from `ode' is terminated, which
-will occur when you type `.'.
+You should note that of the seven variants of `graph', `graph -T ps',
+`graph -T fig', `graph -T pcl' and `graph -T hpgl' do not produce
+output in real time, even when the axis bounds are specified with the
+`-x' and `-y' options.  So if `graph -T ps', `graph -T fig', `graph -T
+pcl', or `graph -T hpgl' is used, the plot will be produced only when
+input from `ode' is terminated, which will occur when you type `.'.
 
    In the preceding examples, the derivatives of the dependent variables
 were specified by comparatively simple expressions.  They are allowed to
@@ -4351,7 +4465,7 @@ application.
    The drawing operations supported by Plotters of different types are
 identical, in agreement with the principle of device independence.
 So a graphics application that is linked with `libplot' may easily be
-written so as to produce output for any or all of the supported output
+written so as to produce output in any or all of the supported output
 formats.
 
    The following are the currently supported types of Plotter.
@@ -4383,11 +4497,17 @@ formats.
      will export drawings in various other formats for inclusion in
      documents.
 
+   * PCL Plotters.  A PCL Plotter produces output in PCL 5 format and
+     directs it to a file or other specified output stream.  PCL 5 is a
+     powerful version of Hewlett-Packard's Printer Control Language,
+     which supports vector graphics.  The output may be sent to a PCL 5
+     device such as a LaserJet printer, DesignJet plotter, or high-end
+     inkjet.
+
    * HP-GL Plotters.  An HP-GL Plotter produces output in the
      Hewlett-Packard Graphics Language (by default, in HP-GL/2), and
      directs it to a file or other specified output stream.  The output
-     may be sent to a Hewlett-Packard LaserJet printer or plotter, or
-     included in another document.
+     may be imported into another application, or sent to a plotter.
 
    * Tektronix Plotters.  A Tektronix Plotter produces output in
      Tektronix 4014 format and directs it to a file or other specified
@@ -4422,26 +4542,26 @@ and `closepl', which open and close it.  Graphics may be drawn, and
 drawing attributes set, only within an `openpl'...`closepl' pair.  The
 graphics produced within each `openpl'...`closepl' pair constitute a
 `page'.  In principle, any Plotter may be opened and closed arbitrarily
-many times.  An X Plotter displays each page in a separate X window,
-and an HP-GL Plotter renders each page as a separate physical page.
-X Drawable Plotters and Tektronix Plotters manipulate a single drawable
-or display, on which pages are displayed in succession.  Plotters that
-do not draw in real time (Postscript, Fig, and HP-GL Plotters) may wait
-until their existence comes to an end (i.e., until they are deleted)
-before outputting their pages of graphics.
+many times.  An X Plotter displays each page in a separate X window, and
+Postscript, PCL, and HP-GL Plotters render each page as a separate
+physical page.  X Drawable Plotters and Tektronix Plotters manipulate a
+single drawable or display, on which pages are displayed in succession.
+Plotters that do not draw in real time (Postscript, Fig, PCL, and
+HP-GL Plotters) may wait until their existence comes to an end (i.e.,
+until they are deleted) before outputting their pages of graphics.
 
    In the current release of `libplot', Postscript Plotters delay
-outputting graphics in this way, but HP-GL Plotters output each page of
-graphics individually, i.e., when `closepl' is invoked.  Fig Plotters
-are similar, but output at most one page of graphics.  That is because
-Fig format currently supports only a single page.  On account of this
-potential problem with Fig Plotters, all Plotters support an additional
-operation: `outfile'.  The output stream for a Plotter, if it has one,
-may be altered by invoking `outfile' on it.  `outfile' may only be
-invoked outside an `openpl'...`closepl' pair.  By using `outfile', a
-programmer may produce multipage graphics output from Fig Plotters by
-directing output to a sequence of output streams, one per page.  The use
-of `outfile' in other contexts is strongly deprecated.
+outputting graphics in this way, but PCL and HP-GL Plotters output each
+page of graphics individually, i.e., when `closepl' is invoked.  Fig
+Plotters are similar, but output at most one page of graphics.  That is
+because Fig format currently supports only a single page.  On account
+of this potential problem with Fig Plotters, all Plotters support an
+additional operation: `outfile'.  The output stream for a Plotter, if
+it has one, may be altered by invoking `outfile' on it.  `outfile' may
+only be invoked outside an `openpl'...`closepl' pair.  By using
+`outfile', a programmer may produce multipage graphics output from Fig
+Plotters by directing output to a sequence of output streams, one per
+page.  The use of `outfile' in other contexts is strongly deprecated.
 
    There are several other basic operations which any Plotter supports.
 The `graphics display' drawn in by a Plotter is a square or rectangular
@@ -4483,10 +4603,10 @@ frame to be drawn.  Displaying a sequence of frames in succession
 creates the illusion of smooth animation.
 
    On a Plotter that does not do real-time plotting (i.e., a
-Postscript, Fig or HP-GL Plotter), invoking `erase' deletes all plotted
-objects from an internal buffer.  For this reason, Plotters that do not
-do real-time plotting will display only the last frame of any
-multiframe page.
+Postscript, Fig, PCL or HP-GL Plotter), invoking `erase' deletes all
+plotted objects from an internal buffer.  For this reason, Plotters
+that do not do real-time plotting will display only the last frame of
+any multiframe page.
 
 
 File: plotutils.info,  Node: C Programming,  Next: Functions,  Prev: libplot Overview,  Up: libplot
@@ -4522,12 +4642,12 @@ this: `newpl', `selectpl', `deletepl', and the parameter-setting
 function `parampl'.
 
    The `newpl' function will create a Plotter of specified type.  Its
-first argument may be "X", "Xdrawable", "ps", "fig", "hpgl", "tek", or
-"meta".  It returns an integer (a "handle") that may be used to refer
-to the Plotter.  Before using a Plotter that you have created (i.e.,
-before invoking any of the `libplot' operations on it), you must select
-the Plotter for use by calling `selectpl'.  Only one Plotter may be
-selected at a time, but by calling `selectpl' you may switch from
+first argument may be "X", "Xdrawable", "ps", "fig", "pcl", "hpgl",
+"tek", or "meta".  It returns an integer (a "handle") that may be used
+to refer to the Plotter.  Before using a Plotter that you have created
+(i.e., before invoking any of the `libplot' operations on it), you must
+select the Plotter for use by calling `selectpl'.  Only one Plotter may
+be selected at a time, but by calling `selectpl' you may switch from
 Plotter to Plotter at any time, even when the selected Plotter is open.
 A Plotter that is not currently selected can be deleted, and its
 storage freed, by calling `deletepl'.
@@ -4550,16 +4670,16 @@ the C binding that are used for Plotter manipulation.
 
 int newpl (const char *TYPE, FILE *IN, FILE *OUT, FILE *ERR);
      newpl creates a Plotter of type TYPE, where TYPE may be "X",
-     "Xdrawable", "ps", "fig", "hpgl", "tek", or "meta".  The Plotter
-     will have input stream IN, output stream OUT, and error stream
-     ERR.  Currently, all Plotters are write-only and IN is ignored.
-     X Plotters and X Drawable Plotters write graphics to an X Window
-     System display rather than to an output stream, so if TYPE is "X"
-     or "Xdrawable" then OUT is ignored as well.  Error messages
-     (if any) are written to the stream ERR, unless ERR is NULL.  The
-     return value from newpl is a `handle': a nonnegative integer by
-     which the newly created Plotter is referred to.  A negative return
-     value indicates the Plotter could not be created.
+     "Xdrawable", "ps", "fig", "pcl", "hpgl", "tek", or "meta".  The
+     Plotter will have input stream IN, output stream OUT, and error
+     stream ERR.  Currently, all Plotters are write-only and IN is
+     ignored.  X Plotters and X Drawable Plotters write graphics to an
+     X Window System display rather than to an output stream, so if
+     TYPE is "X" or "Xdrawable" then OUT is ignored as well.  Error
+     messages (if any) are written to the stream ERR, unless ERR is
+     NULL.  The return value from newpl is a `handle': a nonnegative
+     integer by which the newly created Plotter is referred to.
+     A negative return value indicates the Plotter could not be created.
 
 int selectpl (int HANDLE);
      selectpl selects a Plotter, referred to by its handle, for use.  If
@@ -4739,12 +4859,12 @@ previous point.  After the "C" curve is drawn, the Plotter is closed.
 A Postscript file is written to standard output when `deletepl' is
 called to delete the Plotter.
 
-   Specifying "fig", "hpgl", "tek", or "meta" as the first argument in
-the call to `newpl', instead of "ps", would yield a Plotter that would
-write graphics to standard output in the specified format, instead of
-Postscript.  The `PAGESIZE' parameter is relevant to the first two of
-these output formats, but is ignored for the latter two.  Specifying
-"meta" as the Plotter type may be useful if you wish to avoid
+   Specifying "fig", "pcl", "hpgl", "tek", or "meta" as the first
+argument in the call to `newpl', instead of "ps", would yield a Plotter
+that would write graphics to standard output in the specified format,
+instead of Postscript.  The `PAGESIZE' parameter is relevant to the
+first three of these output formats, but is ignored for the latter two.
+Specifying "meta" as the Plotter type may be useful if you wish to avoid
 recompilation for different output devices.  Metafile output may be
 piped to the `plot' utility and converted to any other supported output
 format, or displayed in an X window.  *Note plot::.
@@ -5368,10 +5488,10 @@ int closepl ();
      A negative return value indicates the Plotter could not be closed.
 
      In general, Plotters that do not do real-time plotting (i.e.,
-     Postscript, Fig, and HP-GL Plotters) wait until they are deleted
-     before outputing their page(s) of graphics.  However, HP-GL
-     Plotters in the present release of `libplot' output pages of
-     graphics individually.
+     Postscript, Fig, PCL, and HP-GL Plotters) wait until they are
+     deleted before outputing their page(s) of graphics.  However, PCL
+     and HP-GL Plotters in the present release of `libplot' output
+     pages of graphics individually.
 
 FILE *outfile (FILE *FP);
      outfile, which must be called outside a openpl...closepl pair,
@@ -5895,20 +6015,21 @@ Plotter.
 `PAGESIZE'
      (Default "letter".)  The size of the page on which the graphics
      display will be positioned.  This is relevant only to Postscript,
-     Fig, and HP-GL Plotters.  "letter" means an 8.5in by 11in page.
-     Any ISO page size in the range "a0"..."a4" or ANSI page size in
-     the range "a"..."e" may be specified ("letter" is an alias for "a"
-     and "tabloid" is an alias for "b").  "legal" and "ledger" are
-     recognized page sizes also.
+     Fig, PCL, and HP-GL Plotters.  "letter" means an 8.5in by 11in
+     page.  Any ISO page size in the range "a0"..."a4" or ANSI page
+     size in the range "a"..."e" may be specified ("letter" is an alias
+     for "a" and "tabloid" is an alias for "b").  "legal" and "ledger"
+     are recognized page sizes also.
 
      For Postscript Plotters, the graphics display will be a square
      region centered on the specified page and occupying its full
      width.  For Fig Plotters, the graphics display will be a square
      region located in the upper left corner of an `xfig' display, with
-     width equal to the width of the specified page.  For HP-GL
-     Plotters, fine control over the positioning of the graphics
-     display on the page may be accomplished by setting the
-     `HPGL_XOFFSET' and `HPGL_YOFFSET' parameters.
+     width equal to the width of the specified page.  For PCL Plotters,
+     fine control over the positioning of the graphics display on the
+     page may be accomplished by setting the `PCL_XOFFSET' and
+     `PCL_YOFFSET' parameters.  For HP-GL Plotters, `HPGL_XOFFSET' and
+     `HPGL_YOFFSET' are used similarly.
 
 `BG_COLOR'
      (Default "white".)  The initial background color of the graphics
@@ -5962,11 +6083,10 @@ Plotter.
      "0", "90", "180", and "270"; "no" and "yes" are equivalent to
      "0" and "90" respectively.  This parameter is provided to
      facilitate switching between portrait and landscape orientations.
-     For HP-GL output devices this is frequently a concern, since some
-     HP-GL devices ("plotters") draw with a default landscape
-     orientation, and others ("printers") draw with a default portrait
-     orientation.  "180" and "270" are supported only if `HPGL_VERSION'
-     is "2".
+     For HP-GL devices this is frequently a concern, since some HP-GL
+     devices ("plotters") draw with a default landscape orientation,
+     and others ("printers") draw with a default portrait orientation.
+     "180" and "270" are supported only if `HPGL_VERSION' is "2".
 
 `HPGL_VERSION'
      (Default "2".)  Relevant only to HP-GL Plotters.  "1" means that
@@ -5980,17 +6100,12 @@ Plotter.
      the filling of arbitrary paths will not be supported (circles and
      rectangles aligned with the coordinate axes may be filled).
 
-`HPGL_XOFFSET'
-     (Default "0.0cm".)  Relevant only to HP-GL Plotters.  An
-     adjustment, in the x direction, of the position of the graphics
-     display on the page.  It may be specified in centimeters,
-     millimeters, or inches.  For example, an offset could be specified
-     as "2cm" or "1.2in".
-
-`HPGL_YOFFSET'
-     (Default "0.0cm".)  Relevant only to HP-GL Plotters.  An
-     adjustment, in the y direction, of the position of the graphics
-     display on the page.
+`HPGL_XOFFSET, HPGL_YOFFSET'
+     (Defaults "0.0cm" and "0.0cm".)  Relevant only to HP-GL Plotters.
+     Adjustments, in the x and y directions, of the position of the
+     graphics display on the page.  They may be specified in
+     centimeters, millimeters, or inches.  For example, an offset could
+     be specified as "2cm" or "1.2in".
 
 `MAX_LINE_LENGTH'
      (Default "500".)  The maximum number of points that a path may
@@ -5999,18 +6114,44 @@ Plotter.
      sub-paths, though the splitting should not be noticeable.
      Splitting will not be performed if the path is filled.
 
-     This parameter is relevant to X, X Drawable, Postscript, Fig, and
-     HP-GL Plotters.  The reason for splitting long paths is that some
-     display devices (e.g., old Postscript printers and HP-GL plotters)
-     have limited buffer sizes.  It is not relevant to Tektronix or
-     Metafile Plotters, since they draw paths in real time and have no
-     buffer limitations.
+     This parameter is relevant to X, X Drawable, Postscript, Fig, PCL,
+     and HP-GL Plotters.  The reason for splitting long paths is that
+     some display devices (e.g., old Postscript printers and HP-GL
+     plotters) have limited buffer sizes.  It is not relevant to
+     Tektronix or Metafile Plotters, since they draw paths in real time
+     and have no buffer limitations.
 
 `META_PORTABLE'
      (Default "no".)  Relevant only to Metafile Plotters.  "yes" means
      that the output should be in a portable (human-readable) version
      of the metafile format, rather than the default (binary) version.
      *Note Metafiles::.
+
+`PCL_ASSIGN_COLORS'
+     (Default "no".)  Relevant only to PCL Plotters.  "no" means to draw
+     with a fixed set of pens.  "yes" means that pen colors will not
+     restricted to this palette: colors will be assigned to "logical
+     pens", as needed.  Other than color LaserJet printers and DesignJet
+     plotters, not many PCL 5 devices allow the assignment of colors to
+     logical pens.  So this parameter should be used with caution.
+
+`PCL_ROTATE'
+     (Default "0".)  Relevant only to PCL Plotters.  The angle, in
+     degrees, by which the graphics display should be rotated on the
+     page relative to the default orientation.  Recognized values are
+     "0", "90", "180", and "270"; "no" and "yes" are equivalent to
+     "0" and "90" respectively.  This parameter is provided to
+     facilitate switching between portrait and landscape orientations.
+     For PCL 5 devices this is frequently a concern, since some PCL 5
+     devices ("plotters") draw with a default landscape orientation,
+     and others ("printers") draw with a default portrait orientation.
+
+`PCL_XOFFSET, PCL_YOFFSET'
+     (Defaults "0.0cm" and "0.0cm".)  Relevant only to PCL Plotters.
+     Adjustments, in the x and y directions, of the position of the
+     graphics display on the page.  They may be specified in
+     centimeters, millimeters, or inches.  For example, an offset could
+     be specified as "2cm" or "1.2in".
 
 `TERM'
      (Default NULL.)  Relevant only to Tektronix Plotters.  If the
@@ -6116,43 +6257,54 @@ sections explain how to use these features.
 * Menu:
 
 * Text Fonts::          Available text fonts
+* Cyrillic and Japanese::  The Cyrillic and Japanese fonts
 * Text Fonts in X::     Available text fonts in the X Window System
 * Text String Format::  Text string formatting (with escape sequences)
 * Marker Symbols::      Available marker symbols
 
 
-File: plotutils.info,  Node: Text Fonts,  Next: Text Fonts in X,  Prev: Text and Markers,  Up: Text and Markers
+File: plotutils.info,  Node: Text Fonts,  Next: Cyrillic and Japanese,  Prev: Text and Markers,  Up: Text and Markers
 
 Available text fonts
 ====================
 
    The `libplot' library and applications built on it, such as `graph'
 and `plot', can use many fonts.  These include 22 Hershey vector fonts,
-35 Postscript fonts, and 45 PCL 5 fonts.  We call these 102 fonts the
-`built-in' fonts.  The Hershey fonts are constructed from stroked
-characters digitized c. 1967 by Dr.  Allen V. Hershey at the U.S. Naval
-Surface Weapons Center in Dahlgren, VA.  The 35 Postscript fonts are
-the outline fonts resident in all modern Postscript printers, and the
-45 PCL 5 fonts are the outline fonts resident in modern Hewlett-Packard
-LaserJet printers and plotters.  (The old LaserJet III, which was
-Hewlett-Packard's first PCL 5 printer, supported only 8 of the 45.)
+35 Postscript fonts, 45 PCL 5 fonts, and 18 Hewlett-Packard vector
+fonts.  We call these 120 fonts the `built-in' fonts.  The Hershey
+fonts are constructed from stroked characters digitized c. 1967 by Dr.
+Allen V. Hershey at the U.S. Naval Surface Weapons Center in
+Dahlgren, VA.  The 35 Postscript fonts are the outline fonts resident
+in all modern Postscript printers and plotter, and the 45 PCL 5 fonts
+are the outline fonts resident in most modern Hewlett-Packard LaserJet
+printers.  (The old LaserJet III, which was Hewlett-Packard's first
+PCL 5 printer, supported only 8 of the 45; most Hewlett-Packard
+plotters do not support PCL 5 at all.)  The 18 Hewlett-Packard vector
+fonts are fonts that are resident in Hewlett-Packard printers and
+plotters (mostly the latter).
 
-   The Hershey fonts can be used by all types of Plotter supported by
-`libplot', and the Postscript fonts can be used by all types of Plotter
-except HP-GL and Tektronix.  So all variants of `graph' can use the
-Hershey fonts, and all variants of `graph' except `graph -T hpgl' and
-`graph -T tek' can use the Postscript fonts.  The PCL 5 fonts can be
-used by HP-GL Plotters and `graph -T hpgl'.  X Plotters and `graph
--T X' are not restricted to the built-in fonts.  They can use any
-X Window System font.
+   The Hershey fonts can be used by all types of Plotter object
+supported by `libplot', and the Postscript fonts can be used by all
+types of Plotter object except PCL, HP-GL and Tektronix.  So all
+variants of `graph' can use the Hershey fonts, and all variants of
+`graph' except `graph -T pcl', `graph -T hpgl' and `graph -T tek' can
+use the Postscript fonts.  The PCL 5 and Hewlett-Packard vector fonts
+can be used by PCL and HP-GL Plotters, and by `graph -T pcl' and `graph
+-T hpgl'.  X Plotters and `graph -T X' are not restricted to the
+built-in fonts.  They can use any X Window System font.
 
    The `plotfont' utility, which accepts the `-T' option, will print a
-character map of any font that is available on the specified output
-device.  *Note plotfont::.
+character map of any font that is available in the specified output
+format.  *Note plotfont::.
 
    For the purpose of plotting text strings (see *Note Text String
-Format::), the 102 built-in fonts are divided into typefaces.  The 22
-Hershey fonts are divided into typefaces as follows.
+Format::), the 120 built-in fonts are divided into typefaces.  As you
+can see from the following tables, our convention is that in any
+typeface with more than a single font, font #1 is the normal font, font
+#2 is italic or oblique, font #3 is bold, and font #4 is bold italic or
+bold oblique.  Additional variants (if any) are numbered #5 and higher.
+
+   The 22 Hershey fonts are divided into typefaces as follows.
 
    * HersheySerif
 
@@ -6210,11 +6362,17 @@ Hershey fonts are divided into typefaces as follows.
 
        2. HersheySansSymbol-Oblique
 
-The three HersheyGothic fonts are singletons: each is font #1 of its own
-typeface.  The symbol fonts contain Greek characters and mathematical
-symbols, and play a special role.  By convention, each Hershey typeface
-contains a symbol font (HersheySerifSymbol or HersheySansSymbol, as
-appropriate) as font #0.
+Nearly all Hershey fonts except the Symbol fonts use the ISO-Latin-1
+encoding, which is a superset of ASCII.  The Symbol fonts consist of
+Greek characters and mathematical symbols, and use the symbol font
+encoding documented in the `Postscript Language Reference Manual'.  By
+convention, each Hershey typeface contains a symbol font
+(HersheySerifSymbol or HersheySansSymbol, as appropriate) as font #0.
+
+   HersheyCyrillic, HersheyCyrillic-Oblique, and HersheyEUC (which is a
+Japanese font) are the only non-Symbol Hershey fonts that do not use the
+ISO-Latin-1 encoding.  For their encodings, see *Note Cyrillic and
+Japanese::.
 
    The 35 Postscript fonts are divided into typefaces as follows.
 
@@ -6304,9 +6462,11 @@ appropriate) as font #0.
 
    * Symbol
 
-The two Zapf fonts are singletons: each is font #1 of its own typeface.
-The Symbol font plays a special role.  By convention, each Postscript
-typeface contains the Symbol font as font #0.
+All Postscript fonts except the ZapfDingbats and Symbol fonts use the
+ISO-Latin-1 encoding.  The encodings used by the ZapfDingbats and Symbol
+fonts are documented in the `Postscript Language Reference Manual'.  By
+convention, each Postscript typeface contains the Symbol font as
+font #0.
 
    The 45 PCL 5 fonts are divided into typefaces as follows.
 
@@ -6428,78 +6588,90 @@ typeface contains the Symbol font as font #0.
 
    * Symbol
 
-The ClarendonCondensed, Coronet, Marigold, and Wingdings fonts are
-singletons: each is font #1 of its own typeface.  The Symbol font plays
-a special role.  By convention, each PCL 5 typeface contains the Symbol
-font as font #0.
+All PCL 5 fonts except the Wingdings and Symbol fonts use the
+ISO-Latin-1 encoding.  The encoding used by the Symbol font is the
+symbol font encoding documented in the `Postscript Language Reference
+Manual'.  By convention, each PCL typeface contains the Symbol font as
+font #0.
 
-   As you can see from the three preceding tables, our convention is
-that in any typeface with more than a single font, font #1 is the normal
-font, font #2 is italic or oblique, font #3 is bold, and font #4 is bold
-italic or bold oblique.  Additional variants (if any) are numbered #5
-and higher.
+   The 18 Hewlett-Packard vector fonts are divided into typefaces as
+follows.
 
-   Of the above 102 built-in fonts, all except for the four Symbol
-fonts, HersheyCyrillic, HersheyCyrillic-Oblique, HersheyEUC,
-ZapfDingbats, and Wingdings are ISO-8859-1 fonts.  This means that they
-use the ISO-Latin-1 encoding, which is a superset of ASCII.  The four
-Symbol fonts use a special encoding, since they consist of Greek
-characters and mathematical symbols.  The Symbol encoding and the
-encoding used by the ZapfDingbats font are documented in the
-`Postscript Language Reference Manual'.
+   * Arc
 
-   The HersheyCyrillic and HersheyCyrillic-Oblique fonts use an encoding
-called KOI8-R, a superset of ASCII which has become the de facto
-standard for Unix and networking applications in the former Soviet
-Union.  Insofar as printable ASCII characters go, they resemble the
-HersheySerif fonts.  But their `8-bit' characters are different.  The
-byte range 0xc0...0xdf contains lower-case Cyrillic characters and the
-byte range 0xe0...0xff contains upper case Cyrillic characters.
-Additional Cyrillic characters are located at 0xa3 and 0xb3.  For more
-on the encoding scheme, see the official KOI8-R Web page (http://www.nagual.pp.ru/~ache/koi8.html) and the document known as Internet RFC
-1489.
+       1. Arc
 
-   The HersheyEUC font is used for displaying Japanese.  EUC stands for
-`extended Unix code', which is a scheme for encoding Japanese, and also
-other character sets (e.g., Greek and Cyrillic) as multibyte character
-strings.  The format of EUC strings is explained in Ken Lunde's
-`Understanding Japanese Information Processing' (O'Reilly, 1993), which
-contains much additional information on Japanese text processing.  See
-also his on-line supplement (http://www.ora.com/people/authors/lunde/cjk_inf.html).
+       2. Arc-Oblique
 
-   In the HersheyEUC font, characters in the printable ASCII range,
-0x20...0x7e, are similar to US ASCII (they are `JIS Roman', an ASCII
-variant standardized by the Japanese Industrial Standards Committee).
-Each successive pair of bytes in the `0xa1'...`0xfe' range defines a
-single character in the JIS X0208 standard.  The characters in the JIS
-X0208 standard include Japanese syllabic characters (Hiragana and
-Katakana), ideographic characters (Kanji), Roman, Greek, and Cyrillic
-alphabets, punctuation marks, and miscellaneous symbols.  For example,
-the JIS X0208 standard indexes the 83 Hiragana as `0x2421'...`0x2453'.
-To obtain the EUC code for any JIS X0208 character, you would add
-`0x80' to each byte (i.e., `set the high bit' on each byte).  So the
-first of the 83 Hiragana (`0x2421') would be encoded as the successive
-pair of bytes `0xa4' and `0xa1'.
+       3. Arc-Bold
 
-   The implementation of the JIS X0208 standard in the HersheyEUC font
-is based on Dr. Hershey's digitizations, and is complete enough to be
-useful.  All Hiragana and Katakana are available, though the little-used
-`half-width Katakana' are not supported.  Also, 603 frequently used
-Kanji are available.  The Hiragana, the Katakana, and the available
-Kanji all have the same width.  The file `kanji.doc', which on most
-systems is installed in `/usr/share/libplot' or
-`/usr/local/share/libplot', lists the 603 available Kanji.  Each JIS
-X0208 character that is unavailable will be drawn as an `undefined
-character' glyph (several horizontal lines).
+       4. Arc-BoldOblique
+
+   * Stick
+
+       1. Stick
+
+       2. Stick-Oblique
+
+       3. Stick-Bold
+
+       4. Stick-BoldOblique
+
+   * ArcANK
+
+       1. ArcANK*
+
+       2. ArcANK-Oblique*
+
+       3. ArcANK-Bold*
+
+       4. ArcANK-BoldOblique*
+
+   * StickANK
+
+       1. StickANK*
+
+       2. StickANK-Oblique*
+
+       3. StickANK-Bold*
+
+       4. StickANK-BoldOblique*
+
+   * ArcSymbol*
+
+   * StickSymbol*
+
+The Hewlett-Packard vector fonts with an asterisk (the ANK and Symbol
+fonts) are not available when producing output in PCL 5 or HP-GL/2
+format.  They are only available when producing HP-GL output for the
+HP7550A graphics plotter and the HP758x, HP7595A and HP7596A drafting
+plotters, which used HP-GL with some HP-GL/2 extensions.  To ensure
+that these fonts are available, you must set the environment variable or
+driver parameter `HPGL_VERSION' to "1.5".  The ANK fonts are Japanese
+fonts (*note Cyrillic and Japanese::.), and the Symbol fonts contain a
+few miscellaneous mathematical symbols.
+
+   All Hewlett-Packard vector fonts except the ANK and Symbol fonts use
+the ISO-Latin-1 encoding.  The Arc fonts are proportional
+(variable-width) fonts, and the Stick fonts are fixed-width fonts.  If
+`HPGL_VERSION' is "1.5" then the Arc fonts will be kerned.  But if
+`HPGL_VERSION' is "2" (the default), there will be no kerning.
+Apparently Hewlett-Packard dropped support for device-resident kerning
+tables when moving from HP-GL to modern HP-GL/2 and PCL 5.  For
+information about Hewlett-Packard vector fonts and the way in which
+they are kerned (in pen plotters, at least), see the article by L. W.
+Hennessee et al. in the Nov. 1981 issue of the `Hewlett-Packard
+Journal'.
 
    To what extent do the fonts supported by `libplot' contain
-ligatures?  The 35 Postscript fonts and 45 PCL 5 fonts, as implemented
-in `libplot', do not contain ligatures.  However, four of the 22
-Hershey fonts contain ligatures.  The character combinations "fi",
-"ff", "fl", "ffi", and "ffl" are automatically drawn as ligatures in
-HersheySerif and HersheySerif-Italic.  (Also in the HersheyCyrillic
-fonts and HersheyEUC, since insofar as printable ASCII characters are
-concerned, they are identical [or almost identical] to HersheySerif.)
+ligatures?  The Postscript fonts, the PCL 5 fonts, and the
+Hewlett-Packard vector fonts, at least as implemented in `libplot',
+do not contain ligatures.  However, six of the 22 Hershey fonts contain
+ligatures.  The character combinations "fi", "ff", "fl", "ffi", and
+"ffl" are automatically drawn as ligatures in HersheySerif and
+HersheySerif-Italic.  (Also in the two HersheyCyrillic fonts and
+HersheyEUC, since insofar as printable ASCII characters are concerned,
+they are identical [or almost identical] to HersheySerif.)
 In addition, "tz" and "ch" are ligatures in HersheyGothicGerman.  The
 German double-s character `ss', which is called an `eszet', is not
 treated as a ligature in any font.  To obtain an eszet, you must either
@@ -6507,7 +6679,78 @@ request one with the escape sequence "\ss" (*note Text String
 Format::.), or, if you have an 8-bit keyboard, type an eszet explicitly.
 
 
-File: plotutils.info,  Node: Text Fonts in X,  Next: Text String Format,  Prev: Text Fonts,  Up: Text and Markers
+File: plotutils.info,  Node: Cyrillic and Japanese,  Next: Text Fonts in X,  Prev: Text Fonts,  Up: Text and Markers
+
+Cyrillic and Japanese fonts
+===========================
+
+   The built-in fonts discussed in the previous section include Cyrillic
+and Japanese vector fonts.  This section explains how these fonts are
+encoded, i.e., how their character maps are laid out.  You may use the
+`plotfont' utility to display the character map for any font, including
+the Cyrillic and Japanese vector fonts.  *Note plotfont::.
+
+   The HersheyCyrillic and HersheyCyrillic-Oblique fonts use an encoding
+called KOI8-R, a superset of ASCII that has become the de facto
+standard for Unix and networking applications in the former Soviet
+Union.  Insofar as printable ASCII characters go, they resemble the
+HersheySerif vector font.  But their upper halves are different.  The
+byte range 0xc0...0xdf contains lower-case Cyrillic characters and the
+byte range 0xe0...0xff contains upper case Cyrillic characters.
+Additional Cyrillic characters are located at 0xa3 and 0xb3.  For more
+on the encoding scheme, see the official KOI8-R Web page (http://www.nagual.pp.ru/~ache/koi8.html) and the document known as Internet RFC
+1489.
+
+   The HersheyEUC font is a vector font that is is used for displaying
+Japanese text.  EUC stands for `extended Unix code', which is a scheme
+for encoding Japanese, and also other character sets (e.g., Greek and
+Cyrillic) as multibyte character strings.  The format of EUC strings is
+explained in Ken Lunde's `Understanding Japanese Information
+Processing' (O'Reilly, 1993), which contains much additional information
+on Japanese text processing.  See also
+his on-line supplement (http://www.ora.com/people/authors/lunde/cjk_inf.html).
+
+   In the HersheyEUC font, characters in the printable ASCII range,
+0x20...0x7e, are similar to HersheySerif (their encoding is `JIS
+Roman', an ASCII variant standardized by the Japanese Industrial
+Standards Committee).  Each successive pair of bytes in the
+`0xa1'...`0xfe' range defines a single character in the JIS X0208
+standard.  The characters in the JIS X0208 standard include Japanese
+syllabic characters (Hiragana and Katakana), ideographic characters
+(Kanji), Roman, Greek, and Cyrillic alphabets, punctuation marks, and
+miscellaneous symbols.  For example, the JIS X0208 standard indexes the
+83 Hiragana as `0x2421'...`0x2473'.  To obtain the EUC code for any JIS
+X0208 character, you would add `0x80' to each byte (i.e., `set the high
+bit' on each byte).  So the first of the 83 Hiragana (`0x2421') would
+be encoded as the successive pair of bytes `0xa4' and `0xa1'.
+
+   The implementation of the JIS X0208 standard in the HersheyEUC font
+is based on Dr. Hershey's digitizations, and is complete enough to be
+useful.  All 83 Hiragana and 86 Katakana are available, though the
+little-used `half-width Katakana' are not supported.  Also, 603
+frequently used Kanji are available.  The Hiragana, the Katakana, and
+the available Kanji all have the same width.  The file `kanji.doc',
+which on most systems is installed in `/usr/share/libplot' or
+`/usr/local/share/libplot', lists the 603 available Kanji.  Each JIS
+X0208 character that is unavailable will be drawn as an `undefined
+character' glyph (several horizontal lines).
+
+   The eight Hewlett-Packard vector fonts in the ArcANK and StickANK
+typefaces are also used for displaying Japanese text.  They are
+available when producing HP-GL output for the HP7550A graphics plotter
+and the HP758x, HP7595A and HP7596A drafting plotters.  To ensure that
+they are available, you must set the environment variable or driver
+parameter `HPGL_VERSION' to "1.5".
+
+   ANK stands for Alphabet, Numerals, and Katakana.  The ANK fonts use
+the `Kana-8' encoding.  The lower half of each font uses the JIS Roman
+encoding, and the upper half contains half-width Katakana.  Half-width
+Katakana are simplified Katakana that may need to be equipped with
+diacritical marks.  The diacritical marks are included in the encoding
+as separate characters.
+
+
+File: plotutils.info,  Node: Text Fonts in X,  Next: Text String Format,  Prev: Cyrillic and Japanese,  Up: Text and Markers
 
 Available text fonts for the X Window System
 ============================================
@@ -6518,7 +6761,7 @@ System display in a wide variety of fonts.  This includes the 22
 built-in Hershey vector fonts.  They can use the 35 built-in Postscript
 fonts too, if those fonts are available on the X display.  Most
 releases of the plotting utilities include freely distributable
-versions of the 35 Postscript fonts, in Type 1 format, that are easily
+versions of the 35 Postscript fonts, in Type 1 format, which are easily
 installed on any X display.
 
    In fact, the plotting utilities can use most fonts that are
@@ -6631,11 +6874,11 @@ switching between fonts in different typefaces.
 
    There are also a few escape sequences for horizontal shifts, which
 are useful for improving horizontal alignment, such as when shifting
-between fonts.  "\r1", "\r2", "\r4", "\r6", "\r8" are escape sequences
-that shift right by 1 em, 1/2 em, 1/4 em, 1/6 em, and 1/8 em,
-respectively.  "\l1", "\l2", "\l4", "\l6", "\l8" are similar, but shift
-left instead of right.  "A \f2very\r8\f1 well labeled axis" would look
-better than "A \f2very\f1 well labeled axis".
+between fonts.  "\r1", "\r2", "\r4", "\r6", "\r8", and "\r^" are escape
+sequences that shift right by 1 em, 1/2 em, 1/4 em, 1/6 em, 1/8 em, and
+1/12 em, respectively.  "\l1", "\l2", "\l4", "\l6", "\l8", and "\l^" are
+similar, but shift left instead of right.  "A \f2very\r8\f1 well labeled
+axis" would look better than "A \f2very\f1 well labeled axis".
 
    Square roots are handled with the aid of a special pair of escape
 sequences, together with the "\mk" and "\rt" sequences discussed above.
@@ -6657,11 +6900,11 @@ would yield a better underline than "\mk\ul\ul\ul\rtabc".
    Besides the preceding escape sequences, there are also escape
 sequences for the printable non-ASCII characters in each of the built-in
 ISO-Latin-1 fonts (which means in every built-in font, except for the
-symbol fonts, the HersheyCyrillic fonts, HersheyEUC, and ZapfDingbats).
-The useful non-ASCII characters include accented characters among
-others.  Such `8-bit' characters, in the 0xa0...0xff byte range, may be
-included directly in a text string.  But if your terminal does not
-permit this, you may use the escape sequences for them instead.
+symbol fonts, ZapfDingbats, and the Cyrillic and Japanese fonts).  The
+useful non-ASCII characters include accented characters, among others.
+Such `8-bit' characters, in the 0xa0...0xff byte range, may be included
+directly in a text string.  But if your terminal does not permit this,
+you may use the escape sequences for them instead.
 
    There are escape sequences for the mathematical symbols and Greek
 characters in the symbol fonts, as well.  This is how the symbol fonts
@@ -7445,9 +7688,9 @@ NONE
    Finally, there are escape sequences that apply only if the current
 font is a Hershey font.  Most of these escape sequences provide access
 to special symbols that belong to no font, and are accessible by no
-other means.  These symbols are of two sorts: miscellaneous and
-astronomical.  The escape sequences for the miscellaneous symbols are
-as follows.
+other means.  These symbols are of two sorts: miscellaneous, and
+astronomical or zodiacal.  The escape sequences for the miscellaneous
+symbols are as follows.
 
 "\dd"
      daggerdbl
@@ -7490,7 +7733,8 @@ lower-case final `s' is different from lower-case non-final `s').
 In Hershey fonts where there is no distinction between final and
 non-final `s', "s" and "\s-" are equivalent.
 
-   The escape sequences for the astronomical symbols are listed in the
+   The escape sequences for the astronomical symbols, including the
+signs for the twelve constellations of the zodiac, are listed in the
 following table.  We stress that that like the preceding miscellaneous
 escape sequences, they apply only if the current font is a Hershey font.
 
@@ -7538,6 +7782,42 @@ escape sequences, they apply only if the current font is a Hershey font.
 
 "\DE"
      descendingnode
+
+"\AR"
+     aries
+
+"\TA"
+     taurus
+
+"\GE"
+     gemini
+
+"\CA"
+     cancer
+
+"\LE"
+     leo
+
+"\VI"
+     virgo
+
+"\LI"
+     libra
+
+"\SC"
+     scorpio
+
+"\SG"
+     sagittarius
+
+"\CP"
+     capricornus
+
+"\AQ"
+     aquarius
+
+"\PI"
+     pisces
 
    The preceding miscellaneous and astronomical symbols are not the only
 special non-font symbols that can be used if the current font is a
@@ -7682,9 +7962,9 @@ well known GKS (Graphical Kernel System).
    Symbols 32 and up are interpreted as characters in a certain text
 font.  For `libplot', it is the current font.  For `graph', it is the
 font selected with the `--symbol-font-name' option.  By default, this
-is the ZapfDingbats font except in `graph -T hpgl' and `graph -T tek'.
-`graph -T hpgl' and `graph -T tek' currently have no access to
-Postscript fonts, so they use the `HersheySerif' font instead.
+is the ZapfDingbats font except in `graph -T pcl', `graph -T hpgl' and
+`graph -T tek'.  These three variants of `graph' normally have no
+access to Postscript fonts, so they use the `HersheySerif' font instead.
 
    Many of the characters in the ZapfDingbats font are suitable for use
 as marker symbols.  For example, character #74 is the Texas star.  Doing
@@ -7695,14 +7975,15 @@ will produce a Postscript plot consisting of five data points, not
 joined by line segments.  Each data point will be marked by a Texas
 star, of a large font size (0.1 times the width of the plotting box).
 
-   If you are using `graph -T hpgl' and wish to use font characters as
-marker symbols, you should consider using the Wingdings font, which is
-available when producing HP-GL/2 output.  Doing
+   If you are using `graph -T pcl' or `graph -T hpgl' and wish to use
+font characters as marker symbols, you should consider using the
+Wingdings font, which is available when producing PCL 5 or HP-GL/2
+output.  Doing
 
      echo 0 0 1 2 2 1 3 2 4 0 |
-         graph -T hpgl -m 0 --symbol-font Wingdings -S 181 0.1 > plot.plt
+         graph -T pcl -m 0 --symbol-font Wingdings -S 181 0.1 > plot.pcl
 
-will produce an HP-GL/2 plot that is similar to the preceding Postscript
+will produce a PCL 5 plot that is similar to the preceding Postscript
 plot.  The Wingdings font has the Texas star in location #181.
 
 
@@ -7712,11 +7993,11 @@ Specifying Colors by Name
 *************************
 
    Many of the plotting utilities allow colors to be specified by name.
-For example, `graph' supports the `--frame-color' option.  `graph -T
-hpgl' and `plot -T hpgl' check the value of the `HPGL_PENS' environment
-variable, as do the HP-GL Plotters available in the `libplot' library.
-Also, the `libplot' library includes the `pencolorname',
-`fillcolorname', and `bgcolorname' functions.
+For example, `graph' supports the `--frame-color' option.  `plot -T
+hpgl' checks the value of the `HPGL_PENS' environment variable, as do
+the HP-GL Plotter objects available in the `libplot' library.  Also,
+the `libplot' library includes the `pencolorname', `fillcolorname', and
+`bgcolorname' functions.
 
    In any of these contexts, 665 distinct color names are recognized,
 including obscure ones like "dark magenta", "forest green", and "olive
@@ -7741,13 +8022,13 @@ The Graphics Metafile Format
 ****************************
 
    GNU metafile format is produced by the raw variants of `graph',
-`plot', `tek2plot', and plotfont, and by any other graphics application
-that uses the Metafile Plotter support contained in GNU `libplot'.
-A file in this format is a sort of audit trail: a sequence of plotting
-commands, each of which may be followed by data.  Each plotting command
-is an `op code': a single ASCII character, indicating a Plotter
-operation.  The data following the command are the arguments passed to
-the operation, if any.
+`plot', `tek2plot', and `plotfont', and by any other graphics
+application that uses the Metafile Plotter support contained in GNU
+`libplot'.  A file in this format is a sort of audit trail: a sequence
+of plotting commands, each of which may be followed by data.  Each
+plotting command is an `op code': a single ASCII character, indicating
+a Plotter operation.  The data following the command are the arguments
+passed to the operation, if any.
 
    There are two sorts of GNU metafile: binary (the default) and
 portable (human-readable).  Binary metafiles begin with the magic string
@@ -7963,70 +8244,71 @@ documentation for style and clarity.
 Tag Table:
 Node: Top1674
 Node: Plotutils Intro2540
-Node: graph10299
-Node: Simple Examples11108
-Node: Non-Square Plots23541
-Node: Multiple Datasets26256
-Node: Multiplotting31873
-Node: Data Formats35458
-Node: graph Invocation38186
-Node: Plot Options39781
-Node: Dataset Options55569
-Node: Multiplot Options64779
-Node: Raw graph Options66507
-Node: Info Options67218
-Node: graph Environment68520
-Node: plot73992
-Node: plot Examples74259
-Node: plot Invocation76482
-Node: plot Environment87215
-Node: tek2plot92642
-Node: tek2plot Introduction92939
-Node: tek2plot Invocation94283
-Node: tek2plot Environment104317
-Node: plotfont108203
-Node: plotfont Examples108496
-Node: plotfont Invocation111942
-Node: plotfont Environment119990
-Node: spline124711
-Node: spline Examples124989
-Node: Advanced Use of spline132109
-Node: spline Invocation136646
-Node: ode146138
-Node: Basic Math147472
-Node: Simple ode Examples150354
-Node: Additional ode Examples159416
-Node: ode Invocation166416
-Node: Diagnostics170467
-Node: Numerical Error174586
-Node: Running Time186349
-Node: Input Language187678
-Node: ODE Bibliography196037
-Node: libplot196961
-Node: libplot Overview197340
-Node: C Programming206907
-Node: The C API207371
-Node: C Compiling and Linking213146
-Node: Sample C Drawings214843
-Node: Sample C Animations224906
-Node: X Programming232481
-Node: Functions238930
-Node: Setup Functions240563
-Node: Drawing Functions247101
-Node: Attribute Functions257879
-Node: Mapping Functions269311
-Node: Driver Parameters271454
-Node: Appendices284176
-Node: Text and Markers284633
-Node: Text Fonts285437
-Node: Text Fonts in X295813
-Node: Text String Format298993
-Node: Marker Symbols317310
-Node: Color Names319768
-Node: Metafiles321195
-Node: Auxiliary Software325092
-Node: idraw325373
-Node: xfig326575
-Node: Acknowledgements327496
+Node: graph10244
+Node: Simple Examples11053
+Node: Non-Square Plots23708
+Node: Multiple Datasets26458
+Node: Multiplotting32075
+Node: Data Formats35660
+Node: graph Invocation38388
+Node: Plot Options39983
+Node: Dataset Options55908
+Node: Multiplot Options65147
+Node: Raw graph Options66875
+Node: Info Options67586
+Node: graph Environment68951
+Node: plot75660
+Node: plot Examples75927
+Node: plot Invocation78183
+Node: plot Environment89082
+Node: tek2plot95745
+Node: tek2plot Introduction96042
+Node: tek2plot Invocation97386
+Node: tek2plot Environment107571
+Node: plotfont112697
+Node: plotfont Examples112990
+Node: plotfont Invocation116591
+Node: plotfont Environment124937
+Node: spline130898
+Node: spline Examples131176
+Node: Advanced Use of spline138296
+Node: spline Invocation142833
+Node: ode152325
+Node: Basic Math153659
+Node: Simple ode Examples156541
+Node: Additional ode Examples165637
+Node: ode Invocation172637
+Node: Diagnostics176688
+Node: Numerical Error180807
+Node: Running Time192570
+Node: Input Language193899
+Node: ODE Bibliography202258
+Node: libplot203182
+Node: libplot Overview203561
+Node: C Programming213495
+Node: The C API213959
+Node: C Compiling and Linking219748
+Node: Sample C Drawings221445
+Node: Sample C Animations231516
+Node: X Programming239091
+Node: Functions245540
+Node: Setup Functions247173
+Node: Drawing Functions253724
+Node: Attribute Functions264502
+Node: Mapping Functions275934
+Node: Driver Parameters278077
+Node: Appendices292145
+Node: Text and Markers292602
+Node: Text Fonts293465
+Node: Cyrillic and Japanese303287
+Node: Text Fonts in X307329
+Node: Text String Format310521
+Node: Marker Symbols329178
+Node: Color Names331672
+Node: Metafiles333088
+Node: Auxiliary Software336988
+Node: idraw337269
+Node: xfig338471
+Node: Acknowledgements339392
 
 End Tag Table

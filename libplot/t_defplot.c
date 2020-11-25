@@ -45,8 +45,8 @@ const Plotter _tek_default_plotter =
   (FILE *)NULL,			/* output stream (if any) */
   (FILE *)NULL,			/* error stream (if any) */
   /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
   /* capabilities */
   0, 0, 0, 1, 0, 0, 0, 0, 0,	/* capability flags (see extern.h) */
   INT_MAX,			/* hard polyline length limit */
@@ -89,7 +89,7 @@ const Plotter _tek_default_plotter =
   0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
   0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
   10668.0,			/* plot length (for HP-GL/2 roll plotters) */
-  1,				/* current pen (initted in h_closepl.c) */
+  1,				/* current pen (initted in h_openpl.c) */
   false,			/* bad pen? (advisory, see h_color.c) */
   false,			/* pen down rather than up? */
   0.001,			/* pen width (frac of diag dist betw P1,P2) */

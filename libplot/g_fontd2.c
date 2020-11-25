@@ -1,6 +1,6 @@
 /* THIS FILE IS NOW SPLIT INTO TWO PIECES: g_fontdb.c and g_fontd2.c, 
    TO FACILITATE COMPILING.  This is the second half, containing PCL fonts 
-   and Stick fonts (i.e., device-resident vector fonts). */
+   and Stick fonts (i.e., device-resident HP vector fonts). */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -11,8 +11,8 @@
    where that is appropriate.  (Note that NUM_PCL_FONTS is defined to equal
    45 in extern.h.)
 
-   These width tables are taken from the LaserJet 4 font distribution, as
-   of this writing available at
+   The tables of widths and `left edge' offsets are taken from the 
+   LaserJet 4 font distribution, as of this writing available at
    ftp://ftp.hp.com/pub/printers/software/mp135mu.exe . This is a zipped
    archive file which includes both .afm and .pfb files for the 45 fonts
    (apparently constructed by Fontographer from TrueType or Intellifont
@@ -34,17 +34,21 @@
 	inline (64).
    (5) PCL info: normal weight(0) / bold(3) / extra bold(4), etc.
    (6) PCL info: "symbol set" i.e. native character set/encoding.
-   	(0 = Roman-8 i.e. default set; 14 = ISO8859-1 i.e. ECMA-94 Latin 1;
+   	(277 = Roman-8 i.e. default set; 14 = ISO8859-1 i.e. ECMA-94 Latin 1;
 	621 = PS Symbol; 18540 = Wingdings.  In PCL as opposed to HP-GL/2,
 	these numbers are encoded base 32, as a number and a letter.  E.g.,
 	621 is written as 19M since 19*32+13, and 'M' is letter #13.)
+	Note: even for ISO-Latin-1 fonts we do NOT specify `14'; we
+	specify `277' instead, since we use HP's Roman-8 for the lower
+	half of the font and HP's Latin 1 for the upper half.  See 
+	comments in h_alab_pcl.c.
    (7) and (8) normalized font ascent and descent (from font bounding box).
    (9) normalized cap height
    (10) the character width information (array, size 256).
    (11) the character offset, or `left edge' information (array, size 256).  
-        [Our HP/GL-2 driver needs this, since HP-GL/2 rendering starts at
-	the left edge of the bounding box, unlike PS rendering.  We shift
-	rightward to compensate.  See h_alab_pcl.c.]
+        [Our HP/GL-2, i.e. PCL 5 driver needs this, since HP-GL/2 and PCL 5 
+	rendering begin at the left edge of the bounding box, unlike 
+	PS rendering.  We shift	rightward to compensate.  See h_alab_pcl.c.]
    (12) a typeface id (an index into the _ps_typeface_info[] array below).
    (13) a font index (which font within the typeface this is).
    (14) an `iso8859-1' flag (refers to character set after re-encoding if any;
@@ -56,7 +60,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Univers",			/* #0 */
   NULL,
   "univers-medium-r-normal",
-  4148, 1, 0, 0, 14,
+  4148, 1, 0, 0, 277,
   987, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -126,7 +130,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Univers-Italic",		/* #1 */
   NULL,
   "univers-medium-i-normal",
-  4148, 1, 1, 0, 14,
+  4148, 1, 1, 0, 277,
   989, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -196,7 +200,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Univers-Bold",		/* #2 */
   NULL,
   "univers-bold-r-normal",
-  4148, 1, 0, 3, 14,
+  4148, 1, 0, 3, 277,
   976, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -266,7 +270,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Univers-BoldItalic",		/* #3 */
   NULL,
   "univers-bold-i-normal",
-  4148, 1, 1, 3, 14,
+  4148, 1, 1, 3, 277,
   976, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -336,7 +340,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "UniversCondensed",		/* #4 */
   NULL,
   "univers-medium-r-condensed",
-  4148, 1, 4, 0, 14,
+  4148, 1, 4, 0, 277,
   932, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -406,7 +410,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "UniversCondensed-Italic",	/* #5 */
   NULL,
   "univers-medium-i-condensed",
-  4148, 1, 5, 0, 14,
+  4148, 1, 5, 0, 277,
   933, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -476,7 +480,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "UniversCondensed-Bold",	/* #6 */
   NULL,
   "univers-bold-r-condensed",
-  4148, 1, 4, 3, 14,
+  4148, 1, 4, 3, 277,
   950, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -546,7 +550,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "UniversCondensed-BoldItalic", /* #7 */
   NULL,
   "univers-bold-i-condensed",
-  4148, 1, 5, 3, 14,
+  4148, 1, 5, 3, 277,
   950, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -616,7 +620,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "CGTimes",			/* #8 */
   NULL,
   "cg times-medium-r-normal",
-  4101, 1, 0, 0, 14,
+  4101, 1, 0, 0, 277,
   910, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -686,7 +690,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "CGTimes-Italic",		/* #9 */
   NULL,
   "cg times-medium-i-normal",
-  4101, 1, 1, 0, 14,
+  4101, 1, 1, 0, 277,
   910, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -756,7 +760,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "CGTimes-Bold",		/* #10 */
   NULL,
   "cg times-bold-r-normal",
-  4101, 1, 0, 3, 14,
+  4101, 1, 0, 3, 277,
   944, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -826,7 +830,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "CGTimes-BoldItalic",		/* #11 */
   NULL,
   "cg times-bold-i-normal",
-  4101, 1, 1, 3, 14,
+  4101, 1, 1, 3, 277,
   944, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -896,7 +900,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "AlbertusMedium",		/* #12 */
   NULL,
   "albertus-semibold-r-normal",
-  4362, 1, 0, 1, 14,
+  4362, 1, 0, 1, 277,
   997, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -966,7 +970,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "AlbertusExtraBold",		/* #13 */
   NULL,
   "albertus-extrabold-r-normal",
-  4362, 1, 0, 4, 14,
+  4362, 1, 0, 4, 277,
   1017, 260,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1036,7 +1040,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "AntiqueOlive",		/* #14 */
   NULL,
   "antique olive-medium-r-normal",
-  4168, 1, 0, 0, 14,
+  4168, 1, 0, 0, 277,
   1038, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1106,7 +1110,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "AntiqueOlive-Italic",	/* #15 */
   NULL,
   "antique olive-medium-i-normal",
-  4168, 1, 1, 0, 14,
+  4168, 1, 1, 0, 277,
   1035, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1176,7 +1180,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "AntiqueOlive-Bold",		/* #16 */
   NULL,
   "antique olive-bold-r-normal",
-  4168, 1, 0, 3, 14,
+  4168, 1, 0, 3, 277,
   1055, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1246,7 +1250,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Arial-Roman",		/* #17 */
   NULL,
   "arial-medium-r-normal",
-  16602, 1, 0, 0, 14,
+  16602, 1, 0, 0, 277,
   913, 216,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1316,7 +1320,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Arial-Italic",		/* #18 */
   NULL,
   "arial-medium-i-normal",
-  16602, 1, 1, 0, 14,
+  16602, 1, 1, 0, 277,
   913, 213,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1386,7 +1390,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Arial-Bold",			/* #19 */
   NULL,
   "arial-bold-r-normal",
-  16602, 1, 0, 3, 14,
+  16602, 1, 0, 3, 277,
   924, 211,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1456,7 +1460,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Arial-BoldItalic",		/* #20 */
   NULL,
   "arial-bold-i-normal",
-  16602, 1, 1, 3, 14,
+  16602, 1, 1, 3, 277,
   924, 221,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1526,7 +1530,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "ClarendonCondensed",		/* #21 */
   NULL,
   "clarendon-medium-r-condensed",
-  4140, 1, 4, 3, 14,
+  4140, 1, 4, 3, 277,
   970, 261,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1596,7 +1600,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Coronet",			/* #22 */
   NULL,
   "coronet-medium-r-normal",
-  4116, 1, 1, 0, 14,
+  4116, 1, 1, 0, 277,
   898, 257,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1666,7 +1670,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Courier",			/* #23 */
   NULL,
   "courier-medium-r-normal",
-  4099, 0, 0, 0, 14,
+  4099, 0, 0, 0, 277,
   856, 253,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1736,7 +1740,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Courier-Italic",		/* #24 */
   NULL,
   "courier-medium-o-normal",
-  4099, 0, 1, 0, 14,
+  4099, 0, 1, 0, 277,
   856, 253,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1806,7 +1810,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Courier-Bold",		/* #25 */
   NULL,
   "courier-bold-r-normal",
-  4099, 0, 0, 3, 14,
+  4099, 0, 0, 3, 277,
   856, 237,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1876,7 +1880,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Courier-BoldItalic",		/* #26 */
   NULL,
   "courier-bold-o-normal",
-  4099, 0, 1, 3, 14,
+  4099, 0, 1, 3, 277,
   856, 237,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1946,7 +1950,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Garamond",			/* #27 */
   NULL,
   "garamond-medium-r-normal",
-  4197, 1, 0, 0, 14,		/* Garamond Antiqua */
+  4197, 1, 0, 0, 277,		/* Garamond Antiqua */
   1023, 260,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2016,7 +2020,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Garamond-Italic",		/* #28 */
   NULL,
   "garamond-medium-i-normal",
-  4197, 1, 1, 0, 14,		/* Garamond Kursiv */
+  4197, 1, 1, 0, 277,		/* Garamond Kursiv */
   984, 261,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2086,7 +2090,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Garamond-Bold",		/* #29 */
   NULL,
   "garamond-bold-r-normal",
-  4197, 1, 0, 3, 14,		/* Garamond Halbfett */
+  4197, 1, 0, 3, 277,		/* Garamond Halbfett */
   1010, 261,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2156,7 +2160,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Garamond-BoldItalic",	/* #30 */
   NULL,
   "garamond-bold-i-normal",
-  4197, 1, 1, 3, 14,		/* Garamond Kursiv Halbfett */
+  4197, 1, 1, 3, 277,		/* Garamond Kursiv Halbfett */
   1016, 264,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2226,7 +2230,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "LetterGothic",		/* #31 */
   NULL,
   "letter gothic-medium-r-normal",
-  4102, 0, 0, 0, 14,
+  4102, 0, 0, 0, 277,
   946, 308,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2296,7 +2300,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "LetterGothic-Italic",	/* #32 */
   NULL,
   "letter gothic-medium-i-normal",
-  4102, 0, 1, 0, 14,
+  4102, 0, 1, 0, 277,
   947, 308,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2366,7 +2370,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "LetterGothic-Bold",		/* #33 */
   NULL,
   "letter gothic-bold-r-normal",
-  4102, 0, 0, 3, 14,
+  4102, 0, 0, 3, 277,
   988, 308,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2436,7 +2440,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "Marigold",			/* #34 */
   NULL,
   "marigold-medium-r-normal",
-  4297, 1, 0, 0, 14,
+  4297, 1, 0, 0, 277,
   770, 302,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2506,7 +2510,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "CGOmega",			/* #35 */
   NULL,
   "cg omega-medium-r-normal",
-  4113, 1, 0, 0, 14,
+  4113, 1, 0, 0, 277,
   895, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2576,7 +2580,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "CGOmega-Italic",		/* #36 */
   NULL,
   "cg omega-medium-i-normal",
-  4113, 1, 1, 0, 14,
+  4113, 1, 1, 0, 277,
   911, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2646,7 +2650,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "CGOmega-Bold",		/* #37 */
   NULL,
   "cg omega-bold-r-normal",
-  4113, 1, 0, 3, 14,
+  4113, 1, 0, 3, 277,
   924, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2716,7 +2720,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "CGOmega-BoldItalic",		/* #38 */
   NULL,
   "cg omega-bold-i-normal",
-  4113, 1, 1, 3, 14,
+  4113, 1, 1, 3, 277,
   923, 250,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2786,7 +2790,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "TimesNewRoman",		/* #39 */
   NULL,
   "times new roman-medium-r-normal",
-  16901, 1, 0, 0, 14,
+  16901, 1, 0, 0, 277,
   913, 219,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2856,7 +2860,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "TimesNewRoman-Italic",	/* #40 */
   NULL,
   "times new roman-medium-i-normal",
-  16901, 1, 1, 0, 14,
+  16901, 1, 1, 0, 277,
   913, 216,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2926,7 +2930,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "TimesNewRoman-Bold",		/* #41 */
   NULL,
   "times new roman-bold-r-normal",
-  16901, 1, 0, 3, 14,
+  16901, 1, 0, 3, 277,
   913, 226,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2996,7 +3000,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
   "TimesNewRoman-BoldItalic",	/* #42 */
   NULL,
   "times new roman-bold-i-normal",
-  16901, 1, 1, 3, 14,
+  16901, 1, 1, 3, 277,
   913, 216,
   {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3204,7 +3208,7 @@ const struct pcl_font_info_struct _pcl_font_info[] = {
     119, 66, 66, 132, 104, 135, 104, 135,
     19, 14, 42, 42, 9, 58, 2, 2,
     2, 2, 2, 2, 233, 51, 233, 272,
-    0, -14, -98, 305, 330, 6, -15, 330,
+    53, -14, -98, 305, 330, 6, -15, 330,
     -15, 46, 233, 46, 51, 233, 51, 0
   },
       2, 0, false,
@@ -3318,34 +3322,110 @@ const struct typeface_info_struct _pcl_typeface_info[] =
 };
 
 
-/* Known stick fonts (i.e., device-resident vector fonts), supported by
-   HP-GL or HP-GL/2.  These structures, one per font, are similar to the
-   ones for the PCL fonts, but width units are different.  Stick and Arc
-   fonts are defined on an abstract raster, of width equal to one-half the
-   font size (by definition).  Width units below are raster units.
-   Actually, some characters stick out beyond the boundary of the raster.
+/* Known stick fonts (i.e., device-resident vector fonts) that are
+   supported by HP-GL or HP-GL/2.  These structures, one per font, are
+   similar to the ones for the PCL fonts, but units are different, as is
+   the interpretation of character `width'.  Each character in any stick
+   font is defined on an abstract raster, of width equal to one-half the
+   font size (by definition).  Widths below are measured in terms of raster
+   units.  Each width is really the width of a (nominal) bounding box for
+   the character.  This is NOT the same as the character cell width, i.e.,
+   the logical width of the character in the PS sense.  
+
+   The reason that we tabulate bounding box widths here is that HP
+   originally had no notion of logical width at all.  For the stick fonts
+   as for the PCL fonts, native HP-GL or HP-GL/2 rendering begins at the
+   `first ink' for the character, i.e., at the left edge of the bounding
+   box, _not_ at the left edge of the character cell for the character (as
+   in PS).  This is an old pen plotter convention.  The bounding box width
+   is the distance between first ink and left ink.
+
+   There is a separate `offset' field, measured in the same units, which
+   measures the offset from the left edge of the character cell to the left
+   edge of the bounding box, and the right edge of the bounding box to the
+   right edge of the character cell.  This was a later addition of HP's,
+   for HP-GL/2.  Apparently, HP added it to make the device-resident
+   metrics for the Stick fonts similar to those for the PCL fonts.  This
+   offset, in HP-GL/2, is the same for all characters in a character set.
+
+   So relative to PS-style rendering, the `offset' field is the amount in
+   abstract raster units by which the HP-GL/2 renderer automatically shifts
+   leftwards before rendering the character, to make the first ink appear
+   at the current point.  (In a sense, the abstract raster on which each
+   character is defined has an unoccupied border to its left, of width
+   equal to this offset.)  We undo this leftward shift before rendering any
+   string, by shifting rightwards.  This `rightward shift' procedure is the
+   same as the one we use for the PCL fonts (see h_alab_pcl.c, where stick
+   fonts as well as PCL fonts are rendered).
 
    For example, the fixed-width stick font (`Stick') is defined on a 32x32
-   raster.  This raster is the left 2/3 of a character cell, so the width
-   of each character is 48, in these units.  The nominal font size
-   [measured horizontally] is 64.  The variable-width `Arc' font is defined
-   on a 28x36 raster.  The nominal font size [measured horizontally] is 56.
-   The Arc font does not use fixed-width character cells, though a nominal
-   `character cell width' is sometimes stated to be 42 raster units.
+   abstract raster.  Each character has nominal bounding box width of 32.
+   The abstract raster is effectively the left 2/3 of a character cell, and
+   the character cell width of each character is 48, in these units.  The
+   `offset' is 8, since 8 + 32 + 8 = 48.  The nominal font size [measured
+   horizontally] is 64 = 2 * 32, in accordance with the HP convention that
+   the nominal font size equals twice the raster width.
+
+   Similarly, the variable-width `Arc' font is defined on an abstract
+   raster, of notional size 28x36.  Most characters are narrower than 28
+   units; some stick out beyond the right edge of the raster.  The offset
+   is 5, so by adding 5 + 5 = 10 to the bounding box width for a character,
+   you can get its cell width.  These cell widths are character-dependent,
+   unlike the case of the `Stick' font.  The nominal font size for the Arc
+   font [measured horizontally] is 56 = 2 * 28.  In HP literature a nominal
+   character cell width for the Arc font is sometimes given as 42 raster
+   units.  This is 2/3 of 56, i.e., 2/3 of the font size, just as for the
+   `Stick' font.
 
    For any font, the abstract raster is mapped to device space by
    appropriate scaling in the x and y directions, the `natural' mapping
    being one where the mapped raster has a height equal to 1.4 = 7/5 (or
-   maybe 10/7?) times its width.  The value 1.4 is HP magic.
+   maybe 10/7?) times its width.  The value 1.4 is HP magic; we use it when
+   we select a stick font, in h_font.c.
 
-   The `offset' field is the amount in abstract raster units by which the
-   HP-GL renderer automatically shifts leftwards before rendering the
-   character, to make the first ink appear at the current point.  (In a
-   sense, the abstract raster has an unoccupied border to its left, of
-   width equal to this offset.)  We undo this leftward shift before
-   rendering any string, by shifting rightwards.  This is the same as for
-   the PCL fonts (see h_alab_pcl.c, where stick fonts as well as PCL fonts
-   are rendered). */
+   The above explanation is fully valid only for HP-GL/2.  In pre-HP-GL/2
+   (i.e. the version of HP-GL used on the HP7550A and other late HP-GL
+   devices), stick fonts were handled differently.  Instead of the distance
+   between any two successive character's bounding boxes being a fixed
+   amount, namely 2 * offset, this distance was computed from
+   device-resident lookup tables.  I.e, the character sets in pre-HP-GL/2
+   were automatically kerned.
+
+   There were at least three device-resident `spacing tables': 
+   (1) a trivial spacing table for the fixed width character sets (which we
+   now use in our Stick* fonts), (2) a spacing table used by most
+   variable-width character sets (such as those now used in our Arc*
+   fonts), (3) a spacing table for the Japanese Katakana character set
+   (which we now use as the upper half of our ArcANK* fonts).  Three
+   different tables were needed, because these three sorts of character set
+   were defined on abstract rasters of different widths: 32, 28, and 30,
+   respectively.
+
+   These three spacing tables were indexed by `row class' and `character
+   class', i.e., `right edge class' and `left edge class' for the
+   character.  For details, see "Firmware Determines Plotter Personality",
+   by L. W. Hennessee, A. K. Frankel, M. A. Overton, and R. B. Smith,
+   Hewlett-Packard Journal, Nov. 1981, pp. 16-25.
+
+   (There was an additional difference between HP-GL/2 and pre-HP-GL/2.
+   In pre-HP-GL/2, the width of each space character [i.e. ASCII SP]
+   was 3/2 times as wide.  Yes, even for the fixed-width character sets;
+   the spacing tables compensated for that.)
+
+   Below in this file, after the fonts and the character width information,
+   we include the relevant kerning tables and spacing tables.  Each font
+   half (i.e. the lower half or upper half of a font) uses a kerning table.
+   A kerning table maps each character in a 128-character character set to
+   its row class and column class.  The kerning table also includes a
+   pointer to the appropriate spacing table, which as noted is indexed by
+   row class and column class.  So when computing the spacing between two
+   successive characters in a label, double indirection must be used. */
+
+
+/* NOTE: do NOT change the ordering of the fonts in this table.
+   Fonts may be referred to elsewhere by our internal numbering.
+   See in particular the code in g_alabel.c, h_alab_pcl.c for handling 
+   marker symbols in the ArcSymbol and StickSymbol fonts. */
 
 const struct stick_font_info_struct _stick_font_info[] = {
 {
@@ -3357,41 +3437,42 @@ const struct stick_font_info_struct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   28, 36,			/* raster size = 28x36 (for upper half) */
   10, 17,			/* charset numbers (pre-HP-GL/2) */
+  6, 7,				/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 40, 36, 44, 38, 34, 32, 44, 
-    36, 11, 28, 36, 31, 44, 37, 44, 
-    33, 42, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 30, 19, 26, 64, 
-    20, 30, 32, 32, 32, 33, 23, 32, 
-    28, 11, 17, 29, 11, 42, 28, 34, 
-    32, 32, 21, 29, 22, 28, 30, 42,
-    32, 30, 31, 21, 11, 21, 39,  0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31, 30, 26, 34, 28, 24, 22, 34, 
+    26,  1, 18, 26, 21, 34, 27, 34, 
+    23, 32, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 20,  9, 16, 54, 
+    10, 20, 22, 22, 22, 23, 13, 22, 
+    18,  1,  7, 19,  1, 32, 18, 24, 
+    22, 22, 11, 19, 12, 18, 20, 32,
+    22, 20, 21, 11,  1, 11, 29,  0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 32, 39, 40, 35, 11, 34,
-    26, 38, 31, 36, 38, 38, 38, 52,
-    16, 36, 38, 38, 20, 36, 33, 12,
-    38, 38, 32, 36, 31, 31, 36, 30,
-    40, 40, 40, 40, 40, 40, 41, 44,
-    34, 34, 34, 34, 20, 20, 26, 26,
-    44, 37, 44, 44, 44, 44, 44, 38,
-    42, 36, 36, 36, 36, 38, 40, 33,
-    30, 30, 30, 30, 30, 30, 38, 32,
-    33, 33, 33, 33, 20, 20, 20, 27,
-    32, 28, 34, 34, 34, 34, 34, 38,
-    34, 28, 28, 28, 28, 30, 32, 30},
+    28,  2, 22, 29, 30, 25,  1, 24,
+    16, 28, 21, 26, 28, 28, 28, 42,
+     6, 26, 28, 28, 10, 26, 23,  2,
+    28, 28, 22, 26, 21, 21, 26, 20,
+    30, 30, 30, 30, 30, 30, 31, 34,
+    24, 24, 24, 24, 10, 10, 16, 16,
+    34, 27, 34, 34, 34, 34, 34, 28,
+    32, 26, 26, 26, 26, 28, 30, 23,
+    20, 20, 20, 20, 20, 20, 28, 22,
+    23, 23, 23, 23, 10, 10, 10, 17,
+    22, 18, 24, 24, 24, 24, 24, 28,
+    24, 18, 18, 18, 18, 20, 22, 20},
   5,				/* offset */
   0, 1, false, true,
 },
@@ -3404,42 +3485,43 @@ const struct stick_font_info_struct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   28, 36,			/* raster size = 28x36 (for upper half) */
   10, 17,			/* charset numbers (pre-HP-GL/2) */
+  6, 7,				/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 40, 36, 44, 38, 34, 32, 44, 
-    36, 11, 28, 36, 31, 44, 37, 44, 
-    33, 42, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 30, 19, 26, 64, 
-    20, 30, 32, 32, 32, 33, 23, 32, 
-    28, 11, 17, 29, 11, 42, 28, 34, 
-    32, 32, 21, 29, 22, 28, 30, 42,
-    32, 30, 31, 21, 11, 21, 39,  0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31, 30, 26, 34, 28, 24, 22, 34, 
+    26,  1, 18, 26, 21, 34, 27, 34, 
+    23, 32, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 20,  9, 16, 54, 
+    10, 20, 22, 22, 22, 23, 13, 22, 
+    18,  1,  7, 19,  1, 32, 18, 24, 
+    22, 22, 11, 19, 12, 18, 20, 32,
+    22, 20, 21, 11,  1, 11, 29,  0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 32, 39, 40, 35, 11, 34,
-    26, 38, 31, 36, 38, 38, 38, 52,
-    16, 36, 38, 38, 20, 36, 33, 12,
-    38, 38, 32, 36, 31, 31, 36, 30,
-    40, 40, 40, 40, 40, 40, 41, 44,
-    34, 34, 34, 34, 20, 20, 26, 26,
-    44, 37, 44, 44, 44, 44, 44, 38,
-    42, 36, 36, 36, 36, 38, 40, 33,
-    30, 30, 30, 30, 30, 30, 38, 32,
-    33, 33, 33, 33, 20, 20, 20, 27,
-    32, 28, 34, 34, 34, 34, 34, 38,
-    34, 28, 28, 28, 28, 30, 32, 30},
-  5,
+    28,  2, 22, 29, 30, 25,  1, 24,
+    16, 28, 21, 26, 28, 28, 28, 42,
+     6, 26, 28, 28, 10, 26, 23,  2,
+    28, 28, 22, 26, 21, 21, 26, 20,
+    30, 30, 30, 30, 30, 30, 31, 34,
+    24, 24, 24, 24, 10, 10, 16, 16,
+    34, 27, 34, 34, 34, 34, 34, 28,
+    32, 26, 26, 26, 26, 28, 30, 23,
+    20, 20, 20, 20, 20, 20, 28, 22,
+    23, 23, 23, 23, 10, 10, 10, 17,
+    22, 18, 24, 24, 24, 24, 24, 28,
+    24, 18, 18, 18, 18, 20, 22, 20},
+  5,				/* offset */
   0, 2, true, true,
 },
 {
@@ -3451,42 +3533,43 @@ const struct stick_font_info_struct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   28, 36,			/* raster size = 28x36 (for upper half) */
   10, 17,			/* charset numbers (pre-HP-GL/2) */
+  6, 7,				/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 40, 36, 44, 38, 34, 32, 44, 
-    36, 11, 28, 36, 31, 44, 37, 44, 
-    33, 42, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 30, 19, 26, 64, 
-    20, 30, 32, 32, 32, 33, 23, 32, 
-    28, 11, 17, 29, 11, 42, 28, 34, 
-    32, 32, 21, 29, 22, 28, 30, 42,
-    32, 30, 31, 21, 11, 21, 39,  0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31, 30, 26, 34, 28, 24, 22, 34, 
+    26,  1, 18, 26, 21, 34, 27, 34, 
+    23, 32, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 20,  9, 16, 54, 
+    10, 20, 22, 22, 22, 23, 13, 22, 
+    18,  1,  7, 19,  1, 32, 18, 24, 
+    22, 22, 11, 19, 12, 18, 20, 32,
+    22, 20, 21, 11,  1, 11, 29,  0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 32, 39, 40, 35, 11, 34,
-    26, 38, 31, 36, 38, 38, 38, 52,
-    16, 36, 38, 38, 20, 36, 33, 12,
-    38, 38, 32, 36, 31, 31, 36, 30,
-    40, 40, 40, 40, 40, 40, 41, 44,
-    34, 34, 34, 34, 20, 20, 26, 26,
-    44, 37, 44, 44, 44, 44, 44, 38,
-    42, 36, 36, 36, 36, 38, 40, 33,
-    30, 30, 30, 30, 30, 30, 38, 32,
-    33, 33, 33, 33, 20, 20, 20, 27,
-    32, 28, 34, 34, 34, 34, 34, 38,
-    34, 28, 28, 28, 28, 30, 32, 30},
-  5,
+    28,  2, 22, 29, 30, 25,  1, 24,
+    16, 28, 21, 26, 28, 28, 28, 42,
+     6, 26, 28, 28, 10, 26, 23,  2,
+    28, 28, 22, 26, 21, 21, 26, 20,
+    30, 30, 30, 30, 30, 30, 31, 34,
+    24, 24, 24, 24, 10, 10, 16, 16,
+    34, 27, 34, 34, 34, 34, 34, 28,
+    32, 26, 26, 26, 26, 28, 30, 23,
+    20, 20, 20, 20, 20, 20, 28, 22,
+    23, 23, 23, 23, 10, 10, 10, 17,
+    22, 18, 24, 24, 24, 24, 24, 28,
+    24, 18, 18, 18, 18, 20, 22, 20},
+  5,				/* offset */
   0, 3, false, true,
 },
 {
@@ -3498,42 +3581,43 @@ const struct stick_font_info_struct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   28, 36,			/* raster size = 28x36 (for upper half) */
   10, 17,			/* charset numbers (pre-HP-GL/2) */
+  6, 7,				/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 40, 36, 44, 38, 34, 32, 44, 
-    36, 11, 28, 36, 31, 44, 37, 44, 
-    33, 42, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 30, 19, 26, 64, 
-    20, 30, 32, 32, 32, 33, 23, 32, 
-    28, 11, 17, 29, 11, 42, 28, 34, 
-    32, 32, 21, 29, 22, 28, 30, 42,
-    32, 30, 31, 21, 11, 21, 39,  0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31, 30, 26, 34, 28, 24, 22, 34, 
+    26,  1, 18, 26, 21, 34, 27, 34, 
+    23, 32, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 20,  9, 16, 54, 
+    10, 20, 22, 22, 22, 23, 13, 22, 
+    18,  1,  7, 19,  1, 32, 18, 24, 
+    22, 22, 11, 19, 12, 18, 20, 32,
+    22, 20, 21, 11,  1, 11, 29,  0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 32, 39, 40, 35, 11, 34,
-    26, 38, 31, 36, 38, 38, 38, 52,
-    16, 36, 38, 38, 20, 36, 33, 12,
-    38, 38, 32, 36, 31, 31, 36, 30,
-    40, 40, 40, 40, 40, 40, 41, 44,
-    34, 34, 34, 34, 20, 20, 26, 26,
-    44, 37, 44, 44, 44, 44, 44, 38,
-    42, 36, 36, 36, 36, 38, 40, 33,
-    30, 30, 30, 30, 30, 30, 38, 32,
-    33, 33, 33, 33, 20, 20, 20, 27,
-    32, 28, 34, 34, 34, 34, 34, 38,
-    34, 28, 28, 28, 28, 30, 32, 30},
-  5,
+    28,  2, 22, 29, 30, 25,  1, 24,
+    16, 28, 21, 26, 28, 28, 28, 42,
+     6, 26, 28, 28, 10, 26, 23,  2,
+    28, 28, 22, 26, 21, 21, 26, 20,
+    30, 30, 30, 30, 30, 30, 31, 34,
+    24, 24, 24, 24, 10, 10, 16, 16,
+    34, 27, 34, 34, 34, 34, 34, 28,
+    32, 26, 26, 26, 26, 28, 30, 23,
+    20, 20, 20, 20, 20, 20, 28, 22,
+    23, 23, 23, 23, 10, 10, 10, 17,
+    22, 18, 24, 24, 24, 24, 24, 28,
+    24, 18, 18, 18, 18, 20, 22, 20},
+  5,				/* offset */
   0, 4, true, true,
 },
 {
@@ -3545,37 +3629,38 @@ const struct stick_font_info_struct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   30, 36,			/* raster size = 30x36 (for upper half) */
   16, 18,			/* charset numbers (pre-HP-GL/2) */
+  8, 9,				/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 40, 36, 44, 38, 34, 32, 44, 
-    36, 11, 28, 36, 31, 44, 37, 44, 
-    33, 42, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 35, 19, 26, 64, 
-    20, 30, 32, 32, 32, 33, 23, 32, 
-    28, 11, 17, 29, 11, 42, 28, 34, 
-    32, 32, 21, 29, 22, 28, 30, 42,
-    32, 30, 31, 21, 11, 21, 52,  0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31, 30, 26, 34, 28, 24, 22, 34, 
+    26,  1, 18, 26, 21, 34, 27, 34, 
+    23, 32, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 25,  9, 16, 54, 
+    10, 20, 22, 22, 22, 23, 13, 22, 
+    18,  1,  7, 19,  1, 32, 18, 24, 
+    22, 22, 11, 19, 12, 18, 20, 32,
+    22, 20, 21, 11,  1, 11, 42,  0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    40, 18, 27, 27, 18, 18, 38, 38, 
-    33, 36, 36, 37, 39, 40, 33, 37, 
-    36, 40, 40, 38, 40, 40, 38, 40, 
-    38, 40, 36, 38, 39, 40, 38, 38, 
-    38, 38, 38, 40, 31, 40, 40, 36, 
-    37, 38, 40, 34, 37, 40, 37, 37, 
-    37, 40, 40, 40, 40, 40, 36, 40, 
-    27, 40, 31, 32, 36, 38, 17, 20, 
+    30,  8, 17, 17,  8,  8, 28, 28, 
+    23, 26, 26, 27, 29, 30, 23, 27, 
+    26, 30, 30, 28, 30, 30, 28, 30, 
+    28, 30, 26, 28, 29, 30, 28, 28, 
+    28, 28, 28, 30, 21, 30, 30, 26, 
+    27, 28, 30, 24, 27, 30, 27, 27, 
+    27, 30, 30, 30, 30, 30, 26, 30, 
+    17, 30, 21, 22, 26, 28,  7, 10, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3592,42 +3677,43 @@ const struct stick_font_info_struct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   30, 36,			/* raster size = 30x36 (for upper half) */
   16, 18,			/* charset numbers (pre-HP-GL/2) */
+  8, 9,				/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 40, 36, 44, 38, 34, 32, 44, 
-    36, 11, 28, 36, 31, 44, 37, 44, 
-    33, 42, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 35, 19, 26, 64, 
-    20, 30, 32, 32, 32, 33, 23, 32, 
-    28, 11, 17, 29, 11, 42, 28, 34, 
-    32, 32, 21, 29, 22, 28, 30, 42,
-    32, 30, 31, 21, 11, 21, 52,  0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31, 30, 26, 34, 28, 24, 22, 34, 
+    26,  1, 18, 26, 21, 34, 27, 34, 
+    23, 32, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 25,  9, 16, 54, 
+    10, 20, 22, 22, 22, 23, 13, 22, 
+    18,  1,  7, 19,  1, 32, 18, 24, 
+    22, 22, 11, 19, 12, 18, 20, 32,
+    22, 20, 21, 11,  1, 11, 42,  0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    40, 18, 27, 27, 18, 18, 38, 38, 
-    33, 36, 36, 37, 39, 40, 33, 37, 
-    36, 40, 40, 38, 40, 40, 38, 40, 
-    38, 40, 36, 38, 39, 40, 38, 38, 
-    38, 38, 38, 40, 31, 40, 40, 36, 
-    37, 38, 40, 34, 37, 40, 37, 37, 
-    37, 40, 40, 40, 40, 40, 36, 40, 
-    27, 40, 31, 32, 36, 38, 17, 20, 
+    30,  8, 17, 17,  8,  8, 28, 28, 
+    23, 26, 26, 27, 29, 30, 23, 27, 
+    26, 30, 30, 28, 30, 30, 28, 30, 
+    28, 30, 26, 28, 29, 30, 28, 28, 
+    28, 28, 28, 30, 21, 30, 30, 26, 
+    27, 28, 30, 24, 27, 30, 27, 27, 
+    27, 30, 30, 30, 30, 30, 26, 30, 
+    17, 30, 21, 22, 26, 28,  7, 10, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0},
-  5,
+  5,				/* offset */
   1, 2, true, false,
 },
 {
@@ -3639,42 +3725,43 @@ const struct stick_font_info_struct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   30, 36,			/* raster size = 30x36 (for upper half) */
   16, 18,			/* charset numbers (pre-HP-GL/2) */
+  8, 9,				/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 40, 36, 44, 38, 34, 32, 44, 
-    36, 11, 28, 36, 31, 44, 37, 44, 
-    33, 42, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 35, 19, 26, 64, 
-    20, 30, 32, 32, 32, 33, 23, 32, 
-    28, 11, 17, 29, 11, 42, 28, 34, 
-    32, 32, 21, 29, 22, 28, 30, 42,
-    32, 30, 31, 21, 11, 21, 52,  0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31, 30, 26, 34, 28, 24, 22, 34, 
+    26,  1, 18, 26, 21, 34, 27, 34, 
+    23, 32, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 25,  9, 16, 54, 
+    10, 20, 22, 22, 22, 23, 13, 22, 
+    18,  1,  7, 19,  1, 32, 18, 24, 
+    22, 22, 11, 19, 12, 18, 20, 32,
+    22, 20, 21, 11,  1, 11, 42,  0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    40, 18, 27, 27, 18, 18, 38, 38, 
-    33, 36, 36, 37, 39, 40, 33, 37, 
-    36, 40, 40, 38, 40, 40, 38, 40, 
-    38, 40, 36, 38, 39, 40, 38, 38, 
-    38, 38, 38, 40, 31, 40, 40, 36, 
-    37, 38, 40, 34, 37, 40, 37, 37, 
-    37, 40, 40, 40, 40, 40, 36, 40, 
-    27, 40, 31, 32, 36, 38, 17, 20, 
+    30,  8, 17, 17,  8,  8, 28, 28, 
+    23, 26, 26, 27, 29, 30, 23, 27, 
+    26, 30, 30, 28, 30, 30, 28, 30, 
+    28, 30, 26, 28, 29, 30, 28, 28, 
+    28, 28, 28, 30, 21, 30, 30, 26, 
+    27, 28, 30, 24, 27, 30, 27, 27, 
+    27, 30, 30, 30, 30, 30, 26, 30, 
+    17, 30, 21, 22, 26, 28,  7, 10, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0},
-  5,
+  5,				/* offset */
   1, 3, false, false,
 },
 {
@@ -3686,71 +3773,73 @@ const struct stick_font_info_struct _stick_font_info[] = {
   28, 36,			/* raster size = 28x36 (for lower half)*/
   30, 36,			/* raster size = 30x36 (for upper half) */
   16, 18,			/* charset numbers (pre-HP-GL/2) */
+  8, 9,				/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 40, 36, 44, 38, 34, 32, 44, 
-    36, 11, 28, 36, 31, 44, 37, 44, 
-    33, 42, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 35, 19, 26, 64, 
-    20, 30, 32, 32, 32, 33, 23, 32, 
-    28, 11, 17, 29, 11, 42, 28, 34, 
-    32, 32, 21, 29, 22, 28, 30, 42,
-    32, 30, 31, 21, 11, 21, 52,  0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31, 30, 26, 34, 28, 24, 22, 34, 
+    26,  1, 18, 26, 21, 34, 27, 34, 
+    23, 32, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 25,  9, 16, 54, 
+    10, 20, 22, 22, 22, 23, 13, 22, 
+    18,  1,  7, 19,  1, 32, 18, 24, 
+    22, 22, 11, 19, 12, 18, 20, 32,
+    22, 20, 21, 11,  1, 11, 42,  0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    40, 18, 27, 27, 18, 18, 38, 38, 
-    33, 36, 36, 37, 39, 40, 33, 37, 
-    36, 40, 40, 38, 40, 40, 38, 40, 
-    38, 40, 36, 38, 39, 40, 38, 38, 
-    38, 38, 38, 40, 31, 40, 40, 36, 
-    37, 38, 40, 34, 37, 40, 37, 37, 
-    37, 40, 40, 40, 40, 40, 36, 40, 
-    27, 40, 31, 32, 36, 38, 17, 20, 
+    30,  8, 17, 17,  8,  8, 28, 28, 
+    23, 26, 26, 27, 29, 30, 23, 27, 
+    26, 30, 30, 28, 30, 30, 28, 30, 
+    28, 30, 26, 28, 29, 30, 28, 28, 
+    28, 28, 28, 30, 21, 30, 30, 26, 
+    27, 28, 30, 24, 27, 30, 27, 27, 
+    27, 30, 30, 30, 30, 30, 26, 30, 
+    17, 30, 21, 22, 26, 28,  7, 10, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0},
-  5,
+  5,				/* offset */
   1, 4, true, false,
 },
 {
-  "ArcMath",			/* #8 (our numbering) */
+  "ArcSymbol",			/* #8 (our numbering) */
   false,			/* not basic font */
-  49, 1, 0, 0, 13,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  49, 1, 0, 0, 595,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 40.0 / 64.0), /* 40 = height of top of parenthesis */
   (int)(1000 * 1.4 * 9.0 / 64.0), /* 9 = depth of descender of `p' and `q' */
   28, 36,			/* raster size = 28x36 (for lower half) */
   28, 36,			/* raster size = 28x36 (for upper half) */
   15, -1,			/* charset numbers (pre-HP-GL/2) */
+  10, 11,			/* kerning tables (pre-HP-GL/2) */
   {
     /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    38, 12, 20, 38, 36, 37, 38, 13, 
-    18, 18, 36, 38, 13, 38, 12, 30, 
-    36, 19, 32, 34, 39, 33, 35, 33, 
-    34, 35, 12, 13, 37, 37, 37, 30, 
-    41, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 
-    31, 11, 35, 36, 38, 36, 36, 52, 
-    37, 38, 37, 19, 30, 19, 26, 64, 
-    20, 40, 40, 40, 40, 10, 39, 39, 
-    39, 39, 37, 37, 37, 37, 37, 37, 
-    36, 36, 43, 36, 43, 36, 44, 36, 
-    28, 37, 16, 21, 11, 21, 39, 0,
+    28,  2, 10, 28, 26, 27, 28,  3, 
+     8,  8, 26, 28,  3, 28,  2, 20, 
+    26,  9, 22, 24, 29, 23, 25, 23, 
+    24, 25,  2,  3, 27, 27, 27, 20, 
+    31,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0, 
+    21,  1, 25, 26, 28, 26, 26, 42, 
+    27, 28, 27,  9, 20,  9, 16, 54, 
+    10, 30, 30, 30, 30,  0, 29, 29, 
+    29, 29, 27, 27, 27, 27, 27, 27, 
+    26, 26, 33, 26, 33, 26, 34, 26, 
+    18, 27,  6, 11,  1, 11, 29, 0,
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3780,33 +3869,42 @@ const struct stick_font_info_struct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   0, 7,				/* charset numbers (pre-HP-GL/2) */
+  0, 1,				/* kerning tables (pre-HP-GL/2) */
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48}, 
+    /* lower half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0,
+    /* upper half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32},
   8,				/* offset */
   3, 1, false, true,
 },
@@ -3819,34 +3917,43 @@ const struct stick_font_info_struct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   0, 7,				/* charset numbers (pre-HP-GL/2) */
+  0, 1,				/* kerning tables (pre-HP-GL/2) */
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48}, 
-  8,
+    /* lower half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0,
+    /* upper half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32},
+  8,				/* offset */
   3, 2, true, true,
 },
 {
@@ -3858,34 +3965,43 @@ const struct stick_font_info_struct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   0, 7,				/* charset numbers (pre-HP-GL/2) */
+  0, 1,				/* kerning tables (pre-HP-GL/2) */
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48}, 
-  8,
+    /* lower half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0,
+    /* upper half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32},
+  8,				/* offset */
   3, 3, false, true,
 },
 {
@@ -3897,34 +4013,43 @@ const struct stick_font_info_struct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   0, 7,				/* charset numbers (pre-HP-GL/2) */
+  0, 1,				/* kerning tables (pre-HP-GL/2) */
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48}, 
-  8,
+    /* lower half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0,
+    /* upper half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32},
+  8,				/* offset */
   3, 4, true, true,
 },
 {
@@ -3936,36 +4061,42 @@ const struct stick_font_info_struct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   6, 8,				/* charset numbers (pre-HP-GL/2) */
+  2, 3,				/* kerning tables (pre-HP-GL/2) */
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 
+    /* lower half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0,
+    /* upper half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0},
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32},
   8,				/* offset */
   4, 1, false, false,
 },
@@ -3978,36 +4109,42 @@ const struct stick_font_info_struct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   6, 8,				/* charset numbers (pre-HP-GL/2) */
+  2, 3,				/* kerning tables (pre-HP-GL/2) */
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 
+    /* lower half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0,
+    /* upper half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0},
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32},
   8,
   4, 2, true, false,
 },
@@ -4020,36 +4157,42 @@ const struct stick_font_info_struct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   6, 8,				/* charset numbers (pre-HP-GL/2) */
+  2, 3,				/* kerning tables (pre-HP-GL/2) */
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 
+    /* lower half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0,
+    /* upper half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0},
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32},
   8,
   4, 3, false, false,
 },
@@ -4062,65 +4205,73 @@ const struct stick_font_info_struct _stick_font_info[] = {
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   6, 8,				/* charset numbers (pre-HP-GL/2) */
+  2, 3,				/* kerning tables (pre-HP-GL/2) */
   {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 
+    /* lower half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0,
+    /* upper half */
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0},
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32},
   8,
   4, 4, true, false,
 },
 {
-  "StickMath",			/* #17 (our numbering) */
+  "StickSymbol",		/* #17 (our numbering) */
   false,			/* not basic font */
-  48, 0, 0, 0, 13,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
+  48, 0, 0, 0, 595,		/* HP-GL/2 t'face, spacing, italic, wt., symset */
   (int)(1000 * 1.4 * 36.0 / 64.0), /* 36 = height of top of parenthesis */
   (int)(1000 * 1.4 * 8.0 / 64.0), /* 8 = depth of descender of `p' and `q' */
   32, 32,			/* raster size = 32x32 (for lower half) */
   32, 32,			/* raster size = 32x32 (for upper half) */
   5, -1,			/* charset numbers (pre-HP-GL/2) */
+  4, 5,				/* kerning tables (pre-HP-GL/2) */
   {
+    /* lower half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
-    48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48, 
-    48, 48, 48, 48, 48, 0, 48, 48, 
-    48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 48,
-    48, 48, 48, 48, 48, 48, 48, 0, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32, 
+    32, 32, 32, 32, 32, 32, 32, 32, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32,  0,  0,  0,  0,  0,  0,  0,
+    0,   0,  0,  0,  0,  0,  0,  0, 
+    32, 32, 32, 32, 32, 32, 32, 32, 
+    32, 32, 32, 32, 32, 32, 32, 32, 
+    32, 32, 32, 32, 32,  0, 32, 32, 
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 0, 
     /* upper half */
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 
@@ -4149,6 +4300,7 @@ const struct stick_font_info_struct _stick_font_info[] = {
   0, 0,
   0, 0,
   0, 0,
+  0, 0,				/* kerning tables (pre-HP-GL/2) */
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    
@@ -4198,12 +4350,636 @@ const struct typeface_info_struct _stick_typeface_info[] =
   { 5, { 0, 0, 1, 2, 3, 999, 999, 999, 999, 999 } },
   /* ArcANK, #1 */
   { 5, { 4, 4, 5, 6, 7, 999, 999, 999, 999, 999 } },
-  /* ArcMath, #2 */
+  /* ArcSymbol, #2 */
   { 2, { 8, 8, 999, 999, 999, 999, 999, 999, 999, 999 } },
   /* Stick, #3 */
   { 5, { 9, 9, 10, 11, 12, 999, 999, 999, 999, 999 } },
   /* StickANK, #4 */
   { 5, { 13, 13, 14, 15, 16, 999, 999, 999, 999, 999 } },
-  /* StickMath, #5 */
+  /* StickSymbol, #5 */
   { 2, { 17, 17, 999, 999, 999, 999, 999, 999, 999, 999 } },
+};
+
+/* Kerning information for upper and lower halves of the Stick fonts, in
+   pre-HP-GL/2, e.g., in the HP7550A pen plotter.  For background info, see
+   "Firmware Determines Plotter Personality", by L. W. Hennessee,
+   A. K. Frankel, M. A. Overton, and R. B. Smith, Hewlett-Packard Journal,
+   Nov. 1981, pp. 16-25.
+
+   Each kerning table specifies (1) an HP spacing table [see below], and
+   (2) a map that takes each character in the 128-character font half to
+   the appropriate row class and column class, i.e. `right edge class' and
+   `left edge class'.  Each of HP's spacing tables is indexed by row class
+   and column class.
+
+   The map from characters to row/column classes depends on our reencoding,
+   if any.  I.e., HP wouldn't necessarily recognize the kerning tables,
+   unlike the underlying spacing tables.  For example, several of the
+   kerning tables identified as `upper half' are indexed by characters in
+   the upper half of the ISO-Latin-1 encoding.  We elsewhere map our
+   ISO-Latin-1 fonts into HP's native Roman-8 encoding (see h_stick.h),
+   which is why we index by ISO-Latin-1 rather than Roman-8 here. */
+
+/* our numbering of HP's spacing tables (see below) */
+#define SPACING_FIXED_WIDTH 0
+#define SPACING_VARIABLE_WIDTH 1
+#define SPACING_VARIABLE_WIDTH_KATAKANA 2
+
+/* kerning tables for 128-character font halves */
+const struct stick_kerning_table_struct _stick_kerning_tables[] =
+{
+  /* kerning table #0, used for lower half of our 4 basic Stick fonts
+     (ASCII encoding) */
+  {
+    SPACING_FIXED_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0
+    },
+  },
+  /* kerning table #1, used for upper half of our 4 basic Stick fonts
+     (ISO-Latin-1 encoding) */
+  {
+    SPACING_FIXED_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0
+    },
+  },
+  /* kerning table #2, used for lower half of StickANK (JIS ASCII encoding) */
+  {
+    SPACING_FIXED_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0
+    },
+  },
+  /* kerning table #3, used for upper half of StickANK (half-width Katakana
+     encoding, also called `Kana-7') */
+  {
+    SPACING_FIXED_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+    },
+  },
+  /* kerning table #4, used for lower half of StickSymbol (HP's `Special
+     Symbols' encoding; same as ASCII except that A..O are centered marker
+     symbols; P, Q are misc. chars, a..z are mathematical symbols) */
+  {
+    SPACING_FIXED_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0
+    },
+  },
+  /* kerning table #5, used for upper half of StickSymbol (empty) */
+  {
+    SPACING_FIXED_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0
+    },
+  },
+  /* kerning table #6, used for lower half of our 4 basic Arc fonts (ASCII
+     encoding) */
+  {
+    SPACING_VARIABLE_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 2, 2, 2, 2, 1,
+      3, 4, 5, 6, 1, 6, 1, 7,
+      6, 8, 9, 2,10,11,12,11,
+      2,12, 1, 1, 6, 6, 6,13,
+      6,14,13, 4, 4,15,16,15,
+      1, 1,15,17, 3, 1, 1, 4,
+     16,18,13,13, 7,15, 7, 7,
+     17, 7,17, 3, 1, 1,14, 3,
+      7,19, 5, 5,20, 5,21,20,
+     22,20,20,23,20,22,22, 5,
+      5,20,21,19,21,20,23,23,
+     23,23,23, 3, 1,13, 6, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 2, 2, 2, 2, 1,
+      3, 4, 5, 6, 1, 6, 1, 7,
+      6, 8, 9, 2,10, 9, 6, 8,
+      2, 2, 1, 1, 6, 6, 6,11,
+      6, 7,12, 3,12,12,12, 3,
+     12,12, 4,12,12,12,12, 3,
+     12, 3,12,11,13,14,13,13,
+     15,13,15,12,13,13, 7, 4,
+     13,16, 1, 5, 5, 5,17, 5,
+      1, 1,18, 1, 1, 1, 1, 5,
+      1, 5, 1,16,17,16,19,19,
+     20,19,20,11,12,13, 6, 0
+    }
+  },
+  /* kerning table #7, used for upper half of our 4 basic Arc fonts
+     (ISO-Latin-1 encoding) */
+  {
+    SPACING_VARIABLE_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 5, 2,18, 7, 1, 2,
+      4, 0,19, 2, 0, 6, 0, 3,
+      1, 6, 0, 0, 4, 0, 0, 0,
+      0, 0, 5, 2, 2, 2, 0,13,
+     14,14,14,14,14,14,15, 4,
+     15,15,15,15, 1, 1, 1, 1,
+      4, 1, 4, 4, 4, 4, 4, 0,
+     18,15,15,15,15, 0,16,13,
+     19,19,19,19,19,19, 5, 5,
+      5, 5, 5, 5,21,21,21,21,
+     21,22, 5, 5, 5, 5, 5, 0,
+      5,20,20,20,20, 0, 5,23
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 5, 2, 3,13,12, 2,
+      1, 0,16, 2, 0, 6, 0, 4,
+      1, 6, 0, 0, 1, 0, 0, 0,
+      0, 0, 5, 2, 2, 2, 0,11,
+      7, 7, 7, 7, 7, 7, 7, 3,
+     12,12,12,12,12,12,12,12,
+     13,12, 3, 3, 3, 3, 3, 0,
+      3,14,14,14,14, 0,13,12,
+     16,16,16,16,16,16,16, 5,
+      5, 5, 5, 5,17,17,17,17,
+      5, 1, 5, 5, 5, 5, 5, 0,
+      5,16,16,16,16, 0, 1,19
+    }
+  },
+  /* kerning table #8, used for lower half of ArcANK (JIS ASCII encoding;
+     same as basic lower-half Arc font table above except that \ and ~ are
+     different characters (yen and overbar respectively) */
+  {
+    SPACING_VARIABLE_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 2, 2, 2, 2, 1,
+      3, 4, 5, 6, 1, 6, 1, 7,
+      6, 8, 9, 2,10,11,12,11,
+      2,12, 1, 1, 6, 6, 6,13,
+      6,14,13, 4, 4,15,16,15,
+      1, 1,15,17, 3, 1, 1, 4,
+     16,18,13,13, 7,15, 7, 7,
+     17, 7,17, 3, 7, 1,14, 3,
+      7,19, 5, 5,20, 5,21,20,
+     22,20,20,23,20,22,22, 5,
+      5,20,21,19,21,20,23,23,
+     23,23,23, 3, 1,13, 3, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 2, 2, 2, 2, 1,
+      3, 4, 5, 6, 1, 6, 1, 7,
+      6, 8, 9, 2,10, 9, 6, 8,
+      2, 2, 1, 1, 6, 6, 6,11,
+      6, 7,12, 3,12,12,12, 3,
+     12,12, 4,12,12,12,12, 3,
+     12, 3,12,11,13,14,13,13,
+     15,13,15,12,13,13, 7, 4,
+     13,16, 1, 5, 5, 5,17, 5,
+      1, 1,18, 1, 1, 1, 1, 5,
+      1, 5, 1,16,17,16,19,19,
+     20,19,20,11,12,13, 4, 0
+    }
+  },
+  /* kerning table #9, used for upper half of ArcANK (half-width Katakana
+     encoding, also called `Kana-7') */
+  {
+    SPACING_VARIABLE_WIDTH_KATAKANA,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 1, 1, 2, 3, 3,
+      3, 3, 4, 3, 3, 4, 4, 3,
+      2, 5, 6, 3, 4, 5, 7, 2,
+      3, 5, 7, 5, 3, 4, 4, 3,
+      3, 2, 3, 2, 8, 5, 4, 4,
+      4, 3, 9, 4, 3, 9, 4, 5,
+      4, 9, 3, 4, 5, 4, 7, 3,
+      7, 4, 3, 7, 3, 3,10,10,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 2, 3, 1, 4, 4, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      4, 5, 1, 4, 4, 4, 4, 4,
+      6, 7, 4, 5, 4, 4, 5, 5,
+      6, 4, 5, 4, 2, 5, 4, 4,
+      4, 8, 4, 2, 5, 9, 4, 5, 
+      4,10, 3, 4, 5, 4, 4, 4,
+      2, 4, 2, 2, 4, 4,11,11,
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0
+    }
+  },
+  /* kerning table #10, used for lower half of ArcSymbol (HP's `Special
+     Symbols' encoding; same as ASCII except that A..O are centered marker
+     symbols; P, Q are misc. chars, a..z are mathematical symbols) */
+  {
+    SPACING_VARIABLE_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 2, 2, 2, 2, 1,
+      3, 4, 5, 6, 1, 6, 1, 7,
+      6, 8, 9, 2,10,11,12,11,
+      2,12, 1, 1, 6, 6, 6,13,
+      6, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      3, 1,13,13, 7,15, 7, 7,
+     17, 7,17, 3, 1, 1,14, 3,
+      7, 2, 2, 2, 2, 0, 6, 6,
+      6, 6, 6, 6, 6, 6, 6, 6,
+      6, 6, 6, 7, 6, 7, 2, 6,
+      5, 6, 1, 3, 1,13, 6, 0
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 1, 1, 2, 2, 2, 2, 1,
+      3, 4, 5, 6, 1, 6, 1, 7,
+      6, 8, 9, 2,10, 9, 6, 8,
+      2, 2, 1, 1, 6, 6, 6,11,
+      6, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+     17, 1,12,11,13,14,13,13,
+     15,13,15,12,13,13, 7, 4,
+     13, 2, 2, 2, 2, 0, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7,11, 7,13, 2, 7,
+      5, 7, 1,11,12,13, 6, 0
+    }
+  },
+  /* kerning table #11, used for upper half of ArcSymbol font (empty) */
+  {
+    SPACING_VARIABLE_WIDTH,
+    {				/* row classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+    },
+    {				/* column classes */
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 
+    }
+  }
+};
+
+/* The following are HP's device-resident spacing tables, as used in the
+   HP7550A pen plotter.  Order agrees with the SPACING_* definitions above.
+   There are three, because there are three distinct sorts of old-style
+   128-character HP character set: (1) fixed width, (2) variable width, and
+   (3) variable width Japanese Katakana.  Characters in the three different
+   sorts of character set are defined on abstract rasters of different
+   sizes.  Nominal character cell widths are 48 units, 42 units, and 45
+   units, respectively.  Nominal `raster widths' are 2/3 of these: 32
+   units, 28 units, and 30 units, respectively.  Character cell and raster
+   widths are to be taken literally only for the fixed-width character
+   sets.  But font size, measured horizontally, is always twice the nominal
+   raster width, i.e., 4/3 times the nominal character cell width. */
+
+/* 2x2 spacing table for the fixed-width character sets of pre-HP-GL/2,
+   which we use in our Stick, StickSymbol, etc. fonts.  In these units,
+   character cell width equals 48, and font size (measured horizontally)
+   equals 64.
+  
+   This spacing table is a kludge.  In pre-HP-GL/2 the width tables for the
+   `fixed width' character sets don't list every character as having width
+   48 (the nominal width for the space character is 48, but all other
+   characters have width 32).  So this spacing table is employed to fix
+   things up: e.g., the spacing between any two non-space characters is
+   made equal to 16 units. */
+const short _fixed_width_spacings[] =
+{
+    0,  8,
+    8, 16
+};
+
+/* 24x21 spacing table for the variable-width character sets of pre-HP-GL/2
+   (other than variable-width Katakana), which we use in our Arc,
+   ArcSymbol, etc., fonts.  In these units, nominal character cell width
+   (see above) equals 42, and font size (measured horizontally) equals
+   56. */
+const short _variable_width_spacings[] =
+{
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0,14,13,13,10,11,13,11,12,13,12,13,17,11,14,12,13,11,10,11,11,
+  0,12,18,11, 8,10,18,10,18,18,18,11,13, 9,13,10,11, 9, 6, 9, 8,
+  0, 8, 8, 6, 6, 8, 6, 7, 8, 8, 7, 8, 9, 3, 9, 7, 8, 3, 3, 3, 8,
+  0,12,11,11, 8,10,11, 9, 8,10, 9,11,13, 8,12, 9,11,10, 8, 9, 8,
+  0,12,10,10, 9,10,10, 9, 7, 9, 8,10,12, 6,11, 7,11,10, 8,10,10,
+  0,12,16,11, 8,10,16, 9,16,16,16,11,13, 8,12, 9,11,10, 8, 9, 8,
+  0,10, 9, 8, 3, 6, 8, 6, 8, 8, 6, 9,11, 8,11, 9, 6, 8, 6, 7, 7,
+  0,14,33,13,10,11,33,11,33,33,33,13,17,11,14,12,13,11,10,11,11,
+  0,10,20,11, 8, 9,20,10,20,20,20,11,13, 8,11, 8,10,10, 7,10, 9,
+  0,10,13,10, 8, 9,13,10,13,13,13,11,13, 8,11, 8,10,10, 7,10, 9,
+  0,10,19,10, 8, 9,19,10,19,19,19,11,13, 8,11, 8,10,10, 7,10, 9,
+  0,12,17,11, 8,10,17, 9,17,17,17,11,13, 8,12, 9,11,10, 8, 9, 8,
+  0,12,11,11, 8,10,11,10,10,11,10,11,13, 9,13,10,11, 9, 6, 9, 8,
+  0,11, 9, 9, 7,10, 9, 8, 8,10, 7, 9,11, 6,10, 8,11, 8,10, 8, 8,
+  0,13,12,12, 9,11,12,11,11,11,11,12,15,11,13,11,11,11,10,11,11,
+  0,11,10, 9, 7, 8, 9, 7, 8, 9, 8,10,11, 9,11, 9, 8,10, 6, 9, 9,
+  0,11,10, 9, 7, 7, 9, 8, 9, 8, 7,10,11, 8,11, 9, 8, 6, 8, 7, 8,
+  0,10,10,11, 9,11,11, 8,10,10,10,10,12, 8,12, 9,11,10, 6, 8, 8,
+  0,13,11,11,10,11,11, 9, 8,11, 8,11,11, 8,11, 9,11,10, 9,10,11,
+  0,14,11,12,10,12,12, 9,11,12,10,11,14,11,13,11,12,11,10,11,11,
+  0,12,10,10, 6, 9,10, 7, 9, 9, 7,10,11, 8,11, 9,10,11, 8,11,10,
+  0,13,11,11, 9,11,11,10,10,11, 8,11,13, 8,13,10,12,11,10,11,11,
+  0,11, 9, 9, 6,10, 9, 8, 9, 9, 8, 9,11, 8,11, 8, 9,10, 9, 9, 9
+};
+
+/* 11x12 spacing table for the variable-width Katakana character set of
+   pre-HP-GL/2, which we use as the upper half of our ArcANK font.  In
+   these units, nominal character cell width (see above) equals 45, and
+   font size (measured horizontally) equals 60. */
+const short _variable_width_katakana_spacings[] =
+{
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+  0, 10,14,10,10,10,10,10,10,10,10,10,
+  0, 10,14,6, 10,10,6, 10,2, 10,10,2, 
+  0, 10,14,10,10,10,10,10,6, 10,10,0, 
+  0, 10,14,10,10,10,10,10,10,6, 10,0, 
+  0, 6, 14,2, 10,10,6, 6, 2, 6, 6, 0, 
+  0, 10,14,6, 10,10,6, 6, 6, 6, 10,10,
+  0, 10,14,10,14,14,10,10,10,10,14,0, 
+  0, 10,14,6, 10,10,6, 10,2, 10,10,0, 
+  0, 10,14,10,10,6, 10,10,10,6, 10,0, 
+  0, 2, 10,2, 10,10,2, 6, 2, 10,2, 10
+};
+
+/* array we use to access spacing tables by number */
+const struct stick_spacing_table_struct _stick_spacing_tables[] =
+{
+  /* spacing table #0, SPACING_FIXED */
+  {
+    2, 2,			/* number of rows, cols */
+    _fixed_width_spacings
+  },
+  /* spacing table #1, SPACING_VARIABLE_WIDTH */
+  {
+    24, 21,			/* number of rows, cols */
+    _variable_width_spacings
+  },
+  /* spacing table #2, SPACING_VARIABLE_WIDTH_KATAKANA */
+  {
+    11, 12,			/* number of rows, cols */
+    _variable_width_katakana_spacings
+  }
 };

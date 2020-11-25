@@ -77,6 +77,7 @@ X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
+ps_fonts_in_pcl = @ps_fonts_in_pcl@
 
 info_TEXINFOS = plotutils.texi
 

@@ -9,8 +9,7 @@
    arbitrary (non-integer) font sizes for PS fonts only on paper.  The
    current releases (3.1 and 3.2) of xfig round them to integers.  So we
    quantize the user-specified font size in such a way that the font size
-   that fig will see, and use, will be precisely an integer.  We store this
-   in the fig_font_point_size field in the current drawing state. */
+   that fig will see, and use, will be precisely an integer. */
 
 #include "sys-defines.h"
 #include "plot.h"

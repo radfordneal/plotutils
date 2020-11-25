@@ -1,9 +1,9 @@
 /* This file contains the erase method, which is a standard part of
    libplot.  It erases all objects on the graphics device display.
 
-   This generic version of the method, designed for device drivers that do
-   not do real-time plotting, simply resets the output buffer, discarding
-   all objects written to it. */
+   This generic version is designed mostly for Plotters that do not do
+   real-time plotting.  It simply resets the output buffer for the current
+   `page', discarding all objects written to it. */
 
 #include "sys-defines.h"
 #include "plot.h"

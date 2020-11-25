@@ -21,9 +21,10 @@ see "Understanding Japanese Information Processing", by Ken Lunde
 (O'Reilly, 1993).
 
 The Hiragana and Katakana are indexed in the table below as 0x21..0x73 and
-0x21..0x76, respectively.  A transliteration of each Kana is included.  For
-example, the Kana `ka' is listed as 0x2b.  The corresponding Hiragana would
-be 0x242b, and the corresponding Katakana would be 0x252b.
+0x21..0x76, respectively.  A transliteration of each Kana is included,
+according to the Hepburn system.  For example, the Kana `ka' is listed as
+0x2b.  The corresponding Hiragana would be 0x242b, and the corresponding
+Katakana would be 0x252b.
 
 To draw Hiragana `ka', you would use the escape sequence "\#J242b".  To
 draw Katakana `ka', you would use the escape sequence "\#J252b".  These

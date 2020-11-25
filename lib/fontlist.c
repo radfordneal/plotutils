@@ -36,11 +36,18 @@ extern struct vector_font_info_struct _vector_font_info[];
 struct ps_font_info_struct 
 {
   const char *ps_name;		/* the postscript font name */
+  const char *ps_name_alt;	/* alternative PS font name, if non-NULL */
   const char *x_name;		/* the X Windows font name */
   const char *x_name_alt;	/* alternative X Windows font name */
+  int pcl_typeface;		/* the PCL typeface number */
+  int pcl_spacing;		/* 0=fixed width, 1=variable */
+  int pcl_posture;		/* 0=upright, 1=italic, etc. */
+  int pcl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
+  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
   int font_ascent;		/* the font's ascent (from bounding box) */
   int font_descent;		/* the font's descent (from bounding box) */
-  short width[256];		/* the font width information */
+  short width[256];		/* per-character width information */
+  short offset[256];		/* per-character left edge information */
   int typeface_index;		/* default typeface for the font */
   int font_index;		/* which font within typeface this is */
   int fig_id;			/* Fig's font id */
@@ -58,7 +65,7 @@ struct pcl_font_info_struct
   int pcl_spacing;		/* 0=fixed width, 1=variable */
   int pcl_posture;		/* 0=upright, 1=italic, etc. */
   int pcl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
-  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1 */
+  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
   int font_ascent;		/* the font's ascent (from bounding box) */
   int font_descent;		/* the font's descent (from bounding box) */
   short width[256];		/* per-character width information */
@@ -74,7 +81,7 @@ struct stick_font_info_struct
 {
   const char *ps_name;		/* the postscript font name */
 				/* no x_name field */  
-  bool basic;			/* basic stick font (supported on all devices)? */
+  bool basic;			/* basic stick font (supp. on all devices)? */
   int pcl_typeface;		/* the PCL typeface number */
   int pcl_spacing;		/* 0=fixed width, 1=variable */
   int pcl_posture;		/* 0=upright, 1=italic, etc. */
@@ -88,12 +95,14 @@ struct stick_font_info_struct
   int raster_height_upper;	/* height of abstract raster (upper half) */
   int hp_charset_lower;		/* old HP character set number (lower half) */
   int hp_charset_upper;		/* old HP character set number (upper half) */
+  int kerning_table_lower;	/* number of a kerning table (lower half) */
+  int kerning_table_upper;	/* number of a kerning table (upper half) */
   char width[256];		/* per-character width information */
   int offset;			/* left edge (applies to all chars) */
   int typeface_index;		/* default typeface for the font */
   int font_index;		/* which font within typeface this is */
   bool obliquing;		/* whether to apply obliquing */
-  bool iso8859_1;		/* encoding is iso8859-1? (after re-encoding) */
+  bool iso8859_1;		/* encoding is iso8859-1? (after reencoding) */
 };
 
 extern const struct stick_font_info_struct _stick_font_info[];
@@ -101,7 +110,7 @@ extern const struct stick_font_info_struct _stick_font_info[];
 /* List of Plotter types we support getting font information from,
    NULL-terminated.  This list also appears in the program text below. */
 static char *_known_devices[] =
-{ "X", "ps", "fig", "hpgl", "tek", "meta", NULL };
+{ "X", "ps", "fig", "pcl", "hpgl", "tek", "meta", NULL };
 
 bool
 #ifdef _HAVE_PROTOS
@@ -126,7 +135,7 @@ display_fonts (display_type, progname)
     {
       fprintf (stderr, "\
 To list available fonts, type `%s -T \"device\" --help-fonts',\n\
-where \"device\" is the display device: X, ps, fig, hpgl, or tek.\n",
+where \"device\" is the display device: X, ps, fig, pcl, hpgl, or tek.\n",
 	       progname);
       return false;
     }
@@ -217,7 +226,7 @@ where \"device\" is the display device: X, ps, fig, hpgl, or tek.\n",
       numpairs = numfonts / 2;
 
       fprintf (stdout, 
-	       "Names of supported non-Hershey vector fonts (case-insensitive):\n");
+	       "Names of supported HP vector fonts (case-insensitive):\n");
       for (i=0, j=0, k=numpairs + (odd ? 1 : 0); i < numpairs; i++)
 	{
 	  int len;

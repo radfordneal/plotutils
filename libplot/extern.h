@@ -30,7 +30,7 @@
 /* TYPEDEFS FOR, AND EXTERNAL VARIABLES IN, OUR FONT DATABASE (g_fontdb.c) */
 /*************************************************************************/
 
-/* our information about the 35 standard fonts in g_fontdb.c, and the
+/* our information about the 35 standard PS fonts in g_fontdb.c, and the
    typefaces they belong to */
 
 /* Note: NUM_PS_FONTS and NUM_PCL_FONTS should agree with the number of
@@ -41,11 +41,18 @@
 struct ps_font_info_struct 
 {
   const char *ps_name;		/* the postscript font name */
+  const char *ps_name_alt;	/* alternative PS font name, if non-NULL */
   const char *x_name;		/* the X Windows font name */
   const char *x_name_alt;	/* alternative X Windows font name */
+  int pcl_typeface;		/* the PCL typeface number */
+  int pcl_spacing;		/* 0=fixed width, 1=variable */
+  int pcl_posture;		/* 0=upright, 1=italic, etc. */
+  int pcl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
+  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
   int font_ascent;		/* the font's ascent (from bounding box) */
   int font_descent;		/* the font's descent (from bounding box) */
-  short width[256];		/* the font width information */
+  short width[256];		/* per-character width information */
+  short offset[256];		/* per-character left edge information */
   int typeface_index;		/* default typeface for the font */
   int font_index;		/* which font within typeface this is */
   int fig_id;			/* Fig's font id */
@@ -66,7 +73,7 @@ struct pcl_font_info_struct
   int pcl_spacing;		/* 0=fixed width, 1=variable */
   int pcl_posture;		/* 0=upright, 1=italic, etc. */
   int pcl_stroke_weight;	/* 0=normal, 3=bold, 4=extra bold, etc. */
-  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1 */
+  int pcl_symbol_set;		/* 0=Roman-8, 14=ISO-8859-1, etc. */
   int font_ascent;		/* the font's ascent (from bounding box) */
   int font_descent;		/* the font's descent (from bounding box) */
   short width[256];		/* per-character width information */
@@ -78,14 +85,14 @@ struct pcl_font_info_struct
 
 extern const struct pcl_font_info_struct _pcl_font_info[];
 
-/* our information about the 2 Stick fonts in g_fontdb.c, and the typefaces
-   they belong to */
+/* our information about the Stick fonts (i.e., vector fonts resident in
+   HP's devices) listed in g_fontdb.c, and the typefaces they belong to */
 
 struct stick_font_info_struct 
 {
   const char *ps_name;		/* the postscript font name */
 				/* no x_name field */  
-  bool basic;			/* basic stick font (supported on all devices)? */
+  bool basic;			/* basic stick font (supp. on all devices)? */
   int pcl_typeface;		/* the PCL typeface number */
   int pcl_spacing;		/* 0=fixed width, 1=variable */
   int pcl_posture;		/* 0=upright, 1=italic, etc. */
@@ -99,18 +106,46 @@ struct stick_font_info_struct
   int raster_height_upper;	/* height of abstract raster (upper half) */
   int hp_charset_lower;		/* old HP character set number (lower half) */
   int hp_charset_upper;		/* old HP character set number (upper half) */
+  int kerning_table_lower;	/* number of a kerning table (lower half) */
+  int kerning_table_upper;	/* number of a kerning table (upper half) */
   char width[256];		/* per-character width information */
   int offset;			/* left edge (applies to all chars) */
   int typeface_index;		/* default typeface for the font */
   int font_index;		/* which font within typeface this is */
   bool obliquing;		/* whether to apply obliquing */
-  bool iso8859_1;		/* encoding is iso8859-1? (after re-encoding) */
+  bool iso8859_1;		/* encoding is iso8859-1? (after reencoding) */
 };
 
 extern const struct stick_font_info_struct _stick_font_info[];
 
-/* our information about the vector fonts (i.e. Hershey fonts) in
-   g_fontdb.c, and the typefaces they belong to */
+/* Device-resident kerning data (`spacing table' in HP documentation),
+   indexed by `right edge character class' and `left edge character class',
+   i.e., `row class' and `column class'.  There are three such spacing
+   tables, shared among old-style HP character sets, and hence among our
+   Stick fonts.  See the article by L. W. Hennessee et al. in the Nov. 1981
+   issue of the Hewlett-Packard Journal. */
+struct stick_spacing_table_struct
+{
+  int rows, cols;
+  const short *kerns;
+};
+
+extern const struct stick_spacing_table_struct _stick_spacing_tables[];
+
+/* Kerning tables for 128-character halves of Stick fonts.  A kerning table
+   for the lower or upper half of one of our fonts specifies a spacing
+   table (see above), and maps each character in the half-font to the
+   appropriate row and column class. */
+struct stick_kerning_table_struct
+{
+  int spacing_table;
+  char row[128], col[128];	/* we use char's as very short int's */
+};
+
+extern const struct stick_kerning_table_struct _stick_kerning_tables[];
+
+/* our information about the 22 Hershey vector fonts in g_fontdb.c, and the
+   typefaces they belong to */
 
 struct vector_font_info_struct 
 {
@@ -271,9 +306,11 @@ typedef struct
 typedef struct lib_outbuf
 {
   char *base;			/* start of buffer */
-  int len;			/* size of buffer */
+  unsigned long len;		/* size of buffer */
   char *point;			/* current point (high-water mark) */
-  int contents;			/* size of contents */
+  char *reset_point;		/* point below which contents are frozen */
+  unsigned long contents;	/* size of contents */
+  unsigned long reset_contents;	/* size of frozen contents if any */
   double xrange_min;		/* bounding box, in device coordinates */
   double xrange_max;
   double yrange_min;
@@ -750,7 +787,7 @@ typedef struct lib_state
   struct lib_state *previous;
 } State;
 
-/* default drawing states for supported plotter types */
+/* default drawing states for supported plotter types, see ?_defplot.c */
 extern const State _meta_default_drawstate, _tek_default_drawstate, _hpgl_default_drawstate, _fig_default_drawstate, _ps_default_drawstate, _X_default_drawstate;
 
 /* supported plotter types */
@@ -759,6 +796,7 @@ typedef enum
   PL_META,			/* GNU graphics metafile */
   PL_TEK,			/* Tektronix 4014 with EGM */
   PL_HPGL,			/* HP-GL and HP-GL/2 */
+  PL_PCL,			/* PCL 5 (i.e. HP-GL/2 w/ header, trailer) */
   PL_FIG,			/* xfig 3.1 */
   PL_PS,			/* Postscript, with idraw support */
 #ifndef X_DISPLAY_MISSING
@@ -769,7 +807,7 @@ typedef enum
 plotter_type;
 
 /* recognized device driver parameters (key/value) are in g_params.h */
-#define NUM_DEVICE_DRIVER_PARAMETERS 20
+#define NUM_DEVICE_DRIVER_PARAMETERS 24
 
 /* This elides the argument prototypes if the compiler does not support
    them. The name P__ is chosen in hopes that it will not collide with any
@@ -1039,7 +1077,7 @@ typedef struct
   int pen_defined[MAX_NUM_PENS]; /* D: 0=absent, 1=soft-def'd, 2=hard-def'd */
   long int fig_usercolors[FIG_MAX_NUM_USER_COLORS]; /* D: colors we've def'd */
   bool ps_font_used[NUM_PS_FONTS]; /* D: whether or not each font is used */
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
   bool pcl_font_used[NUM_PCL_FONTS]; /* D: whether or not each font is used */
 #endif
 } Plotter;
@@ -1051,7 +1089,7 @@ extern Plotter *_plotter;
 
 /* At Plotter creation time, the following are the initializations that
    are used for the different sorts of Plotter. */
-extern const Plotter _meta_default_plotter, _tek_default_plotter, _hpgl_default_plotter, _fig_default_plotter, _ps_default_plotter, _X_default_plotter, _X_drawable_default_plotter;
+extern const Plotter _meta_default_plotter, _tek_default_plotter, _hpgl_default_plotter, _pcl_default_plotter, _fig_default_plotter, _ps_default_plotter, _X_default_plotter, _X_drawable_default_plotter;
 
 /* This elides the argument prototypes if the compiler does not support
    them. The name P__ is chosen in hopes that it will not collide with any
@@ -1119,6 +1157,7 @@ extern int _clip_line P__ ((double *x0_p, double *y0_p, double *x1_p, double *y1
 extern int _codestring_len P__((const unsigned short *codestring));
 extern unsigned short * _controlify P__((const unsigned char *));
 extern void _delete_outbuf P__((Outbuf *outbuf));
+extern void _freeze_outbuf P__((Outbuf *outbuf));
 extern void _get_range P__ ((Outbuf *bufp, double *xmin, double *xmax, double *ymin, double *ymax));
 extern void _matrix_product P__ ((const double m[6], const double n[6], double product[6]));
 extern void _reset_outbuf P__((Outbuf *outbuf));
@@ -1154,7 +1193,7 @@ extern void _process_other_plotter_events P__ ((Plotter *plotter));
    plotter methods.  The initial letter indicates the Plotter specificity.
    g=generic, m=metafile, t=Tektronix, h=HP-GL/2, f=xfig, p=PS, x=X11,
    y=X11 Drawable.  Many of these do not exist, since the corresponding
-   Plotter simply uses the generic method. */
+   Plotter simply uses a generic method. */
 
 extern FILE* _g_outfile P__((FILE* newstream));
 extern bool _g_initialize P__((void));
@@ -1179,6 +1218,7 @@ extern int _g_capmod P__ ((const char *s));
 extern int _g_circle P__ ((int x, int y, int r));
 extern int _g_circlerel P__ ((int dx, int dy, int r));
 extern int _g_closepl P__ ((void));
+extern int _g_closepl2 P__ ((void));
 extern int _g_color P__ ((int red, int green, int blue));
 extern int _g_colorname P__ ((const char *name));
 extern int _g_cont P__ ((int x, int y));
@@ -1235,6 +1275,7 @@ extern int _g_markerrel P__ ((int dx, int dy, int type, int size));
 extern int _g_move P__ ((int x, int y));
 extern int _g_moverel P__ ((int x, int y));
 extern int _g_openpl P__ ((void));
+extern int _g_openpl2 P__ ((void));
 extern int _g_pencolor P__ ((int red, int green, int blue));
 extern int _g_pencolorname P__ ((const char *name));
 extern int _g_point P__ ((int x, int y));

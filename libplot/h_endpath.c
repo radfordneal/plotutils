@@ -58,6 +58,7 @@ _h_endpath ()
       free (_plotter->drawstate->datapoints);
       _plotter->drawstate->datapoints_len = 0;
       _plotter->drawstate->PointsInLine = 0;
+
       return 0;
     }
   

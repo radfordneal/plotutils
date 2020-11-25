@@ -322,7 +322,7 @@ _x_retrieve_font_internal(name, size, rotation)
       font_index = _ps_font_info[i].font_index;
     }
 
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_X
   if (matched_builtin == false)	/* PS match failed, so try PCL fonts too */
     {
       i = -1;
@@ -343,7 +343,7 @@ _x_retrieve_font_internal(name, size, rotation)
 	  font_index = _pcl_font_info[i].font_index;
 	}
     }
-#endif /* USE_LJ_FONTS */
+#endif /* USE_LJ_FONTS_IN_X */
 
   if (matched_builtin)
     {

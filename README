@@ -1,8 +1,8 @@
-This is release 2.1.4 of the GNU plotutils (plotting utilities) package,
-including release 1.4 of GNU libplot: a function library for
+This is release 2.1.5 of the GNU plotutils (plotting utilities) package,
+including release 1.5 of GNU libplot: a function library for
 two-dimensional device-independent vector graphics, including vector
-graphics animations under the X Window System.  The package has its own Web
-page: http://www.gnu.org/software/plotutils/plotutils.html .
+graphics animations under the X Window System.  The package has its own 
+Web page: http://www.gnu.org/software/plotutils/plotutils.html .
 
 In the top-level source directory, the file INSTALL contains generic
 instructions dealing with installation of a GNU package, and the file
@@ -35,24 +35,25 @@ The contents of the plotutils package are:
 		`paths' may be drawn.  There is support for color (both pen
 		color and fill color for objects).
 
-		Output formats include X11, Postscript (editable with
-		the idraw drawing editor), Fig (editable with the xfig
-		drawing editor), HP-GL and HP-GL/2, Tektronix, and GNU
-		metafile format.  GNU metafile format may be translated
-		into any of the other formats with the `plot' utility
+		Output formats include X11, Postscript (editable with the
+		idraw drawing editor), Fig (editable with the xfig drawing
+		editor), PCL 5, HP-GL and HP-GL/2, Tektronix, and
+		GNU metafile format.  GNU metafile format may be translated
+		into any of the other formats with the `plot' utility 
 		(see below).
 
 		libplot includes extensive support for accurate sizing and
 		positioning of text.  This includes the placement of
 		subscripts and superscripts.  Its X11, Postscript, and Fig
 		drivers all support the 35 standard Postscript fonts, and
-		its HP-GL/2 driver supports the 45 standard LaserJet fonts.
-		In addition, all four, together with its Tektronix driver,
-		support a set of 22 Hershey vector fonts.  All supported
-		fonts may be arbitrarily rotated and scaled.  All fonts,
-		except for symbol and dingbat fonts, use the ISO-Latin-1
-		encoding (a superset of ascii; the ISO-Latin-1 support in
-		the Hershey fonts is extensive but not quite complete).
+		its PCL 5 and HP-GL/2 drivers support the 45 standard
+		LaserJet fonts.  In addition, all five, together with its
+		Tektronix driver, support a set of 22 Hershey vector fonts.
+		All supported fonts may be arbitrarily rotated and scaled.
+		All fonts, except for symbol and dingbat fonts, use the
+		ISO-Latin-1 encoding (a superset of ascii; the ISO-Latin-1
+		support in the Hershey fonts is extensive but not quite
+		complete).
 		
 		(Clones of the 35 standard Postscript fonts, in Type 1
 		format, have been contributed by URW GmbH and are
@@ -115,6 +116,17 @@ The contents of the plotutils package are:
 				xfig can export the plot in numerous formats,
 				such as GIF, X11 bitmap, and EPS.
 
+		graph -T pcl	A variant that produces PCL 5, a powerful
+				version of Hewlett-Packard's Printer
+				Control Language, which is supported by
+				LaserJets and other high-end printers.  Any
+				standard page size is supported (letter,
+				legal, ANSI sizes, ISO sizes such as 
+				a4 and a3, etc.)  This variant supports
+				the 45 standard PCL 5 fonts that are 
+				built into many non-Postscript printers,
+				such as recent LaserJets.
+
 		graph -T hpgl	A variant that produces HP-GL (or by
 				default, HP-GL/2) output.  HP-GL is the
 				Hewlett-Packard Graphics Language, and
@@ -123,8 +135,7 @@ The contents of the plotutils package are:
 				Also many applications, e.g. CAD applications,
 				can import HP-GL or HP-GL/2 figures.
 				This variant supports the 45 standard PCL 5
-				fonts that are built into many non-Postscript
-				printers, such as LaserJets.
+				fonts.
 
 		graph -T tek	A variant that produces Tektronix output,
 				suitable for viewing, e.g., on an X Windows
@@ -173,11 +184,11 @@ The contents of the plotutils package are:
 		another format or uses it to drive a display device.
 
 		Since this distribution includes `graph -T X', `graph -T
-		ps', `graph -T fig', `graph -T hpgl', and `graph -T tek',
-		all of which can drive display devices directly, `plot' is
-		only occasionally useful.  It may be used, though, to
-		produce graphical output in more than one format at once.
-		To do this, you would pipe the output of a
+		ps', `graph -T fig', `graph -T pcl', `graph -T hpgl', and
+		`graph -T tek', all of which can drive display devices
+		directly, `plot' is only occasionally useful.  It may be
+		used, though, to produce graphical output in more than one
+		format at once.  To do this, you would pipe the output of a
 		datapoint-generating program to the raw variant of `graph',
 		and then use the `tee' command to direct the output of raw
 		`graph', which is in metafile format, to two separate

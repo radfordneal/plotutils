@@ -237,7 +237,6 @@ _h_set_fill_color()
        in RGB cube that is a desaturated version of one of the defined
        pen colors, and fill by shading at the appropriate level */
     {
-      int pen;
       double shading;
 
       _compute_pseudo_fillcolor (red, green, blue, &i, &shading);

@@ -1,11 +1,11 @@
 /* This file contains a low-level method for adjusting the font of an HP-GL
-   plotter to agree with an HPGLPlotter's notion of what the graphics
-   cursor position should be, prior to plotting a label using PCL fonts.
+   or HP-GL/2 plotter to agree with an HPGLPlotter's notion of what it
+   should be, prior to plotting a label.
 
-   This has an effect only if (1) HP-GL/2 rather than HP-GL is being
-   emitted, and the current font is a PCL or Stick font, or (2) HP-GL is
-   being used, and the current font is a Stick font.  HP-GL, as opposed to
-   HP-GL/2, does not support PCL fonts. */
+   This is used if the current font is a Stick, PCL, or PS font.
+   Pre-HP-GL/2 plotters only support Stick fonts.  Only a few recent HP
+   devices (e.g. LaserJet 4000 series laser printers) support PS fonts in
+   PCL format. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -33,17 +33,17 @@ _h_set_font ()
   double len, perplen, tan_slant;
   double relative_label_run, relative_label_rise;
   double theta, sintheta, costheta;
-  int master_font_index;
   
   /* sanity check, should be unnecessary */
   if (_plotter->hpgl_version == 0 /* i.e. generic HP-GL */
-      || (_plotter->drawstate->font_type != F_PCL
-	  && _plotter->drawstate->font_type != F_STICK))
+      || _plotter->drawstate->font_type == F_HERSHEY)
     return;
 
   if (_plotter->drawstate->font_type == F_STICK)
     /* check whether obliquing of this font is called for */
     {
+      int master_font_index;
+
       /* compute index of font in master table of fonts, in g_fontdb.c */
       master_font_index =
 	(_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
@@ -167,8 +167,6 @@ _h_set_font ()
       _update_buffer (_plotter->page);
       _plotter->char_slant_tangent = tan_slant;
     }
-
-  return;
 }
 
 /* If needed, emit a font-change command, HP-GL/2 style.  Return value
@@ -182,20 +180,22 @@ _hpgl2_maybe_update_font ()
 #endif
 {
   bool font_change = false;
+  bool font_is_iso_latin_1;
   int master_font_index;
   int symbol_set, spacing, posture, stroke_weight, typeface;
 
-  /* PCL and Stick fonts are handled separately here only because the font
-     information for them is stored in two different tables in
-     g_fontdb.c. */
+  /* PCL, PS, and Stick fonts are handled separately here only because the
+     font information for them is stored in different tables in g_fontdb.c.
+     We compute parameters we'll need for the HP-GL/2 `SD' font-selection
+     command. */
 
-  if (_plotter->drawstate->font_type == F_PCL)
+  switch (_plotter->drawstate->font_type)
     {
+    case F_PCL:
+    default:
       /* compute index of font in master table of fonts, in g_fontdb.c */
       master_font_index =
 	(_pcl_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
-      
-      /* compute character sizes (width / height) for SR or SI instruction */
       
       /* #1: symbol set */
       symbol_set = _pcl_font_info[master_font_index].pcl_symbol_set;
@@ -208,14 +208,32 @@ _hpgl2_maybe_update_font ()
       stroke_weight = _pcl_font_info[master_font_index].pcl_stroke_weight;
       /* #7: typeface */
       typeface = _pcl_font_info[master_font_index].pcl_typeface;  
-    }
-  else			/* F_STICK */
-    {
+      /* ISO-Latin-1 after reencoding (if any)? */
+      font_is_iso_latin_1 = _pcl_font_info[master_font_index].iso8859_1;
+      break;
+    case F_POSTSCRIPT:
+      /* compute index of font in master table of fonts, in g_fontdb.c */
+      master_font_index =
+	(_ps_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
+      
+      /* #1: symbol set */
+      symbol_set = _ps_font_info[master_font_index].pcl_symbol_set;
+      /* #2: spacing */
+      spacing = _ps_font_info[master_font_index].pcl_spacing;
+      /* #3, #4 are pitch and height (we use defaults) */
+      /* #5: posture */
+      posture = _ps_font_info[master_font_index].pcl_posture;
+      /* #6: stroke weight */
+      stroke_weight = _ps_font_info[master_font_index].pcl_stroke_weight;
+      /* #7: typeface */
+      typeface = _ps_font_info[master_font_index].pcl_typeface;  
+      /* ISO-Latin-1 after reencoding (if any)? */
+      font_is_iso_latin_1 = _ps_font_info[master_font_index].iso8859_1;
+      break;
+    case F_STICK:
       /* compute index of font in master table of fonts, in g_fontdb.c */
       master_font_index =
 	(_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
-      
-      /* compute character sizes (width / height) for SR or SI instruction */
       
       /* #1: symbol set */
       symbol_set = _stick_font_info[master_font_index].pcl_symbol_set;
@@ -228,6 +246,9 @@ _hpgl2_maybe_update_font ()
       stroke_weight = _stick_font_info[master_font_index].pcl_stroke_weight;
       /* #7: typeface */
       typeface = _stick_font_info[master_font_index].pcl_typeface;  
+      /* ISO-Latin-1 after reencoding (if any)? */
+      font_is_iso_latin_1 = _stick_font_info[master_font_index].iso8859_1;
+      break;
     }
   
   if (symbol_set != _plotter->pcl_symbol_set
@@ -256,6 +277,35 @@ _hpgl2_maybe_update_font ()
 		 posture, stroke_weight, typeface);
       _update_buffer (_plotter->page);
 
+      /* A hack.  Due to HP's idiosyncratic definition of `ISO-Latin-1
+	 encoding' for PCL fonts, for ISO-Latin-1 PCL fonts we normally map
+	 characters in the lower half into HP's Roman-8 encoding, and
+	 characters in the upper half into HP's ISO-Latin-1 encoding.  We
+	 implement this by using two fonts: standard and alternative.  See
+	 h_alab_pcl.c for the DFA that switches back and forth (if
+	 necessary) when the label is rendered. */
+      if (_plotter->drawstate->font_type == F_PCL
+	  && font_is_iso_latin_1
+	  && symbol_set == PCL_ROMAN_8)
+	{
+	  if (spacing == FIXED_SPACING)
+	    /* fixed-width font */
+	    sprintf (_plotter->page->point, 
+		     /* #4 (nominal point size) not needed but included anyway */
+		     "AD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
+		     PCL_ISO_8859_1, spacing, 
+		     (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
+		     posture, stroke_weight, typeface);
+	  else			/* variable-width font */
+	    sprintf (_plotter->page->point, 
+		     /* #3 (nominal chars per inch) not needed but included anyway*/
+		     "AD1,%d,2,%d,3,%.3f,4,%.3f,5,%d,6,%d,7,%d;",
+		     PCL_ISO_8859_1, spacing, 
+		     (double)NOMINAL_CHARS_PER_INCH, (double)NOMINAL_POINT_SIZE, 
+		     posture, stroke_weight, typeface);
+	  _update_buffer (_plotter->page);
+	}
+
       _plotter->pcl_symbol_set = symbol_set;
       _plotter->pcl_spacing = spacing;
       _plotter->pcl_posture = posture;
@@ -267,7 +317,8 @@ _hpgl2_maybe_update_font ()
 }
 
 /* If needed, emit an old-style (pre-HP-GL/2) `CS' font-change command.
-   Return value indicates whether font was changed. */
+   (This is used only for Stick fonts, which is all that pre-HP/GL-2
+   devices had.)  Return value indicates whether font was changed. */
 
 static bool
 #ifdef _HAVE_PROTOS

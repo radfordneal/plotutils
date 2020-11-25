@@ -30,6 +30,14 @@
    one [for X Windows] that doesn't belong to any of our builtin typefaces */
 #define SYMBOL_FONT "Symbol"
 
+/* Kludges to handle the zero-width marker symbols in our ArcMath and
+   StickMath fonts; also zero-width overbar.
+   8 AND 17 ARE HARDCODED IN THE TABLE IN g_fontd2.c !! */
+#define ARCMATH 8
+#define STICKMATH 17
+#define IS_MATH_FONT(fontnum) ((fontnum) == ARCMATH || (fontnum) == STICKMATH)
+#define IS_CENTERED_SYMBOL(c) (((c) >= 'A' && (c) <= 'O') || (c) == 'e')
+
 /* forward references */
 static unsigned char *_esc_esc_string __P((const unsigned char *s));
 static double _g_render_string_non_hershey __P((const char *s, bool do_render, int x_justify, int y_justify));
@@ -452,6 +460,17 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 	      width += _plotter->drawstate->true_font_size / 8.0;
 	      break;
 
+	    case C_RIGHT_TWELFTH_EM:
+	      if (do_render)
+		{
+
+		  (_plotter->drawstate->pos).x += costheta * _plotter->drawstate->true_font_size / 12.0;
+		  (_plotter->drawstate->pos).y += sintheta * _plotter->drawstate->true_font_size / 12.0;
+		}
+	      
+	      width += _plotter->drawstate->true_font_size / 8.0;
+	      break;
+
 	      /* Kludge: used only for \rn macro, i.e. in square roots, if
 		 the current font is a PS or PCL font.  See g_cntrlify.c.
 		 If the font is a Hershey font, \rn is implemented
@@ -526,6 +545,16 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 		{
 		  (_plotter->drawstate->pos).x -= costheta * _plotter->drawstate->true_font_size / 8.0;
 		  (_plotter->drawstate->pos).y -= sintheta * _plotter->drawstate->true_font_size / 8.0;
+		}
+	      
+	      width -= _plotter->drawstate->true_font_size / 8.0;
+	      break;
+
+	    case C_LEFT_TWELFTH_EM:
+	      if (do_render)
+		{
+		  (_plotter->drawstate->pos).x -= costheta * _plotter->drawstate->true_font_size / 12.0;
+		  (_plotter->drawstate->pos).y -= sintheta * _plotter->drawstate->true_font_size / 12.0;
 		}
 	      
 	      width -= _plotter->drawstate->true_font_size / 8.0;
@@ -622,6 +651,7 @@ _g_render_string_non_hershey (s, do_render, x_justify, y_justify)
 		default:	/* unsupported font type, shouldn't happen */
 		  break;
 		}
+
 	      _plotter->retrieve_font();
 	      current_font_index = new_font_index;
 	    }
@@ -700,9 +730,9 @@ _g_render_simple_string_non_hershey (s, do_render, h_just)
       }
       
     case F_POSTSCRIPT:
-      return (do_render ? 
-	      _plotter->falabel_ps (s, h_just) : 
-	      _plotter->flabelwidth_ps (s));
+	return (do_render ? 
+		_plotter->falabel_ps (s, h_just) : 
+		_plotter->flabelwidth_ps (s));
     case F_PCL:
       return (do_render ? 
 	      _plotter->falabel_pcl (s, h_just) : 
@@ -786,9 +816,85 @@ _g_flabelwidth_pcl (s)
 
 
 /* A generic internal method that computes the width (total delta x) of a
-   character string to be rendered in one of the 2 standard Stick fonts, in
-   user units.  The font used is the currently selected one (assumed to be
-   a Stick font). */
+   character string to be rendered in a stick font [i.e. device-resident HP
+   font], in user units.  The font used is the currently selected one
+   (assumed to be a stick font). */
+
+/* The width tables for stick fonts (in g_fontdb.c) give character widths
+   in terms of abstract raster units (the grid on which the character was
+   defined).  Font size is twice the width of the abstract raster (by
+   definition).  So in principle, to compute the width of a character
+   string, we just need to add the character widths together, and normalize
+   using the font size.
+
+   It's more complicated than that, in part because our width tables for
+   stick fonts, unlike those for PCL fonts, contain the bounding box widths
+   rather than the character cell widths.  Also, for agreement with the PS
+   rendering convention, we need to add a bit of leading whitespace, and a
+   bit of trailing whitespace.
+
+   We handle the string width computation in one of two ways.
+
+   1. Modern HP-GL/2.  Much as for the PCL fonts, the true width
+   (character cell width) of a character equals 
+
+   	offset + bounding box width + offset
+
+   In fact, offset is independent of character; it depends only on the
+   font.  So the string width we compute for a string consisting of n
+   characters is:
+
+      offset + bb width #1 + offset 
+    + offset + bb width #2 + offset 
+    + ...
+    + offset + bb width #n + offset
+
+   The first and last offsets in this formula provide the leading and
+   trailing bits of whitespace.
+
+   2. Pre-HP-GL/2 (i.e. HPGL_VERSION="1.5").  There is automatic kerning,
+   according to HP's device-resident spacing tables (the spacing tables are
+   in g_fontd2.c).  The string width we return is:
+
+    offset + bb width #1 + spacing(1,2) + bb width #2 + spacing(2,3) 
+           + ... + spacing(n-1,n) + bb width #n + offset
+
+   where spacing(1,2) is the spacing between characters 1 and 2, etc.
+
+   The basic reference for HP's pre-HP-GL/2 kerning scheme is "Firmware
+   Determines Plotter Personality", by L. W. Hennessee, A. K. Frankel,
+   M. A. Overton, and R. B. Smith, Hewlett-Packard Journal, Nov. 1981,
+   pp. 16-25.  Every character belongs to a `row class' and a `column
+   class', i.e., `right edge class' and `left edge class'.  Any spacing
+   table is indexed by row class and column class.
+
+   [What HP later did in HP-GL/2 is apparently a degenerate case of this
+   setup, with all the inter-character spacings changed to 2*offset.]
+
+   A couple of additional comments on the pre-HP-GL/2 case:
+
+   Comment A.  The width of the space character (ASCII SP) is 3/2 times as
+   large in pre-HP-GL/2 as it is in HP-GL/2.  In HP-GL/2, it's 0.5 times
+   the font size, but in pre-HP-GL/2, it's 0.75 times the font size.  That
+   sounds like a major difference, but the use of kerning more or less
+   compensates for it.  See comment in code below.
+
+   Comment B.  Our ANK fonts consist of a lower half encoded according to
+   JIS ASCII, and an upper half encoded according to the half-width
+   Katakana encoding.  These two halves are different HP character sets and
+   use different spacing tables, since their abstract raster widths differ
+   (42 and 45, respectively).  HP's convention is apparently that if,
+   between character k and character k+1, there's a switch between spacing
+   tables and spacing(k,k+1) can't be computed via lookup, then
+
+   	bb width #k + spacing(k,k+1) + bb width #(k+1)
+
+   should be replaced by
+
+   	width_of_space_character + bb width #(k+1)
+
+   That's the way we do it.
+*/
 
 double
 #ifdef _HAVE_PROTOS
@@ -800,37 +906,240 @@ _g_flabelwidth_stick (s)
 {
   double width = 0.0;		/* normalized units (font size = 1.0) */
   int index;
-  int master_font_index;	/* index into master table */
+  int master_font_index;	/* index into master font array */
 
-  /* compute font index in master Stick font table */
+  /* compute font index in master table of device-resident HP fonts */
   master_font_index =
     (_stick_typeface_info[_plotter->drawstate->typeface_index].fonts)[_plotter->drawstate->font_index];
 
-  /* Width table (in g_fontdb.c) gives character width in terms of abstract
-     raster units (the grid on which the character was defined).  Since
-     font size is twice the width of the abstract raster (by definition),
-     to get the width in normalized units (in which font size = 1.0), we
-     need to divide.  */
-
-  for (index=0; s[index]!='\0'; index++)
+  if (_plotter->hpgl_version < 2)
+    /* presumably HPGL_VERSION="1.5" i.e. HP7550A; have device-resident
+       kerning, so we compute inter-character spacing from spacing tables
+       in g_fontd2.c, which we know match the device-resident tables */
     {
-      unsigned char c;
+      const struct stick_kerning_table_struct *ktable_lower, *ktable_upper;
+      const struct stick_spacing_table_struct *stable_lower, *stable_upper;
+      const short *lower_spacing, *upper_spacing;	/* spacing tables */
+      int lower_rows, lower_cols, upper_rows, upper_cols; /* table sizes */
+      const char *lower_char_to_row, *lower_char_to_col; /* map char to pos */
+      const char *upper_char_to_row, *upper_char_to_col; /* map char to pos */
+      bool halves_use_different_tables; /* upper/lower spacing tables differ?*/
 
-      c = (unsigned int)s[index];
-      /* some fonts have different raster widths for lower and upper halves
-	 (e.g. ArcANK, which has a JIS-ASCII lower half (width 42 units)
-	 and a half-width-Katakana upper half (width 45 units)) */
-      if (c < 0x80)
-	width			/* lower half */
-	  += (((double)(_stick_font_info[master_font_index].width[c]))
-	      / (2 * _stick_font_info[master_font_index].raster_width_lower));
-      else
-	width			/* upper half */
-	  += (((double)(_stick_font_info[master_font_index].width[c]))
-	      / (2 * _stick_font_info[master_font_index].raster_width_upper));
+      /* kerning table and spacing table structs, for each font half */
+      ktable_lower = &(_stick_kerning_tables[_stick_font_info[master_font_index].kerning_table_lower]);
+      ktable_upper = &(_stick_kerning_tables[_stick_font_info[master_font_index].kerning_table_upper]);
+      stable_lower = &(_stick_spacing_tables[ktable_lower->spacing_table]);
+      stable_upper = &(_stick_spacing_tables[ktable_upper->spacing_table]);
+      
+      /* do font halves use different spacing tables (e.g. ANK fonts)? */
+      halves_use_different_tables 
+	= (stable_lower != stable_upper ? true : false);
+      
+      /* numbers of rows and columns in each of the two spacing tables */
+      lower_rows = stable_lower->rows;
+      lower_cols = stable_lower->cols;  
+      upper_rows = stable_upper->rows;
+      upper_cols = stable_upper->cols;  
+      
+      /* arrays (size 128), mapping character to row/column of spacing table */
+      lower_char_to_row = ktable_lower->row;
+      lower_char_to_col = ktable_lower->col;  
+      upper_char_to_row = ktable_upper->row;
+      upper_char_to_col = ktable_upper->col;  
+      
+      /* spacing tables for each half of the font */
+      lower_spacing = stable_lower->kerns;
+      upper_spacing = stable_upper->kerns;  
+      
+      /* our convention: add an initial bit of whitespace (an `offset'), to
+	 make the stick font rendering agree with the PS rendering
+	 convention */
+      width		
+	+= (((double)(_stick_font_info[master_font_index].offset))
+	    /(2 * _stick_font_info[master_font_index].raster_width_lower));
+      
+      /* loop through chars in label */
+      for (index=0; s[index]!='\0'; index++)
+	{
+	  unsigned char c, d;
+	  
+	  c = (unsigned int)s[index];
+
+	  if (c < 0x80)
+	    /* lower half */
+	    {
+	      double spacefactor, char_width;
+
+	      /* Our width tables in g_fontd2.c are suitable for HP-GL/2,
+		 not pre-HP-GL/2.  Major difference is that in pre-HP-GL/2,
+		 width of space character is 3/2 times larger, e.g. in the
+		 Arc font it is 42 abstract raster units rather than 28.
+		 (This difference is partly compensated for by pre-HP-GL/2
+		 having kerning, unlike HP-GL/2.)  */
+	      if (c == ' ')
+		spacefactor = 1.5;
+	      else
+		spacefactor = 1.0;
+
+	      /* add width of char */
+	      char_width
+		= (((double)(_stick_font_info[master_font_index].width[c]))
+		   * spacefactor
+		   /(2 * _stick_font_info[master_font_index].raster_width_lower));
+	      width += char_width;
+
+	      if ((d = (unsigned int)s[index+1]) != '\0')
+		/* current char is not final char in string, so add spacing
+                   between it and the next char */
+		{
+		  int row, col;
+		  int spacing;
+		  
+		  /* compute row class for current character, i.e., its
+		     `right edge class' */
+		  row = lower_char_to_row[c];
+
+		  /* compute and add spacing; if we switch from lower to
+		     upper half here, and upper half uses a different
+		     spacing table, just replace width of c by width of ` '
+		     (see explanation above) */
+		  if (d < 0x80)
+		    {
+		      col = lower_char_to_col[d];
+		      spacing = lower_spacing[row * lower_cols + col];
+		    }
+		  else if (!halves_use_different_tables)
+		    {
+		      col = upper_char_to_col[d - 0x80];
+		      spacing = lower_spacing[row * lower_cols + col];
+		    }
+		  else if (c == ' ' || (d == ' ' + 0x80))
+		    /* space characters have no kerning */
+		    spacing = 0;
+		  else	
+		    /* c -> ` ', see above. */
+		    spacing = 
+		      - IROUND(spacefactor * _stick_font_info[master_font_index].width[c])
+		      + IROUND(1.5 * _stick_font_info[master_font_index].width[' ']);
+
+		  width		
+		    += ((double)spacing)
+		      /(2 * _stick_font_info[master_font_index].raster_width_lower);
+		}
+	    }
+	  else
+	    /* upper half */
+	    {
+	      double spacefactor, char_width;
+
+	      if (c == ' ' + 0x80) /* i.e. `unbreakable SP' */
+		spacefactor = 1.5;
+	      else
+		spacefactor = 1.0;
+
+	      /* add width of char */
+	      char_width		
+		= (((double)(_stick_font_info[master_font_index].width[c]))
+		   /(2 * _stick_font_info[master_font_index].raster_width_upper));
+	      width += char_width;
+
+	      if ((d = (unsigned int)s[index+1]) != '\0')
+		/* current char is not final char in string, so add spacing
+                   between it and the next char */
+		{
+		  int row, col;
+		  int spacing;
+		  
+		  /* compute row class for current character, i.e., its
+		     `right edge class' */
+		  row = upper_char_to_row[c - 0x80];
+
+		  /* compute and add spacing; if we switch from upper to
+		     lower half here, and lower half uses a different
+		     spacing table, just replace width of c by width of ` '
+		     (see explanation above) */
+		  if (d >= 0x80)
+		    {
+		      col = upper_char_to_col[d - 0x80];
+		      spacing = upper_spacing[row * upper_cols + col];
+		    }
+		  else if (!halves_use_different_tables)
+		    {
+		      col = lower_char_to_col[d];
+		      spacing = upper_spacing[row * upper_cols + col];
+		    }
+		  else if ((c == ' ' + 0x80) || d == ' ')
+		    /* space characters have no kerning */
+		    spacing = 0;
+		  else
+		    /* c -> ` ', see above. */
+		    spacing = 
+		      - IROUND(spacefactor * _stick_font_info[master_font_index].width[c])
+		      + IROUND(1.5 * _stick_font_info[master_font_index].width[' ']);
+
+		  width		
+		    += ((double)spacing)
+		      /(2 * _stick_font_info[master_font_index].raster_width_upper);
+		}
+	    }
+	}
+
+      /* our convention: add a trailing bit of whitespace (an `offset'), to
+	 make the stick font rendering agree with the PS rendering
+	 convention */
+      width		
+	+= (((double)(_stick_font_info[master_font_index].offset))
+	    /(2 * _stick_font_info[master_font_index].raster_width_lower));
+    }
+  else
+    /* HPGL_VERSION="2", i.e. HP-GL/2; no device-resident kerning.  We use
+       a fixed offset between each pair of characters, which is the way
+       HP-GL/2 devices do it.  We also use this offset as the width of the
+       `bit of whitespace' that we add at beginning and end of label. */
+    {
+      /* loop through chars in label */
+      for (index=0; s[index]!='\0'; index++)
+	{
+	  unsigned char c;
+
+	  c = (unsigned int)s[index];
+
+#if 0
+	  /* kludge around HP's convention for centered marker symbols
+	     (poor fellows ain't got no width a-tall) */
+	  if (IS_MATH_FONT(master_font_index) && IS_CENTERED_SYMBOL(c))
+	    continue;
+#endif
+	  if (c < 0x80)
+	    /* lower half */
+	    {
+	      width		
+		+= (((double)(_stick_font_info[master_font_index].offset))
+		    /(2 * _stick_font_info[master_font_index].raster_width_lower));
+	      width		
+		+= (((double)(_stick_font_info[master_font_index].width[c]))
+		    /(2 * _stick_font_info[master_font_index].raster_width_lower));
+	      width		
+		+= (((double)(_stick_font_info[master_font_index].offset))
+		    /(2 * _stick_font_info[master_font_index].raster_width_lower));
+	    }
+	  else
+	    /* upper half */
+	    {
+	      width		
+		+= (((double)(_stick_font_info[master_font_index].offset))
+		    /(2 * _stick_font_info[master_font_index].raster_width_upper));
+	      width	
+		+= (((double)(_stick_font_info[master_font_index].width[c]))
+		    /(2 * _stick_font_info[master_font_index].raster_width_upper));
+	      width		
+		+= (((double)(_stick_font_info[master_font_index].offset))
+		    /(2 * _stick_font_info[master_font_index].raster_width_upper));
+	    }
+	}
     }
 
-  /* convert to user units */
+  /* normalize: use font size to convert width to user units */
   return _plotter->drawstate->true_font_size * (double)width;
 }
 

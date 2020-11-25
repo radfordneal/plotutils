@@ -1,11 +1,12 @@
 /* This file contains the closepl method, which is a standard part of
    libplot.  It closes a Plotter object. */
 
-/* This version is for Postscript Plotters, which maintain a linked list of
-   pages (graphics are only written to the output stream when a Plotter is
-   deleted, and the internal p_writeout() method is invoked).  So it simply
-   finalizes the current page by invoking endpath() etc.; it doesn't write
-   anything out. */
+/* This version is used for Plotters that emit graphics only after all
+   pages of graphics have been drawn, and the Plotter is deleted.  Such
+   Plotters maintain a linked list of pages (graphics are only written to
+   the output stream when a Plotter is deleted, and the appropriate
+   `terminate' method is invoked).  So this version simply finalizes the
+   current page by invoking endpath() etc.; it doesn't write anything out. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -13,9 +14,9 @@
 
 int
 #ifdef _HAVE_PROTOS
-_p_closepl(void)
+_g_closepl2(void)
 #else
-_p_closepl()
+_g_closepl2()
 #endif
 {
   if (!_plotter->open)

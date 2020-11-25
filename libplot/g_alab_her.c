@@ -357,6 +357,10 @@ _label_width_stroke (label)
 	      width += charsize * HERSHEY_EM / 8.0;
 	      break;
 	      
+	    case C_RIGHT_TWELFTH_EM:
+	      width += charsize * HERSHEY_EM / 12.0;
+	      break;
+	      
 	    case C_LEFT_ONE_EM:
 	      width -= charsize * HERSHEY_EM;
 	      break;
@@ -375,6 +379,10 @@ _label_width_stroke (label)
 	      
 	    case C_LEFT_EIGHTH_EM:
 	      width -= charsize * HERSHEY_EM / 8.0;
+	      break;
+	      
+	    case C_LEFT_TWELFTH_EM:
+	      width -= charsize * HERSHEY_EM / 12.0;
 	      break;
 	      
 	      /* unrecognized control code */

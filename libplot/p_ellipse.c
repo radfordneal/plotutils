@@ -5,7 +5,7 @@
    libplot.  It draws an object: an ellipse with center xc,yc and semi-axes
    of length rx and ry (the former at a specified angle with the x-axis).
    Both methods produce output in PS format, and both call
-   _p_draw_ellipse_internal(). */
+   _p_fellipse_internal(). */
 
 #include "sys-defines.h"
 #include "plot.h"

@@ -1,3 +1,38 @@
+Version 2.1.5 released, 8/98.  [Includes libplot 1.5, interface age=1.]
+
+libplot: if HPGL_VERSION=1.5, the 18 HP vector fonts are kerned.  This
+	agrees with what was done in the HP7550A graphics plotter and
+	other pre-HP-GL/2 devices.  In HP-GL/2, the HP vector fonts
+	are not kerned.
+texinfo documentation: full documentation supplied on the 18 supported
+	device-resident Hewlett-Packard vector fonts, also known as 
+	`stick fonts'.
+libplot: escape sequences added for the 12 signs of the zodiac; they are
+	recognized in labels whenever the current font is a Hershey font.
+libplot: new escape sequences "\r^" and "\l^" added, for use in labels;
+	they shift right and left by 1/12 em, respectively.
+libplot: 3 missing Japanese Katakana added to the HersheyEUC font (they
+	are the 3 that have no Hiragana counterpart).
+graph,plot,tek2plot,plotfont: `-T pcl' option added, for PCL 5 output.
+libplot: PCL 5 driver added; it essentially outputs HP-GL/2, with 
+	a preceding control sequence to switch the printer or plotter 
+	from PCL 5 mode to HP-GL/2 mode, and a following control sequence 
+	to switch back.
+plot: parsing bug fixed; files may now be listed on command line.
+configure: options now include `--enable-ps-fonts-in-pcl', 
+	`--enable-lj-fonts-in-ps', and `enable-lj-fonts-in-x'.  Previous
+	option `--enable-lj-fonts' was split into final two.
+libplot: HP-GL/2 driver now supports the 35 PS fonts.  So e.g. in principle
+	`plotfont -Thpgl Helvetica > map.plt' will work, allowing a PS
+	character map to be displayed on a PCL device.  But PS fonts are
+	available only on high-end PCL devices, e.g., 4000-series
+	LaserJets.
+libplot: when drawing labels in any of the 43 ISO-Latin-1 PCL fonts,
+	HP-GL/2 driver previously displayed five characters (-, `, ', ^, ~)
+	incorrectly.  Final four of these were displayed as accents.
+	Problem was traced to HP's idiosyncratic definition of ISO-Latin-1
+	("ECMA-96 Latin-1").  Now fixed.
+
 Version 2.1.4 released, 7/98.  [Includes libplot 1.4, interface age=1.]
 
 libplot: HP-GL driver now supports 8 Stick fonts (device-resident
@@ -35,7 +70,7 @@ libplot: previously the HP-GL driver required that HPGL_VERSION be "1"
 	generic HP-GL (as opposed to HP-GL/2) devices.  No longer
 	absolutely necessary: HP-GL/2 line graphics produced by the driver
 	should be positioned correctly even when erroneously sent to an
-	HP-GL device.
+	HP-GL device.  Fonts do not work, however.
 libplot: HP-GL driver now visibly displays zero-length line segments,
 	if cap mode is `round' or `projecting'.
 libplot: dot/dash spacing in the "dotted", "dotdashed", "shortdashed" and

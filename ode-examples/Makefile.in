@@ -78,6 +78,7 @@ X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
+ps_fonts_in_pcl = @ps_fonts_in_pcl@
 
 odedatadir = $(datadir)/ode
 odedata_DATA = README atwoods.ode bead.ode chem.ode coupled.ode ddho.ode \

@@ -1,21 +1,21 @@
 This directory holds the source files for a 2-D vector graphics library:
-GNU libplot.  Seven different sorts of graphic output are supported:
-metafile, Tektronix, HP-GL/2, xfig, Postscript, X11, and X11 Drawable.  The
-first five are supported via output streams.  The last two are supported
-directly, by calling X routines.  The X11 driver pops up a window
-(actually, a Label widget) on an X display, and draws graphics in it.  The
-X11 Drawable driver draws graphics in one or two `drawables' (windows or
-pixmaps), which must be passed to it.  Each driver is accessed at run time
-through a `Plotter' object of the corresponding type.
+GNU libplot.  Eight different sorts of graphic output are supported:
+metafile, Tektronix, HP-GL/2, PCL 5, xfig, Postscript, X11, and X11
+Drawable.  The first six are supported via output streams.  The last two
+are supported directly, by calling X routines.  The X11 driver pops up a
+window (actually, a Label widget) on an X display, and draws graphics in
+it.  The X11 Drawable driver draws graphics in one or two `drawables'
+(windows or pixmaps), which must be passed to it.  Each driver is accessed
+at run time through a `Plotter' object of the corresponding type.
 
 The names of the source files in this directory include as prefix a letter
 indicating which driver they include code for.  For example, the file
 h_circ.c is part of the HP-GL/2 driver, and contains the source code for
 the method _h_fcircle().  This method is invoked when the user-level
 operation fcircle() is invoked on a HP-GL/2 Plotter.  m=metafile,
-t=Tektronix, f=Fig, p=Postscript, x=X11, y=X11 Drawable.  The many files
-whose names begin with `g' (e.g., g_relative.c) include generic code that
-is used by more than one driver.
+t=Tektronix, h=HP-GL[/2] and PCL 5, f=Fig, p=Postscript, x=X11, y=X11
+Drawable.  The many files whose names begin with `g' (e.g., g_relative.c)
+include generic code that is used by more than one driver.
 
 The library provides a uniform (Plotter) interface to each display device,
 and treats each display device as a virtual pen plotter.  The C binding for

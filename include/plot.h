@@ -1,8 +1,8 @@
-/* This is plot.h, the user-level include file for release 1.4 of
+/* This is plot.h, the user-level include file for release 2.0 of
    GNU libplot, a shared library for 2-dimensional vector graphics.  
 
-   Release 1.4 of libplot, and this file, are distributed as part of
-   release 2.1.4 of the GNU plotting utilities ("plotutils") package. */
+   Release 1.5 of libplot, and this file, are distributed as part of
+   release 2.1.5 of the GNU plotting utilities ("plotutils") package. */
 
 /* stdio.h must be included before this file is included. */
 

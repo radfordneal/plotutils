@@ -50,9 +50,9 @@ Breen <jwb@dgs.monash.edu.au>.  The KANJIDIC file is a text file that
 contains comprehensive information about each Japanese Kanji, with one line
 for each Kanji listed in the JIS X0208 standard.  Correspondences to other
 numberings (Unicode, Nelson, etc.) are given.  The KANJIDIC file is
-available at ftp://ftp.cc.monash.edu.au/pub/nihongo/kanjidic.gz , and
+available at ftp://ftp.monash.edu.au/pub/nihongo/kanjidic.gz , and
 documentation on its format is available at
-ftp://ftp.cc.monash.edu.au/pub/nihongo/kanjidic.doc.gz .
+ftp://ftp.monash.edu.au/pub/nihongo/kanjidic.doc .
 
 JIS	Unicode	Nelson		Meaning(s)
 ---	------	------		----------

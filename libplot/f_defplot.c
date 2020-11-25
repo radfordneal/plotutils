@@ -12,7 +12,7 @@
 
 /* The size of the graphics display is determined by the PAGESIZE
    environment variable ("usletter", "a4", etc.)  The table of known
-   pagetypes is in pagetype.h.  The default is "usletter", for which the
+   pagetypes is in g_pagetype.h.  The default is "usletter", for which the
    graphics display is an 8.5" by 8.5" square, in the upper left corner of
    the xfig display. */
 
@@ -48,8 +48,8 @@ const Plotter _fig_default_plotter =
   (FILE *)NULL,			/* error stream (if any) */
   /* device driver parameters (see g_params.h) */
   /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
   /* capabilities */
   1, 1, 0, 1, 1, 0, 0, 0, 1,	/* capability flags (see extern.h) */
   INT_MAX,			/* hard polyline length limit */
@@ -92,7 +92,7 @@ const Plotter _fig_default_plotter =
   0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
   0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
   10668.0,			/* plot length (for HP-GL/2 roll plotters) */
-  1,				/* current pen (initted in h_closepl.c) */
+  1,				/* current pen (initted in h_openpl.c) */
   false,			/* bad pen? (advisory, see h_color.c) */
   false,			/* pen down rather than up? */
   0.001,			/* pen width (frac of diag dist betw P1,P2) */

@@ -4,18 +4,18 @@
    text string, or `label'.
 
    This database is used in `controlification': the mapping of a label (a
-   string of unsigned chars) to a string of shorts, for further processing.
-   This mapping accomplishes two things: first, it maps certain escape
-   sequences, beginning with a backslash, to non-ASCII ISO-Latin-1
-   characters (e.g., \mu is mapped to `times'), and second, it maps certain
-   escape sequences to internal control codes (e.g. \sp is mapped to `start
-   superscript'). */
+   string of unsigned chars) to a string of unsigned shorts, for further
+   processing.  This mapping accomplishes two things: first, it maps
+   certain escape sequences, beginning with a backslash, to non-ASCII
+   ISO-Latin-1 characters (e.g., \mu is mapped to `times'), and second, it
+   maps certain escape sequences to internal control codes (e.g. \sp is
+   mapped to `start superscript'). */
 
 /* Escape sequences that are mapped to internal control codes.  The order
    in which these appear must agree with the order of internal control
-   codes (e.g. C_BEGIN_SUBSCRIPT) appearing in extern.h. */
+   codes (e.g. C_BEGIN_SUBSCRIPT) appearing in g_control.h. */
 
-#define NUM_CONTROLS 16
+#define NUM_CONTROLS 18
 static const char * const _control_tbl[NUM_CONTROLS] =
 {
   /* \sp = start superscript */
@@ -40,6 +40,8 @@ static const char * const _control_tbl[NUM_CONTROLS] =
   "r6",
   /* \r8 = shift right by em/8 */
   "r8",
+  /* \r^ = shift right by em/12 */
+  "r^",
   /* \l1 = shift left by 1 em */
   "l1",
   /* \l2 = shift left by em/2 */
@@ -50,6 +52,8 @@ static const char * const _control_tbl[NUM_CONTROLS] =
   "l6",
   /* \l8 = shift left by em/8 */
   "l8",
+  /* \l^ = shift left by em/12 */
+  "l^",
 };
 
 typedef struct
@@ -163,10 +167,10 @@ static const Escape _iso_escape_tbl[NUM_ISO_ESCAPES] =
   {255, ":y", "ydieresis"},
 };
 
-/* For any standard PS font or vector font, the following additional
+/* For any standard PS font or Hershey font, the following additional
    translation table applies.  It permits the use of symbols and Greek
    characters (taken from the Symbol font, for a PS font, or from the
-   HersheySymbol font, for a vector font) without explicitly switching
+   HersheySymbol font, for a Hershey font) without explicitly switching
    fonts. */
 
 #define NUM_SYMBOL_ESCAPES 161
@@ -315,7 +319,7 @@ static const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] =
   {0355, "lk", "braceleftmid"},
   {0356, "lb", "braceleftbt"},
   {0357, "bv", "braceex"},
-  /* Euro symbol, added by Adobe 1997(?).  OBHistorical note: Back in Apple
+  /* Euro symbol, added by Adobe 1997(?).  ObHistorical note: Back in Apple
      LaserWriter days, the Apple logo was stored in this slot. */
   {0360, "eu", "euro"},	
   {0361, "ra", "angleright"},
@@ -340,17 +344,33 @@ static const Escape _symbol_escape_tbl[NUM_SYMBOL_ESCAPES] =
   {0321, "dl", "nabla"},
 };
 
-/* For any vector font, the following additional translation table applies.
-   It allows access to special vector characters, from the Hershey
-   repertory and from the SLAC UGS [Unified Graphics System] repertory,
-   which we've placed in the nonprintable 0200--0237 region of the
-   HersheySymbol font.  That region is accessible only through the
-   following translations. */
+/* For any Hershey font, the following additional translation table
+   applies.  It allows access to special vector characters, from the
+   Hershey repertory and from the SLAC UGS [Unified Graphics System]
+   repertory, which we've placed in the nonprintable 0200..0237 region of
+   each Hershey Symbol font.  That region of each Symbol font, like the
+   corresponding region of all other fonts, is normally inaccessible; it is
+   accessible only through the following translations.  (The Hershey
+   zodiacal glyphs, which were a last-minute addition, are similarly stored
+   in the other nonprintable range 000..037 of the Symbol fonts.) */
 
-#define NUM_SPECIAL_ESCAPES 28
+#define NUM_SPECIAL_ESCAPES 40
 
 static const Escape _special_escape_tbl[NUM_SPECIAL_ESCAPES] = 
 {
+  /* zodiacal Hershey glyphs */
+  {01, "AR", "aries"},
+  {02, "TA", "taurus"},
+  {03, "GE", "gemini"},
+  {04, "CA", "cancer"},
+  {05, "LE", "leo"},
+  {06, "VI", "virgo"},
+  {07, "LI", "libra"},
+  {010, "SC", "scorpio"},
+  {011, "SG", "sagittarius"},
+  {012, "CP", "capricornus"},
+  {013, "AQ", "aquarius"},
+  {014, "PI", "pisces"},
   /* some special UGS characters */
   {0204, "~-", "modifiedcongruent"},
   {0205, "hb", "hbar"},
@@ -383,14 +403,14 @@ static const Escape _special_escape_tbl[NUM_SPECIAL_ESCAPES] =
   {0234, "-+", "minusplus"},
   {0235, "||", "parallel"},
   /* overbar and underbar (which make sense for all fonts, but which are
-     implemented for non-vector fonts in a different way) */
+     implemented for non-Hershey fonts in a different way) */
   {0236, "rn", "overscore"},
 #define VECTOR_SYMBOL_FONT_UNDERSCORE 0237
   {0237, "ul", "underscore"},
 };
 
 /* The character-to-superscript mapping table, applying only to ISO-8859-1
-   vector fonts.  Certain printable 8-bit characters are drawn as small
+   Hershey fonts.  Certain printable 8-bit characters are drawn as small
    raised ASCII characters, possibly underlined. */
 
 typedef struct 

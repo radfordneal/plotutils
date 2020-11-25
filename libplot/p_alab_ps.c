@@ -53,10 +53,10 @@ _p_falabel_ps (s, h_just)
     }
 
   /* sanity check */
-#ifndef USE_LJ_FONTS
+#ifndef USE_LJ_FONTS_IN_PS
   if (_plotter->drawstate->font_type != F_POSTSCRIPT)
     return 0.0;
-#else  /* USE_LJ_FONTS */
+#else  /* USE_LJ_FONTS_IN_PS */
   if (_plotter->drawstate->font_type != F_POSTSCRIPT
       && _plotter->drawstate->font_type != F_PCL)
     return 0.0;
@@ -304,7 +304,7 @@ End\n\
   _plotter->drawstate->pos.y += sintheta * width;
 
   /* flag current PS or PCL font as used */
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
   if (pcl_font)
     _plotter->pcl_font_used[master_font_index] = true;
 

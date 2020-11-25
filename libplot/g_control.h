@@ -15,11 +15,13 @@
 #define C_RIGHT_QUARTER_EM 8
 #define C_RIGHT_SIXTH_EM 9
 #define C_RIGHT_EIGHTH_EM 10
-#define C_LEFT_ONE_EM 11
-#define C_LEFT_HALF_EM 12
-#define C_LEFT_QUARTER_EM 13
-#define C_LEFT_SIXTH_EM 14
-#define C_LEFT_EIGHTH_EM 15
+#define C_RIGHT_TWELFTH_EM 11
+#define C_LEFT_ONE_EM 12
+#define C_LEFT_HALF_EM 13
+#define C_LEFT_QUARTER_EM 14
+#define C_LEFT_SIXTH_EM 15
+#define C_LEFT_EIGHTH_EM 16
+#define C_LEFT_TWELFTH_EM 17
 
 #define C_RIGHT_RADICAL_SHIFT 254	/* for \rn in PS and PCL fonts */
 #define C_LEFT_RADICAL_SHIFT 255

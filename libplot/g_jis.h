@@ -1011,6 +1011,9 @@ static const struct jis_entry _builtin_jis_chars[] =
   {0x2571, HERSHEY_KATAKANA, 0x71},
   {0x2572, HERSHEY_KATAKANA, 0x72},
   {0x2573, HERSHEY_KATAKANA, 0x73},
+  {0x2574, HERSHEY_KATAKANA, 0x74},
+  {0x2575, HERSHEY_KATAKANA, 0x75},
+  {0x2576, HERSHEY_KATAKANA, 0x76},
 /* Row 6 [Greek characters], taken from HersheySerif-Symbol. */
   {0x2621, HERSHEY_SERIF_SYMBOL, 'A'},    
   {0x2622, HERSHEY_SERIF_SYMBOL, 'B'},    

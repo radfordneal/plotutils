@@ -70,8 +70,14 @@
 /* Define to signal support in -lXext for the MBX X11 protocol extension */
 #undef HAVE_MBX_SUPPORT
 
-/* Define to enable support for the 45 LaserJet fonts in PS and X output */
-#undef USE_LJ_FONTS
+/* Define to enable support for the 45 LaserJet fonts in X output */
+#undef USE_LJ_FONTS_IN_X
+
+/* Define to enable support for the 45 LaserJet fonts in PS output */
+#undef USE_LJ_FONTS_IN_PS
+
+/* Define to enable support for the 35 PS fonts in PCL output */
+#undef USE_PS_FONTS_IN_PCL
 
 /* Define if you have the erf function.  */
 #undef HAVE_ERF

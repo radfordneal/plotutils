@@ -5,10 +5,10 @@ GNU packages, and the file INSTALL.pkg for package-specific installation
 instructions.
 
 The fonts this file discusses are: (1) the 35 standard `Postscript fonts',
-which come with the package, (2) the 4 standard `Tektronix fonts', which do
-also, and (3) the 45 standard `LaserJet fonts', which do not come with the
-package, but which you can get for free from Hewlett-Packard via the
-Internet.
+clones of which come with the package, (2) the 4 standard `Tektronix
+fonts', which do also, and (3) the 45 standard `LaserJet fonts', which
+do not come with the package, but which you can get for free from
+Hewlett-Packard via the Internet.
 
 1. The 35 standard Postscript fonts
 -----------------------------------
@@ -19,18 +19,18 @@ Courier, New Century Schoolbook, Palatino, Bookman, AvantGarde,
 ZapfChancery, and ZapfDingbats.
 
 You will get the greatest value out of the plotutils package, when running
-under X Windows, if these fonts are available on your X server.  It is best
-to have an X11R6 ("release 6") X server, since X11R6 servers support
+under X Windows, if these fonts are available on your X display.  It is
+best to have an X11R6 ("release 6") X server, since X11R6 servers support
 arbitrary rotation and scaling of fonts.
 
 Many X servers (for example, many releases of XFree86 for Linux) do not
 supply all 35 standard Postscript fonts.  However, all modern X servers,
-such as X11R6 servers, support Type 1 fonts.  If your X server is a modern
-one, there is nothing to stop you from buying Type 1 versions of the 35
-standard Postscript fonts from Adobe, and installing them.  There is an
-even easier option: you may install the cloned versions in the subdirectory
-./fonts/pfb, which were designed by URW GmBH of Germany and contributed for
-distribution under the GNU License.
+such as X11R6 servers, support fonts in Type 1 format.  If your X server is
+a modern one, there is nothing to stop you from buying Type 1 versions of
+the 35 standard Postscript fonts from Adobe, and installing them.  There is
+an even easier option: you may install the cloned versions in the
+subdirectory ./fonts/pfb, which were designed by URW GmBH of Germany and
+contributed for distribution under the GNU License.
 
 To install the 35 Postscript fonts, first locate the directory on your
 system in which Type 1 fonts are stored (it will probably be
@@ -83,22 +83,23 @@ LaserJets.  (The LaserJet 6, 5, and 4 at least; the old LaserJet III
 included only 8 of the 45.)  They include Times New Roman, Arial, Univers,
 Garamond, CGTimes, CGOmega, Courier, Letter Gothic, Symbol, and Wingdings.
 
-The plotting utilities can produce HP-GL/2 output, which is meant to be
-sent to a LaserJet or similar printer or plotter.  For example,
-`graph -T hpgl' can do so.  When producing HP-GL/2 output, they can use
-any of the 45 LaserJet fonts.
+The plotting utilities can produce PCL 5 or HP-GL/2 output, which is meant
+to be sent to a LaserJet or similar printer or plotter.  For example,
+`graph -T pcl' and `graph -T hpgl' can do this.  When producing PCL 5 and
+HP-GL/2 output, they can use any of the 45 LaserJet fonts.
 
-You can also use them when producing plots for an X Window System display,
-or when producing Postscript output.  Here is how.
+You may also use them when producing plots for an X Window System display,
+or when producing Postscript output.  Here is how you can do this (the
+first is much easier than the second).
 
 A. When you configure and install the plotting utilities package, be sure
-to do `./configure --enable-lj-fonts' instead of just `./configure'.
+to do `./configure --enable-lj-fonts-in-x' instead of just `./configure'.
 
 B. Obtain and install the 45 LaserJet fonts.  Hewlett-Packard has made 
 Type 1 versions of these fonts available via the Internet, at
 ftp://ftp.hp.com/pub/printers/software/mp135mu.exe .  
 This is a zipped file, which you can unzip with the `unzip' utility.  You
-will get 45 font files, in .pfb format.
+will get 45 font files, in .pfb ("Postscript Font, Binary") format.
 
 To install the 45 LaserJet fonts, first locate the directory on your system
 in which Type 1 fonts are stored (it will probably be
@@ -109,64 +110,83 @@ new font files, copy the lines in the file ./fonts/fonts3.append to the end
 of the fonts.scale file, and correct the first line of the fonts.scale file
 (a count of the number of scalable fonts) by adding 45 to it.  Then, while
 in that directory, run the `mkfontdir' program.  The `mkfontdir' program
-creates a file called `fonts.dir', which is what the X server will read.  If
-the X server is currently running, you should also do `xset fp rehash' to
-make the server re-scan the directory.
+creates a file called `fonts.dir', which is what the X server will read.
+If the X server is currently running, you should also do `xset fp rehash'
+to make the server re-scan the directory.
 
 C. After steps (A) and (B) are followed, the plotting utilities will be
-able to use the 45 fonts when producing X output.  For example, you can do
+able to use the 45 LaserJet fonts when producing X output.  For example,
+you can do
 
 	echo 0 0 1 1 2 0 | graph -T X -F Arial-Roman
 
-to pop up a simple Arial plot on your screen.  If you do `graph -T X
---help-fonts' or `plotfont -T X --help-fonts', the list of fonts you are
-shown will include the 45.
+to pop up a simple plot on your screen, labelled in Arial.  If you do
+`graph -T X --help-fonts' or `plotfont -T X --help-fonts', the list of
+fonts you are shown will include the 45.
 
-You may wish to use the new fonts for Postscript output as well.  On this,
-you are largely on your own.  It is easiest to add support for them to the
-Ghostscript previewer.  To do so, you would need to add 45 new entries to
-the Ghostscript `Fontmap' file, one per font.  This file is usually in a
+D. You may wish to use the 45 new fonts in Postscript output as well.  This
+is harder, and to some extent, you are on your own on this.  What follows
+is a (long!) explanation of what you can do.
+
+If you want to produce, view, and print Postscript files that contain the
+45 LaserJet fonts, you should first add the `--enable-lj-fonts-in-ps'
+option to `./configure'.  In principle, this is enough: it will let you
+produce Postscript output that uses the 45 LaserJet fonts.  The problem is
+that your Postscript interpreter or printer may not know about the new
+fonts.
+
+It is easiest to add support for the new fonts to the Ghostscript
+previewer.  To do this, you would need to add 45 new entries to the
+Ghostscript `Fontmap' file, one per font.  This file is usually in a
 subdirectory of /usr/local/share/ghostscript or /usr/share/ghostscript.
 The format of this file should be self-explanatory: it lists the name of
-each font and the name of the .pfb file that contains it.  The 45 .pfb
+each font and the file name of the .pfb file that contains it.  The 45 .pfb
 files from Hewlett-Packard have obscure names, but by looking at them you
-should be able to figure out which contains which font.
+should be able to figure out which contains which font.  For example, the
+file `0037____.pfb' contains the Arial-Roman font.
 
 Of course it would be desirable to use the 45 LaserJet fonts not just for
-Postscript preview, but for printing.  This can be a bit painful, since the
-appropriate font(s) will need to be downloaded to the printer, either
-separately or as part of the document (e.g., plot) that you wish to print.
+preview, but for printing on a Postscript printer.  This can be quite
+painful, since the appropriate font(s) will need to be downloaded to the
+printer, either separately or as part of the document (e.g., plot) that you
+wish to print.
 
 The current release of the plotting utilities unfortunately does not
-support automatically including the fonts in PS output files.  But if you
-have a sophisticated printer driver or document manager that automatically
-includes fonts in documents, then it should be easy for you to add support
-for the 45 LaserJet fonts.  (The PS output of such utilities as `graph'
-indicates to the driver or manager which fonts should be included.)
+support automatically including the fonts in Postscript output files.  But
+if you have a sophisticated printer driver or document manager that
+automatically includes fonts in documents, then it should be easy for you
+to add support for the 45 LaserJet fonts.  (The PS output of such utilities
+as `graph' will indicate to the driver or manager which fonts should be
+included.)  You are on your own on this, though.
 
-You can also experiment with manual downloading of fonts to your printer.
-First, you need to convert the relevant .pfb file(s), which are in binary,
-to .pfa file(s), which are human readable.  There is a standard program,
-`t1ascii', which can do this.  It is part of the `t1utils' package, which
-is available in many standard archives.  After converting the .pfb files to
-.pfa files, you can send each of the needed .pfa files to your printer, as
-if it were a documented to be printed.  Be sure to precede each .pfa file
-by the magic lines
+As an alternative, you may manually download the 45 new fonts, or whichever
+ones of them you are using, to your Postscript printer.  This works quite
+well, though whenever you turn the printer off, the fonts go away.  To do
+this, you should first convert the relevant .pfb file(s), which are in
+binary, to .pfa file(s), which are in human readable ["Postscript Font,
+Ascii"] format.  There is a standard program, `t1ascii', which can do this.
+It is part of the `t1utils' package, which is available in many standard
+archives.  After converting the .pfb files to .pfa files, you would send
+each of the needed .pfa files to your printer, as if it were a Postscript
+documented to be printed.  Be sure to precede each .pfa file by the magic
+lines
 
 %!PS-Adobe-3.0 ExitServer
 %%BeginExitServer: 0
 serverdict begin 0 exitserver
 %%EndExitServer
 
-which will ensure the font stays resident in the printer.  
+which will ensure the font stays resident in the printer, at least until it
+is turned off.
 
-For example, the file `0037____.pfb' contains Arial-Roman.  If you convert
-it to `0037____.pfa' and download it to your printer, you will be able to
-print an Arial-Roman plot by doing, e.g.,
+For example, the file `0037____.pfb' from Hewlett-Packard contains the
+Arial-Roman font.  If you convert it to `0037____.pfa' with `t1ascii' and
+download it to your printer, you will be able to print an Arial-Roman plot
+by doing, e.g.,
 
 	echo 0 0 1 1 2 0 | graph -T ps -F Arial-Roman | lpr
 
 This procedure is awkward, and may be improved in future releases.
 
-A final comment.  The font in `tidbits_.pfb' is actually Wingdings, despite
-its name.
+A final comment.  The LaserJet font in the file `tidbits_.pfb' from
+Hewlett-Packard is actually Wingdings, despite its name.

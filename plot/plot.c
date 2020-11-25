@@ -339,8 +339,8 @@ main (argc, argv)
 		  fprintf (stderr, "%s: ignoring this file\n", progname);
 		  errno = 0;	/* not quite fatal */
 		  retval = 1;
+		  continue;	/* back to top of for loop */
 		}
-	      continue;	/* back to top of for loop */
 	    }
 	  if (read_plot (data_file) == false)
 	    {

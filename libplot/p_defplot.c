@@ -32,16 +32,16 @@ static void _get_page_bbox __P ((Outbuf *bufp, double *xmin, double *xmax, doubl
 
 /* The size of the graphics display is determined by the PAGESIZE
    environment variable ("usletter", "a4", etc.)  The table of known
-   pagetypes is in pagetype.h.  The default is "usletter", for which the
+   pagetypes is in g_pagetype.h.  The default is "usletter", for which the
    graphics display is an 8.5" by 8.5" square, centered on an 8.5" by 11"
    page. */
 
 const Plotter _ps_default_plotter = 
 {
   /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _p_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _p_endpath, _p_erase, _g_farc, _g_farcrel, _g_fbox, _g_fboxrel, _p_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _p_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _p_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _p_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
+  _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _g_closepl2, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _p_endpath, _p_erase, _g_farc, _g_farcrel, _g_fbox, _g_fboxrel, _p_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _p_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _g_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _p_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _g_openpl2, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* internal methods that plot strings in non-Hershey fonts */
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
   _p_falabel_ps, _p_falabel_ps, NULL, NULL,
   _g_flabelwidth_ps, _g_flabelwidth_pcl, NULL, NULL,
 #else
@@ -72,10 +72,10 @@ const Plotter _ps_default_plotter =
   (FILE *)NULL,			/* output stream (if any) */
   (FILE *)NULL,			/* error stream (if any) */
   /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
   /* capabilities */
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
   1, 1, 0, 1, 1, 1, 0, 0, 0,	/* capability flags (see extern.h) */
 #else
   1, 1, 0, 1, 1, 0, 0, 0, 0,	/* capability flags (see extern.h) */
@@ -120,7 +120,7 @@ const Plotter _ps_default_plotter =
   0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
   0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
   10668.0,			/* plot length (for HP-GL/2 roll plotters) */
-  1,				/* current pen (initted in h_closepl.c) */
+  1,				/* current pen (initted in h_openpl.c) */
   false,			/* bad pen? (advisory, see h_color.c) */
   false,			/* pen down rather than up? */
   0.001,			/* pen width (frac of diag dist betw P1,P2) */
@@ -232,7 +232,7 @@ _ps_init_plotter (plotter)
   /* initialize `font used' array(s) for the document */
   for (i = 0; i < NUM_PS_FONTS; i++)
     plotter->ps_font_used[i] = false;
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
   for (i = 0; i < NUM_PCL_FONTS; i++)
     plotter->pcl_font_used[i] = false;
 #endif
@@ -317,7 +317,7 @@ _ps_terminate_plotter (plotter)
 		first_font = false;
 	      }
 	  }
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
 	for (i = 0; i < NUM_PCL_FONTS; i++)
 	  {
 	    if (plotter->pcl_font_used[i])
@@ -375,7 +375,7 @@ _ps_terminate_plotter (plotter)
 	  if (plotter->ps_font_used[i])
 	    fprintf (plotter->outstream, "\
 %%%%IncludeResource: font %s\n", _ps_font_info[i].ps_name);
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
       for (i = 0; i < NUM_PCL_FONTS; i++)
 	  if (plotter->pcl_font_used[i])
 	    {
@@ -404,7 +404,7 @@ DrawDict begin\n");
 	      need_to_reencode = true;
 	      break;
 	    }
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
 	for (i = 0; i < NUM_PCL_FONTS; i++)
 	  if (plotter->pcl_font_used[i] && _pcl_font_info[i].iso8859_1)
 	    {
@@ -423,7 +423,7 @@ DrawDict begin\n");
 /%s reencodeISO def\n",
 			   _ps_font_info[i].ps_name);
 	      }
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
 	    for (i = 0; i < NUM_PCL_FONTS; i++)
 	      {
 		if (plotter->pcl_font_used[i] && _pcl_font_info[i].iso8859_1)
@@ -487,7 +487,7 @@ Begin\n\
 	    fputs ("\
 %%EndPageSetup\n\n", plotter->outstream);
 	  
-	    /* OUTPUT POSTSCRIPT FOR THIS PAGE */
+	    /* OUTPUT PS CODE FOR THIS PAGE */
 	    if (page->len > 0)
               fputs (page->base, plotter->outstream); 
 	  

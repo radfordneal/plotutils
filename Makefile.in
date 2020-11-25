@@ -81,6 +81,7 @@ X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
+ps_fonts_in_pcl = @ps_fonts_in_pcl@
 
 SUBDIRS = lib spline double ode ode-examples libplot plot tek2plot plotfont graph include info doc fonts test
 

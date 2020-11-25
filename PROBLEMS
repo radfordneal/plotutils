@@ -142,6 +142,22 @@ conventional dotted lines.
 
 ----------------------------------------------------------------------
 
+`graph -T pcl' and libplot's PCL 5 driver
+--------------------------------------------
+
+1. There are some small errors in the positioning of text strings when
+producing PCL 5 output that uses the Symbol font.  For example, if you do
+`plotfont -Tpcl --box Symbol > symbol.pcl' to get a PCL 5 file that is a
+character map of the Symbol font, you will notice that in the character
+map, some of the characters do not quite line up with their boxes.
+
+This problem is due to problems in HP's documentation.  HP has released
+useful information on its 45 PCL 5 fonts (i.e., "LaserJet fonts"),
+including Symbol.  (This includes font metrics, etc.; see ./INSTALL.fonts.)
+However, their information on the Symbol font appears to be incorrect.  As
+a consequence, horizontal positioning of text strings in the Symbol font is
+slightly in error.  This problem does not affect the other 44 PCL 5 fonts.
+
 `graph -T hpgl' and libplot's HP-GL/2 driver
 --------------------------------------------
 
@@ -160,98 +176,18 @@ the 4L and 5L.
 A less drastic remedy is to do a search-and-replace on the HP-GL/2 output
 with a text editor, replacing each occurrence of the string "31402" by "6826".
 
-2. `graph -T hpgl', `plot -T hpgl', and any other applications that use
-libplot's HP-GL driver, by default produce HP-GL/2 output files that may be
-imported into a wide variety of applications.  However, it is useful to be
-able to print HP-GL/2 files directly on a PCL 5 or PCL 6 device such as a
-LaserJet III, 4, 5, or 6.
+2. There are some small errors in the positioning of text strings when
+producing HP-GL/2 output that uses the Symbol font.  For example, if you do
+`plotfont -Thpgl --box Symbol > symbol.plt' to get an HP-GL/2 file that is
+a character map of the Symbol font, you will notice that in the character
+map, some of the characters do not quite line up with their boxes.
 
-If you have a PCL 5 or PCL 6 printer or plotter, and the file contains only
-a single page of graphics, you may do this easily.  Precede the HP-GL/2
-file by the four-byte escape sequence
-
-		ESC % 0 B
-
-which will switch the printer or plotter from PCL mode to HP-GL/2 mode, and
-follow it by the four-byte escape sequence
-
-		ESC % 0 A
-
-which will switch it back to PCL mode.  Then send the file, as modified, to
-your printer port.  The printer or plotter should accept it and print it.
-
-If you have one of the above LaserJets, but it is equipped with the
-Postscript personality and is functioning as a Postscript printer, the
-above technique will not work.  Instead, follow the instructions in #3,
-below.
-
-There is a problem with using the above technique to print an HP-GL/2 file
-that contains more than a single page of graphics.  It will not work
-properly, since PCL 5 devices, when in HP-GL/2 mode, do not allow pages to
-be ejected and new ones to be begun.
-
-If necessary, this problem can be worked around with a text editor.  Simply
-replace each "PG0;BP;IN;" command sequence in the multipage HP-GL/2 file,
-which would normally eject the current page and initialize the next one, by
-the nine-byte sequence
-
-	ESC % 0 A FF ESC % 0 B
-
-Then each page of graphics will be ejected as it should be.  (Here `FF'
-means a form feed, i.e., control-L.)  As you can see, this sequence
-switches the printer from HP-GL/2 mode to PCL mode and back.  Page ejection
-within PCL mode, by a form feed, is allowed.
-
-3. If you have a LaserJet 4, 5, or 6 that is functioning as a Postscript
-printer, e.g., a LaserJet 4MP, 5MP, or 6MP, you can use it to print
-single-page HP-GL/2 files.  The technique is a bit complicated, however.
-The following explanation assumes that you are using a Unix-style `lpr'
-program, and that the printing of jobs is controlled by a `lpd' daemon, the
-configuration file for which is /etc/printcap.
-
-Add to the entry for your printer in /etc/printcap a field like
-
-	cf=/usr/local/lib/hpglf
-
-where /usr/local/lib/hpglf will be a shell script that you will install.
-This entry will make it possible to use the `lpr -c' command to 
-print HP-GL/2 files on your Postscript LaserJet.  The `-c' option is
-normally unused.
-
-The /usr/local/lib/hpglf script should be the following.  As you can see,
-it first sends a command to the printer that switches it to PCL mode.  The
-command is in PJL, Printer Job Language.  Then the technique explained in
-#2 above is used to switch the printer to HP-GL/2 mode and back.  Finally,
-the printer is switched back to Postscript mode.
-
-This technique will work on Postscript versions of the LaserJet 4, 5, and 6.
-It will not work on LaserJet III's that are equipped with Postscript
-cartridges, since their Postscript functionality cannot be turned off in
-software (they do not support PJL).
-
-#!/bin/sh
-
-# This filter permits HP-GL/2 data to be printed on an HP LaserJet
-# that is functioning as a Postscript printer.  It may be installed
-# as the `c' filter in /etc/printcap, so that `lpr -c' will invoke it.
-
-# switch LaserJet printer from PS to PCL mode
-# (echo is assumed to support the -e option)
-echo -e '\033%-12345X@PJL ENTER LANGUAGE=PCL'
-
-# enter HP-GL/2 mode, begin functioning as a standalone plotter
-echo -e '\033%-1B'
-
-# take input from standard input, send to standard output
-cat
-
-# exit HP-GL/2 mode
-echo -e '\033%0A'
-
-# switch LaserJet printer from PCL mode to PS mode
-echo -e '\033%-12345X@PJL ENTER LANGUAGE=POSTSCRIPT'
-
-#EOF
+This problem is due to problems in HP's documentation.  HP has released
+useful information on its 45 LaserJet fonts, including Symbol.  (This
+includes font metrics, etc.; see ./INSTALL.fonts.)  However, their
+information on the Symbol font appears to be incorrect.  As a consequence,
+horizontal positioning of text strings in the Symbol font is slightly in
+error.  This problem does not affect the other 44 LaserJet fonts.
 
 ----------------------------------------------------------------------
 

@@ -78,6 +78,7 @@ X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 X_TOOLKIT_LIBS = @X_TOOLKIT_LIBS@
 YACC = @YACC@
+ps_fonts_in_pcl = @ps_fonts_in_pcl@
 
 tek2plotdatadir = $(datadir)/tek2plot
 tek2plotdata_DATA = README aitest.tek dmerc.tek fotest.tek imtesth.tek karney.tek ocpred.tek scale.tek skymap.tek usmap.tek

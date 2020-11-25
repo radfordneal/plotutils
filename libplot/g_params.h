@@ -6,7 +6,7 @@
 /* A default value should be specified for each parameter that is
    string-valued, except for HPGL_PENS, which is left uninitialized.  (Its
    default value will depend on the value of HPGL_VERSION; see
-   h_openpl.c.).  The `value' field should always be NULL; it is set with
+   h_defplot.c.).  The `value' field should always be NULL; it is set with
    the parampl() function. */
 
 /* Beside each parameter there is an indication of which type(s) of Plotter
@@ -35,7 +35,11 @@ static struct param_record _plot_params[NUM_DEVICE_DRIVER_PARAMETERS] =
   {"HPGL_YOFFSET", "0 cm", NULL, true}, /* hpgl */
   {"MAX_LINE_LENGTH", MAX_UNFILLED_POLYLINE_LENGTH_STRING, NULL, true}, /* all but tek and meta */
   {"META_PORTABLE", "no", NULL, true}, /* raw  */
-  {"PAGESIZE", "letter", NULL, true}, /* hpgl, fig, ps */
+  {"PAGESIZE", "letter", NULL, true}, /* hpgl, pcl, fig, ps */
+  {"PCL_ASSIGN_COLORS", "no", NULL, true}, /* pcl */
+  {"PCL_ROTATE", "no", NULL, true},	/* pcl */
+  {"PCL_XOFFSET", "0 cm", NULL, true}, /* pcl */
+  {"PCL_YOFFSET", "0 cm", NULL, true}, /* pcl */
   {"TERM", "tek", NULL, true},	/* tek only! */
   {"USE_DOUBLE_BUFFERING", "no", NULL, true}, /* X */
   {"VANISH_ON_DELETE", "no", NULL, true}, /* X */

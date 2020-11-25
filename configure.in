@@ -3,7 +3,7 @@ dnl Copyright (C) 1989-98 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(graph/graph.c)
-AM_INIT_AUTOMAKE(plotutils, 2.1.4)
+AM_INIT_AUTOMAKE(plotutils, 2.1.5)
 AM_CONFIG_HEADER(config.h)
 
 dnl Determine extension (e.g. ".exe") on executables, if any.
@@ -99,6 +99,11 @@ dnl Necessitated by lack of support in autoconf for libtool.
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/.lo/g'`
 AC_SUBST(LTALLOCA)
 
-AC_ARG_ENABLE(lj-fonts, [  --enable-lj-fonts       enable the use of LaserJet fonts in X and PS output], echo enabling support for LaserJet fonts in X and PS output; AC_DEFINE(USE_LJ_FONTS))
+AC_ARG_ENABLE(ps-fonts-in-pcl, [  --enable-ps-fonts-in-pcl   enable use of PS fonts in PCL and HP-GL/2 output], echo enabling support for the 35 PS fonts in PCL 5 and HP-GL/2 output; ps_fonts_in_pcl=1; AC_DEFINE(USE_PS_FONTS_IN_PCL), ps_fonts_in_pcl=0)
+AC_SUBST(ps_fonts_in_pcl)
+
+AC_ARG_ENABLE(lj-fonts-in-ps, [  --enable-lj-fonts-in-ps    enable use of LaserJet fonts in PS output], echo enabling support for the 45 LaserJet fonts in PS output; AC_DEFINE(USE_LJ_FONTS_IN_PS))
+
+AC_ARG_ENABLE(lj-fonts-in-x, [  --enable-lj-fonts-in-x     enable use of LaserJet fonts on X displays], echo enabling support for the 45 LaserJet fonts on X displays; AC_DEFINE(USE_LJ_FONTS_IN_X))
 
 AC_OUTPUT(Makefile double/Makefile graph/Makefile info/Makefile lib/Makefile libplot/Makefile plot/Makefile tek2plot/Makefile tek2plot/teksamples/Makefile plotfont/Makefile spline/Makefile ode/Makefile ode-examples/Makefile include/Makefile doc/Makefile fonts/Makefile fonts/bdf/Makefile fonts/pcf/Makefile fonts/pfb/Makefile test/Makefile)

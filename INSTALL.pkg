@@ -33,24 +33,24 @@ library.
 
 A. This section covers installation problems related to both the unshared
 version and the shared version (DLL) of the GNU libplot graphics library.
-On most systems, especially recent ones, the default is for GNU libplot to
-be installed as a DLL.  A script called `libtool' is used for this.  Also
-by default, the application programs `graph', `plot', `tek2plot', and
-`plotfont' are configured to use this DLL.
+Except on older systems, the default is for GNU libplot to be installed as
+a DLL.  A script called `libtool' is used for this.  Also by default, the
+application programs `graph', `plot', `tek2plot', and `plotfont' are
+configured to use this DLL.
 
 If for any reason you wish to disable support for the shared version, you
 may begin by doing `./configure --disable-shared' instead of `./configure'.
-Note though that two of the problem reports below (#A.2 and #A.3a) mention
+Note though that two of the problem reports below (#A.2 and #A.3) mention
 difficulties in creating the _unshared_ version, rather than the shared
 version.
 
 A.1. You may already have a version of GNU libplot installed on your
 system.  Check to see if there are any files named libplot.* in the library
 installation directory, which by default is /usr/local/lib.  If so, 
-YOU SHOULD MOVE OR RENAME THEM BEFORE BUILDING THE PACKAGE.  The reason is
-that the installation scripts may erroneously try to link with them.
-At the very least, this will affect the outcome of the tests run by 
-doing `make check'.
+YOU SHOULD MOVE OR RENAME THEM BEFORE BUILDING THE PACKAGE.  
+The reason is that the installation scripts may erroneously try to link
+with them.  At the very least, this will adversely affect the outcome of
+the tests run by doing `make check'.
 
 A.2. This package has been successfully built and installed on Suns running
 Solaris 2.5 (with the SunPro 4.0 `cc' compiler) and Solaris 2.6 (with the
@@ -59,94 +59,76 @@ created if the package is compiled with gcc.
 
 However, some problems have been reported with the linking of libplot on
 Suns running Solaris (2.5 and 2.6, at least).  These problems are difficult
-to reproduce and may be due to an incorrectly configured compiler/linker
-setup.  Suns running Solaris do not come with compilers, and either Sun's
-SunPro compiler `cc' or the GNU compiler `gcc' must be installed.
-(A BSD-compatible compiler `ucbcc' is also supported.)  Compiler installation
-under Solaris is not a trivial matter.  Usually, users must set environment
-variables for the correct compiler and related utilities to be executed.
-Some of the reported problems with this package on Solaris systems may have
-been due to incorrect or incomplete compiler installations, which caused a
-mixture of SunPro, GNU, and BSD-compatible tools to be used during
-installation.
+to reproduce.  They may be due to bugs in the Solaris shell (/bin/sh),
+causing buffer overrun problems.  (A very long command line apparently
+triggers the bug.)  They may also be due to an incorrectly configured
+compiler/linker setup.
 
 The most frequently reported problem on Solaris systems is the following.
-At some point during compilation or installation you may get an error
-message like ".libs/libplot.a: No such file", or "make: Fatal error:
-Command failed for target `libplot.la'".  This is an indication that the
-unshared version of the libplot library was somehow not created as it
-should have been.
+At some point in the installation you may get an error message like
+".libs/libplot.a: No such file", or "make: Fatal error: Command failed for
+target `libplot.la'".  This is an indication that the unshared version of
+the libplot library was somehow not been created as it should have been.
+If this is due to the buffer overrun bug in the Solaris shell, here are two
+possible workarounds.
 
-Here are some possible workarounds for this problem on Solaris systems.
+A.2a. Obtain and install GNU bash, the Bourne again shell.  It does not
+suffer from the buffer overrun bug.  After doing `make distclean' and
+`./configure' to start over, you should change the definition of the SHELL
+variable in the file ./libtool to be GNU bash, instead of /bin/sh.  The
+definition is located at about line #50 of the file.  With luck, this will
+do the job; you can then just type `make'.
 
-Possible Solaris Workaround 1. You may not actually need the unshared
-version of libplot, especially if you are compiling with gcc rather than
-cc.  Try starting over by doing a `make distclean', this time doing
-`./configure --disable-static' rather than just `./configure'.  Only the
-shared version of libplot will be built, and there should be no error
-message.
-
-Possible Solaris Workaround 2. The error message may occur not during
-compiling and linking, but only at the very end of the installation, when
-you do a `make install'.  This indicates that with the exception of an
-unneeded library, everything was created correctly, despite appearances.
-So in principle there may be nothing to worry about.  Actually, the error
-message interrupts the installation before many files are installed.  To
-complete the installation you should `cd' into the each of the seven
-directories `plot', `tek2plot', `plotfont', `graph', `include', `info', and
-`doc', being sure to type `make install' in each.
-
-Possible Solaris Workaround 3. The preceding workaround is not very
-convenient.  If the unshared version of libplot (normally named in
-`libplot/.libs/libplot.a') is not created as it should be, but is not
-actually needed, you may be able to fool the installation process into
-thinking that it exists.  If you get the error message when doing a `make
-install', try doing `touch libplot/.libs/libplot.a' to create an empty file
-with the same name, and then do `make install' to see what happens.
-
-Possible Solaris Workaround 4. None of the preceding three workarounds will
-work if the unshared library libplot.a is truly needed; for example, if the
-compilation process on your system does not build a shared version of
-libplot.  This is the case if you are compiling with cc rather than gcc, in
-particular.  However, in that case you may be able to create libplot.a by
-hand.
+A.2b. Here is an another possible workaround, which does not require
+the installation of a new shell.
 
     1.  Go to the directory ./libplot, and examine the Makefile.
     2.  Extract the long list of .lo files beginning on the 
 	"cond1libplot_la_OBJECTS:" line, and put it in a file called OBJECTS.
 	(The list starts with "api.lo" and ends with "y_openpl.lo".)
-    3.  Manually run the command     
-		ar cru .libs/libplot.a `cat OBJECTS`
+    3.  Manually run the command     ar cru .libs/libplot.a `cat OBJECTS`
         in that directory.
 
 With luck, this will create the unshared library ./libs/libplot.a.  
 You may then go back to the top directory and type `make' to continue
 the installation.
 
-If none of these four possible workarounds succeed, please report it to
-bug-gnu-utils@gnu.org.
+A.2c. The following remarks may be useful if the installation problems on a
+Solaris system are not due to a shell bug, but rather to an incorrectly
+installed compiler/linker setup.
+
+Suns running Solaris do not come with compilers, and either Sun's SunPro
+compiler `cc' or the GNU compiler `gcc' must be installed. 
+(A BSD-compatible alternative `ucbcc' is also supported.)  Compiler
+installation under Solaris is not a trivial matter.  Usually, users must
+set environment variables for the correct compiler and related utilities to
+be executed.  Some of the reported problems with this package on Solaris
+systems may have been due to incorrect or incomplete compiler
+installations, which caused a mixture of SunPro, GNU, and BSD-compatible
+tools to be used during installation.
 
 A.3. There are problems with the linking of the libplot library on DEC Alphas
 running OSF 3.x, though apparently not OSF 4.0.  The problems are due to
 bugs (buffer overrun problems) in DEC's shell and/or other command-line
-utilities.  They occur because a large number of object modules are linked
-together to construct the library.
+utilities.  They occur because the shell and/or other command-line programs
+cannot handle very long command lines.
 
-A.3a. On DEC Alphas running OSF 3.x (though apparently not OSF 4.x), a
-problem similar to the Solaris problem discussed in #2, above, has been
+A.3a. On DEC Alphas running OSF 3.x (though apparently not OSF 4.x), 
+a problem similar to the Solaris problem discussed in #A.2, above, has been
 reported to occur: the libplot library libplot.la or libplot.a being
-missing or not containing any files.  It is due to a bug (a buffer overrun
-problem) in the version of /bin/sh that comes with OSF/1.  It should be
-possible to work around the problem by using one of the same techniques
-explained in #A.2.
+missing or not containing any files.  This problem is due to a bug
+(a buffer overrun problem) in the version of /bin/sh that comes with OSF/1.
+It should be possible to work around the problem by using one of the
+techniques explained in #A.2a and #A.2b, e.g., installing GNU bash as an
+alternative shell.
 
 A.3b. On DEC Alphas running OSF 3.2 (though apparently not OSF 4.x), you
 may get a message like "Segmentation Fault printf: line too long" during
 the installation process.  This is due to a bug (a buffer overrun problem)
-in DEC's `printf' command.  The fix is to obtain and install the GNU
-shellutils package, which includes a working version of `printf'.  It has
-been reported that renaming /usr/ucb/printf, for the duration of the
-installation, will also work around the problem.
+in DEC's `printf' command, rather than in DEC's shell. The fix is to obtain
+and install the GNU shellutils package, which includes a working version of
+`printf'.  It has been reported that renaming /usr/ucb/printf, for the
+duration of the installation, will also work around the problem.
 
 A.4. On Silicon Graphics systems running IRIX 6.x, you may get error messages
 about `GP overflow'.  If so, you should do `make distclean' and start over,
@@ -221,13 +203,20 @@ should fail on any other system, please report it to
 <bug-gnu-utils@gnu.org>.
 
 B.5. By default, the 45 fonts that are built into recent HP LaserJets are
-available to the plotting utilities when you produce HP-GL/2 output, e.g.,
-when you do `graph -T hpgl'.  You may wish to have them available when you
-produce X or Postscript output, also.  To do this, you should do
-`./configure --enable-lj-fonts' instead of `./configure'.  Of course you
-will need to acquire the fonts and install them.  This is very easy; for
-use by the X Window System, at least.  Instructions are in the file
-INSTALL.fonts.
+available to the plotting utilities when you produce PCL 5 or HP-GL/2
+output, e.g., when you do `graph -T pcl' or `graph -T hpgl'.  You may wish
+to have these 45 fonts available when you produce X or Postscript output,
+also.  To arrange this, you would add the `--enable-lj-fonts-in-x' option
+and/or the `--enable-lj-fonts-in-ps' option to `./configure'.  Of course
+you would also need to acquire the fonts and install them for use in X, and
+for use when previewing and printing Postscript.  This is fairly easy.
+Instructions are in the file INSTALL.fonts.
+
+B.6. If you have a recent laser printer that can use the 35 standard
+Postscript fonts even when in PCL 5 or HP-GL/2 mode, such as a 4000-series
+HP LaserJet, you may also wish to add the `--enable-ps-fonts-in-pcl' option
+to `./configure'.  No additional font installation is required, since the
+Postscript fonts are internal to the printer.
 
 ----------------------------------------------------------------------
 
@@ -248,11 +237,16 @@ Postscript fonts.)  For this too, see the file ./INSTALL.fonts.
 
 C.3. There is a possible installation problem having to do with X widget
 sets.  By default this package uses Athena widgets, which are supported on
-most but not all machines.  Some machines provide Motif widgets instead of
-Athena widgets.  On such machines (e.g. Hewlett-Packard systems running
-HP/UX, and some IBM systems) you should begin by doing `./configure
---with-motif' instead of just `./configure' to ensure that the software is
-configured correctly.
+most but not all machines.  Some machines provide proprietary Motif widgets
+instead of the Athena widgets, which are free.  On such machines
+(e.g. Hewlett-Packard systems running HP/UX, and some IBM systems) you
+should begin by doing `./configure --with-motif' instead of just
+`./configure' to ensure that the software is configured correctly.
+
+(If you use `--with-motif', all windows popped up by the package on an
+X display will support drag-and-drop.  You will be able to use the middle
+mouse button to copy the contents of a popped-up window to any allowed
+Motif `drop site'.)
 
 C.4. Hewlett-Packard HP/UX systems that are running HP/UX 9.xx or earlier
 have Motif widgets, but the Motif files are stored in unusual places.  On
@@ -267,7 +261,7 @@ Athena widgets rather than Motif widgets.  As noted, the Athena widgets are
 not included in most releases of HP/UX.  However, HP made them available at
 an ftp site, and recommended that they be installed in the tree
 /usr/contrib/X11R5/{include,lib}.  If you have a recent HP/UX system and
-have installed Athena widgets as HP recommends, and wish to use them
+have installed the Athena widgets as HP recommends, and wish to use them
 instead of Motif widgets, you should do `./configure' and then
 
 	make CFLAGS="-O -L/usr/local/X11R5/lib -L/usr/contrib/X11R5/lib

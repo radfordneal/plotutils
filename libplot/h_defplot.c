@@ -1,7 +1,15 @@
-/* This file defines the initialization for any HPGLPlotter object,
-   including both private data and public methods.  There is a one-to-one
-   correspondence between public methods and user-callable functions in the
-   C API. */
+/* This file defines the initializations for HPGLPlotter and PCLPlotter
+   objects including both private data and public methods.  There is a
+   one-to-one correspondence between public methods and user-callable
+   functions in the C API. */
+
+/* Currently, only differences between the two types of Plotter are (1) the
+   different `type' field in corresponding _*_default_plotter structures,
+   and (2) some tests for same, in h_openpl.c (in the openpl and closepl
+   methods).  The differences are due to the PCL 5 control codes that must
+   be emitted to switch the printer into HP-GL/2 mode, etc; also to the
+   fact that HPGLPlotters emit graphics after each page, but PCLPlotters
+   wait until the end of a job, when the Plotter is deleted. */
 
 #include "sys-defines.h"
 #include "plot.h"
@@ -15,8 +23,8 @@ static bool _string_to_inches __P ((const char *offset_s, double *offset));
 
 /* The size of the graphics display is determined by the PAGESIZE
    environment variable ("usletter", "a4", etc.)  The table of known
-   pagetypes is in pagetype.h.  The default is "usletter", for which the
-   graphics display is a square with side length equal to 80% of 8.5"", so
+   pagetypes is in g_pagetype.h.  The default is "usletter", for which the
+   graphics display is a square with side length equal to 80% of 8.5", so
    it should fit on an 8.5" by 11" page.
 
    The origin of the HP-GL[/2] coordinate system is the lower left corner
@@ -25,13 +33,21 @@ static bool _string_to_inches __P ((const char *offset_s, double *offset));
    display via the environment variables HPGL_XOFFSET and HPGL_YOFFSET (see
    below). */
 
+/* This version is for HPGLPlotters; the PCLPlotter counterpart immediately
+   follows. */
+
 const Plotter _hpgl_default_plotter = 
 {
   /* methods */
-  _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _h_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _h_endpath, _g_erase, _h_farc, _g_farcrel, _h_fbox, _g_fboxrel, _h_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _h_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _h_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _g_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
+  _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _h_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _h_endpath, _g_erase, _h_farc, _g_farcrel, _h_fbox, _g_fboxrel, _h_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _h_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _h_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _h_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
   /* internal methods that plot strings in non-Hershey fonts */
+#ifdef USE_PS_FONTS_IN_PCL
+  _h_falabel_pcl, _h_falabel_pcl, _h_falabel_pcl, NULL,
+  _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, NULL,
+#else
   NULL, _h_falabel_pcl, _h_falabel_pcl, NULL,
   NULL, _g_flabelwidth_pcl, _g_flabelwidth_stick, NULL,
+#endif
   /* private low-level `retrieve font' method */
   _g_retrieve_font,
   /* private low-level `sync font' method */
@@ -56,10 +72,14 @@ const Plotter _hpgl_default_plotter =
   (FILE *)NULL,			/* output stream (if any) */
   (FILE *)NULL,			/* error stream (if any) */
   /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
   /* capabilities (these are appropriate for HP-GL/2 [the default])*/
+#ifdef USE_PS_FONTS_IN_PCL
+  1, 1, 0, 1, 1, 1, 1, 0, 0,	/* capability flags (see extern.h) */
+#else
   1, 1, 0, 1, 0, 1, 1, 0, 0,	/* capability flags (see extern.h) */
+#endif
   INT_MAX,			/* hard polyline length limit */
   /* output buffers */
   NULL,				/* pointer to output buffer for current page */
@@ -100,7 +120,154 @@ const Plotter _hpgl_default_plotter =
   0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
   0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
   10668.0,			/* plot length (for HP-GL/2 roll plotters) */
-  1,				/* current pen (initted in h_closepl.c) */
+  1,				/* current pen (initted in h_openpl.c) */
+  false,			/* bad pen? (advisory, see h_color.c) */
+  false,			/* pen down rather than up? */
+  0.001,			/* pen width (frac of diag dist betw P1,P2) */
+  HPGL_L_SOLID,			/* line type */
+  HPGL_CAP_BUTT,		/* cap style for lines */
+  HPGL_JOIN_MITER,		/* join style for lines */
+  HPGL_FILL_SOLID_BI,		/* fill type */
+  0.0,				/* percent shading (used if FILL_SHADING) */
+  2,				/* pen to be assigned a color next */
+  false,			/* can construct a palette? (HP-GL/2 only) */
+  true,				/* pen marks sh'd be opaque? (HP-GL/2 only) */
+  PCL_ROMAN_8,			/* encoding, 14=ISO-Latin-1,.. (HP-GL/2 only)*/
+  0,				/* font spacing, 0=fixed, 1=not(HP-GL/2 only)*/
+  0,				/* posture, 0=upright, 1=italic(HP-GL/2 only)*/
+  0,				/* weight,0=normal,3=bold, etc.(HP-GL/2 only)*/
+  STICK_TYPEFACE,		/* typeface, as in g_fontdb.c (HP-GL/2 only) */
+  HP_ASCII,			/* old HP character set number (lower half) */
+  HP_ASCII,			/* old HP character set number (upper half) */
+  0,				/* char. ht., % of p2y-p1y (HP-GL/2 only) */
+  0,				/* char. width, % of p2x-p1x (HP-GL/2 only) */
+  0,				/* label rise, % of p2y-p1y (HP-GL/2 only) */
+  0,				/* label run, % of p2x-p1x (HP-GL/2 only) */
+  0,				/* tangent of character slant (HP-GL/2 only)*/
+  (unsigned char)3,		/* label terminator char (^C) */
+  /* elements specific to the fig device driver */
+  false,			/* whether xfig display should be in metric */
+  FIG_INITIAL_DEPTH,		/* fig's current value for `depth' attribute */
+  0,				/* drawing priority for last-drawn object */
+  0,				/* number of colors currently defined */
+  /* elements specific to the Postscript/idraw device driver */
+#ifndef X_DISPLAY_MISSING
+  /* elements specific to the X11 and X11 Drawable device drivers */
+  (Drawable)0,			/* an X drawable (e.g. a window) */
+  (Drawable)0,			/* an X drawable (e.g. a pixmap) */
+  (Drawable)0,			/* graphics buffer, if double buffering */
+  (Fontrecord *)NULL,		/* head of list of retrieved X fonts */
+  (Colorrecord *)NULL,		/* head of list of retrieved color cells */
+  (Display *)NULL,		/* display */
+  (Colormap)0,			/* colormap */
+  DBL_NONE,			/* double buffering type (if any) */
+  0,				/* number of frame in page */
+  NULL,				/* label (hint to font retrieval routine) */
+  /* elements specific to the X11 device driver */
+  (XtAppContext)NULL,		/* application context */
+  (Widget)NULL,			/* toplevel widget */
+  (Widget)NULL,			/* Label widget */
+  (Drawable)0,			/* used for server-side double buffering */
+  false,			/* using private colormap? */
+  false,			/* window(s) disappear on Plotter deletion? */
+  false,			/* issued warning on color cell exhaustion? */
+#endif /* X_DISPLAY_MISSING */
+
+  /* Long arrays are positioned at the end, and are not initialized */
+  /* HP-GL driver: pen_color[] and pen_defined[] arrays */
+  /* FIG: fig_usercolors[] array */
+  /* PS: ps_font_used[] array */
+};
+
+/* This version is for PCL Plotters rather than HPGL Plotters.  It is
+   exactly the same as the above, except that the `type' member is set to
+   PL_PCL rather than PL_HPGL. */
+
+const Plotter _pcl_default_plotter = 
+{
+  /* methods */
+  _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _h_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _h_endpath, _g_erase, _h_farc, _g_farcrel, _h_fbox, _g_fboxrel, _h_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _g_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _h_flinewidth, _g_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _h_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _h_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _g_restorestate, _g_savestate, _g_space, _g_space2, _g_textangle,
+  /* internal methods that plot strings in non-Hershey fonts */
+#ifdef USE_PS_FONTS_IN_PCL
+  _h_falabel_pcl, _h_falabel_pcl, _h_falabel_pcl, NULL,
+  _g_flabelwidth_ps, _g_flabelwidth_pcl, _g_flabelwidth_stick, NULL,
+#else
+  NULL, _h_falabel_pcl, _h_falabel_pcl, NULL,
+  NULL, _g_flabelwidth_pcl, _g_flabelwidth_stick, NULL,
+#endif
+  /* private low-level `retrieve font' method */
+  _g_retrieve_font,
+  /* private low-level `sync font' method */
+  _h_set_font,
+  /* private low-level `sync line attributes' method */
+  _h_set_attributes,
+  /* private low-level `sync color' methods */
+  _h_set_pen_color,
+  _h_set_fill_color,
+  NULL,
+  /* private low-level `sync position' method */
+  _h_set_position,
+  /* error handlers */
+  _g_warning,
+  _g_error,
+  /* basic plotter parameters */
+  PL_PCL,			/* plotter type */
+  false,			/* open? */
+  false,			/* opened? */
+  0,				/* number of times opened */
+  (FILE *)NULL,			/* input stream [not used] */
+  (FILE *)NULL,			/* output stream (if any) */
+  (FILE *)NULL,			/* error stream (if any) */
+  /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
+  /* capabilities (these are appropriate for HP-GL/2 [the default])*/
+#ifdef USE_PS_FONTS_IN_PCL
+  1, 1, 0, 1, 1, 1, 1, 0, 0,	/* capability flags (see extern.h) */
+#else
+  1, 1, 0, 1, 0, 1, 1, 0, 0,	/* capability flags (see extern.h) */
+#endif
+  INT_MAX,			/* hard polyline length limit */
+  /* output buffers */
+  NULL,				/* pointer to output buffer for current page */
+  NULL,				/* pointer to output buffer for first page */
+  /* associated process id's */
+  NULL,				/* list of pids of forked-off processes */
+  0,				/* number of pids in list */
+  /* drawing state(s) */
+  (State *)NULL,		/* pointer to top of drawing state stack */
+  &_hpgl_default_drawstate,	/* for initialization and resetting */
+  /* dimensions */
+  false,			/* bitmap display device? */
+  0, 0, 0, 0,			/* range of coordinates (for a bitmap device)*/
+  {0.0, 8.0, 0.0, 8.0, 10.5},	/* same, for a physical device (in inches) */
+  (double)HPGL_UNITS_PER_INCH,	/* units/inch for a physical device */
+  false,			/* y increases downward? */
+  /* elements used by more than one device */
+  MAX_UNFILLED_POLYLINE_LENGTH,	/* user-settable, for unfilled polylines */
+  true,				/* position is unknown? */
+  {0, 0},			/* cursor position (for a bitmap device) */
+  false,			/* issued warning on font substitution? */
+  false,			/* issued warning on colorname substitution? */
+  false,			/* issued warning on colorname substitution? */
+  false,			/* issued warning on colorname substitution? */
+  /* elements specific to the metafile device driver */
+  false,			/* portable, not binary output format? */
+  /* elements specific to the Tektronix device driver */
+  D_GENERIC,			/* which sort of Tektronix? */
+  MODE_ALPHA,			/* one of MODE_* */
+  L_SOLID,			/* one of L_* */
+  true,				/* mode is unknown? */
+  true,				/* line type is unknown? */
+  ANSI_SYS_GRAY30,		/* MS-DOS kermit's fg color */
+  ANSI_SYS_WHITE,		/* MS-DOS kermit's bg color */
+  /* elements specific to the HP-GL device driver */
+  2,				/* version, 0=HP-GL, 1=HP7550A, 2=HP-GL/2 */
+  0,				/* HP-GL rotation angle */
+  0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
+  0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
+  10668.0,			/* plot length (for HP-GL/2 roll plotters) */
+  1,				/* current pen (initted in h_openpl.c) */
   false,			/* bad pen? (advisory, see h_color.c) */
   false,			/* pen down rather than up? */
   0.001,			/* pen width (frac of diag dist betw P1,P2) */
@@ -164,12 +331,15 @@ const Plotter _hpgl_default_plotter =
    from the values of class variables, allocating storage, etc.  Return
    value indicates whether everything proceeded smoothly. */
 
-/* For HPGL Plotter objects, we determine the HP-GL version from the
-   environment variable "HPGL_VERSION" ("1", "1.5", or "2", meaning generic
-   HP-GL, HP7550A, and modern HP-GL/2 respectively), and determine the page
-   size and the location on the page of the graphics display, so that we'll
-   be able to work out the map from user coordinates to device coordinates
-   in space.c.
+/* This initialization serves for both HPGL and PCL Plotters, which are
+   almost identical.
+
+   For HPGL Plotters, we determine the HP-GL version from the environment
+   variable "HPGL_VERSION" ("1", "1.5", or "2", meaning generic HP-GL,
+   HP7550A, and modern HP-GL/2 respectively), and determine the page size
+   and the location on the page of the graphics display, so that we'll be
+   able to work out the map from user coordinates to device coordinates in
+   space.c.
 
    We allow the user to shift the location of the graphics display by
    specifying an offset vector, since the origin of the HP-GL coordinate
@@ -215,42 +385,51 @@ _hpgl_init_plotter (plotter)
       plotter->max_unfilled_polyline_length = local_length;
   }
       
+  /* if an HPGLPlotter rather than a PCLPlotter, check for HP/GL version;
+     if a PCLPlotter, use default version (i.e. 2) */
+
   version_s = (const char *)_get_plot_param (plotter, "HPGL_VERSION");
-  {
-    if (strcmp (version_s, "1") == 0) /* generic HP-GL, HP7220 or HP7475A */
-      {
-	plotter->hpgl_version = 0;
-	plotter->have_wide_lines = 0;
-	plotter->have_solid_fill = 0;
-	plotter->have_pcl_fonts = 0;
-	plotter->have_stick_fonts = 0;
-	plotter->have_extra_stick_fonts = 0;
-      }
-    else if (strcmp (version_s, "1.5") == 0) /* HP7550A */
-      {
-	plotter->hpgl_version = 1;
-	plotter->have_wide_lines = 0;
-	plotter->have_solid_fill = 1;
-	plotter->have_pcl_fonts = 0;
-	plotter->have_stick_fonts = 1;
-	plotter->have_extra_stick_fonts = 1;
-      }
-    else if (strcmp (version_s, "2") == 0) /* HP-GL/2 */
-      {
-	plotter->hpgl_version = 2;
-	plotter->have_wide_lines = 1;
-	plotter->have_solid_fill = 1;
-	plotter->have_pcl_fonts = 1;
-	plotter->have_stick_fonts = 1;
-	plotter->have_extra_stick_fonts = 0;
-      }
-    else 
-      {
-	plotter->warning ("bad HPGL_VERSION variable, can't initialize");
-	retval = false;
-      }
-  }
-      
+  if (plotter->type == PL_HPGL)
+    {
+      if (strcmp (version_s, "1") == 0) /* generic HP-GL, HP7220 or HP7475A */
+	{
+	  plotter->hpgl_version = 0;
+	  plotter->have_wide_lines = 0;
+	  plotter->have_solid_fill = 0;
+	  plotter->have_ps_fonts = 0;
+	  plotter->have_pcl_fonts = 0;
+	  plotter->have_stick_fonts = 0;
+	  plotter->have_extra_stick_fonts = 0;
+	}
+      else if (strcmp (version_s, "1.5") == 0) /* HP7550A */
+	{
+	  plotter->hpgl_version = 1;
+	  plotter->have_wide_lines = 0;
+	  plotter->have_solid_fill = 1;
+	  plotter->have_ps_fonts = 0;
+	  plotter->have_pcl_fonts = 0;
+	  plotter->have_stick_fonts = 1;
+	  plotter->have_extra_stick_fonts = 1;
+	}
+      else if (strcmp (version_s, "2") == 0) /* HP-GL/2 */
+	{
+	  plotter->hpgl_version = 2;
+	  plotter->have_wide_lines = 1;
+	  plotter->have_solid_fill = 1;
+	  /* we take `have_ps_fonts' from the default value; see capability
+	     flag above, which depends on USE_PS_FONTS_IN_PCL (a config-time
+	     option) */
+	  plotter->have_pcl_fonts = 1;
+	  plotter->have_stick_fonts = 1;
+	  plotter->have_extra_stick_fonts = 0;
+	}
+      else 
+	{
+	  plotter->warning ("bad HPGL_VERSION variable, can't initialize");
+	  retval = false;
+	}
+    }
+  
   /* determine page type i.e. determine the range of device coordinates
      over which the graphics display will extend (and hence the
      transformation from user to device coordinates). */
@@ -267,8 +446,17 @@ _hpgl_init_plotter (plotter)
      hard-clip region, which is not the same as the lower left corner
      of the page.  So we allow the user to specify an offset for the
      location of the graphics display. */
-  xoffset_s = (const char *)_get_plot_param (plotter, "HPGL_XOFFSET");
-  yoffset_s = (const char *)_get_plot_param (plotter, "HPGL_YOFFSET");  
+  if (plotter->type == PL_HPGL)
+    {
+      xoffset_s = (const char *)_get_plot_param (plotter, "HPGL_XOFFSET");
+      yoffset_s = (const char *)_get_plot_param (plotter, "HPGL_YOFFSET");  
+    }
+  else
+    /* PCL Plotter */
+    {
+      xoffset_s = (const char *)_get_plot_param (plotter, "PCL_XOFFSET");
+      yoffset_s = (const char *)_get_plot_param (plotter, "PCL_YOFFSET");  
+    }
   {
     double xoffset;
 	
@@ -279,7 +467,11 @@ _hpgl_init_plotter (plotter)
       }
     else
       {
-	plotter->warning ("bad HPGL_XOFFSET variable, can't initialize");
+	if (plotter->type != PL_HPGL)
+	  /* PCL Plotter */
+	  plotter->warning ("bad PCL_XOFFSET variable, can't initialize");
+	else
+	  plotter->warning ("bad HPGL_XOFFSET variable, can't initialize");
 	retval = false;
       }
   }
@@ -293,17 +485,20 @@ _hpgl_init_plotter (plotter)
       }
     else
       {
-	plotter->warning ("bad HPGL_YOFFSET variable, can't initialize");
+	if (plotter->type != PL_HPGL)
+	  /* PCL Plotter */
+	  plotter->warning ("bad PCL_YOFFSET variable, can't initialize");
+	else
+	  plotter->warning ("bad HPGL_YOFFSET variable, can't initialize");
 	retval = false;
       }
   }
       
-  /* At this point we stash the coordinates for later use.  They'll
-     become the coordinates of our `scaling points' P1 and P2 (see
-     closepl.c).  The numbers in our output file will be normalized
-     device coordinates, not physical device coordinates (for the
-     transformation between them, which is accomplished by the HP-GL
-     `SC' instruction, see h_closepl.c) */
+  /* At this point we stash the coordinates for later use.  They'll become
+     the coordinates of our `scaling points' P1 and P2 (see h_openpl.c).
+     The numbers in our output file will be normalized device coordinates,
+     not physical device coordinates (for the transformation between them,
+     which is accomplished by the HP-GL `SC' instruction, see h_openpl.c) */
   plotter->p1x = plotter->display_coors.left * HPGL_UNITS_PER_INCH;
   plotter->p2x = plotter->display_coors.right * HPGL_UNITS_PER_INCH;
   plotter->p1y = plotter->display_coors.bottom * HPGL_UNITS_PER_INCH;
@@ -320,25 +515,33 @@ _hpgl_init_plotter (plotter)
     plotter->display_coors.extra * HPGL_UNITS_PER_INCH;
 
   /* determine whether to rotate the figure (e.g. horizontal instead of
-     vertical, see closepl.c) */
-  rotate_s = (const char *)_get_plot_param (plotter, "HPGL_ROTATE");
+     vertical, see h_openpl.c) */
+  if (plotter->type != PL_HPGL)
+    /* PCL Plotter */
+    rotate_s = (const char *)_get_plot_param (plotter, "PCL_ROTATE");
+  else
+    rotate_s = (const char *)_get_plot_param (plotter, "HPGL_ROTATE");
   if (strcasecmp (rotate_s, "yes") == 0
       || strcmp (rotate_s, "90") == 0)
     plotter->rotation = 90;
-  else if (strcmp (rotate_s, "180") == 0 && _plotter->hpgl_version == 2)
+  else if (strcmp (rotate_s, "180") == 0 && plotter->hpgl_version == 2)
     plotter->rotation = 180;
-  else if (strcmp (rotate_s, "270") == 0 && _plotter->hpgl_version == 2)
+  else if (strcmp (rotate_s, "270") == 0 && plotter->hpgl_version == 2)
     plotter->rotation = 270;
   else
     plotter->rotation = 0;
       
-  /* should we avoid emitting the `white is opaque' HP-GL/2 instruction?
-     (HP-GL/2 pen plotters may not like it) */
-  transparent_s = (const char *)_get_plot_param (plotter, "HPGL_OPAQUE_MODE");
-  if (strcasecmp (transparent_s, "no") == 0)
-    plotter->opaque_mode = false;
-  else
-    plotter->opaque_mode = true;
+
+  if (plotter->type == PL_HPGL)
+  /* HPGL Plotter, not PCL Plotter; should we avoid emitting the `white is
+     opaque' HP-GL/2 instruction?  (HP-GL/2 pen plotters may not like it) */
+    {
+      transparent_s = (const char *)_get_plot_param (plotter, "HPGL_OPAQUE_MODE");
+      if (strcasecmp (transparent_s, "no") == 0)
+	plotter->opaque_mode = false;
+      else
+	plotter->opaque_mode = true;
+    }
       
   /* do we support the HP-GL/2 palette extension, i.e. can we define
      new logical pens as RGB triples? (user must request this) */
@@ -347,7 +550,11 @@ _hpgl_init_plotter (plotter)
     {
       const char *palette_s;
 	  
-      palette_s = (const char *)_get_plot_param (plotter, "HPGL_ASSIGN_COLORS");
+      if (plotter->type == PL_HPGL)
+	palette_s = (const char *)_get_plot_param (plotter, "HPGL_ASSIGN_COLORS");
+      else
+	/* PCL Plotter */
+	palette_s = (const char *)_get_plot_param (plotter, "PCL_ASSIGN_COLORS");
       if (strcasecmp (palette_s, "yes") == 0)
 	plotter->palette = true;
     }
@@ -363,15 +570,23 @@ _hpgl_init_plotter (plotter)
   plotter->pen_defined[0] = 2; /* i.e. hard-defined */
       
   /* determine initial palette, i.e. available pens in 1..31 range */
-  if ((pen_s = (const char *)_get_plot_param (plotter, "HPGL_PENS")) == NULL)
-    /* since no value is assigned to HPGL_PENS by default, user must not
-       have assigned a value to it; we'll choose a value based on version */
+  if (plotter->type != PL_HPGL)
+    /* PCL Plotter */
+    pen_s = DEFAULT_HPGL2_PEN_STRING;
+  else
     {
-      if (plotter->hpgl_version == 0) /* i.e. generic HP-GL */
-	pen_s = DEFAULT_HPGL_PEN_STRING;
-      else
-	pen_s = DEFAULT_HPGL2_PEN_STRING;
+      if ((pen_s = (const char *)_get_plot_param (plotter, "HPGL_PENS")) == NULL)
+	/* since no value is assigned to HPGL_PENS by default, user must
+	   not have assigned a value to it; we'll choose a value based on
+	   version */
+	{
+	  if (plotter->hpgl_version == 0) /* i.e. generic HP-GL */
+	    pen_s = DEFAULT_HPGL_PEN_STRING;
+	  else
+	    pen_s = DEFAULT_HPGL2_PEN_STRING;
+	}
     }
+  
   if (_parse_pen_string (pen_s, plotter) == false)
     {
       plotter->warning ("bad HPGL_PENS variable, can't initialize");
@@ -535,9 +750,9 @@ bool
 #ifdef _HAVE_PROTOS
 _hpgl_terminate_plotter (Plotter *plotter)
 #else
-_hpgl_terminate_plotter (plotter)
+     _hpgl_terminate_plotter (plotter)
      Plotter *plotter;
 #endif
 {
-  return true;
+    return true;
 }

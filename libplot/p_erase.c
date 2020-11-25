@@ -31,7 +31,7 @@ _p_erase ()
   /* reinitialize `font used' array(s) */
   for (i = 0; i < NUM_PS_FONTS; i++)
     _plotter->ps_font_used[i] = false;
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_PS
   for (i = 0; i < NUM_PCL_FONTS; i++)
     _plotter->pcl_font_used[i] = false;
 #endif

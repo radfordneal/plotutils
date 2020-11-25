@@ -16,7 +16,7 @@ const Plotter _X_default_plotter =
   /* methods */
   _g_alabel, _g_arc, _g_arcrel, _g_bgcolor, _g_bgcolorname, _g_box, _g_boxrel, _g_capmod, _g_circle, _g_circlerel, _x_closepl, _g_color, _g_colorname, _g_cont, _g_contrel, _g_ellarc, _g_ellarcrel, _g_ellipse, _g_ellipserel, _x_endpath,  _x_erase, _x_farc, _g_farcrel, _x_fbox, _g_fboxrel, _g_fcircle, _g_fcirclerel, _g_fconcat, _g_fcont, _g_fcontrel, _g_fellarc, _g_fellarcrel, _x_fellipse, _g_fellipserel, _g_ffontname, _g_ffontsize, _g_fillcolor, _g_fillcolorname, _g_filltype, _g_flabelwidth, _g_fline, _g_flinerel, _g_flinewidth, _x_flushpl, _g_fmarker, _g_fmarkerrel, _g_fmove, _g_fmoverel, _g_fontname, _g_fontsize, _x_fpoint, _g_fpointrel, _g_frotate, _g_fscale, _g_fspace, _g_fspace2, _g_ftextangle, _g_ftranslate, _g_havecap, _g_joinmod, _g_label, _g_labelwidth, _g_line, _g_linemod, _g_linerel, _g_linewidth, _g_marker, _g_markerrel, _g_move, _g_moverel, _x_openpl, _g_outfile, _g_pencolor, _g_pencolorname, _g_point, _g_pointrel, _x_restorestate, _x_savestate, _g_space, _g_space2, _g_textangle,
   /* internal methods that plot strings in non-Hershey fonts */
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_X
   _x_falabel_other, _x_falabel_other, NULL, _x_falabel_other,
   _x_flabelwidth_other, _x_flabelwidth_other, NULL, _x_flabelwidth_other,
 #else
@@ -47,10 +47,10 @@ const Plotter _X_default_plotter =
   (FILE *)NULL,			/* output stream [not used] */
   (FILE *)NULL,			/* error stream (if any) */
   /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
   /* capabilities */
-#ifdef USE_LJ_FONTS
+#ifdef USE_LJ_FONTS_IN_X
   1, 1, 1, 1, 1, 1, 0, 0, 0,	/* capability flags (see extern.h) */
 #else
   1, 1, 1, 1, 1, 0, 0, 0, 0,	/* capability flags (see extern.h) */
@@ -95,7 +95,7 @@ const Plotter _X_default_plotter =
   0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
   0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
   10668.0,			/* plot length (for HP-GL/2 roll plotters) */
-  1,				/* current pen (initted in h_closepl.c) */
+  1,				/* current pen (initted in h_openpl.c) */
   false,			/* bad pen? (advisory, see h_color.c) */
   false,			/* pen down rather than up? */
   0.001,			/* pen width (frac of diag dist betw P1,P2) */

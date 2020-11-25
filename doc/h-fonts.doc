@@ -1,4 +1,4 @@
-The 21 Hershey fonts now supported by GNU libplot and the GNU plotting
+The 22 Hershey fonts now supported by GNU libplot and the GNU plotting
 utilities are enhanced versions of the Hershey fonts that have been
 incorporated in many software packages over the years.  They have been
 extended, by the addition of accented and other special characters, to
@@ -28,7 +28,8 @@ The following table lists the modern names and the traditional names.
 	HersheySerifSymbol-BoldOblique	Triplex Greek [obliqued]
 	HersheySansSymbol		Simplex Greek
 	HersheySansSymbol		Simplex Greek [obliqued]
-	HersheyCyrillic			Complex Cyrillic (and Complex Roman)
+	HersheyCyrillic			Complex Cyrillic, Roman
+	HersheyCyrillic-Oblique		Complex Cyrillic, Roman [obliqued]
 	HersheyEUC			[based on Japanese repertory]
 
 The `obliqued' versions have been obtained by performing an anamorphic

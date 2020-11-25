@@ -38,8 +38,8 @@ const Plotter _meta_default_plotter =
   (FILE *)NULL,			/* output stream (if any) */
   (FILE *)NULL,			/* error stream (if any) */
   /* NUM_DEVICE_DRIVER_PARAMETERS Plotter parameters (see g_params.h) */
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
   /* capabilities */
   2, 2, 2, 1, 1, 1, 1, 1, 0,	/* capability flags (see extern.h) */
   INT_MAX,			/* hard polyline length limit */
@@ -82,7 +82,7 @@ const Plotter _meta_default_plotter =
   0.0, 8128.0,			/* scaling point P1 in native HP-GL coors */
   0.0, 8128.0,			/* scaling point P2 in native HP-GL coors */
   10668.0,			/* plot length (for HP-GL/2 roll plotters) */
-  1,				/* current pen (initted in h_closepl.c) */
+  1,				/* current pen (initted in h_openpl.c) */
   false,			/* bad pen? (advisory, see h_color.c) */
   false,			/* pen down rather than up? */
   0.001,			/* pen width (frac of diag dist betw P1,P2) */
@@ -154,7 +154,7 @@ _meta_init_plotter (plotter)
      Plotter *plotter;
 #endif
 {
-  const char *portable_s;
+  const char *portable_s, *version_s;
 
   /* initialize certain data members from values of relevant class
      variables */
@@ -163,6 +163,16 @@ _meta_init_plotter (plotter)
     plotter->portable_output = true;
   else
     plotter->portable_output = false;
+
+   /* Kludge to ensure that if HPGL_VERSION="1.5", the Stick font widths
+      (which differ between pre-HP-GL/2 and HP-GL/2) will be what they
+      should be, when computed by the code in h_alab_pcl.c.  Yes, this is
+      ugly (it shouldn't be here). */
+  version_s = (const char *)_get_plot_param (plotter, "HPGL_VERSION");
+  if (strcmp (version_s, "1.5") == 0) /* HP7550A */
+    plotter->hpgl_version = 1;
+  else if (strcmp (version_s, "1") == 0) /* generic HP-GL */
+    plotter->hpgl_version = 0;
 
   return true;
 }

@@ -45,11 +45,11 @@ int (*libplot_error_handler)() = NULL;
 
 /* Known Plotter types, indexed into by a short mnemonic case-insensitive
    string: "meta"=metafile, "tek"=Tektronix, "hpgl"=HP-GL/2, "fig"=xfig,
-   "ps"=PS, "X"=X11, "Xdrawable"=X11 Drawable.  When a new Plotter of any
-   type is constructed, the appropriate `default_init' structure is copied
-   into it.  Also, the appropriate `initialize' routine is invoked.  Before
-   the Plotter is destroyed, the appropriate `terminate' routine is
-   invoked. */
+   "ps"=PS, "pcl"=PCL 5, "X"=X11, "Xdrawable"=X11 Drawable.  When a new
+   Plotter of any type is constructed, the appropriate `default_init'
+   structure is copied into it.  Also, the appropriate `initialize' routine
+   is invoked.  Before the Plotter is destroyed, the appropriate
+   `terminate' routine is invoked. */
 
 typedef struct 
 {
@@ -79,6 +79,8 @@ static const Plotter_data _plotter_data[] =
      _tek_init_plotter, _tek_terminate_plotter},
   {"hpgl", PL_HPGL, &_hpgl_default_plotter, 
      _hpgl_init_plotter, _hpgl_terminate_plotter},
+  {"pcl", PL_PCL, &_pcl_default_plotter, 
+     _hpgl_init_plotter, _hpgl_terminate_plotter}, /* not incorrect */
   {"fig", PL_FIG, &_fig_default_plotter, 
      _fig_init_plotter, _fig_terminate_plotter},
   {"ps", PL_PS, &_ps_default_plotter, 
