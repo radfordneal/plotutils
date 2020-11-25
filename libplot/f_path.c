@@ -282,7 +282,7 @@ _f_draw_arc_internal (R___(_plotter) xc, yc, x0, y0, x1, y1)
     if (_plotter->fig_drawing_depth > 0)
       (_plotter->fig_drawing_depth)--;
 
-  /* compute orientation in device frame */
+  /* compute orientation in NDC frame */
   orientation *= (_plotter->drawstate->transform.nonreflection ? 1 : -1);
 
   if (orientation == -1)

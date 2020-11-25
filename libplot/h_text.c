@@ -3,7 +3,7 @@
    The `PCL 5' output by any PCL Plotter is simply a wrapped version of
    HP-GL/2.
 
-   Prior to this method being invoked, the font must be selected.  See
+   This method internally invokes _h_set_font to select the font.  See
    h_font.c for the font selection code.
 
    Before HP-GL/2 (introduced c. 1990), HP-GL devices supported only Stick
@@ -63,17 +63,6 @@ typedef enum { LOWER_HALF, UPPER_HALF } state_type;
 /* kludge, see comment in code */
 #define HP_ROMAN_8_MINUS_CHAR 0366
 
-/* Note: the code that uses the following kludges is now commented out. */
-
-/* Kludges to handle the zero-width marker symbols in our ArcMath and
-   StickSymbol fonts; also zero-width overbar.
-   8 AND 17 ARE EFFECTIVELY HARDCODED IN THE FONT TABLE IN g_fontd2.c !! */
-
-#define ARCSYMBOL 8
-#define STICKSYMBOL 17
-#define IS_SYMBOL_FONT(fontnum) ((fontnum) == ARCSYMBOL || (fontnum) == STICKSYMBOL)
-#define IS_CENTERED_SYMBOL(c) (((c) >= 'A' && (c) <= 'O') || (c) == 'e')
-
 double
 #ifdef _HAVE_PROTOS
 _h_paint_text_string (R___(Plotter *_plotter) const unsigned char *s, int h_just, int v_just)
@@ -119,8 +108,15 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
   if (_plotter->drawstate->true_font_size == 0.0)
     return 0.0;
 
-  /* compute index of font in master table in g_fontdb.c; also width
-     of string in user units */
+  /* Our font selection code in h_font.c will divide by zero if the
+     viewport in the device frame has zero area, i.e., if the HP-GL scaling
+     points P1,P2 have the same x or y coordinates.  So bail now if that's
+     the case. */
+  if (_plotter->hpgl_p1.x == _plotter->hpgl_p2.x 
+      || _plotter->hpgl_p1.y == _plotter->hpgl_p2.y)
+    return _plotter->get_text_width (R___(_plotter) s);
+
+  /* compute index of font in master table in g_fontdb.c */
   switch (_plotter->drawstate->font_type)
     {
     case F_PCL:
@@ -154,9 +150,10 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 	   works best; see comments in the font retrieval code in h_font.c.
 
 	   There is one exception to this: right here, we map the ASCII
-	   minus character `-', in the lower half, to 0366.  This is a
-	   kludge, needed to get a character whose width matches the width
-	   in the AFM files that HP distributes. */
+	   minus character `-', in the lower half, to
+	   HP_ROMAN_8_MINUS_CHAR, i.e., to 0366.  This is a kludge, needed
+	   to get a character whose width matches the width in the AFM
+	   files that HP distributes. */
 	{
 	  state_type dfa_state = LOWER_HALF;
 	  unsigned const char *sptr = s;
@@ -331,17 +328,8 @@ _h_paint_text_string (R___(_plotter) s, h_just, v_just)
 	 half, with raster width 45.  For now, just use the raster width
 	 for the lower half. */
 
-#if 0
-      /* COMMENTED OUT BECAUSE IT WAS IDIOTIC */
-      /* kludge around possibility that first character in string is a
-	 centered symbol in the ArcSymbol or StickSymbol fonts */
-      if (IS_SYMBOL_FONT(master_font_index) 
-	  && IS_CENTERED_SYMBOL(*((unsigned char *)s)))
-	hp_offset = 0.0;
-      else
-#endif
-	hp_offset = (((double)(_stick_font_info[master_font_index].offset)) /
-		     (2.0 * _stick_font_info[master_font_index].raster_width_lower));
+      hp_offset = (((double)(_stick_font_info[master_font_index].offset)) /
+		   (2.0 * _stick_font_info[master_font_index].raster_width_lower));
       break;
     }
 

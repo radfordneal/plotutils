@@ -16,15 +16,15 @@
    plotting in portrait or landscape mode.  (It can flip between them, but
    it doesn't know which is which.)
 
-   So HPGL Plotters use a viewport of the same size as PCL, PS, AI, and Fig
-   Plotters.  But they don't position it: the lower left corner of the
-   viewport is chosen to be the origin of the device coordinate system:
+   So HPGL Plotters use a viewport of the same default size as PCL, PS, AI,
+   and Fig Plotters.  But they don't position it: the lower left corner of
+   the viewport is chosen to be the origin of the device coordinate system:
    what in HP-GL[/2] jargon is called "scaling point P1".
 
    For this to look reasonably good, the viewport needs to have a size
    appropriate for an HP-GL[/2] device.  And in fact, that's what
-   determines our choice of viewport size -- for all Plotters, not just
-   HPGLPlotters.  See comments in g_pagetype.h.  */
+   determines our choice of default viewport size -- for all Plotters, not
+   just HPGLPlotters.  See comments in g_pagetype.h.  */
 
 #include "sys-defines.h"
 #include "extern.h"
@@ -126,8 +126,6 @@ _h_initialize (S___(_plotter))
 #endif
 {
   int i;
-  double xoffset, yoffset;
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
   _g_initialize (S___(_plotter));
@@ -289,33 +287,48 @@ _h_initialize (S___(_plotter))
       }
   }
 
-  /* determine page type, and user-specified viewport offset if any */
-  _set_page_type (_plotter->data, &xoffset, &yoffset);
-  
   /* Determine range of device coordinates over which the viewport will
      extend (and hence the transformation from user to device coordinates;
      see g_space.c). */
 
+  /* NOTE: HP-GL Plotters, unlike PCL Plotters, ignore the xorigin and
+     yorigin fields of the PAGESIZE parameter.  That's because the device
+     coordinate system isn't well specified.  However, the viewport can be
+     shifted relative to its default location, as usual, by specifying the
+     xoffset and yoffset fields. */
+
   /* We use the corners of the viewport, in device coordinates, as our
      `scaling points' P1 and P2 (see h_openpl.c).  The coordinates we use
      in our output file will be normalized device coordinates, not physical
-     device coordinates (for the transformation between them, which is
-     accomplished by the HP-GL `SC' instruction, see h_openpl.c). */
+     device coordinates (for the map from the former to the latter, which
+     is accomplished by the HP-GL `SC' instruction, see h_openpl.c). */
   {
-    double x_llc, y_llc, x_urc, y_urc, viewport_size;
-    
-    viewport_size = _plotter->data->page_data->viewport_size;
+    /* determine page type, and viewport size and location */
+    _set_page_type (_plotter->data);
+  
+    /* by default, viewport lower left corner is (0,0) in HP-GL
+       coordinates; if a user wishes to change this, the xoffset and
+       yoffset parameters should be added to PAGESIZE */
+    _plotter->hpgl_p1.x = (HPGL_UNITS_PER_INCH 
+			   * (0.0 
+			      + _plotter->data->viewport_xoffset));
+    _plotter->hpgl_p2.x = (HPGL_UNITS_PER_INCH 
+			   * (0.0 
+			      + _plotter->data->viewport_xoffset
+			      + _plotter->data->viewport_xsize));
 
-    /* by default, viewport lower left corner is (0,0) in HP-GL coordinates */
-    x_llc = 0.0 + xoffset;
-    y_llc = 0.0 + yoffset;
-    x_urc = x_llc + viewport_size;
-    y_urc = y_llc + viewport_size;    
+    _plotter->hpgl_p1.y = (HPGL_UNITS_PER_INCH 
+			   * (0.0 
+			      + _plotter->data->viewport_yoffset));
+    _plotter->hpgl_p2.y = (HPGL_UNITS_PER_INCH 
+			   * (0.0 
+			      + _plotter->data->viewport_yoffset
+			      + _plotter->data->viewport_ysize));
     
-    _plotter->hpgl_p1.x = HPGL_UNITS_PER_INCH * x_llc;
-    _plotter->hpgl_p2.x = HPGL_UNITS_PER_INCH * x_urc;
-    _plotter->hpgl_p1.y = HPGL_UNITS_PER_INCH * y_llc;
-    _plotter->hpgl_p2.y = HPGL_UNITS_PER_INCH * y_urc;
+  _plotter->data->xmin = HPGL_SCALED_DEVICE_LEFT; 
+  _plotter->data->xmax = HPGL_SCALED_DEVICE_RIGHT;
+  _plotter->data->ymin = HPGL_SCALED_DEVICE_BOTTOM;
+  _plotter->data->ymax = HPGL_SCALED_DEVICE_TOP;
 
   /* plot length (to be emitted in an HP-GL/2 `PS' instruction, important
      mostly for roll plotters; see h_openpl.c) */
@@ -429,7 +442,6 @@ _q_initialize (S___(_plotter))
 #endif
 {
   int i;
-  double xoffset, yoffset;
 
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
@@ -557,9 +569,6 @@ _q_initialize (S___(_plotter))
 
   /* initialize certain data members from device driver parameters */
       
-  /* determine page type, and user-specified viewport offset if any */
-  _set_page_type (_plotter->data, &xoffset, &yoffset);
-  
   /* Determine range of device coordinates over which the viewport will
      extend (and hence the transformation from user to device coordinates;
      see g_space.c). */
@@ -567,24 +576,37 @@ _q_initialize (S___(_plotter))
   /* We use the corners of the viewport, in device coordinates, as our
      `scaling points' P1 and P2 (see h_openpl.c).  The coordinates we use
      in our output file will be normalized device coordinates, not physical
-     device coordinates (for the transformation between them, which is
-     accomplished by the HP-GL `SC' instruction, see h_openpl.c). */
+     device coordinates (for the map from the former to the latter, which
+     is accomplished by the HP-GL `SC' instruction, see h_openpl.c). */
   {
-    double xmid, ymid, viewport_size;
-    
-    viewport_size = _plotter->data->page_data->viewport_size;
-    xmid = 0.5 * _plotter->data->page_data->xsize + xoffset;
-    ymid = 0.5 * _plotter->data->page_data->ysize + yoffset;
-    
-    /* origin of HP-GL/2 coordinate system used by a PCL5 device is not at
-       lower left corner of page; compensate */
-    xmid -= _plotter->data->page_data->pcl_hpgl2_xorigin;
-    ymid -= _plotter->data->page_data->pcl_hpgl2_yorigin;
+    /* determine page type, viewport size and location */
+    _set_page_type (_plotter->data);
+  
+    /* convert viewport size-and-location data (in terms of inches) to
+       device coordinates (i.e. HP-GL units) */
 
-    _plotter->hpgl_p1.x = HPGL_UNITS_PER_INCH * (xmid - 0.5 * viewport_size);
-    _plotter->hpgl_p2.x = HPGL_UNITS_PER_INCH * (xmid + 0.5 * viewport_size);  
-    _plotter->hpgl_p1.y = HPGL_UNITS_PER_INCH * (ymid - 0.5 * viewport_size);
-    _plotter->hpgl_p2.y = HPGL_UNITS_PER_INCH * (ymid + 0.5 * viewport_size);  
+    /* NOTE: origin of HP-GL/2 coordinate system used by a PCL5 device is
+       not at lower left corner of page; must compensate by subtracting the
+       `pcl_hpgl2_?origin' quantities. */
+    _plotter->hpgl_p1.x = (HPGL_UNITS_PER_INCH 
+			   * (_plotter->data->viewport_xorigin
+			      + _plotter->data->viewport_xoffset
+			      - _plotter->data->page_data->pcl_hpgl2_xorigin));
+    _plotter->hpgl_p2.x = (HPGL_UNITS_PER_INCH 
+			   * (_plotter->data->viewport_xorigin
+			      + _plotter->data->viewport_xoffset
+			      + _plotter->data->viewport_xsize
+			      - _plotter->data->page_data->pcl_hpgl2_xorigin));
+
+    _plotter->hpgl_p1.y = (HPGL_UNITS_PER_INCH 
+			   * (_plotter->data->viewport_yorigin
+			      + _plotter->data->viewport_yoffset
+			      - _plotter->data->page_data->pcl_hpgl2_yorigin));
+    _plotter->hpgl_p2.y = (HPGL_UNITS_PER_INCH 
+			   * (_plotter->data->viewport_yorigin
+			      + _plotter->data->viewport_yoffset
+			      + _plotter->data->viewport_ysize
+			      - _plotter->data->page_data->pcl_hpgl2_yorigin));
 
   /* plot length (to be emitted in an HP-GL/2 `PS' instruction, important
      mostly for roll plotters; see h_openpl.c) */

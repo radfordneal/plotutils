@@ -34,11 +34,11 @@ The most important points not mentioned in the file INSTALL are these.
     **********************************************************************
 
     **********************************************************************
-    By default, if the `libpng' library is found at installation time, then
-    support for PNG graphics will be included in libplot and all
-    command-line utilities.  If for any reason you wish to omit PNG support
-    despite libpng being present, you should add the `--without-libpng'
-    option to the `./configure' command.
+    By default, if the `libpng' library and its header file are found at
+    installation time, then support for PNG graphics will be included in
+    libplot and all command-line utilities.  If for any reason you wish to
+    omit PNG support despite libpng being present, you should add the
+    `--without-libpng' option to the `./configure' command.
     **********************************************************************
 
     **********************************************************************
@@ -177,48 +177,76 @@ recompile it.  (The change makes it use the full set of 35 standard
 Postscript fonts.)  For this too, see the file ./INSTALL.fonts.
 
 C.3. There is a possible installation problem having to do with X widget
-sets.  By default this package uses the free Athena widgets, which are
-supported on most but not all machines.  Some machines provide Motif
-widgets instead of Athena widgets.  On such machines (e.g. Hewlett-Packard
-systems running HP/UX, and some IBM systems) you should normally begin by
-doing `./configure --with-motif' instead of just `./configure' to ensure
-that the software is configured correctly.
+sets.  By default, this package uses the free Athena widgets, which are
+provided on most but not all machines.  Some machines provide Motif widgets
+instead of Athena widgets.  On such machines (e.g. Hewlett-Packard systems
+running HP/UX, and some IBM systems) you should normally begin by doing
+`./configure --with-motif' instead of just `./configure', to ensure that
+the software is configured correctly.
 
 The only advantage of using Motif widgets, which are not free, is that you
 may be able to use Motif's drag-and-drop facility to drag graphics out of
 popped-up X Windows, e.g., the window popped up by `graph -T X'.
 
-C.4. On some Hewlett-Packard systems running HP/UX 10.xx, it is possible to
-use the free Athena widgets rather than the Motif widgets.  If you have an
-HP/UX 10.xx system, you should check whether the directories
-/usr/contrib/X11R6/{include,lib} exist.  If so, you can use the Athena
-widgets.  To use them, you would do `./configure' and then
+C.4 On a few machines, the auto-configuration process may not be able to
+find the library files containing the X widgets (whether Athena or Motif),
+or the corresponding header files.  If this problem occurs, you can specify
+their location manually at configure time, as follows.
+    
+C.4a. If you have the Athena widgets and wish to use them, even though the
+auto-configuration process does not find them, you may specify their
+location by doing `./configure --with-athena=DIR' instead of just
+`./configure'.  Here DIR should be a directory whose subdirectory `lib'
+contains the Athena widget library files libXaw and libXmu, and whose
+subdirectory `include' contains the Athena header files, such as
+X11/Xaw/Label.h.
 
-    make CFLAGS="-O -L/usr/contrib/X11R6/lib -I/usr/contrib/X11R6/include"
+An example would be Hewlett-Packard systems running HP/UX 10.xx.  If you
+are installing the package on such a system, you should check whether the
+directories /usr/contrib/X11R6/{lib,include} exist.  If so, you can use the
+Athena widgets.  To use them, you would do
 
-rather than just `make'.
+	  ./configure --with-athena=/usr/contrib/X11R6
 
-Older HP/UX 10.xx systems have X11R5 instead of X11R6, in which case you
-should modify the directory names appropriately.  Also, you may need to
-include "-L/usr/local/X11R5/lib" in CFLAGS.  It is not clear why.
+instead of just `./configure'.  If these directories do not exist on your
+system, you do not have the Athena widgets: you must use `--with-motif'
+instead.
 
-C.5. Old Hewlett-Packard systems that are running HP/UX 9.xx or earlier
-have Motif widgets, but the Motif files are stored in unusual places.  On
-such systems, besides doing `./configure --with-motif' you may need to do
+Older HP/UX 10.xx systems may have X11R5 instead of X11R6, in which case
+you should modify the directory name appropriately.
+
+C.4.b. It is also possible that you have only Motif widgets, but the
+autoconfigure process is unable to find the Motif files.  In such a
+situation, you may specify the location of the Motif files by doing
+`./configure --with-motif=DIR' instead of just `./configure'.  Here DIR
+should be a directory whose subdirectory `lib' contains the Motif widget
+library file libXm, and whose subdirectory `include' contains the Motif
+header files, such as X11/Xm/Label.h.
+
+C.4.c. There are a very few systems where the widget files must be
+specified manually by an even more complicated procedure.  An example would
+be old Hewlett-Packard systems that are running HP/UX 9.xx or earlier.
+They have Motif widgets, but the Motif files are stored in unusual places.
+If you have an HP/UX 9.xx system that X11R6 was installed on, besides doing
+`./configure' (or possibly `./configure --with-motif'), you may need to do
 
 	make CFLAGS="-O -I/usr/include/Motif1.2 -L/usr/lib/Motif1.2"
 
 rather than just `make'.
 
-For HP/UX 9.xx systems, X11R6, presumably including the Athena widgets and
-not the Motif widgets, was available as a patch.  If you have an HP/UX 9.xx
-system that X11R6 was installed on, besides doing `./configure' (or
-possibly `./configure --with-motif'), you should do
+You should note, however, that for HP/UX 9.xx systems, X11R6, presumably
+including the Athena widgets and not the Motif widgets, was available as a
+patch.  If you have an HP/UX 9.xx system that the X11R6 patch was installed
+on, you can probably do `./configure --with-athena=/usr/contrib/X11R6'.
 
-    make CFLAGS="-O -L/usr/contrib/X11R6/lib -I/usr/contrib/X11R6/include"
-
-rather than just `make'.  This is because on HP/UX 9.xx systems, the X11R6
-patch was installed in the /usr/contrib directory.
+C.5. Some version of Motif require that executables that are linked with
+Motif be linked, also, with the `libXpm' library.  `configure' knows about
+this.  But if for some reason it is unable to find libXpm and the
+corresponding header file, you can specify their location manually at
+configuration time, by doing not just `./configure --with-motif', but
+rather `./configure --with-motif --with-libxpm=DIR'.  Here DIR should be a
+directory whose subdirectory `lib' contains libXpm, and whose subdirectory
+`include' contains the corresponding header file, X11/xpm.h.
 
 C.6. On Suns that are running SunOS 4.1.x with the ancient OpenWindows 3.0
 version of the X Window System, the Xmu and Xt libraries may not link

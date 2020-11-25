@@ -28,16 +28,27 @@ _s_end_page (S___(_plotter))
 \"http://www.w3.org/TR/2000/03/WD-SVG-20000303/DTD/svg-20000303-stylable.dtd\">\n");
   _update_buffer (svg_header);
 
+  /* Emit nominal physical size of the device-frame viewport (and specify
+     that in the device-frame coordinates we use, it's a unit square).
+     viewport_{x,y}size are set from the PAGESIZE Plotter parameter, and
+     either or both may be negative.  If they are, we flipped the
+     NDC_frame->device_frame map to compensate (see s_defplot.c).  Which is
+     why we can take absolute values here. */
+
   if (_plotter->data->page_data->metric)
     sprintf (svg_header->point, 
-	     "<svg width=\"%.5gcm\" height=\"%.5gcm\" viewBox=\"0 0 1 1\">\n",
-	     2.54 * _plotter->data->page_data->viewport_size,
-	     2.54 * _plotter->data->page_data->viewport_size);
+	     "<svg width=\"%.5gcm\" height=\"%.5gcm\" %s %s>\n",
+	     2.54 * FABS(_plotter->data->viewport_xsize),
+	     2.54 * FABS(_plotter->data->viewport_ysize),
+	     "viewBox=\"0 0 1 1\"",
+	     "preserveAspectRatio=\"none\"");
   else
     sprintf (svg_header->point, 
-	     "<svg width=\"%.5gin\" height=\"%.5gin\" viewBox=\"0 0 1 1\">\n",
-	     _plotter->data->page_data->viewport_size,
-	     _plotter->data->page_data->viewport_size);
+	     "<svg width=\"%.5gin\" height=\"%.5gin\" %s %s>\n",
+	     FABS(_plotter->data->viewport_xsize),
+	     FABS(_plotter->data->viewport_ysize),
+	     "viewBox=\"0 0 1 1\"",
+	     "preserveAspectRatio=\"none\"");
   _update_buffer (svg_header);
 
   sprintf (svg_header->point, "<title>SVG drawing</title>\n");
@@ -68,10 +79,14 @@ _s_end_page (S___(_plotter))
        transformation matrix, which is simply the transformation matrix
        attribute of the very first graphical object plotted on the page.
 
-       We're careful to multiply by `m_ndc_to_device', which transforms NDC
-       space to unnormalized device space.  If the ROTATION Plotter
-       parameter is set, it may do a 90, 180, or 270 degree rotation;
-       otherwise it's the identity. */
+       In libplot, `transformation matrix attribute' refers to the affine
+       map from user space to NDC space.  So we're careful to multiply by
+       `m_ndc_to_device', which transforms NDC space to device space.
+       Because SVG uses a flipped-y convention, `m_ndc_to_device' flips the
+       y coordinate.  There will be additional flipping if the
+       user-specified xsize, ysize are negative; see s_defplot.c.  Also, if
+       the user-specified ROTATION Plotter parameter is set, it may do a
+       90, 180, or 270 degree rotation. */
     {
       double product[6];
 

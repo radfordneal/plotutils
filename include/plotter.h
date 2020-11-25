@@ -36,8 +36,8 @@
    `pl_libplot_ver'.  The PL_LIBPLOT_VER macro is not compiled into it.
    Both are available to applications that include this header file. */
 
-#define PL_LIBPLOT_VER_STRING "4.0"
-#define PL_LIBPLOT_VER         400
+#define PL_LIBPLOT_VER_STRING "4.1"
+#define PL_LIBPLOT_VER         401
 
 extern const char pl_libplot_ver[8];   /* need room for 99.99aa */
 
@@ -251,15 +251,15 @@ typedef struct
 
    For all `physical' Plotters, i.e. those with a page type determined by
    the PAGESIZE parameter, we map the window that the user specifies by
-   invoking space(), to a viewport of a fixed, Plotter-independent size.
-   E.g., for any Plotter for which PAGESIZE is "letter", the viewport is a
-   square of size 8.0in x 8.0in.
+   invoking space(), to a viewport whose default size is fixed and
+   Plotter-independent.  E.g., for any Plotter for which PAGESIZE is
+   "letter", the default viewport is a square of size 8.0in x 8.0in.
 
-   All physical Plotters position the viewport at the center of the page,
-   except that HPGLPlotters don't know exactly where the origin of the
-   device coordinate system is.  PCLPlotters do, though, when they're
-   emitting HP-GL/2 code (there's a field in the struct that specifies
-   that, see below).  See comments in g_pagetype.h. */
+   All physical Plotters position this default viewport at the center of
+   the page, except that HPGLPlotters don't know exactly where the origin
+   of the device coordinate system is.  PCLPlotters do, though, when
+   they're emitting HP-GL/2 code (there's a field in the struct that
+   specifies that, see below).  See comments in g_pagetype.h. */
 
 typedef struct
 {
@@ -268,7 +268,7 @@ typedef struct
   const char *fig_name;		/* name used in Fig format (case-sensitive) */
   bool metric;			/* metric vs. Imperial, advisory only */
   double xsize, ysize;		/* width, height in inches */
-  double viewport_size;		/* size of our viewport (a square) in inches */
+  double default_viewport_size;	/* size of default square viewport, in inches*/
   double pcl_hpgl2_xorigin;	/* origin for HP-GL/2-in-PCL5 plotting */
   double pcl_hpgl2_yorigin;  
   double hpgl2_plot_length;	/* plot length (for HP-GL/2 roll plotters) */
@@ -727,14 +727,22 @@ typedef struct
   /* cache of previously retrieved color names (used for speed) */
   plColorNameCache *color_name_cache;/* pointer to color name cache */
 
-  /* info on the device coordinate frame (coordinate ranges for viewport,
-     etc.; note that if flipped_y=true, then jmax<jmin or ymax<ymin) */
+  /* info on the device coordinate frame (ranges for viewport in terms of
+     native device coordinates, etc.; note that if flipped_y=true, then
+     jmax<jmin or ymax<ymin) */
   int display_model_type;	/* one of DISP_MODEL_{PHYSICAL,VIRTUAL} */
   int display_coors_type;	/* one of DISP_DEVICE_COORS_{REAL, etc.} */
   bool flipped_y;		/* y increases downward? */
   int imin, imax, jmin, jmax;	/* ranges, if virtual with integer coors */
   double xmin, xmax, ymin, ymax; /* ranges, if physical with real coors */
-  const plPageData *page_data;	/* page characteristics, if physical display */
+
+  /* low-level page and viewport information, if display is physical.
+     Final six parameters are in terms of inches, and can be specified by
+     setting the PAGESIZE Plotter parameter. */
+  const plPageData *page_data;	/* page dimensions and other characteristics */
+  double viewport_xsize, viewport_ysize; /* viewport dimensions (inches) */
+  double viewport_xorigin, viewport_yorigin; /* viewport origin (inches) */
+  double viewport_xoffset, viewport_yoffset; /* viewport origin offset */
 
   /* affine transformation from NDC to device coordinates */
   double m_ndc_to_device[6];	/*  1. a linear transformation (4 elements)

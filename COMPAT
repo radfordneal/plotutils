@@ -1,5 +1,35 @@
-These are some release notes that deal with backward compatibility of the
-plotutils package, on both the user and programmer levels.
+These are some release notes that deal with new features and backward
+compatibility of the plotutils package, on both the user and programmer
+levels.
+
+Release 2.4.1, dated 7/2000
+---------------------------
+
+The `--page-size' option supported by the command-line graphics utilities
+has been extended, to allow precise specification of viewport size and
+location in the output, e.g., on a printed page.  For example,
+`--page-size=letter,xsize=5in,ysize=3in,xorigin=1in,yorigin=2in' is now a
+possible command-line option.  Previously, only `xoffset' and `yoffset'
+fields were supported.
+
+You can get some interesting visual effects by setting xsize or ysize to a
+negative value.  For example,
+
+echo 0 0 1 1 2 0 | graph -Tps --page-size letter,xsize=-8in,ysize=8in
+
+will write to standard output a Postscript graph for a letter-size page.
+The graph will be drawn into a viewport that has the same size as usual
+(8in x 8in), but it will be reflected from left to right.
+
+The ability to specify a custom viewport size should be useful when
+producing SVG or WebCGM graphics for Web pages.  When producing SVG or
+WebCGM output, only the xsize,ysize fields are meaningful; xorigin,
+yorigin, xoffset, and yoffset are ignored.
+
+The syntax of the libplot Plotter parameter `PAGESIZE' has been similarly
+extended.
+
+Libplot version number is now 4.1.
 
 Release 2.4, dated 6/2000
 -------------------------

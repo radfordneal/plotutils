@@ -26,10 +26,12 @@
 
 #undef fmod
 #undef rand
+#undef srand
 
 extern "C" {
   double fmod(double, double);
   int rand();
+  void srand(unsigned int);
 }
 
 // Maximum number of characters produced by printf("%g")
@@ -163,6 +165,7 @@ static char * do_sprintf(const char *form, const double *v, int nv);
 %token K_MIN
 %token INT
 %token RAND
+%token SRAND
 %token COPY
 %token THRU
 %token TOP
@@ -215,7 +218,7 @@ static char * do_sprintf(const char *form, const double *v, int nv);
 %left CHOP DASHED DOTTED UP DOWN FILL
 %left LABEL
 
-%left VARIABLE NUMBER '(' SIN COS ATAN2 LOG EXP SQRT K_MAX K_MIN INT RAND LAST 
+%left VARIABLE NUMBER '(' SIN COS ATAN2 LOG EXP SQRT K_MAX K_MIN INT RAND SRAND LAST 
 %left ORDINAL HERE '`'
 
 // these need to be lower than '-'
@@ -1533,6 +1536,8 @@ expr:
 		  // portable, but not very random
 		  $$ = (rand() & 0x7fff) / double(0x8000);
 		}
+        | SRAND '(' any_expr ')'
+                { $$ = 0; srand((unsigned int)$3); }
 	| expr '<' expr
 		{ $$ = ($1 < $3); }
 	| expr LESSEQUAL expr

@@ -48,8 +48,6 @@ _s_initialize (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  double xoffset, yoffset;
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
   _g_initialize (S___(_plotter));
@@ -133,24 +131,41 @@ _s_initialize (S___(_plotter))
   _plotter->s_bgcolor.blue = -1;
   _plotter->s_bgcolor_suppressed = false;
 
-  /* Note: xmin,xmax,ymin,ymax above determine the range of device
-     coordinates over which the viewport will extend (and hence the
-     transformation from user to device coordinates; see g_space.c).
+  /* Note: xmin,xmax,ymin,ymax determine the range of device coordinates
+     over which the viewport will extend (and hence the transformation from
+     user to device coordinates; see g_space.c).
 
-     For an SVG Plotter, `device coordinates' are basically the same as
-     libplot's NDC coordinates, on account of the way we wrap a
-     transformation matrix around each page in the output file; see
+     For an SVG Plotter, `device coordinates' are usually almost the same
+     as libplot's NDC coordinates, on account of the way we wrap a global
+     transformation matrix around all graphics in the output file; see
      s_closepl.c.  However, SVG uses a flipped-y convention: ymin,ymax are
-     1 and 0 respectively (see above). */
+     1 and 0 respectively (see above).
+
+     Actually, if the user specifies a negative xsize or ysize as part of
+     the PAGESIZE parameter, we perform an additional flipping, so we can
+     emit nonnegative width and height attributes for the top-level SVG
+     element.  We do this additional flipping right now. */
+
+  /* determine page type, and viewport size and location/offset (the
+     viewport size will be written out at the head of the SVG file, and the
+     location/offset will be ignored) */
+  _set_page_type (_plotter->data);
+
+  if (_plotter->data->viewport_xsize < 0.0)
+    /* flip map from user to NDC space */
+    {
+      _plotter->data->xmin = 1.0;
+      _plotter->data->xmax = 0.0;
+    }
+  if (_plotter->data->viewport_ysize < 0.0)
+    /* flip map from user to NDC space */
+    {
+      _plotter->data->ymin = 0.0;
+      _plotter->data->ymax = 1.0;
+    }
 
   /* compute the NDC to device-frame affine map, set it in Plotter */
   _compute_ndc_to_device_map (_plotter->data);
-
-  /* initialize certain data members from device driver parameters */
-      
-  /* determine page type, and hence nominal viewport size (returned xoffset
-     and yoffset make no sense in an SVG context, so we'll ignore them) */
-  _set_page_type (_plotter->data, &xoffset, &yoffset);
 }
 
 /* The private `terminate' method, which is invoked when a Plotter is

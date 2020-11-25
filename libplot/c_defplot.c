@@ -80,8 +80,6 @@ _c_initialize (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  double xoffset, yoffset;
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
   _g_initialize (S___(_plotter));
@@ -148,9 +146,6 @@ _c_initialize (S___(_plotter))
   _plotter->data->ymin = 0.0;
   _plotter->data->ymax = 0.0;  
   _plotter->data->page_data = (plPageData *)NULL;
-
-  /* compute the NDC to device-frame affine map, set it in Plotter */
-  _compute_ndc_to_device_map (_plotter->data);
 
   /* initialize data members specific to this derived class */
   /* parameters */
@@ -219,10 +214,62 @@ _c_initialize (S___(_plotter))
 
   /* initialize certain data members from device driver parameters */
 
-  /* determine page type, and hence viewport size (returned xoffset and
-     yoffset make no sense in a CGM context, so we'll ignore them) */
-  _set_page_type (_plotter->data, &xoffset, &yoffset);
+  /* determine page type, and viewport size and location */
+  _set_page_type (_plotter->data);
   
+  /* user may have specified a viewport aspect ratio other than 1:1, so
+     carefully compute device-space coordinate ranges (i.e. don't use above
+     default values for imin,imax,jmin,jmax, which are appropriate only for
+     a square viewport) */
+  {
+    /* our choice: the larger side of the viewport will essentially be 1/4
+       times the maximum range for integer device coordinates, i.e., half
+       the larger side will be 1/8 times the maximum range */
+    int half_side = (1 << (8*CGM_BINARY_BYTES_PER_INTEGER - 3)) - 1;
+    int half_other_side;
+    double xsize = _plotter->data->viewport_xsize;
+    double ysize = _plotter->data->viewport_ysize;
+    int xsign = xsize < 0.0 ? -1 : 1;
+    int ysign = ysize < 0.0 ? -1 : 1;
+    double fraction;
+    
+    /* There are two cases, plus a degenerate case.  For each,
+       `scaling_factor' is the conversion factor from virtual to physical
+       units. */
+
+    if (xsize == 0.0 && ysize == 0.0)
+      /* degenerate case, scaling_factor = 0 (or anything else :-)) */
+      {
+	_plotter->data->imin = 0;
+	_plotter->data->imax = 0;
+	_plotter->data->jmin = 0;
+	_plotter->data->jmax = 0;
+      }
+    else if (FABS(ysize) > FABS(xsize))
+      /* scaling_factor = FABS(ysize) / (2*half_side) */
+      {
+	fraction = FABS(xsize) / FABS(ysize);
+	half_other_side = IROUND(half_side * fraction);
+	_plotter->data->imin = - xsign * half_other_side;
+	_plotter->data->imax = xsign * half_other_side;
+	_plotter->data->jmin = - ysign * half_side;
+	_plotter->data->jmax = ysign * half_side;
+      }
+    else		/* FABS(ysize) <= FABS(xsize), which is nonzero */
+      /* scaling_factor = FABS(xsize) / (2*half_side) */
+      {
+	fraction = FABS(ysize) / FABS(xsize);
+	half_other_side = IROUND(half_side * fraction);
+	_plotter->data->imin = - xsign * half_side;
+	_plotter->data->imax = xsign * half_side;
+	_plotter->data->jmin = - ysign * half_other_side;
+	_plotter->data->jmax = ysign * half_other_side;
+      }
+  }
+
+  /* compute the NDC to device-frame affine map, set it in Plotter */
+  _compute_ndc_to_device_map (_plotter->data);
+
   /* determine CGM encoding */
   {
     const char* cgm_encoding_type;
@@ -1176,32 +1223,73 @@ _c_terminate (S___(_plotter))
 	  
 	  /* emit "VDC EXTENT" command [specify virtual device coor ranges] */
 	  {
+	    int imin_true, imax_true, jmin_true, jmax_true;
+
 	    data_len = 2 * 2 * 2;
 	    byte_count = data_byte_count = 0;
 	    _cgm_emit_command_header (current_page_header, _plotter->cgm_encoding,
 				      CGM_PICTURE_DESCRIPTOR_ELEMENT, 6,
 				      data_len, &byte_count,
 				      "VDCEXT");
-	    /* for extent values, see above: we choose viewport coordinates
-	       that are one-fourth the maximum integer range */
 
-	    /* in binary, we write each of these four coordinates as a
+	    /* To see how we set extent values, see the initialize()
+	       routine.  In that routine, we choose device-coordinates
+	       ranges imin,imax,jmin,jmax so that the length of the longer
+	       side of the viewport is one-fourth the maximum integer
+	       range.  The other side will be reduced if the user specifies
+	       (via PAGESIZE) an aspect ratio other than 1:1.  With this
+	       scheme, if the user specifies xsize=ysize > 0, the same
+	       user->device coordinate map will result, no matter what
+	       xsize and ysize equal.
+
+	       However, if the user specifies (via PAGESIZE) a negative
+	       xsize or ysize, we flip the sign of imax-imin or jmax-jmin,
+	       thereby greatly modifying the user->device coordinate map.
+	       Which means we must flip it back, right here, before
+	       emitting the VDC extents.  The reason for this sign-flipping
+	       is that we don't trust CGM viewers to handle negative VDC
+	       extents. */
+
+	    if (_plotter->data->imax < _plotter->data->imin)
+	      {
+		imin_true = _plotter->data->imax;
+		imax_true = _plotter->data->imin;
+	      }
+	    else
+	      {
+		imin_true = _plotter->data->imin;
+		imax_true = _plotter->data->imax;
+	      }
+
+	    if (_plotter->data->jmax < _plotter->data->jmin)
+	      {
+		jmin_true = _plotter->data->jmax;
+		jmax_true = _plotter->data->jmin;
+	      }
+	    else
+	      {
+		jmin_true = _plotter->data->jmin;
+		jmax_true = _plotter->data->jmax;
+	      }
+
+	    /* In binary, we write each of these four coordinates as a
 	       16-bit `index' i.e. integer, because we haven't yet changed
 	       the VDC integer precision to our desired value (we can't do
-	       that until the beginning of the picture) */
+	       that until the beginning of the picture). */
 	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
-			     _plotter->data->imin,
+			     imin_true,
 			     data_len, &data_byte_count, &byte_count);
 	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
-			     _plotter->data->jmin,
+			     jmin_true,
 			     data_len, &data_byte_count, &byte_count);
 	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
-			     _plotter->data->imax,
+			     imax_true,
 			     data_len, &data_byte_count, &byte_count);
 	    _cgm_emit_index (current_page_header, false, _plotter->cgm_encoding,
-			     _plotter->data->jmax,
+			     jmax_true,
 			     data_len, &data_byte_count, &byte_count);
-	    _cgm_emit_command_terminator (current_page_header, _plotter->cgm_encoding,
+	    _cgm_emit_command_terminator (current_page_header, 
+					  _plotter->cgm_encoding,
 					  &byte_count);
 	  }
       
@@ -1209,8 +1297,7 @@ _c_terminate (S___(_plotter))
 	   by WebCGM profile).  The argument is the number of millimeters
 	   per VDC unit; it must be a floating-point real.  */
 	  {
-	    /* viewport size in inches; depends on PAGESIZE parameter */
-	    double viewport_size = _plotter->data->page_data->viewport_size;
+	    int irange, jrange;
 	    double scaling_factor;
 
 	    data_len = 6;	/* 2 bytes per enum, 4 per floating-pt. real */
@@ -1226,9 +1313,27 @@ _c_terminate (S___(_plotter))
 
 	    /* Compute a metric scaling factor from the criterion that the
 	       nominal physical width and height of VDC space be the
-	       viewport size determined by the PAGESIZE parameter. */
-	    scaling_factor = 
-	      (25.4 * viewport_size) / (_plotter->data->imax - _plotter->data->imin);
+	       viewport xsize and ysize, as determined by the PAGESIZE
+	       parameter.  
+
+	       We can get this scaling factor easily, by computing a
+	       quotient, because our scheme for setting imin,imax,jmin,jmax
+	       in the initialize() method preserves aspect ratio, and
+	       signs, as well (see comment immediately above).  But we must
+	       be careful not to divide by zero, since zero-width and
+	       zero-height viewports are allowed. */
+
+	    irange = _plotter->data->imax - _plotter->data->imin;
+	    jrange = _plotter->data->jmax - _plotter->data->jmin;
+	    if (irange != 0)
+	      scaling_factor = 
+		(25.4 * _plotter->data->viewport_xsize) / irange;
+	    else if (jrange != 0)
+	      scaling_factor = 
+		(25.4 * _plotter->data->viewport_ysize) / jrange;
+	    else
+	      /* degenerate case, viewport has zero size */
+	      scaling_factor = 0.0;
 
 	    /* yes, this needs to be a floating-point real, not fixed-point! */
 	    _cgm_emit_real_floating_point (current_page_header, false, _plotter->cgm_encoding,

@@ -22,10 +22,6 @@ i.e., hyperlinks based on CGM `application structures'.  Maybe set up a
 standard way of defining hyperlinks, which could be used by SVG and
 Illustrator Plotters too?
 
-libplot: the PAGESIZE parameter should be enhanced to allow specification
-of xsize, ysize, xloc, yloc parameters, so that the viewport can be very
-precisely sized and positioned.
-
 libplot: add the display list concept, i.e. retained 2-D graphical objects
 (will also facilitate adding support for compound objects and redrawing).
 libplot must become more widget-like; cf. guppi.
@@ -62,6 +58,11 @@ e.g. Allegro's shading and texture-mapping features, and gd.
 
 Intermediate Priority
 ---------------------
+
+libplot: extend parsing of BITMAPSIZE parameter to include options
+xsize,ysize,xorigin,yorigin,xoffset,yoffset, just like PAGESIZE.  This
+would affect the graphing utilities (--bitmap-size option, when producing
+bitmap output, would be invoked similarly to to --page-size).
 
 libsciplot: new graphing library.  Incorporate all functionality of VOGLE,
 PGPLOT, and PLPLOT libraries; check into GLE, PLOTPLUS, XYPLOT, DISLIN (not
@@ -143,7 +144,7 @@ libplot: PNG driver, when outputing a grayscale image, should use the
 optimal bit depth.  PNG grayscale (without alpha channel) supports bit
 depths of 1, 2, 4, 8, 16.  Right now, we use bit depth 1 for bitonal
 images, as we should, but for grayscale images that aren't bitonal, we
-always use bitdepth 8.  We should use 2 or 4 instead, if possible.
+always use bitdepth 8.  We should use 2 or 4 instead, if reasonable.
 
 libplot: Fig output format now supports specifying a `transparent color',
 for use when xfig exports GIF files.  It would be good to support this.

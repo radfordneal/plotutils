@@ -4,7 +4,7 @@ lib_LTLIBRARIES = libplot.la
 
 EXTRA_DIST = DEDICATION HUMOR README-cgm README-gif README-hpgl README-tek VERSION
 
-libplot_la_LDFLAGS = -version-info 4:0:2
+libplot_la_LDFLAGS = -version-info 4:1:2
 
 INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT
 

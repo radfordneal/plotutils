@@ -138,16 +138,12 @@ _set_font (S___(_plotter))
   /* Plotter-specific retrieval failed: it doesn't like the font name or
      other drawstate parameters (size, textangle, transformation matrix?)  */
 
-  /* Try to retrieve default font for this Plotter type, if it's different
-     from the one we just failed to retrieve.  (This may fail because some
-     Plotters can't retrieve their nominal default font.) */
+  /* Via a recursive call, try to retrieve default font for this Plotter
+     type (if it's different from the one we just failed to retrieve;
+     otherwise retrieve the default Hershey font). */
 
   switch (data->default_font_type)
     {
-    case F_HERSHEY:
-    default:
-      default_font_name = DEFAULT_HERSHEY_FONT;
-      break;
     case F_POSTSCRIPT:
       default_font_name = DEFAULT_POSTSCRIPT_FONT;
       break;
@@ -157,41 +153,42 @@ _set_font (S___(_plotter))
     case F_STICK:
       default_font_name = DEFAULT_STICK_FONT;
       break;
+    case F_HERSHEY:		/* Hershey shouldn't happen */
+    default:
+      default_font_name = DEFAULT_HERSHEY_FONT;
+      break;
 
       /* N.B. No support yet for a Plotter-specific default font that is of
 	 F_OTHER type, i.e., isn't listed in the libplot font database. */
     }
 
-  if (strcmp (drawstate->font_name, default_font_name) != 0)
-    /* default font is different, so try to retrieve it via a recursive
-       call; if we can't retrieve it, then recursive call will retrieve a
-       default Hershey font instead (see below) */
-    {
-      const char *saved_font_name = drawstate->font_name;
-      
-      drawstate->font_name = default_font_name;
-      _set_font (S___(_plotter));
-      drawstate->font_name = saved_font_name;
-    }
-  else
-    /* give up; substitute default Hershey font */
-    {
-      const char *saved_font_name = drawstate->font_name;
-      
-      default_font_name = DEFAULT_HERSHEY_FONT;
-      drawstate->font_name = default_font_name;
-      _set_font (S___(_plotter));
-      drawstate->font_name = saved_font_name;
-    }
+  if (strcmp (drawstate->font_name, default_font_name) == 0)
+    /* default font is the one we just failed to retrieve: so use Hershey */
+    default_font_name = DEFAULT_HERSHEY_FONT;
+  
+  /* stash fontname we failed to retrieve; then do recursive call, turning
+     off font warnings for the duration; restore fontname field */
+  {
+    const char *saved_font_name;
+    bool saved_font_warning_issued;
+
+    saved_font_name = drawstate->font_name;
+    drawstate->font_name = default_font_name;
+    saved_font_warning_issued = _plotter->data->font_warning_issued;
+    _plotter->data->font_warning_issued = true;	/* turn off warnings */
+    _set_font (S___(_plotter));
+    _plotter->data->font_warning_issued = saved_font_warning_issued;
+    drawstate->font_name = saved_font_name;
+  }
 
   if (data->issue_font_warning && !_plotter->data->font_warning_issued)
     /* squawk */
     {
       char *buf;
       
-      buf = (char *)_plot_xmalloc (strlen (drawstate->font_name) + strlen (default_font_name) + 100);
+      buf = (char *)_plot_xmalloc (strlen (drawstate->font_name) + strlen (drawstate->true_font_name) + 100);
       sprintf (buf, "cannot retrieve font \"%s\", using default \"%s\"", 
-	       drawstate->font_name, default_font_name);
+	       drawstate->font_name, drawstate->true_font_name);
       _plotter->warning (R___(_plotter) buf);
       free (buf);
       _plotter->data->font_warning_issued = true;

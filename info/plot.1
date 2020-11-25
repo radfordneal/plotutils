@@ -235,8 +235,7 @@ The environment variable
 can also be used to specify the maximum line length.
 .TP
 .BI \-\-page\-size " pagesize"
-Set the size of the plot, by specifying the size of a page
-on which the plot will be positioned.
+Set the size of the page on which the plot will be positioned.
 This is relevant only to
 .BR "plot \-T svg" ,
 .BR "plot \-T ai" ,
@@ -255,28 +254,28 @@ The environment variable
 .SB PAGESIZE 
 can equally well be used to specify the page size.
 .IP ""
-The graphics display in which the plot is drawn will be a square region
-that would occupy nearly the full width of the specified page.
+The graphics display in which the plot is drawn will, by default, be a square
+region that occupies nearly the full width of the specified page.
+An alternative size for the graphics display can be specified.
+For example, the page size could be specified as
+"letter,xsize=4in,ysize=6in", or "a4,xsize=5.0cm,ysize=100mm".
 For all of the above except
 .BR "plot \-T hpgl" , 
-the graphics display will be centered on the page.
+the graphics display will, by default, be centered on the page.  
 For all of the above except
 .B "plot \-T svg"
 and
 .BR "plot \-T cgm" ,
-user-specified positioning of the graphics display on the page is supported.
+the graphics display may be repositioned manually, by specifying the
+location of its lower left corner, relative to the lower left corner of the
+page.
+For example, the page size could be specified as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+It is also possible to specify an offset vector.
 For example, the page size could be specified as "letter,xoffset=1in",
 or "letter,xoffset=1in,yoffset=1.2in", or "a4,yoffset=\-1cm".
-Offsets may be specified in inches, centimeters, or millimeters,
-and are relative to the default position of the graphics display on the page.
-.IP ""
-Specifying an offset vector has no effect on
-.B "plot \-T svg"
-or
-.BR "plot \-T cgm" .
-In SVG format and WebCGM format it is possible to specify the default size
-of a graphics display, but not the position of the graphics display on a
-page.
+In SVG format and WebCGM format it is possible to specify the size
+of the graphics display, but not its position.
 .TP
 .BI \-\-rotation " angle"
 Rotate the graphics display by

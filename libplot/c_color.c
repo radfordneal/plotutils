@@ -28,6 +28,11 @@ _c_set_pen_color(R___(_plotter) cgm_object_type)
   int byte_count, data_byte_count, data_len;
   int fullstrength;
 
+  if (_plotter->drawstate->pen_type == 0
+      && cgm_object_type != CGM_OBJECT_TEXT)
+    /* don't do anything, pen color will be ignored when writing objects */
+    return;
+
   /* 48-bit RGB */
   red_long = _plotter->drawstate->fgcolor.red;
   green_long = _plotter->drawstate->fgcolor.green;
@@ -194,7 +199,7 @@ _c_set_fill_color(R___(_plotter) cgm_object_type)
   int byte_count, data_byte_count, data_len;
 
   if (_plotter->drawstate->fill_type == 0)
-    /* don't do anything, fill color will be ignored when writing objects*/
+    /* don't do anything, fill color will be ignored when writing objects */
     return;
 
   if (cgm_object_type != CGM_OBJECT_OPEN

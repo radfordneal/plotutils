@@ -271,8 +271,8 @@ map(s) to be
 rather than the default.
 .TP
 .BI \-\-page\-size " pagesize"
-Set the size of the character map(s), by specifying the size of the page
-on which they will be positioned.
+Set the size of size of the page on which the character map(s) will be
+positioned.
 This is relevant only to
 .BR "plotfont \-T svg" ,
 .BR "plotfont \-T ai" ,
@@ -293,26 +293,26 @@ can equally well be used to specify the page size.
 .IP ""
 The graphics display in which each character map is drawn will be a square
 region that would occupy nearly the full width of the specified page.
+An alternative size for the graphics display can be specified.
+For example, the page size could be specified as
+"letter,xsize=4in,ysize=6in", or "a4,xsize=5.0cm,ysize=100mm".
 For all of the above except
 .BR "plotfont \-T hpgl" , 
-the graphics display will be centered on the page.
+the graphics display will, by default, be centered on the page.
 For all of the above except
 .B "plotfont \-T svg"
 and
 .BR "plotfont \-T cgm" ,
-user-specified positioning of the graphics display on the page is supported.
+the graphics display may be repositioned manually, by specifying the
+location of its lower left corner, relative to the lower left corner of the
+page.
+For example, the page size could be specified as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+It is also possible to specify an offset vector.
 For example, the page size could be specified as "letter,xoffset=1in",
 or "letter,xoffset=1in,yoffset=1.2in", or "a4,yoffset=\-1cm".
-Offsets may be specified in inches, centimeters, or millimeters,
-and are relative to the default position of the graphics display on the page.
-.IP ""
-Specifying an offset vector has no effect on
-.B "plotfont \-T svg"
-or
-.BR "plotfont \-T cgm" .
-In SVG format and WebCGM format it is possible to specify the default size
-of a graphics display, but not the position of the graphics display on a
-page.
+In SVG format and WebCGM format it is possible to specify the size
+of the graphics display, but not its position.
 .TP
 .BI \-\-rotation " angle"
 Rotate the graphics display by

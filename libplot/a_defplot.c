@@ -53,8 +53,6 @@ _a_initialize (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  double xoffset, yoffset;
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
   _g_initialize (S___(_plotter));
@@ -168,23 +166,26 @@ _a_initialize (S___(_plotter))
   if (_plotter->ai_version == AI_VERSION_3)
     _plotter->data->have_odd_winding_fill = 0;
 
-  /* determine page type, and user-specified viewport offset if any */
-  _set_page_type (_plotter->data, &xoffset, &yoffset);
-  
   /* Determine range of device coordinates over which the viewport will
      extend (and hence the transformation from user to device coordinates;
      see g_space.c). */
   {
-    double xmid, ymid, viewport_size;
-    
-    viewport_size = _plotter->data->page_data->viewport_size;
-    xmid = 0.5 * _plotter->data->page_data->xsize + xoffset;
-    ymid = 0.5 * _plotter->data->page_data->ysize + yoffset;
+    /* determine page type, viewport size and location */
+    _set_page_type (_plotter->data);
+  
+    /* convert viewport size-and-location data (in terms of inches) to
+       device coordinates (i.e. points) */
+    _plotter->data->xmin = 72 * (_plotter->data->viewport_xorigin
+				 + _plotter->data->viewport_xoffset);
+    _plotter->data->xmax = 72 * (_plotter->data->viewport_xorigin
+				 + _plotter->data->viewport_xoffset
+				 + _plotter->data->viewport_xsize);
 
-    _plotter->data->xmin = 72 * (xmid - 0.5 * viewport_size);
-    _plotter->data->xmax = 72 * (xmid + 0.5 * viewport_size);    
-    _plotter->data->ymin = 72 * (ymid - 0.5 * viewport_size);
-    _plotter->data->ymax = 72 * (ymid + 0.5 * viewport_size);    
+    _plotter->data->ymin = 72 * (_plotter->data->viewport_yorigin
+				 + _plotter->data->viewport_yoffset);
+    _plotter->data->ymax = 72 * (_plotter->data->viewport_yorigin
+				 + _plotter->data->viewport_yoffset
+				 + _plotter->data->viewport_ysize);
   }
 
   /* compute the NDC to device-frame affine map, set it in Plotter */

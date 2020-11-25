@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20000303 Stylable//EN"
 "http://www.w3.org/TR/2000/03/WD-SVG-20000303/DTD/svg-20000303-stylable.dtd">
-<svg width="8in" height="8in" viewBox="0 0 1 1">
+<svg width="8in" height="8in" viewBox="0 0 1 1" preserveAspectRatio="none">
 <title>SVG drawing</title>
-<desc>This was produced by version 4.0 of GNU libplot, a free library for exporting 2-D vector graphics.</desc>
+<desc>This was produced by version 4.1 of GNU libplot, a free library for exporting 2-D vector graphics.</desc>
 <rect x="0" y="0" width="1" height="1" style="stroke:none;fill:white;"/>
 <g transform="translate(0,1) scale(1,-1) scale(0.00024414) " xml:space="preserve" style="stroke:black;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10.433;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;fill:none;fill-rule:even-odd;fill-opacity:1;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size-adjust:none;letter-spacing:normal;word-spacing:normal;text-anchor:start;">
 <text transform="translate(2048,3222.5) scale(1,-1) " style="font-family:Times-Roman,'Times Roman',serif;font-size:184.32;text-anchor:middle;baseline-identifier:text-bottom;stroke:none;fill:black;">A Sample Plot</text>

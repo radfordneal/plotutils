@@ -35,6 +35,11 @@
    half, and the latter for characters in the upper half.  This is bizarre,
    but it works.  See additional comments in h_text.c. */
 
+/* NOTE: This code assumes that P1 and P2 have different x coordinates, and
+   different y coordinates.  If that isn't the case, it'll divide by zero.
+   So we check for that possibility in _h_paint_text_string() before
+   calling this function.  See comment in h_text.c. */
+
 #include "sys-defines.h"
 #include "extern.h"
 
@@ -53,10 +58,10 @@ _h_set_font (S___(_plotter))
   bool font_changed = false;
   bool oblique;
   double cos_slant = 1.0, sin_slant = 0.0;
-  double dx, dy, perpdx, perpdy;
-  double len, perplen, tan_slant;
   double new_relative_label_run, new_relative_label_rise;
   double theta, sintheta, costheta;
+  plVector base, up, base_native, up_native;
+  double base_native_len, up_native_len, tan_slant;
   
   /* sanity check, should be unnecessary */
   if (_plotter->drawstate->font_type == F_HERSHEY)
@@ -80,27 +85,17 @@ _h_set_font (S___(_plotter))
   costheta = cos (theta);
   sintheta = sin (theta);
 
-  /* compute lengths in device frame of two vectors that are (in the user
-     frame) directed along the label and perpendicular to the label, with
-     length (in the user frame) equal to the font size */
-  dx = _plotter->drawstate->true_font_size * XDV(costheta,sintheta);
-  dy = _plotter->drawstate->true_font_size * YDV(costheta,sintheta);
-  len = sqrt (dx * dx + dy * dy);
+  /* compute in the device frame a `base vector' which is (in the user
+     frame) directed along the label, with length equal to the font size) */
+  base.x = _plotter->drawstate->true_font_size * XDV(costheta,sintheta);
+  base.y = _plotter->drawstate->true_font_size * YDV(costheta,sintheta);
 
-  perpdx = _plotter->drawstate->true_font_size * XDV(-sintheta,costheta);
-  perpdy = _plotter->drawstate->true_font_size * YDV(-sintheta,costheta);
-
-  /* actually, even in the user frame the second vector may be obliqued */
-  perpdx += (oblique ? SHEAR : 0.0) * dx;
-  perpdy += (oblique ? SHEAR : 0.0) * dy;  
-
-  perplen = sqrt (perpdx * perpdx + perpdy * perpdy);
-
-  /* Compute rise and run, relative to scaling points. (Either or both can
-     be negative; overall normalization, e.g. the `100', is irrelevant.  We
-     include the `100' to express them as percentages.) */
-  new_relative_label_run =  100 * dx / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
-  new_relative_label_rise = 100 * dy / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
+  /* Compute rise and run, relative to x-distance and y-distance between
+     scaling points P1,P2. (Either rise or run can be negative; overall
+     normalization, e.g. the `100', is irrelevant.  We include the `100' to
+     express them as percentages.) */
+  new_relative_label_run =  100 * base.x / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
+  new_relative_label_rise = 100 * base.y / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
   if (new_relative_label_run != 0.0 || new_relative_label_rise != 0.0)
     /* (will always be true except when the font size is so small
        there's really no point in printing the label) */
@@ -117,18 +112,55 @@ _h_set_font (S___(_plotter))
 	}
     }
 
-  /* emit command to change font, if needed (see below) */
+  /* emit command to select new font, if needed (see below) */
   if (_plotter->hpgl_version == 2)
     font_changed = _hpgl2_maybe_update_font (S___(_plotter));
   else				/* 0 or 1, i.e. generic HP-GL or HP7550A */
     font_changed = _hpgl_maybe_update_font (S___(_plotter));
 
-  /* compute character slant (device frame) */
-  if (len == 0.0 || perplen == 0.0) /* a bad situation */
+  /* Compute image, in the device frame, of a so-called `up vector': a
+     vector which in the user frame is perpendicular to the above `base'
+     vector, and has the same length.  Some fonts are specially obliqued,
+     so we take font obliquing (if any) into account here. */
+
+  up.x = _plotter->drawstate->true_font_size * XDV(-sintheta,costheta);
+  up.y = _plotter->drawstate->true_font_size * YDV(-sintheta,costheta);
+  up.x += (oblique ? SHEAR : 0.0) * base.x;
+  up.y += (oblique ? SHEAR : 0.0) * base.y;  
+
+  /* Our `device frame' base and up vectors are really vectors in the
+     normalized device frame, in which the viewport has a fixed size.  See
+     h_defplot.c.  E.g., the viewport corners (0,0) and (1,1) in the NDC
+     frame are respectively mapped to
+     (HPGL_SCALED_DEVICE_LEFT,HPGL_SCALED_DEVICE_BOTTOM) and
+     (HPGL_SCALED_DEVICE_RIGHT,HPGL_SCALED_DEVICE_TOP) in the normalized
+     device frame.  The further mapping to native HP-GL coordinates is
+     accomplished by an `SC' scaling instruction emitted at the head of the
+     output file; see h_openpl.c.  This further mapping depends on the
+     PAGESIZE parameter.
+
+     Unfortunately, when dealing with anamorphically transformed fonts we
+     need to manipulate not just vectors in the normalized device frame,
+     but also vectors in the true device frame, i.e., in native HP-GL
+     units. */
+
+  /* These vectors use native HP-GL units. */
+  base_native.x = base.x * (_plotter->hpgl_p2.x - _plotter->hpgl_p1.x) / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
+  base_native.y = base.y * (_plotter->hpgl_p2.y - _plotter->hpgl_p1.y) / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
+  up_native.x = up.x * (_plotter->hpgl_p2.x - _plotter->hpgl_p1.x) / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
+  up_native.y = up.y * (_plotter->hpgl_p2.y - _plotter->hpgl_p1.y) / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
+
+  base_native_len = sqrt (base_native.x * base_native.x + base_native.y * base_native.y);
+  up_native_len = sqrt (up_native.x * up_native.x + up_native.y * up_native.y);
+
+  /* compute character slant angle (in the true device frame, NOT in the
+     normalized device frame) */
+  if (base_native_len == 0.0 || up_native_len == 0.0) /* a bad situation */
     tan_slant = 0.0;
   else
     {
-      sin_slant = (dx * perpdx + dy * perpdy) / (len * perplen);
+      sin_slant = ((base_native.x * up_native.x + base_native.y * up_native.y) 
+		   / (base_native_len * up_native_len));
       cos_slant = sqrt (1 - sin_slant * sin_slant);
       tan_slant = sin_slant / cos_slant;
     }
@@ -160,16 +192,32 @@ _h_set_font (S___(_plotter))
      the nominal font size. */
 
   {
-    int orientation = _plotter->drawstate->transform.nonreflection ? 1 : -1;
-    double fractional_char_width, fractional_char_height;    
+    double fractional_char_width = 0.5;
+    double fractional_char_height = 1.4 * 0.5;
     double new_relative_char_width, new_relative_char_height;
 
-    fractional_char_width = 0.5;
-    fractional_char_height = 1.4 * 0.5;
+    /* If, in the physical device frame, the font is reflected, we must
+       flip the sign of HP-GL's `character height', as used in the SR
+       instruction.  To determine whether this sign-flipping is needed, we
+       use the fact that the user_frame->physical_device_frame map is the
+       product of the user_frame->normalized_device_frame map and the
+       normalized_device_frame->physical_device_frame map.  Whether the
+       first includes a reflection is precomputed and stored in the drawing
+       state.  The second will include a reflection only if exactly one of
+       the xsize,ysize fields of PAGESIZE is negative.  We can easily check
+       for that by comparing the x,y coordinates of the HP-GL scaling
+       points P1,P2. */
 
-    new_relative_char_width = fractional_char_width * 100 * len / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT);
+    int orientation = _plotter->drawstate->transform.nonreflection ? 1 : -1;
+
+    if ((_plotter->hpgl_p2.x - _plotter->hpgl_p1.x) / (HPGL_SCALED_DEVICE_RIGHT - HPGL_SCALED_DEVICE_LEFT) < 0.0)
+      orientation *= -1;
+    if ((_plotter->hpgl_p2.y - _plotter->hpgl_p1.y) / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM) < 0.0)
+      orientation *= -1;
+
+    new_relative_char_width = fractional_char_width * 100 * base_native_len / (_plotter->hpgl_p2.x - _plotter->hpgl_p1.x);
     new_relative_char_height = 
-      fractional_char_height * 100 * orientation * cos_slant * perplen / (HPGL_SCALED_DEVICE_TOP - HPGL_SCALED_DEVICE_BOTTOM);
+      fractional_char_height * 100 * orientation * cos_slant * up_native_len / (_plotter->hpgl_p2.y - _plotter->hpgl_p1.y);
     
     /* emit SR instruction only if font was changed or if current
        size was wrong */

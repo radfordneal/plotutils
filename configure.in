@@ -3,7 +3,7 @@ dnl Copyright (C) 1989-2000 Free Software Foundation, Inc.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(graph/graph.c)
-AM_INIT_AUTOMAKE(plotutils, 2.4)
+AM_INIT_AUTOMAKE(plotutils, 2.4.1)
 AM_CONFIG_HEADER(config.h)
 
 dnl Did installer set the CFLAGS and CXXFLAGS environ variables before
@@ -139,35 +139,123 @@ LDFLAGS="$X_LIBS $LDFLAGS"
 AC_CHECK_LIB(Xext, XdbeQueryExtension, AC_DEFINE(HAVE_DBE_SUPPORT), , -lX11 "$X_EXTRA_LIBS")
 AC_CHECK_LIB(Xext, XmbufQueryExtension, AC_DEFINE(HAVE_MBX_SUPPORT), , -lX11 "$X_EXTRA_LIBS")
 LDFLAGS="$our_saved_LDFLAGS"
+
 our_saved_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$X_CFLAGS $CPPFLAGS"
 AC_CHECK_HEADERS(X11/extensions/Xdbe.h X11/extensions/multibuf.h)
 CPPFLAGS="$our_saved_CPPFLAGS"
 
-dnl If user specified --with-motif (which requires X support), place -lXm
-dnl at the head of X_TOOLKIT_LIBS, otherwise place -lXaw -lXmu there.
-dnl Also, Motif 2.x seems to require the extension library -lXp for
-dnl printing, so if found, place it before -lXext -lX11 in X_BASIC_LIBS.
-dnl Similarly if -lXpm is found then place it at the beginning of
-dnl X_BASIC_LIBS, since Motif 2.x requires it (it may be included in -lXm
-dnl already, though).  Also, Motif on Sys-V derived systems requires -lPW.
-dnl If found, add it to LIBS, but precede it by -lc because some of its
-dnl definitions may conflict with the standard library.  Similarly check
-dnl for -lgen, which some versions of Motif on Solaris need.
+dnl Allow installer to specify location of Athena widgets (i.e. location of
+dnl libraries lib/libXaw.so and lib/libXmu.so, and header files).  If the
+dnl argument of --with-athena is a directory DIR, we'll add an `-L DIR/lib'
+dnl option to the head of X_LIBS and an `-I DIR/include' option to the head
+dnl of X_CFLAGS.
 
-AC_ARG_WITH(motif, [  --with-motif            use Motif widgets], if test "x${with_motif}" = "xyes"; then X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"; AC_CHECK_LIB(Xp, XpQueryExtension, X_BASIC_LIBS="-lXp $X_BASIC_LIBS", , -lXext -lX11) AC_CHECK_LIB(Xpm, XpmReadFileToPixmap, X_BASIC_LIBS="-lXpm $X_BASIC_LIBS", , -lXext -lX11) AC_CHECK_LIB(gen, regex, LIBS="$LIBS -lc -lgen", LIBS="$LIBS") AC_CHECK_LIB(PW, regex, LIBS="$LIBS -lc -lPW", LIBS="$LIBS") AC_DEFINE(USE_MOTIF) else X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS"; fi, X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS")
+AC_ARG_WITH(athena, [  --with-athena[=DIR]     use Athena widgets: includes and libraries in DIR])
+
+dnl If --with-motif is specified, then `-lXm' will be added to the head of
+dnl X_TOOLKIT_LIBS, instead of `-lXaw -lXmu', and --with-athena will be
+dnl ignored.  We allow the installer to specify DIR, the location of Motif.
+dnl If the argument of --with-motif is a directory, an `-L DIR/lib' option
+dnl will be added to the head of X_LIBS and an `-I DIR/include' option to
+dnl the head of C_FLAGS.
+
+AC_ARG_WITH(motif, [  --with-motif[=DIR]      use Motif widgets: includes and libraries in DIR])
+
+dnl If --with-motif is specified, we always check for the Xpm image
+dnl library, and if we find it, then we place it at the beginning of
+dnl X_BASIC_LIBS, since Motif 2.x requires it (it may be included in -lXm
+dnl already, though).  We also allow the installer to specify a location
+dnl for Xpm. If DIR is specified as an argument to --with-xpm, DIR/include
+dnl should contain xpm.h, and DIR/lib should contain the library libxpm.
+
+AC_ARG_WITH(xpm, [  --with-xpm[=DIR]        use Xpm with Motif: include and library in DIR])
+
+dnl NOTE: Motif 2.x also seems to require the extension library -lXp for
+dnl printing, so if --with-motif is specified we always check for libXp.
+dnl If we find it, we'll place `-lXp' before `-lXext -lX11' in
+dnl X_BASIC_LIBS.  Also, Motif on Sys-V derived systems requires `-lPW'.
+dnl If we find libPW, we'll add `-lPW' to LIBS, but precede it by -lc
+dnl because some of its definitions may conflict with the standard library.
+dnl Similarly we always check for libgen, which some versions of Motif on
+dnl Solaris need.
+
+dnl NOTE: For each `with' option, there are four possible values for the
+dnl associated shell variable, all of which we must handle:
+dnl 
+dnl     1. ""    (if neither `--with-foo' nor `--without-foo' was specified)
+dnl     2. "no"  (obtained if `--without-foo' was specified)
+dnl     3. "yes" (obtained if `--with-foo' was specified, without an argument)
+dnl     4. DIR   (obtained if `--with-foo DIR' was specified)
+
+case "x$with_motif" in
+xno|x)
+  case "x$with_athena" in
+  xyes|x)
+    X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS"
+    ;;
+  xno) ;;
+  *)
+    X_TOOLKIT_LIBS="-lXaw -lXmu $X_TOOLKIT_LIBS"
+    X_CFLAGS="$X_CFLAGS -I$with_athena/include"
+    X_LIBS="$X_LIBS -L$with_athena/lib"
+    ;;
+  esac
+  ;;
+*)
+  if test "x$with_motif" != "xyes"; then
+    X_CFLAGS="$X_CFLAGS -I$with_motif/include"
+    X_LIBS="$X_LIBS -L$with_motif/lib"
+  fi
+
+  X_TOOLKIT_LIBS="-lXm $X_TOOLKIT_LIBS"
+
+  our_saved_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS $X_LIBS"
+  case "x$with_xpm" in
+    xno|x)
+      AC_CHECK_LIB(Xpm, XpmReadFileToPixmap, X_BASIC_LIBS="-lXpm $X_BASIC_LIBS", , -lXext -lX11) 
+      ;;
+    xyes)
+      AC_CHECK_LIB(Xpm, XpmReadFileToPixmap, X_BASIC_LIBS="-lXpm $X_BASIC_LIBS", , -lXext -lX11) 
+      ;;
+    *)
+      LDFLAGS="$LDFLAGS -L$with_xpm/lib"
+      AC_CHECK_LIB(Xpm, XpmReadFileToPixmap, X_CFLAGS="$X_CFLAGS -I$with_xpm/include"; X_LIBS="$X_LIBS -L$with_xpm/lib"; X_BASIC_LIBS="-lXpm $X_BASIC_LIBS", , -lXext -lX11) 
+      ;;
+  esac
+  LDFLAGS="$our_saved_LDFLAGS"
+
+  our_saved_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS $X_LIBS"
+  AC_CHECK_LIB(Xp, XpQueryExtension, X_BASIC_LIBS="-lXp $X_BASIC_LIBS", , -lXext -lX11) 
+  AC_CHECK_LIB(gen, regex, LIBS="$LIBS -lc -lgen", LIBS="$LIBS") 
+  AC_CHECK_LIB(PW, regex, LIBS="$LIBS -lc -lPW", LIBS="$LIBS") 
+  LDFLAGS="$our_saved_LDFLAGS"
+
+  AC_DEFINE(USE_MOTIF) 
+  ;;
+esac
 
 dnl The libplot/libplotter Makefile.am files test the automake variable
 dnl NO_X to determine whether X should be supported.
 AM_CONDITIONAL(NO_X, test "x$no_x" = "xyes")
 
-dnl Check for png.h and for libpng, and if both are available, define the
+dnl Check for libpng and png.h, and if both are available, define the
 dnl config.h variable INCLUDE_PNG_SUPPORT; otherwise define the automake
-dnl variable NO_PNG.  Latter is used in libplot/Makefile.am and
+dnl variable NO_PNG.  The latter is used in libplot/Makefile.am and
 dnl libplotter/Makefile.am.
+
+dnl NOTE: the test for libpng checks for the function png_set_tRNS(),
+dnl because it was added to libpng in version 0.95, which is the minimum
+dnl version that we can use.
+
+dnl ALSO NOTE: the test for libpng automatically checks for zlib, since it
+dnl supplies the `-lz' argument to the linker.
+
 AC_CHECK_HEADERS(png.h, png_support="yes", png_support="no")
 AC_CHECK_LIB(png, png_set_tRNS, AC_DEFINE(HAVE_LIBPNG), png_support="no", -lz -lm)
-AC_ARG_WITH(libpng, [  --without-libpng        omit PNG support even if libpng is present], if test "x${with_libpng}" = "xno"; then png_support="no"; fi)
+AC_ARG_WITH(libpng, [  --without-libpng        omit PNG support even if libpng and zlib are present], if test "x${with_libpng}" = "xno"; then png_support="no"; fi)
 if test "x${png_support}" = "xyes"; then AC_DEFINE(INCLUDE_PNG_SUPPORT) fi
 AM_CONDITIONAL(NO_PNG, test "x${png_support}" = "xno")
 

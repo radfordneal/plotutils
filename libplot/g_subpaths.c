@@ -1809,7 +1809,11 @@ read_into_subpath (s, path)
 
   if (need_to_close)
     {
+#if 0
       s->segments[path->num_segments].type = S_CLOSEPATH;
+#else  /* currently, use line segment instead of closepath */
+      s->segments[path->num_segments].type = S_LINE;
+#endif
       s->segments[path->num_segments].p = path->segments[0].p;
       s->num_segments++;
     }

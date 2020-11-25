@@ -29,6 +29,10 @@ _c_set_attributes (R___(_plotter) object_type)
   int desired_line_type = CGM_L_SOLID; /* keep compiler happy */
   double desired_dash_offset = 0.0;
 
+  if (_plotter->drawstate->pen_type == 0)
+    /* won't be edging; at most, will be filling; so nothing to do */
+    return;
+
   /* alter CGM line width if necessary */
 
   switch (object_type)

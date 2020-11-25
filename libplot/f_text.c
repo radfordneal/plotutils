@@ -113,6 +113,12 @@ _f_paint_text_string (R___(_plotter) s, h_just, v_just)
   if (angle_device == 0.0)
     angle_device = 0.0;		/* remove sign bit if any */
   
+  /* avoid triggering a bug in xfig, which as of release 3.2.2 can't handle
+     rotated text strings consisting of a single space character (they
+     cause it to crash) */
+  if (angle_device != 0.0 && strcmp ((const char *)s, " ") == 0)
+    return _plotter->get_text_width (R___(_plotter) s);
+
   vertical_fig_x = XDV(vertical_x, vertical_y);
   vertical_fig_y = YDV(vertical_x, vertical_y);  
   vertical_fig_length = sqrt(vertical_fig_x * vertical_fig_x

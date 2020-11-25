@@ -1165,7 +1165,7 @@ extern void _write_bytes P___((const plPlotterData *data, int n, const unsigned 
 extern void _write_string P___((const plPlotterData *data, const char *s));
 /* other plPlotterData methods */
 extern bool _compute_ndc_to_device_map P___((plPlotterData *data));
-extern void _set_page_type P___((plPlotterData *data, double *xoffset, double *yoffset));
+extern void _set_page_type P___((plPlotterData *data));
 extern voidptr_t _get_plot_param P___((const plPlotterData *data, const char *parameter)); 
 
 /* plPath methods (see g_subpaths.c) */

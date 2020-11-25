@@ -70,11 +70,16 @@ _c_paint_path (S___(_plotter))
 	else
 	  closed = false;		/* 2-point ones should be open */
 	
-	/* set CGM line attributes, by emitting appropriate commands */
+	/* set CGM pen/fill colors and line attributes, by emitting
+           appropriate commands */
+
+	/* N.B. pen color and line attributes don't need to be set if
+	   pen_type is zero, signifying an edgeless (presumably filled)
+	   path */
 	_c_set_pen_color (R___(_plotter)
 			  closed ? CGM_OBJECT_CLOSED : CGM_OBJECT_OPEN);
 	_c_set_fill_color (R___(_plotter)
-			  closed ? CGM_OBJECT_CLOSED : CGM_OBJECT_OPEN);
+			   closed ? CGM_OBJECT_CLOSED : CGM_OBJECT_OPEN);
 	_c_set_attributes (R___(_plotter) 
 			   closed ? CGM_OBJECT_CLOSED : CGM_OBJECT_OPEN);
       
@@ -611,11 +616,20 @@ _c_paint_path (S___(_plotter))
 					  means successive Beziers abut, so
 					  (after the first) each is
 					  specified by only three points;
-					  `1' means they don't abut.  To
-					  avoid stressing CGM interpreters,
-					  we specify `1' if there's only 1
-					  Bezier.  */
+					  `1' means they don't abut.  Our
+					  Beziers are contiguous, so we
+					  specify `2'.  We used to specify
+					  `1' if there's only one Bezier,
+					  but the browser plug-in from
+					  SYSDEV didn't like that (it
+					  produced a parse error when such
+					  a Bezier was the only element of
+					  a CGM `closed figure'). */
+#if 0
 				       (end_of_run - i > 1 ? 2 : 1),
+#else
+				       (end_of_run - i > 1 ? 2 : 2),
+#endif
 				       data_len, &data_byte_count, &byte_count);
 		      /* starting point */
 		      _cgm_emit_point (_plotter->data->page, 

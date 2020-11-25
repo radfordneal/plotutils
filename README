@@ -1,5 +1,5 @@
-This is release 2.4 of the GNU plotutils (plotting utilities) package,
-including release 4.0 of GNU libplot: a thread-safe function library for
+This is release 2.4.1 of the GNU plotutils (plotting utilities) package,
+including release 4.1 of GNU libplot: a thread-safe function library for
 exporting two-dimensional vector graphics files, and for displaying
 animated vector graphics under the X Window System.  The Web page for the
 package is: http://www.gnu.org/software/plotutils/plotutils.html .

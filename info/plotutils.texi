@@ -25,8 +25,8 @@
 @end iftex
 
 @ifinfo
-This file documents version 2.4 of the GNU plotting
-utilities package, including GNU libplot 4.0
+This file documents version 2.4.1 of the GNU plotting
+utilities package, including GNU libplot 4.1
 
 Copyright @copyright{} 1989--2000 Free Software Foundation, Inc.
 
@@ -48,7 +48,7 @@ by the Foundation.
 @titlepage
 @title The GNU Plotting Utilities
 @subtitle Programs and functions for vector graphics and data plotting
-@subtitle Version 2.4
+@subtitle Version 2.4.1
 @author Robert S. Maier and Nicholas B. Tufillaro
 @page
 @vskip 0pt plus 1filll
@@ -72,8 +72,8 @@ by the Foundation.
 
 @node Top, Plotutils Intro, (dir), (dir)
 @ifnottex
-This is the documentation for version 2.4 of the GNU plotting
-utilities package, including GNU libplot 4.0.  The package consists of
+This is the documentation for version 2.4.1 of the GNU plotting
+utilities package, including GNU libplot 4.1.  The package consists of
 programs and functions for data plotting and vector graphics.
 @end ifnottex
 
@@ -757,24 +757,42 @@ default} it is a 8-inch square centered on an 8.5@dmn{in} by 11@dmn{in}
 page (@w{US letter} size).  For @code{graph -T hpgl}, it is an 8-inch
 square, which by default is not centered.  For @code{graph -T svg} and
 @code{graph -T cgm}, the default graphics display is an 8-inch square,
-though if the WebCGM output file is placed in a Web page, it may be
-scaled arbitrarily.
+though if the output file is placed on a Web page, it may be scaled
+arbitrarily.
 
-The page type, which determines the graphics display size used by
+The page size, which determines the default display size used by
 @code{graph -T svg}, @code{graph -T ai}, @code{graph -T ps}, @code{graph
 -T cgm}, @code{graph -T fig}, @code{graph -T pcl}, and @code{graph -T
-hpgl} can be set by using the @samp{--page-size} option, or by setting
-the environment variable @code{PAGESIZE}@.  @w{For example}, setting
-@code{PAGESIZE} to "a4" would select a graphics display size appropriate
-to an A4-size page (21@dmn{cm} by 29.7@dmn{cm}).  The position of the
-graphics display on the page, relative to its default position, can be
-adjusted by specifying an offset vector.  For example, @code{PAGESIZE}
-could be specified as "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @code{graph -T svg} and
-@code{graph -T cgm} ignore the offset vector, since SVG format and
-WebCGM format have no notion of the size of the Web page on which the
-graphics display will ultimately be positioned.  For more information on
-page types, see @ref{Page and Viewport Sizes}.
+hpgl}, can be set by using the @samp{--page-size} option, or by setting
+the environment variable @code{PAGESIZE}@.  @w{For example}, setting the
+page size to "a4" would produce output for an A4-size page (21@dmn{cm}
+by 29.7@dmn{cm}), and would select a appropriate graphics display size.
+Either or both of the dimensions of the graphics display can be
+specified explicitly.  For example, the page size could be specified as
+"letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The dimensions of
+the graphics display are allowed to be negative (@w{a negative}
+dimension results in a reflection).
+
+The position of the display on the page, relative to its default
+position, may optionally be adjusted by specifying an offset vector.
+For example, the page size could be specified as "letter,yoffset=1.2in",
+or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
+position the graphics display precisely, by specifying the location of
+its lower left corner relative to the lower left corner of the page.
+For example, the page size could be specified as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+
+The preceding options may be intermingled.  However, @code{graph -T svg}
+and @code{graph -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
+"yorigin" options, since SVG format and WebCGM format have no notion of
+the Web page on which the graphics display will ultimately be
+positioned.  They interpret the "xsize" and "ysize" options as
+specifying a default size for the graphics display (@w{it is} merely a
+default, since the output file may be scaled arbitrarily when it is
+placed on a Web page).
+
+For more information on page and graphics display sizes, see @ref{Page
+and Viewport Sizes}.
 
 @node Multiple Datasets, Multiplotting, Non-Square Plots, graph
 @section Preparing a plot from more than one dataset
@@ -1478,18 +1496,28 @@ also.  The environment variable @code{PAGESIZE} can equally well be used
 to specify the page size.
 
 For @code{graph -T ai}, @code{graph -T ps}, @code{graph -T pcl}, and
-@code{graph -T fig}, the graphics display within which the plot is drawn
-will be a square region centered on the specified page.  For @code{graph
--T hpgl}, it will be a square region of the same size, but may be
-positioned differently.  The position of the graphics display may be
-adjusted by specifying an offset vector.  For example, the argument of
-@samp{--page-size} could be "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  Although SVG format and WebCGM
-format support the specification of a default graphics display size, it
-has no notion of the size of the Web page on which the graphics display
-will ultimately be positioned.  So @code{graph -T svg} and @code{graph
--T cgm} ignore the offset vector.  For more on page sizes, see @ref{Page
-and Viewport Sizes}.
+@code{graph -T fig}, the graphics display (or `viewport') within which
+the plot is drawn will be, by default, a square region centered on the
+specified page.  For @code{graph -T hpgl}, it will be a square region of
+the same size, but may be positioned differently.  Either or both of the
+dimensions of the graphics display can be specified explicitly.  For
+example, @var{pagesize} could be specified as "letter,xsize=4in", or
+"a4,xsize=10cm,ysize=15cm".  The dimensions are allowed to be negative
+(@w{a negative} dimension results in a reflection).
+
+The position of the graphics display, relative to its default position,
+may optionally be adjusted by specifying an offset vector.  For example,
+@var{pagesize} could be specified as "letter,yoffset=1.2in", or
+"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
+position the graphics display precisely, by specifying the location of
+its lower left corner relative to the lower left corner of the page.
+For example, @var{pagesize} could be specified as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+The preceding options may be intermingled.  @code{graph -T svg} and
+@code{graph -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
+"yorigin" options, since SVG format and WebCGM format have no notion of
+the Web page on which the graphics display will ultimately be
+positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
 
 @item --pen-colors @var{colors}
 (String, default "1=red:2=green:3=blue:4=magenta:5=cyan".)  Set the
@@ -2325,18 +2353,28 @@ also.  The environment variable @code{PAGESIZE} can equally well be used
 to specify the page size.
 
 For @code{plot -T ai}, @code{plot -T ps}, @code{plot -T pcl}, and
-@code{plot -T fig}, the graphics display within which the plot is drawn
-will be a square region centered on the specified page.  For @code{plot
--T hpgl}, it will be a square region of the same size, but may be
-positioned differently.  The position of the graphics display may be
-adjusted by specifying an offset vector.  For example, the argument of
-@samp{--page-size} could be "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  Although SVG format and WebCGM
-format support the specification of a default graphics display size,
-they have no notion of the size of the Web page on which the graphics
-display will ultimately be positioned.  So @code{plot -T svg} and
-@code{plot -T cgm} ignore the offset vector.  For more on page sizes,
-see @ref{Page and Viewport Sizes}.
+@code{plot -T fig}, the graphics display (or `viewport') within which
+the plot is drawn will be, by default, a square region centered on the
+specified page.  For @code{plot -T hpgl}, it will be a square region of
+the same size, but may be positioned differently.  Either or both of the
+dimensions of the graphics display can be specified explicitly.  For
+example, @var{pagesize} could be specified as "letter,xsize=4in", or
+"a4,xsize=10cm,ysize=15cm".  The dimensions are allowed to be negative
+(@w{a negative} dimension results in a reflection).
+
+The position of the graphics display, relative to its default position,
+may optionally be adjusted by specifying an offset vector.  For example,
+@var{pagesize} could be specified as "letter,yoffset=1.2in", or
+"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
+position the graphics display precisely, by specifying the location of
+its lower left corner relative to the lower left corner of the page.
+For example, @var{pagesize} could be specified as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+The preceding options may be intermingled.  @code{plot -T svg} and
+@code{plot -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
+"yorigin" options, since SVG format and WebCGM format have no notion of
+the Web page on which the graphics display will ultimately be
+positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
 @end table
 
 The following options set the initial values of additional drawing
@@ -2937,27 +2975,38 @@ has no buffer limitations.
 (String, default "letter".)  Set the size of the page on which the plot
 will be positioned.  This is relevant only to @code{pic2plot -T svg},
 @code{pic2plot -T ai}, @code{pic2plot -T ps}, @code{pic2plot -T cgm},
-@code{pic2plot -T fig}, @code{pic2plot -T pcl}, and @code{pic2plot -T
-hpgl}.  "letter" means an 8.5@dmn{in} by 11@dmn{in} page.  Any ISO page
-size in the range "a0"@dots{}"a4" or ANSI page size in the range
-"a"@dots{}"e" may be specified ("letter" is an alias @w{for "a"} and
-"tabloid" is an alias @w{for "b"}).  "legal", "ledger", @w{and "b5"} are
-recognized page sizes also.  The environment variable @code{PAGESIZE}
-can equally well be used to specify the page size.
+@code{pic2plot -T fig}, @code{pic2plot -T pcl}, and @code{pic2plot
+@w{-T} hpgl}.  "letter" means an 8.5@dmn{in} by 11@dmn{in} page.  Any
+ISO page size in the range "a0"@dots{}"a4" or ANSI page size in the
+range "a"@dots{}"e" may be specified ("letter" is an alias @w{for "a"}
+and "tabloid" is an alias @w{for "b"}).  "legal", "ledger", @w{and "b5"}
+are recognized page sizes also.  The environment variable
+@code{PAGESIZE} can equally well be used to specify the page size.
 
 For @code{pic2plot -T ai}, @code{pic2plot -T ps}, @code{pic2plot -T
-pcl}, and @code{pic2plot -T fig}, the graphics display within which the
-plot is drawn will be a square region centered on the specified page.
-For @code{pic2plot -T hpgl}, it will be a square region of the same
-size, but may be positioned differently.  The position of the graphics
-display may be adjusted by specifying an offset vector.  For example,
-the argument of @samp{--page-size} could be "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  Although SVG format and WebCGM
-format support the specification of a default graphics display size,
-they have no notion of the size of the Web page on which the graphics
-display will ultimately be positioned.  So @code{pic2plot -T svg} and
-@code{pic2plot -T cgm} ignore the offset vector.  For more on page
-sizes, see @ref{Page and Viewport Sizes}.
+pcl}, and @code{pic2plot -T fig}, the graphics display (or `viewport')
+within which the plot is drawn will be, by default, a square region
+centered on the specified page.  For @code{pic2plot -T hpgl}, it will be
+a square region of the same size, but may be positioned differently.
+Either or both of the dimensions of the graphics display can be
+specified explicitly.  For example, @var{pagesize} could be specified as
+"letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The dimensions are
+allowed to be negative (@w{a negative} dimension results in a
+reflection).
+
+The position of the graphics display, relative to its default position,
+may optionally be adjusted by specifying an offset vector.  For example,
+@var{pagesize} could be specified as "letter,yoffset=1.2in", or
+"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
+position the graphics display precisely, by specifying the location of
+its lower left corner relative to the lower left corner of the page.
+For example, @var{pagesize} could be specified as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+The preceding options may be intermingled.  @code{pic2plot -T svg} and
+@code{pic2plot -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
+"yorigin" options, since SVG format and WebCGM format have no notion of
+the Web page on which the graphics display will ultimately be
+positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
 
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
@@ -3385,27 +3434,38 @@ has no buffer limitations.
 (String, default "letter".)  Set the size of the page on which the plot
 will be positioned.  This is relevant only to @code{tek2plot -T svg},
 @code{tek2plot -T ai}, @code{tek2plot -T ps}, @code{tek2plot -T cgm},
-@code{tek2plot -T fig}, @code{tek2plot -T pcl}, and @code{tek2plot -T
-hpgl}.  "letter" means an 8.5@dmn{in} by 11@dmn{in} page.  Any ISO page
-size in the range "a0"@dots{}"a4" or ANSI page size in the range
-"a"@dots{}"e" may be specified ("letter" is an alias @w{for "a"} and
-"tabloid" is an alias @w{for "b"}).  "legal", "ledger", @w{and "b5"} are
-recognized page sizes also.  The environment variable @code{PAGESIZE}
-can equally well be used to specify the page size.
+@code{tek2plot -T fig}, @code{tek2plot -T pcl}, and @code{tek2plot
+@w{-T} hpgl}.  "letter" means an 8.5@dmn{in} by 11@dmn{in} page.  Any
+ISO page size in the range "a0"@dots{}"a4" or ANSI page size in the
+range "a"@dots{}"e" may be specified ("letter" is an alias @w{for "a"}
+and "tabloid" is an alias @w{for "b"}).  "legal", "ledger", @w{and "b5"}
+are recognized page sizes also.  The environment variable
+@code{PAGESIZE} can equally well be used to specify the page size.
 
 For @code{tek2plot -T ai}, @code{tek2plot -T ps}, @code{tek2plot -T
-pcl}, and @code{tek2plot -T fig}, the graphics display within which the
-plot is drawn will be a square region centered on the specified page.
-For @code{tek2plot -T hpgl}, it will be a square region of the same
-size, but may be positioned differently.  The position of the graphics
-display may be adjusted by specifying an offset vector.  For example,
-the argument of @samp{--page-size} could be "letter,yoffset=1.2in", or
-"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  Although SVG format and WebCGM
-format support the specification of a default graphics display size,
-they have no notion of the size of the Web page on which the graphics
-display will ultimately be positioned.  So @code{tek2plot -T svg} and
-@code{tek2plot -T cgm} ignore the offset vector.  For more on page
-sizes, see @ref{Page and Viewport Sizes}.
+pcl}, and @code{tek2plot -T fig}, the graphics display (or `viewport')
+within which the plot is drawn will be, by default, a square region
+centered on the specified page.  For @code{tek2plot -T hpgl}, it will be
+a square region of the same size, but may be positioned differently.
+Either or both of the dimensions of the graphics display can be
+specified explicitly.  For example, @var{pagesize} could be specified as
+"letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The dimensions are
+allowed to be negative (@w{a negative} dimension results in a
+reflection).
+
+The position of the graphics display, relative to its default position,
+may optionally be adjusted by specifying an offset vector.  For example,
+@var{pagesize} could be specified as "letter,yoffset=1.2in", or
+"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
+position the graphics display precisely, by specifying the location of
+its lower left corner relative to the lower left corner of the page.
+For example, @var{pagesize} could be specified as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+The preceding options may be intermingled.  @code{tek2plot -T svg} and
+@code{tek2plot -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
+"yorigin" options, since SVG format and WebCGM format have no notion of
+the Web page on which the graphics display will ultimately be
+positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
 
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
@@ -3891,7 +3951,7 @@ the characters in the character map(s) to be @var{font_name}.
 (String, default "letter".)  Set the size of the page on which the
 character map(s) will be drawn.  This is relevant only to @code{plotfont
 -T svg}, @code{plotfont -T ai}, @code{plotfont -T ps}, @code{plotfont -T
-fig}, @code{plotfont -T pcl}, and @code{plotfont -T hpgl}.  "letter"
+fig}, @code{plotfont -T pcl}, and @code{plotfont @w{-T} hpgl}.  "letter"
 means an 8.5@dmn{in} by 11@dmn{in} page.  Any ISO page size in the range
 "a0"@dots{}"a4" or ANSI page size in the range "a"@dots{}"e" may be
 specified ("letter" is an alias @w{for "a"} and "tabloid" is an alias
@@ -3900,18 +3960,29 @@ also.  The environment variable @code{PAGESIZE} can equally well be used
 to specify the page size.
 
 For @code{plotfont -T ai}, @code{plotfont -T ps}, @code{plotfont -T
-pcl}, and @code{plotfont -T fig}, the graphics display within which the
-character map(s) will be positioned will be a square region centered on
-the specified page.  For @code{plotfont -T hpgl}, it will be a square
-region of the same size, but may be positioned differently.  The
-position of the graphics display may be adjusted by specifying an offset
-vector.  For example, the argument of @samp{--page-size} could be
-"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".
-Although SVG format and WebCGM format support the specification of a
-default graphics display size, they have no notion of the size of the
-Web page on which the graphics display will ultimately be positioned.
-So @code{plotfont -T svg} and @code{plotfont -T cgm} ignore the offset
-vector.  For more on page sizes, see @ref{Page and Viewport Sizes}.
+pcl}, and @code{plotfont -T fig}, the graphics display (or `viewport')
+within which the character map is drawn will be, by default, a square
+region centered on the specified page.  For @code{plotfont -T hpgl}, it
+will be a square region of the same size, but may be positioned
+differently.  Either or both of the dimensions of the graphics display
+can be specified explicitly.  For example, @var{pagesize} could be
+specified as "letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The
+dimensions are allowed to be negative (@w{a negative} dimension results
+in a reflection).
+
+The position of the graphics display, relative to its default position,
+may optionally be adjusted by specifying an offset vector.  For example,
+@var{pagesize} could be specified as "letter,yoffset=1.2in", or
+"a4,xoffset=@minus{}5mm,yoffset=2.0cm".  @w{It is} also possible to
+position the graphics display precisely, by specifying the location of
+its lower left corner relative to the lower left corner of the page.
+For example, @var{pagesize} could be specified as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+The preceding options may be intermingled.  @code{plotfont -T svg} and
+@code{plotfont -T cgm} ignore the "xoffset", "yoffset", "xorigin", and
+"yorigin" options, since SVG format and WebCGM format have no notion of
+the Web page on which the graphics display will ultimately be
+positioned.  For more on page sizes, see @ref{Page and Viewport Sizes}.
 
 @item --pen-color @var{name}
 (String, default "black".)  Set the pen color to be @var{name}.  An
@@ -6310,7 +6381,7 @@ Physics Instruction}, Addison--Wesley, 1990.
 @chapter @code{libplot}, a 2-D Vector Graphics Library
 
 @ifnottex
-This is the documentation for version 4.0 of GNU libplot, which is
+This is the documentation for version 4.1 of GNU libplot, which is
 a free function library for drawing two-dimensional vector graphics.
 @end ifnottex
 
@@ -6325,7 +6396,7 @@ a free function library for drawing two-dimensional vector graphics.
 @node libplot Overview, C Programming, libplot, libplot
 @section Programming with @code{libplot}: An overview
 
-GNU @code{libplot} 4.0 is a free function library for drawing
+GNU @code{libplot} 4.1 is a free function library for drawing
 two-dimensional vector graphics.  It can produce smooth, double-buffered
 animations for the @w{X Window} System, and can export graphics files in
 many file formats.  @w{It is} `device-independent' in the sense that its
@@ -7322,23 +7393,28 @@ subject of `winding numbers'.
 GNU @code{libplot} can draw graphics over an entire page of paper, not
 merely within the graphics display or `viewport' that it normally uses.
 
-The viewport used by an Illustrator, Postscript, Fig, or PCL Plotter is
-a square region centered on the page.  The size of the viewport depends
-on the @code{PAGESIZE} parameter, which may be "letter", "a4", etc.  See
-@ref{Page and Viewport Sizes}.  For example, the viewport on a
-letter-sized page, which has width 8.5@dmn{}in and height 11@dmn{}in, is
-8@dmn{}in on a side.
+The default viewport used by an Illustrator, Postscript, Fig, or PCL
+Plotter is a square region centered on the page.  The size of the
+default viewport depends on the @code{PAGESIZE} parameter, which may be
+"letter", "a4", etc.  See @ref{Page and Viewport Sizes}.  For example,
+the default viewport on a letter-sized page, which has width 8.5@dmn{}in
+and height 11@dmn{}in, is a square of side 8@dmn{}in.
 
-The point is that graphics will not be clipped to the viewport, so that
-the entire page will @w{in principle} be imageable.  You may, in fact,
-define a user coordinate system in terms of which the lower left corner
-of the page is (0,0), and in which the units are physical inches or
-centimeters.  @w{To do} so, you would use appropriate arguments when
-invoking the @code{space} operation on the Plotter.
+However, you may specify different dimensions for the viewport, and a
+different position @w{as well}.  In particular, you may specify a
+viewport that covers the entire page.  This would be accomplished by
+setting @code{PAGESIZE} to, for example,
+"letter,xsize=8.5in,ysize=11in,xorigin=0in,yorigin=0in".  "xorigin" and
+"yorigin" specify the location of the lower left corner of the viewport,
+relative to the lower left corner of the page.
 
-On a letter-sized page, the viewport has lower left corner (0.25,1.5)
-and upper right corner (8.25,9.5), provided that inches are used.  The
-following program shows how the @code{space} operation would be invoked.
+With this choice for the viewport, the entire page is @w{in principle}
+imageable.  For full-page drawing, it is convenient to define a user
+coordinate system in terms of which the lower left corner of the page is
+(0,0), and in which the units are physical inches or centimeters.  @w{To
+do} so, you would use appropriate arguments when invoking the
+@code{space} operation on the Plotter.  The following program shows how
+the @code{space} operation would be invoked.
 
 @example
 @group
@@ -7354,20 +7430,21 @@ int main()
 @end group
      
 @group
-  /* set Plotter parameters */
+  /* set page size parameter, including viewport size and location */
   plotter_params = pl_newplparams ();
-  pl_setplparam (plotter_params, "PAGESIZE", "letter");
+  pl_setplparam (plotter_params, "PAGESIZE", 
+                 "letter,xsize=8.5in,ysize=11in,xorigin=0in,yorigin=0in");
 @end group
      
 @group
-  /* create a Postscript Plotter with the specified parameters */
+  /* create a Postscript Plotter with the specified parameter */
   plotter = pl_newpl_r ("ps", stdin, stdout, stderr, plotter_params);
 @end group
      
 @group
   pl_openpl_r (plotter);                /* begin page of graphics */
   pl_fspace_r (plotter,
-               0.25, 1.5, 8.25, 9.5);   /* set user coor system */
+               0.0, 0.0, 8.5, 11.0);   /* set user coor system */
 @end group
      
 @group
@@ -7412,7 +7489,7 @@ viewport would be rotated on the page by setting the Plotter parameter
 @code{ROTATION}@.  Its default value @w{is "0"} (@w{or "no"}), and other
 allowed values are "90" (@w{or "yes"}), "180", and "270".  @w{On a}
 letter-sized page in landscape orientation, a rotated viewport has lower
-left corner (1.5,0.25) and upper right corner (9.5,8.25), provided that
+left corner (0.0,0.0) and upper right corner (11.0,8.5), provided that
 inches are used.  The following program is a modified version of the
 preceding, showing how a landscape orientation would be produced.
 
@@ -7432,7 +7509,8 @@ int main()
 @group
   /* set Plotter parameters */
   plotter_params = pl_newplparams ();
-  pl_setplparam (plotter_params, "PAGESIZE", "letter");
+  pl_setplparam (plotter_params, "PAGESIZE", 
+                 "letter,xsize=8.5in,ysize=11in,xorigin=0in,yorigin=0in");
   pl_setplparam (plotter_params, "ROTATION", "90");
 @end group
      
@@ -7444,7 +7522,7 @@ int main()
 @group
   pl_openpl_r (plotter);                /* begin page of graphics */
   pl_fspace_r (plotter,
-               1.5, 0.25, 9.5, 8.25);   /* set user coor system */
+               0.0, 0.0, 11.0, 8.5);   /* set user coor system */
 @end group
      
 @group
@@ -7472,6 +7550,11 @@ int main()
 @end group
 @end example
 
+It is worth nothing that rotating a viewport, by specifying a nonzero
+value for @code{ROTATION}, does not change the position of its four
+corners.  Rather, any graphics that are drawn are rotated @w{within it}.
+@w{If the} viewport is rectangular rather than square, this `rotation'
+necessarily includes a rescaling.
 
 @node Animated GIFs, X Animations, Drawing on a Page, C Programming
 @subsection Animated GIFs in C
@@ -9409,25 +9492,41 @@ page size in the range "a0"@dots{}"a4" or ANSI page size in the range
 recognized page sizes also.
 
 For Illustrator, Postscript, PCL and Fig Plotters, the graphics display
-will be a square region centered on the specified page.  (For example,
-it will be a centered 8@dmn{in} square if @code{PAGESIZE} is "letter".)
-For HP-GL Plotters, it will be a square region of the same size, but
-will not @w{by default} be centered.  SVG format and WebCGM format have
-no notion of the size of the Web page on which the graphics display will
-ultimately be positioned.  They do have a notion of default display
-size, though this will normally be overridden when the SVG or WebCGM
-file is placed on a Web page.  For the default display size, SVG and CGM
-Plotters will use the graphics display size that is used by other
-Plotters.
+will be, by default, a square region centered on the specified page.
+(For example, it will be a centered 8@dmn{in} square if @code{PAGESIZE}
+is "letter".)  For HP-GL Plotters, it will be a square region of the
+same size, but will not @w{by default} be centered.  SVG format and
+WebCGM format have no notion of the Web page on which the graphics
+display will ultimately be positioned.  They do have a notion of default
+display size, though this will normally be overridden when the SVG or
+WebCGM file is placed on a Web page.  For the default display size, SVG
+and CGM Plotters will use the graphics display size that is used by
+other Plotters.  
+
+For the default size and location of the graphics display for each page
+type, see @ref{Page and Viewport Sizes}.  You do not need to use the
+default graphics display, since either or both of its dimensions can be
+specified explicitly.  For example, @code{PAGESIZE} could be specified
+as "letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The dimensions
+are allowed to be negative (@w{a negative} dimension results in a
+reflection).
 
 For Plotters other than SVG and CGM Plotters, the position of the
 graphics display on the page, relative to its default position, can be
 adjusted by specifying an offset vector.  For example, @code{PAGESIZE}
 could be specified as "letter,yoffset=1.2in", or
 "a4,xoffset=@minus{}5mm,yoffset=2.0cm".  Inches, centimeters, and
-millimeters are the supported units.  The offset vector, unlike the page
-type, is ignored by SVG and CGM Plotters.  For more information on page
-types, see @ref{Page and Viewport Sizes}.
+millimeters are the supported units.  
+
+@w{It is} also possible to position the graphics display precisely, by
+specifying the location of its lower left corner relative to the lower
+left corner of the page.  For example, @code{PAGESIZE} could be
+specified as "letter,xorigin=2in,yorigin=3in", or
+"a4,xorigin=0.5cm,yorigin=0.5cm".  The preceding options may be
+intermingled.  SVG and WebCGM Plotters ignore the "xoffset", "yoffset",
+"xorigin", and "yorigin" options, since SVG format and WebCGM format
+have no notion of the Web page on which the graphics display will
+ultimately be positioned.
 
 @item ROTATION
 (Default "0".)  Relevant to all Plotters other than Metafile Plotters,
@@ -9435,11 +9534,16 @@ which have no output device.  The angle, in degrees, by which the
 graphics display (i.e., the viewport) should be rotated, relative to its
 default orientation.  Recognized values are "0", "90", "180", and "270";
 @w{"no" and} "yes" are equivalent to @w{"0" and "90"} respectively.  The
-rotation is counterclockwise.  This option is used for switching between
-portrait and landscape orientations.
+rotation is counterclockwise.  
 
-Internally, this parameter determines the affine transformation from NDC
-(normalized device coordinate) space to device space.
+A rotated viewport does not change the position of its four corners.
+Rather, the graphics are rotated @w{within it}.  @w{If the} viewport is
+rectangular rather than square, this `rotation' necessarily includes a
+rescaling.
+
+This parameter is useful for switching between portrait and landscape
+orientations.  Internally, it determines the affine transformation from
+NDC (normalized device coordinate) space to device space.
 
 @item BG_COLOR
 (Default "white".)  The initial background color of the graphics
@@ -11260,27 +11364,39 @@ Graphics drawn by @code{libplot} are nominally drawn within a graphics
 display, or `viewport'.  When producing such raster formats as PNG, PNM,
 and pseudo-GIF, @w{it will} use a square or rectangular bitmap as its
 viewport.  But when producing Illustrator, Postscript, @w{PCL 5}, HP-GL,
-and Fig format, it will use a square region on the page as its viewport.
-Except in the HP-GL case, the viewport will @w{by default} be centered
-on the page.  Graphics will not be clipped to the viewport, so the
-entire page will @w{in principle} be imageable.
+and Fig format, it will use a square or rectangular region on the page
+as its viewport.  Except in the HP-GL case, the viewport will @w{by
+default} be centered on the page.  Graphics will not be clipped to the
+viewport, so the entire page will @w{in principle} be imageable.
 
-In all cases, the viewport position may be adjusted relative to its
-default position by specifying an offset vector.  For example, the page
-size could be specified not merely as "letter" @w{or "a4"}, but as
-"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".
-Inches, centimeters, and millimeters are the supported units.  The
+Either or both of the dimensions of the graphics display can be
+specified explicitly.  For example, the page size could be specified as
+"letter,xsize=4in", or "a4,xsize=10cm,ysize=15cm".  The dimensions of
+the graphics display are allowed to be negative (@w{a negative}
+dimension results in a reflection).  Inches, centimeters, and
+millimeters are the supported units.
+
+@w{It is} also possible to position the graphics display precisely, by
+specifying the location of its lower left corner relative to the lower
+left corner of the page.  For example, the page size could be specified
+not merely as "letter" @w{or "a4"}, but as
+"letter,xorigin=2in,yorigin=3in", or "a4,xorigin=0.5cm,yorigin=0.5cm".
+In all cases, the viewport position may be adjusted by specifying an
+offset vector.  For example, the page size could be specified as
+"letter,yoffset=1.2in", or "a4,xoffset=@minus{}5mm,yoffset=2.0cm".  The
 viewport may also be rotated, by setting the @code{ROTATION} parameter
 or environment variable, or (@w{in the} case of the graphics programs)
 by using the @samp{--rotation} option.  A rotated viewport does not
-change its position.
+change the position of its four corners.  Rather, the graphics are
+rotated @w{within it}.  @w{If the} viewport is rectangular rather than
+square, this `rotation' necessarily includes a rescaling.
 
 Any ISO page size in the range "a0"@dots{}"a4" or ANSI page size in the
 range "a"@dots{}"e" may be specified.  ("letter" is an alias @w{for
 "a"}, which is the default, and "tabloid" is an alias @w{for "b"}).
 "legal", "ledger", and the JIS [Japanese Industrial Standard] size "b5"
 are recognized also.  The following are the supported page sizes and the
-viewport size that corresponds to each.
+default square viewport size that corresponds to each.
 
 @table @asis
 @item "a" (or "letter"; 8.5@dmn{in} by 11.0@dmn{in})
@@ -11323,13 +11439,20 @@ viewport size that corresponds to each.
 16.94@dmn{cm}
 @end table
 
-SVG format and WebCGM format have no notion of the size of the Web page
-on which the viewport will ultimately be positioned.  They do have a
-notion of default viewport size, though this will normally be overridden
-when the WebCGM file is placed on a Web page.  @w{In SVG} and WebCGM
-output, the default viewport size is set by @code{PAGESIZE}, or (@w{in
+SVG format and WebCGM format have no notion of the Web page on which the
+viewport will ultimately be positioned.  They do have a notion of
+default viewport size, though this will normally be overridden when the
+output file is placed on a Web page.  When producing SVG or WebCGM
+output, this default viewport size is set by @code{PAGESIZE}, or (@w{in
 the} case of the graphics programs) the @samp{--page-size} option.  The
-offset vector, @w{if any}, is ignored.
+"xorigin", "yorigin", "xoffset", and "yoffset" specifiers, if included,
+are ignored.
+
+For a similar reason, the "xorigin" and "yorigin" specifiers are ignored
+when producing HP-GL or HP-GL/2 output.  The lower left corner of the
+viewport is positioned at the HP-GL `scaling @w{point' P1}, whose
+location is device-dependent.  The "xoffset" and "yoffset" specifiers
+are respected, however, and may be used to reposition the viewport.
 
 @node Metafiles, Auxiliary Software, Page and Viewport Sizes, Appendices
 @appendix The Graphics Metafile Format

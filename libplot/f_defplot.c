@@ -52,8 +52,6 @@ _f_initialize (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
-  double xoffset, yoffset;
-
 #ifndef LIBPLOTTER
   /* in libplot, manually invoke superclass initialization method */
   _g_initialize (S___(_plotter));
@@ -128,24 +126,33 @@ _f_initialize (S___(_plotter))
 
   /* initialize certain data members from device driver parameters */
 
-  /* determine page type, and user-specified viewport offset if any */
-  _set_page_type (_plotter->data, &xoffset, &yoffset);
-  
   /* Determine range of device coordinates over which the viewport will
      extend (and hence the transformation from user to device coordinates;
      see g_space.c). */
   {
-    double xmid, ymid, viewport_size;
+    /* determine page type, viewport size and location */
+    _set_page_type (_plotter->data);
+  
+    /* convert viewport size-and-location data (in terms of inches) to
+       device coordinates (i.e. Fig units) */
+    _plotter->data->xmin = (FIG_UNITS_PER_INCH 
+			    * (_plotter->data->viewport_xorigin
+			       + _plotter->data->viewport_xoffset));
+    _plotter->data->xmax = (FIG_UNITS_PER_INCH 
+			    * (_plotter->data->viewport_xorigin
+			       + _plotter->data->viewport_xoffset
+			       + _plotter->data->viewport_xsize));
     
-    viewport_size = _plotter->data->page_data->viewport_size;
-    xmid = 0.5 * _plotter->data->page_data->xsize + xoffset;
-    ymid = 0.5 * _plotter->data->page_data->ysize - yoffset; /* flipped y */
-
-    _plotter->data->xmin = FIG_UNITS_PER_INCH * (xmid - 0.5 * viewport_size);
-    _plotter->data->xmax = FIG_UNITS_PER_INCH * (xmid + 0.5 * viewport_size);    
-    /* flipped y, so ymin > ymax; interchange */
-    _plotter->data->ymin = FIG_UNITS_PER_INCH * (ymid + 0.5 * viewport_size);
-    _plotter->data->ymax = FIG_UNITS_PER_INCH * (ymid - 0.5 * viewport_size);    
+    /* Fig coor system has flipped y: y=0 is at the top of the page */
+    _plotter->data->ymin = (FIG_UNITS_PER_INCH 
+			    * (_plotter->data->page_data->ysize
+			       - (_plotter->data->viewport_yorigin
+				  + _plotter->data->viewport_yoffset)));
+    _plotter->data->ymax = (FIG_UNITS_PER_INCH 
+			    * (_plotter->data->page_data->ysize
+				- (_plotter->data->viewport_yorigin
+				   + _plotter->data->viewport_yoffset
+				   + _plotter->data->viewport_ysize)));
   }
 
   /* compute the NDC to device-frame affine map, set it in Plotter */

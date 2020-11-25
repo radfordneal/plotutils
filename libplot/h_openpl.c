@@ -102,8 +102,10 @@ _h_begin_page (S___(_plotter))
       _update_buffer (_plotter->data->page);
     }
   
-  /* set scaling points P1, P2 at lower left and upper right corners of our
-     square viewport */
+  /* Set scaling points P1, P2 at lower left and upper right corners of our
+     viewport; or more accurately, at the two points that (0,0) and (1,1),
+     which are the lower right and upper right corners in NDC space, get
+     mapped to. */
   sprintf (_plotter->data->page->point, "IP%d,%d,%d,%d;",
 	   IROUND(_plotter->hpgl_p1.x), IROUND(_plotter->hpgl_p1.y),
 	   IROUND(_plotter->hpgl_p2.x), IROUND(_plotter->hpgl_p2.y));

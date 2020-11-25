@@ -11,59 +11,75 @@
 #include "g_pagetype.h"
 
 /* forward references */
-static bool _parse_page_type ____P((const char *pagesize, const plPageData **pagedata, double *xoffset, double *yoffset));
-static bool _string_to_inches ____P ((const char *offset_s, double *offset));
+static bool _parse_page_type ____P((const char *pagesize, const plPageData **pagedata, double *xoffset, double *yoffset, double *xorigin, double *yorigin, double *xsize, double *ysize));
+static bool _string_to_inches ____P ((const char *string, double *inches));
 
 void
 #ifdef _HAVE_PROTOS
-_set_page_type(plPlotterData *data, double *xoffset, double *yoffset)
+_set_page_type (plPlotterData *data)
 #else
-_set_page_type(data, xoffset, yoffset)
+_set_page_type (data)
      plPlotterData *data;
-     double *xoffset, *yoffset;
 #endif
 {
   const char *pagesize;
   const plPageData *pagedata;
-  double local_xoffset, local_yoffset;
+  double viewport_xoffset, viewport_yoffset;
+  double viewport_xorigin, viewport_yorigin;
+  double viewport_xsize, viewport_ysize;
   
   /* examine user-specified value for PAGESIZE parameter, or the default
      value if we can't parse the user-specified value */
   pagesize = (const char *)_get_plot_param (data, "PAGESIZE");
   if (!_parse_page_type (pagesize, &pagedata, 
-			 &local_xoffset, &local_yoffset))
+			 &viewport_xoffset, &viewport_yoffset,
+			 &viewport_xorigin, &viewport_yorigin,
+			 &viewport_xsize, &viewport_ysize))
     {
       pagesize = (const char *)_get_default_plot_param ("PAGESIZE");
       _parse_page_type (pagesize, &pagedata, 
-			&local_xoffset, &local_yoffset);
+			&viewport_xoffset, &viewport_yoffset,
+			&viewport_xorigin, &viewport_yorigin,
+			&viewport_xsize, &viewport_ysize);
     }
 
-  /* set page data in Plotter; pass back viewport offset vector */
+  /* set page data in Plotter */
   data->page_data = pagedata;
-  *xoffset = local_xoffset;
-  *yoffset = local_yoffset;
+  data->viewport_xoffset = viewport_xoffset;
+  data->viewport_yoffset = viewport_yoffset;
+  data->viewport_xorigin = viewport_xorigin;
+  data->viewport_yorigin = viewport_yorigin;
+  data->viewport_xsize = viewport_xsize;
+  data->viewport_ysize = viewport_ysize;
 }
 
 static bool
 #ifdef _HAVE_PROTOS
-_parse_page_type (const char *pagesize, const plPageData **pagedata, double *xoffset, double *yoffset)
+_parse_page_type (const char *pagesize, const plPageData **pagedata, double *xoffset, double *yoffset, double *xorigin, double *yorigin, double *xsize, double *ysize)
 #else
-_parse_page_type (pagesize, pagedata, xoffset, yoffset)
+_parse_page_type (pagesize, pagedata, xoffset, yoffset, xorigin, yorigin, xsize, ysize)
      const char *pagesize;
      const plPageData **pagedata;
      double *xoffset, *yoffset;
+     double *xorigin, *yorigin;
+     double *xsize, *ysize;
 #endif
 {
   const plPageData *local_pagedata = _pagedata;
-  char *local_pagesize, *first, *next;
+  char *viewport_pagesize, *first, *next;
   char xoffset_s[32], yoffset_s[32]; /* each field should have length <=31 */
-  bool anotherfield, success, got_xoffset = false, got_yoffset = false;
+  char xorigin_s[32], yorigin_s[32];
+  char xsize_s[32], ysize_s[32];
+  bool anotherfield, success;
+  bool got_xoffset = false, got_yoffset = false;
+  bool got_xorigin = false, got_yorigin = false;
+  bool got_xsize = false, got_ysize = false;
   int i;
 
-  local_pagesize = (char *)_plot_xmalloc (strlen (pagesize) + 1);  
-  strcpy (local_pagesize, pagesize);
-  first = local_pagesize;
-  next = strchr (local_pagesize, (int)',');
+  viewport_pagesize = (char *)_plot_xmalloc (strlen (pagesize) + 1);  
+  strcpy (viewport_pagesize, pagesize);
+  first = viewport_pagesize;
+  next = strchr (viewport_pagesize, (int)',');
   if (next)
     {
       anotherfield = true;
@@ -73,21 +89,21 @@ _parse_page_type (pagesize, pagedata, xoffset, yoffset)
   else
     anotherfield = false;
 
-  /* try to match page size to a page size on our list */
+  /* try to match page type to a page type on our list */
   success = false;
   for (i = 0; i < NUM_PAGESIZES; i++, local_pagedata++)
-    if (strcasecmp (local_pagedata->name, local_pagesize) == 0
+    if (strcasecmp (local_pagedata->name, viewport_pagesize) == 0
 	|| 
 	(local_pagedata->alt_name 
-	 && strcasecmp (local_pagedata->alt_name, local_pagesize) == 0))
+	 && strcasecmp (local_pagedata->alt_name, viewport_pagesize) == 0))
       {
 	success = true;
 	break;
       }
-  free (local_pagesize);
+  free (viewport_pagesize);
 
   if (success)
-    /* matched the page size, at least */
+    /* matched page type, at least */
     {
       /* pass back pointer to page data via pointer */
       *pagedata = local_pagedata;
@@ -110,25 +126,51 @@ _parse_page_type (pagesize, pagedata, xoffset, yoffset)
 	    got_xoffset = true;
 	  else if (sscanf (first, "yoffset = %31s", yoffset_s) == 1)
 	    got_yoffset = true;	      
+	  else if (sscanf (first, "xorigin = %31s", xorigin_s) == 1)
+	    got_xorigin = true;	      
+	  else if (sscanf (first, "yorigin = %31s", yorigin_s) == 1)
+	    got_yorigin = true;	      
+	  else if (sscanf (first, "xsize = %31s", xsize_s) == 1)
+	    got_xsize = true;	      
+	  else if (sscanf (first, "ysize = %31s", ysize_s) == 1)
+	    got_ysize = true;	      
 	}
       
-      /* pass back viewpoint offset vector */
+      /* pass back viewport size-and-location data via pointers */
       {
-	double local_xoffset, local_yoffset;
+	double viewport_xsize, viewport_ysize;
+	double viewport_xorigin, viewport_yorigin;
+	double viewport_xoffset, viewport_yoffset;
 
-	if (got_xoffset && _string_to_inches (xoffset_s, &local_xoffset))
-	  *xoffset = local_xoffset;
-	else
-	  *xoffset = 0.0;
-	
-	if (got_yoffset && _string_to_inches (yoffset_s, &local_yoffset))
-	  *yoffset = local_yoffset;
-	else
-	  *yoffset = 0.0;
+	/* xsize, ysize default to this page type's default */
+	if (!(got_xsize && _string_to_inches (xsize_s, &viewport_xsize)))
+	  viewport_xsize = local_pagedata->default_viewport_size;
+	if (!(got_ysize && _string_to_inches (ysize_s, &viewport_ysize)))
+	  viewport_ysize = local_pagedata->default_viewport_size;
+
+	/* xorigin, yorigin default to whatever is needed to center the
+	   viewport on the page */
+	if (!(got_xorigin && _string_to_inches (xorigin_s, &viewport_xorigin)))
+	  viewport_xorigin = 0.5 * (local_pagedata->xsize - viewport_xsize);
+	if (!(got_yorigin && _string_to_inches (yorigin_s, &viewport_yorigin)))
+	  viewport_yorigin = 0.5 * (local_pagedata->ysize - viewport_ysize);
+
+	/* xoffset, yoffset default to zero */
+	if (!(got_xoffset && _string_to_inches (xoffset_s, &viewport_xoffset)))
+	  viewport_xoffset = 0.0;
+	if (!(got_yoffset && _string_to_inches (yoffset_s, &viewport_yoffset)))
+	  viewport_yoffset = 0.0;
+
+	*xsize = viewport_xsize;
+	*ysize = viewport_ysize;
+	*xorigin = viewport_xorigin;
+	*yorigin = viewport_yorigin;
+	*xoffset = viewport_xoffset;
+	*yoffset = viewport_yoffset;
       }
     }
 
-  /* indicate whether we were able to match at least the page size */
+  /* indicate whether we were able to match the page type */
   return success;
 }
 

@@ -1,3 +1,32 @@
+Version 2.4.1 released, 7/2000.  [Includes libplot 4.1, interface age=2.]
+
+graph,plot,tek2plot,plotfont,pic2plot: `--page-size' option and PAGESIZE
+	 environment variable now allow precise specification of viewport
+	 size and location on the printed page.  For example,
+	 `--page-size=letter,xsize=5in,ysize=3in,xorigin=1in,yorigin=2in'
+	 is now a possible command-line option.  The traditional `xoffset'
+	 and `yoffset' fields are still supported.
+libplot: PAGESIZE parameter extended, to allow precise specification of
+	 viewport size and location on the printed page (see item above).
+libplot: bug dealing with filling of paths formed from segments of multiple
+	 types now fixed.  It affected CGM and possibly other output
+	 formats.  (CGM version number was affected: it could be too high.)
+pic2plot: pic parser extended to support a new command, srand(), which sets
+	 the seed for the random number generator that rand() invokes.
+	 This is for compatibility for GNU pic, which (as distributed in
+	 the recently released groff-1.16) now supports srand().
+libplot: a bug in xfig is now worked around.  When producing Fig output,
+	 any text string consisting of a single space, which is rotated at
+	 a nonzero angle, is no longer written to the output file.  As of
+	 xfig-3.2.2, xfig crashes when it sees such strings.
+installation: `configure' now supports `--with-athena=DIR' and
+	 `--with-motif=DIR' options, to allow specification of location of
+	 Athena and Motif files.  Also, `--with-xpm=DIR' is now supported,
+	 since some versions of Motif require linking with libXpm, and the
+	 libXpm may be located in an odd place.  (Thanks, Albert Chin.)
+pic2plot: distributed `gram.c' file is now prepared with bison-1.28, so it
+	 should compile under Solaris 2.7.  (Thanks, Albert Chin.)
+	 
 Version 2.4 released, 6/2000.  [Includes libplot 4.0, interface age=2.]
 
 libplot: libxmi rendering module (used by GIF/PNM/PNG drivers) has been
@@ -163,6 +192,10 @@ libplot: when producing WebCGM output, libplot's `triangular' line cap
 	 CGM's triangular line cap style, since the latter disagrees with
 	 libplot's convention (taken from HP-GL/2) that the cap should be a
 	 stubby triangle, not an equilateral one.
+libplot: when a FigPlotter runs out of user-defined colors (511 appears to
+	 be the maximum), it now quantizes to the nearest standard or
+	 user-defined color.  Previously, exceeding the maximum number of
+	 user-defined colors triggered a bug.
 installation: CFLAGS and CXXFLAGS may now be set at build time, i.e., if
 	 set, will not be ignored.
 
@@ -244,10 +277,6 @@ libplot: PCL Plotters and Fig Plotters now position their viewports
 	 parameters has been dropped.  Support for HPGL_XOFFSET and
 	 HPGL_YOFFSET also removed for consistency, even though the default
 	 HP-GL viewport position has not changed.
-libplot: when a FigPlotter runs out of user-defined colors (511 appears to
-	 be the maximum), it now quantizes to the nearest standard or
-	 user-defined color.  Previously, exceeding the maximum number of
-	 user-defined colors triggered a bug.
 libplot: PS fonts Courier-Oblique, Courier-BoldOblique can now be requested
 	 under the names Courier-Italic, Courier-BoldItalic.  Also, PCL
 	 fonts Courier-Italic, Courier-BoldItalic can now be requested

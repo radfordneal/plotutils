@@ -66,7 +66,7 @@ _c_paint_text_string (R___(_plotter) s, h_just, v_just)
   if (_plotter->drawstate->true_font_size == 0.0)
     return 0.0;
 
-  /* set CGM text color (pass hint) */
+  /* set CGM text color */
   _c_set_pen_color (R___(_plotter) CGM_OBJECT_TEXT);
 
   /* compute index of font in master table of PS fonts, in g_fontdb.c */

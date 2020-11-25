@@ -33,9 +33,33 @@ _p_paint_path (S___(_plotter))
      S___(Plotter *_plotter;)
 #endif
 {
+  double granularity;
+
   if (_plotter->drawstate->pen_type == 0
       && _plotter->drawstate->fill_type == 0)
     /* nothing to draw */
+    return;
+
+  /* Compute `granularity': factor by which user-frame coordinates will be
+     scaled up, so that when they're emitted as integers (which idraw
+     requires), resolution loss won't be excessive.  CTM factors will be
+     scaled down by this factor. */
+  {
+    /* compute norm of user->device affine transformation */
+    double norm, min_sing_val, max_sing_val;
+    
+    /* This minimum singular value isn't really the norm.  But it's the
+       nominal device-frame line width divided by the actual user-frame
+       line-width (see g_linewidth.c), and that's what we need. */
+    _matrix_sing_vals (_plotter->drawstate->transform.m,
+		       &min_sing_val, &max_sing_val);
+    norm = min_sing_val;
+    
+    granularity = norm / (PS_MIN_RESOLUTION);
+  }
+
+  if (granularity == 0.0)
+    /* must have norm = 0, quit now to avoid division by zero */
     return;
 
   switch ((int)_plotter->drawstate->path->type)
@@ -44,7 +68,6 @@ _p_paint_path (S___(_plotter))
       {
 	bool closed, closed_int;
 	int i, numpoints, index_start, index_increment;
-	double granularity;
 	int polyline_len;
 	plIntPoint *xarray;
   
@@ -61,24 +84,6 @@ _p_paint_path (S___(_plotter))
 	else
 	  closed = false;		/* 2-point ones should be open */
 	
-	/* Compute `granularity': factor by which user-frame coordinates
-	   will be scaled up, so that when they're emitted as integers,
-	   resolution loss won't be excessive.  CTM factors will be scaled
-	   down by this factor. */
-	{
-	  /* compute norm of user->device affine transformation */
-	  double norm, min_sing_val, max_sing_val;
-	  
-	  /* This minimum singular value isn't really the norm.  But it's the
-	     nominal device-frame line width divided by the actual user-frame
-	     line-width (see g_linewidth.c), and that's what we need. */
-	  _matrix_sing_vals (_plotter->drawstate->transform.m,
-			     &min_sing_val, &max_sing_val);
-	  norm = min_sing_val;
-	  
-	  granularity = norm / (PS_MIN_RESOLUTION);
-	}
-
 	/* scale up each point coordinate by granularity factor and round
 	   it to closest integer, removing runs of points with the same
 	   scaled integer coordinates */
@@ -265,7 +270,6 @@ End\n\n", numpoints);
     case (int)PATH_BOX:
       {
 	int i;
-	double granularity;
 
 	/* emit prolog and idraw instructions: start of Rect */
 	strcpy (_plotter->data->page->point, "Begin %I Rect\n");
@@ -274,7 +278,7 @@ End\n\n", numpoints);
 	/* emit common attributes: CTM, fill rule, cap and join styles and
 	   miter limit, dash array, foreground and background colors, and
 	   idraw brush. */
-	granularity = _p_emit_common_attributes (S___(_plotter));
+	_p_emit_common_attributes (S___(_plotter));
 	
 	/* emit transformation matrix (all 6 elements) */
 	strcpy (_plotter->data->page->point, "%I t\n["); 
@@ -353,12 +357,15 @@ End\n\n",
 
     case (int)PATH_CIRCLE:
       {
-	double x = _plotter->drawstate->path->pc.x;
-	double y = _plotter->drawstate->path->pc.y;
-	double radius = _plotter->drawstate->path->radius;
+	plPoint pc;
+	double radius;
 
+	pc = _plotter->drawstate->path->pc;
+	radius = _plotter->drawstate->path->radius;
+	
 	/* final arg flags this for idraw as a circle, not an ellipse */
-	_p_fellipse_internal (R___(_plotter) x, y, radius, radius, 0.0, true);
+	_p_fellipse_internal (R___(_plotter) pc.x, pc.y, radius, radius,
+			      0.0, true);
       }
       break;
       
@@ -492,8 +499,12 @@ _p_fellipse_internal (R___(_plotter) x, y, rx, ry, angle, circlep)
    Return value is the `granularity': a factor by which user-frame
    coordinates, when emitted to the output file as integers, should be
    scaled up.  This is to avoid loss of precision when using integer
-   coordinates.  The CTM emitted here will automatically compensate for
-   this factor. */
+   coordinates.  The CTM emitted here will automatically compensate for the
+   granularity factor.
+
+   Note: some of the functions that call this one (see _p_paint_path()
+   above) need to compute the granularity themselves, since they can't need
+   to quit if the granularity is zero, without calling this function . */
 
 double
 #ifdef _HAVE_PROTOS

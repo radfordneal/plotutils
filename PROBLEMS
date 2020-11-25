@@ -166,10 +166,13 @@ The libplot CGM driver and `graph -T cgm'
 currently unsupported RALCGM and GPLOT viewers, and the CGM import filter
 used by Microsoft Office, that can only handle version 1 CGM files.  To
 produce output for such CGM viewers and interpreters, you should set the
-environment variable (i.e., libplot parameter) CGM_MAX_VERSION to "1".  The
-default is to use version 3 (versions are more or less upward compatible,
-so any version-1 CGM file is effectively also a version-3 file, but not
-vice versa).
+environment variable (i.e., libplot parameter) CGM_MAX_VERSION to "1".  
+
+The default is to use version 3.  (Versions are more or less upward
+compatible, so any version-1 CGM file is effectively also a version-3 file,
+but not vice versa.)  However, no free (open-source) version-3 CGM viewer
+is currently available.  A high-quality browser plug-in for version-3 CGM
+files, without source, is available from http://www.sysdev.com .
 
 You should be aware that version 1 was much less powerful than later
 versions, such as version 3.  In particular, font handling was not good.
@@ -264,17 +267,31 @@ The problem has been reported to the xfig maintainer.
 
 2. xfig supports rotation and uniform scaling of the 35 standard Postscript
 fonts, but not non-uniform scaling or shearing.  So libplot's xfig driver
-does not support them: it replaces anisotropically transformed Postscript
-fonts by a default Hershey font (HersheySerif).  Hershey fonts may always
-be anisotropically transformed.
+automatically replaces anisotropically transformed Postscript fonts by a
+default Hershey font (HersheySerif).  Hershey fonts may always be
+anisotropically transformed.
 
-This does not affect `graph -T fig', since it never uses anisotropically
-transformed fonts.  However, if an application that uses libplot's xfig
-driver calls the control function space() or space2() so as to define a
-user-frame drawing window that is not square, the affine map from the user
-frame to the device frame will involve a non-uniform scaling, and possibly
-even a shearing.  So in the device frame, any Postscript font will need to
-be anamorphically transformed.
+This affects `graph -T fig', `plotfont -T fig', etc., and in general the
+output of libplot's xfig driver, if you specify a rectangular (rather than
+square) viewport.  For example, if you do
+
+  echo 0 0 1 1 2 0 | graph -T fig --page-size letter,xsize=8in,ysize=4in
+
+then in the .fig file which is written to standard output, the usual
+Helvetica font for graph labels will be replaced by HersheySerif.  You will
+get a warning message about that.
+
+3. At least as of release 3.2.2, xfig can't handle text strings that
+consist of a single space character, if they're rotated at a nonzero angle.
+In fact, xfig will crash if it sees such a string in a .fig file.  This
+problem is automatically worked around: when producing Fig output, libplot
+and the graphics utilities built on it never write such strings.  One
+example of this is `plotfont -T fig --rotation 180 Helvetica', which writes
+to standard output an upside-down character map of the Helvetica font, in
+Fig format.  If you examine the character map carefully with xfig and/or a
+text editor, you will notice that the space character is omitted from the
+character map.  That is not a major blemish, since if it were present it
+would be invisible.
 
 ----------------------------------------------------------------------
 

@@ -21,8 +21,8 @@
    `pl_libplot_ver'.  The PL_LIBPLOT_VER macro is not compiled into it.
    Both are available to applications that include this header file. */
 
-#define PL_LIBPLOT_VER_STRING "4.0"
-#define PL_LIBPLOT_VER         400
+#define PL_LIBPLOT_VER_STRING "4.1"
+#define PL_LIBPLOT_VER         401
 
 extern const char pl_libplot_ver[8];   /* need room for 99.99aa */
 

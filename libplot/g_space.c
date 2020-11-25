@@ -158,21 +158,30 @@ _API_fsetmatrix (R___(_plotter) m0, m1, m2, m3, m4, m5)
   s[4] = m4;
   s[5] = m5;
 
-  /* store new user->NDC map in drawing state */
+  /* store new user_frame->NDC_frame map in drawing state */
   for (i = 0; i < 6; i++)
     _plotter->drawstate->transform.m_user_to_ndc[i] = s[i];
 
-  /* compute affine map from user frame to device frame, as product of this
-     map with the map from NDC frame to device frame; store in state */
+  /* compute the user_frame -> device_frame map, as product of this map
+     with the following NDC_frame->device_frame map: store in drawing state */
   _matrix_product (s, _plotter->data->m_ndc_to_device, t);
   for (i = 0; i < 6; i++)
     _plotter->drawstate->transform.m[i] = t[i];
 
-  /* compute related data, stored in drawing state for convenience */
+  /* for convenience, precompute boolean properties of the
+     user_frame->device_frame map: store in drawing state */
 
-  /* does map preserve axis directions? */
+  /* Does the user_frame->device_frame map preserve axis directions?
+     (Since our NDC_frame->device frame map always does, this is the same
+     as, does the user_frame->NDC_frame map preserve axis directions?) */
   _plotter->drawstate->transform.axes_preserved = 
     (t[1] == 0.0 && t[2] == 0.0) ? true : false;
+
+  /* Is the user_frame->device_frame map a uniform scaling (possibly
+     involving a rotation or reflection)?  We need to know this because
+     it's only uniform maps that map circles to circles, and circular arcs
+     to circular arcs.  Also some Plotters, e.g. Fig Plotters, don't
+     support non-uniformly transformed fonts. */
 
 #define IS_ZERO(arg) (IS_ZERO1(arg) && IS_ZERO2(arg))
 #define IS_ZERO1(arg) (FABS(arg) < OTHER_FUZZ * DMAX(t[0] * t[0], t[1] * t[1]))
@@ -187,7 +196,28 @@ _API_fsetmatrix (R___(_plotter) m0, m1, m2, m3, m4, m5)
     /* map's scaling not uniform */
     _plotter->drawstate->transform.uniform = false; 
 
-  /* determine whether map involves a reflection, by computing determinant */
+  /* Does the user_frame->physical_frame map involve a reflection?  This is
+     useful to know because some Plotters, e.g. Fig Plotters, don't support
+     reflected fonts, even if they're uniformly transformed.
+
+     This is a tricky question, because it isn't a question about the
+     user_frame->device_frame map alone.  There's a sequence of maps:
+
+     	user_frame -> NDC_frame -> device_frame -> physical_frame
+
+     If the device_frame uses `flipped y' coordinates, then by definition,
+     the default NDC_frame->device_frame map and the
+     device_frame->physical_frame map both include a reflection, so they
+     cancel each other out.
+
+     (Though depending on the Plotter, non-default behavior could obtain.
+     For example, the PAGESIZE parameter allows the specification of xsize
+     and ysize, and if exactly one of these two is negative, the
+     NDC_frame->device_frame map will include an extra reflection.)
+
+     What we do is look at the `sign' or orientation-preservingness of the
+     user_frame->device_frame map, and flip it if the
+     device_frame->physical_frame map is flagged as `flipped y'. */
   {
     double det;
     
@@ -299,11 +329,22 @@ _API_fconcat (R___(_plotter) m0, m1, m2, m3, m4, m5)
 			  s[0], s[1], s[2], s[3], s[4], s[5]);
 }
 
-/* Internal method, used by any Plotter at initialization time, or at
-   latest during the first invocation of openpl().  It computes the affine
-   transformation from the NDC frame to the device frame.  The square
-   [0,1]x[0,1] in the NDC frame is mapped to the viewport in the device
-   frame (a square or rectangular region). */
+/* Compute the affine transformation from the NDC frame to the device
+   frame.  This is an internal method, called by any Plotter at
+   initialization time, or at latest during the first invocation of
+   openpl().
+
+   The square [0,1]x[0,1] in the NDC frame is mapped to the viewport in the
+   device frame (a square or rectangular region).  So, the
+   NDC_frame->device_frame map preserves coordinate axes.  (Though either
+   the x or y axis may be flipped, the latter being more common, because
+   some devices' native coordinate system has a flipped-y convention, which
+   means that the final device_frame->physical_frame map flips in the y
+   direction.)
+
+   There is support for the ROTATION Plotter parameter, which allows the
+   NDC frame to be rotated by 90, 180, or 270 degrees, before it is mapped
+   to the device frame. */
 
 bool
 #ifdef _HAVE_PROTOS
@@ -340,9 +381,9 @@ _compute_ndc_to_device_map (data)
          units such as inches.  E.g., CGM, SVG, GIF, PNM, Tektronix, X, and
          X Drawable Plotters.  CGM and SVG Plotters are hybrids of a sort:
          the PAGESIZE parameter is meaningful for them, as far as nominal
-         viewport size goes, but we classify a CGM or SVG display as
-         `virtual' because a CGM or SVG viewer or interpreter is free to
-         ignore the requested viewport size.  */
+         viewport size goes, but we treat a CGM or SVG display as `virtual'
+         because a CGM or SVG viewer or interpreter is free to ignore the
+         requested viewport size.  */
       {
 	switch ((int)data->display_coors_type)
 	  {
@@ -369,17 +410,22 @@ _compute_ndc_to_device_map (data)
 	       ?_defplot.c; e.g., for Plotters with adjustable-size
 	       displays, they are taken from the BITMAPSIZE parameter).
 
-	       The subtraction/addition of 0.5-ROUNDING_FUZZ is magic.  */
+	       The subtraction/addition of 0.5-ROUNDING_FUZZ, which widens
+	       the rectangle by nearly 0.5 pixel on each side, is magic. */
 	    {
-	      /* test whether flipped-y convention is used */
-	      double sign = (data->jmin < data->jmax ? 1.0 : -1.0);
+	      /* test whether NCD_frame->device_frame map reflects in the x
+                 and/or y direction */
+	      double x_sign = (data->imin < data->imax ? 1.0 : -1.0);
+	      double y_sign = (data->jmin < data->jmax ? 1.0 : -1.0);
 	      
-	      device_x_left = (double)(data->imin) - 0.5 + ROUNDING_FUZZ;
-	      device_x_right = (double)(data->imax) + 0.5 - ROUNDING_FUZZ;
-	      device_y_bottom = (double)(data->jmin)
-		+ sign * (- 0.5 + ROUNDING_FUZZ);
-	      device_y_top = (double)(data->jmax) 
-		+ sign * (0.5 - ROUNDING_FUZZ);
+	      device_x_left = ((double)(data->imin) 
+			      + x_sign * (- 0.5 + ROUNDING_FUZZ));
+	      device_x_right = ((double)(data->imax) 
+			      + x_sign * (0.5 - ROUNDING_FUZZ));
+	      device_y_bottom = ((double)(data->jmin)
+			      + y_sign * (- 0.5 + ROUNDING_FUZZ));
+	      device_y_top = ((double)(data->jmax) 
+			      + y_sign * (0.5 - ROUNDING_FUZZ));
 	    }
 	    break;
 	  }
