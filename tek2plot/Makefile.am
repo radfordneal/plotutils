@@ -6,7 +6,7 @@ tek2plot_SOURCES = tek2plot.c Tektable.c fontlist.c
 tek2plot_LDADD = ../lib/libcommon.a ../libplot/libplot.la
 noinst_HEADERS = Tekparse.h
 
-INCLUDES = -I$(srcdir)/../include
+AM_CPPFLAGS = -I$(srcdir)/../include
 
 CLEANFILES = fontlist.c
 

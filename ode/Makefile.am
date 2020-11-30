@@ -8,6 +8,6 @@ ode_LDADD = ../lib/libcommon.a @LEXLIB@
 
 AM_YFLAGS = -d
 
-INCLUDES = -I$(srcdir)/../include
+AM_CPPFLAGS = -I$(srcdir)/../include
 
 EXTRA_DIST = INTERNALS gram.h

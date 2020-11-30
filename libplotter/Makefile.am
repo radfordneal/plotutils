@@ -4,7 +4,7 @@ lib_LTLIBRARIES = libplotter.la
 
 libplotter_la_LDFLAGS = -version-info 4:4:2
 
-INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT -DLIBPLOTTER
+AM_CPPFLAGS = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT -DLIBPLOTTER
 
 MISRC = mi_alloc.cc mi_api.cc mi_arc.cc mi_canvas.cc mi_fllarc.cc	\
 mi_fllrct.cc mi_fplycon.cc mi_gc.cc mi_ply.cc mi_plycon.cc mi_plygen.cc	\

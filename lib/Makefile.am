@@ -1,7 +1,7 @@
 ## Makefile.am for plotutils/lib.
 
 noinst_LIBRARIES = libcommon.a
-INCLUDES = -I$(srcdir)/../include
+AM_CPPFLAGS = -I$(srcdir)/../include
 
 libcommon_a_SOURCES = compat.c display.c getopt.c getopt1.c xmalloc.c xstrdup.c
 libcommon_a_LIBADD = @ALLOCA@

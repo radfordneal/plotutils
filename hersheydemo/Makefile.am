@@ -5,4 +5,4 @@ bin_PROGRAMS = hersheydemo
 hersheydemo_SOURCES = hersheydemo.c
 hersheydemo_LDADD = ../lib/libcommon.a ../libplot/libplot.la
 
-INCLUDES = -I$(srcdir)/../include
+AM_CPPFLAGS = -I$(srcdir)/../include

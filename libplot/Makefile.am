@@ -6,7 +6,7 @@ EXTRA_DIST = DEDICATION HUMOR README-cgm README-gif README-hpgl README-tek VERSI
 
 libplot_la_LDFLAGS = -version-info 4:4:2
 
-INCLUDES = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT
+AM_CPPFLAGS = $(X_CFLAGS) -I$(srcdir)/../include -DLIBPLOT
 
 MISRC = mi_alloc.c mi_api.c mi_arc.c mi_canvas.c mi_fllarc.c mi_fllrct.c \
 mi_fplycon.c mi_gc.c mi_ply.c mi_plycon.c mi_plygen.c mi_plypnt.c	 \

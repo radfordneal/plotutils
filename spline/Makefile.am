@@ -3,6 +3,6 @@
 bin_PROGRAMS = spline
 spline_SOURCES = spline.c
 
-INCLUDES = -I$(srcdir)/../include
+AM_CPPFLAGS = -I$(srcdir)/../include
 
 spline_LDADD = ../lib/libcommon.a
