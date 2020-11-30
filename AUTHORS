@@ -1,3 +1,5 @@
+Radford Neal is the author of modifications to GNU plotutils in plotutils+.
+
 Rob Maier <rsm@math.arizona.edu> wrote the libplot/libplotter library and
 the graphics programs graph, plot, tek2plot, plotfont, and hersheydemo,
 beginning in 1995.  The old `GNU graphics' package (written by Rich Murphey
