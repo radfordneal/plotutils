@@ -1,4 +1,6 @@
 // -*- C++ -*-
+/* Modifications for plotutils+ copyright (C) 2020 Radford M. Neal. */
+
 /* Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com) */
 
@@ -114,10 +116,6 @@ static char * do_sprintf(const char *form, const double *v, int nv);
 %token RADIUS
 %token WIDTH
 %token DIAMETER
-%token UP
-%token DOWN
-%token RIGHT
-%token LEFT
 %token FROM
 %token TO
 %token AT
@@ -344,7 +342,7 @@ placeless_element:
 		  if (safer_flag)
 		    lex_error("unsafe to run command `%1'", $3);
 		  else
-		    system($3);
+		    (void) system($3);
 		  a_delete $3;
 		}
 	| COPY TEXT
@@ -1831,9 +1829,7 @@ do_sprintf(const char *form, const double *v, int nv)
 	    }
 	  if (*form == '%') 
 	    {
-	      one_format += *form++;
-	      one_format += '\0';
-	      sprintf(sprintf_buf, one_format.contents());
+	      sprintf(sprintf_buf, "%%");
 	    }
 	  else 
 	    {
