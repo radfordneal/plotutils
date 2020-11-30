@@ -6,6 +6,8 @@
    GNU enhancements Copyright (C) 1998, 1999, 2000, 2005, Free Software
    Foundation, Inc.
 
+   Buf fix for plotutils+ Copyright (C) 2020 Radford M. Neal.
+
    The GNU libxmi package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software foundation; either version 2, or (at your
@@ -3020,7 +3022,7 @@ hookX (double scan_y, const struct arc_def *def, const struct arc_bound *bound, 
 	  if ((left && maxMin > 0) || ((left ? false : true) && maxMin < 0))
 	    {
 	      if (ellipse_y == 0)
-		return def->w + left ? -def->l : def->l;
+		return def->w + (left ? -def->l : def->l);
 	      x = (acc->h2 * scan_y - ellipse_y * acc->h2mw2) *
 		sqrt (acc->h2 - ellipse_y * ellipse_y) /
 		  (def->h * def->w * ellipse_y);
