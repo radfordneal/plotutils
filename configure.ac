@@ -1,11 +1,13 @@
-# Configure template for the GNU plotutils package.
+# Configure template for the plotutils+ package, 
+# Copyright (C) 2020 Radford M. Neal.
+# Based on the GNU plotutils package,
 # Copyright (C) 1989-2009 Free Software Foundation, Inc.
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU plotutils],[2.6],[bug-plotutils@gnu.org])
-AC_PREREQ(2.59)
+AC_INIT([plotutils+],[3.0],[radfordneal@gmail.com])
+AC_PREREQ(2.69)
 AC_CONFIG_SRCDIR(graph/graph.c)
-AM_INIT_AUTOMAKE([plotutils],[2.6])
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h:config.hin)
 
 # The following will be defined in config.h, if appropriate.
