@@ -1,13 +1,8 @@
 // -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
+/* Modifications for plotutils+ copyright (C) 2020 Radford M. Neal.
+
+   Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.com) */
-
-/* Comment by rsm: shortly after label got_dot, there is a line that looks
-   bogus:
-
-	    if (!c == EOF || !csdigit(c)) break;
-
-*/
 
 #include "pic.h"
 #include "object.h"
@@ -1493,7 +1488,7 @@ get_token(int lookup_flag)
 		for (;;) 
 		  {
 		    c = input_stack::peek_char();
-		    if (!c == EOF || !csdigit(c))
+		    if (c == EOF || !csdigit(c))
 		      break;
 		    input_stack::get_char();
 		    context_buffer += char(c);
