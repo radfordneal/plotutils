@@ -371,7 +371,7 @@ main (int argc, char *argv[])
 	  break;
 	}			/* endswitch */
 
-      if ((option == EOF))
+      if (option == EOF)
 	{
 	  errcnt--;
 	  break;		/* break out of option processing */
