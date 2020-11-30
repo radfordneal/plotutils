@@ -1,3 +1,5 @@
+/* Modifications for plotutils+ copyright (C) 2020 Radford M. Neal. */
+
 /* This file is part of the GNU plotutils package.  Copyright (C) 1995,
    1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
