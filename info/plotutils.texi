@@ -8218,9 +8218,9 @@ static storage.  @w{A parameter} may be set in static storage by
 invoking a static member function of the Plotter class,
 @code{Plotter::parampl}, which has declaration
 
-@table @asis
+@example
 int @t{PlotterParams::parampl} (const char *@var{parameter}, void *@var{value});
-@end table
+@end example
 
 @noindent
 This alternative way of creating a Plotter is not thread-safe, which is
