@@ -15,8 +15,13 @@ START-INFO-DIR-ENTRY
 * Appendices: (plotutils)Appendices.    More info on the plotting utilities.
 END-INFO-DIR-ENTRY
 
-This file documents version 2.6 of the GNU plotting utilities package,
-including GNU libplot 4.4
+This file documents the plututils+ plotting utilities package, version
+3.?.
+
+   Copyright (C) 2020 Radford M. Neal.
+
+   Based on version 2.6 of the GNU plotting utilities package, including
+GNU libplot 4.4
 
    Copyright (C) 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000,
 2005, 2008, 2009 Free Software Foundation, Inc.
@@ -31,13 +36,14 @@ Documentation License".
 
 File: plotutils.info,  Node: Top,  Next: Plotutils Intro,  Prev: (dir),  Up: (dir)
 
-This is the documentation for version 2.6 of the GNU plotting utilities
-package, including GNU libplot 4.4.  The package consists of programs
-and functions for vector graphics and data plotting.
+This is the documentation for version 3.?  of plotutils+, based on
+version 2.6 of the GNU plotting utilities package, including GNU libplot
+4.4.  The package consists of programs and functions for vector graphics
+and data plotting.
 
 * Menu:
 
-* Plotutils Intro::     GNU plotting utilities
+* Plotutils Intro::     Plotutils+ plotting utilities
 * graph::               graph, a program for plotting datasets
 * plot::                plot, a plot format conversion program
 * pic2plot::            pic2plot, a translator for files in the pic language
@@ -713,7 +719,7 @@ specified with the '-W' option.  'Symbol type' and 'symbol size', which
 are specified with the '-S' option, specify the symbol plotted at each
 point of the dataset.  'Symbol font name' refers to the font from which
 marker symbols #32 and above, which are taken to be characters rather
-than geometric symbols, are selected.  It is set with the
+than geometric symbols, are selected. It is set with the
 '--symbol-font-name' option, and is relevant only if '-S' is used to
 request such special marker symbols.  Finally, the polygonal line
 joining the points in a dataset may be _filled_, to create a filled or
@@ -1052,7 +1058,7 @@ occurrences should be placed on the command line immediately after each
      (Float, default .02.)  Set the length of the tick marks on each
      axis to be LENGTH.  A value of 1.0 produces tick marks whose length
      is equal to the minimum dimension (width or height) of the plotting
-     box.  A negative LENGTH yields tick marks that extend outside the
+     box. A negative LENGTH yields tick marks that extend outside the
      box, rather than inside.
 
 '-K CLIP_MODE'
@@ -1068,7 +1074,7 @@ occurrences should be placed on the command line immediately after each
      neither point is outside the plotting box.  Clip mode 1 means that
      it will be plotted if no more than one of the two points is
      outside, and clip mode 2 means that it will be plotted even if both
-     are outside.  In all three clip modes the line segment will be
+     are outside. In all three clip modes the line segment will be
      clipped to the plotting box.
 
 '-l X|Y'
@@ -1146,7 +1152,7 @@ occurrences should be placed on the command line immediately after each
      (Float, default 0.2.)  Move the plot up by a fractional amount UP
      with respect to the height of the display (or virtual display, in
      the case of a multiplot).  This produces a margin below the
-     plotting box.  A value of 0.5 will produce a margin half the height
+     plotting box. A value of 0.5 will produce a margin half the height
      of the available area.  Note that the tick marks and labels are
      drawn in the margin.
 
@@ -1163,7 +1169,7 @@ occurrences should be placed on the command line immediately after each
 '--x-limits [LOWER_LIMIT [UPPER_LIMIT [SPACING]]]'
      (Floats.)  The arguments LOWER_LIMIT and UPPER_LIMIT specify the
      limits of the x axis, and the optional argument SPACING specifies
-     the spacing of labeled ticks along the axis.  If any of the three
+     the spacing of labeled ticks along the axis. If any of the three
      arguments is missing or is supplied as '-' (i.e., as a single
      hyphen), it is computed from the data.  Both arguments LOWER_LIMIT
      and UPPER_LIMIT must be present if 'graph' is to act as a real-time
@@ -1209,7 +1215,7 @@ occurrences should be placed on the command line immediately after each
      (String, default "white".)  Set the color used for the plot
      background to be NAME.  This is relevant only to 'graph -T X',
      'graph -T png', 'graph -T pnm', 'graph -T gif', 'graph -T cgm',
-     'graph -T regis', and 'graph -T meta'.  An unrecognized name sets
+     'graph -T regis', and 'graph -T meta'. An unrecognized name sets
      the color to the default.  For information on what names are
      recognized, see *note Color Names::.  The environment variable
      'BG_COLOR' can equally well be used to specify the background
@@ -1319,7 +1325,7 @@ occurrences should be placed on the command line immediately after each
      The position of the graphics display, relative to its default
      position, may optionally be adjusted by specifying an offset
      vector.  For example, PAGESIZE could be specified as
-     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm".  It is
+     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm". It is
      also possible to position the graphics display precisely, by
      specifying the location of its lower left corner relative to the
      lower left corner of the page.  For example, PAGESIZE could be
@@ -1753,7 +1759,7 @@ supported only if 'HPGL_VERSION' is "2" (the default).
 
    _Opaque_ filling and the drawing of visible white lines are supported
 only if 'HPGL_VERSION' is "2" (the default) and the environment variable
-'HPGL_OPAQUE_MODE' is "yes" (the default).  If the value is "no" then
+'HPGL_OPAQUE_MODE' is "yes" (the default). If the value is "no" then
 opaque filling will not be used, and white lines (if any), which are
 normally drawn with pen #0, will not be drawn.  This feature is to
 accommodate older HP-GL/2 devices.  HP-GL/2 pen plotters, for example,
@@ -2078,7 +2084,7 @@ type and default value of the argument.
      The position of the graphics display, relative to its default
      position, may optionally be adjusted by specifying an offset
      vector.  For example, PAGESIZE could be specified as
-     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm".  It is
+     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm". It is
      also possible to position the graphics display precisely, by
      specifying the location of its lower left corner relative to the
      lower left corner of the page.  For example, PAGESIZE could be
@@ -2318,7 +2324,7 @@ supported only if 'HPGL_VERSION' is "2" (the default).
 
    _Opaque_ filling and the drawing of visible white lines are supported
 only if 'HPGL_VERSION' is "2" (the default) and the environment variable
-'HPGL_OPAQUE_MODE' is "yes" (the default).  If the value is "no" then
+'HPGL_OPAQUE_MODE' is "yes" (the default). If the value is "no" then
 opaque filling will not be used, and white lines (if any), which are
 normally drawn with pen #0, will not be drawn.  This feature is to
 accommodate older HP-GL/2 devices.  HP-GL/2 pen plotters, for example,
@@ -2697,7 +2703,7 @@ type and default value of the argument.
      The position of the graphics display, relative to its default
      position, may optionally be adjusted by specifying an offset
      vector.  For example, PAGESIZE could be specified as
-     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm".  It is
+     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm". It is
      also possible to position the graphics display precisely, by
      specifying the location of its lower left corner relative to the
      lower left corner of the page.  For example, PAGESIZE could be
@@ -2854,7 +2860,7 @@ supported only if 'HPGL_VERSION' is "2" (the default).
 
    _Opaque_ filling and the drawing of visible white lines are supported
 only if 'HPGL_VERSION' is "2" (the default) and the environment variable
-'HPGL_OPAQUE_MODE' is "yes" (the default).  If the value is "no" then
+'HPGL_OPAQUE_MODE' is "yes" (the default). If the value is "no" then
 opaque filling will not be used, and white lines (if any), which are
 normally drawn with pen #0, will not be drawn.  This feature is to
 accommodate older HP-GL/2 devices.  HP-GL/2 pen plotters, for example,
@@ -3149,7 +3155,7 @@ type and default value of the argument.
      The position of the graphics display, relative to its default
      position, may optionally be adjusted by specifying an offset
      vector.  For example, PAGESIZE could be specified as
-     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm".  It is
+     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm". It is
      also possible to position the graphics display precisely, by
      specifying the location of its lower left corner relative to the
      lower left corner of the page.  For example, PAGESIZE could be
@@ -3172,11 +3178,11 @@ type and default value of the argument.
 
 '--position-chars'
      Position the characters in each text string individually on the
-     display.  If the text font is not a member of the Courier family,
+     display. If the text font is not a member of the Courier family,
      and especially if it is not a fixed-width font, this option is
-     recommended.  It will improve the appearance of text strings, at
-     the price of making it difficult to edit the output file with
-     'xfig' or 'idraw'.
+     recommended. It will improve the appearance of text strings, at the
+     price of making it difficult to edit the output file with 'xfig' or
+     'idraw'.
 
 '--rotation ANGLE'
      (Float, default 0.0.)  Set the rotation angle of the graphics
@@ -3514,7 +3520,7 @@ type and default value of the argument.
      Generate a character map for row ROW of a Japanese font arranged
      according to JIS [Japanese Industrial Standard] X0208.  The only
      such font currently available is the HersheyEUC [Extended Unix
-     Code] font.  If used, this option overrides the '-1' and '-2'
+     Code] font. If used, this option overrides the '-1' and '-2'
      options.
 
      The valid rows are 1...94.  In the JIS X0208 standard, Roman
@@ -3644,7 +3650,7 @@ type and default value of the argument.
      The position of the graphics display, relative to its default
      position, may optionally be adjusted by specifying an offset
      vector.  For example, PAGESIZE could be specified as
-     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm".  It is
+     "letter,yoffset=1.2in", or "a4,xoffset=-5mm,yoffset=2.0cm". It is
      also possible to position the graphics display precisely, by
      specifying the location of its lower left corner relative to the
      lower left corner of the page.  For example, PAGESIZE could be
@@ -4347,7 +4353,7 @@ A differential equation is _ordinary_ if the unknown function depends on
 only one independent variable, often denoted t.  The _order_ of the
 differential equation is the order of the highest-order derivative in
 the equation.  One speaks of a family, or _system_ of equations when
-more than one equation is involved.  If the equations are dependent on
+more than one equation is involved. If the equations are dependent on
 one another, they are said to be _coupled_.  A _solution_ is any
 function satisfying the equations.  An _initial value problem_ is
 present when there exist subsidiary conditions on the unknown function
@@ -5056,7 +5062,7 @@ an approximation to real numbers.  However, all computations performed
 by 'ode' are done to double precision, so floating point error tends to
 be relatively small.  You may nonetheless detect the difference between
 real numbers and floating point numbers by experimenting with the '-p
-17' option, which will print seventeen significant digits.  On most
+17' option, which will print seventeen significant digits. On most
 machines, that is the precision of a double precision floating point
 number.
 
@@ -5269,7 +5275,7 @@ them in turn.
      obtained by varying the initial conditions.  If they diverge
      sharply--that is, if two solutions which start out very close
      nonetheless end up far apart--then the quality of the numerical
-     solution is dubious.  On the other hand, if the curves do not
+     solution is dubious. On the other hand, if the curves do not
      diverge sharply then any error that is present will in all
      likelihood not increase by more than an order of magnitude or so
      over the interval.  Problems exhibiting no sharp divergence of
@@ -5537,8 +5543,9 @@ File: plotutils.info,  Node: libplot,  Next: Appendices,  Prev: ode,  Up: Top
 9 'libplot', a 2-D Vector Graphics Library
 ******************************************
 
-This is the documentation for version 4.4 of GNU libplot, which is a
-free function library for drawing two-dimensional vector graphics.
+This is the documentation for the plotutils+ version of libplot, based
+on version 4.4 of GNU libplot.  This is a free function library for
+drawing two-dimensional vector graphics.
 
 * Menu:
 
@@ -5554,9 +5561,9 @@ File: plotutils.info,  Node: libplot Overview,  Next: C Programming,  Prev: libp
 9.1 Programming with 'libplot': An overview
 ===========================================
 
-GNU 'libplot' 4.4 is a free function library for drawing two-dimensional
-vector graphics.  It can produce smooth, double-buffered animations for
-the X Window System, and can export graphics files in many file formats.
+'libplot' is a free function library for drawing two-dimensional vector
+graphics.  It can produce smooth, double-buffered animations for the
+X Window System, and can export graphics files in many file formats.
 It is 'device-independent' in the sense that its API (application
 programming interface) is to a large extent independent of the output
 format.  The API is thread-safe, so it may be used in multithreaded
@@ -5593,7 +5600,7 @@ in the output format they produce.  Any number of Plotters, of the same
 or different types, may exist simultaneously in an application.
 
    The drawing operations supported by Plotters of different types are
-identical, in agreement with the principle of device independence.  So a
+identical, in agreement with the principle of device independence. So a
 graphics application that is linked with 'libplot' may easily be written
 so as to produce output in any or all of the supported output formats.
 
@@ -5603,13 +5610,12 @@ so as to produce output in any or all of the supported output formats.
      X Window System display and draws graphics in it.  The window will
      be 'spun off' when the Plotter is closed; if it is subsequently
      reopened, a new window will be popped up.  A spun-off window will
-     remain on the screen but will vanish if you type 'q' or click your
-     mouse in it.  Future releases may permit X Plotters, when reopened,
-     to reuse an existing window.
+     remain on the screen but will vanish if you type 'q', click your
+     mouse in it, or use a window manager facility to close it.
 
    * X Drawable Plotters.  An X Drawable Plotter draws graphics in one
      or two specified drawables associated with an X Window System
-     display.  A 'drawable' is either a window or a pixmap.  The
+     display. A 'drawable' is either a window or a pixmap.  The
      drawables must be passed to the Plotter as parameters.  (*Note
      Plotter Parameters::.)
 
@@ -5630,7 +5636,8 @@ so as to produce output in any or all of the supported output formats.
 
    * GIF Plotters.  A GIF Plotter produces a single page of output in a
      pseudo-GIF format.  Unlike true GIF format, the pseudo-GIF format
-     does not use LZW compression: it uses run-length encoding instead.     So it does not transgress the Unisys patent that restricts the use
+     does not use LZW compression: it uses run-length encoding instead.
+     So it does not transgress the Unisys patent that restricts the use
      of LZW compression.  However, the output file may be viewed or
      edited with any application that understands GIF format, such as
      'display'.  The creation of animated pseudo-GIFs is supported.
@@ -5975,9 +5982,9 @@ That is why the old API is not thread-safe.
 
    An even older C API omitted the prefix "pl_" from the names of
 'libplot' functions.  The prefix "pl_" was added in part to distinguish
-GNU 'libplot' from pre-GNU versions of 'libplot'.  If you need to
-compile code written for very early versions of GNU 'libplot' or for
-pre-GNU 'libplot', you should include the header file 'plotcompat.h'.
+GNU 'libplot' from pre-GNU versions of 'libplot'. If you need to compile
+code written for very early versions of GNU 'libplot' or for pre-GNU
+'libplot', you should include the header file 'plotcompat.h'.
 'plotcompat.h' redefines 'openpl' as 'pl_openpl', and so forth.  *Note C
 Compiling and Linking::.
 
@@ -6578,8 +6585,8 @@ pseudo-GIFs, is straightforward.  A GIF Plotter is a Plotter like any
 other, and it supports the same drawing operations.  However, it has two
 special properties.  (1) It can draw only a single page of graphics,
 i.e., only the graphics contained in the first 'openpl'...'closepl' pair
-appear in the output file.  In this, it resembles other Plotters that do
-not plot in real time.  (2) Within this page, each invocation of 'erase'
+appear in the output file. In this, it resembles other Plotters that do
+not plot in real time. (2) Within this page, each invocation of 'erase'
 is normally treated as the beginning of a new image in the output file.
 There is an exception to this: the first invocation of 'erase' begins a
 new image only if something has already been drawn.
@@ -6823,7 +6830,7 @@ letter 'A'.
    This animation serves as a good test of the capabilities of an
 X Window System display.  On a modern X11R6 display, animation will be
 smooth and fast.  That is because X11R6 displays can retrieve individual
-characters from a font without retrieving the entire font.  If your
+characters from a font without retrieving the entire font. If your
 X display does not support the "NewCenturySchlbk-Roman" font, you may
 substitute most core X fonts, such as the widely available scalable font
 "charter-medium-r-normal", or the traditional screen font "fixed".  For
@@ -7132,7 +7139,7 @@ use 'libplotter', must contain the line
 The header file 'plotter.h' is distributed with 'libplotter', and should
 have been installed on your system where your C++ compiler will find it.
 It declares the 'Plotter' class and its derived classes, and also
-contains some miscellaneous definitions.  It includes the header files
+contains some miscellaneous definitions. It includes the header files
 '<iostream.h>' and '<stdio.h>', so you do not need to include them
 separately.
 
@@ -7159,10 +7166,10 @@ widgets.  In recent releases of the X Window System, you would insert
 '-lXpm' as well.)
 
    On some platforms, the directories in which 'libplotter' or the other
-libraries are stored must be specified on the command line.
-For example, the options '-lXaw -lXmu -lXt -lSM -lICE -lXext -lX11',
-which specify X Window System libraries, may need to be preceded by an
-option like '-L/usr/X11/lib'.
+libraries are stored must be specified on the command line. For example,
+the options '-lXaw -lXmu -lXt -lSM -lICE -lXext -lX11', which specify
+X Window System libraries, may need to be preceded by an option like
+'-L/usr/X11/lib'.
 
    On most systems 'libplotter' is installed as a shared library.  This
 means that the linking with your application will take place at run time
@@ -7242,7 +7249,7 @@ File: plotutils.info,  Node: Functions,  Next: Plotter Parameters,  Prev: C++ Pr
 
 In the current release of GNU 'libplot', any Plotter supports 97
 distinct operations.  A language binding for 'libplot' necessarily
-includes 97 functions that correspond to these operations.  In the C
+includes 97 functions that correspond to these operations. In the C
 binding, these 97 functions belong to the C API (application programming
 interface).  The name of each function begins with the prefix "pl_" and
 ends with the suffix "_r".  In the C++ binding, the 97 functions are
@@ -7324,7 +7331,7 @@ int bgcolorname (const char *NAME);
      bgcolorname sets the background color for the the graphics display
      to be NAME.  Unrecognized colors are interpreted as "white".  For
      information on what color names are recognized, see *note Color
-     Names::.  A 24-bit RGB color may also be specified as a six-digit
+     Names::. A 24-bit RGB color may also be specified as a six-digit
      hexadecimal string, e.g., "#c0c0c0".
 
      bgcolorname affects only Plotters that have a notion of background
@@ -7428,7 +7435,7 @@ int flushpl ();
      objects to the graphics display.  This is useful only if the
      affected Plotter is one that does real-time plotting (X Plotters,
      X Drawable Plotters, ReGIS Plotters, Tektronix Plotters, and
-     Metafile Plotters).  It ensures that all previously plotted objects
+     Metafile Plotters). It ensures that all previously plotted objects
      are visible to the user.  On Plotters that do not do real-time
      plotting, this operation has no effect.
 
@@ -7470,7 +7477,7 @@ multiple simple paths, which must be nested.
 should, at least in theory, end a path under construction, and request
 that it be drawn on the graphics display, by calling 'endpath'.  But the
 'endpath' function is automatically called when any other object is
-drawn, and at the end of each page of graphics.  It is also called
+drawn, and at the end of each page of graphics. It is also called
 automatically when any path-related attribute is changed: for example,
 when 'move' is called to change the graphics cursor position.  So
 'endpath' seldom needs to be invoked explicitly.
@@ -7544,7 +7551,7 @@ int fbezier2rel (double X0, double Y0, double X1, double Y1, double X2, double Y
      cursor is at 'p0' and a path is under construction, then the curve
      is added to the path.  Otherwise the current path (if any) is ended
      and drawn, as if endpath had been called, and the curve begins a
-     new path.  In all cases the graphics cursor is moved to 'p2'.
+     new path. In all cases the graphics cursor is moved to 'p2'.
      bezier2rel and fbezier2rel are similar to 'bezier2' and 'fbezier2',
      but use cursor-relative coordinates.
 
@@ -7628,13 +7635,13 @@ int fellarcrel (double XC, double YC, double X0, double Y0, double X1, double Y1
      a path is under construction, the quarter-ellipse is added to it.
      Otherwise the path under construction (if any) is ended and drawn,
      as if endpath had been called, and the quarter-ellipse begins a new
-     path.  In all cases the graphics cursor is moved to 'p1'.
+     path. In all cases the graphics cursor is moved to 'p1'.
 
      The quarter-ellipse is an affinely transformed version of a quarter
      circle.  It is drawn so as to have control points 'p0', 'p1', and
      'p0'+'p1'-'pc'.  This means that it is tangent at 'p0' to the line
      segment joining 'p0' to 'p0'+'p1'-'pc', and is tangent at 'p1' to
-     the line segment joining 'p1' to 'p0'+'p1'-'pc'.  So it fits snugly
+     the line segment joining 'p1' to 'p0'+'p1'-'pc'. So it fits snugly
      into a triangle with these three control points as vertices.
      Notice that the third control point is the reflection of 'pc'
      through the line joining 'p0' and 'p1'.  ellarcrel and fellarcrel
@@ -7709,8 +7716,8 @@ int flinerel (double X1, double y1, double X2, double Y2);
      cursor is at (X1, Y1) and a path is under construction, the line
      segment is added to it.  Otherwise the path under construction
      (if any) is ended and drawn, as if endpath had been called, and the
-     line segment begins a new path.  In all cases the graphics cursor
-     is moved to (X2, Y2).  linerel and flinerel are similar to line and
+     line segment begins a new path. In all cases the graphics cursor is
+     moved to (X2, Y2).  linerel and flinerel are similar to line and
      fline, but use cursor-relative coordinates.
 
 int marker (int X, int Y, int TYPE, int SIZE);
@@ -8031,7 +8038,7 @@ int linemod (const char *S);
 
      In the preceding patterns, each hyphen stands for one line
      thickness.  This is the case for sufficiently thick lines,
-     at least.  So for sufficiently thick lines, the distance over which
+     at least. So for sufficiently thick lines, the distance over which
      a dash pattern repeats is scaled proportionately to the line
      thickness.
 
@@ -8169,7 +8176,7 @@ int restorestate ();
      'libplot''s drawing attributes, which are set by the attribute
      functions documented in this section.  So popping off the graphics
      context restores the drawing attributes to values they previously
-     had.  A path under construction is regarded as part of the graphics
+     had. A path under construction is regarded as part of the graphics
      context.  For this reason, calling restorestate automatically calls
      endpath to terminate and draw the path under construction, if any.
      All graphics contexts on the stack are popped off when 'closepl' is
@@ -8209,7 +8216,7 @@ File: plotutils.info,  Node: Mapping Functions,  Prev: Attribute Functions,  Up:
 
 The following are the "mapping functions" in 'libplot'.  When invoked on
 a Plotter, they affect the affine transformation it employs to map the
-user coordinate system to the device coordinate system.  That is, they
+user coordinate system to the device coordinate system. That is, they
 affect the transformation matrix attribute of objects subsequently drawn
 on the graphics display.
 
@@ -8491,7 +8498,7 @@ type of Plotter.
      range #1...#31, as needed.  Other than color LaserJet printers and
      DesignJet plotters, not many HP-GL/2 devices allow the assignment
      of colors to logical pens.  In particular, HP-GL/2 pen plotters do
-     not.  So this parameter should be used with caution.
+     not. So this parameter should be used with caution.
 
 'HPGL_OPAQUE_MODE'
      (Default "yes".)  Relevant only to HP-GL Plotters, and only if the
@@ -8646,7 +8653,7 @@ type of Plotter.
 
 'USE_DOUBLE_BUFFERING'
      (Default "no".)  Relevant only to X Plotters and X Drawable
-     Plotters.  If the value is "yes", a double buffering scheme will be
+     Plotters. If the value is "yes", a double buffering scheme will be
      used when drawing graphics.  Each frame of graphics, within a
      openpl...closepl pair, will be written to an off-screen buffer
      rather than to the Plotter's display.  When erase is invoked to end
@@ -8656,7 +8663,7 @@ type of Plotter.
      illusion of smooth animation.
 
      Some X displays provide special hardware support for double
-     buffering.  If this support is available, the X Plotter will detect
+     buffering. If this support is available, the X Plotter will detect
      its presence, and will draw graphics using the appropriate
      extension to the X11 protocol (either DBE or MBX). In this case the
      animation will be significantly faster; on high-end graphics
@@ -8666,8 +8673,19 @@ type of Plotter.
      (Default "no".)  Relevant only to X Plotters.  If the value is
      "yes", when a Plotter is deleted, the window or windows that it has
      popped up will vanish.  Otherwise, each such window will remain on
-     the screen until it is removed by the user (by typing 'q' in it, or
-     by clicking with a mouse).
+     the screen until it is removed by the user (by typing 'q' in it, by
+     clicking with a mouse, or by other means provided by a window
+     manager).  This parameter is ignored if the 'WAIT_ON_DELETE'
+     parameter is "yes".
+
+'WAIT_ON_DELETE'
+     (Default "no".)  Relevant only to X Plotters.  If the value is
+     "yes", when a Plotter is deleted, the delete operation will wait
+     for the window or windows that it has popped up to be closed by the
+     user (by typing 'q' in it, by clicking with a mouse, or by other
+     means provided by a window manager).  Otherwise, each such window
+     will remain on the screen after the Plotter is deleted, until it is
+     removed by the user.
 
 'XDRAWABLE_COLORMAP'
      (Default NULL.)  Relevant only to X Drawable Plotters.  If the
@@ -9067,7 +9085,7 @@ combinations "fi", "ff", "fl", "ffi", and "ffl" are automatically drawn
 as ligatures in HersheySerif and HersheySerif-Italic.  (Also in the two
 HersheyCyrillic fonts and HersheyEUC, since insofar as printable ASCII
 characters are concerned, they are identical [or almost identical] to
-HersheySerif.)  In addition, "tz" and "ch" are ligatures in
+HersheySerif.) In addition, "tz" and "ch" are ligatures in
 HersheyGothicGerman.  The German double-s character 'ß', which is called
 an 'eszet', is not treated as a ligature in any font.  To obtain an
 eszet, you must either request one with the escape sequence "\ss" (*note
@@ -9305,10 +9323,9 @@ sequence, one or more times.  The "\mk"..."\rt" trick would be employed
 in the same way.  So, for example, "\mk\ul\ul\ul\rtabc" would yield an
 underlined "abc".  To adjust the length of the underline, you may need
 to experiment with the number of times "\ul" appears.  You may also need
-to use one or more of the abovementioned horizontal shifts.
-For example, if the "HersheySerif" font were used,
-"\mk\ul\ul\l8\ul\rtabc" would yield a better underline than
-"\mk\ul\ul\ul\rtabc".
+to use one or more of the abovementioned horizontal shifts. For example,
+if the "HersheySerif" font were used, "\mk\ul\ul\l8\ul\rtabc" would
+yield a better underline than "\mk\ul\ul\ul\rtabc".
 
    Besides the preceding escape sequences, there are also escape
 sequences for the printable non-ASCII characters in each of the built-in
@@ -10301,7 +10318,7 @@ operations, which are internally mapped to 'pencolor', 'fillcolor', and
 'bgcolor', (4) the 'frotate', 'fscale', and 'ftranslate' operations,
 which are internally mapped to 'fconcat', and (5) the 'ffontname'
 operation, which in a metafile would be indistinguishable from
-'fontname'.  So besides 'o' and 'x', there are 83 possible op codes, for
+'fontname'. So besides 'o' and 'x', there are 83 possible op codes, for
 a total of 85.  The following table lists 10 of the op codes other than
 'o' and 'x', followed by the Plotter operation they stand for.
 
@@ -10367,11 +10384,11 @@ Postscript Plotter support contained in GNU 'libplot'.  That includes
 'plotfont -T ps'.
 
    The current version of 'idraw' is maintained by Vectaport, Inc., and
-is available at their Web site (http://www.vectaport.com).  It is part
-of the 'ivtools' package, which is a framework for building custom
-drawing editors.  'idraw' was originally part of the 'InterViews'
-package, developed by Stanford University and Silicon Graphics.  The
-'InterViews' package is available at a distribution site
+is available at their Web site (http://www.vectaport.com). It is part of
+the 'ivtools' package, which is a framework for building custom drawing
+editors.  'idraw' was originally part of the 'InterViews' package,
+developed by Stanford University and Silicon Graphics.  The 'InterViews'
+package is available at a distribution site
 (ftp://interviews.stanford.edu), but is no longer supported.  Retrieving
 the 'ivtools' package instead is recommended.
 
@@ -10416,14 +10433,13 @@ the first releases of Unix from Bell Laboratories, going at least as far
 back as the Version 4 distribution (1973).  The first supported display
 device was a Tektronix 611 storage scope.  Most of the work on tying the
 plot filters together and breaking out device-dependent versions of
-'libplot' was performed by Lorinda Cherry <llc@research.att.com>.
-By the time of Version 7 Unix (1979) and the subsequent Berkeley
-releases, the package consisting of 'graph', 'plot', 'spline', and
-several device-dependent versions of 'libplot' was a standard Unix
-feature.  Supported devices by the early 1980's included Tektronix
-storage scopes, early graphics terminals, 200dpi electrostatic
-printer/plotters from Versatec and Varian, and pen plotters from
-Hewlett-Packard.
+'libplot' was performed by Lorinda Cherry <llc@research.att.com>. By the
+time of Version 7 Unix (1979) and the subsequent Berkeley releases, the
+package consisting of 'graph', 'plot', 'spline', and several
+device-dependent versions of 'libplot' was a standard Unix feature.
+Supported devices by the early 1980's included Tektronix storage scopes,
+early graphics terminals, 200dpi electrostatic printer/plotters from
+Versatec and Varian, and pen plotters from Hewlett-Packard.
 
    In 1989, Rich Murphey <rich@freebsd.org> wrote the first GNU versions
 of 'graph', 'plot', and 'spline', and the earliest documentation.
@@ -10937,89 +10953,89 @@ their use in free software.
 
 
 Tag Table:
-Node: Top1508
-Node: Plotutils Intro2446
-Node: graph13629
-Node: Simple Examples14453
-Node: Non-Square Plots29122
-Node: Multiple Datasets34240
-Node: Multiplotting39889
-Node: Data Formats43513
-Node: graph Invocation46234
-Node: Plot Options48004
-Node: Dataset Options69262
-Node: Multiplot Options78936
-Node: Raw graph Options80828
-Node: Info Options81632
-Node: graph Environment83189
-Node: plot90902
-Node: plot Examples91173
-Node: plot Invocation94892
-Node: plot Environment110991
-Node: pic2plot118661
-Node: pic2plot Introduction118962
-Node: pic2plot Invocation125126
-Node: pic2plot Environment138925
-Node: tek2plot146670
-Node: tek2plot Introduction146975
-Node: tek2plot Invocation148676
-Node: tek2plot Environment163835
-Node: plotfont169957
-Node: plotfont Examples170254
-Node: plotfont Invocation174036
-Node: plotfont Environment187061
-Node: spline194038
-Node: spline Examples194320
-Node: Advanced Use of spline201459
-Node: spline Invocation205971
-Node: ode215479
-Node: Basic Math216814
-Node: Simple ode Examples219699
-Node: Additional ode Examples228859
-Node: ode Invocation235845
-Node: Diagnostics240060
-Node: Numerical Error244177
-Node: Running Time255919
-Node: Input Language257252
-Node: ODE Bibliography265545
-Node: libplot266477
-Node: libplot Overview267069
-Node: C Programming282185
-Node: The C API282897
-Node: Older C APIs287442
-Node: C Compiling and Linking290460
-Node: Sample C Drawings293796
-Node: Paths and Subpaths304843
-Node: Drawing on a Page311359
-Node: Animated GIFs317164
-Node: X Animations321938
-Node: X Programming330131
-Node: C++ Programming336805
-Node: The Plotter Class337157
-Node: C++ Compiling and Linking341522
-Node: Sample C++ Drawings343868
-Node: Functions346157
-Node: Control Functions348074
-Node: Drawing Functions357210
-Node: Attribute Functions374203
-Node: Mapping Functions398960
-Node: Plotter Parameters403263
-Node: Appendices425600
-Node: Fonts and Markers426302
-Node: Text Fonts427218
-Node: Cyrillic and Japanese437089
-Node: Text Fonts in X441346
-Node: Text String Format445315
-Node: Marker Symbols464012
-Node: Color Names466936
-Node: Page and Viewport Sizes468844
-Node: Metafiles474137
-Node: Auxiliary Software478301
-Node: idraw478616
-Node: xfig479906
-Node: History and Acknowledgements480900
-Node: Reporting Bugs485822
-Node: GNU Free Documentation License486494
+Node: Top1617
+Node: Plotutils Intro2599
+Node: graph13782
+Node: Simple Examples14606
+Node: Non-Square Plots29275
+Node: Multiple Datasets34393
+Node: Multiplotting40041
+Node: Data Formats43665
+Node: graph Invocation46386
+Node: Plot Options48156
+Node: Dataset Options69408
+Node: Multiplot Options79082
+Node: Raw graph Options80974
+Node: Info Options81778
+Node: graph Environment83335
+Node: plot91047
+Node: plot Examples91318
+Node: plot Invocation95037
+Node: plot Environment111135
+Node: pic2plot118804
+Node: pic2plot Introduction119105
+Node: pic2plot Invocation125269
+Node: pic2plot Environment139067
+Node: tek2plot146811
+Node: tek2plot Introduction147116
+Node: tek2plot Invocation148817
+Node: tek2plot Environment163973
+Node: plotfont170095
+Node: plotfont Examples170392
+Node: plotfont Invocation174174
+Node: plotfont Environment187197
+Node: spline194174
+Node: spline Examples194456
+Node: Advanced Use of spline201595
+Node: spline Invocation206107
+Node: ode215615
+Node: Basic Math216950
+Node: Simple ode Examples219834
+Node: Additional ode Examples228994
+Node: ode Invocation235980
+Node: Diagnostics240195
+Node: Numerical Error244312
+Node: Running Time256052
+Node: Input Language257385
+Node: ODE Bibliography265678
+Node: libplot266610
+Node: libplot Overview267246
+Node: C Programming282308
+Node: The C API283020
+Node: Older C APIs287565
+Node: C Compiling and Linking290582
+Node: Sample C Drawings293918
+Node: Paths and Subpaths304965
+Node: Drawing on a Page311481
+Node: Animated GIFs317286
+Node: X Animations322058
+Node: X Programming330250
+Node: C++ Programming336924
+Node: The Plotter Class337276
+Node: C++ Compiling and Linking341641
+Node: Sample C++ Drawings343986
+Node: Functions346275
+Node: Control Functions348191
+Node: Drawing Functions357325
+Node: Attribute Functions374313
+Node: Mapping Functions399068
+Node: Plotter Parameters403370
+Node: Appendices426299
+Node: Fonts and Markers427001
+Node: Text Fonts427917
+Node: Cyrillic and Japanese437787
+Node: Text Fonts in X442044
+Node: Text String Format446013
+Node: Marker Symbols464710
+Node: Color Names467634
+Node: Page and Viewport Sizes469542
+Node: Metafiles474835
+Node: Auxiliary Software478998
+Node: idraw479313
+Node: xfig480602
+Node: History and Acknowledgements481596
+Node: Reporting Bugs486517
+Node: GNU Free Documentation License487189
 
 End Tag Table
 

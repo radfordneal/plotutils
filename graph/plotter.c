@@ -1,13 +1,15 @@
-/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+/* Plotutils+ is copyright (C) 2020 Radford M. Neal.
+
+   Based on the GNU plotutils package.  Copyright (C) 1989,
    1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, Free
    Software Foundation, Inc.
 
-   The GNU plotutils package is free software.  You may redistribute it
+   The plotutils+ package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software foundation; either version 2, or (at your
    option) any later version.
 
-   The GNU plotutils package is distributed in the hope that it will be
+   The plotutils+ package is distributed in the hope that it will be
    useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
@@ -739,6 +741,7 @@ new_multigrapher (const char *output_format, const char *bg_color, const char *b
   pl_setplparam (plotter_params, "META_PORTABLE", (void *)meta_portable);
   pl_setplparam (plotter_params, "PAGESIZE", (void *)page_size);
   pl_setplparam (plotter_params, "ROTATION", (void *)rotation_angle);
+  // pl_setplparam (plotter_params, "WAIT_ON_DELETE", (void *)"yes");
 
   /* create Plotter and open it */
   plotter = pl_newpl_r (output_format, NULL, stdout, stderr, plotter_params);

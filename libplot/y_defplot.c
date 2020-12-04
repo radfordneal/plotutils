@@ -1,4 +1,6 @@
-/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+/* Plotutils+ is copyright (C) 2020 Radford M. Neal.
+
+   Based on the GNU plotutils package.  Copyright (C) 1995,
    1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
@@ -24,6 +26,16 @@
 #include "sys-defines.h"
 #include <signal.h>		/* for kill() */
 #include "extern.h"
+
+/* song and dance to declare waitpid() */
+#ifdef HAVE_WAITPID
+#ifdef HAVE_SYS_WAIT_H
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif /* HAVE_SYS_TYPES_H */
+#include <sys/wait.h>
+#endif /* HAVE_SYS_WAIT_H */
+#endif /* HAVE_WAITPID */
 
 /* Sparse array of pointers to XPlotter instances, and its size.  Should be
    initialized to a NULL pointer, and 0, respectively.  
@@ -173,6 +185,7 @@ _pl_y_initialize (S___(Plotter *_plotter))
   _plotter->y_drawable4 = (Drawable)0;
   _plotter->y_auto_flush = true;
   _plotter->y_vanish_on_delete = false;
+  _plotter->y_wait_on_delete = false;
   _plotter->y_pids = (pid_t *)NULL;
   _plotter->y_num_pids = 0;
   _plotter->y_event_handler_count = 0;
@@ -181,11 +194,11 @@ _pl_y_initialize (S___(Plotter *_plotter))
 
   /* determine whether to do an XFlush() after each drawing operation */
   {
-    const char *vanish_s;
+    const char *flush_s;
 
-    vanish_s = (const char *)_get_plot_param (_plotter->data,
-					      "X_AUTO_FLUSH");
-    if (strcasecmp (vanish_s, "no") == 0)
+    flush_s = (const char *)_get_plot_param (_plotter->data,
+					     "X_AUTO_FLUSH");
+    if (strcasecmp (flush_s, "no") == 0)
       _plotter->y_auto_flush = false;
     else
       _plotter->y_auto_flush = true;
@@ -203,6 +216,18 @@ _pl_y_initialize (S___(Plotter *_plotter))
       _plotter->y_vanish_on_delete = false;
   }
 
+  /* determine whether to wait for windows to be closed on Plotter deletion */
+  {
+    const char *wait_s;
+
+    wait_s = (const char *)_get_plot_param (_plotter->data,
+					    "WAIT_ON_DELETE");
+    if (strcasecmp (wait_s, "yes") == 0)
+      _plotter->y_wait_on_delete = true;
+    else
+      _plotter->y_wait_on_delete = false;
+  }
+
 }
 
 /* The private `terminate' method, which is invoked when a Plotter is
@@ -215,13 +240,34 @@ _pl_y_terminate (S___(Plotter *_plotter))
 {
   int i, j;
 
-  /* kill forked-off processes that are maintaining XPlotter's popped-up
-     windows, provided that the VANISH_ON_DELETE parameter was set to "yes"
-     at creation time */
-  if (_plotter->y_vanish_on_delete)
+  if (_plotter->y_wait_on_delete)
     {
+      /* Wait for forked-off processes that are maintaining XPlotter's 
+         popped-up windows to terminate (when window close), provided that
+         the WAIT_ON_DELETE parameter was set to "yes" at creation time */
+
+      for (j = 0; j < _plotter->y_num_pids; j++)
+        { 
+	  int status;
+	  while (waitpid(_plotter->y_pids[j],&status,0) != -1
+                  || errno != ECHILD) ;  /* wait until this child gone */
+        }
+
+      if (_plotter->y_num_pids > 0)
+	{
+	  free (_plotter->y_pids);
+	  _plotter->y_pids = (pid_t *)NULL;
+	}
+    }
+  else if (_plotter->y_vanish_on_delete)
+    {
+      /* Kill forked-off processes that are maintaining XPlotter's popped-up
+         windows, provided that the VANISH_ON_DELETE parameter was set to "yes"
+         at creation time */
+
       for (j = 0; j < _plotter->y_num_pids; j++)
 	kill (_plotter->y_pids[j], SIGKILL);
+
       if (_plotter->y_num_pids > 0)
 	{
 	  free (_plotter->y_pids);

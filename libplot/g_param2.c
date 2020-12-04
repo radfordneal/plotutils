@@ -1,12 +1,14 @@
-/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+/* Plotutils+ is copyright (C) 2020 Radford M. Neal.
+
+   Based on the GNU plotutils package.  Copyright (C) 1995,
    1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
-   The GNU plotutils package is free software.  You may redistribute it
+   The plotutils+ package is free software.  You may redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software foundation; either version 2, or (at your
    option) any later version.
 
-   The GNU plotutils package is distributed in the hope that it will be
+   The plotutils+ package is distributed in the hope that it will be
    useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
@@ -63,6 +65,7 @@ const struct plParamRecord _known_params[NUM_PLOTTER_PARAMETERS] =
   {"TRANSPARENT_COLOR", (char *)"none", true}, /* gif */
   {"USE_DOUBLE_BUFFERING", (char *)"no", true}, /* X, XDrawable */
   {"VANISH_ON_DELETE", (char *)"no", true}, /* X */
+  {"WAIT_ON_DELETE", (char *)"no", true}, /* X */
   {"X_AUTO_FLUSH", (char *)"yes", true}, /* X */
 
   /* Pointer-valued (i.e. non-string, i.e. non-(char *)-valued) */

@@ -25,7 +25,12 @@
 @end iftex
 
 @ifinfo
-This file documents version 2.6 of the GNU plotting utilities package,
+This file documents the plututils+ plotting utilities package,
+version 3.?.
+
+Copyright @copyright{} 2020 Radford M. Neal.
+
+Based on version 2.6 of the GNU plotting utilities package,
 including GNU libplot 4.4
 
 Copyright @copyright{} 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009 Free Software Foundation, Inc.
@@ -39,12 +44,13 @@ Documentation License''.
 @end ifinfo
 
 @titlepage
-@title The GNU Plotting Utilities
+@title Plotutils+ - extending the GNU Plotting Utilities
 @subtitle Programs and functions for vector graphics and data plotting
-@subtitle Version 2.6
-@author Robert S. Maier
+@subtitle Version 3.?
+@author Radford M. Neal, Robert S. Maier
 @page
 @vskip 0pt plus 1filll
+Copyright @copyright{} 2020 Radford M. Neal.
 Copyright @copyright{} 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999,
 2000, 2005, 2008, 2009 Free Software Foundation, Inc.
 
@@ -59,13 +65,14 @@ Free Documentation License''.
 
 @node Top, Plotutils Intro, (dir), (dir)
 @ifnottex
-This is the documentation for version 2.6 of the GNU plotting
+This is the documentation for version 3.? of plotutils+, based on
+version 2.6 of the GNU plotting
 utilities package, including GNU libplot 4.4.  The package consists of
 programs and functions for vector graphics and data plotting.
 @end ifnottex
 
 @menu
-* Plotutils Intro::     GNU plotting utilities
+* Plotutils Intro::     Plotutils+ plotting utilities
 * graph::               graph, a program for plotting datasets
 * plot::                plot, a plot format conversion program
 * pic2plot::            pic2plot, a translator for files in the pic language
@@ -6400,7 +6407,8 @@ Physics Instruction}, Addison--Wesley, 1990.
 @chapter @code{libplot}, a 2-D Vector Graphics Library
 
 @ifnottex
-This is the documentation for version 4.4 of GNU libplot, which is
+This is the documentation for the plotutils+ version of libplot,
+based on version 4.4 of GNU libplot.  This is 
 a free function library for drawing two-dimensional vector graphics.
 @end ifnottex
 
@@ -6415,7 +6423,7 @@ a free function library for drawing two-dimensional vector graphics.
 @node libplot Overview, C Programming, libplot, libplot
 @section Programming with @code{libplot}: An overview
 
-GNU @code{libplot} 4.4 is a free function library for drawing
+@code{libplot} is a free function library for drawing
 two-dimensional vector graphics.  It can produce smooth,
 double-buffered animations for the @w{X Window} System, and can export
 graphics files in many file formats.  @w{It is} `device-independent'
@@ -6467,9 +6475,8 @@ X Plotters.  An X Plotter, when opened, pops up a window on an @w{X
 Window} System display and draws graphics @w{in it}.  The window will be
 `@w{spun off}' when the Plotter is closed; if it is subsequently
 reopened, a new window will be @w{popped up}.  A spun-off window will
-remain on the screen but will vanish if you type @samp{q} or click your
-mouse @w{in it}.  Future releases may permit @w{X Plotters}, when
-reopened, to reuse an existing window.
+remain on the screen but will vanish if you type @samp{q}, click your
+mouse @w{in it}, or use a window manager facility to close it. 
 
 @item 
 X Drawable Plotters.  An X Drawable Plotter draws graphics in one or two
@@ -9812,8 +9819,17 @@ significantly faster; on high-end graphics hardware, @w{at least}.
 (Default "no".)  Relevant only to X Plotters.  If the value is "yes",
 when a Plotter is deleted, the window or windows that it has @w{popped
 up} will vanish.  Otherwise, each such window will remain on the screen
-until it is removed by the user (by typing @samp{q} @w{in it}, or by
-clicking with a mouse).
+until it is removed by the user (by typing @samp{q} @w{in it}, by
+clicking with a mouse, or by other means provided by a window manager).
+This parameter is ignored if the @code{WAIT_ON_DELETE} parameter is "yes".
+
+@item WAIT_ON_DELETE
+(Default "no".)  Relevant only to X Plotters.  If the value is "yes",
+when a Plotter is deleted, the delete operation will wait for the window
+or windows that it has @w{popped up} to be closed by the user (by typing 
+@samp{q} @w{in it}, by clicking with a mouse, or by other means provided by 
+a window manager). Otherwise, each such window will remain on the screen
+after the Plotter is deleted, until it is removed by the user.
 
 @item XDRAWABLE_COLORMAP
 (Default NULL@.)  Relevant only to @w{X Drawable Plotters}.  If the
