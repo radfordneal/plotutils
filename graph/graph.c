@@ -32,7 +32,7 @@
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
-const char *optstring = "-BCHOQVstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::"; /* initial hyphen requests no reordering */
+const char *optstring = "-BCHOQVinstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::"; /* initial hyphen requests no reordering */
 
 struct option long_options[] =
 {
@@ -50,6 +50,7 @@ struct option long_options[] =
   {"input-format",	ARG_REQUIRED,	NULL, 'I'},
   {"line-mode",		ARG_REQUIRED,	NULL, 'm'},
   {"line-width",	ARG_REQUIRED,	NULL, 'W'},
+  {"new-defaults",	ARG_NONE,	NULL, 'n'},
   {"right-shift",	ARG_REQUIRED,	NULL, 'r'},
   {"save-screen",	ARG_NONE,	NULL, 's'},
   {"symbol",		ARG_OPTIONAL,	NULL, 'S'}, /* 0 or 1 or 2 */
@@ -66,6 +67,7 @@ struct option long_options[] =
   {"top-label",		ARG_REQUIRED,	NULL, 'L'},
   {"upward-shift",      ARG_REQUIRED,	NULL, 'u'},
   {"width-of-plot",	ARG_REQUIRED,	NULL, 'w'},
+  {"wait",		ARG_NONE,	NULL, 'i'},
   {"x-label",		ARG_REQUIRED,	NULL, 'X'},
   {"x-limits",		ARG_OPTIONAL,	NULL, 'x'}, /* 0, 1, 2, or 3 */
   {"y-label",		ARG_REQUIRED,	NULL, 'Y'},
@@ -256,6 +258,8 @@ main (int argc, char *argv[])
   double old_reposition_scale;
 
   /* sui generis */
+  bool wait_for_close = false;	/* Wait until window closes before exitting */
+  bool new_defaults = false;	/* Use new set of default option values */
   bool frame_on_top = false;
 
   /* The main command-line parsing loop, which uses getopt to scan argv[]
@@ -282,7 +286,7 @@ main (int argc, char *argv[])
 				/* initial hyphen requests no reordering */
 				optstring, 
 				long_options, &opt_index);
-	  if (option == EOF)	/* end of options */
+	  if (option == -1)	/* end of options */
 	    {
 	      using_getopt = false;
 	      continue;		/* back to top of while loop */
@@ -331,6 +335,12 @@ main (int argc, char *argv[])
 	{
 	  /* ----------- options with no argument --------------*/
 
+	case 'i':		/* Don't exit until window closed, ARG NONE */
+	  wait_for_close = true;
+	  break;
+	case 'n':		/* Use new set of default options, ARG NONE */
+	  new_defaults = true;
+	  break;
 	case 's':		/* Don't erase display before plot, ARG NONE */
 	  save_screen = true;
 	  break;

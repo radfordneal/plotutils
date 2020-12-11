@@ -1179,6 +1179,18 @@ format, and device-independent GNU graphics metafile format.  The
 option @samp{--display-type} is an obsolete alternative to
 @samp{--output-format}.
 
+@item -i
+@itemx --wait
+(Relevant only for @code{-TX}.) Wait until the X window displaying the
+plot has been closed before exitting. Alternatively, the program may be
+terminated by typing the interrupt character (often Control-C).
+
+@item -n
+@itemx --new-defaults
+Use a new set of default values for plot options (such as for @code{-w}
+and @code{-h}). The old defaults, and where different the new defaults,
+are noted in the description of each option.
+
 @item -E @var{x|y}
 @itemx --toggle-axis-end @var{x|y}
 Set the position of the indicated axis to be on the other end of the
@@ -4836,12 +4848,12 @@ problems of the form:
 @tex
 @example
 @group
-$x' = f(t,x,y,@ldots{},z)$
-$y' = g(t,x,y,@ldots{},z)$
+$x' = f(t,x,y,\ldots{},z)$
+$y' = g(t,x,y,\ldots{},z)$
    .
    .
    .
-$z' = h(t,x,y,@ldots{},z)$
+$z' = h(t,x,y,\ldots{},z)$
 @end group
 @end example
 @end tex
