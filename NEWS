@@ -30,6 +30,10 @@ libplot: The API for X Plotters now has a new WAIT_ON_DELETE parameter,
          until the window or windows that were popped up are closed
          by the user. The default is "no" (the old behaviour).
 
+         The process spawned to handle events for a closed X Window
+         will now no longer display any error messages. These previously
+         appeared at times such as when the user manual closed the window.
+
 
 Version 3.0, 2020-11-30:
 

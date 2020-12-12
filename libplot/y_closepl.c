@@ -29,7 +29,7 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>		/* always include before unistd.h */
 #endif
-#include <unistd.h>		/* for fork() */
+#include <unistd.h>		/* for fork() and close() */
 #endif
 
 /* song and dance to declare waitpid() and define WNOHANG */
@@ -358,6 +358,11 @@ _pl_y_end_page (S___(Plotter *_plotter))
       
       _plotter->data->open = false; /* flag Plotter as closed (is this useful,
 				       or just pedantic?) */
+
+      /* Make sure that we don't bother the user with error messages, such
+         as when the window is closed with the close button. */
+      close(1);  /* standard output */
+      close(2);  /* standard error */
       
       /* Manage the window.  We won't get any events associated with other
 	 windows i.e. with previous invocations of openpl..closepl on this
