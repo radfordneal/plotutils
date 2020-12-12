@@ -724,7 +724,16 @@ prepare_axis (Axis *axisp, Transform *trans, double min, double max, double spac
    line. */
 
 Multigrapher *
-new_multigrapher (const char *output_format, const char *bg_color, const char *bitmap_size, const char *emulate_color, const char *max_line_length, const char *meta_portable, const char *page_size, const char *rotation_angle, bool save_screen)
+new_multigrapher (const char *output_format,
+  const char *bg_color,
+  const char *bitmap_size,
+  const char *emulate_color,
+  const char *max_line_length,
+  const char *meta_portable,
+  const char *page_size,
+  const char *rotation_angle,
+  bool save_screen,
+  bool wait_for_close)
 {
   plPlotterParams *plotter_params;
   plPlotter *plotter;
@@ -741,7 +750,8 @@ new_multigrapher (const char *output_format, const char *bg_color, const char *b
   pl_setplparam (plotter_params, "META_PORTABLE", (void *)meta_portable);
   pl_setplparam (plotter_params, "PAGESIZE", (void *)page_size);
   pl_setplparam (plotter_params, "ROTATION", (void *)rotation_angle);
-  // pl_setplparam (plotter_params, "WAIT_ON_DELETE", (void *)"yes");
+  if (wait_for_close)
+    pl_setplparam (plotter_params, "WAIT_ON_DELETE", (void *)"yes");
 
   /* create Plotter and open it */
   plotter = pl_newpl_r (output_format, NULL, stdout, stderr, plotter_params);
@@ -774,7 +784,7 @@ delete_multigrapher (Multigrapher *multigrapher)
   return retval;
 }
 
-
+
 void
 begin_graph (Multigrapher *multigrapher, double scale, double trans_x, double trans_y)
 {
@@ -790,7 +800,7 @@ end_graph (Multigrapher *multigrapher)
   pl_restorestate_r (multigrapher->plotter);
 }
 
-
+
 /* ARGS:
      Multigrapher *multigrapher
      double frame_line_width 	= fractional width of lines in the frame
@@ -1069,7 +1079,7 @@ set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const
   multigrapher->oldpoint_y = 0.0;
 }
 
-   	
+
 /* draw_frame_of_graph() plots the graph frame (grid plus axis labels and
    title), using the multigrapher's variables (the multigrapher->x_axis,
    multigrapher->y_axis, multigrapher->x_trans, multigrapher->y_trans
@@ -1972,7 +1982,6 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 }
   
 
-
 /* plot_abscissa_log_subsubtick() and plot_ordinate_log_subsubtick() are
    called to plot both normal log subticks and special (user-requested)
    ones */
@@ -2223,7 +2232,7 @@ plot_ordinate_log_subsubtick (Multigrapher *multigrapher, double yval)
     }
 }
 
-
+
 /* set_line_style() maps from line modes to physical line modes.  See
  * explanation at head of file. */
 
@@ -2267,7 +2276,7 @@ set_line_style (Multigrapher *multigrapher, int style, bool use_color)
     }
 }
 
-
+
 /* plot_point_array() calls plot_point() on each point in an array of
  * points.
  */
@@ -2477,7 +2486,7 @@ plot_point (Multigrapher *multigrapher, const Point *point)
   return;
 }
 
-
+
 /* clip_line() takes two points, the endpoints of a line segment, and
  * destructively passes back two points: the endpoints of the line segment
  * clipped by Cohen-Sutherland to the rectangular plotting area.  Return

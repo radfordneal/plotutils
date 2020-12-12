@@ -1027,7 +1027,8 @@ main (int argc, char *argv[])
 		    {
 		      multigrapher = new_multigrapher (output_format, 
                         bg_color, bitmap_size, emulate_color, max_line_length, 
-                        meta_portable, page_size, rotation_angle, save_screen);
+                        meta_portable, page_size, rotation_angle, save_screen,
+                        wait_for_close);
 		      if (multigrapher == NULL)
 			{
 			  fprintf (stderr, 
@@ -1246,7 +1247,8 @@ main (int argc, char *argv[])
 		    {
 		      multigrapher = new_multigrapher (output_format, 
                         bg_color, bitmap_size, emulate_color, max_line_length, 
-                        meta_portable, page_size, rotation_angle, save_screen);
+                        meta_portable, page_size, rotation_angle, save_screen,
+                        wait_for_close);
 		      if (multigrapher == NULL)
 			{
 			  fprintf (stderr, 
@@ -1489,7 +1491,8 @@ main (int argc, char *argv[])
 	    {
 	      multigrapher = new_multigrapher (output_format, 
                 bg_color, bitmap_size, emulate_color, max_line_length, 
-                meta_portable, page_size, rotation_angle, save_screen);
+                meta_portable, page_size, rotation_angle, save_screen,
+                wait_for_close);
 	      if (multigrapher == NULL)
 		{
 		  fprintf (stderr, 
@@ -1571,18 +1574,11 @@ main (int argc, char *argv[])
 	       progname);
       return EXIT_FAILURE;
     }
-
-  /* Wait for child that is handling X window, if --wait option enabled. */
-  if (wait_for_close)
-    {
-      int wvalue;
-      while (wait(&wvalue) != -1 || errno != ECHILD) ;
-    }
   
   return EXIT_SUCCESS;
 }
 
-
+
 static void
 open_file_for_reading (char *filename, FILE **input)
 {
