@@ -1017,10 +1017,10 @@ occurrences should be placed on the command line immediately after each
 
 '-f SIZE'
 '--font-size SIZE'
-     (Float, default 0.0525.)  Set the size of the font used for the
-     axis and tick labels to be SIZE.  The size is specified as a
-     fraction of the minimum dimension (width or height) of the plotting
-     box.
+     (Float, old default 0.0525, new default 0.0375.)  Set the size of
+     the font used for the axis and tick labels to be SIZE.  The size is
+     specified as a fraction of the minimum dimension (width or height)
+     of the plotting box.
 
 '-F FONT_NAME'
 '--font-name FONT_NAME'
@@ -1052,12 +1052,13 @@ occurrences should be placed on the command line immediately after each
 
 '-h HEIGHT'
 '--height-of-plot HEIGHT'
-     (Float, default 0.6.)  Set the fractional height of the plot with
-     respect to the height of the display (or virtual display, in the
-     case of a multiplot) to be HEIGHT.  A value of 1.0 will produce a
-     plotting box that fills the entire available area.  Since labels
-     and tick marks may be placed outside the plotting box, values
-     considerably less than 1.0 are normally chosen.
+     (Float, old default 0.6, new default 0.84.)  Set the fractional
+     height of the plot with respect to the height of the display (or
+     virtual display, in the case of a multiplot) to be HEIGHT.  A value
+     of 1.0 will produce a plotting box that fills the entire available
+     area.  Since labels and tick marks may be placed outside the
+     plotting box, values considerably less than 1.0 are normally
+     chosen.
 
 '-H'
 '--toggle-frame-on-top'
@@ -1122,12 +1123,12 @@ occurrences should be placed on the command line immediately after each
 
 '-r RIGHT'
 '--right-shift RIGHT'
-     (Float, default 0.2.)  Move the plot to the right by a fractional
-     amount RIGHT with respect to the width of the display (or virtual
-     display, in the case of a multiplot).  This produces a margin on
-     the left side of the plotting box.  A value of 0.5 will produce a
-     margin half the width of the available area.  Note that the tick
-     marks and labels are drawn in the margin.
+     (Float, old default 0.2, new default 0.13.)  Move the plot to the
+     right by a fractional amount RIGHT with respect to the width of the
+     display (or virtual display, in the case of a multiplot).  This
+     produces a margin on the left side of the plotting box.  A value of
+     0.5 will produce a margin half the width of the available area.
+     Note that the tick marks and labels are drawn in the margin.
 
 '-R X|Y'
 '--toggle-round-to-next-tick X|Y'
@@ -1162,21 +1163,22 @@ occurrences should be placed on the command line immediately after each
 
 '-u UP'
 '--upward-shift UP'
-     (Float, default 0.2.)  Move the plot up by a fractional amount UP
-     with respect to the height of the display (or virtual display, in
-     the case of a multiplot).  This produces a margin below the
-     plotting box.  A value of 0.5 will produce a margin half the height
-     of the available area.  Note that the tick marks and labels are
-     drawn in the margin.
+     (Float, old default 0.2, new default 0.09.)  Move the plot up by a
+     fractional amount UP with respect to the height of the display (or
+     virtual display, in the case of a multiplot).  This produces a
+     margin below the plotting box.  A value of 0.5 will produce a
+     margin half the height of the available area.  Note that the tick
+     marks and labels are drawn in the margin.
 
 '-w WIDTH'
 '--width-of-plot WIDTH'
-     (Float, default 0.6.)  Set the fractional width of the plot with
-     respect to the width of the display (or virtual display, in the
-     case of a multiplot) to be WIDTH.  A value of 1.0 will produce a
-     plotting box that fills the entire available area.  Since labels
-     and tick marks may be placed outside the plotting box, values
-     considerably less than 1.0 are normally chosen.
+     (Float, old default 0.6, new default 0.84.)  Set the fractional
+     width of the plot with respect to the width of the display (or
+     virtual display, in the case of a multiplot) to be WIDTH.  A value
+     of 1.0 will produce a plotting box that fills the entire available
+     area.  Since labels and tick marks may be placed outside the
+     plotting box, values considerably less than 1.0 are normally
+     chosen.
 
 '-x [LOWER_LIMIT [UPPER_LIMIT [SPACING]]]'
 '--x-limits [LOWER_LIMIT [UPPER_LIMIT [SPACING]]]'
@@ -1386,10 +1388,10 @@ occurrences should be placed on the command line immediately after each
      a character map of any available font.  *Note plotfont::.
 
 '--title-font-size SIZE'
-     (Float, default 0.07.)  Set the size of the font used for the top
-     label ('title'), as specified by the '-L' option, to be SIZE.  The
-     size is specified as a fraction of the minimum dimension (width or
-     height) of the plotting box.
+     (Float, old default 0.07, new default 0.0375.)  Set the size of the
+     font used for the top label ('title'), as specified by the '-L'
+     option, to be SIZE.  The size is specified as a fraction of the
+     minimum dimension (width or height) of the plotting box.
 
 
 File: plotutils.info,  Node: Dataset Options,  Next: Multiplot Options,  Prev: Plot Options,  Up: graph Invocation
@@ -10970,78 +10972,78 @@ Node: Multiplotting40045
 Node: Data Formats43669
 Node: graph Invocation46391
 Node: Plot Options48162
-Node: Dataset Options69878
-Node: Multiplot Options79558
-Node: Raw graph Options81450
-Node: Info Options82254
-Node: graph Environment83811
-Node: plot91525
-Node: plot Examples91796
-Node: plot Invocation95515
-Node: plot Environment111615
-Node: pic2plot119286
-Node: pic2plot Introduction119587
-Node: pic2plot Invocation125751
-Node: pic2plot Environment139550
-Node: tek2plot147295
-Node: tek2plot Introduction147600
-Node: tek2plot Invocation149301
-Node: tek2plot Environment164460
-Node: plotfont170582
-Node: plotfont Examples170879
-Node: plotfont Invocation174661
-Node: plotfont Environment187686
-Node: spline194663
-Node: spline Examples194945
-Node: Advanced Use of spline202086
-Node: spline Invocation206596
-Node: ode216104
-Node: Basic Math217439
-Node: Simple ode Examples220323
-Node: Additional ode Examples229483
-Node: ode Invocation236471
-Node: Diagnostics240683
-Node: Numerical Error244800
-Node: Running Time256542
-Node: Input Language257875
-Node: ODE Bibliography266169
-Node: libplot267102
-Node: libplot Overview267738
-Node: C Programming282804
-Node: The C API283516
-Node: Older C APIs288062
-Node: C Compiling and Linking291080
-Node: Sample C Drawings294417
-Node: Paths and Subpaths305465
-Node: Drawing on a Page311983
-Node: Animated GIFs317788
-Node: X Animations322562
-Node: X Programming330756
-Node: C++ Programming337430
-Node: The Plotter Class337782
-Node: C++ Compiling and Linking342148
-Node: Sample C++ Drawings344494
-Node: Functions346783
-Node: Control Functions348701
-Node: Drawing Functions357840
-Node: Attribute Functions374835
-Node: Mapping Functions399593
-Node: Plotter Parameters403897
-Node: Appendices426826
-Node: Fonts and Markers427528
-Node: Text Fonts428444
-Node: Cyrillic and Japanese438316
-Node: Text Fonts in X442573
-Node: Text String Format446541
-Node: Marker Symbols465239
-Node: Color Names468163
-Node: Page and Viewport Sizes470071
-Node: Metafiles475364
-Node: Auxiliary Software479528
-Node: idraw479843
-Node: xfig481133
-Node: History and Acknowledgements482127
-Node: Reporting Bugs487049
-Node: GNU Free Documentation License487721
+Node: Dataset Options70023
+Node: Multiplot Options79703
+Node: Raw graph Options81595
+Node: Info Options82399
+Node: graph Environment83956
+Node: plot91670
+Node: plot Examples91941
+Node: plot Invocation95660
+Node: plot Environment111760
+Node: pic2plot119431
+Node: pic2plot Introduction119732
+Node: pic2plot Invocation125896
+Node: pic2plot Environment139695
+Node: tek2plot147440
+Node: tek2plot Introduction147745
+Node: tek2plot Invocation149446
+Node: tek2plot Environment164605
+Node: plotfont170727
+Node: plotfont Examples171024
+Node: plotfont Invocation174806
+Node: plotfont Environment187831
+Node: spline194808
+Node: spline Examples195090
+Node: Advanced Use of spline202231
+Node: spline Invocation206741
+Node: ode216249
+Node: Basic Math217584
+Node: Simple ode Examples220468
+Node: Additional ode Examples229628
+Node: ode Invocation236616
+Node: Diagnostics240828
+Node: Numerical Error244945
+Node: Running Time256687
+Node: Input Language258020
+Node: ODE Bibliography266314
+Node: libplot267247
+Node: libplot Overview267883
+Node: C Programming282949
+Node: The C API283661
+Node: Older C APIs288207
+Node: C Compiling and Linking291225
+Node: Sample C Drawings294562
+Node: Paths and Subpaths305610
+Node: Drawing on a Page312128
+Node: Animated GIFs317933
+Node: X Animations322707
+Node: X Programming330901
+Node: C++ Programming337575
+Node: The Plotter Class337927
+Node: C++ Compiling and Linking342293
+Node: Sample C++ Drawings344639
+Node: Functions346928
+Node: Control Functions348846
+Node: Drawing Functions357985
+Node: Attribute Functions374980
+Node: Mapping Functions399738
+Node: Plotter Parameters404042
+Node: Appendices426971
+Node: Fonts and Markers427673
+Node: Text Fonts428589
+Node: Cyrillic and Japanese438461
+Node: Text Fonts in X442718
+Node: Text String Format446686
+Node: Marker Symbols465384
+Node: Color Names468308
+Node: Page and Viewport Sizes470216
+Node: Metafiles475509
+Node: Auxiliary Software479673
+Node: idraw479988
+Node: xfig481278
+Node: History and Acknowledgements482272
+Node: Reporting Bugs487194
+Node: GNU Free Documentation License487866
 
 End Tag Table

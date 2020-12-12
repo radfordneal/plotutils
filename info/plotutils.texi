@@ -1203,7 +1203,8 @@ plot} title will be drawn, since there will be no room.
 
 @item -f @var{size}
 @itemx --font-size @var{size}
-(Float, default 0.0525.)  Set the size of the font used for the axis and
+(Float, old default 0.0525, new default 0.0375.)  
+Set the size of the font used for the axis and
 tick labels to be @var{size}.  The size is specified as a fraction of
 the minimum dimension (width or height) of the plotting box.
 
@@ -1239,7 +1240,8 @@ progressively more fancy, but @w{style 4} is a somewhat different style.
 
 @item -h @var{height}
 @itemx --height-of-plot @var{height}
-(Float, default 0.6.)  Set the fractional height of the plot with
+(Float, old default 0.6, new default 0.84.)  
+Set the fractional height of the plot with
 respect to the height of the display (or virtual display, in the case of
 a multiplot) to be @var{height}.  @w{A value} of 1.0 will produce a
 plotting box that fills the entire available area.  Since labels and
@@ -1309,7 +1311,8 @@ if you specify @samp{-T X}, you may also @w{need @samp{-Q}}.
 
 @item -r @var{right}
 @itemx --right-shift @var{right}
-(Float, default 0.2.)  Move the plot to the right by a fractional amount
+(Float, old default 0.2, new default 0.13.)  
+Move the plot to the right by a fractional amount
 @var{right} with respect to the width of the display (or virtual
 display, in the case of a multiplot).  This produces a margin on the
 left side of the plotting box.  @w{A value} of 0.5 will produce a margin
@@ -1350,7 +1353,8 @@ vertical and horizontal.
 
 @item -u @var{up}
 @itemx --upward-shift @var{up}
-(Float, default 0.2.)  Move the plot up by a fractional amount @var{up}
+(Float, old default 0.2, new default 0.09.)  
+Move the plot up by a fractional amount @var{up}
 with respect to the height of the display (or virtual display, in the
 case of a multiplot).  This produces a margin below the plotting box.
 @w{A value} of 0.5 will produce a margin half the height of the
@@ -1359,7 +1363,8 @@ margin.
 
 @item -w @var{width}
 @itemx --width-of-plot @var{width}
-(Float, default 0.6.)  Set the fractional width of the plot with respect
+(Float, old default 0.6, new default 0.84.)  
+Set the fractional width of the plot with respect
 to the width of the display (or virtual display, in the case of a
 multiplot) to be @var{width}.  @w{A value} of 1.0 will produce a
 plotting box that fills the entire available area.  Since labels and
@@ -1578,7 +1583,8 @@ depends on which @samp{-T} option is used.  For a list of all fonts, see
 map of any available font.  @xref{plotfont}.
 
 @item --title-font-size @var{size}
-(Float, default 0.07.)  Set the size of the font used for the top label
+(Float, old default 0.07, new default 0.0375.)  
+Set the size of the font used for the top label
 (`title'), as specified by the @samp{-L} option, to be @var{size}.  The
 size is specified as a fraction of the minimum dimension (width or
 height) of the plotting box.

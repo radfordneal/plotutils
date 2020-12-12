@@ -194,14 +194,20 @@ main (int argc, char *argv[])
   /* dimensions of graphing area, expressed as fractions of the width of
      the libplot graphics display [by convention square] */
   double margin_below = .2;	/* margin below the plot */
+  bool margin_below_dflt = true;/* whether using default value for margin_below */
   double margin_left = .2;	/* margin left of the plot */
+  bool margin_left_dflt = true;	/* whether using default value for margin_left */
   double plot_height = .6;	/* height of the plot */
+  bool plot_height_dflt = true;	/* whether using default value for plot_height */
   double plot_width = .6;	/* width of the plot */
+  bool plot_width_dflt = true;	/* whether using default value for plot_width */
 
   /* dimensions, expressed as fractions of the size of the plotting area */
   double tick_size = .02;	/* size of tick marks (< 0.0 allowed) */
   double font_size = 0.0525;	/* fontsize */
+  bool font_size_dflt = true;	/* whether using default value for font_size */
   double title_font_size = 0.07; /* title fontsize */
+  bool title_font_size_dflt = true; /* whether using default for title fontsize value */
   double blankout_fraction = 1.3; /* this fraction of size of plotting box
 				   is erased before the plot is drawn */
 
@@ -340,6 +346,12 @@ main (int argc, char *argv[])
 	  break;
 	case 'n':		/* Use new set of default options, ARG NONE */
 	  new_defaults = true;
+	  if (margin_left_dflt)  margin_left = 0.13;
+	  if (margin_below_dflt) margin_below = 0.09;
+	  if (plot_width_dflt)   plot_width = 0.84;
+	  if (plot_height_dflt)  plot_height = 0.84;
+	  if (font_size_dflt)    font_size = 0.0525 * 0.6 / 0.82;
+	  if (title_font_size_dflt) title_font_size = 0.0525 * 0.6 / 0.82;
 	  break;
 	case 's':		/* Don't erase display before plot, ARG NONE */
 	  save_screen = true;
@@ -450,7 +462,10 @@ main (int argc, char *argv[])
 		fprintf (stderr, "%s: the negative font size `%f' is disregarded\n",
 			 progname, local_font_size);
 	      else
-		font_size = local_font_size;
+		{
+		  font_size = local_font_size;
+		  font_size_dflt = false;
+		}
 	    }
 	  break;
 	case 'g':		/* Grid style, ARG REQUIRED	*/
@@ -500,6 +515,7 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
+	  plot_height_dflt = false;
 	  break;
 	case 'K':		/* Clip mode, ARG REQUIRED */
 	  if ((sscanf (optarg, "%d", &local_clip_mode) <= 0)
@@ -585,6 +601,7 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
+	  margin_left_dflt = false;
 	  break;
 	case 'u':		/* Upward shift, ARG REQUIRED */
 	  if (sscanf (optarg, "%lf", &margin_below) <= 0)
@@ -594,6 +611,7 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
+	  margin_below_dflt = false;
 	  break;
 	case 'w':		/* Width of plot, ARG REQUIRED 	*/
 	  if (sscanf (optarg, "%lf", &plot_width) <= 0)
@@ -603,6 +621,7 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
+	  plot_width_dflt = false;
 	  break;
 	case 'T':		/* Output format, ARG REQUIRED      */
 	case 'T' << 8:
@@ -723,7 +742,10 @@ main (int argc, char *argv[])
 	    fprintf (stderr, "%s: the request for a zero title font size is disregarded\n",
 		     progname);
 	  else
-	    title_font_size = local_title_font_size;
+	    {
+	      title_font_size = local_title_font_size;
+	      title_font_size_dflt = false;
+	    }
 	  break;
 	case 'W' << 8:		/* Frame line width, ARG REQUIRED	*/
 	  if (sscanf (optarg, "%lf", &local_frame_line_width) <= 0)
