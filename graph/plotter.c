@@ -303,7 +303,7 @@ static void scale1 (double min, double max, double *tick_spacing, int *tick_spac
 static void set_line_style (Multigrapher *multigrapher, int style, bool use_color);
 static void transpose_portmanteau (int *val);
 
-
+
 /* print_tick_label() prints a label on an axis tick.  The format depends
  * on whether the axis is a log axis or a linear axis; also, the magnitude
  * of the axis labels.
@@ -529,7 +529,7 @@ spacing_type (double incr)
     return S_UNKNOWN;
 }
 
-
+
 /* prepare_axis() fills in the Axis structure for an axis, and some of
  * the linear transformation variables in the Transform structure also.
  */
@@ -713,7 +713,8 @@ prepare_axis (Axis *axisp, Transform *trans, double min, double max, double spac
   else				/* linear axes don't have log subsubticks */
     axisp->have_normal_subsubticks = false;
 }
-
+
+
 /* The following routines [new_multigrapher(), begin_graph(),
  * set_graph_parameters(), draw_frame_of_graph(), plot_point(),
  * end_graph(), delete_multigrapher()] are the basic routines of the
@@ -801,39 +802,46 @@ end_graph (Multigrapher *multigrapher)
 }
 
 
-/* ARGS:
-     Multigrapher *multigrapher
-     double frame_line_width 	= fractional width of lines in the frame
-     const char *frame_color 	= color for frame (and plot if no -C option)
-     const char *title 		= graph title
-     const char *title_font_name = font for graph title (string)
-     double title_font_size 	= font size for graph title
-     double tick_size 		= fractional size of ticks
-     grid_type grid_spec 	= gridstyle (and tickstyle) spec
-     double x_min, x_max, x_spacing
-     double y_min, y_max, y_spacing
-     bool spec_x_spacing
-     bool spec_y_spacing
-     double width, height, up, right
-     const char *x_font_name
-     double x_font_size
-     const char *x_label
-     const char *y_font_name 
-     double y_font_size
-     const char *y_label
-     bool no_rotate_y_label
-
-     -- portmanteaux args --
-     int log_axis		= whether axes should be logarithmic
-     int round_to_next_tick	= round limits to the next tick mark
-     int switch_axis_end	= put axes at right/top, not left/bottom?
-     int omit_ticks		= omit all ticks, tick labels from an axis?
-     -- other args --
-     int clip_mode		= 0, 1, or 2
-     double blankout_fraction	= 1.0 means blank out whole box before plot
-     bool transpose_axes */
 void 
-set_graph_parameters (Multigrapher *multigrapher, double frame_line_width, const char *frame_color, const char *title, const char *title_font_name, double title_font_size, double tick_size, grid_type grid_spec, double x_min, double x_max, double x_spacing, double y_min, double y_max, double y_spacing, bool spec_x_spacing, bool spec_y_spacing, double width, double height, double up, double right, const char *x_font_name, double x_font_size, const char *x_label, const char *y_font_name, double y_font_size, const char *y_label, bool no_rotate_y_label, int log_axis, int round_to_next_tick, int switch_axis_end, int omit_ticks, int clip_mode, double blankout_fraction, bool transpose_axes)
+set_graph_parameters (Multigrapher *multigrapher,
+
+  double frame_line_width,	/* fractional width of lines in the frame */
+  const char *frame_color,	/* color for frame (and plot if no -C option) */
+  const char *title,		/* graph title */
+  const char *title_font_name,	/* font for graph title (string) */
+  double title_font_size,	/* font size for graph title */
+  double tick_size,		/* fractional size of ticks */
+  grid_type grid_spec,		/* gridstyle (and tickstyle) spec */
+  double x_min,
+  double x_max,
+  double x_spacing,
+  double y_min,
+  double y_max,
+  double y_spacing,
+  bool spec_x_spacing,
+  bool spec_y_spacing,
+  double width,
+  double height,
+  double up,
+  double right,
+  const char *x_font_name,
+  double x_font_size,
+  const char *x_label,
+  const char *y_font_name,
+  double y_font_size,
+  const char *y_label,
+  bool no_rotate_y_label,
+
+  /* -- portmanteaux args -- */
+  int log_axis,			/* whether axes should be logarithmic */
+  int round_to_next_tick,	/* round limits to the next tick mark */
+  int switch_axis_end,		/* put axes at right/top, not left/bottom? */
+  int omit_ticks,		/* omit all ticks, tick labels from an axis? */
+
+  /* -- other args -- */
+  int clip_mode,		/* 0, 1, or 2 */
+  double blankout_fraction,	/* 1.0 means blank out whole box before plot */
+  bool transpose_axes)
 {
   double x_subsubtick_spacing = 0.0, y_subsubtick_spacing = 0.0;
   /* local portmanteau variables */
