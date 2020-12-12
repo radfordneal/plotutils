@@ -14,10 +14,11 @@ by other programs, as in pipelines of the form
 
 Details of changes:
 
-graph:   There is a new --wait (or -i) command-line option.  If it is
-         set, the 'graph' program will wait until the plot window has
-         been closed by the user before exitting (or until the user
-         terminates the program manually, of course). 
+graph:   There is a new --wait (or -i) command-line option, relevant
+         only for X Window display (with -TX).  If it is set, the 
+         'graph' program will wait until the plot window has been 
+         closed by the user before exitting (or the user may terminate
+         the program manually, e.g., with Control-C). 
 
          A new set of default plot parameters can now be enabled with
          the --new-defaults (or -n) command-line option.  These defaults
