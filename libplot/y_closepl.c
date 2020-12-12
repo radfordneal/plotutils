@@ -1,4 +1,6 @@
-/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+/* Plotutils+ is copyright (C) 2020 Radford M. Neal.
+
+   Based on the GNU plotutils package.  Copyright (C) 1995,
    1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it

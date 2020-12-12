@@ -1,4 +1,6 @@
-/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+/* Plotutils+ is copyright (C) 2020 Radford M. Neal.
+
+   Based on the GNU plotutils package.  Copyright (C) 1989,
    1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, 2009, Free
    Software Foundation, Inc.
 
@@ -1023,7 +1025,10 @@ main (int argc, char *argv[])
 		  if (first_graph_of_multigraph)
 		    /* haven't created multigrapher yet, do so now */
 		    {
-		      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+		      multigrapher = new_multigrapher (output_format, 
+                        bg_color, bitmap_size, emulate_color, max_line_length, 
+                        meta_portable, page_size, rotation_angle, save_screen);
+		      if (multigrapher == NULL)
 			{
 			  fprintf (stderr, 
 				   "%s: error: the graphing device could not be opened\n", progname);
@@ -1239,7 +1244,10 @@ main (int argc, char *argv[])
 		  if (first_graph_of_multigraph)
 		    /* need to create the multigrapher */
 		    {
-		      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+		      multigrapher = new_multigrapher (output_format, 
+                        bg_color, bitmap_size, emulate_color, max_line_length, 
+                        meta_portable, page_size, rotation_angle, save_screen);
+		      if (multigrapher == NULL)
 			{
 			  fprintf (stderr, 
 				   "%s: error: the graphing device could not be opened\n", 
@@ -1479,7 +1487,10 @@ main (int argc, char *argv[])
 	  if (first_graph_of_multigraph)
 	    /* still haven't created multigrapher, do so now */
 	    {
-	      if ((multigrapher = new_multigrapher (output_format, bg_color, bitmap_size, emulate_color, max_line_length, meta_portable, page_size, rotation_angle, save_screen)) == NULL)
+	      multigrapher = new_multigrapher (output_format, 
+                bg_color, bitmap_size, emulate_color, max_line_length, 
+                meta_portable, page_size, rotation_angle, save_screen);
+	      if (multigrapher == NULL)
 		{
 		  fprintf (stderr, 
 			   "%s: error: the graphing device could not be opened\n", progname);
