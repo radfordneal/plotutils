@@ -1538,6 +1538,13 @@ main (int argc, char *argv[])
 	       progname);
       return EXIT_FAILURE;
     }
+
+  /* Wait for child that is handling X window, if --wait option enabled. */
+  if (wait_for_close)
+    {
+      int wvalue;
+      while (wait(&wvalue) != -1 || errno != ECHILD) ;
+    }
   
   return EXIT_SUCCESS;
 }
