@@ -89,7 +89,8 @@ extern Multigrapher * new_multigrapher (const char *output_format,
   const char *page_size,
   const char *rotation_angle,
   bool save_screen,
-  bool wait_for_close);
+  bool wait_for_close,
+  bool no_input);
 
 extern int delete_multigrapher (Multigrapher *multigrapher);
 

@@ -59,12 +59,12 @@ struct option long_options[] =
   {"tick-size",		ARG_REQUIRED,	NULL, 'k'},
   {"toggle-auto-bump",	ARG_NONE,	NULL, 'B'},
   {"toggle-axis-end",	ARG_REQUIRED,	NULL, 'E'},
-  {"toggle-frame-on-top",	ARG_NONE,	NULL, 'H'},
+  {"toggle-frame-on-top", ARG_NONE,	NULL, 'H'},
   {"toggle-log-axis",	ARG_REQUIRED,	NULL, 'l'},
   {"toggle-no-ticks",	ARG_REQUIRED,	NULL, 'N'},
-  {"toggle-rotate-y-label",	ARG_NONE,	NULL, 'Q'},
+  {"toggle-rotate-y-label", ARG_NONE,	NULL, 'Q'},
   {"toggle-round-to-next-tick",	ARG_REQUIRED,	NULL, 'R'},
-  {"toggle-transpose-axes",	ARG_NONE,	NULL, 't'},
+  {"toggle-transpose-axes", ARG_NONE,	NULL, 't'},
   {"toggle-use-color",	ARG_NONE,	NULL, 'C'},
   {"top-label",		ARG_REQUIRED,	NULL, 'L'},
   {"upward-shift",      ARG_REQUIRED,	NULL, 'u'},
@@ -89,6 +89,7 @@ struct option long_options[] =
   {"title-font-name",	ARG_REQUIRED,	NULL, 'Z' << 8},
   {"title-font-size",	ARG_REQUIRED,	NULL, 'F' << 8},
   {"page-size",		ARG_REQUIRED,	NULL, 'P' << 8},
+  {"no-input",		ARG_NONE,	NULL, 'n' << 8},
   /* Options relevant only to raw graph (refers to plot(5) output) */
   {"portable-output",	ARG_NONE,	NULL, 'O'},
   /* Documentation options */
@@ -266,6 +267,7 @@ main (int argc, char *argv[])
   double old_reposition_scale;
 
   /* sui generis */
+  bool no_input = false;	/* Suppress input from X window */
   bool wait_for_close = false;	/* Wait until window closes before exitting */
   bool new_defaults = false;	/* Use new set of default option values */
   bool frame_on_top = false;
@@ -354,6 +356,9 @@ main (int argc, char *argv[])
 	  if (plot_height_dflt)  plot_height = 0.84;
 	  if (font_size_dflt)    font_size = 0.0525 * 0.6 / 0.82;
 	  if (title_font_size_dflt) title_font_size = 0.0525 * 0.6 / 0.82;
+	  break;
+	case 'n' << 8:		/* No input from X window, ARG NONE */
+	  no_input = true;
 	  break;
 	case 's':		/* Don't erase display before plot, ARG NONE */
 	  save_screen = true;
@@ -1028,7 +1033,7 @@ main (int argc, char *argv[])
 		      multigrapher = new_multigrapher (output_format, 
                         bg_color, bitmap_size, emulate_color, max_line_length, 
                         meta_portable, page_size, rotation_angle, save_screen,
-                        wait_for_close);
+                        wait_for_close, no_input);
 		      if (multigrapher == NULL)
 			{
 			  fprintf (stderr, 
@@ -1248,7 +1253,7 @@ main (int argc, char *argv[])
 		      multigrapher = new_multigrapher (output_format, 
                         bg_color, bitmap_size, emulate_color, max_line_length, 
                         meta_portable, page_size, rotation_angle, save_screen,
-                        wait_for_close);
+                        wait_for_close, no_input);
 		      if (multigrapher == NULL)
 			{
 			  fprintf (stderr, 
@@ -1492,7 +1497,7 @@ main (int argc, char *argv[])
 	      multigrapher = new_multigrapher (output_format, 
                 bg_color, bitmap_size, emulate_color, max_line_length, 
                 meta_portable, page_size, rotation_angle, save_screen,
-                wait_for_close);
+                wait_for_close, no_input);
 	      if (multigrapher == NULL)
 		{
 		  fprintf (stderr, 

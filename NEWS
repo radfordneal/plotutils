@@ -7,10 +7,14 @@ Version 3.1, 2020-12-??:
 Still in development...
 
 Changes in this version are largely aimed at making the 'graph'
-program work better for interactively displaying data produced 
-by other programs, as in pipelines of the form
+program work better for interactively displaying data produced by
+other programs.  With the new facilities in this release, a
+pipeline of the following form is recommended for this:
 
-    program | graph -TX (other options)
+    program | graph -TX --no-input --wait --new-defaults
+
+These options can of course be included automatically using either a
+shell alias or a shell script.
 
 Details of changes:
 
@@ -19,6 +23,14 @@ graph:   There is a new --wait (or -i) command-line option, relevant
          'graph' program will wait until the plot window has been 
          closed by the user before exitting (or the user may terminate
          the program manually, e.g., with Control-C). 
+
+         There is a new --no-input comand-line option, relevant only
+         of X Window display (with -TX).  If it is set, keyboard and
+         mouse input not longer accepted from the plot window. This
+         avoids accidently closing the window with a stray mouse click
+         (or by typing 'q'), and also prevents focus from moving to the
+         plot window, away from the window used to issue the 'graph'
+         command, which would often be inconvenient.
 
          A new set of default plot parameters can now be enabled with
          the --new-defaults (or -n) command-line option.  These defaults
@@ -30,10 +42,15 @@ libplot: The API for X Plotters now has a new WAIT_ON_DELETE parameter,
          until the window or windows that were popped up are closed
          by the user. The default is "no" (the old behaviour).
 
-         The process spawned to handle events for a closed X Window
-         will now no longer display any error messages. These previously
-         appeared at times such as when the user manual closed the window.
+         The API for X Plotters now has a new NO_INPUT parameter, which
+         if set to "yes" suppresses mouse and keyboard input. This also
+         prevents input focus from moving to the plot window. The default 
+         is "no", in which case typing 'q' or clicking the mouse in the
+         window causes it to close.
 
+         The process spawned to handle events for an X Window will now 
+         no longer display any error messages. These previously appeared
+         at times such as when the user manual closed the window.
 
 Version 3.0, 2020-11-30:
 

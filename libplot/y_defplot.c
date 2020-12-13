@@ -184,6 +184,7 @@ _pl_y_initialize (S___(Plotter *_plotter))
   _plotter->y_canvas = (Widget)NULL;
   _plotter->y_drawable4 = (Drawable)0;
   _plotter->y_auto_flush = true;
+  _plotter->y_no_input = false;
   _plotter->y_vanish_on_delete = false;
   _plotter->y_wait_on_delete = false;
   _plotter->y_pids = (pid_t *)NULL;
@@ -202,6 +203,18 @@ _pl_y_initialize (S___(Plotter *_plotter))
       _plotter->y_auto_flush = false;
     else
       _plotter->y_auto_flush = true;
+  }
+
+  /* determine whether input in window is suppressed */
+  {
+    const char *no_input_s;
+
+    no_input_s = (const char *)_get_plot_param (_plotter->data,
+					        "NO_INPUT");
+    if (strcasecmp (no_input_s, "yes") == 0)
+      _plotter->y_no_input = true;
+    else
+      _plotter->y_no_input = false;
   }
 
   /* determine whether windows vanish on Plotter deletion */

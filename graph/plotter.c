@@ -531,17 +531,25 @@ spacing_type (double incr)
 
 
 /* prepare_axis() fills in the Axis structure for an axis, and some of
- * the linear transformation variables in the Transform structure also.
- */
+   the linear transformation variables in the Transform structure also. */
 
-/* ARGS: user_specified_subticks = linear ticks on a log axis?
-   	 round_to_next_tick = round limits to next tick mark?
-	 log_axis = log axis?
-	 reverse_axis = reverse min, max?
-	 switch_axis_end = intersection w/ other axis in alt. pos.?
-	 omit_ticks = suppress all ticks and tick labels? */
 static void 
-prepare_axis (Axis *axisp, Transform *trans, double min, double max, double spacing, const char *font_name, double font_size, const char *label, double subsubtick_spacing, bool user_specified_subsubticks, bool round_to_next_tick, bool log_axis, bool reverse_axis, bool switch_axis_end, bool omit_ticks)
+prepare_axis (Axis *axisp,
+  Transform *trans,
+  double min,
+  double max,
+  double spacing,
+  const char *font_name,
+  double font_size,
+  const char *label,
+  double subsubtick_spacing,
+  bool user_specified_subsubticks, /* linear ticks on a log axis? */
+  bool round_to_next_tick,	   /* round limits to next tick mark? */
+  bool log_axis,		   /* log axis? */
+  bool reverse_axis,		   /* reverse min, max? */
+  bool switch_axis_end,		   /* intersection w/ other axis in alt. pos.?*/
+  bool omit_ticks		   /* suppress all ticks and tick labels? */
+)
 {
   double range;
   int tick_spacing_type = 0;
@@ -734,7 +742,8 @@ new_multigrapher (const char *output_format,
   const char *page_size,
   const char *rotation_angle,
   bool save_screen,
-  bool wait_for_close)
+  bool wait_for_close,
+  bool no_input)
 {
   plPlotterParams *plotter_params;
   plPlotter *plotter;
@@ -751,6 +760,8 @@ new_multigrapher (const char *output_format,
   pl_setplparam (plotter_params, "META_PORTABLE", (void *)meta_portable);
   pl_setplparam (plotter_params, "PAGESIZE", (void *)page_size);
   pl_setplparam (plotter_params, "ROTATION", (void *)rotation_angle);
+  if (no_input)
+    pl_setplparam (plotter_params, "NO_INPUT", (void *)"yes");
   if (wait_for_close)
     pl_setplparam (plotter_params, "WAIT_ON_DELETE", (void *)"yes");
 

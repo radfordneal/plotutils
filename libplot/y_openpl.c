@@ -1,4 +1,6 @@
-/* This file is part of the GNU plotutils package.  Copyright (C) 1995,
+/* Plotutils+ is copyright (C) 2020 Radford M. Neal.
+
+   Based on the GNU plotutils package.  Copyright (C) 1995,
    1996, 1997, 1998, 1999, 2000, 2005, 2008, Free Software Foundation, Inc.
 
    The GNU plotutils package is free software.  You may redistribute it
@@ -338,6 +340,7 @@ _pl_y_begin_page (S___(Plotter *_plotter))
   XtSetArg(wargs[0], XtNscreen, screen_struct);
   XtSetArg(wargs[1], XtNargc, fake_argc);
   XtSetArg(wargs[2], XtNargv, fake_argv);
+  XtSetArg(wargs[3], XtNsensitive, !_plotter->y_no_input);
   _plotter->y_toplevel = XtAppCreateShell(NULL, /* name of app instance */
 			     (String)XPLOT_APP_CLASS, /* app class */
 			     applicationShellWidgetClass, 
@@ -346,7 +349,7 @@ _pl_y_begin_page (S___(Plotter *_plotter))
 				command-line, to get resources from
 				(options may include "-display"
 				[redundant], and "-geometry", "-bg") */
-			     wargs, (Cardinal)3); 
+			     wargs, (Cardinal)4); 
 
   /* Create drawing canvas (a Label widget) as child of toplevel Shell
      widget.  Set many obscure spacing parameters to zero, so that origin
@@ -360,19 +363,35 @@ _pl_y_begin_page (S___(Plotter *_plotter))
   XtSetArg(wargs[5], XmNmarginBottom, (Dimension)0);
   XtSetArg(wargs[6], XmNshadowThickness, (Dimension)0);
   XtSetArg(wargs[7], XmNhighlightThickness, (Dimension)0);
+  XtSetArg(wargs[8XtNsensitive, !_plotter->y_no_input);
   _plotter->y_canvas = XtCreateManagedWidget ((String)"", xmLabelWidgetClass,
 					    _plotter->y_toplevel, 
-					    wargs, (Cardinal)8);
+					    wargs, (Cardinal)9);
 #else  
   XtSetArg(wargs[0], XtNinternalHeight, (Dimension)0);
   XtSetArg(wargs[1], XtNinternalWidth, (Dimension)0);
+  XtSetArg(wargs[2], XtNsensitive, !_plotter->y_no_input);
   _plotter->y_canvas = XtCreateManagedWidget ((String)"", labelWidgetClass,
 					    _plotter->y_toplevel, 
-					    wargs, (Cardinal)2);
+					    wargs, (Cardinal)3);
 #endif
   
   /* realize both widgets */
   XtRealizeWidget (_plotter->y_toplevel);
+
+  if (_plotter->y_no_input)
+    {
+      /* Hint to window manager that neither widget accepts keyboard input, to 
+         prevent focus shifting there. */
+      XWMHints wmhints;
+      wmhints.flags = InputHint | StateHint;
+      wmhints.input = False;
+      wmhints.initial_state = NormalState;
+      XSetWMHints (XtDisplay(_plotter->y_toplevel), XtWindow(_plotter->y_toplevel),
+                   &wmhints);
+      XSetWMHints (XtDisplay(_plotter->y_canvas), XtWindow(_plotter->y_canvas),
+                   &wmhints);
+    }
   
   /* replace the Label widget's default translations by ours [see above;
      our default is no translations at all, with a nod to Motif] */

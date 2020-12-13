@@ -26,7 +26,7 @@
 
 @ifinfo
 This file documents the plututils+ plotting utilities package,
-version 3.?.
+version 3.1.
 
 Copyright @copyright{} 2020 Radford M. Neal.
 
@@ -46,7 +46,7 @@ Documentation License''.
 @titlepage
 @title Plotutils+ - extending the GNU Plotting Utilities
 @subtitle Programs and functions for vector graphics and data plotting
-@subtitle Version 3.?
+@subtitle Version 3.1
 @author Radford M. Neal, Robert S. Maier
 @page
 @vskip 0pt plus 1filll
@@ -65,7 +65,7 @@ Free Documentation License''.
 
 @node Top, Plotutils Intro, (dir), (dir)
 @ifnottex
-This is the documentation for version 3.? of plotutils+, based on
+This is the documentation for version 3.1 of plotutils+, based on
 version 2.6 of the GNU plotting
 utilities package, including GNU libplot 4.4.  The package consists of
 programs and functions for vector graphics and data plotting.
@@ -9832,6 +9832,12 @@ Some X displays provide special hardware support for double buffering.
 presence, and will draw graphics using the appropriate extension to the
 X11 protocol (either DBE or MBX).  In this case the animation will be
 significantly faster; on high-end graphics hardware, @w{at least}.
+
+@item NO_INPUT
+(Default "no".)  Relevant only to X Plotters.  If the value is "yes",
+keyboard and mouse input in the window will be suppressed.  Closing
+the window will then be done only using facilities provided by the window 
+manager, or by terminating the program.
 
 @item VANISH_ON_DELETE
 (Default "no".)  Relevant only to X Plotters.  If the value is "yes",

@@ -64,6 +64,7 @@ const struct plParamRecord _known_params[NUM_PLOTTER_PARAMETERS] =
   {"TERM", (char *)"tek", true}, /* tek only! */
   {"TRANSPARENT_COLOR", (char *)"none", true}, /* gif */
   {"USE_DOUBLE_BUFFERING", (char *)"no", true}, /* X, XDrawable */
+  {"NO_INPUT", (char *)"no", true}, /* X */
   {"VANISH_ON_DELETE", (char *)"no", true}, /* X */
   {"WAIT_ON_DELETE", (char *)"no", true}, /* X */
   {"X_AUTO_FLUSH", (char *)"yes", true}, /* X */
