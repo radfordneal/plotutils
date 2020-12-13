@@ -340,8 +340,12 @@ print_tick_label (char *labelbuf, const Axis *axis, const Transform *transform, 
       double prefactor;
       
       sprintf (labelbuf_tmp, "%e", val);
+
       if ((eloc = strchr (labelbuf_tmp, (int)'e')) == NULL)
-	return;
+	{
+	  strcpy (labelbuf, labelbuf_tmp);
+	  return;
+	}
 
       if (axis->type == A_LOG10 && !axis->user_specified_subsubticks)
 	/* a hack: this must be a power of 10, so just print "10^bar" */
