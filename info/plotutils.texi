@@ -1311,7 +1311,7 @@ if you specify @samp{-T X}, you may also @w{need @samp{-Q}}.
 
 @item -r @var{right}
 @itemx --right-shift @var{right}
-(Float, old default 0.2, new default 0.13.)  
+(Float, old default 0.2, new default 0.125.)  
 Move the plot to the right by a fractional amount
 @var{right} with respect to the width of the display (or virtual
 display, in the case of a multiplot).  This produces a margin on the

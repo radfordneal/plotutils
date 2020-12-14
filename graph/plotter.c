@@ -1943,8 +1943,8 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 		      - (libplot_has_font_metrics ?
 			 (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
 			     * fabs(multigrapher->tick_size)) 
-			  + 1.15 * multigrapher->y_axis.max_label_width
-			  + 0.5 * y_axis_font_size
+			  + 1.0 /* was 1.15 */ * multigrapher->y_axis.max_label_width
+			  + 0.35 /* was 0.5 */ * y_axis_font_size
 			  + multigrapher->half_line_width)
 			 : (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
 			       * fabs(multigrapher->tick_size)) /* backup */
@@ -1972,8 +1972,8 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 		      + (libplot_has_font_metrics ?
 			 (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
 			     * fabs(multigrapher->tick_size)) 
-			  + 1.15 * multigrapher->y_axis.max_label_width 
-			  + 0.5 * y_axis_font_size
+			  + 1.0 /* was 1.15 */ * multigrapher->y_axis.max_label_width 
+			  + 0.35 /* was 0.5 */ * y_axis_font_size
 			  + multigrapher->half_line_width)
 			 : (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
 			       * fabs(multigrapher->tick_size)) /* backup */
