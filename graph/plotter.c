@@ -387,11 +387,24 @@ print_tick_label (char *labelbuf, const Axis *axis, const Transform *transform, 
 		prec = count;
 	    }
 	}
-      
-      /* \sp ... \ep is start_superscript ... end_superscript, and \r6 is
-	 right-shift by 1/6 em.  \mu is the `times' character. */
-      sprintf (dst, "%.*f\\r6\\mu10\\sp%d\\ep", 
-	       prec, prefactor, exponent);
+
+      for (;;)
+	{      
+	  /* Suppress trailing "0" characters after decimal point. */
+	  sprintf (dst, "%.*f", prec, prefactor);
+	  if (prec > 0 && strchr(dst,'.') != NULL && dst[strlen(dst)-1] == '0')
+	    {
+	      prec -= 1;
+	      continue;
+	    }
+
+	  /* \sp ... \ep is start_superscript ... end_superscript, and \l6 is
+	     left-shift by 1/6 em.  The "x" represents a times sign, which 
+	     is avoided because special symbols can cause spacing anomolies
+	     in X windows. */
+	  sprintf (dst, "%.*fx\\l610\\sp%d\\ep", prec, prefactor, exponent);
+          break;
+	}
 
       return;
     }
