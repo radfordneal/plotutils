@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Update .yout files, after updating .xout files.  Should
+# be run when the --enable-ps-fonts-in-pcl option was 
+# used with configure.
+
+../plot/plot -T hpgl <graph.xout >plot2hpgl.yout 2>/dev/null
+../plot/plot -T pcl <graph.xout >plot2pcl.yout 2>/dev/null

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Update .xout files, after mod that changes the output.
+# Should be run when the --enable-ps-fonts-in-pcl option was 
+# not used with configure.
+
+for file in graph ode pic2plot plot2fig plot2plot plot2svg spline tek2plot
+do
+  cp $file.out $file.xout
+done
+
+CGM_ENCODING=clear_text BG_COLOR=white ../plot/plot -T cgm <graph.xout >plot2cgm.xout
+../plot/plot -T ps <graph.xout >plot2ps.xout
+
+../plot/plot -T hpgl <graph.xout >plot2hpgl.xout 2>/dev/null
+../plot/plot -T pcl <graph.xout >plot2pcl.xout 2>/dev/null
