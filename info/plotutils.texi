@@ -1,4 +1,4 @@
-\input texinfo   @c -*-texinfo-*-
+\input texinfo
 @c %**start of header
 @setfilename plotutils.info
 @settitle The Plotutils Package
