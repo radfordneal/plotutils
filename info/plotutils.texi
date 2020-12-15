@@ -1828,6 +1828,7 @@ default).
 
 @item -C
 @itemx --toggle-use-color
+(old default false, new default true) 
 Toggle between color and monochrome rendering of datasets.  The
 interpretation of linemode depends on whether the rendering is being
 performed in color or monochrome; see the @samp{-m} option above.

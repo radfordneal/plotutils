@@ -158,6 +158,7 @@ main (int argc, char *argv[])
   double symbol_size = .03;	/* symbol size (frac. of plotting box size) */
   double fill_fraction = -1.0;	/* negative means regions aren't filled */
   bool use_color = false;	/* color / monochrome */
+  bool use_color_dflt = true;	/* whether using default setting of use-color */
 
   /* Variables related to both the point reader and the point plotter */
 
@@ -360,6 +361,11 @@ main (int argc, char *argv[])
 	  if (clip_mode_dflt)    tick_size =    new_defaults ? 2 : 1;
 	  if (font_size_dflt)    font_size =    new_defaults ? 0.0385 : 0.0525;
 	  if (title_font_size_dflt) title_font_size = new_defaults ? 0.0385 : 0.07;
+	  if (use_color_dflt)
+            {
+              use_color = new_defaults ? true : false;
+              new_use_color = true;
+            }
 	  break;
 	case 'n' << 8:		/* No input from X window, ARG NONE */
 	  no_input = true;
@@ -376,6 +382,7 @@ main (int argc, char *argv[])
 	case 'C':		/* Toggle color/monochrome, ARG NONE */
 	  new_use_color = true;
 	  use_color = (use_color == true ? false : true);
+	  use_color_dflt = false;
 	  break;
 	case 'H':		/* Toggle frame-on-top, ARG NONE */
 	  frame_on_top = (frame_on_top == true ? false : true);
