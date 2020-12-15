@@ -184,6 +184,7 @@ main (int argc, char *argv[])
   bool no_rotate_y_label = false; /* used for pre-X11R6 servers */
   const char *frame_color = "black"; /* color of frame (and graph, if no -C)*/
   int clip_mode = 1;		/* clipping mode (cf. gnuplot) */
+  bool clip_mode_dflt;		/* whether using default value for clip mode */
   /* following variables are portmanteau: x and y are included as bitfields*/
   int log_axis = 0;		/* log axes or linear axes? */
   int round_to_next_tick = 0;	/* round axis limits to nearest tick? */
@@ -357,6 +358,7 @@ main (int argc, char *argv[])
 	  if (plot_height_dflt)  plot_height = 0.82;
 	  if (font_size_dflt)    font_size = 0.0385;
 	  if (tick_size_dflt)    tick_size = -0.01;
+	  if (clip_mode_dflt)    tick_size = 2;
 	  if (title_font_size_dflt) title_font_size = 0.0385;
 	  break;
 	case 'n' << 8:		/* No input from X window, ARG NONE */
@@ -524,7 +526,8 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
-	  plot_height_dflt = false;
+	  else
+	    plot_height_dflt = false;
 	  break;
 	case 'K':		/* Clip mode, ARG REQUIRED */
 	  if ((sscanf (optarg, "%d", &local_clip_mode) <= 0)
@@ -533,7 +536,10 @@ main (int argc, char *argv[])
 		     "%s: the bad clip mode `%s' is disregarded (it should be 0, 1, or 2)\n",
 		     progname, optarg);
 	  else
-	    clip_mode = local_clip_mode;
+	    {
+	      clip_mode = local_clip_mode;
+	      clip_mode_dflt = false;
+	    }
 	  break;
 	case 'l':		/* Toggle log/linear axis, ARG REQUIRED */
 	  switch (*optarg)
@@ -610,7 +616,8 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
-	  margin_left_dflt = false;
+	  else
+	    margin_left_dflt = false;
 	  break;
 	case 'u':		/* Upward shift, ARG REQUIRED */
 	  if (sscanf (optarg, "%lf", &margin_below) <= 0)
@@ -620,7 +627,8 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
-	  margin_below_dflt = false;
+	  else
+	    margin_below_dflt = false;
 	  break;
 	case 'w':		/* Width of plot, ARG REQUIRED 	*/
 	  if (sscanf (optarg, "%lf", &plot_width) <= 0)
@@ -630,7 +638,8 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
-	  plot_width_dflt = false;
+	  else
+	    plot_width_dflt = false;
 	  break;
 	case 'T':		/* Output format, ARG REQUIRED      */
 	case 'T' << 8:
@@ -678,6 +687,8 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
+	  else
+	    tick_size_dflt = false;
 	  break;
 	case 'W':		/* Line width, ARG REQUIRED	*/
 	  if (sscanf (optarg, "%lf", &local_plot_line_width) <= 0)

@@ -1265,8 +1265,8 @@ extend outside the box, rather than inside.
 
 @item -K @var{clip_mode}
 @itemx --clip-mode @var{clip_mode}
-(Integer, default 1.)  Set the clip mode for the plot to
-@var{clip_mode}.  The clip mode is relevant only if data points are
+(Integer, old default 1, new default 2.)  Set the clip mode for the plot 
+to @var{clip_mode}.  The clip mode is relevant only if data points are
 being joined by a line, and the line is not being filled to create a
 filled region (since filled regions are clipped in a fixed way).  
 
