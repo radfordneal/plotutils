@@ -105,8 +105,8 @@ struct option long_options[] =
 const int hidden_options[] = { (int)('T' << 8), 0 };
 
 const char *progname = "graph";	/* name of this program */
-const char *written = "Written by Robert S. Maier.";
-const char *copyright = "Copyright (C) 2009 Free Software Foundation, Inc.";
+const char *written = "Written Radford Neal, based on original by Robert S. Maier.";
+const char *copyright = "Copyright (C) 2020 Radford Neal\nCopyright (C) 2009 Free Software Foundation, Inc.";
 
 const char *usage_appendage = " [FILE]...\n\
 With no FILE, or when FILE is -, read standard input.\n";

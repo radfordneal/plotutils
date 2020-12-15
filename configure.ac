@@ -4,7 +4,7 @@
 # Copyright (C) 1989-2009 Free Software Foundation, Inc.
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([plotutils+],[3.0],[radfordneal@gmail.com])
+AC_INIT([plotutils+],[3.1],[radfordneal@gmail.com])
 AC_PREREQ(2.69)
 AC_CONFIG_SRCDIR(graph/graph.c)
 AM_INIT_AUTOMAKE
