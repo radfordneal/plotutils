@@ -1181,15 +1181,18 @@ option @samp{--display-type} is an obsolete alternative to
 
 @item -i
 @itemx --wait
-(Relevant only for @code{-TX}.) Wait until the X window displaying the
+(Relevant only for @samp{-TX}.) Wait until the X window displaying the
 plot has been closed before exitting. Alternatively, the program may be
 terminated by typing the interrupt character (often Control-C).
 
 @item -n
 @itemx --new-defaults
-Use a new set of default values for plot options (such as for @code{-w}
-and @code{-h}). The old defaults, and where different the new defaults,
-are noted in the description of each option.
+Toggle use a new set of default values for plot options (such 
+as for @samp{-w} and @samp{-h}). The old defaults, and where different 
+the new defaults, are noted in the description of each option.
+The old defaults are used initially (so the first @samp{--new-defaults} 
+enables the new defaults).  This option does not change the values of
+options that have already been set explicitly.
 
 @item -E @var{x|y}
 @itemx --toggle-axis-end @var{x|y}
@@ -4108,7 +4111,7 @@ We have already mentioned the environment variables @code{BITMAPSIZE},
 @code{PAGESIZE}, @code{BG_COLOR}, @samp{EMULATE_COLOR}, and
 @code{ROTATION}@.  They serve as backups for the several options
 @samp{--bitmap-size}, @samp{--page-size}, @samp{--bg-color},
-@code{--emulate-color}, and @samp{--rotation}.  The remaining
+@samp{--emulate-color}, and @samp{--rotation}.  The remaining
 environment variables are specific to individual output formats.
 
 @code{plotfont @w{-T X}}, which pops up a window on an @w{X Window}

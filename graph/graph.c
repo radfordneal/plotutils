@@ -271,7 +271,7 @@ main (int argc, char *argv[])
   /* sui generis */
   bool no_input = false;	/* Suppress input from X window */
   bool wait_for_close = false;	/* Wait until window closes before exitting */
-  bool new_defaults = false;	/* Use new set of default option values */
+  bool new_defaults = false;	/* Use new set of default option values? */
   bool frame_on_top = false;
 
   /* The main command-line parsing loop, which uses getopt to scan argv[]
@@ -350,16 +350,16 @@ main (int argc, char *argv[])
 	case 'i':		/* Don't exit until window closed, ARG NONE */
 	  wait_for_close = true;
 	  break;
-	case 'n':		/* Use new set of default options, ARG NONE */
-	  new_defaults = true;
-	  if (margin_left_dflt)  margin_left = 0.13;
-	  if (margin_below_dflt) margin_below = 0.09;
-	  if (plot_width_dflt)   plot_width = 0.82;
-	  if (plot_height_dflt)  plot_height = 0.82;
-	  if (font_size_dflt)    font_size = 0.0385;
-	  if (tick_size_dflt)    tick_size = -0.01;
-	  if (clip_mode_dflt)    tick_size = 2;
-	  if (title_font_size_dflt) title_font_size = 0.0385;
+	case 'n':		/* Toggle using new default options, ARG NONE */
+	  new_defaults = ! new_defaults;
+	  if (margin_left_dflt)  margin_left =  new_defaults ? 0.13 : 0.2;
+	  if (margin_below_dflt) margin_below = new_defaults ? 0.09 : 0.2;
+	  if (plot_width_dflt)   plot_width =   new_defaults ? 0.82 : 0.6;
+	  if (plot_height_dflt)  plot_height =  new_defaults ? 0.82 : 0.6;
+	  if (tick_size_dflt)    tick_size =    new_defaults ? -0.01 : 0.02;
+	  if (clip_mode_dflt)    tick_size =    new_defaults ? 2 : 1;
+	  if (font_size_dflt)    font_size =    new_defaults ? 0.0385 : 0.0525;
+	  if (title_font_size_dflt) title_font_size = new_defaults ? 0.0385 : 0.07;
 	  break;
 	case 'n' << 8:		/* No input from X window, ARG NONE */
 	  no_input = true;
