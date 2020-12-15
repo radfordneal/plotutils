@@ -153,7 +153,8 @@ main (int argc, char *argv[])
   double delta_x = 1.;
   /* polyline attributes */
   int linemode_index = 1;	/* linemode for polylines, 1=solid, etc. */
-  double plot_line_width = -0.001; /* polyline width (as frac. of display width), negative means default provided by libplot) */
+  double plot_line_width = -1; /* polyline width (as frac. of display width), negative = default from libplot) */
+  double plot_line_width_dflt = true;  /* whether using default for plot_line_width */
   int symbol_index = 0;		/* 0=none, 1=dot, 2=plus, 3=asterisk, etc. */
   double symbol_size = .03;	/* symbol size (frac. of plotting box size) */
   double fill_fraction = -1.0;	/* negative means regions aren't filled */
@@ -366,6 +367,11 @@ main (int argc, char *argv[])
               use_color = new_defaults ? true : false;
               new_use_color = true;
             }
+	  if (plot_line_width_dflt)
+	    {
+	      plot_line_width = new_defaults ? 0.003 : -1;
+	      new_plot_line_width = true;
+	    }
 	  break;
 	case 'n' << 8:		/* No input from X window, ARG NONE */
 	  no_input = true;
@@ -705,12 +711,10 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
-	  if (local_plot_line_width < 0.0)
-	    fprintf (stderr, "%s: the negative plot line thickness `%f' is disregarded\n",
-		     progname, local_plot_line_width);
 	  else
 	    {
 	      plot_line_width = local_plot_line_width;
+              plot_line_width_dflt = false;
 	      new_plot_line_width = true;
 	    }
 	  break;

@@ -1788,7 +1788,8 @@ can be set with the @samp{--symbol-font-name} option (see below).
 
 @item -W @var{line_width}
 @itemx --line-width @var{line_width}
-(Float, default @minus{}1.0.)  Set the thickness of the lines used to
+(Float, old default @minus{}1.0, new default 0.003)  
+Set the thickness of the lines used to
 join successive points in a dataset, as a fraction of the size (i.e.,
 minimum dimension) of the graphics display, to @var{line_width}.  @w{A
 negative} value means that the default value for the line thickness
