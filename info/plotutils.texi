@@ -1257,11 +1257,11 @@ if a large line thickness or symbol size is specified.
 
 @item -k @var{length}
 @itemx --tick-size @var{length}
-(Float, default .02.)  Set the length of the tick marks on each axis to
-be @var{length}.  @w{A value} of 1.0 produces tick marks whose length is
-equal to the minimum dimension (width or height) of the plotting box.
-@w{A negative} @var{length} yields tick marks that extend outside the
-box, rather than inside.
+(Float, old default 0.02, new default -0.01.)  Set the length of the tick 
+marks on each axis to be @var{length}.  @w{A value} of 1.0 produces tick
+marks whose length is equal to the minimum dimension (width or height) 
+of the plotting box. @w{A negative} @var{length} yields tick marks that 
+extend outside the box, rather than inside.
 
 @item -K @var{clip_mode}
 @itemx --clip-mode @var{clip_mode}

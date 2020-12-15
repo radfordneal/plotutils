@@ -207,6 +207,7 @@ main (int argc, char *argv[])
 
   /* dimensions, expressed as fractions of the size of the plotting area */
   double tick_size = .02;	/* size of tick marks (< 0.0 allowed) */
+  bool tick_size_dflt = true;	/* whether using default value for tick size */
   double font_size = 0.0525;	/* fontsize */
   bool font_size_dflt = true;	/* whether using default value for font_size */
   double title_font_size = 0.07; /* title fontsize */
@@ -355,6 +356,7 @@ main (int argc, char *argv[])
 	  if (plot_width_dflt)   plot_width = 0.82;
 	  if (plot_height_dflt)  plot_height = 0.82;
 	  if (font_size_dflt)    font_size = 0.0385;
+	  if (tick_size_dflt)    tick_size = -0.01;
 	  if (title_font_size_dflt) title_font_size = 0.0385;
 	  break;
 	case 'n' << 8:		/* No input from X window, ARG NONE */
