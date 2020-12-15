@@ -388,23 +388,20 @@ print_tick_label (char *labelbuf, const Axis *axis, const Transform *transform, 
 	    }
 	}
 
-      for (;;)
+      /* Suppress trailing "0" characters after decimal point. */
+      while (prec > 0)
 	{      
-	  /* Suppress trailing "0" characters after decimal point. */
 	  sprintf (dst, "%.*f", prec, prefactor);
-	  if (prec > 0 && strchr(dst,'.') != NULL && dst[strlen(dst)-1] == '0')
-	    {
-	      prec -= 1;
-	      continue;
-	    }
-
-	  /* \sp ... \ep is start_superscript ... end_superscript, and \l6 is
-	     left-shift by 1/6 em.  The "x" represents a times sign, which 
-	     is avoided because special symbols can cause spacing anomolies
-	     in X windows. */
-	  sprintf (dst, "%.*fx\\l610\\sp%d\\ep", prec, prefactor, exponent);
-          break;
+	  if (strchr(dst,'.') == NULL || dst[strlen(dst)-1] != '0')
+	    break;
+	  prec -= 1;
 	}
+
+      /* \sp ... \ep is start_superscript ... end_superscript, and \l6 is
+	 left-shift by 1/6 em.  The "x" represents a times sign, which 
+	 is avoided because special symbols can cause spacing anomolies
+	 in X windows. */
+      sprintf (dst, "%.*fx\\l610\\sp%d\\ep", prec, prefactor, exponent);
 
       return;
     }
@@ -1543,7 +1540,7 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 
 	      pl_fmove_r (multigrapher->plotter, 
 			  XN (multigrapher->x_axis.other_axis_loc)
-			  - (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			  - (SS((multigrapher->tick_size >= 0.0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */) 
 				* fabs(multigrapher->tick_size))
 			     + multigrapher->half_line_width),
 			  YV (yval));
@@ -1569,7 +1566,7 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 
 	      pl_fmove_r (multigrapher->plotter, 
 			  XN (multigrapher->x_axis.alt_other_axis_loc)
-			  + (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			  + (SS((multigrapher->tick_size >= 0.0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */) 
 				* fabs(multigrapher->tick_size))
 			     + multigrapher->half_line_width),
 			  YV (yval));
@@ -1941,12 +1938,12 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 	  pl_fmove_r (multigrapher->plotter,
 		      XN (multigrapher->x_axis.other_axis_loc)
 		      - (libplot_has_font_metrics ?
-			 (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			 (SS((multigrapher->tick_size >= 0.0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */)
 			     * fabs(multigrapher->tick_size)) 
 			  + 1.0 /* was 1.15 */ * multigrapher->y_axis.max_label_width
 			  + 0.35 /* was 0.5 */ * y_axis_font_size
 			  + multigrapher->half_line_width)
-			 : (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			 : (SS((multigrapher->tick_size >= 0.0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */)
 			       * fabs(multigrapher->tick_size)) /* backup */
 			    + 1.0 * y_axis_font_size
 			    + multigrapher->half_line_width)),
@@ -1970,12 +1967,12 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 	  pl_fmove_r (multigrapher->plotter, 
 		      XN (multigrapher->x_axis.alt_other_axis_loc)
 		      + (libplot_has_font_metrics ?
-			 (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			 (SS((multigrapher->tick_size >= 0.0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */)
 			     * fabs(multigrapher->tick_size)) 
 			  + 1.0 /* was 1.15 */ * multigrapher->y_axis.max_label_width 
 			  + 0.35 /* was 0.5 */ * y_axis_font_size
 			  + multigrapher->half_line_width)
-			 : (SS((multigrapher->tick_size >= 0.0 ? 0.75 : 1.75) 
+			 : (SS((multigrapher->tick_size >= 0.0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */)
 			       * fabs(multigrapher->tick_size)) /* backup */
 			    + 1.0 * y_axis_font_size
 			    + multigrapher->half_line_width)), 
@@ -2052,7 +2049,7 @@ plot_abscissa_log_subsubtick (Multigrapher *multigrapher, double xval)
 	  pl_fmove_r (multigrapher->plotter, 
 		      XV (xval),
 		      YN (multigrapher->y_axis.other_axis_loc)
-		      - ((tick_size >= 0 ? 0.75 : 1.75)
+		      - ((tick_size >= 0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */)
 			 * fabs((double)tick_size)
 			 + multigrapher->half_line_width));
 	  pl_alabel_r (multigrapher->plotter, 'c', 't', labelbuf);
@@ -2063,7 +2060,7 @@ plot_abscissa_log_subsubtick (Multigrapher *multigrapher, double xval)
 	  pl_fmove_r (multigrapher->plotter, 
 		      XV (xval),
 		      YN (multigrapher->y_axis.alt_other_axis_loc)
-		      + ((tick_size >= 0 ? 0.75 : 1.75) 
+		      + ((tick_size >= 0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */)
 			 * fabs((double)tick_size)
 			 + multigrapher->half_line_width));
 	  pl_alabel_r (multigrapher->plotter, 'c', 'b', labelbuf);
@@ -2173,7 +2170,7 @@ plot_ordinate_log_subsubtick (Multigrapher *multigrapher, double yval)
 	{
 	  pl_fmove_r (multigrapher->plotter, 
 		      XN(multigrapher->x_axis.other_axis_loc)
-		      - ((tick_size >= 0 ? 0.75 : 1.75) 
+		      - ((tick_size >= 0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */) 
 			 * fabs((double)tick_size)
 			 + multigrapher->half_line_width),
 		      YV (yval));
@@ -2186,7 +2183,7 @@ plot_ordinate_log_subsubtick (Multigrapher *multigrapher, double yval)
 	{
 	  pl_fmove_r (multigrapher->plotter, 
 		      XN(multigrapher->x_axis.alt_other_axis_loc)
-		      + ((tick_size >= 0 ? 0.75 : 1.75) 
+		      + ((tick_size >= 0 ? 0.25 /* was 0.75 */ : 1.25 /* was 1.75 */) 
 			 * fabs((double)tick_size)
 			 + multigrapher->half_line_width),
 		      YV (yval));

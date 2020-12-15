@@ -44,8 +44,8 @@ graph:
   after a decimal point in the mantissa are now suppressed.  The
   spacing in this notation is now also slightly more compact.
 
-* The text label on the vertical axis is now slightly closer to the
-  tick labels.
+* The text and numeric labels on the vertical axis is now slightly
+  closer to the axis.
 
 libplot: 
 

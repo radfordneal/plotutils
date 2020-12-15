@@ -1203,7 +1203,7 @@ plot} title will be drawn, since there will be no room.
 
 @item -f @var{size}
 @itemx --font-size @var{size}
-(Float, old default 0.0525, new default 0.0375.)  
+(Float, old default 0.0525, new default 0.0385.)  
 Set the size of the font used for the axis and
 tick labels to be @var{size}.  The size is specified as a fraction of
 the minimum dimension (width or height) of the plotting box.
@@ -1240,7 +1240,7 @@ progressively more fancy, but @w{style 4} is a somewhat different style.
 
 @item -h @var{height}
 @itemx --height-of-plot @var{height}
-(Float, old default 0.6, new default 0.84.)  
+(Float, old default 0.6, new default 0.82.)  
 Set the fractional height of the plot with
 respect to the height of the display (or virtual display, in the case of
 a multiplot) to be @var{height}.  @w{A value} of 1.0 will produce a
@@ -1311,7 +1311,7 @@ if you specify @samp{-T X}, you may also @w{need @samp{-Q}}.
 
 @item -r @var{right}
 @itemx --right-shift @var{right}
-(Float, old default 0.2, new default 0.125.)  
+(Float, old default 0.2, new default 0.13.)  
 Move the plot to the right by a fractional amount
 @var{right} with respect to the width of the display (or virtual
 display, in the case of a multiplot).  This produces a margin on the
@@ -1363,7 +1363,7 @@ margin.
 
 @item -w @var{width}
 @itemx --width-of-plot @var{width}
-(Float, old default 0.6, new default 0.84.)  
+(Float, old default 0.6, new default 0.82.)  
 Set the fractional width of the plot with respect
 to the width of the display (or virtual display, in the case of a
 multiplot) to be @var{width}.  @w{A value} of 1.0 will produce a
@@ -1583,7 +1583,7 @@ depends on which @samp{-T} option is used.  For a list of all fonts, see
 map of any available font.  @xref{plotfont}.
 
 @item --title-font-size @var{size}
-(Float, old default 0.07, new default 0.0375.)  
+(Float, old default 0.07, new default 0.0385.)  
 Set the size of the font used for the top label
 (`title'), as specified by the @samp{-L} option, to be @var{size}.  The
 size is specified as a fraction of the minimum dimension (width or
