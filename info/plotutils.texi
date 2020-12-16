@@ -1783,6 +1783,9 @@ Here are a few of the useful symbols (by convention,
 @tex
 ($\times$)
 @end tex
+@item square
+@item triangle
+@item diamond
 @end enumerate
 
 @enumerate 16
