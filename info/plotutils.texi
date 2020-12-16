@@ -1213,11 +1213,14 @@ the minimum dimension (width or height) of the plotting box.
 
 @item -F @var{font_name}
 @itemx --font-name @var{font_name}
-(String, default "Helvetica" except for @code{graph -T pcl}, for which
-"Univers" is the default, and @code{graph -T png}, @code{graph -T pnm},
-@code{graph -T gif}, @code{graph -T hpgl}, @code{graph -T regis},
-@code{graph -T tek}, and raw @code{graph}, for all of which
-"HersheySerif" is the default.)  Set the font used for the axis and tick
+(String, default depends on output format, and whether old or new defaults
+are used.  For @samp{-TX}, it is "Helvetica" with old defaults and 
+"Helvetica-Bold" with new defaults.  For @samp{-Tpng} and @samp{-Tgif},
+it is "HersheySerif" with old defaults and "HersheySerif-Bold" with
+new defaults. For @samp{pcl} it is "Univers".  For @samp{-Tpnm},
+@samp{-Thpgl}, @samp{-Tregis}, @samp{-Ttek}, and raw output, it is
+"HersheySerif".  For all other output formats, the default is "Helvetica".)
+Set the font initially used for axis and tick
 labels, and for the plot title @w{(if any)}, to be @var{font_name}.  The
 choice of font for the plot title may be overridden with the
 @samp{--title-font-name} option (see below).  Font names are
@@ -1786,12 +1789,11 @@ Here are a few of the useful symbols (by convention,
 @item filled circle
 @item filled square
 @item filled triangle
+@item filled diamond
 @end enumerate
 
 The default if @samp{-S} is specified with no following symbol number is
-symbol 1 (small dot), except if the output is to an X window (@samp{-TX}) and 
-new defaults have been chosen (@samp{-n}), in which case the default is 
-symbol 16 (filled circle).
+symbol 1 (small dot) with old defaults and 16 (filled circle) with new defaults.
 
 Marker symbols 0@dots{}31 are furnished by the GNU @code{libplot}
 graphics library.  @xref{Marker Symbols}.  Symbol numbers greater than

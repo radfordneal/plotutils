@@ -116,6 +116,17 @@ static void close_file (char *filename, FILE *stream);
 static void open_file_for_reading (char *filename, FILE **input);
 static bool parse_pen_string (const char *pen_s);
 
+/* Return the default font for an output format when using
+   the new defaults.  NULL means the device default. */
+static char *new_default_font (const char *output_format)
+{
+  return strcmp(output_format,"X") == 0 ? "Helvetica-Bold"
+       : strcmp(output_format,"png") == 0 ? "HersheySerif-Bold"
+       : strcmp(output_format,"gif") == 0 ? "HersheySerif-Bold" 
+       : NULL;
+}
+  
+
 int
 main (int argc, char *argv[])
 {
@@ -221,6 +232,7 @@ main (int argc, char *argv[])
 
   /* text-related */
   const char *font_name = NULL;	/* font name, NULL -> device default */
+  bool font_name_dflt = true;	/* whether using default value for font_name */
   const char *title_font_name = NULL; /* title font name, NULL -> default */
   const char *symbol_font_name = "ZapfDingbats"; /* symbol font name, NULL -> default */
   const char *x_label = NULL;	/* label for the x axis, NULL -> no label */
@@ -373,11 +385,13 @@ main (int argc, char *argv[])
 	      plot_line_width = new_defaults ? 0.003 : -1;
 	      new_plot_line_width = true;
 	    }
-	  if (symbol_index_dflt && symbol_index != 0 && strcmp(output_format,"X") == 0)
+	  if (symbol_index_dflt && symbol_index != 0)
 	    {
 	      symbol_index = new_defaults ? 16 : 1;
 	      new_symbol = true;
 	    }
+	  if (font_name_dflt)
+	    font_name = new_defaults ? new_default_font(output_format) : NULL;
 	  break;
 	case 'n' << 8:		/* No input from X window, ARG NONE */
 	  no_input = true;
@@ -663,14 +677,17 @@ main (int argc, char *argv[])
 	case 'T':		/* Output format, ARG REQUIRED      */
 	case 'T' << 8:
 	  output_format = xstrdup (optarg);
-	  if (new_defaults && strcmp(output_format,"X") == 0 && symbol_index != 0 && symbol_index_dflt)
+	  if (new_defaults && symbol_index != 0 && symbol_index_dflt)
 	    {
-	      symbol_index = 16;  /* new default symbol for X windows is 16 */
+	      symbol_index = 16;
 	      new_symbol = true;
 	    }
+	  if (new_defaults && font_name_dflt)
+	    font_name =  new_default_font(output_format);
 	  break;
 	case 'F':		/* Font name, ARG REQUIRED      */
 	  font_name = xstrdup (optarg);
+	  font_name_dflt = false;
 	  break;
 	case 'r' << 8:		/* Rotation angle, ARG REQUIRED      */
 	  rotation_angle = xstrdup (optarg);
@@ -961,9 +978,7 @@ main (int argc, char *argv[])
 
 	case 'S':		/* Symbol, ARG OPTIONAL	*/
 	  new_symbol = true;
-	  symbol_index = 1;					/* symbol # 1 is switched to by -S alone */
-	  if (strcmp(output_format,"X") == 0 && new_defaults)	/* ...  except for new X default */
-	    symbol_index = 16;
+	  symbol_index = new_defaults ? 16 : 1;
 	  if (optind >= argc)
 	    break;
 	  if (sscanf (argv[optind], "%d", &local_symbol_index) <= 0)
