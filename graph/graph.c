@@ -55,7 +55,7 @@ struct option long_options[] =
   {"new-defaults",	ARG_NONE,	NULL, 'n'},
   {"right-shift",	ARG_REQUIRED,	NULL, 'r'},
   {"save-screen",	ARG_NONE,	NULL, 's'},
-  {"symbol",		ARG_OPTIONAL,	NULL, 'S'}, /* 0 or 1 or 2 */
+  {"symbol",		ARG_OPTIONAL,	NULL, 'S'},
   {"tick-size",		ARG_REQUIRED,	NULL, 'k'},
   {"toggle-auto-bump",	ARG_NONE,	NULL, 'B'},
   {"toggle-axis-end",	ARG_REQUIRED,	NULL, 'E'},
@@ -156,6 +156,7 @@ main (int argc, char *argv[])
   double plot_line_width = -1; /* polyline width (as frac. of display width), negative = default from libplot) */
   double plot_line_width_dflt = true;  /* whether using default for plot_line_width */
   int symbol_index = 0;		/* 0=none, 1=dot, 2=plus, 3=asterisk, etc. */
+  bool symbol_index_dflt = true; /* whether using default for (non-zero) symbol_index */
   double symbol_size = .03;	/* symbol size (frac. of plotting box size) */
   double fill_fraction = -1.0;	/* negative means regions aren't filled */
   bool use_color = false;	/* color / monochrome */
@@ -371,6 +372,11 @@ main (int argc, char *argv[])
 	    {
 	      plot_line_width = new_defaults ? 0.003 : -1;
 	      new_plot_line_width = true;
+	    }
+	  if (symbol_index_dflt && symbol_index != 0 && strcmp(output_format,"X") == 0)
+	    {
+	      symbol_index = new_defaults ? 16 : 1;
+	      new_symbol = true;
 	    }
 	  break;
 	case 'n' << 8:		/* No input from X window, ARG NONE */
@@ -657,6 +663,11 @@ main (int argc, char *argv[])
 	case 'T':		/* Output format, ARG REQUIRED      */
 	case 'T' << 8:
 	  output_format = xstrdup (optarg);
+	  if (new_defaults && strcmp(output_format,"X") == 0 && symbol_index != 0 && symbol_index_dflt)
+	    {
+	      symbol_index = 16;  /* new default symbol for X windows is 16 */
+	      new_symbol = true;
+	    }
 	  break;
 	case 'F':		/* Font name, ARG REQUIRED      */
 	  font_name = xstrdup (optarg);
@@ -948,9 +959,11 @@ main (int argc, char *argv[])
 	  optind++;	/* tell getopt we recognized spacing_y */
 	  break;
 
-	case 'S':		/* Symbol, ARG OPTIONAL	[0,1,2]		*/
+	case 'S':		/* Symbol, ARG OPTIONAL	*/
 	  new_symbol = true;
-	  symbol_index = 1;	/* symbol # 1 is switched to by -S alone */
+	  symbol_index = 1;					/* symbol # 1 is switched to by -S alone */
+	  if (strcmp(output_format,"X") == 0 && new_defaults)	/* ...  except for new X default */
+	    symbol_index = 16;
 	  if (optind >= argc)
 	    break;
 	  if (sscanf (argv[optind], "%d", &local_symbol_index) <= 0)
@@ -959,7 +972,10 @@ main (int argc, char *argv[])
 	    fprintf (stderr, "%s: the symbol type `%d' is disregarded (it should be in the range 0..255)\n",
 		     progname, local_symbol_index);
 	  else
-	    symbol_index = local_symbol_index;
+	    {
+	      symbol_index = local_symbol_index;
+	      symbol_index_dflt = false;
+	    }
 	  optind++;		/* tell getopt we recognized symbol_index */
 	  if (optind >= argc)
 	    break;

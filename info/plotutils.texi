@@ -1761,14 +1761,15 @@ If you use the @samp{-S} option, you would usually also use the
 connecting them.  By specifying a negative argument @w{to @samp{-m}}
 (@w{a `negative} linemode'), you may obtain colored symbols.
 
-The following table lists the first few symbols (by convention,
+Here are a few of the useful symbols (by convention,
 @w{symbol #0} means @w{no symbol} @w{at all}).
 
 @enumerate
-@item dot
+@item small dot
 @tex
 ($\thinspace\cdot\thinspace$)
 @end tex
+(size ignored)
 @item plus (@math{+})
 @item asterisk (@math{*})
 @item circle
@@ -1780,6 +1781,17 @@ The following table lists the first few symbols (by convention,
 ($\times$)
 @end tex
 @end enumerate
+
+@enumerate 16
+@item filled circle
+@item filled square
+@item filled triangle
+@end enumerate
+
+The default if @samp{-S} is specified with no following symbol number is
+symbol 1 (small dot), except if the output is to an X window (@samp{-TX}) and 
+new defaults have been chosen (@samp{-n}), in which case the default is 
+symbol 16 (filled circle).
 
 Marker symbols 0@dots{}31 are furnished by the GNU @code{libplot}
 graphics library.  @xref{Marker Symbols}.  Symbol numbers greater than
