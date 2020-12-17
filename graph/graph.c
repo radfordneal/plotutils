@@ -846,11 +846,22 @@ main (int argc, char *argv[])
 
 	case 'a':		/* Auto-abscissa, ARG OPTIONAL [0,1,2] */
 	  auto_abscissa = true;
-	  if (optind >= argc)
-	    break;
-	  if (sscanf (argv[optind], "%lf", &local_delta_x) <= 0)
-	    break;
-	  optind++;	/* tell getopt we recognized delta_x */
+	  if (optarg != NULL && optarg[0] != '\0')
+	    {
+	      if (sscanf (optarg, "%lf", &local_delta_x) <= 0)
+		{
+		  fprintf (stderr, "%s: garbage specification of step size, 1.0 assumed\n", progname);
+	          local_delta_x = 1.0;
+		}
+	    }
+	  else
+	    {
+	      if (optind >= argc)
+	        break;
+	      if (sscanf (argv[optind], "%lf", &local_delta_x) <= 0)
+	        break;
+	      optind++;		/* tell getopt we recognized delta_x */
+	    }
 	  if (local_delta_x == 0.0)
 	    /* "-a 0" turns off auto-abscissa for next file */
 	    {
@@ -867,13 +878,22 @@ main (int argc, char *argv[])
 	  break;
 	case 'x':		/* X limits, ARG OPTIONAL [0,1,2,3] */
 	  matched = 0;
-	  if (optind >= argc
-	      || ((strcmp (argv[optind], "-") != 0)
-		  && (matched 
-		      = sscanf (argv[optind], "%lf", &local_min_x)) <= 0))
+	  if (optarg != NULL && optarg[0] != '\0')
 	    {
-	      spec_min_x = spec_max_x = spec_spacing_x = false;
-	      break;
+	        if (strcmp (optarg, "-") != 0
+		     && (matched = sscanf (optarg, "%lf", &local_min_x)) <= 0)
+		  fprintf (stderr, "%s: garbage specification of lower limit ignored\n", progname);
+	    }
+	  else
+	    {
+	      if (optind >= argc
+	          || ((strcmp (argv[optind], "-") != 0)
+		        && (matched = sscanf (argv[optind], "%lf", &local_min_x)) <= 0))
+	        {
+	          spec_min_x = spec_max_x = spec_spacing_x = false;
+	          break;
+	        }
+	      optind++;	/* tell getopt we recognized min_x */
 	    }
 	  if (matched > 0)
 	    {
@@ -887,8 +907,7 @@ main (int argc, char *argv[])
 	  matched = 0;
 	  if (optind >= argc
 	      || ((strcmp (argv[optind], "-") != 0)
-		  && (matched 
-		      = sscanf (argv[optind], "%lf", &local_max_x)) <= 0))
+		  && (matched  = sscanf (argv[optind], "%lf", &local_max_x)) <= 0))
 	    {
 	      spec_max_x = spec_spacing_x = false;
 	      break;
@@ -905,8 +924,7 @@ main (int argc, char *argv[])
 	  matched = 0;
 	  if (optind >= argc
 	      || ((strcmp (argv[optind], "-") != 0)
-		  && (matched 
-		      = sscanf (argv[optind], "%lf", &local_spacing_x)) <= 0))
+		  && (matched = sscanf (argv[optind], "%lf", &local_spacing_x)) <= 0))
 	    {
 	      spec_spacing_x = false;
 	      break;
@@ -923,13 +941,22 @@ main (int argc, char *argv[])
 
 	case 'y':		/* Y limits, ARG OPTIONAL [0,1,2,3] */
 	  matched = 0;
-	  if (optind >= argc
-	      || ((strcmp (argv[optind], "-") != 0)
-		  && (matched 
-		      = sscanf (argv[optind], "%lf", &local_min_y)) <= 0))
+	  if (optarg != NULL && optarg[0] != '\0')
 	    {
-	      spec_min_y = spec_max_y = spec_spacing_y = false;
-	      break;
+	        if (strcmp (optarg, "-") != 0
+		     && (matched = sscanf (optarg, "%lf", &local_min_y)) <= 0)
+		  fprintf (stderr, "%s: garbage specification of lower limit ignored\n", progname);
+	    }
+	  else
+	    {
+	      if (optind >= argc
+	          || ((strcmp (argv[optind], "-") != 0)
+		        && (matched = sscanf (argv[optind], "%lf", &local_min_y)) <= 0))
+	        {
+	          spec_min_y = spec_max_y = spec_spacing_y = false;
+	          break;
+	        }
+	      optind++;	/* tell getopt we recognized min_y */
 	    }
 	  if (matched > 0)
 	    {
@@ -938,13 +965,11 @@ main (int argc, char *argv[])
 	    }
 	  else
 	      spec_min_y = false;
-	  optind++;	/* tell getopt we recognized min_y */
 
 	  matched = 0;
 	  if (optind >= argc
 	      || ((strcmp (argv[optind], "-") != 0)
-		  && (matched 
-		      = sscanf (argv[optind], "%lf", &local_max_y)) <= 0))
+		  && (matched = sscanf (argv[optind], "%lf", &local_max_y)) <= 0))
 	    {
 	      spec_max_y = spec_spacing_y = false;
 	      break;
@@ -961,8 +986,7 @@ main (int argc, char *argv[])
 	  matched = 0;
 	  if (optind >= argc
 	      || ((strcmp (argv[optind], "-") != 0)
-		  && (matched 
-		      = sscanf (argv[optind], "%lf", &local_spacing_y)) <= 0))
+		  && (matched = sscanf (argv[optind], "%lf", &local_spacing_y)) <= 0))
 	    {
 	      spec_spacing_y = false;
 	      break;
@@ -985,11 +1009,22 @@ main (int argc, char *argv[])
 	  linemode_index = -1;
 	  symbol_size = 0.03;
 	  symbol_index = 16;
-	  if (optind >= argc)
-	    break;
-// fprintf(stderr,"-- '%s' '%s'\n",optarg,argv[optind]);
-	  if (sscanf (argv[optind], "%lf", &local_symbol_size) <= 0)
-	    break;
+	  if (optarg != NULL && optarg[0] != '\0')
+	    {
+	      if (sscanf (optarg, "%lf", &local_symbol_size) <= 0)
+		{
+		  fprintf (stderr, "%s: garbage specification of point size ignored\n", progname);
+	          break;
+		}
+	    }
+	  else
+	    {
+	      if (optind >= argc)
+	        break;
+	      if (sscanf (argv[optind], "%lf", &local_symbol_size) <= 0)
+	        break;
+	      optind++;		/* tell getopt we recognized symbol_index */
+	    }
 	  if (local_symbol_size < 0.0)
 	    fprintf (stderr, "%s: the negative symbol size `%f' is disregarded\n",
 		     progname, local_symbol_size);
@@ -998,16 +1033,27 @@ main (int argc, char *argv[])
 		     progname);
 	  else
 	    symbol_size = local_symbol_size / 100;
-	  optind++;		/* tell getopt we recognized symbol_index */
 	  break;
 
 	case 'S':		/* Symbol, ARG OPTIONAL	[0,1 2] */
 	  new_symbol = true;
 	  symbol_index = new_defaults ? 16 : 1;
-	  if (optind >= argc)
-	    break;
-	  if (sscanf (argv[optind], "%d", &local_symbol_index) <= 0)
-	    break;
+	  if (optarg != NULL && optarg[0] != '\0')
+	    {
+	      if (sscanf (optarg, "%d", &local_symbol_index) <= 0)
+		{
+		  fprintf (stderr, "%s: garbage specification of symbol type ignored\n", progname);
+	          local_symbol_index = symbol_index;
+		}
+	    }
+	  else
+	    {
+	      if (optind >= argc)
+	        break;
+	      if (sscanf (argv[optind], "%d", &local_symbol_index) <= 0)
+	        break;
+	      optind++;		/* tell getopt we recognized symbol_index */
+	    }
 	  if (local_symbol_index < 0 || local_symbol_index > 255)
 	    fprintf (stderr, "%s: the symbol type `%d' is disregarded (it should be in the range 0..255)\n",
 		     progname, local_symbol_index);
@@ -1016,7 +1062,6 @@ main (int argc, char *argv[])
 	      symbol_index = local_symbol_index;
 	      symbol_index_dflt = false;
 	    }
-	  optind++;		/* tell getopt we recognized symbol_index */
 	  if (optind >= argc)
 	    break;
 	  if (sscanf (argv[optind], "%lf", &local_symbol_size) <= 0)

@@ -52,6 +52,9 @@ graph:
 * The text and numeric labels on the vertical axis is now slightly
   closer to the axis.
 
+* Fixed a bug in which optional arguments immediately after one-letter 
+  options were not handled properly.  (E.g, -S17 now works properly.)
+
 libplot: 
 
 * The API for X Plotters now has a new WAIT_ON_DELETE parameter, which
