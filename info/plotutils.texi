@@ -1215,9 +1215,9 @@ the minimum dimension (width or height) of the plotting box.
 @itemx --font-name @var{font_name}
 (String, default depends on output format, and whether old or new defaults
 are used.  For @samp{-TX}, it is "Helvetica" with old defaults and 
-"Helvetica-Bold" with new defaults.  For @samp{-Tpng} and @samp{-Tgif},
-it is "HersheySerif" with old defaults and "HersheySerif-Bold" with
-new defaults. For @samp{pcl} it is "Univers".  For @samp{-Tpnm},
+"Helvetica-Bold" with new defaults.  For @samp{-Tpng}, @samp{-Tpnm}, and 
+@samp{-Tgif}, it is "HersheySerif" with old defaults and "HersheySerif-Bold" 
+with new defaults. For @samp{pcl} it is "Univers".  For 
 @samp{-Thpgl}, @samp{-Tregis}, @samp{-Ttek}, and raw output, it is
 "HersheySerif".  For all other output formats, the default is "Helvetica".)
 Set the font initially used for axis and tick

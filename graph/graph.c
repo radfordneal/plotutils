@@ -124,6 +124,7 @@ static char *new_default_font (const char *output_format)
   return strcmp(output_format,"X") == 0 ? "Helvetica-Bold"
        : strcmp(output_format,"png") == 0 ? "HersheySerif-Bold"
        : strcmp(output_format,"gif") == 0 ? "HersheySerif-Bold" 
+       : strcmp(output_format,"pnm") == 0 ? "HersheySerif-Bold"
        : NULL;
 }
   

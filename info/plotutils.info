@@ -1029,19 +1029,20 @@ occurrences should be placed on the command line immediately after each
 '--font-name FONT_NAME'
      (String, default depends on output format, and whether old or new
      defaults are used.  For '-TX', it is "Helvetica" with old defaults
-     and "Helvetica-Bold" with new defaults.  For '-Tpng' and '-Tgif',
-     it is "HersheySerif" with old defaults and "HersheySerif-Bold" with
-     new defaults.  For 'pcl' it is "Univers".  For '-Tpnm', '-Thpgl',
-     '-Tregis', '-Ttek', and raw output, it is "HersheySerif".  For all
-     other output formats, the default is "Helvetica".)  Set the font
-     initially used for axis and tick labels, and for the plot title
-     (if any), to be FONT_NAME.  The choice of font for the plot title
-     may be overridden with the '--title-font-name' option (see below).
-     Font names are case-insensitive.  If the specified font is not
-     available, the default font will be used.  Which fonts are
-     available depends on which '-T' option is used.  For a list of all
-     fonts, see *note Text Fonts::.  The 'plotfont' utility will produce
-     a character map of any available font.  *Note plotfont::.
+     and "Helvetica-Bold" with new defaults.  For '-Tpng', '-Tpnm', and
+     '-Tgif', it is "HersheySerif" with old defaults and
+     "HersheySerif-Bold" with new defaults.  For 'pcl' it is "Univers".
+     For '-Thpgl', '-Tregis', '-Ttek', and raw output, it is
+     "HersheySerif".  For all other output formats, the default is
+     "Helvetica".)  Set the font initially used for axis and tick
+     labels, and for the plot title (if any), to be FONT_NAME.  The
+     choice of font for the plot title may be overridden with the
+     '--title-font-name' option (see below).  Font names are
+     case-insensitive.  If the specified font is not available, the
+     default font will be used.  Which fonts are available depends on
+     which '-T' option is used.  For a list of all fonts, see *note Text
+     Fonts::.  The 'plotfont' utility will produce a character map of
+     any available font.  *Note plotfont::.
 
 '-g GRID_STYLE'
 '--grid-style GRID_STYLE'
@@ -11014,79 +11015,79 @@ Node: Multiplotting40041
 Node: Data Formats43665
 Node: graph Invocation46386
 Node: Plot Options48156
-Node: Dataset Options70483
-Node: Multiplot Options80902
-Node: Raw graph Options82794
-Node: Info Options83598
-Node: graph Environment85155
-Node: plot92868
-Node: plot Examples93139
-Node: plot Invocation96858
-Node: plot Environment112957
-Node: pic2plot120627
-Node: pic2plot Introduction120928
-Node: pic2plot Invocation127092
-Node: pic2plot Environment140891
-Node: tek2plot148636
-Node: tek2plot Introduction148941
-Node: tek2plot Invocation150642
-Node: tek2plot Environment165801
-Node: plotfont171923
-Node: plotfont Examples172220
-Node: plotfont Invocation176002
-Node: plotfont Environment189027
-Node: spline196004
-Node: spline Examples196286
-Node: Advanced Use of spline203425
-Node: spline Invocation207937
-Node: ode217445
-Node: Basic Math218780
-Node: Simple ode Examples221665
-Node: Additional ode Examples230825
-Node: ode Invocation237811
-Node: Diagnostics242026
-Node: Numerical Error246143
-Node: Running Time257885
-Node: Input Language259218
-Node: ODE Bibliography267511
-Node: libplot268443
-Node: libplot Overview269079
-Node: C Programming284142
-Node: The C API284854
-Node: Older C APIs289399
-Node: C Compiling and Linking292417
-Node: Sample C Drawings295753
-Node: Paths and Subpaths306800
-Node: Drawing on a Page313316
-Node: Animated GIFs319121
-Node: X Animations323895
-Node: X Programming332088
-Node: C++ Programming338762
-Node: The Plotter Class339114
-Node: C++ Compiling and Linking343479
-Node: Sample C++ Drawings345825
-Node: Functions348114
-Node: Control Functions350031
-Node: Drawing Functions359167
-Node: Attribute Functions376160
-Node: Mapping Functions400917
-Node: Plotter Parameters405220
-Node: Appendices428435
-Node: Fonts and Markers429137
-Node: Text Fonts430053
-Node: Cyrillic and Japanese439924
-Node: Text Fonts in X444181
-Node: Text String Format448150
-Node: Marker Symbols466847
-Node: Color Names469771
-Node: Page and Viewport Sizes471679
-Node: Metafiles476972
-Node: Auxiliary Software481136
-Node: idraw481451
-Node: xfig482741
-Node: History and Acknowledgements483735
-Node: Reporting Bugs488657
-Node: GNU Free Documentation License489329
+Node: Dataset Options70489
+Node: Multiplot Options80908
+Node: Raw graph Options82800
+Node: Info Options83604
+Node: graph Environment85161
+Node: plot92874
+Node: plot Examples93145
+Node: plot Invocation96864
+Node: plot Environment112963
+Node: pic2plot120633
+Node: pic2plot Introduction120934
+Node: pic2plot Invocation127098
+Node: pic2plot Environment140897
+Node: tek2plot148642
+Node: tek2plot Introduction148947
+Node: tek2plot Invocation150648
+Node: tek2plot Environment165807
+Node: plotfont171929
+Node: plotfont Examples172226
+Node: plotfont Invocation176008
+Node: plotfont Environment189033
+Node: spline196010
+Node: spline Examples196292
+Node: Advanced Use of spline203431
+Node: spline Invocation207943
+Node: ode217451
+Node: Basic Math218786
+Node: Simple ode Examples221671
+Node: Additional ode Examples230831
+Node: ode Invocation237817
+Node: Diagnostics242032
+Node: Numerical Error246149
+Node: Running Time257891
+Node: Input Language259224
+Node: ODE Bibliography267517
+Node: libplot268449
+Node: libplot Overview269085
+Node: C Programming284148
+Node: The C API284860
+Node: Older C APIs289405
+Node: C Compiling and Linking292423
+Node: Sample C Drawings295759
+Node: Paths and Subpaths306806
+Node: Drawing on a Page313322
+Node: Animated GIFs319127
+Node: X Animations323901
+Node: X Programming332094
+Node: C++ Programming338768
+Node: The Plotter Class339120
+Node: C++ Compiling and Linking343485
+Node: Sample C++ Drawings345831
+Node: Functions348120
+Node: Control Functions350037
+Node: Drawing Functions359173
+Node: Attribute Functions376166
+Node: Mapping Functions400923
+Node: Plotter Parameters405226
+Node: Appendices428441
+Node: Fonts and Markers429143
+Node: Text Fonts430059
+Node: Cyrillic and Japanese439930
+Node: Text Fonts in X444187
+Node: Text String Format448156
+Node: Marker Symbols466853
+Node: Color Names469777
+Node: Page and Viewport Sizes471685
+Node: Metafiles476978
+Node: Auxiliary Software481142
+Node: idraw481457
+Node: xfig482747
+Node: History and Acknowledgements483741
+Node: Reporting Bugs488663
+Node: GNU Free Documentation License489335
 
 End Tag Table
 
