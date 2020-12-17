@@ -34,7 +34,7 @@
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
-const char *optstring = "-BCHOQVinstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::S::"; /* initial hyphen requests no reordering */
+const char *optstring = "-BCHOQVinstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::p::S::"; /* initial hyphen requests no reordering */
 
 struct option long_options[] =
 {
@@ -53,6 +53,7 @@ struct option long_options[] =
   {"line-mode",		ARG_REQUIRED,	NULL, 'm'},
   {"line-width",	ARG_REQUIRED,	NULL, 'W'},
   {"new-defaults",	ARG_NONE,	NULL, 'n'},
+  {"points",		ARG_OPTIONAL,	NULL, 'p'},
   {"right-shift",	ARG_REQUIRED,	NULL, 'r'},
   {"save-screen",	ARG_NONE,	NULL, 's'},
   {"symbol",		ARG_OPTIONAL,	NULL, 'S'},
@@ -313,7 +314,7 @@ main (int argc, char *argv[])
 				/* initial hyphen requests no reordering */
 				optstring, 
 				long_options, &opt_index);
-	  if (option == -1)	/* end of options */
+	  if (option == EOF)	/* end of options */
 	    {
 	      using_getopt = false;
 	      continue;		/* back to top of while loop */
@@ -416,9 +417,6 @@ main (int argc, char *argv[])
 	case 'O':		/* portable format, ARG NONE */
 	  meta_portable = "yes";
 	  break;
-	case 'e' << 8:		/* emulate color, ARG NONE */
-	  emulate_color = xstrdup (optarg);
-	  break;
 	case 'V' << 8:		/* Version, ARG NONE		*/
 	  show_version = true;
 	  continue_parse = false;
@@ -488,6 +486,9 @@ main (int argc, char *argv[])
 		       progname, optarg);
 	      errcnt++;
 	    }
+	  break;
+	case 'e' << 8:		/* emulate color, ARG REQUIRED */
+	  emulate_color = xstrdup (optarg);
 	  break;
 	case 'f':		/* Font size, ARG REQUIRED	*/
 	  if (sscanf (optarg, "%lf", &local_font_size) <= 0)
@@ -976,7 +977,31 @@ main (int argc, char *argv[])
 	  optind++;	/* tell getopt we recognized spacing_y */
 	  break;
 
-	case 'S':		/* Symbol, ARG OPTIONAL	*/
+	case 'p':		/* Points, ARG OPTIONAL [0,1] */
+	  new_linemode = true;
+	  new_symbol_size = true;
+	  new_symbol = true;
+	  symbol_index_dflt = false;
+	  linemode_index = -1;
+	  symbol_size = 0.03;
+	  symbol_index = 16;
+	  if (optind >= argc)
+	    break;
+// fprintf(stderr,"-- '%s' '%s'\n",optarg,argv[optind]);
+	  if (sscanf (argv[optind], "%lf", &local_symbol_size) <= 0)
+	    break;
+	  if (local_symbol_size < 0.0)
+	    fprintf (stderr, "%s: the negative symbol size `%f' is disregarded\n",
+		     progname, local_symbol_size);
+	  else if (local_symbol_size == 0.0)
+	    fprintf (stderr, "%s: the request for a zero symbol size is disregarded\n",
+		     progname);
+	  else
+	    symbol_size = local_symbol_size / 100;
+	  optind++;		/* tell getopt we recognized symbol_index */
+	  break;
+
+	case 'S':		/* Symbol, ARG OPTIONAL	[0,1 2] */
 	  new_symbol = true;
 	  symbol_index = new_defaults ? 16 : 1;
 	  if (optind >= argc)

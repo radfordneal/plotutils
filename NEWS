@@ -38,6 +38,11 @@ graph:
   the aesthetics of plots and reduce wasted space.  They are
   especially appropriate for plotting in an X window.
 
+* There is a new --points or -p command-line option, which has the
+  effect of -m -1 and -S 16 POINT_SIZE/100, where POINT_SIZE if the
+  optional argument of --points (default 3).  This is convenient for 
+  specifying that the plot should have points only, without lines.
+
 * When axis labels are in scientific notation, the times sign is now
   represented by an "x" character.  This avoids some spacing anomolies
   that occur when the actual times symbol is used.  Trailing zeros

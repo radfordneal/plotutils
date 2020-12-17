@@ -1750,6 +1750,15 @@ negative} linemode indicates that no line should be drawn, but that the
 marker symbol, @w{if any} (see below), should be in the color of the
 corresponding positive linemode.
 
+@item -p [@var{point_size}]
+@itemx --points [@var{point_size}]
+
+(Float, default 3.) Plot points, without lines.  Equivalent to
+the combination of @code{-m -1}, which suppresses lines, and
+@code{-S 16 @var{point_size}/100}, which sets the symbol for points
+to a filled circle, with size of @var{point_size} hundredths of 
+the minimum dimension of the plot region.
+
 @item -S [@var{symbol_number} [@var{symbol_size}]]
 @itemx --symbol [@var{symbol_number} [@var{symbol_size}]]
 (Integer and float, defaults 0 and 0.03.)  Draw a marker symbol at each
