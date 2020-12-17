@@ -903,7 +903,6 @@ main (int argc, char *argv[])
 	    }
 	  else
 	      spec_min_x = false;
-	  optind++;	/* tell getopt we recognized min_x */
 
 	  matched = 0;
 	  if (optind >= argc
