@@ -1305,7 +1305,7 @@ overridden with the @samp{--title-font-name} option.
 @itemx --toggle-no-ticks @var{x|y}
 Toggle the presence of ticks and tick labels on the specified axis.
 This applies to the grid styles that normally include ticks and tick
-labels, i.e., grid styles 1, 2, 3, @w{and 4}.
+labels (i.e., grid styles other than "0").
 
 @item -Q
 @itemx --toggle-rotate-y-label
