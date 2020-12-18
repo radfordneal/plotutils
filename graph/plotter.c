@@ -1219,6 +1219,8 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 
   switch (multigrapher->grid_spec)
     {
+    case AXES_AND_BOX_AND_XGRID:
+    case AXES_AND_BOX_AND_YGRID:
     case AXES_AND_BOX_AND_GRID:
     case AXES_AND_BOX:
       /* draw a box, not just a pair of axes */
@@ -1343,12 +1345,14 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 	  /* Plot the abscissa tick marks, and vertical grid lines. */
 	  switch (multigrapher->grid_spec)
 	    {
+	    case AXES_AND_BOX_AND_XGRID:
 	    case AXES_AND_BOX_AND_GRID:
 	      pl_linemod_r (multigrapher->plotter, "dotted");
 	      pl_fmove_r (multigrapher->plotter, XV(xval), YP(YSQ(0.0)));
 	      pl_fcont_r (multigrapher->plotter, XV(xval), YP(YSQ(1.0)));
 	      pl_linemod_r (multigrapher->plotter, "solid");
 	      /* fall through */
+	    case AXES_AND_BOX_AND_YGRID:
 	    case AXES_AND_BOX:
 	      if (!multigrapher->y_axis.switch_axis_end)
 		{
@@ -1428,6 +1432,8 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 
 	      switch (multigrapher->grid_spec)
 		{
+		case AXES_AND_BOX_AND_XGRID:
+		case AXES_AND_BOX_AND_YGRID:
 		case AXES_AND_BOX_AND_GRID:
 		case AXES_AND_BOX:
 		  /* draw on both sides */
@@ -1582,12 +1588,14 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 	  /* Plot the tick marks on the y-axis, and horizontal grid lines. */
 	  switch (multigrapher->grid_spec)
 	    {
+	    case AXES_AND_BOX_AND_YGRID:
 	    case AXES_AND_BOX_AND_GRID:
 	      pl_linemod_r (multigrapher->plotter, "dotted");
 	      pl_fmove_r (multigrapher->plotter, XP(XSQ(0.0)), YV (yval));
 	      pl_fcont_r (multigrapher->plotter, XP(XSQ(1.0)), YV (yval));
 	      pl_linemod_r (multigrapher->plotter, "solid");
 	      /* fall through */
+	    case AXES_AND_BOX_AND_XGRID:
 	    case AXES_AND_BOX:
 	      if (!multigrapher->x_axis.switch_axis_end)
 		{
@@ -1668,6 +1676,8 @@ draw_frame_of_graph (Multigrapher *multigrapher, bool draw_canvas)
 	      /* Plot the tick marks on the y-axis, and horizontal grid lines. */
 	      switch (multigrapher->grid_spec)
 		{
+		case AXES_AND_BOX_AND_XGRID:
+		case AXES_AND_BOX_AND_YGRID:
 		case AXES_AND_BOX_AND_GRID:
 		case AXES_AND_BOX:
 		  if (!multigrapher->x_axis.switch_axis_end)
@@ -2071,12 +2081,14 @@ plot_abscissa_log_subsubtick (Multigrapher *multigrapher, double xval)
   /* draw subsubtick */
   switch (multigrapher->grid_spec)
     {
+    case AXES_AND_BOX_AND_XGRID:
     case AXES_AND_BOX_AND_GRID:
       pl_linemod_r (multigrapher->plotter, "dotted");
       pl_fmove_r (multigrapher->plotter, XV (xval), YP(YSQ(0.0)));
       pl_fcont_r (multigrapher->plotter, XV (xval), YP(YSQ(1.0)));
       pl_linemod_r (multigrapher->plotter, "solid");
       /* fall through */
+    case AXES_AND_BOX_AND_YGRID:
     case AXES_AND_BOX:
       if (!multigrapher->y_axis.switch_axis_end)
 	{
@@ -2197,12 +2209,14 @@ plot_ordinate_log_subsubtick (Multigrapher *multigrapher, double yval)
   /* draw subsubtick */
   switch (multigrapher->grid_spec)
     {
+    case AXES_AND_BOX_AND_YGRID:
     case AXES_AND_BOX_AND_GRID:
       pl_linemod_r (multigrapher->plotter, "dotted");
       pl_fmove_r (multigrapher->plotter, XP(XSQ(0.0)), YV (yval));
       pl_fcont_r (multigrapher->plotter, XP(XSQ(1.0)), YV (yval));
       pl_linemod_r (multigrapher->plotter, "solid");
       /* fall through */
+    case AXES_AND_BOX_AND_XGRID:
     case AXES_AND_BOX:
       if (!multigrapher->x_axis.switch_axis_end)		      
 	{

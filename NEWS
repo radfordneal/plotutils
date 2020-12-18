@@ -43,6 +43,12 @@ graph:
   optional argument of --points (default 3).  This is convenient for 
   specifying that the plot should have points only, without lines.
 
+* The --grid-style or -g command-line option now has two new styles,
+  which allow for only vertical grid lines or only horizontal grid lines.
+  The style synonyms of "x", "y", "xy", or "yx" are now allowed, specifying
+  that x (vertical), y (horizontal), or both grid lines should be drawn.
+  (The default is still no grid lines.)
+
 * When axis labels are in scientific notation, the times sign is now
   represented by an "x" character.  This avoids some spacing anomolies
   that occur when the actual times symbol is used.  Trailing zeros

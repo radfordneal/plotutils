@@ -59,12 +59,11 @@ typedef enum
    the last (AXES_AT_ORIGIN) is an altogether different style */
 typedef enum
 {
-  NO_AXES = 0, AXES = 1, AXES_AND_BOX = 2, AXES_AND_BOX_AND_GRID = 3, AXES_AT_ORIGIN = 4
+  NO_AXES = 0, AXES = 1, AXES_AND_BOX = 2, AXES_AND_BOX_AND_GRID = 3, AXES_AT_ORIGIN = 4,
+  AXES_AND_BOX_AND_XGRID = 5, AXES_AND_BOX_AND_YGRID = 6
 } grid_type;
 
-#define NORMAL_AXES(grid_spec) \
-((grid_spec == AXES) || (grid_spec == AXES_AND_BOX) \
- || (grid_spec == AXES_AND_BOX_AND_GRID))
+#define NORMAL_AXES(grid_spec) ((grid_spec) != NO_AXES && (grid_spec) != AXES_AT_ORIGIN)
 
 /* bit fields in portmanteau variables */
 enum { X_AXIS = 0x1, Y_AXIS = 0x2 };

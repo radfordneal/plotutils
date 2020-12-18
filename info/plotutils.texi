@@ -1232,16 +1232,17 @@ available font.  @xref{plotfont}.
 
 @item -g @var{grid_style}
 @itemx --grid-style @var{grid_style}
-(Integer in the range 0@dots{}4, default 2.)  Set the grid style for the
-plot to be @var{grid_style}.  Grid styles 0 @w{through 3} are
-progressively more fancy, but @w{style 4} is a somewhat different style.
+(One of "0", "1", "2", "3", "4", "5", "6", "x", "y", "xy", or "yx", default "2".)  
+Set the grid style for the plot to be @var{grid_style}.
 
 @enumerate 0
 @item no axes, tick marks or labels.
 @item a pair of axes, with tick marks and labels.
 @item box around plot, with tick marks and labels.
-@item box around plot, with tick marks and labels; also grid lines.
+@item (or "xy", or "yx") box around plot, with tick marks and labels, and grid lines.
 @item axes intersect at the origin, with tick marks and labels.
+@item (or "x") box around plot, with tick marks and labels, and vertical grid lines only.
+@item (or "y") box around plot, with tick marks and labels, and horizontal grid lines only.
 @end enumerate
 
 @item -h @var{height}

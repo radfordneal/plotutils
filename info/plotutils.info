@@ -1046,16 +1046,19 @@ occurrences should be placed on the command line immediately after each
 
 '-g GRID_STYLE'
 '--grid-style GRID_STYLE'
-     (Integer in the range 0...4, default 2.)  Set the grid style for
-     the plot to be GRID_STYLE.  Grid styles 0 through 3 are
-     progressively more fancy, but style 4 is a somewhat different
-     style.
+     (One of "0", "1", "2", "3", "4", "5", "6", "x", "y", "xy", or "yx",
+     default "2".)  Set the grid style for the plot to be GRID_STYLE.
 
        0. no axes, tick marks or labels.
        1. a pair of axes, with tick marks and labels.
        2. box around plot, with tick marks and labels.
-       3. box around plot, with tick marks and labels; also grid lines.
+       3. (or "xy", or "yx") box around plot, with tick marks and
+          labels, and grid lines.
        4. axes intersect at the origin, with tick marks and labels.
+       5. (or "x") box around plot, with tick marks and labels, and
+          vertical grid lines only.
+       6. (or "y") box around plot, with tick marks and labels, and
+          horizontal grid lines only.
 
 '-h HEIGHT'
 '--height-of-plot HEIGHT'
@@ -11015,79 +11018,79 @@ Node: Multiplotting40041
 Node: Data Formats43665
 Node: graph Invocation46386
 Node: Plot Options48156
-Node: Dataset Options70489
-Node: Multiplot Options80908
-Node: Raw graph Options82800
-Node: Info Options83604
-Node: graph Environment85161
-Node: plot92874
-Node: plot Examples93145
-Node: plot Invocation96864
-Node: plot Environment112963
-Node: pic2plot120633
-Node: pic2plot Introduction120934
-Node: pic2plot Invocation127098
-Node: pic2plot Environment140897
-Node: tek2plot148642
-Node: tek2plot Introduction148947
-Node: tek2plot Invocation150648
-Node: tek2plot Environment165807
-Node: plotfont171929
-Node: plotfont Examples172226
-Node: plotfont Invocation176008
-Node: plotfont Environment189033
-Node: spline196010
-Node: spline Examples196292
-Node: Advanced Use of spline203431
-Node: spline Invocation207943
-Node: ode217451
-Node: Basic Math218786
-Node: Simple ode Examples221671
-Node: Additional ode Examples230831
-Node: ode Invocation237817
-Node: Diagnostics242032
-Node: Numerical Error246149
-Node: Running Time257891
-Node: Input Language259224
-Node: ODE Bibliography267517
-Node: libplot268449
-Node: libplot Overview269085
-Node: C Programming284148
-Node: The C API284860
-Node: Older C APIs289405
-Node: C Compiling and Linking292423
-Node: Sample C Drawings295759
-Node: Paths and Subpaths306806
-Node: Drawing on a Page313322
-Node: Animated GIFs319127
-Node: X Animations323901
-Node: X Programming332094
-Node: C++ Programming338768
-Node: The Plotter Class339120
-Node: C++ Compiling and Linking343485
-Node: Sample C++ Drawings345831
-Node: Functions348120
-Node: Control Functions350037
-Node: Drawing Functions359173
-Node: Attribute Functions376166
-Node: Mapping Functions400923
-Node: Plotter Parameters405226
-Node: Appendices428441
-Node: Fonts and Markers429143
-Node: Text Fonts430059
-Node: Cyrillic and Japanese439930
-Node: Text Fonts in X444187
-Node: Text String Format448156
-Node: Marker Symbols466853
-Node: Color Names469777
-Node: Page and Viewport Sizes471685
-Node: Metafiles476978
-Node: Auxiliary Software481142
-Node: idraw481457
-Node: xfig482747
-Node: History and Acknowledgements483741
-Node: Reporting Bugs488663
-Node: GNU Free Documentation License489335
+Node: Dataset Options70660
+Node: Multiplot Options81079
+Node: Raw graph Options82971
+Node: Info Options83775
+Node: graph Environment85332
+Node: plot93045
+Node: plot Examples93316
+Node: plot Invocation97035
+Node: plot Environment113134
+Node: pic2plot120804
+Node: pic2plot Introduction121105
+Node: pic2plot Invocation127269
+Node: pic2plot Environment141068
+Node: tek2plot148813
+Node: tek2plot Introduction149118
+Node: tek2plot Invocation150819
+Node: tek2plot Environment165978
+Node: plotfont172100
+Node: plotfont Examples172397
+Node: plotfont Invocation176179
+Node: plotfont Environment189204
+Node: spline196181
+Node: spline Examples196463
+Node: Advanced Use of spline203602
+Node: spline Invocation208114
+Node: ode217622
+Node: Basic Math218957
+Node: Simple ode Examples221842
+Node: Additional ode Examples231002
+Node: ode Invocation237988
+Node: Diagnostics242203
+Node: Numerical Error246320
+Node: Running Time258062
+Node: Input Language259395
+Node: ODE Bibliography267688
+Node: libplot268620
+Node: libplot Overview269256
+Node: C Programming284319
+Node: The C API285031
+Node: Older C APIs289576
+Node: C Compiling and Linking292594
+Node: Sample C Drawings295930
+Node: Paths and Subpaths306977
+Node: Drawing on a Page313493
+Node: Animated GIFs319298
+Node: X Animations324072
+Node: X Programming332265
+Node: C++ Programming338939
+Node: The Plotter Class339291
+Node: C++ Compiling and Linking343656
+Node: Sample C++ Drawings346002
+Node: Functions348291
+Node: Control Functions350208
+Node: Drawing Functions359344
+Node: Attribute Functions376337
+Node: Mapping Functions401094
+Node: Plotter Parameters405397
+Node: Appendices428612
+Node: Fonts and Markers429314
+Node: Text Fonts430230
+Node: Cyrillic and Japanese440101
+Node: Text Fonts in X444358
+Node: Text String Format448327
+Node: Marker Symbols467024
+Node: Color Names469948
+Node: Page and Viewport Sizes471856
+Node: Metafiles477149
+Node: Auxiliary Software481313
+Node: idraw481628
+Node: xfig482918
+Node: History and Acknowledgements483912
+Node: Reporting Bugs488834
+Node: GNU Free Documentation License489506
 
 End Tag Table
 

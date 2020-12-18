@@ -252,7 +252,6 @@ main (int argc, char *argv[])
 
   /* misc. local variables used in getopt parsing, counterparts to the above */
   double local_x_start, local_delta_x;
-  int local_grid_style;
   int local_symbol_index;
   int local_clip_mode;
   double local_symbol_size, local_font_size, local_title_font_size;
@@ -515,41 +514,24 @@ main (int argc, char *argv[])
 	    }
 	  break;
 	case 'g':		/* Grid style, ARG REQUIRED	*/
-	  if (sscanf (optarg, "%d", &local_grid_style) <= 0)
+	  /* the subset partial ordering is: 0 < 1 < 2 < (5,6) < 3; 4 is different */
+	  if (strcmp(optarg,"0") == 0)
+	    grid_spec = NO_AXES;		/* no frame at all; just the plot */
+	  else if (strcmp(optarg,"1") == 0)
+	    grid_spec = AXES;			/* half-box, ticks, labels */
+	  else if (strcmp(optarg,"2") == 0)
+	    grid_spec = AXES_AND_BOX;		/* box, ticks, labels */
+	  else if (strcmp(optarg,"3") == 0 || strcmp(optarg,"xy") == 0 || strcmp(optarg,"yx") == 0)
+	    grid_spec = AXES_AND_BOX_AND_GRID;	/* box, ticks, labels, gridlines */
+	  else if (strcmp(optarg,"4") == 0)
+	    grid_spec = AXES_AT_ORIGIN;		/* no box, no gridlines; special axes, labels */
+	  else if (strcmp(optarg,"5") == 0 || strcmp(optarg,"x") == 0)
+	    grid_spec = AXES_AND_BOX_AND_XGRID;	/* box, ticks, labels, gridlines at x points */
+	  else if (strcmp(optarg,"6") == 0 || strcmp(optarg,"y") == 0)
+	    grid_spec = AXES_AND_BOX_AND_YGRID;	/* box, ticks, labels, gridlines at y points */
+	  else
 	    {
-	      fprintf (stderr,
-		       "%s: error: the grid style should be a (small) integer, but it was `%s'\n",
-		       progname, optarg);
-	      errcnt++;
-	      break;
-	    }
-	  switch (local_grid_style)
-	    /* the subset ordering is: 0 < 1 < 2 < 3; 4 is different */
-	    {
-	    case 0:
-	      /* no frame at all; just the plot */
-	      grid_spec = NO_AXES;
-	      break;
-	    case 1:
-	      /* box, ticks, gridlines, labels */
-	      grid_spec = AXES;
-	      break;
-	    case 2:
-	      /* box, ticks, no gridlines, labels */
-	      grid_spec = AXES_AND_BOX;
-	      break;
-	    case 3:
-	      /* `half-box', partial ticks, no gridlines, labels */
-	      grid_spec = AXES_AND_BOX_AND_GRID;
-	      break;
-	    case 4:
-	      /* no box, no gridlines; specially positioned axes, labels */
-	      grid_spec = AXES_AT_ORIGIN;
-	      break;
-	    default:
-	      fprintf (stderr,
-		       "%s: error: the grid style number `%s' is out of bounds\n",
-		       progname, optarg);
+	      fprintf (stderr, "%s: error: grid style `%s' is invalid\n", progname, optarg);
 	      errcnt++;
 	    }
 	  break;
