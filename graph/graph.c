@@ -34,7 +34,7 @@
 #define	ARG_REQUIRED	1
 #define	ARG_OPTIONAL	2
 
-const char *optstring = "-BCHOQVinstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::p::S::"; /* initial hyphen requests no reordering */
+const char *optstring = "-BCHOQVnstE:F:f:g:h:k:K:I:l:L:m:N:q:R:r:T:u:w:W:X:Y:a::x::y::p::S::"; /* initial hyphen requests no reordering */
 
 struct option long_options[] =
 {
@@ -70,7 +70,6 @@ struct option long_options[] =
   {"top-label",		ARG_REQUIRED,	NULL, 'L'},
   {"upward-shift",      ARG_REQUIRED,	NULL, 'u'},
   {"width-of-plot",	ARG_REQUIRED,	NULL, 'w'},
-  {"wait",		ARG_NONE,	NULL, 'i'},
   {"x-label",		ARG_REQUIRED,	NULL, 'X'},
   {"x-limits",		ARG_OPTIONAL,	NULL, 'x'}, /* 0, 1, 2, or 3 */
   {"y-label",		ARG_REQUIRED,	NULL, 'Y'},
@@ -91,6 +90,7 @@ struct option long_options[] =
   {"title-font-size",	ARG_REQUIRED,	NULL, 'F' << 8},
   {"page-size",		ARG_REQUIRED,	NULL, 'P' << 8},
   {"no-input",		ARG_NONE,	NULL, 'n' << 8},
+  {"wait",		ARG_NONE,	NULL, 'i' << 8},
   /* Options relevant only to raw graph (refers to plot(5) output) */
   {"portable-output",	ARG_NONE,	NULL, 'O'},
   /* Documentation options */
@@ -185,6 +185,7 @@ main (int argc, char *argv[])
   
   /* command-line parameters (constant over multigrapher operation) */
   const char *output_format = "meta";/* libplot output format */
+  bool output_format_dflt = true; /* whether using default setting of output_format */
   const char *bg_color = NULL;	/* color of background, if non-NULL */
   const char *bitmap_size = NULL;
   const char *emulate_color = NULL;
@@ -285,10 +286,12 @@ main (int argc, char *argv[])
   double old_reposition_scale;
 
   /* sui generis */
-  bool no_input = false;	/* Suppress input from X window */
-  bool wait_for_close = false;	/* Wait until window closes before exitting */
   bool new_defaults = false;	/* Use new set of default option values? */
   bool frame_on_top = false;
+  bool wait_for_close = false;	/* Wait until window closes before exitting? */
+  bool wait_for_close_dflt = true;  /* Whether wait_for_close has not been toggled */
+  bool no_input = false;	/* Suppress input from X window */
+  bool no_input_dflt = true;    /* Whether no_input has not been toggled */
 
   /* The main command-line parsing loop, which uses getopt to scan argv[]
      without reordering, i.e. to process command-line arguments (options
@@ -363,18 +366,16 @@ main (int argc, char *argv[])
 	{
 	  /* ----------- options with no argument --------------*/
 
-	case 'i':		/* Don't exit until window closed, ARG NONE */
-	  wait_for_close = true;
-	  break;
 	case 'n':		/* Toggle using new default options, ARG NONE */
 	  new_defaults = ! new_defaults;
-	  if (margin_left_dflt)  margin_left =  new_defaults ? 0.13 : 0.2;
-	  if (margin_below_dflt) margin_below = new_defaults ? 0.09 : 0.2;
-	  if (plot_width_dflt)   plot_width =   new_defaults ? 0.82 : 0.6;
-	  if (plot_height_dflt)  plot_height =  new_defaults ? 0.82 : 0.6;
-	  if (tick_size_dflt)    tick_size =    new_defaults ? -0.01 : 0.02;
-	  if (clip_mode_dflt)    clip_mode =    new_defaults ? 2 : 1;
-	  if (font_size_dflt)    font_size =    new_defaults ? 0.0385 : 0.0525;
+	  if (output_format_dflt)   output_format = new_defaults ? "X" : "meta";
+	  if (margin_left_dflt)     margin_left =   new_defaults ? 0.13 : 0.2;
+	  if (margin_below_dflt)    margin_below =  new_defaults ? 0.09 : 0.2;
+	  if (plot_width_dflt)      plot_width =    new_defaults ? 0.82 : 0.6;
+	  if (plot_height_dflt)     plot_height =   new_defaults ? 0.82 : 0.6;
+	  if (tick_size_dflt)       tick_size =     new_defaults ? -0.01 : 0.02;
+	  if (clip_mode_dflt)       clip_mode =     new_defaults ? 2 : 1;
+	  if (font_size_dflt)       font_size =     new_defaults ? 0.0385 : 0.0525;
 	  if (title_font_size_dflt) title_font_size = new_defaults ? 0.0385 : 0.07;
 	  if (use_color_dflt)
             {
@@ -393,9 +394,18 @@ main (int argc, char *argv[])
 	    }
 	  if (font_name_dflt)
 	    font_name = new_defaults ? new_default_font(output_format) : NULL;
+	  if (wait_for_close_dflt)
+	    wait_for_close = true;
+	  if (no_input_dflt)
+	    no_input = true;
+	  break;
+	case 'i' << 8:		/* Toggle don't exit until window closed, ARG NONE */
+	  wait_for_close = !wait_for_close;
+	  wait_for_close_dflt = false;
 	  break;
 	case 'n' << 8:		/* No input from X window, ARG NONE */
-	  no_input = true;
+	  no_input = !no_input;
+	  no_input_dflt = false;
 	  break;
 	case 's':		/* Don't erase display before plot, ARG NONE */
 	  save_screen = true;
@@ -661,6 +671,7 @@ main (int argc, char *argv[])
 	case 'T':		/* Output format, ARG REQUIRED      */
 	case 'T' << 8:
 	  output_format = xstrdup (optarg);
+	  output_format_dflt = false;
 	  if (new_defaults && symbol_index != 0 && symbol_index_dflt)
 	    {
 	      symbol_index = 16;

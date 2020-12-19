@@ -1,1 +1,0 @@
-exec graph -TX -i -n --no-input "$@"

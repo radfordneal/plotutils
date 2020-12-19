@@ -20,11 +20,16 @@ Details of changes:
 
 graph:   
 
+* A new set of default plot parameters can now be enabled with the
+  --new-defaults (or -n) command-line option.  These defaults improve
+  the aesthetics of plots and reduce wasted space.  They are
+  especially appropriate for plotting in an X window.
+
 * There is a new --wait (or -i) command-line option, relevant only for
   X Window display (with -TX).  If it is set, the 'graph' program will
   wait until the plot window has been closed by the user before
   exitting (or the user may terminate the program manually, e.g., with
-  Control-C).
+  Control-C).  It is set by default with --new-options.
 
 * There is a new --no-input comand-line option, relevant only for X
   Window display (with -TX).  If it is set, keyboard and mouse input
@@ -32,11 +37,7 @@ graph:
   the window with a stray mouse click (or by typing 'q'), and also
   prevents focus from moving to the plot window, away from the window
   used to issue the 'graph' command, which would often be inconvenient.
-
-* A new set of default plot parameters can now be enabled with the
-  --new-defaults (or -n) command-line option.  These defaults improve
-  the aesthetics of plots and reduce wasted space.  They are
-  especially appropriate for plotting in an X window.
+  It is set by default with --new-options.
 
 * There is a new --points or -p command-line option, which has the
   effect of -m -1 and -S 16 POINT_SIZE/100, where POINT_SIZE if the

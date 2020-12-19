@@ -975,30 +975,6 @@ of the '-T' option) occur more than once.  If so, the second and later
 occurrences should be placed on the command line immediately after each
 '--reposition X Y' option, which separates the plots in a multiplot.
 
-'-T TYPE'
-'--output-format TYPE'
-     (String, default "meta".)  Select an output format of type TYPE,
-     which may be one of the strings "X", "png", "pnm", "gif", "svg",
-     "ai", "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and
-     "meta".  These refer respectively to the X Window System, PNG
-     format, portable anymap (PBM/PGM/PPM) format, pseudo-GIF format,
-     the XML-based Scalable Vector Graphics format, the format used by
-     Adobe Illustrator, 'idraw'-editable Postscript, the WebCGM format
-     for Web-based vector graphics, the format used by the 'xfig'
-     drawing editor, the Hewlett-Packard PCL 5 printer language, the
-     Hewlett-Packard Graphics Language (by default, HP-GL/2), the ReGIS
-     (remote graphics instruction set) format developed by DEC,
-     Tektronix format, and device-independent GNU graphics metafile
-     format.  The option '--display-type' is an obsolete alternative to
-     '--output-format'.
-
-'-i'
-'--wait'
-     (Relevant only for '-TX'.)  Wait until the X window displaying the
-     plot has been closed before exitting.  Alternatively, the program
-     may be terminated by typing the interrupt character (often
-     Control-C).
-
 '-n'
 '--new-defaults'
      Toggle use a new set of default values for plot options (such as
@@ -1007,6 +983,39 @@ occurrences should be placed on the command line immediately after each
      defaults are used initially (so the first '--new-defaults' enables
      the new defaults).  This option does not change the values of
      options that have already been set explicitly.
+
+'-T TYPE'
+'--output-format TYPE'
+     (String, old default "meta", new default "X".) Select an output
+     format of type TYPE, which may be one of the strings "X", "png",
+     "pnm", "gif", "svg", "ai", "ps", "cgm", "fig", "pcl", "hpgl",
+     "regis", "tek", and "meta".  These refer respectively to the
+     X Window System, PNG format, portable anymap (PBM/PGM/PPM) format,
+     pseudo-GIF format, the XML-based Scalable Vector Graphics format,
+     the format used by Adobe Illustrator, 'idraw'-editable Postscript,
+     the WebCGM format for Web-based vector graphics, the format used by
+     the 'xfig' drawing editor, the Hewlett-Packard PCL 5 printer
+     language, the Hewlett-Packard Graphics Language (by default,
+     HP-GL/2), the ReGIS (remote graphics instruction set) format
+     developed by DEC, Tektronix format, and device-independent GNU
+     graphics metafile format.  The option '--display-type' is an
+     obsolete alternative to '--output-format'.
+
+'--wait'
+     (Relevant only for '-TX'.)  Toggle whether to wait until the X
+     window displaying the plot has been closed before exitting.
+     Alternatively, the program may be terminated by typing the
+     interrupt character (often Control-C). Initially off with old
+     defaults, and on with new defaults ('-n').
+
+'--no-input'
+     (Relevant only for '-TX'.)  Toggle whether to suppress input in the
+     X window in which the plot is displayed.  This avoids accidently
+     closing the window with a stray mouse click (or by typing 'q'), and
+     also prevents focus from moving to the plot window, away from the
+     window used to issue the 'graph' command, which would often be
+     inconvenient.  Initially off with old defaults, and on with new
+     defaults ('-n').
 
 '-E X|Y'
 '--toggle-axis-end X|Y'
@@ -11017,79 +11026,79 @@ Node: Multiplotting40040
 Node: Data Formats43664
 Node: graph Invocation46385
 Node: Plot Options48155
-Node: Dataset Options70654
-Node: Multiplot Options81073
-Node: Raw graph Options82965
-Node: Info Options83769
-Node: graph Environment85326
-Node: plot93038
-Node: plot Examples93309
-Node: plot Invocation97028
-Node: plot Environment113126
-Node: pic2plot120795
-Node: pic2plot Introduction121096
-Node: pic2plot Invocation127260
-Node: pic2plot Environment141058
-Node: tek2plot148802
-Node: tek2plot Introduction149107
-Node: tek2plot Invocation150808
-Node: tek2plot Environment165964
-Node: plotfont172086
-Node: plotfont Examples172383
-Node: plotfont Invocation176165
-Node: plotfont Environment189188
-Node: spline196165
-Node: spline Examples196447
-Node: Advanced Use of spline203586
-Node: spline Invocation208098
-Node: ode217606
-Node: Basic Math218941
-Node: Simple ode Examples221825
-Node: Additional ode Examples230985
-Node: ode Invocation237971
-Node: Diagnostics242186
-Node: Numerical Error246303
-Node: Running Time258043
-Node: Input Language259376
-Node: ODE Bibliography267669
-Node: libplot268601
-Node: libplot Overview269237
-Node: C Programming284299
-Node: The C API285011
-Node: Older C APIs289556
-Node: C Compiling and Linking292573
-Node: Sample C Drawings295909
-Node: Paths and Subpaths306956
-Node: Drawing on a Page313472
-Node: Animated GIFs319277
-Node: X Animations324049
-Node: X Programming332241
-Node: C++ Programming338915
-Node: The Plotter Class339267
-Node: C++ Compiling and Linking343632
-Node: Sample C++ Drawings345977
-Node: Functions348266
-Node: Control Functions350182
-Node: Drawing Functions359316
-Node: Attribute Functions376304
-Node: Mapping Functions401059
-Node: Plotter Parameters405361
-Node: Appendices428573
-Node: Fonts and Markers429275
-Node: Text Fonts430191
-Node: Cyrillic and Japanese440061
-Node: Text Fonts in X444318
-Node: Text String Format448287
-Node: Marker Symbols466984
-Node: Color Names469908
-Node: Page and Viewport Sizes471816
-Node: Metafiles477109
-Node: Auxiliary Software481272
-Node: idraw481587
-Node: xfig482876
-Node: History and Acknowledgements483870
-Node: Reporting Bugs488791
-Node: GNU Free Documentation License489463
+Node: Dataset Options71217
+Node: Multiplot Options81636
+Node: Raw graph Options83528
+Node: Info Options84332
+Node: graph Environment85889
+Node: plot93601
+Node: plot Examples93872
+Node: plot Invocation97591
+Node: plot Environment113689
+Node: pic2plot121358
+Node: pic2plot Introduction121659
+Node: pic2plot Invocation127823
+Node: pic2plot Environment141621
+Node: tek2plot149365
+Node: tek2plot Introduction149670
+Node: tek2plot Invocation151371
+Node: tek2plot Environment166527
+Node: plotfont172649
+Node: plotfont Examples172946
+Node: plotfont Invocation176728
+Node: plotfont Environment189751
+Node: spline196728
+Node: spline Examples197010
+Node: Advanced Use of spline204149
+Node: spline Invocation208661
+Node: ode218169
+Node: Basic Math219504
+Node: Simple ode Examples222388
+Node: Additional ode Examples231548
+Node: ode Invocation238534
+Node: Diagnostics242749
+Node: Numerical Error246866
+Node: Running Time258606
+Node: Input Language259939
+Node: ODE Bibliography268232
+Node: libplot269164
+Node: libplot Overview269800
+Node: C Programming284862
+Node: The C API285574
+Node: Older C APIs290119
+Node: C Compiling and Linking293136
+Node: Sample C Drawings296472
+Node: Paths and Subpaths307519
+Node: Drawing on a Page314035
+Node: Animated GIFs319840
+Node: X Animations324612
+Node: X Programming332804
+Node: C++ Programming339478
+Node: The Plotter Class339830
+Node: C++ Compiling and Linking344195
+Node: Sample C++ Drawings346540
+Node: Functions348829
+Node: Control Functions350745
+Node: Drawing Functions359879
+Node: Attribute Functions376867
+Node: Mapping Functions401622
+Node: Plotter Parameters405924
+Node: Appendices429136
+Node: Fonts and Markers429838
+Node: Text Fonts430754
+Node: Cyrillic and Japanese440624
+Node: Text Fonts in X444881
+Node: Text String Format448850
+Node: Marker Symbols467547
+Node: Color Names470471
+Node: Page and Viewport Sizes472379
+Node: Metafiles477672
+Node: Auxiliary Software481835
+Node: idraw482150
+Node: xfig483439
+Node: History and Acknowledgements484433
+Node: Reporting Bugs489354
+Node: GNU Free Documentation License490026
 
 End Tag Table
 

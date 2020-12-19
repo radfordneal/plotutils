@@ -1162,9 +1162,20 @@ immediately after each @samp{--reposition @var{x} @var{y}} option, which
 separates the plots in a multiplot.
 
 @table @samp
+
+@item -n
+@itemx --new-defaults
+Toggle use a new set of default values for plot options (such 
+as for @samp{-w} and @samp{-h}). The old defaults, and where different 
+the new defaults, are noted in the description of each option.
+The old defaults are used initially (so the first @samp{--new-defaults} 
+enables the new defaults).  This option does not change the values of
+options that have already been set explicitly.
+
 @item -T @var{type}
 @itemx --output-format @var{type}
-(String, default "meta".)  Select an output format of type @var{type},
+(String, old default "meta", new default "X".)  
+Select an output format of type @var{type},
 which may be one of the strings "X", "png", "pnm", "gif", "svg", "ai",
 "ps", "cgm", "fig", "pcl", "hpgl", "regis", "tek", and "meta".  These
 refer respectively to the @w{X Window System}, PNG format, portable
@@ -1179,20 +1190,20 @@ format, and device-independent GNU graphics metafile format.  The
 option @samp{--display-type} is an obsolete alternative to
 @samp{--output-format}.
 
-@item -i
-@itemx --wait
-(Relevant only for @samp{-TX}.) Wait until the X window displaying the
-plot has been closed before exitting. Alternatively, the program may be
-terminated by typing the interrupt character (often Control-C).
+@item --wait
+(Relevant only for @samp{-TX}.) Toggle whether to wait until the X
+window displaying the plot has been closed before exitting. Alternatively, 
+the program may be terminated by typing the interrupt character 
+(often Control-C).  Initially off with old defaults, and on with new
+defaults (@samp{-n}).
 
-@item -n
-@itemx --new-defaults
-Toggle use a new set of default values for plot options (such 
-as for @samp{-w} and @samp{-h}). The old defaults, and where different 
-the new defaults, are noted in the description of each option.
-The old defaults are used initially (so the first @samp{--new-defaults} 
-enables the new defaults).  This option does not change the values of
-options that have already been set explicitly.
+@item --no-input
+(Relevant only for @samp{-TX}.) Toggle whether to suppress input in 
+the X window in which the plot is displayed.  This avoids accidently closing
+the window with a stray mouse click (or by typing 'q'), and also
+prevents focus from moving to the plot window, away from the window
+used to issue the 'graph' command, which would often be inconvenient.
+Initially off with old defaults, and on with new defaults (@samp{-n}).
 
 @item -E @var{x|y}
 @itemx --toggle-axis-end @var{x|y}
