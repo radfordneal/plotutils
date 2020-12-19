@@ -200,7 +200,7 @@ main (int argc, char *argv[])
   bool no_rotate_y_label = false; /* used for pre-X11R6 servers */
   const char *frame_color = "black"; /* color of frame (and graph, if no -C)*/
   int clip_mode = 1;		/* clipping mode (cf. gnuplot) */
-  bool clip_mode_dflt;		/* whether using default value for clip mode */
+  bool clip_mode_dflt = true;	/* whether using default value for clip mode */
   /* following variables are portmanteau: x and y are included as bitfields*/
   int log_axis = 0;		/* log axes or linear axes? */
   int round_to_next_tick = 0;	/* round axis limits to nearest tick? */
@@ -373,7 +373,7 @@ main (int argc, char *argv[])
 	  if (plot_width_dflt)   plot_width =   new_defaults ? 0.82 : 0.6;
 	  if (plot_height_dflt)  plot_height =  new_defaults ? 0.82 : 0.6;
 	  if (tick_size_dflt)    tick_size =    new_defaults ? -0.01 : 0.02;
-	  if (clip_mode_dflt)    tick_size =    new_defaults ? 2 : 1;
+	  if (clip_mode_dflt)    clip_mode =    new_defaults ? 2 : 1;
 	  if (font_size_dflt)    font_size =    new_defaults ? 0.0385 : 0.0525;
 	  if (title_font_size_dflt) title_font_size = new_defaults ? 0.0385 : 0.07;
 	  if (use_color_dflt)
