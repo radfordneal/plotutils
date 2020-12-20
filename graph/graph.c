@@ -127,7 +127,47 @@ static char *new_default_font (const char *output_format)
        : strcmp(output_format,"pnm") == 0 ? "HersheySerif-Bold"
        : NULL;
 }
-  
+
+/* Return a fixed-up bitmap-size option. */
+static const char *adjust_bitmap_size (const char *bitmap_size, bool new_defaults, const char *output_format)
+{
+  if (strcmp(output_format,"X") != 0) 
+    /* don't change anything for formats other than X. */
+    return bitmap_size;
+
+  if (bitmap_size == NULL)
+    /* return default */
+    return new_defaults ? "570x570+5+5" : NULL;
+
+  bool has_x = strchr(bitmap_size,'x') != NULL;
+  bool has_pm = strchr(bitmap_size,'+') != NULL || strchr(bitmap_size,'-') != NULL;
+
+  if (!has_x && !has_pm)
+    /* seems invalid, let whatever happens happen later... */
+    return bitmap_size;
+
+  if (!has_x && (*bitmap_size == '+' || *bitmap_size == '-'))
+    {
+      /* missing dimensions, add defaults */
+      char *n = malloc(strlen(bitmap_size)+7+1);
+      if (n == NULL)
+        return bitmap_size;
+      sprintf(n,"570x570%s",bitmap_size);
+      bitmap_size = n;
+    }
+
+  if (!has_pm && new_defaults)
+    {  
+      /* no position, add default */
+      char *n = malloc(strlen(bitmap_size)+4+1);
+      if (n == NULL)
+        return bitmap_size;
+      sprintf(n,"%s+5+5",bitmap_size);
+      bitmap_size = n;
+    }
+
+  return bitmap_size;
+}  
 
 int
 main (int argc, char *argv[])
@@ -1148,6 +1188,7 @@ main (int argc, char *argv[])
 		  if (first_graph_of_multigraph)
 		    /* haven't created multigrapher yet, do so now */
 		    {
+		      bitmap_size = adjust_bitmap_size (bitmap_size, new_defaults, output_format);
 		      multigrapher = new_multigrapher (output_format, 
                         bg_color, bitmap_size, emulate_color, max_line_length, 
                         meta_portable, page_size, rotation_angle, save_screen,
@@ -1368,6 +1409,7 @@ main (int argc, char *argv[])
 		  if (first_graph_of_multigraph)
 		    /* need to create the multigrapher */
 		    {
+		      bitmap_size = adjust_bitmap_size (bitmap_size, new_defaults, output_format);
 		      multigrapher = new_multigrapher (output_format, 
                         bg_color, bitmap_size, emulate_color, max_line_length, 
                         meta_portable, page_size, rotation_angle, save_screen,
@@ -1612,6 +1654,7 @@ main (int argc, char *argv[])
 	  if (first_graph_of_multigraph)
 	    /* still haven't created multigrapher, do so now */
 	    {
+	      bitmap_size = adjust_bitmap_size (bitmap_size, new_defaults, output_format);
 	      multigrapher = new_multigrapher (output_format, 
                 bg_color, bitmap_size, emulate_color, max_line_length, 
                 meta_portable, page_size, rotation_angle, save_screen,

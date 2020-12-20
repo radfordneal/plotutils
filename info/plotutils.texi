@@ -1453,7 +1453,8 @@ svg} or @samp{-T cgm} option is used, an output file without a
 background may be produced by setting the background color to "none".
 
 @item --bitmap-size @var{bitmap_size}
-(String, default "570x570".)  Set the size of the graphics display in
+(String, default "570x570", except for @samp{-TX} new default is "570x570+5+5".)  
+Set the size of the graphics display in
 which the plot will be drawn, in terms of pixels, to be
 @var{bitmap_size}.  This is relevant only to @code{graph @w{-T X}},
 @code{graph -T png}, @code{graph -T pnm}, and @code{graph -T gif}, for
@@ -1465,7 +1466,9 @@ The graphics display used by @code{graph -T X} is a popped-up @w{X
 window}.  Command-line positioning of this window on an @w{X Window}
 System display is supported.  For example, if @var{bitmap_size} is
 "570x570+0+0" then the window will be @w{popped up} in the upper left
-corner.
+corner.  If only a position is given (eg, "-10+20"), the default
+size of "570x570" will be prepended.  If new defaults are being used
+and no position is given, "+5+5" will be appended.
 
 If you choose a rectangular (non-square) window size, the fonts in the
 plot will be scaled anisotropically, i.e., by different factors in the

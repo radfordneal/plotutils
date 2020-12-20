@@ -1264,17 +1264,21 @@ occurrences should be placed on the command line immediately after each
      be produced by setting the background color to "none".
 
 '--bitmap-size BITMAP_SIZE'
-     (String, default "570x570".)  Set the size of the graphics display
-     in which the plot will be drawn, in terms of pixels, to be
-     BITMAP_SIZE.  This is relevant only to 'graph -T X', 'graph -T
-     png', 'graph -T pnm', and 'graph -T gif', for all of which the size
-     can be expressed in terms of pixels.  The environment variable
-     'BITMAPSIZE' may equally well be used to specify the size.
+     (String, default "570x570", except for '-TX' new default is
+     "570x570+5+5".)  Set the size of the graphics display in which the
+     plot will be drawn, in terms of pixels, to be BITMAP_SIZE.  This is
+     relevant only to 'graph -T X', 'graph -T png', 'graph -T pnm', and
+     'graph -T gif', for all of which the size can be expressed in terms
+     of pixels.  The environment variable 'BITMAPSIZE' may equally well
+     be used to specify the size.
 
      The graphics display used by 'graph -T X' is a popped-up X window.
      Command-line positioning of this window on an X Window System
      display is supported.  For example, if BITMAP_SIZE is "570x570+0+0"
-     then the window will be popped up in the upper left corner.
+     then the window will be popped up in the upper left corner.  If
+     only a position is given (eg, "-10+20"), the default size of
+     "570x570" will be prepended.  If new defaults are being used and no
+     position is given, "+5+5" will be appended.
 
      If you choose a rectangular (non-square) window size, the fonts in
      the plot will be scaled anisotropically, i.e., by different factors
@@ -11026,79 +11030,79 @@ Node: Multiplotting40040
 Node: Data Formats43664
 Node: graph Invocation46385
 Node: Plot Options48155
-Node: Dataset Options71217
-Node: Multiplot Options81636
-Node: Raw graph Options83528
-Node: Info Options84332
-Node: graph Environment85889
-Node: plot93601
-Node: plot Examples93872
-Node: plot Invocation97591
-Node: plot Environment113689
-Node: pic2plot121358
-Node: pic2plot Introduction121659
-Node: pic2plot Invocation127823
-Node: pic2plot Environment141621
-Node: tek2plot149365
-Node: tek2plot Introduction149670
-Node: tek2plot Invocation151371
-Node: tek2plot Environment166527
-Node: plotfont172649
-Node: plotfont Examples172946
-Node: plotfont Invocation176728
-Node: plotfont Environment189751
-Node: spline196728
-Node: spline Examples197010
-Node: Advanced Use of spline204149
-Node: spline Invocation208661
-Node: ode218169
-Node: Basic Math219504
-Node: Simple ode Examples222388
-Node: Additional ode Examples231548
-Node: ode Invocation238534
-Node: Diagnostics242749
-Node: Numerical Error246866
-Node: Running Time258606
-Node: Input Language259939
-Node: ODE Bibliography268232
-Node: libplot269164
-Node: libplot Overview269800
-Node: C Programming284862
-Node: The C API285574
-Node: Older C APIs290119
-Node: C Compiling and Linking293136
-Node: Sample C Drawings296472
-Node: Paths and Subpaths307519
-Node: Drawing on a Page314035
-Node: Animated GIFs319840
-Node: X Animations324612
-Node: X Programming332804
-Node: C++ Programming339478
-Node: The Plotter Class339830
-Node: C++ Compiling and Linking344195
-Node: Sample C++ Drawings346540
-Node: Functions348829
-Node: Control Functions350745
-Node: Drawing Functions359879
-Node: Attribute Functions376867
-Node: Mapping Functions401622
-Node: Plotter Parameters405924
-Node: Appendices429136
-Node: Fonts and Markers429838
-Node: Text Fonts430754
-Node: Cyrillic and Japanese440624
-Node: Text Fonts in X444881
-Node: Text String Format448850
-Node: Marker Symbols467547
-Node: Color Names470471
-Node: Page and Viewport Sizes472379
-Node: Metafiles477672
-Node: Auxiliary Software481835
-Node: idraw482150
-Node: xfig483439
-Node: History and Acknowledgements484433
-Node: Reporting Bugs489354
-Node: GNU Free Documentation License490026
+Node: Dataset Options71461
+Node: Multiplot Options81880
+Node: Raw graph Options83772
+Node: Info Options84576
+Node: graph Environment86133
+Node: plot93845
+Node: plot Examples94116
+Node: plot Invocation97835
+Node: plot Environment113933
+Node: pic2plot121602
+Node: pic2plot Introduction121903
+Node: pic2plot Invocation128067
+Node: pic2plot Environment141865
+Node: tek2plot149609
+Node: tek2plot Introduction149914
+Node: tek2plot Invocation151615
+Node: tek2plot Environment166771
+Node: plotfont172893
+Node: plotfont Examples173190
+Node: plotfont Invocation176972
+Node: plotfont Environment189995
+Node: spline196972
+Node: spline Examples197254
+Node: Advanced Use of spline204393
+Node: spline Invocation208905
+Node: ode218413
+Node: Basic Math219748
+Node: Simple ode Examples222632
+Node: Additional ode Examples231792
+Node: ode Invocation238778
+Node: Diagnostics242993
+Node: Numerical Error247110
+Node: Running Time258850
+Node: Input Language260183
+Node: ODE Bibliography268476
+Node: libplot269408
+Node: libplot Overview270044
+Node: C Programming285106
+Node: The C API285818
+Node: Older C APIs290363
+Node: C Compiling and Linking293380
+Node: Sample C Drawings296716
+Node: Paths and Subpaths307763
+Node: Drawing on a Page314279
+Node: Animated GIFs320084
+Node: X Animations324856
+Node: X Programming333048
+Node: C++ Programming339722
+Node: The Plotter Class340074
+Node: C++ Compiling and Linking344439
+Node: Sample C++ Drawings346784
+Node: Functions349073
+Node: Control Functions350989
+Node: Drawing Functions360123
+Node: Attribute Functions377111
+Node: Mapping Functions401866
+Node: Plotter Parameters406168
+Node: Appendices429380
+Node: Fonts and Markers430082
+Node: Text Fonts430998
+Node: Cyrillic and Japanese440868
+Node: Text Fonts in X445125
+Node: Text String Format449094
+Node: Marker Symbols467791
+Node: Color Names470715
+Node: Page and Viewport Sizes472623
+Node: Metafiles477916
+Node: Auxiliary Software482079
+Node: idraw482394
+Node: xfig483683
+Node: History and Acknowledgements484677
+Node: Reporting Bugs489598
+Node: GNU Free Documentation License490270
 
 End Tag Table
 

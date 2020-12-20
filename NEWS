@@ -50,6 +50,13 @@ graph:
   that x (vertical), y (horizontal), or both grid lines should be drawn.
   (The default is still no grid lines.)
 
+* The default for --bitmap-size with -TX is 570x570+5+5 with the
+  new defaults.  With new or old defaults, the default size of 570x570
+  is prepended if the argument of --bitmap-size specifies only a position
+  (e.g., -10+20 becomes 570x570-10+20).  With new defaults, an argument
+  specifying only the size has +5+5 appended (e.g., 300x300 becomes
+  300x300+5+5).
+
 * When axis labels are in scientific notation, the times sign is now
   represented by an "x" character.  This avoids some spacing anomolies
   that occur when the actual times symbol is used.  Trailing zeros
