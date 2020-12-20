@@ -251,16 +251,15 @@ extern __C_LINKAGE void free (void * ptr);
 
 /**************************************************************************/
 /* Support the `bool' datatype, which is used widely in this package.     */
+/*                                                                        */
+/* Since some of the code uses non-zero values other than 1 to mean true, */
+/* it has to be an int, not a single bit.                                 */
 /**************************************************************************/
 
 #ifndef __cplusplus
-#ifdef __STDC__
-typedef enum { false = 0, true = 1 } bool;
-#else  /* not __STDC__, do things the old-fashioned way */
 typedef int bool;
 #define false 0
 #define true 1
-#endif /* not __STDC__ */
 #endif /* not __cplusplus */
 
 /**************************************************************************/
