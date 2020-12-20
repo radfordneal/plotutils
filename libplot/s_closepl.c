@@ -257,6 +257,7 @@ _pl_s_set_matrix (R___(Plotter *_plotter) const double m_local[6])
   double m_base[6], m[6];
   const double *m_emitted = (const double *)NULL; /* keep compiler happy */
   bool need_transform_attribute = false;
+  double inverse_of_global[6], product[6];
   int i;
   
   for (i = 0; i < 6; i++)
@@ -300,8 +301,6 @@ _pl_s_set_matrix (R___(Plotter *_plotter) const double m_local[6])
 
       if (need_transform_attribute)
 	{
-	  double inverse_of_global[6], product[6];
-
 	  _matrix_inverse (_plotter->s_matrix, inverse_of_global);
 
 	  /* emitted transform attribute of object will be a product of
