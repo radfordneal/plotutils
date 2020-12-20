@@ -22,8 +22,31 @@
 bool
 _pl_m_end_page (S___(Plotter *_plotter))
 {
+  bool retval = true;
+
+  retval = 0;
+
   _pl_m_emit_op_code (R___(_plotter) O_CLOSEPL);
   _pl_m_emit_terminator (S___(_plotter));
+
+  if (_plotter->data->outfp)
+    {
+      if (fflush(_plotter->data->outfp) < 0)
+	retval = false;
+#ifdef MSDOS
+      /* data can be caught in DOS buffers, so do an fsync() too */
+      if (fsync (_plotter->data->outfp) < 0)
+	retval = false;
+#endif
+    }
+#ifdef LIBPLOTTER
+  if (_plotter->data->outstream)
+    {
+      _plotter->data->outstream->flush ();
+      if (!(*(_plotter->data->outstream)))
+	retval = false;
+    }
+#endif
 
   /* clean up device-specific Plotter members that are heap-allocated */
   if (_plotter->meta_font_name != (const char *)NULL)
