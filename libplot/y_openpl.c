@@ -166,6 +166,11 @@ _pl_y_begin_page (S___(Plotter *_plotter))
   String fake_argv[MAX_FAKE_ARGV_LENGTH];
   const char *double_buffer_s;
   int fake_argc;
+  char *display_s;
+  char *bitmap_size_s;
+  const char *bg_color_s;
+  plColor color;
+  char rgb[8];			/* enough room for "#FFFFFF", incl. NUL */
   int screen;			/* screen number */
   
   /* To permit openpl..closepl to be invoked repeatedly, we don't use the
@@ -206,8 +211,6 @@ _pl_y_begin_page (S___(Plotter *_plotter))
 
   /* take argument of the "-display" option from the DISPLAY parameter */
   {
-    const char *display_s;
-	
     display_s = (char *)_get_plot_param (_plotter->data, "DISPLAY");
     if (display_s == NULL || *display_s == '\0')
       {
@@ -223,8 +226,6 @@ _pl_y_begin_page (S___(Plotter *_plotter))
      otherwise size will be taken from Xplot.geometry.  Fallback size is
      specified at head of this file. */
   {
-    char *bitmap_size_s;
-	
     bitmap_size_s = (char *)_get_plot_param (_plotter->data, "BITMAPSIZE");
     if (bitmap_size_s && _bitmap_size_ok (bitmap_size_s))
       {
@@ -236,14 +237,9 @@ _pl_y_begin_page (S___(Plotter *_plotter))
   /* Take argument of "-bg" option from BG_COLOR parameter, if set;
      otherwise use default color (white). */
   {
-    const char *bg_color_s;
-	
     bg_color_s = (char *)_get_plot_param (_plotter->data, "BG_COLOR");
     if (bg_color_s)
       {
-	plColor color;
-	char rgb[8];		/* enough room for "#FFFFFF", incl. NUL */
-
 	if (_string_to_color (bg_color_s, &color, _plotter->data->color_name_cache))
 	  /* color is in our database */
 	  {
@@ -256,8 +252,7 @@ _pl_y_begin_page (S___(Plotter *_plotter))
 		sprintf (rgb, "#%02X%02X%02X", gray, gray, gray);
 	      }
 	    else
-	      sprintf (rgb, "#%02X%02X%02X",
-		       color.red, color.green, color.blue);
+	      sprintf (rgb, "#%02X%02X%02X", color.red, color.green, color.blue);
 	    bg_color_s = rgb;
 	  }
 	else
@@ -304,8 +299,6 @@ _pl_y_begin_page (S___(Plotter *_plotter))
 		   &fake_argc, fake_argv);
   if (_plotter->x_dpy == (Display *)NULL)
     {
-      char *display_s;
-
       display_s = (char *)_get_plot_param (_plotter->data, "DISPLAY");
       if (display_s == NULL)	/* shouldn't happen */
 	_plotter->error (R___(_plotter)
