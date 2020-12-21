@@ -1548,26 +1548,29 @@ color/monochrome) that each dataset has.
 
 '-p [POINT_SIZE]'
 '--points [POINT_SIZE]'
-
-     (Float, default 3.)  Plot points, without lines.  Equivalent to the
-     combination of '-m -1', which suppresses lines, and '-S 16
-     POINT_SIZE/100', which sets the symbol for points to a filled
-     circle, with size of POINT_SIZE hundredths of the minimum dimension
-     of the plot region.
+     (Float, default 0.03.)  Plot points, without lines.  Equivalent to
+     the combination of '-m -1', which suppresses lines, and '-S 16
+     POINT_SIZE', which sets the symbol for points to a filled circle,
+     with size of POINT_SIZE.  Values for POINT_SIZE of 1 or greater are
+     divided by 100.
 
 '-S [SYMBOL_NUMBER [SYMBOL_SIZE]]'
 '--symbol [SYMBOL_NUMBER [SYMBOL_SIZE]]'
-     (Integer and float, defaults 0 and 0.03.)  Draw a marker symbol at
-     each data point.  SYMBOL_NUMBER specifies the symbol type, and
-     SYMBOL_SIZE specifies the font size of the symbol, as a fraction of
-     the minimum dimension (width or height) of the plotting box.
-     If the dataset is being rendered in color, the symbol will have the
-     color of the line that is being drawn to connect the data points.
+     (Integer and float, old defaults for arguments are 1 and 0.03, new
+     defaults are 16 and 0.03, but the default is no symbol if this
+     option is not specified.)  Draw a marker symbol at each data point.
+     SYMBOL_NUMBER specifies the symbol type, and SYMBOL_SIZE specifies
+     the font size of the symbol, as a fraction of the minimum dimension
+     (width or height) of the plotting box.  Values for SYMBOL_SIZE of 1
+     or greater are divided by 100.
 
-     If you use the '-S' option, you would usually also use the '-m'
-     option, to request that the symbols be drawn without any line
-     connecting them.  By specifying a negative argument to '-m'
-     (a 'negative linemode'), you may obtain colored symbols.
+     If the dataset is being rendered in color, the symbol will have the
+     color of the line that is (or would be) drawn to connect the data
+     points.  However, if you use the '-S' option, you would usually
+     also use the '-m' option, to request that the symbols be drawn
+     without any line connecting them.  By specifying a negative
+     argument to '-m' (a 'negative linemode'), you may obtain colored
+     symbols (and no lines).
 
      Here are a few of the useful symbols (by convention, symbol #0
      means no symbol at all).
@@ -1586,10 +1589,6 @@ color/monochrome) that each dataset has.
        18. filled triangle
        19. filled diamond
 
-     The default if '-S' is specified with no following symbol number is
-     symbol 1 (small dot) with old defaults and 16 (filled circle) with
-     new defaults.
-
      Marker symbols 0...31 are furnished by the GNU 'libplot' graphics
      library.  *Note Marker Symbols::.  Symbol numbers greater than or
      equal to 32 are interpreted as characters in a symbol font, which
@@ -1600,14 +1599,15 @@ color/monochrome) that each dataset has.
      (Float, old default -1.0, new default 0.003) Set the thickness of
      the lines used to join successive points in a dataset, as a
      fraction of the size (i.e., minimum dimension) of the graphics
-     display, to LINE_WIDTH.  A negative value means that the default
-     value for the line thickness provided by the GNU 'libplot' graphics
-     library should be used.  This is usually 1/850 times the size of
-     the display, although if '-T X', '-T png', '-T pnm', or '-T gif' is
-     specified, it is zero.  By convention, a zero-thickness line is the
-     thinnest line that can be drawn.  This is the case in all output
-     formats.  Note, however, that the drawing editors 'idraw' and
-     'xfig' treat zero-thickness lines as invisible.
+     display, to LINE_WIDTH.  Values of 1 or greater are divided by
+     1000.  A negative value means that the default value for the line
+     thickness provided by the GNU 'libplot' graphics library should be
+     used.  This is usually 1/850 times the size of the display,
+     although if '-T X', '-T png', '-T pnm', or '-T gif' is specified,
+     it is zero.  By convention, a zero-thickness line is the thinnest
+     line that can be drawn.  This is the case in all output formats.
+     Note, however, that the drawing editors 'idraw' and 'xfig' treat
+     zero-thickness lines as invisible.
 
      'graph -T tek' and 'graph -T regis' do not support drawing lines
      with other than a default thickness, and 'graph -T hpgl' does not
@@ -11043,78 +11043,78 @@ Node: Data Formats43665
 Node: graph Invocation46386
 Node: Plot Options48156
 Node: Dataset Options72020
-Node: Multiplot Options82439
-Node: Raw graph Options84331
-Node: Info Options85135
-Node: graph Environment86692
-Node: plot94405
-Node: plot Examples94676
-Node: plot Invocation98395
-Node: plot Environment114494
-Node: pic2plot122164
-Node: pic2plot Introduction122465
-Node: pic2plot Invocation128629
-Node: pic2plot Environment142428
-Node: tek2plot150173
-Node: tek2plot Introduction150478
-Node: tek2plot Invocation152179
-Node: tek2plot Environment167338
-Node: plotfont173460
-Node: plotfont Examples173757
-Node: plotfont Invocation177539
-Node: plotfont Environment190564
-Node: spline197541
-Node: spline Examples197823
-Node: Advanced Use of spline204962
-Node: spline Invocation209474
-Node: ode218982
-Node: Basic Math220317
-Node: Simple ode Examples223202
-Node: Additional ode Examples232362
-Node: ode Invocation239348
-Node: Diagnostics243563
-Node: Numerical Error247680
-Node: Running Time259422
-Node: Input Language260755
-Node: ODE Bibliography269048
-Node: libplot269980
-Node: libplot Overview270616
-Node: C Programming285679
-Node: The C API286391
-Node: Older C APIs290936
-Node: C Compiling and Linking293954
-Node: Sample C Drawings297290
-Node: Paths and Subpaths308337
-Node: Drawing on a Page314853
-Node: Animated GIFs320658
-Node: X Animations325432
-Node: X Programming333625
-Node: C++ Programming340299
-Node: The Plotter Class340651
-Node: C++ Compiling and Linking345016
-Node: Sample C++ Drawings347362
-Node: Functions349651
-Node: Control Functions351568
-Node: Drawing Functions360704
-Node: Attribute Functions377697
-Node: Mapping Functions402454
-Node: Plotter Parameters406757
-Node: Appendices429972
-Node: Fonts and Markers430674
-Node: Text Fonts431590
-Node: Cyrillic and Japanese441461
-Node: Text Fonts in X445718
-Node: Text String Format449687
-Node: Marker Symbols468384
-Node: Color Names471308
-Node: Page and Viewport Sizes473216
-Node: Metafiles478509
-Node: Auxiliary Software482673
-Node: idraw482988
-Node: xfig484278
-Node: History and Acknowledgements485272
-Node: Reporting Bugs490194
-Node: GNU Free Documentation License490866
+Node: Multiplot Options82551
+Node: Raw graph Options84443
+Node: Info Options85247
+Node: graph Environment86804
+Node: plot94517
+Node: plot Examples94788
+Node: plot Invocation98507
+Node: plot Environment114606
+Node: pic2plot122276
+Node: pic2plot Introduction122577
+Node: pic2plot Invocation128741
+Node: pic2plot Environment142540
+Node: tek2plot150285
+Node: tek2plot Introduction150590
+Node: tek2plot Invocation152291
+Node: tek2plot Environment167450
+Node: plotfont173572
+Node: plotfont Examples173869
+Node: plotfont Invocation177651
+Node: plotfont Environment190676
+Node: spline197653
+Node: spline Examples197935
+Node: Advanced Use of spline205074
+Node: spline Invocation209586
+Node: ode219094
+Node: Basic Math220429
+Node: Simple ode Examples223314
+Node: Additional ode Examples232474
+Node: ode Invocation239460
+Node: Diagnostics243675
+Node: Numerical Error247792
+Node: Running Time259534
+Node: Input Language260867
+Node: ODE Bibliography269160
+Node: libplot270092
+Node: libplot Overview270728
+Node: C Programming285791
+Node: The C API286503
+Node: Older C APIs291048
+Node: C Compiling and Linking294066
+Node: Sample C Drawings297402
+Node: Paths and Subpaths308449
+Node: Drawing on a Page314965
+Node: Animated GIFs320770
+Node: X Animations325544
+Node: X Programming333737
+Node: C++ Programming340411
+Node: The Plotter Class340763
+Node: C++ Compiling and Linking345128
+Node: Sample C++ Drawings347474
+Node: Functions349763
+Node: Control Functions351680
+Node: Drawing Functions360816
+Node: Attribute Functions377809
+Node: Mapping Functions402566
+Node: Plotter Parameters406869
+Node: Appendices430084
+Node: Fonts and Markers430786
+Node: Text Fonts431702
+Node: Cyrillic and Japanese441573
+Node: Text Fonts in X445830
+Node: Text String Format449799
+Node: Marker Symbols468496
+Node: Color Names471420
+Node: Page and Viewport Sizes473328
+Node: Metafiles478621
+Node: Auxiliary Software482785
+Node: idraw483100
+Node: xfig484390
+Node: History and Acknowledgements485384
+Node: Reporting Bugs490306
+Node: GNU Free Documentation License490978
 
 End Tag Table
 

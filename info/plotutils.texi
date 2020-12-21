@@ -1776,26 +1776,29 @@ corresponding positive linemode.
 
 @item -p [@var{point_size}]
 @itemx --points [@var{point_size}]
-
-(Float, default 3.) Plot points, without lines.  Equivalent to
+(Float, default 0.03.) Plot points, without lines.  Equivalent to
 the combination of @code{-m -1}, which suppresses lines, and
-@code{-S 16 @var{point_size}/100}, which sets the symbol for points
-to a filled circle, with size of @var{point_size} hundredths of 
-the minimum dimension of the plot region.
+@code{-S 16 @var{point_size}}, which sets the symbol for points
+to a filled circle, with size of @var{point_size}.  Values for
+@var{point_size} of 1 or greater are divided by 100.
 
 @item -S [@var{symbol_number} [@var{symbol_size}]]
 @itemx --symbol [@var{symbol_number} [@var{symbol_size}]]
-(Integer and float, defaults 0 and 0.03.)  Draw a marker symbol at each
+(Integer and float, old defaults for arguments are 1 and 0.03, 
+new defaults are 16 and 0.03, but the default is no symbol if this option 
+is not specified.)
+Draw a marker symbol at each
 data point.  @var{symbol_number} specifies the symbol type, and
 @var{symbol_size} specifies the font size of the symbol, as a fraction
-of the minimum dimension (width or height) of the plotting box.  @w{If
-the} dataset is being rendered in color, the symbol will have the color
-of the line that is being drawn to connect the data points.
+of the minimum dimension (width or height) of the plotting box.  Values
+for @var{symbol_size} of 1 or greater are divided by 100.
 
-If you use the @samp{-S} option, you would usually also use the
+If the dataset is being rendered in color, the symbol will have the color
+of the line that is (or would be) drawn to connect the data points.
+However, if you use the @samp{-S} option, you would usually also use the
 @samp{-m} option, to request that the symbols be drawn without any line
 connecting them.  By specifying a negative argument @w{to @samp{-m}}
-(@w{a `negative} linemode'), you may obtain colored symbols.
+(@w{a `negative} linemode'), you may obtain colored symbols (and no lines).
 
 Here are a few of the useful symbols (by convention,
 @w{symbol #0} means @w{no symbol} @w{at all}).
@@ -1828,9 +1831,6 @@ Here are a few of the useful symbols (by convention,
 @item filled diamond
 @end enumerate
 
-The default if @samp{-S} is specified with no following symbol number is
-symbol 1 (small dot) with old defaults and 16 (filled circle) with new defaults.
-
 Marker symbols 0@dots{}31 are furnished by the GNU @code{libplot}
 graphics library.  @xref{Marker Symbols}.  Symbol numbers greater than
 or equal @w{to 32} are interpreted as characters in a symbol font, which
@@ -1838,10 +1838,11 @@ can be set with the @samp{--symbol-font-name} option (see below).
 
 @item -W @var{line_width}
 @itemx --line-width @var{line_width}
-(Float, old default @minus{}1.0, new default 0.003)  
+(Float, old default @minus{}1.0, new default 0.003)
 Set the thickness of the lines used to
 join successive points in a dataset, as a fraction of the size (i.e.,
-minimum dimension) of the graphics display, to @var{line_width}.  @w{A
+minimum dimension) of the graphics display, to @var{line_width}.  
+Values of 1 or greater are divided by 1000. @w{A
 negative} value means that the default value for the line thickness
 provided by the GNU @code{libplot} graphics library should be used.
 This is usually 1/850 times the size of the display, although if
@@ -1849,7 +1850,7 @@ This is usually 1/850 times the size of the display, although if
 specified, it is zero.  By convention, a zero-thickness line is the
 thinnest line that can be drawn.  This is the case in all output
 formats.  Note, however, that the drawing editors @code{idraw} and
-@code{xfig} treat zero-thickness lines as invisible.
+@code{xfig} treat zero-thickness lines as invisible.  
 
 @code{graph -T tek} and @code{graph -T regis} do not support drawing
 lines with other than a default thickness, and @code{graph -T hpgl} does

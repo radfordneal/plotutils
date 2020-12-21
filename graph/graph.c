@@ -782,8 +782,7 @@ main (int argc, char *argv[])
 	    }
 	  else
 	    {
-//	      plot_line_width = plot_line_width < 1 ? local_plot_line_width : plot_line_width / 200;
-	      plot_line_width = local_plot_line_width;
+	      plot_line_width = plot_line_width < 1 ? local_plot_line_width : plot_line_width / 1000;
               plot_line_width_dflt = false;
 	      new_plot_line_width = true;
 	    }
@@ -1071,8 +1070,7 @@ main (int argc, char *argv[])
 	    fprintf (stderr, "%s: the request for a zero symbol size is disregarded\n",
 		     progname);
 	  else
-//	    symbol_size = local_symbol_size < 1 ? local_symbol_size : local_symbol_size / 100;
-	    symbol_size = local_symbol_size / 100;
+	    symbol_size = local_symbol_size < 1 ? local_symbol_size : local_symbol_size / 100;
 	  break;
 
 	case 'S':		/* Symbol, ARG OPTIONAL	[0,1 2] */
@@ -1114,7 +1112,7 @@ main (int argc, char *argv[])
 		     progname);
 	  else
 	    {
-	      symbol_size = local_symbol_size;
+	      symbol_size = local_symbol_size < 1 ? local_symbol_size : local_symbol_size / 100;
 	      new_symbol_size = true;
 	    }
 	  optind++;		/* tell getopt we recognized symbol_size */

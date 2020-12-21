@@ -35,23 +35,25 @@ Details of changes:
 graph:   
 
 * A new set of default plot parameters can now be enabled with the
-  --new-defaults (or -n) command-line option.  These defaults improve
-  the aesthetics of plots and reduce wasted space.  They are
-  especially appropriate for plotting in an X window.  Among the
-  options enabled by default by -n are --wait, --no-input, and --pad.
+  --new-defaults (or -n) command-line option.  These defaults 
+  improve the aesthetics of plots and reduce wasted space.  They 
+  are especially appropriate for plotting in an X window, and -TX
+  to specify that output device is set by default when -n is used.  
+  Among the other options enabled by default by -n are --no-input, 
+  --wait, --toggle-use-color, and --pad.
 
 * There is a new --pad command-line option that toggles whether the 
   limits dervied from data for the axes are padded by expanding them 
-  outward by 0.05 of their range.  The default is off for old defaults and on
-  for new defaults.  Also, with new defaults, the -R option always
-  applies, regardless of whether the limits are set by command line
-  options or derived from the data.
+  outward by 0.05 of their range.  The default is off for old defaults 
+  and on for new defaults.  Also, with new defaults, the -R option 
+  always applies, regardless of whether the limits are set by command 
+  line options or derived from the data.
 
 * There is a new --wait (or -i) command-line option, relevant only for
   X Window display (with -TX).  If it is set, the 'graph' program will
   wait until the plot window has been closed by the user before
   exitting (or the user may terminate the program manually, e.g., with
-  Control-C).  It is set by default with --new-options.
+  Control-C).  It is set by default with --new-options (-n).
 
 * There is a new --no-input comand-line option, relevant only for X
   Window display (with -TX).  If it is set, keyboard and mouse input
@@ -59,12 +61,17 @@ graph:
   the window with a stray mouse click (or by typing 'q'), and also
   prevents focus from moving to the plot window, away from the window
   used to issue the 'graph' command, which would often be inconvenient.
-  It is set by default with --new-options.
+  It is set by default with --new-options (-n).
 
 * There is a new --points or -p command-line option, which has the
-  effect of -m -1 and -S 16 POINT_SIZE/100, where POINT_SIZE if the
-  optional argument of --points (default 3).  This is convenient for 
+  effect of -m -1 and -S 16 POINT_SIZE, where POINT_SIZE is the
+  optional argument of --points (default 0.03).  This is convenient for 
   specifying that the plot should have points only, without lines.
+
+* When the size for the --line-width (-W), --symbol (-S), and the new 
+  --points (-p) commands is 1 or greater (too big to make sense), the
+  value is divided by 100 (for -S and -p) or 1000 (for -W).  This 
+  allows for more brief specification of typically-desired values.
 
 * The --grid-style or -g command-line option now has two new styles,
   which allow for only vertical grid lines or only horizontal grid lines.
