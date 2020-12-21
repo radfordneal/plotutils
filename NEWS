@@ -41,8 +41,8 @@ graph:
   options enabled by default by -n are --wait, --no-input, and --pad.
 
 * There is a new --pad command-line option that toggles whether the 
-  limits for the axes to be padded by expanding them in each direction 
-  by 0.05 of their range.  The default is off for old defaults and on
+  limits dervied from data for the axes are padded by expanding them 
+  outward by 0.05 of their range.  The default is off for old defaults and on
   for new defaults.  Also, with new defaults, the -R option always
   applies, regardless of whether the limits are set by command line
   options or derived from the data.

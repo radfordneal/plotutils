@@ -782,6 +782,7 @@ main (int argc, char *argv[])
 	    }
 	  else
 	    {
+//	      plot_line_width = plot_line_width < 1 ? local_plot_line_width : plot_line_width / 200;
 	      plot_line_width = local_plot_line_width;
               plot_line_width_dflt = false;
 	      new_plot_line_width = true;
@@ -793,8 +794,7 @@ main (int argc, char *argv[])
 	case 'Y':		/* Y axis title, ARG REQUIRED	*/
 	  y_label = xstrdup (optarg);
 	  break;
-	case 'E':		/* Toggle switching of axis to other end, 
-				   ARG REQUIRED */
+	case 'E':		/* Toggle switching of axis to other end, ARG REQUIRED */
 	  switch (*optarg)
 	    {
 	    case 'x':
@@ -1071,6 +1071,7 @@ main (int argc, char *argv[])
 	    fprintf (stderr, "%s: the request for a zero symbol size is disregarded\n",
 		     progname);
 	  else
+//	    symbol_size = local_symbol_size < 1 ? local_symbol_size : local_symbol_size / 100;
 	    symbol_size = local_symbol_size / 100;
 	  break;
 
@@ -1193,10 +1194,14 @@ main (int argc, char *argv[])
 
 		  if (pad)
 		    {
-		      final_min_x -= (final_max_x-final_min_x) * 0.05;
-		      final_max_x += (final_max_x-final_min_x) * 0.05;
-		      final_min_y -= (final_max_y-final_min_y) * 0.05;
-		      final_max_y += (final_max_y-final_min_y) * 0.05;
+		      if (!final_spec_min_x)
+			final_min_x -= (final_max_x-final_min_x) * 0.05;
+		      if (!final_spec_max_x)
+			final_max_x += (final_max_x-final_min_x) * 0.05;
+		      if (!final_spec_min_y)
+			final_min_y -= (final_max_y-final_min_y) * 0.05;
+		      if (!final_spec_max_y)
+			final_max_y += (final_max_y-final_min_y) * 0.05;
 		      round_to_next_tick = 0;
 		    }
 		  
@@ -1669,10 +1674,14 @@ main (int argc, char *argv[])
 	  
 	  if (pad)
 	    {
-	      final_min_x -= (final_max_x-final_min_x) * 0.05;
-	      final_max_x += (final_max_x-final_min_x) * 0.05;
-	      final_min_y -= (final_max_y-final_min_y) * 0.05;
-	      final_max_y += (final_max_y-final_min_y) * 0.05;
+	      if (!final_spec_min_x)
+		final_min_x -= (final_max_x-final_min_x) * 0.05;
+	      if (!final_spec_max_x)
+		final_max_x += (final_max_x-final_min_x) * 0.05;
+	      if (!final_spec_min_y)
+		final_min_y -= (final_max_y-final_min_y) * 0.05;
+	      if (!final_spec_max_y)
+		final_max_y += (final_max_y-final_min_y) * 0.05;
 	      round_to_next_tick = 0;
 	    }
 

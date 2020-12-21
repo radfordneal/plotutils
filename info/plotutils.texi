@@ -1338,9 +1338,10 @@ half the width of the available area.  Note that the tick marks and
 labels are drawn in the margin.
 
 @item --pad
-Toggle whether or not the axis limits are padded out on each
-side by 0.05 of their range.  The default to begin is off for
-old defaults and on for new defaults.
+Toggle whether or not the axis limits derived from the data
+are expanded outwards by 0.05 of the range for that axis.
+Axis limits specified with @samp{-x} or @samp{-y} are not affected.
+The default to begin is off for old defaults and on for new defaults.
 
 @item -R @var{x|y}
 @itemx --toggle-round-to-next-tick @var{x|y}
