@@ -2317,7 +2317,7 @@ set_line_style (Multigrapher *multigrapher, int style, bool use_color)
 	j = 0;
 
       else			/* neg. pl_linemode_r (no line will be drawn)*/
-	j = (-style - 1) % (NO_OF_LINEMODES - 1);
+	j = (-style - 1) % NO_OF_LINEMODES;
 
       pl_colorname_r (multigrapher->plotter, colorstyle[j]);
     }

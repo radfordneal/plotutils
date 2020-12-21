@@ -1,4 +1,6 @@
-/* This file is part of the GNU plotutils package.  Copyright (C) 1989,
+/* Plotutils+ is copyright (C) 2020 Radford M. Neal.
+
+   Based on the GNU plotutils package.  Copyright (C) 1989,
    1990, 1991, 1995, 1996, 1997, 1998, 1999, 2000, 2005, 2008, Free
    Software Foundation, Inc.
 
@@ -155,13 +157,22 @@ static dataset_status_t read_point_gnuplot (Reader *reader, Point *point);
 static void reset_reader (Reader *reader);
 static void skip_all_whitespace (FILE *stream);
 
-/* ARGS: format_type = double, or ascii, etc.
-   	 symbol_size = symbol size for markers
-	 symbol_font_name = name for markers >= 32
-	 line_width = fraction of display size
-	 fill_fraction = number in range [0,1], <0 means unfilled (transparent)*/
 Reader *
-new_reader (FILE *input, data_type format_type, bool auto_abscissa, double delta_x, double abscissa, bool transpose_axes, int log_axis, bool auto_bump, int symbol, double symbol_size, const char *symbol_font_name, int linemode, double line_width, double fill_fraction, bool use_color)
+new_reader (FILE *input,
+  data_type format_type,	/* double, or ascii, etc. */
+  bool auto_abscissa,
+  double delta_x,
+  double abscissa,
+  bool transpose_axes,
+  int log_axis,
+  bool auto_bump,
+  int symbol,
+  double symbol_size,		/* symbol size for markers */
+  const char *symbol_font_name,	/* name for markers >= 32 */
+  int linemode,
+  double line_width,		/* fraction of display size */
+  double fill_fraction,		/* number in range [0,1], <0 means unfilled (transparent) */
+  bool use_color)
 
 {
   Reader *reader;
@@ -734,7 +745,7 @@ read_point_gnuplot (Reader *reader, Point *point)
     }
 }
 
-
+
 /* read_dataset() reads an entire dataset (a sequence of points) from an
    input file, and stores the resulting array of points in a block that has
    been allocated on the heap.  The length of the block in which the points
@@ -819,9 +830,11 @@ reset_reader (Reader *reader)
 {
   reader->need_break = true;	/* force break in polyline */
 
-  /* bump linemode if appropriate */
+  /* Bump linemode if appropriate. Negatives keep getting more negative.
+     Zero has effect of -1, so skip to -2. */
   if (reader->auto_bump)
-    reader->linemode += ((reader->linemode > 0) ? 1 : -1);
+    reader->linemode += reader->linemode > 0 ? 1 :
+                        reader->linemode < 0 ? -1 : -2;
 
   /* reset abscissa if auto-abscissa is in effect */
   if (reader->auto_abscissa)
@@ -830,7 +843,7 @@ reset_reader (Reader *reader)
   return;
 }
 
-
+
 /* Skip whitespace in an ascii-format or gnuplot-format input file, up to
    but not including a second newline.  Return value indicates whether or
    not two newlines were in fact seen.  (Two newlines signals
@@ -879,7 +892,7 @@ skip_all_whitespace (FILE *stream)
     ungetc (lookahead, stream);
 }
 
-
+
 /**********************************************************************/
 
 /* read_and_plot_dataset() reads an entire dataset (a sequence of points)

@@ -97,6 +97,9 @@ graph:
 * Fixed a bug in which optional arguments immediately after one-letter 
   options were not handled properly.  (E.g, -S17 now works properly.)
 
+# Fixed bugs regarding "bumping" of colours from one dataset to another,
+  when no lines are drawn (eg, -m0 or -m-1).
+
 libplot: 
 
 * The API for X Plotters now has a new WAIT_ON_DELETE parameter, which
