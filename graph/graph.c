@@ -1184,6 +1184,17 @@ main (int argc, char *argv[])
 				&final_max_x, &final_max_y,
 				final_spec_min_x, final_spec_min_y, 
 				final_spec_max_x, final_spec_max_y);
+
+		  if (0)
+		    {
+fprintf(stderr,"B %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y);
+		      final_min_x -= (final_max_x-final_min_x) * 0.05;
+		      final_max_x += (final_max_x-final_min_x) * 0.05;
+		      final_min_y -= (final_max_y-final_min_y) * 0.05;
+		      final_max_y += (final_max_y-final_min_y) * 0.05;
+fprintf(stderr,"E %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y);
+		      round_to_next_tick = 0;
+		    }
 		  
 		  if (first_graph_of_multigraph)
 		    /* haven't created multigrapher yet, do so now */
@@ -1378,14 +1389,15 @@ main (int argc, char *argv[])
 	      final_spacing_y = spacing_y;
 	      final_spec_spacing_y = spec_spacing_y;
 
-	      /* If user didn't specify either the lower limit or the upper
-		 limit for an axis, by default we'll round the axis limits
-		 to the nearest tick, after computing them.  (If either
-		 limit was specified by the user, to request rounding the
-		 user must specify the -R option as well.) */
-	      if (!final_spec_min_x && !final_spec_max_x)
+	      /* With old defaults, if the user didn't specify either
+                 the lower limit or the upper limit for an axis, by
+                 default we'll round the axis limits to the nearest
+                 tick, after computing them.  (If either limit was
+                 specified by the user, to request rounding the user
+                 must specify the -R option as well.) */
+	      if (!new_defaults && !final_spec_min_x && !final_spec_max_x)
 		final_round_to_next_tick |= X_AXIS;
-	      if (!final_spec_min_y && !final_spec_max_y)
+	      if (!new_defaults && !final_spec_min_y && !final_spec_max_y)
 		final_round_to_next_tick |= Y_AXIS;
 	      
 	      /* The case when x_min, x_max, y_min, y_max are all specified
@@ -1517,7 +1529,7 @@ main (int argc, char *argv[])
 	    } /* end of filter case */
 	  
 	  else
-	    /* filter flag is set, will read and plot this file separately */
+	    /* filter flag is not set, will read and plot this file separately */
 
 	    /* Luser didn't specify enough information for us to act as a
 	       filter, so we do things the hard way: we call read_file() on
@@ -1651,6 +1663,17 @@ main (int argc, char *argv[])
 			final_spec_min_x, final_spec_min_y, 
 			final_spec_max_x, final_spec_max_y);
 	  
+	  if (0)
+	    {
+fprintf(stderr,"B %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y);
+	      final_min_x -= (final_max_x-final_min_x) * 0.05;
+	      final_max_x += (final_max_x-final_min_x) * 0.05;
+	      final_min_y -= (final_max_y-final_min_y) * 0.05;
+	      final_max_y += (final_max_y-final_min_y) * 0.05;
+fprintf(stderr,"E %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y);
+	      round_to_next_tick = 0;
+	    }
+
 	  if (first_graph_of_multigraph)
 	    /* still haven't created multigrapher, do so now */
 	    {

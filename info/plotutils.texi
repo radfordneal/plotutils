@@ -1343,10 +1343,12 @@ Toggle whether or not the upper and lower limits of the specified axis
 should be expanded, so that they both become integer multiples of the
 spacing between labeled tick marks.
 
-This option is meaningful whenever the user specifies either or both of
-the limits, by using the @samp{-x} or @samp{-y} option.  @w{If the} user
-leaves both limits unspecified, they will always be chosen to satisfy
-the `integer multiple' constraint.
+With old defaults, this option is meaningful only if the user specifies 
+either or both of the limits, by using the @samp{-x} or @samp{-y} option;
+if the user leaves both limits unspecified, they will always be chosen 
+to satisfy the `integer multiple' constraint.  With new defaults (@samp{-n}),
+the @samp{-R} toggle always controls whether the limits are expanded to
+the next tick, with the default being no.
 
 @item -s
 @itemx --save-screen
