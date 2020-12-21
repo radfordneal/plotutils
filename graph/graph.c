@@ -53,7 +53,7 @@ struct option long_options[] =
   {"line-mode",		ARG_REQUIRED,	NULL, 'm'},
   {"line-width",	ARG_REQUIRED,	NULL, 'W'},
   {"new-defaults",	ARG_NONE,	NULL, 'n'},
-  {"points",		ARG_OPTIONAL,	NULL, 'p'},
+  {"points",		ARG_OPTIONAL,	NULL, 'p'}, /* 0 or 1 */
   {"right-shift",	ARG_REQUIRED,	NULL, 'r'},
   {"save-screen",	ARG_NONE,	NULL, 's'},
   {"symbol",		ARG_OPTIONAL,	NULL, 'S'},
@@ -89,6 +89,7 @@ struct option long_options[] =
   {"title-font-name",	ARG_REQUIRED,	NULL, 'Z' << 8},
   {"title-font-size",	ARG_REQUIRED,	NULL, 'F' << 8},
   {"page-size",		ARG_REQUIRED,	NULL, 'P' << 8},
+  {"pad",		ARG_NONE,	NULL, 'd' << 8},
   {"no-input",		ARG_NONE,	NULL, 'n' << 8},
   {"wait",		ARG_NONE,	NULL, 'i' << 8},
   /* Options relevant only to raw graph (refers to plot(5) output) */
@@ -332,6 +333,8 @@ main (int argc, char *argv[])
   bool wait_for_close_dflt = true;  /* Whether wait_for_close has not been toggled */
   bool no_input = false;	/* Suppress input from X window */
   bool no_input_dflt = true;    /* Whether no_input has not been toggled */
+  bool pad = false;		/* Pad range of data when computing axis limits */
+  bool pad_dflt = true;    	/* Whether pad has not been toggled */
 
   /* The main command-line parsing loop, which uses getopt to scan argv[]
      without reordering, i.e. to process command-line arguments (options
@@ -416,7 +419,12 @@ main (int argc, char *argv[])
 	  if (tick_size_dflt)       tick_size =     new_defaults ? -0.01 : 0.02;
 	  if (clip_mode_dflt)       clip_mode =     new_defaults ? 2 : 1;
 	  if (font_size_dflt)       font_size =     new_defaults ? 0.0385 : 0.0525;
+	  if (pad_dflt)             pad =           new_defaults ? true : false;
+	  if (no_input_dflt)        no_input =      new_defaults ? true : false;
+	  if (wait_for_close_dflt)  wait_for_close =  new_defaults ? true : false;
 	  if (title_font_size_dflt) title_font_size = new_defaults ? 0.0385 : 0.07;
+	  if (font_name_dflt)
+	    font_name = new_defaults ? new_default_font(output_format) : NULL;
 	  if (use_color_dflt)
             {
               use_color = new_defaults ? true : false;
@@ -432,12 +440,10 @@ main (int argc, char *argv[])
 	      symbol_index = new_defaults ? 16 : 1;
 	      new_symbol = true;
 	    }
-	  if (font_name_dflt)
-	    font_name = new_defaults ? new_default_font(output_format) : NULL;
-	  if (wait_for_close_dflt)
-	    wait_for_close = true;
-	  if (no_input_dflt)
-	    no_input = true;
+	  break;
+	case 'd' << 8:		/* Toggle pad limits, ARG NONE */
+	  pad = !pad;
+	  pad_dflt = false;
 	  break;
 	case 'i' << 8:		/* Toggle don't exit until window closed, ARG NONE */
 	  wait_for_close = !wait_for_close;
@@ -1185,14 +1191,12 @@ main (int argc, char *argv[])
 				final_spec_min_x, final_spec_min_y, 
 				final_spec_max_x, final_spec_max_y);
 
-		  if (0)
+		  if (pad)
 		    {
-fprintf(stderr,"B %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y);
 		      final_min_x -= (final_max_x-final_min_x) * 0.05;
 		      final_max_x += (final_max_x-final_min_x) * 0.05;
 		      final_min_y -= (final_max_y-final_min_y) * 0.05;
 		      final_max_y += (final_max_y-final_min_y) * 0.05;
-fprintf(stderr,"E %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y);
 		      round_to_next_tick = 0;
 		    }
 		  
@@ -1663,14 +1667,12 @@ fprintf(stderr,"E %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y
 			final_spec_min_x, final_spec_min_y, 
 			final_spec_max_x, final_spec_max_y);
 	  
-	  if (0)
+	  if (pad)
 	    {
-fprintf(stderr,"B %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y);
 	      final_min_x -= (final_max_x-final_min_x) * 0.05;
 	      final_max_x += (final_max_x-final_min_x) * 0.05;
 	      final_min_y -= (final_max_y-final_min_y) * 0.05;
 	      final_max_y += (final_max_y-final_min_y) * 0.05;
-fprintf(stderr,"E %f %f %f %f\n",final_min_x,final_max_x,final_min_y,final_max_y);
 	      round_to_next_tick = 0;
 	    }
 

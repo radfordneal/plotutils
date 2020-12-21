@@ -1337,11 +1337,17 @@ left side of the plotting box.  @w{A value} of 0.5 will produce a margin
 half the width of the available area.  Note that the tick marks and
 labels are drawn in the margin.
 
+@item --pad
+Toggle whether or not the axis limits are padded out on each
+side by 0.05 of their range.  The default to begin is off for
+old defaults and on for new defaults.
+
 @item -R @var{x|y}
 @itemx --toggle-round-to-next-tick @var{x|y}
 Toggle whether or not the upper and lower limits of the specified axis
 should be expanded, so that they both become integer multiples of the
-spacing between labeled tick marks.
+spacing between labeled tick marks.  If the @samp{--pad} toggle is 
+active, expansion to the next tick applies to the limits after padding.
 
 With old defaults, this option is meaningful only if the user specifies 
 either or both of the limits, by using the @samp{-x} or @samp{-y} option;
