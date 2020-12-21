@@ -1,11 +1,8 @@
-News on the plotutils+ package.  See ONEWS for the news file for
-the GNU plotutils package that plotutils+ is based on, and OONEWS
+News on the plotutils+ package.  See ONEWS for the news file for 
+the GNU plotutils package that plotutils+ is based on, and OONEWS 
 for even older news.
 
-
-Version 3.1, 2020-12-??:
-
-Still in development...
+Version 3.1, 2020-12-21:
 
 Changes in this version are largely aimed at making the 'graph'
 program work better for interactively displaying data produced by
@@ -18,18 +15,19 @@ such as the following are recommended for this task:
     program | graph -n -p -gy  # point plot with horizontal grid lines 
     program | graph -n -p1     # point plot with small points
     program | graph -n -C      # line plot with black line (not red)
+    program | graph -n -y0     # Plot positive data with y axis from 0
 
 Once the program has finished, the graph program (and the X window
 showing the plot) can be terminated with Control-C, or by closing the
 plot window (using whatever means the window manager provides).
 
 The program may output multiple data sets, separated by blank lines,
-which will be plotted in different colours.
+which (by default with -n) will be plotted in different colours.
 
-These options can of course be included automatically using either a
-shell alias or a shell script.  For a shell script, a final line to
-run the graph program is best done as "exec graph ...", since this
-results in cleaner behaviour when Control-C is used.
+Some selection of these options can of course be included automatically 
+using either a shell alias or a shell script.  For a shell script, a
+final line to run the graph program is best done as "exec graph ...",
+since this results in cleaner behaviour when Control-C is used.
 
 Details of changes:
 
@@ -121,4 +119,4 @@ Version 3.0, 2020-11-30:
 
 This release is functionally identical to GNU plotutils 2.6, except
 for some bug fixes.  Some fixes are from the Debian version, and
-others are new to plutitls+.
+others are new to plotutils+.
