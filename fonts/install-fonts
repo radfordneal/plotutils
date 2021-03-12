@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# This shell file installs the fonts in the pfb directory to the
+# system font directory in /usr/share/fonts/X11/Type1 (which is
+# the correct place in Ubuntu 20.04, but perhaps not for all systems).
+# It needs to be run as root - eg, sudo ./install-fonts - when in
+# the 'fonts' directory.  Don't run it twice.  You may want to back
+# up /usr/share/fonts/X11/Type1/fonts.scale first, just in case.
+
+cp pfb/*.pfb /usr/share/fonts/X11/Type1
+cat fonts.append >>/usr/share/fonts/X11/Type1/fonts.scale
+cd /usr/share/fonts/X11/Type1
+n=`sed 1d fonts.scale | wc -l`
+qq(echo "1,1s/.*/$n/"; echo w) | ed /usr/share/fonts/X11/Type1/fonts.scale
+mkfontdir
+xset fp rehash

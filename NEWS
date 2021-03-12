@@ -2,6 +2,11 @@ News on the plotutils+ package.  See ONEWS for the news file for
 the GNU plotutils package that plotutils+ is based on, and OONEWS 
 for even older news.
 
+Versions 3.2, in development:
+
+* Created an install-fonts shell file in 'fonts', to handle installation
+  of the supplied fonts for Ubuntu-like systems.
+
 Version 3.1, 2020-12-21:
 
 Changes in this version are largely aimed at making the 'graph'
