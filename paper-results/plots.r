@@ -31,7 +31,7 @@ plot_key <- function ()
 
 plot_times <- function (y, what, cache)
 {
-  pdf(paste0("plots/",what,".pdf"),height=4.28,width=5,pointsize=11)
+  pdf(paste0("./",what,".pdf"),height=4.28,width=5,pointsize=11)
   par(mar=c(4.4,3.3,0.2,0.2),mgp=c(2.0,0.6,0),lab=c(7,7,7),cex.lab=1.5)
   col=c("red","red","blue","blue","black","black")
   lty=c(1,2,1,2,1,2)
