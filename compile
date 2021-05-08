@@ -2,5 +2,5 @@
 
 # Compile programs.
 
-rm *.o
-make -f Makefile-$1
+echo Compiled with Makefile-$1 >Make-info
+make -B -f Makefile-$1
