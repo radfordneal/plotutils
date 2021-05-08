@@ -52,6 +52,8 @@
 #define Ldenorm (4*pow2_1024 - 4*pow2_1024*pow2_52)
 #define Sdenorm (4*pow2_1024*pow2_52)
 
+double zero = 0.0;
+
 /* Tests with one term.  Answer should be the same as the term. */
 
 xsum_flt one_term[] = {
@@ -296,7 +298,7 @@ int main (int argc, char **argv)
   printf("\nA: ZERO TERM TEST\n");
 
   if (echo) printf(" \n-- TEST 0: \n");
-  if (echo) printf("   ANSWER: %.16le\n",0.0);
+  if (echo) printf("   ANSWER:  %.16le\n",0.0);
 
   xsum_debug = debug_all || debug_letter=='A';
 
@@ -310,9 +312,9 @@ int main (int argc, char **argv)
 
   for (i = 0; one_term[i] != 0; i += 1)
   { 
-    if (echo) printf(" \n-- TEST %d: %.16le\n",i,one_term[i]);
+    if (echo) printf(" \n-- TEST %2d: %.16le\n",i,one_term[i]);
     s = one_term[i];
-    if (echo) printf("   ANSWER: %.16le\n",s);
+    if (echo) printf("   ANSWER:  %.16le\n",s);
 
     xsum_debug = debug_all || debug_letter=='B' && debug_number==i;
 
@@ -329,9 +331,9 @@ int main (int argc, char **argv)
 
   for (i = 0; one_term[i] != 0; i += 1)
   { 
-    if (echo) printf(" \n-- TEST %d: %.16le\n",i,one_term[i]);
+    if (echo) printf(" \n-- TEST %2d: %.16le\n",i,one_term[i]);
     s = one_term[i] * REP1;
-    if (echo) printf("   ANSWER: %.16le\n",s);
+    if (echo) printf("   ANSWER:  %.16le\n",s);
 
     xsum_debug = debug_all || debug_letter=='C' && debug_number==i;
 
@@ -348,10 +350,10 @@ int main (int argc, char **argv)
 
   for (i = 0; two_term[i] != 0; i += 2)
   { 
-    if (echo) printf(" \n-- TEST %d: %.16le %.16le\n",
+    if (echo) printf(" \n-- TEST %2d: %.16le %.16le\n",
                       i/2,two_term[i],two_term[i+1]);
     s = two_term[i] + two_term[i+1];
-    if (echo) printf("   ANSWER: %.16le\n",s);
+    if (echo) printf("   ANSWER:  %.16le\n",s);
 
     xsum_debug = debug_all || debug_letter=='D' && debug_number==i/2;
 
@@ -368,10 +370,10 @@ int main (int argc, char **argv)
 
   for (i = 0; three_term[i] != 0; i += 4)
   { 
-    if (echo) printf(" \n-- TEST %d: %.16le %.16le %.16le\n",
+    if (echo) printf(" \n-- TEST %2d: %.16le %.16le %.16le\n",
                       i/4,three_term[i],three_term[i+1],three_term[i+2]);
     s = three_term[i+3];
-    if (echo) printf("   ANSWER: %.16le\n",s);
+    if (echo) printf("   ANSWER:  %.16le\n",s);
 
     xsum_debug = debug_all || debug_letter=='E' && debug_number==i/4;
 
@@ -388,9 +390,9 @@ int main (int argc, char **argv)
 
   for (i = 0; ten_term[i] != 0; i += 11)
   { 
-    if (echo) printf(" \n-- TEST %d\n",i/11);
+    if (echo) printf(" \n-- TEST %2d\n",i/11);
     s = ten_term[i+10];
-    if (echo) printf("   ANSWER: %.16le\n",s);
+    if (echo) printf("   ANSWER:  %.16le\n",s);
 
     xsum_debug = debug_all || debug_letter=='F' && debug_number==i/11;
 
@@ -407,9 +409,9 @@ int main (int argc, char **argv)
 
   for (i = 0; ten_term[i] != 0; i += 11)
   { 
-    if (echo) printf(" \n-- TEST %d\n",i/11);
+    if (echo) printf(" \n-- TEST %2d\n",i/11);
     s = ten_term[i+10] * REP10;
-    if (echo) printf("   ANSWER: %.16le\n",s);
+    if (echo) printf("   ANSWER:  %.16le\n",s);
 
     xsum_debug = debug_all || debug_letter=='G' && debug_number==i/11;
 
@@ -420,6 +422,88 @@ int main (int argc, char **argv)
     xsum_large_init (&lacc);
     for (j = 0; j < REP10; j++) xsum_large_addv (&lacc, ten_term+i, 10);
     large_result(&lacc,s,i/11);
+  }
+
+  printf("\nH: SPECIAL TESTS\n");
+
+  int done = 0;
+  for (i = 0; !done; i += 1)
+  { 
+    xsum_debug = debug_all || debug_letter=='H' && debug_number==i;
+    if (echo) printf(" \n-- TEST %2d\n",i);
+    s = 1234.5;
+    if (echo) printf("   ANSWER:  %.16le\n",s);
+
+    xsum_small_init (&sacc);
+    xsum_large_init (&lacc);
+
+    switch (i)
+    { case 0:  /* add positive zero to 1234.5 */
+      { double v[2] = { s, zero };
+        xsum_small_addv (&sacc, v, 2);
+        xsum_large_addv (&lacc, v, 2);
+        break;
+      }
+      case 1:  /* add negative zero to 1234.5 */
+      { double v[2] = { s, -zero };
+        xsum_small_addv (&sacc, v, 2);
+        xsum_large_addv (&lacc, v, 2);
+        break;
+      }
+      case 2:  /* cause simulataneous moves of pair from large to small */
+      { double v[20001];
+        int j;
+        for (j = 0; j < 10000; j += 2)
+        { v[j] = 4567;
+          v[j+1] = 10000;
+        }
+        for (j = 10000; j < 20000; j += 2)
+        { v[j] = -4567;
+          v[j+1] = -10000;
+        }
+        v[20000] = s;
+        xsum_small_addv (&sacc, v, 20001);
+        xsum_large_addv (&lacc, v, 20001);
+        break;
+      }
+      case 3:  /* cause move of pair from large to small same time as init */
+      { double v [2 * (1 << XSUM_LCOUNT_BITS) + 3];
+        int j;
+        for (j = 0; j < (1 << XSUM_LCOUNT_BITS); j += 1)
+        { v[j] = 2345;
+        }
+        v [(1 << XSUM_LCOUNT_BITS)] = 2345;
+        v [(1 << XSUM_LCOUNT_BITS) + 1] = s;
+        for (j = (1 << XSUM_LCOUNT_BITS) + 2; 
+             j < 2 * (1 << XSUM_LCOUNT_BITS) + 3; 
+             j += 1)
+        { v[j] = -2345;
+        }
+        xsum_small_addv (&sacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
+        xsum_large_addv (&lacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
+        break;
+      }
+      case 4:  /* as above, but with order of pair involved reversed */
+      { double v [2 * (1 << XSUM_LCOUNT_BITS) + 3];
+        int j;
+        for (j = 0; j < (1 << XSUM_LCOUNT_BITS); j += 1)
+        { v[j] = 2345;
+        }
+        v [(1 << XSUM_LCOUNT_BITS)] = s;
+        v [(1 << XSUM_LCOUNT_BITS) + 1] = 2345;
+        for (j = (1 << XSUM_LCOUNT_BITS) + 2; 
+             j < 2 * (1 << XSUM_LCOUNT_BITS) + 3; 
+             j += 1)
+        { v[j] = -2345;
+        }
+        xsum_small_addv (&sacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
+        xsum_large_addv (&lacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
+        done = 1;
+      }
+    }
+
+    small_result(&sacc,s,i);
+    large_result(&lacc,s,i);
   }
   
   printf("\nDONE\n\n");
