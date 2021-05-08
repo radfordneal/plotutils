@@ -14,6 +14,7 @@ ZHUFLAGS=
 
 all:		xsum-test xsum-time xsum-check show xsum-time-perm \
 		# xsum-time-zhu xsum-time-perm-zhu
+	echo GCC=$(GCC) >>Make-info
 
 pbinary.o:	pbinary.c pbinary.h
 show.o:		show.c pbinary.h

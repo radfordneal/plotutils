@@ -41,13 +41,14 @@ xsum-time-perm-zhu targets in the list of program after "all:" in the
 Makefile you are using if you want to make these programs.
 
 
-The programs can be remade with the "compile" script, which removes .o
-files and then runs make.
+The programs can be remade by using the "compile" script, which runs
+make -B to recompile them with the makefile with a specified suffix.
+It also stores information on how they were compiled in Make-info.
 
 The checks and timing tests reported in the paper can be run with the
 run-tests-zhu script (except that the tests of sizes 10 and 100 were
 done with fewer repetitions on the Raspberry Pi, to avoid very long
-runs).
+runs).  The run-checks script runs only the correctness checks.
 
 In the directory paper-results, the systems on which tests were done
 are described in the files with names of the form system-xxx, and the

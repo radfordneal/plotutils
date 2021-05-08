@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Run checks of correctness (but not timing tests).
+
+echo -n "COMMIT: "; git rev-parse HEAD
+git diff HEAD
+echo " "; cat Make-info
+
+xsum-check

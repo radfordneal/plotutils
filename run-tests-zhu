@@ -2,7 +2,7 @@
 
 # Run checks and timing tests, including with Zhu & Hayes method.
 
-xsum-check
+run-checks
 
 xsum-time-zhu 10 1 100000000
 xsum-time-zhu 100 1 10000000

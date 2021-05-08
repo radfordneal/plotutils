@@ -2,7 +2,7 @@
 
 # Run checks and timing tests.
 
-xsum-check
+run-checks
 
 xsum-time 10 1 100000000
 xsum-time 100 1 10000000
