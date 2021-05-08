@@ -35,10 +35,11 @@ The xsum-time-zhu and xsum-time-perm-zhu programs do timing tests that
 include times for the iFastSum and OnlineExact methods of Zhu and
 Hayes (ACM Transactions on Mathematical Software, Algorithm 908).
 Making this program requires their ExactSum.cpp and ExactSum.h source
-files, from the supplemental information for their paper.  A C++
-compiler is also needed.  Uncomment-out the xsum-time-zhu and
-xsum-time-perm-zhu targets in the list of program after "all:" in the
-Makefile you are using if you want to make these programs.
+files, from the supplemental information for their paper (found at
+https://dl.acm.org/doi/10.1145/1824801.1824815).  A C++ compiler is
+also needed.  Uncomment-out the xsum-time-zhu and xsum-time-perm-zhu
+targets in the list of program after "all:" in the Makefile you are
+using if you want to make these programs.
 
 
 The programs can be remade by using the "compile" script, which runs
