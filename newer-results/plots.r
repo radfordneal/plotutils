@@ -85,13 +85,20 @@ plot_key()
 
 cache = c(32*1024, 512*1024, 16*1024*1024)
 
-thinkstation <- read_times ("results-thinkstation-gcc-10.2.0")
+thinkstation_gcc_10_2_0 <- read_times ("results-thinkstation-gcc-10.2.0")
+thinkstation_clang_10_0_0 <- read_times ("results-thinkstation-clang_10_0_0")
+
+thinkstation <- thinkstation_clang_10_0_0
 
 plot_times(thinkstation[,,"sum"],  "thinkstation-sum",  cache/8)
 plot_times(thinkstation[,,"norm"], "thinkstation-norm", cache/8)
 plot_times(thinkstation[,,"dot"],  "thinkstation-dot",  cache/16)
 
-thinkstation_no_opt <- read_times ("results-thinkstation-gcc-10.2.0-no-opt")
+thinkstation_gcc_10_2_0_no_opt <- read_times ("results-thinkstation-gcc-10.2.0")
+thinkstation_clang_10_0_0_no_opt <- 
+  read_times ("results-thinkstation-clang_10_0_0")
+
+thinkstation_no_opt <- thinkstation_clang_10_0_0_no_opt
 
 plot_times(thinkstation_no_opt[,,"sum"],  "thinkstation-no-opt-sum",  cache/8)
 plot_times(thinkstation_no_opt[,,"norm"], "thinkstation-no-opt-norm", cache/8)
