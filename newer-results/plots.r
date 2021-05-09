@@ -96,3 +96,20 @@ thinkstation_no_opt <- read_times ("results-thinkstation-gcc-10.2.0-no-opt")
 plot_times(thinkstation_no_opt[,,"sum"],  "thinkstation-no-opt-sum",  cache/8)
 plot_times(thinkstation_no_opt[,,"norm"], "thinkstation-no-opt-norm", cache/8)
 plot_times(thinkstation_no_opt[,,"dot"],  "thinkstation-no-opt-dot",  cache/16)
+
+
+# Intel i7-3520M.
+
+cache = c(32*1024, 256*1024)
+
+macbookpro2 <- read_times ("results-macbookpro2-gcc-10.2.0")
+
+plot_times(macbookpro2[,,"sum"],  "macbookpro2-sum",  cache/8)
+plot_times(macbookpro2[,,"norm"], "macbookpro2-norm", cache/8)
+plot_times(macbookpro2[,,"dot"],  "macbookpro2-dot",  cache/16)
+
+macbookpro2_no_opt <- read_times ("results-macbookpro2-gcc-10.2.0-no-opt")
+
+plot_times(macbookpro2_no_opt[,,"sum"],  "macbookpro2_no_opt-sum",  cache/8)
+plot_times(macbookpro2_no_opt[,,"norm"], "macbookpro2_no_opt-norm", cache/8)
+plot_times(macbookpro2_no_opt[,,"dot"],  "macbookpro2_no_opt-dot",  cache/16)
