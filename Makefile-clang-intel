@@ -12,7 +12,7 @@ CPP=clang++$(CLANG)
 LDCPP=$(CPP)
 ZHUFLAGS=
 
-default:	xsum-test xsum-time xsum-check show xsum-time-perm \
+default:	xsum-test xsum-time xsum-check show xsum-time-perm
 	@ (echo CLANG=$(CLANG); clang$(GCC) -v 2>&1 | head -1) >>Make-info
 
 with-zhu:	default xsum-time-zhu xsum-time-perm-zhu
