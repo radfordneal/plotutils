@@ -1,6 +1,6 @@
 /* TIME MEASUREMENT PROGRAM FOR FUNCTIONS FOR EXACT SUMMATION. */
 
-/* Copyright 2015, 2018 Radford M. Neal
+/* Copyright 2015, 2018, 2021 Radford M. Neal
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -23,11 +23,12 @@
 */
 
 
-/* Program to perform timing tests of exact and non-exact summation methods.
+/* Program to perform timing tests of exact and non-exact summation methods,
+   possibly with permuted data.
 
    Run with a command of the form:
 
-       xsum-time N M R [ data ... ] [ inf ]
+       xsum-time N M R [ data ... ] [ "inf" ] [ "perm" ]
 
    Here, N is the size of the vectors that are summed, M is the number
    of such vectors, and R is the number of times these M vectors of size
@@ -39,11 +40,14 @@
 
    The data in each of the vectors is as specified after R, with any
    remaining elements filled in randomly, differently for each of the
-   M vectors.  This random data sums to zero, since the second half
-   of it is the mirror of the first half, negated (with zero in the 
-   middle if the number of elements is odd).  In addition, if "inf"
-   is the last argument, every eigth element is set to infinity (so
-   the result will also be infinity).
+   M vectors.  This random data sums to zero, since it consists of two
+   copies of a set of numbers, with the second copy negated (with an
+   additional zero if the number of elements is odd).  In addition, if
+   "inf" is specified, every eigth element (before possible
+   permutation) is set to infinity (so the result will also be
+   infinity).  If "perm" is not specified, the second negated copy
+   follows the first, with mirroring.  If "perm" is specified, the
+   order of all elements is randomized.
 
    This program can be compiled to compare with Zhu & Hayes' iFastSum
    and ExactSum methods, if the source for those is present.  The -DZHU
@@ -96,8 +100,13 @@ int main (int argc, char **argv)
   int i, j, k;
   int ndata, n;
   char **data;
-  int inf;
+  int perm, inf;
 
+  perm = 0;
+  if (argc>0 && strcmp(argv[argc-1],"perm")==0)
+  { perm = 1;
+    argc -= 1;
+  }
   inf = 0;
   if (argc>0 && strcmp(argv[argc-1],"inf")==0)
   { inf = 1;
@@ -107,7 +116,8 @@ int main (int argc, char **argv)
 
   if (argc<4 || (N=atoi(argv[1]))<1 || ndata>N
              || (M=atoi(argv[2]))<1 || (R=atoi(argv[3]))<1)
-  { fprintf(stderr,"Usage: xsum-time N M R [ data ... ] [ inf ]\n");
+  { fprintf(stderr,
+            "Usage: xsum-time N M R [ data ... ] [ \"inf\" ] [ \"perm\" ] \n");
     exit(1);
   }
 
@@ -156,6 +166,17 @@ int main (int argc, char **argv)
         a[ndata+i*N+n-1-j] = -a[ndata+i*N+j];
         if (inf && j%8 == 0) 
         { a[ndata+i*N+n-1-j] = a[ndata+i*N+j] = 1.0/0.0;
+        }
+      }
+      if (perm)
+      { for (j = 0; j < N; j++)
+        { xsum_flt t;
+          int w;
+          rnd = (rnd*8192) % 67101323;
+          w = j + rnd % (N-j);
+          t = a[w];
+          a[w] = a[j];
+          a[j] = t;
         }
       }
     }
@@ -266,7 +287,7 @@ int main (int argc, char **argv)
     }
     else
     { correct = 0.0;
-      for (i = 0; i < ndata; i++) correct += a[i];
+      for (i = 0; i < ndata; i++) correct += atof(data[i]);
     }
     if (different(result_s,correct))
     { printf("RESULT USING SMALL ACCUMULATOR IS WRONG\n");
@@ -308,14 +329,15 @@ int main (int argc, char **argv)
   { printf("RESULTS DIFFER FOR DOUBLE AND LARGE ACCUMULATOR\n");
   }
 
-  xsum_small_init(&sacc); /* Get used counts half-way, before cancels to zero */
-  xsum_small_addv(&sacc,a,N/2);
-  used_small = xsum_small_chunks_used(&sacc);
+  printf("\n");
+  if (!perm)
+  { xsum_small_init(&sacc); /* Get used counts half-way, before cancels to 0 */
+    xsum_small_addv(&sacc,a,N/2);
+    used_small = xsum_small_chunks_used(&sacc);
+    printf("Small accumulator chunks used: %d\n", used_small);
+  }
 
   used_large = xsum_large_chunks_used(&lacc);
-
-  printf("\n");
-  printf("Small accumulator chunks used: %d\n", used_small);
   printf("Large accumulator chunks used: %d\n", used_large);
 
   printf("\nVECTOR NORM\n\n");
@@ -387,7 +409,6 @@ int main (int argc, char **argv)
   xsum_small_init(&sacc);
   xsum_small_add_sqnorm(&sacc,a,N);
   used_small = xsum_small_chunks_used(&sacc);
-
   used_large = xsum_large_chunks_used(&lacc);
 
   printf("\n");
@@ -463,7 +484,6 @@ int main (int argc, char **argv)
   xsum_small_init(&sacc);
   xsum_small_add_dot(&sacc,a,a2,N);
   used_small = xsum_small_chunks_used(&sacc);
-
   used_large = xsum_large_chunks_used(&lacc);
 
   printf("\n");

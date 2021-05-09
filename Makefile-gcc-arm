@@ -12,10 +12,10 @@ CPP=g++$(GCC)
 LDCPP=$(CPP)
 ZHUFLAGS=
 
-default:	xsum-test xsum-time xsum-check show xsum-time-perm
+default:	xsum-test xsum-time xsum-check show
 	@ (echo GCC=$(GCC); gcc$(GCC) -v 2>&1 | tail -1) >>Make-info
 
-with-zhu:	default xsum-time-zhu xsum-time-perm-zhu
+with-zhu:	default xsum-time-zhu
 
 pbinary.o:	pbinary.c pbinary.h
 show.o:		show.c pbinary.h
@@ -23,7 +23,6 @@ show.o:		show.c pbinary.h
 xsum-test.o:	xsum-test.c xsum.h pbinary.h
 xsum-check.o:	xsum-check.c xsum.h pbinary.h
 xsum-time.o:	xsum-time.c xsum.h pbinary.h
-xsum-time-perm.o: xsum-time-perm.c xsum.h pbinary.h
 xsum.o:		xsum.c xsum.h pbinary.h
 
 ExactSum.o:	ExactSum.cpp ExactSum.h
@@ -33,10 +32,6 @@ xsum-time-zhu.o: xsum-time.c xsum.h pbinary.h
 	cp xsum-time.c xsum-time-zhu.cpp
 	$(CPP) $(CFLAGS) -DZHU -Drestrict="" -c xsum-time-zhu.cpp
 	rm xsum-time-zhu.cpp
-xsum-time-perm-zhu.o: xsum-time-perm.c xsum.h pbinary.h
-	cp xsum-time-perm.c xsum-time-perm-zhu.cpp
-	$(CPP) $(CFLAGS) -DZHU -Drestrict="" -c xsum-time-perm-zhu.cpp
-	rm xsum-time-perm-zhu.cpp
 xsum-zhu.o:	xsum.c xsum.h pbinary.h
 	cp xsum.c xsum-zhu.cpp
 	$(CPP) $(CFLAGS) -DZHU -Drestrict="" -c xsum-zhu.cpp
@@ -58,12 +53,7 @@ xsum-check:	xsum-check.o xsum-debug.o pbinary.o
 	$(LDC) xsum-check.o xsum-debug.o pbinary.o $(LDLIBS) -o xsum-check
 xsum-time:	xsum-time.o xsum.o pbinary.o
 	$(LDC) xsum-time.o xsum.o pbinary.o $(LDLIBS) -o xsum-time
-xsum-time-perm:	xsum-time-perm.o xsum.o pbinary.o
-	$(LDC) xsum-time-perm.o xsum.o pbinary.o $(LDLIBS) -o xsum-time-perm
 
 xsum-time-zhu:	xsum-time-zhu.o xsum-zhu.o pbinary-zhu.o ExactSum.o
 	$(LDCPP) xsum-time-zhu.o xsum-zhu.o pbinary-zhu.o ExactSum.o $(LDLIBS) \
 	          -o xsum-time-zhu
-xsum-time-perm-zhu:	xsum-time-perm-zhu.o xsum-zhu.o pbinary-zhu.o ExactSum.o
-	$(LDCPP) xsum-time-perm-zhu.o xsum-zhu.o pbinary-zhu.o ExactSum.o \
-	         $(LDLIBS) -o xsum-time-perm-zhu

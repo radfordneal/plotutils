@@ -13,14 +13,13 @@ LDLIBS=-lm
 CC=gcc -std=c99
 LD=$(CC) -pg -fprofile-arcs -ftest-coverage
 
-default:	xsum-test xsum-time xsum-check show xsum-time-perm
+default:	xsum-test xsum-time xsum-check show
 
 pbinary.o:	pbinary.c pbinary.h
 show.o:		show.c pbinary.h
 xsum-test.o:	xsum-test.c xsum.h pbinary.h
 xsum-check.o:	xsum-check.c xsum.h pbinary.h
 xsum-time.o:	xsum-time.c xsum.h pbinary.h
-xsum-time-perm.o: xsum-time-perm.c xsum.h pbinary.h
 xsum.o:		xsum.c xsum.h pbinary.h
 
 xsum-test:	xsum-test.o xsum.o pbinary.o
@@ -29,7 +28,5 @@ xsum-check:	xsum-check.o xsum.o pbinary.o
 	$(LD) xsum-check.o xsum.o pbinary.o $(LDLIBS) -o xsum-check
 xsum-time:	xsum-time.o xsum.o pbinary.o
 	$(LD) xsum-time.o xsum.o pbinary.o $(LDLIBS) -o xsum-time
-xsum-time-perm:	xsum-time-perm.o xsum.o pbinary.o
-	$(LD) xsum-time-perm.o xsum.o pbinary.o $(LDLIBS) -o xsum-time-perm
 show:		show.o pbinary.o
 	$(LD) show.o pbinary.o $(LDLIBS) -o show

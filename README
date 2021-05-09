@@ -28,8 +28,7 @@ beginning of the xsum.c file.
 
 The xsum-check program does automatic correctness checks.  The
 xsum-test program can be used to test the functions manually.  The
-xsum-time program does timing tests. The xsum-time-perm program does
-the same timing tests but with data randomly permuted.
+xsum-time program does timing tests. 
 
 The xsum-time-zhu and xsum-time-perm-zhu programs do timing tests that
 include times for the iFastSum and OnlineExact methods of Zhu and
