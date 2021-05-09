@@ -110,13 +110,21 @@ plot_times(thinkstation_no_opt[,,"dot"],  "thinkstation-no-opt-dot",  cache/16)
 
 cache = c(32*1024, 256*1024)
 
-macbookpro2 <- read_times ("results-macbookpro2-gcc-10.2.0")
+macbookpro2_gcc_10_2_0 <- read_times ("results-macbookpro2-gcc-10.2.0")
+macbookpro2_clang_9_0_0 <- read_times ("results-macbookpro2-clang-9.0.0")
+
+macbookpro2 <- macbookpro2_clang_9_0_0
 
 plot_times(macbookpro2[,,"sum"],  "macbookpro2-sum",  cache/8)
 plot_times(macbookpro2[,,"norm"], "macbookpro2-norm", cache/8)
 plot_times(macbookpro2[,,"dot"],  "macbookpro2-dot",  cache/16)
 
-macbookpro2_no_opt <- read_times ("results-macbookpro2-gcc-10.2.0-no-opt")
+macbookpro2_no_opt_gcc_10_2_0 <- 
+  read_times ("results-macbookpro2-gcc-10.2.0-no-opt")
+macbookpro2_no_opt_clang_9_0_0 <- 
+  read_times ("results-macbookpro2-clang-9.0.0-no-opt")
+
+macbookpro2_no_opt <- macbookpro2_no_opt_clang_9_0_0
 
 plot_times(macbookpro2_no_opt[,,"sum"],  "macbookpro2_no_opt-sum",  cache/8)
 plot_times(macbookpro2_no_opt[,,"norm"], "macbookpro2_no_opt-norm", cache/8)
