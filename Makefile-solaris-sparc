@@ -8,8 +8,9 @@ CPP=CC
 LDCPP=$(CPP)
 ZHUFLAGS=-DREV
 
-all:		xsum-test xsum-time xsum-check show xsum-time-perm \
-		# xsum-time-zhu xsum-time-perm-zhu
+default:	xsum-test xsum-time xsum-check show xsum-time-perm
+
+with-zhu:	default xsum-time-zhu xsum-time-perm-zhu
 
 pbinary.o:	pbinary.c pbinary.h
 show.o:		show.c pbinary.h

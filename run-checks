@@ -3,9 +3,5 @@
 # Run checks of correctness (but not timing tests).
 
 TOP=`git rev-parse --show-toplevel`
-
-echo -n "COMMIT: "; git rev-parse HEAD
-git diff HEAD
-echo " "; cat $TOP/Make-info
-
+cat $TOP/Make-info
 $TOP/xsum-check

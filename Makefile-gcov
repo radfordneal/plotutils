@@ -13,7 +13,7 @@ LDLIBS=-lm
 CC=gcc -std=c99
 LD=$(CC) -pg -fprofile-arcs -ftest-coverage
 
-all:		xsum-test xsum-time xsum-check show xsum-time-perm
+default:	xsum-test xsum-time xsum-check show xsum-time-perm
 
 pbinary.o:	pbinary.c pbinary.h
 show.o:		show.c pbinary.h

@@ -14,9 +14,10 @@ CPP=g++$(GCC)
 LDCPP=$(CPP)
 ZHUFLAGS=
 
-all:		xsum-test xsum-time xsum-check show xsum-time-perm \
-		# xsum-time-zhu xsum-time-perm-zhu
-	echo GCC=$(GCC) >>Make-info
+default:	xsum-test xsum-time xsum-check show xsum-time-perm
+	@ (echo GCC=$(GCC); gcc$(GCC) -v 2>&1 | tail -1) >>Make-info
+
+with-zhu:	default xsum-time-zhu xsum-time-perm-zhu
 
 pbinary.o:	pbinary.c pbinary.h
 show.o:		show.c pbinary.h

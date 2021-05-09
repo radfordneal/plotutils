@@ -37,14 +37,14 @@ Hayes (ACM Transactions on Mathematical Software, Algorithm 908).
 Making this program requires their ExactSum.cpp and ExactSum.h source
 files, from the supplemental information for their paper (found at
 https://dl.acm.org/doi/10.1145/1824801.1824815).  A C++ compiler is
-also needed.  Uncomment-out the xsum-time-zhu and xsum-time-perm-zhu
-targets in the list of program after "all:" in the Makefile you are
-using if you want to make these programs.
-
+also needed.  If you have all this, you can compile them (and the
+other programs) using the with-zhu make target.
 
 The programs can be remade by using the "compile" script, which runs
 make -B to recompile them with the makefile with a specified suffix.
-It also stores information on how they were compiled in Make-info.
+It also stores information on the git commit, diffs from that commit,
+and how they were compiled in Make-info.  The "compile-zhu" script
+does the same with the Zhu and Hayes programs also compiled.
 
 The checks and timing tests reported in the paper can be run with the
 run-tests-zhu script (except that the tests of sizes 10 and 100 were
