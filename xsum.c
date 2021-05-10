@@ -1392,6 +1392,14 @@ void xsum_large_addv (xsum_large_accumulator *restrict lacc,
 }
 
 
+/* ADD ONE DOUBLE TO A LARGE ACCUMULATOR.  Just calls xsum_large_addv. */
+
+void xsum_large_add1 (xsum_large_accumulator *restrict lacc, xsum_flt value)
+{ 
+  xsum_large_addv (lacc, &value, 1);
+}
+
+
 /* ADD SQUARED NORM OF VECTOR OF FLOATING-POINT NUMBERS TO LARGE ACCUMULATOR. */
 
 void xsum_large_add_sqnorm (xsum_large_accumulator *restrict lacc,

@@ -141,6 +141,7 @@ void xsum_small_display (xsum_small_accumulator *restrict);
 int xsum_small_chunks_used (xsum_small_accumulator *restrict);
 
 void xsum_large_init (xsum_large_accumulator *restrict);
+void xsum_large_add1 (xsum_large_accumulator *restrict, xsum_flt);
 void xsum_large_addv (xsum_large_accumulator *restrict, 
                       const xsum_flt *restrict, xsum_length);
 void xsum_large_add_sqnorm (xsum_large_accumulator *restrict, 
