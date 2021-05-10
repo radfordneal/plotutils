@@ -92,6 +92,44 @@ void xsum_small_init (xsum_small_accumulator *restrict sacc)
 }
 
 
+/* ADD AN INF OR NAN TO A SMALL ACCUMULATOR.  This only changes the flags, 
+   not the chunks in the accumulator, which retains the sum of the finite 
+   terms (which is perhaps sometimes useful to access, though no function 
+   to do so is defined at present).  A NaN with larger payload (seen as a 
+   52-bit unsigned integer) takes precedence, with the sign of the NaN always
+   being positive.  This ensures that the order of summing NaN values doesn't
+   matter. */
+
+void xsum_small_add_inf_nan (xsum_small_accumulator *restrict sacc, 
+                             xsum_int ivalue)
+{ 
+  xsum_int mantissa;
+  union fpunion u;
+ 
+  mantissa = ivalue & XSUM_MANTISSA_MASK;  
+
+  if (mantissa == 0) /* Inf */
+  { if (sacc->Inf == 0)   
+    { /* no previous Inf */
+      sacc->Inf = ivalue;
+    }
+    else if (sacc->Inf != ivalue)
+    { /* previous Inf was opposite sign */
+      u.intv = ivalue;
+      u.fltv = u.fltv - u.fltv;  /* result will be a NaN */
+      sacc->Inf = u.intv;
+    }
+  }
+  else /* NaN */
+  { /* Choose the NaN with the bigger payload and clear its sign.  Using <=
+       ensures that we will choose the first NaN over the previous zero. */
+    if ((sacc->NaN & XSUM_MANTISSA_MASK) <= mantissa)
+    { sacc->NaN = ivalue & ~XSUM_SIGN_MASK;
+    }
+  }
+}
+
+
 /* PROPAGATE CARRIES TO NEXT CHUNK IN A SMALL ACCUMULATOR.  Needs to
    be called often enough that accumulated carries don't overflow out 
    the top, as indicated by sacc->adds_until_propagate.  Returns the 
@@ -227,13 +265,22 @@ int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
     }
 
     /* We now change chunk[i] and add to chunk[i+1]. Note that i+1 should be
-       in range (no bigger than XSUM_CHUNKS-1) because the number of chunks
-       is big enough to hold any sum, and we do not store redundant chunks 
-       with values 0 or -1 above previously non-zero chunks. */
+       in range (no bigger than XSUM_CHUNKS-1) if summing memory, since
+       the number of chunks is big enough to hold any sum, and we do not 
+       store redundant chunks with values 0 or -1 above previously non-zero 
+       chunks.  But other add operations might cause overflow, in which 
+       case we produce an appropriate Inf or NaN. */
 
-    if (xsum_debug && i+1 >= XSUM_SCHUNKS) abort();
     sacc->chunk[i] = clow;
-    sacc->chunk[i+1] += chigh;
+    if (i+1 >= XSUM_SCHUNKS)
+    { xsum_small_add_inf_nan (sacc, 
+        chigh > 0 ? ((xsum_int)XSUM_EXP_MASK << XSUM_MANTISSA_BITS)
+          : ((xsum_int)XSUM_EXP_MASK << XSUM_MANTISSA_BITS) | XSUM_SIGN_MASK);
+      u = i;
+    }
+    else
+    { sacc->chunk[i+1] += chigh;
+    }
 
     i += 1;
 
@@ -315,44 +362,6 @@ int xsum_small_chunks_used (xsum_small_accumulator *restrict sacc)
     }
   }
   return c;
-}
-
-
-/* ADD AN INF OR NAN TO A SMALL ACCUMULATOR.  This only changes the flags, 
-   not the chunks in the accumulator, which retains the sum of the finite 
-   terms (which is perhaps sometimes useful to access, though no function 
-   to do so is defined at present).  A NaN with larger payload (seen as a 
-   52-bit unsigned integer) takes precedence, with the sign of the NaN always
-   being positive.  This ensures that the order of summing NaN values doesn't
-   matter. */
-
-void xsum_small_add_inf_nan (xsum_small_accumulator *restrict sacc, 
-                             xsum_int ivalue)
-{ 
-  xsum_int mantissa;
-  union fpunion u;
- 
-  mantissa = ivalue & XSUM_MANTISSA_MASK;  
-
-  if (mantissa == 0) /* Inf */
-  { if (sacc->Inf == 0)   
-    { /* no previous Inf */
-      sacc->Inf = ivalue;
-    }
-    else if (sacc->Inf != ivalue)
-    { /* previous Inf was opposite sign */
-      u.intv = ivalue;
-      u.fltv = u.fltv - u.fltv;  /* result will be a NaN */
-      sacc->Inf = u.intv;
-    }
-  }
-  else /* NaN */
-  { /* Choose the NaN with the bigger payload and clear its sign.  Using <=
-       ensures that we will choose the first NaN over the previous zero. */
-    if ((sacc->NaN & XSUM_MANTISSA_MASK) <= mantissa)
-    { sacc->NaN = ivalue & ~XSUM_SIGN_MASK;
-    }
-  }
 }
 
 
