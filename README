@@ -1,8 +1,10 @@
 FUNCTIONS FOR EXACT SUMMATION.
 
-Written by Radford M. Neal, 2015.
+Written by Radford M. Neal.
 
-Version of 2015-05-20, minor fixes and license update 2018-12-02.
+First version: 2015-05-20.
+Minor fixes and license update: 2018-12-02.
+Current revisions in progress: 2021.
 
 
 These programs implement the methods described in the paper "Fast
@@ -28,7 +30,8 @@ beginning of the xsum.c file.
 
 The xsum-check program does automatic correctness checks.  The
 xsum-test program can be used to test the functions manually.  The
-xsum-time program does timing tests. 
+xsum-time program does timing tests.  See comments in the source files
+for documentation on how to use these programs.
 
 The xsum-time-zhu and xsum-time-perm-zhu programs do timing tests that
 include times for the iFastSum and OnlineExact methods of Zhu and
@@ -55,3 +58,6 @@ are described in the files with names of the form system-xxx, and the
 results are in corresponding files named results-xxx-ccc, where ccc is
 the compiler used.  The plots in the paper are also there, produced by
 the plots.r script.
+
+In the directory newer-results contains results of more recent timing
+tests, similarly to paper-results.
