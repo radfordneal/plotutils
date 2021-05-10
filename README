@@ -17,8 +17,8 @@ file "LICENSE".
 
 
 The programs can be built using one of the several Makefiles included.
-For instance, the following should work on Linux systems with gcc
-installed:
+For instance, the following should work on Intel/AMD Linux systems
+with gcc installed:
 
     make -f Makefile-gcc-intel
 
@@ -26,7 +26,9 @@ See the documentation at the start of the Makefile-xxx files for more
 details.  For some systems, another Makefile may need to be created.
 Performance on a particular system may be improved by tuning compiler
 options, and perhaps the settings of the flags defined at the
-beginning of the xsum.c file.
+beginning of the xsum.c file.  It may be best to make the programs
+using the "compile" script described below, rather than use "make"
+directly.
 
 The xsum-check program does automatic correctness checks.  The
 xsum-test program can be used to test the functions manually.  The
@@ -51,7 +53,10 @@ does the same with the Zhu and Hayes programs also compiled.
 The checks and timing tests reported in the paper can be run with the
 run-tests-zhu script (except that the tests of sizes 10 and 100 were
 done with fewer repetitions on the Raspberry Pi, to avoid very long
-runs).  The run-checks script runs only the correctness checks.
+runs).  The run-tests script does the same but without the Zhu and
+Hayes methods. The run-checks script runs only the correctness checks.
+The output includes Make-info, produced by "compile" or "compile-zhu",
+so that it will be clear what version was testsed.
 
 In the directory paper-results, the systems on which tests were done
 are described in the files with names of the form system-xxx, and the
