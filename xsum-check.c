@@ -261,8 +261,8 @@ void large_result (xsum_large_accumulator *lacc, double s, int i)
 
 int main (int argc, char **argv)
 {
-  xsum_small_accumulator sacc;
-  xsum_large_accumulator lacc;
+  xsum_small_accumulator sacc, sacc2;
+  xsum_large_accumulator lacc, lacc2;
   double s;
   int i, j;
 
@@ -435,7 +435,9 @@ int main (int argc, char **argv)
     if (echo) printf("   ANSWER:  %.16le\n",s);
 
     xsum_small_init (&sacc);
+    xsum_small_init (&sacc2);
     xsum_large_init (&lacc);
+    xsum_large_init (&lacc2);
 
     switch (i)
     { case 0:  /* add positive zero to 1234.5 */
@@ -498,6 +500,17 @@ int main (int argc, char **argv)
         }
         xsum_small_addv (&sacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
         xsum_large_addv (&lacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
+        break;
+      }
+      case 5:  /* add one small/large accumulator to another */
+      { double v1[3] = { 3.7e20, 888.8, 4.1e20 };
+        double v2[4] = { s, -4.1e20, -3.7e20, -888.8 };
+        xsum_small_addv (&sacc, v1, 3);
+        xsum_small_addv (&sacc2, v2, 4);
+        xsum_small_add_accumulator (&sacc, &sacc2);
+        xsum_large_addv (&lacc, v1, 3);
+        xsum_large_addv (&lacc2, v2, 4);
+        xsum_large_add_accumulator (&lacc, &lacc2);
         done = 1;
       }
     }

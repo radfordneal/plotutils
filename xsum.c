@@ -686,6 +686,31 @@ void xsum_small_add_dot (xsum_small_accumulator *restrict sacc,
 }
 
 
+/* ADD A SMALL ACCUMULATOR TO ANOTHER SMALL ACCUMULATOR.  The first argument
+   is the destination, which is modified.  The second is the accumulator to
+   add, which may also be modified, but should still represent the same
+   number.  Source and destination must be different. */
+
+void xsum_small_add_accumulator (xsum_small_accumulator *restrict dst_sacc, 
+                                 xsum_small_accumulator *restrict src_sacc)
+{
+  int i;
+
+  if (xsum_debug) printf("Adding accumulator to a small accumulator\n");
+  if (dst_sacc == src_sacc) abort();
+
+  xsum_carry_propagate (dst_sacc);
+  xsum_carry_propagate (src_sacc);
+
+  if (src_sacc->Inf) xsum_small_add_inf_nan (dst_sacc, src_sacc->Inf);
+  if (src_sacc->NaN) xsum_small_add_inf_nan (dst_sacc, src_sacc->NaN);
+  
+  for (i = 0; i < XSUM_SCHUNKS; i++)
+  { dst_sacc->chunk[i] += src_sacc->chunk[i];
+  }
+}
+
+
 /* RETURN THE RESULT OF ROUNDING A SMALL ACCUMULATOR.  The rounding mode 
    is to nearest, with ties to even.  The small accumulator may be modified 
    by this operation (by carry propagation being done), but the value it
@@ -1675,15 +1700,11 @@ void xsum_large_add_dot (xsum_large_accumulator *restrict lacc,
 }
 
 
-/* RETURN RESULT OF ROUNDING A LARGE ACCUMULATOR.  Rounding mode is to nearest,
-   with ties to even.  
+/* TRANSFER ALL CHUNKS IN LARGE ACCUMULATOR TO ITS SMALL ACCUMULATOR. */
 
-   This is done by adding all the chunks in the large accumulator to the
-   small accumulator, and then calling its rounding procedure. */
-
-xsum_flt xsum_large_round (xsum_large_accumulator *restrict lacc)
+void xsum_large_transfer_to_small (xsum_large_accumulator *restrict lacc)
 {
-  if (xsum_debug) printf("Rounding large accumulator\n");
+  if (xsum_debug) printf("Transferring chunks in large accumulator\n");
 
 # if USE_USED_LARGE
   { 
@@ -1713,19 +1734,19 @@ xsum_flt xsum_large_round (xsum_large_accumulator *restrict lacc)
       { u = *p;
         if (u != 0) break;
         p += 1;
-        if (p == e) goto finish;
+        if (p == e) return;
         u = *p;
         if (u != 0) break;
         p += 1;
-        if (p == e) goto finish;
+        if (p == e) return;
         u = *p;
         if (u != 0) break;
         p += 1;
-        if (p == e) goto finish;
+        if (p == e) return;
         u = *p;
         if (u != 0) break;
         p += 1;
-        if (p == e) goto finish;
+        if (p == e) return;
       }
 
       /* Find and process the chunks in this block that are used.  We skip
@@ -1762,11 +1783,37 @@ xsum_flt xsum_large_round (xsum_large_accumulator *restrict lacc)
     }
   }
 # endif
+}
 
-  /* Finish now that all blocks have been added to the small accumulator
-     by calling the small accumulator rounding function. */
+/* ADD A LARGE ACCUMULATOR TO ANOTHER LARGE ACCUMULATOR.  The first argument
+   is the destination, which is modified.  The second is the accumulator to
+   add, which may also be modified, but should still represent the same
+   number.  Source and destination must be different. */
 
-finish:
+void xsum_large_add_accumulator (xsum_large_accumulator *restrict dst_lacc, 
+                                 xsum_large_accumulator *restrict src_lacc)
+{
+  if (xsum_debug) printf("Adding accumulator to a large accumulator\n");
+  if (dst_lacc == src_lacc) abort();
+
+  xsum_large_transfer_to_small (dst_lacc);
+  xsum_large_transfer_to_small (src_lacc);
+  xsum_small_add_accumulator (&dst_lacc->sacc, &src_lacc->sacc);
+}
+
+
+/* RETURN RESULT OF ROUNDING A LARGE ACCUMULATOR.  Rounding mode is to nearest,
+   with ties to even.  
+
+   This is done by adding all the chunks in the large accumulator to the
+   small accumulator, and then calling its rounding procedure. */
+
+xsum_flt xsum_large_round (xsum_large_accumulator *restrict lacc)
+{
+  if (xsum_debug) printf("Rounding large accumulator\n");
+
+  xsum_large_transfer_to_small (lacc);
+
   return xsum_small_round (&lacc->sacc);
 }
 
