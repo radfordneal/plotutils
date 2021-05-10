@@ -433,7 +433,6 @@ int main (int argc, char **argv)
     xsum_debug = debug_all || debug_letter=='H' && debug_number==i;
     if (echo) printf(" \n-- TEST %2d\n",i);
     s = 1234.5;
-    if (echo) printf("   ANSWER:  %.16le\n",s);
 
     xsum_small_init (&sacc);
     xsum_small_init (&sacc2);
@@ -442,7 +441,8 @@ int main (int argc, char **argv)
 
     switch (i)
     { case 0:  /* add one small/large accumulator to another */
-      { double v1[3] = { 3.7e20, 888.8, 4.1e20 };
+      { if (echo) printf("   ANSWER:  %.16le\n",s);
+        double v1[3] = { 3.7e20, 888.8, 4.1e20 };
         double v2[4] = { s, -4.1e20, -3.7e20, -888.8 };
         xsum_small_addv (&sacc, v1, 3);
         xsum_small_addv (&sacc2, v2, 4);
@@ -450,12 +450,224 @@ int main (int argc, char **argv)
         xsum_large_addv (&lacc, v1, 3);
         xsum_large_addv (&lacc2, v2, 4);
         xsum_large_add_accumulator (&lacc, &lacc2);
+        small_result(&sacc,s,i);
+        large_result(&lacc,s,i);
+        break;
+      }
+      case 1:  /* add a small/large accumulator many times */
+      { if (echo) printf("   ANSWER:  %.16le\n",s);
+        double v1[3] = { 3.5, 888.75, 4.125 };
+        double v2[3] = { -4.125, -3.5, -888.75 };
+        int k;
+
+        xsum_small_addv (&sacc2, v1, 3);
+        for (k = 0; k < 1000; k++) xsum_small_add_accumulator (&sacc, &sacc2);
+        xsum_small_add1 (&sacc, s);
+        xsum_small_addv (&sacc2, v2, 3);
+        xsum_small_addv (&sacc2, v2, 3);
+        for (k = 0; k < 1000; k++) xsum_small_add_accumulator (&sacc, &sacc2);
+
+        xsum_large_addv (&lacc2, v1, 3);
+        for (k = 0; k < 1000; k++) xsum_large_add_accumulator (&lacc, &lacc2);
+        xsum_large_add1 (&lacc, s);
+        xsum_large_addv (&lacc2, v2, 3);
+        xsum_large_addv (&lacc2, v2, 3);
+        for (k = 0; k < 1000; k++) xsum_large_add_accumulator (&lacc, &lacc2);
+
+        small_result(&sacc,s,i);
+        large_result(&lacc,s,i);
+
+        break;
+      }
+      case 2:  /* add a small/large accumulator many times, producing +inf */
+      { if (echo) printf("   ANSWER:  +inf\n");
+
+        double v1[3] = { 3.5, 888.75, 4.125 };
+        double r;
+        int k;
+
+        xsum_small_addv (&sacc, v1, 3);
+        for (k = 0; k < 1015; k++)
+        { xsum_small_accumulator t = sacc;
+          xsum_small_add_accumulator (&sacc, &t);
+        }
+
+        r = xsum_small_round(&sacc);
+        if (!isinf(r) || r < 0) 
+        { printf("%d small: Result not +inf: %.16le\n",i,r);
+        }
+
+        xsum_large_addv (&lacc, v1, 3);
+        for (k = 0; k < 1015; k++)
+        { xsum_large_accumulator t = lacc;
+          xsum_large_add_accumulator (&lacc, &t);
+        }
+
+        r = xsum_large_round(&lacc);
+        if (!isinf(r) || r < 0) 
+        { printf("%d large: Result not +inf: %.16le\n",i,r);
+        }
+
+        break;
+      }
+      case 3:  /* add a small/large accumulator MANY times, producing NaN */
+      { if (echo) printf("   ANSWER:  NaN\n");
+
+        double v1[3] = { 3.5, 888.75, 4.125 };
+        double r;
+        int k;
+
+        xsum_small_addv (&sacc, v1, 3);
+        for (k = 0; k < 2000; k++)
+        { xsum_small_accumulator t = sacc;
+          xsum_small_add_accumulator (&sacc, &t);
+        }
+
+        r = xsum_small_round(&sacc);
+        if (!isnan(r))
+        { printf("%d small: Result not NaN: %.16le\n",i,r);
+        }
+
+        xsum_large_addv (&lacc, v1, 3);
+        for (k = 0; k < 2000; k++)
+        { xsum_large_accumulator t = lacc;
+          xsum_large_add_accumulator (&lacc, &t);
+        }
+
+        r = xsum_large_round(&lacc);
+        if (!isnan(r))
+        { printf("%d large: Result not NaN: %.16le\n",i,r);
+        }
+
+        break;
+      }
+      case 4:  /* add a small/large accumulator many times, producing -inf */
+      { if (echo) printf("   ANSWER:  -inf\n");
+
+        double v1[3] = { -3.5, -888.75, -4.125 };
+        double r;
+        int k;
+
+        xsum_small_addv (&sacc, v1, 3);
+        for (k = 0; k < 1015; k++)
+        { xsum_small_accumulator t = sacc;
+          xsum_small_add_accumulator (&sacc, &t);
+        }
+
+        r = xsum_small_round(&sacc);
+        if (!isinf(r) || r > 0) 
+        { printf("%d small: Result not -inf: %.16le\n",i,r);
+          printf("    "); pbinary_double(r); printf("\n");
+        }
+
+        xsum_large_addv (&lacc, v1, 3);
+        for (k = 0; k < 1015; k++)
+        { xsum_large_accumulator t = lacc;
+          xsum_large_add_accumulator (&lacc, &t);
+        }
+
+        r = xsum_large_round(&lacc);
+        if (!isinf(r) || r > 0) 
+        { printf("%d large: Result not -inf: %.16le\n",i,r);
+          printf("    "); pbinary_double(r); printf("\n");
+        }
+
+        break;
+      }
+      case 5:  /* add a small/large accumulator MANY times, producing NaN */
+      { if (echo) printf("   ANSWER:  NaN\n");
+
+        double v1[3] = { -3.5, -888.75, -4.125 };
+        double r;
+        int k;
+
+        xsum_small_addv (&sacc, v1, 3);
+        for (k = 0; k < 2000; k++)
+        { xsum_small_accumulator t = sacc;
+          xsum_small_add_accumulator (&sacc, &t);
+        }
+
+        r = xsum_small_round(&sacc);
+        if (!isnan(r))
+        { printf("%d small: Result not NaN: %.16le\n",i,r);
+          printf("    "); pbinary_double(r); printf("\n");
+        }
+
+        xsum_large_addv (&lacc, v1, 3);
+        for (k = 0; k < 2000; k++)
+        { xsum_large_accumulator t = lacc;
+          xsum_large_add_accumulator (&lacc, &t);
+        }
+
+        r = xsum_large_round(&lacc);
+        if (!isnan(r))
+        { printf("%d large: Result not NaN: %.16le\n",i,r);
+          printf("    "); pbinary_double(r); printf("\n");
+        }
+
+        break;
+      }
+      case 6:  /* add a small/large accumulator many times, producing zero */
+      { if (echo) printf("   ANSWER:  0\n");
+
+        double v1[3] = { -3.5, -888.75, -4.125 };
+        double v2[3] = { 3.5, 888.75, 4.125 };
+        double r;
+        int k;
+
+        xsum_small_addv (&sacc, v1, 3);
+        for (k = 0; k < 1015; k++)
+        { xsum_small_accumulator t = sacc;
+          xsum_small_add_accumulator (&sacc, &t);
+        }
+
+        xsum_small_addv (&sacc2, v2, 3);
+        for (k = 0; k < 1015; k++)
+        { xsum_small_accumulator t = sacc2;
+          xsum_small_add_accumulator (&sacc2, &t);
+        }
+
+        xsum_small_add_accumulator (&sacc, &sacc2);
+
+        r = xsum_small_round(&sacc);
+        if (isnan(r) || r != 0)
+        { printf("%d small: Result not 0: %.16le\n",i,r);
+          printf("    "); pbinary_double(r); printf("\n");
+        }
+
+        break;
+      }
+      case 7:  /* add a small/large accumulator MANY times, producing NaN */
+      { if (echo) printf("   ANSWER:  NaN\n");
+
+        double v1[3] = { -3.5, -888.75, -4.125 };
+        double v2[3] = { 3.5, 888.75, 4.125 };
+        double r;
+        int k;
+
+        xsum_small_addv (&sacc, v1, 3);
+        for (k = 0; k < 2000; k++)
+        { xsum_small_accumulator t = sacc;
+          xsum_small_add_accumulator (&sacc, &t);
+        }
+
+        xsum_small_addv (&sacc2, v2, 3);
+        for (k = 0; k < 2000; k++)
+        { xsum_small_accumulator t = sacc2;
+          xsum_small_add_accumulator (&sacc2, &t);
+        }
+
+        xsum_small_add_accumulator (&sacc, &sacc2);
+
+        r = xsum_small_round(&sacc);
+        if (!isnan(r))
+        { printf("%d small: Result not NaN: %.16le\n",i,r);
+          printf("    "); pbinary_double(r); printf("\n");
+        }
+
         done = 1;
       }
     }
-
-    small_result(&sacc,s,i);
-    large_result(&lacc,s,i);
   }
 
   printf("\nI: SPECIAL TESTS\n");

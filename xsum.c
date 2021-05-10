@@ -269,13 +269,13 @@ int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
        the number of chunks is big enough to hold any sum, and we do not 
        store redundant chunks with values 0 or -1 above previously non-zero 
        chunks.  But other add operations might cause overflow, in which 
-       case we produce an appropriate Inf or NaN. */
+       case we produce a NaN with all 1s as payload.  (We can't reliably produce
+       an Inf of the right sign.) */
 
     sacc->chunk[i] = clow;
     if (i+1 >= XSUM_SCHUNKS)
     { xsum_small_add_inf_nan (sacc, 
-        chigh > 0 ? ((xsum_int)XSUM_EXP_MASK << XSUM_MANTISSA_BITS)
-          : ((xsum_int)XSUM_EXP_MASK << XSUM_MANTISSA_BITS) | XSUM_SIGN_MASK);
+        ((xsum_int)XSUM_EXP_MASK << XSUM_MANTISSA_BITS) | XSUM_MANTISSA_MASK);
       u = i;
     }
     else
@@ -327,9 +327,14 @@ done:
 void xsum_small_display (xsum_small_accumulator *restrict sacc)
 {
   int i, dots;
-  printf("Small accumulator:%s%s\n", 
-          sacc->Inf ? "  Inf" : "", 
-          sacc->NaN ? "  NaN" : "");
+  printf("Small accumulator:");
+  if (sacc->Inf) 
+  { printf (" %cInf", sacc->Inf>0 ? '+' : '-');
+  }
+  if (sacc->NaN)
+  { printf (" NaN (%lx)", sacc->NaN);
+  }
+  printf("\n");
   dots = 0;
   for (i = XSUM_SCHUNKS-1; i >= 0; i--)
   { if (sacc->chunk[i] == 0)
