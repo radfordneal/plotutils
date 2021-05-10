@@ -264,6 +264,7 @@ int main (int argc, char **argv)
   xsum_small_accumulator sacc, sacc2;
   xsum_large_accumulator lacc, lacc2;
   double s;
+  int done;
   int i, j;
 
   if (argc>2 || argc==2 && strcmp(argv[1],"-e")!=0 
@@ -424,9 +425,9 @@ int main (int argc, char **argv)
     large_result(&lacc,s,i/11);
   }
 
-  printf("\nH: SPECIAL TESTS\n");
+  printf("\nH: TESTS OF ADDING TOGETHER ACCUMULATORS\n");
 
-  int done = 0;
+  done = 0;
   for (i = 0; !done; i += 1)
   { 
     xsum_debug = debug_all || debug_letter=='H' && debug_number==i;
@@ -438,6 +439,37 @@ int main (int argc, char **argv)
     xsum_small_init (&sacc2);
     xsum_large_init (&lacc);
     xsum_large_init (&lacc2);
+
+    switch (i)
+    { case 0:  /* add one small/large accumulator to another */
+      { double v1[3] = { 3.7e20, 888.8, 4.1e20 };
+        double v2[4] = { s, -4.1e20, -3.7e20, -888.8 };
+        xsum_small_addv (&sacc, v1, 3);
+        xsum_small_addv (&sacc2, v2, 4);
+        xsum_small_add_accumulator (&sacc, &sacc2);
+        xsum_large_addv (&lacc, v1, 3);
+        xsum_large_addv (&lacc2, v2, 4);
+        xsum_large_add_accumulator (&lacc, &lacc2);
+        done = 1;
+      }
+    }
+
+    small_result(&sacc,s,i);
+    large_result(&lacc,s,i);
+  }
+
+  printf("\nI: SPECIAL TESTS\n");
+
+  done = 0;
+  for (i = 0; !done; i += 1)
+  { 
+    xsum_debug = debug_all || debug_letter=='I' && debug_number==i;
+    if (echo) printf(" \n-- TEST %2d\n",i);
+    s = 1234.5;
+    if (echo) printf("   ANSWER:  %.16le\n",s);
+
+    xsum_small_init (&sacc);
+    xsum_large_init (&lacc);
 
     switch (i)
     { case 0:  /* add positive zero to 1234.5 */
@@ -500,17 +532,6 @@ int main (int argc, char **argv)
         }
         xsum_small_addv (&sacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
         xsum_large_addv (&lacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
-        break;
-      }
-      case 5:  /* add one small/large accumulator to another */
-      { double v1[3] = { 3.7e20, 888.8, 4.1e20 };
-        double v2[4] = { s, -4.1e20, -3.7e20, -888.8 };
-        xsum_small_addv (&sacc, v1, 3);
-        xsum_small_addv (&sacc2, v2, 4);
-        xsum_small_add_accumulator (&sacc, &sacc2);
-        xsum_large_addv (&lacc, v1, 3);
-        xsum_large_addv (&lacc2, v2, 4);
-        xsum_large_add_accumulator (&lacc, &lacc2);
         done = 1;
       }
     }

@@ -4,4 +4,4 @@
 
 TOP=`git rev-parse --show-toplevel`
 cat $TOP/Make-info
-$TOP/xsum-check
+$TOP/xsum-check $@
