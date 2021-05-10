@@ -435,7 +435,12 @@ static inline void xsum_add1_no_carry (xsum_small_accumulator *restrict sacc,
 
   /* Separate mantissa into two parts, after shifting, and add to (or 
      subtract from) this chunk and the next higher chunk (which always 
-     exists since there are three extra ones at the top). */
+     exists since there are three extra ones at the top). 
+
+     Note that low_mantissa will have at most XSUM_LOW_MANTISSA_BITS bits,
+     while high_mantissa will have at most XSUM_MANTISSA_BITS bits, since
+     even though high_mantissa includes the extra implicit 1 bit, it will
+     also be shifted right by at least one bit. */
 
   low_mantissa = ((xsum_uint)mantissa << low_exp) & XSUM_LOW_MANTISSA_MASK;
   high_mantissa = mantissa >> (XSUM_LOW_MANTISSA_BITS - low_exp);
@@ -708,6 +713,8 @@ void xsum_small_add_accumulator (xsum_small_accumulator *restrict dst_sacc,
   for (i = 0; i < XSUM_SCHUNKS; i++)
   { dst_sacc->chunk[i] += src_sacc->chunk[i];
   }
+
+  dst_sacc->adds_until_propagate = XSUM_SMALL_CARRY_TERMS-2;
 }
 
 
@@ -1796,7 +1803,6 @@ void xsum_large_add_accumulator (xsum_large_accumulator *restrict dst_lacc,
   if (xsum_debug) printf("Adding accumulator to a large accumulator\n");
   if (dst_lacc == src_lacc) abort();
 
-  xsum_large_transfer_to_small (dst_lacc);
   xsum_large_transfer_to_small (src_lacc);
   xsum_small_add_accumulator (&dst_lacc->sacc, &src_lacc->sacc);
 }
