@@ -532,6 +532,12 @@ int main (int argc, char **argv)
         }
         xsum_small_addv (&sacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
         xsum_large_addv (&lacc, v, 2 * (1 << XSUM_LCOUNT_BITS) + 3);
+        break;
+      }
+      case 5:  /* test transfer to small accumulator */
+      { double v[3] = { 5100, s, -5100 };
+        xsum_large_addv (&lacc, v, 3);
+        xsum_large_to_small_accumulator (&sacc, &lacc);
         done = 1;
       }
     }

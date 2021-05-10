@@ -1792,6 +1792,7 @@ void xsum_large_transfer_to_small (xsum_large_accumulator *restrict lacc)
 # endif
 }
 
+
 /* ADD A LARGE ACCUMULATOR TO ANOTHER LARGE ACCUMULATOR.  The first argument
    is the destination, which is modified.  The second is the accumulator to
    add, which may also be modified, but should still represent the same
@@ -1805,6 +1806,17 @@ void xsum_large_add_accumulator (xsum_large_accumulator *restrict dst_lacc,
 
   xsum_large_transfer_to_small (src_lacc);
   xsum_small_add_accumulator (&dst_lacc->sacc, &src_lacc->sacc);
+}
+
+
+/* TRANSFER NUMBER FROM A LARGE ACCUMULATOR TO A SMALL ACCUMULATOR. */
+
+void xsum_large_to_small_accumulator (xsum_small_accumulator *restrict sacc, 
+                                      xsum_large_accumulator *restrict lacc)
+{
+  if (xsum_debug) printf("Transferring from large to small accumulator\n");
+  xsum_large_transfer_to_small (lacc);
+  *sacc = lacc->sacc;
 }
 
 
