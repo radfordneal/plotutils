@@ -31,26 +31,6 @@
 /* --------------------------- CONFIGURATION ------------------------------- */
 
 
-/* OPTIONAL INCLUSION OF PBINARY MODULE.  Used for debug output. */
-
-#ifdef PBINARY
-# include "pbinary.h"
-#else
-# define pbinary_int64(x,y) 0
-# define pbinary_double(x) 0
-#endif
-
-
-/* SET UP DEBUG FLAG.  It's a variable if debuging is enabled, and a
-   constant if disabled (so that no code will be generated then). */
-
-int xsum_debug = 0;
-
-#ifndef DEBUG
-# define xsum_debug 0
-#endif
-
-
 /* IMPLEMENTATION OPTIONS.  Can be set to either 0 or 1, whichever seems
    to be fastest. */
 
@@ -75,14 +55,41 @@ int xsum_debug = 0;
 #define INLINE_SMALL 1      /* Inline more of the small accumulator routines? */
 #define INLINE_LARGE 1      /* Inline more of the large accumulator routines? */
 
-/* Note: when not "inline", routines are made external to discourage inlining.
-   Compiler options such as gcc's -fno-inline-functions may also help prevent
-   undesired inlining. */
-
 
 /* UNION OF FLOATING AND INTEGER TYPES. */
 
 union fpunion { xsum_flt fltv; xsum_int intv; xsum_uint uintv; };
+
+
+/* OPTIONAL INCLUSION OF PBINARY MODULE.  Used for debug output. */
+
+#ifdef PBINARY
+# include "pbinary.h"
+#else
+# define pbinary_int64(x,y) 0
+# define pbinary_double(x) 0
+#endif
+
+
+/* SET UP DEBUG FLAG.  It's a variable if debuging is enabled, and a
+   constant if disabled (so that no code will be generated then). */
+
+int xsum_debug = 0;
+
+#ifndef DEBUG
+# define xsum_debug 0
+#endif
+
+
+/* SET UP INLINE / NOINLINE MACROS. */
+
+#if __GNUC__
+# define INLINE inline __attribute__ ((always_inline))
+# define NOINLINE __attribute__ ((noinline))
+#else
+# define INLINE inline 
+# define NOINLINE
+#endif
 
 
 /* ------------------------ INTERNAL ROUTINES ------------------------------- */
@@ -96,8 +103,8 @@ union fpunion { xsum_flt fltv; xsum_int intv; xsum_uint uintv; };
    being positive.  This ensures that the order of summing NaN values doesn't
    matter. */
 
-static void xsum_small_add_inf_nan (xsum_small_accumulator *restrict sacc, 
-                                    xsum_int ivalue)
+static NOINLINE void xsum_small_add_inf_nan 
+                       (xsum_small_accumulator *restrict sacc, xsum_int ivalue)
 { 
   xsum_int mantissa;
   union fpunion u;
@@ -137,7 +144,7 @@ static void xsum_small_add_inf_nan (xsum_small_accumulator *restrict sacc,
    Lower chunks will be non-negative, and in the range from 0 up to 
    2^XSUM_LOW_MANTISSA_BITS - 1. */
 
-static int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
+static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
 {
   xsum_schunk c, clow, chigh;
   int i, u, uix;
@@ -318,7 +325,7 @@ done:
 }
 
 
-/* INITIALIZE LARGE ACCUMULATOR CHUNKS. */
+/* INITIALIZE LARGE ACCUMULATOR CHUNKS.  Sets all counts to -1. */
 
 static void xsum_large_init_chunks (xsum_large_accumulator *restrict lacc)
 { 
@@ -363,10 +370,10 @@ static void xsum_large_init_chunks (xsum_large_accumulator *restrict lacc)
    Inf or NaN, whose counts should always remain at -1. */
 
 #if INLINE_LARGE
-static inline 
+  INLINE
 #endif
-void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
-                               xsum_expint ix)
+static void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
+                                      xsum_expint ix)
 {
   xsum_expint exp, low_exp, high_exp;
   xsum_uint low_chunk, mid_chunk, high_chunk;
@@ -500,10 +507,10 @@ void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
    that the chunk needs to be transferred to the small accumulator. */
 
 #if INLINE_LARGE
-static inline 
+  INLINE
 #endif
-void xsum_large_add_value_inf_nan (xsum_large_accumulator *restrict lacc,
-                                   xsum_expint ix, xsum_lchunk uintv)
+static void xsum_large_add_value_inf_nan (xsum_large_accumulator *restrict lacc,
+                                          xsum_expint ix, xsum_lchunk uintv)
 {
   if ((ix & XSUM_EXP_MASK) == XSUM_EXP_MASK)
   { xsum_small_add_inf_nan (&lacc->sacc, uintv);
@@ -625,11 +632,11 @@ void xsum_small_init (xsum_small_accumulator *restrict sacc)
 
 
 /* ADD ONE NUMBER TO A SMALL ACCUMULATOR ASSUMING NO CARRY PROPAGATION REQ'D. 
-   This function is declared "inline" regardless of the setting of INLINE_SMALL
+   This function is declared INLINE regardless of the setting of INLINE_SMALL
    and for good performance it must be inlined by the compiler (otherwise the 
    procedure call overhead will result in substantial inefficiency). */
 
-static inline void xsum_add1_no_carry (xsum_small_accumulator *restrict sacc, 
+static INLINE void xsum_add1_no_carry (xsum_small_accumulator *restrict sacc, 
                                        xsum_flt value)
 { 
   union fpunion u;
@@ -758,11 +765,11 @@ void xsum_small_add1 (xsum_small_accumulator *restrict sacc, xsum_flt value)
    response before the value is used. */
 
 #if INLINE_SMALL
-static inline
+  INLINE
 #endif
-void xsum_addv_no_carry (xsum_small_accumulator *restrict sacc, 
-                         const xsum_flt *restrict vec, 
-                         xsum_length n)
+static void xsum_addv_no_carry (xsum_small_accumulator *restrict sacc, 
+                                const xsum_flt *restrict vec, 
+                                xsum_length n)
 { 
 # if OPT_SMALL_SUM
   { xsum_flt f;
@@ -821,11 +828,11 @@ void xsum_small_addv (xsum_small_accumulator *restrict sacc,
    response before the value is used. */
 
 #if INLINE_SMALL
-static inline
+  INLINE
 #endif
-void xsum_add_sqnorm_no_carry (xsum_small_accumulator *restrict sacc, 
-                             const xsum_flt *restrict vec, 
-                             xsum_length n)
+static void xsum_add_sqnorm_no_carry (xsum_small_accumulator *restrict sacc, 
+                                      const xsum_flt *restrict vec, 
+                                      xsum_length n)
 { 
 # if OPT_SMALL_SQNORM
   { xsum_flt f, g;
@@ -888,11 +895,11 @@ void xsum_small_add_sqnorm (xsum_small_accumulator *restrict sacc,
    for memory response before the value is used. */
 
 #if INLINE_SMALL
-static inline
+  INLINE
 #endif
-void xsum_add_dot_no_carry (xsum_small_accumulator *restrict sacc, 
-                            const xsum_flt *vec1, const xsum_flt *vec2, 
-                            xsum_length n)
+static void xsum_add_dot_no_carry (xsum_small_accumulator *restrict sacc, 
+                                   const xsum_flt *vec1, const xsum_flt *vec2, 
+                                   xsum_length n)
 { 
 # if OPT_SMALL_DOT
   { xsum_flt f1, f2, g;
