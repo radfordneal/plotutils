@@ -1,4 +1,4 @@
-FUNCTIONS FOR EXACT SUMMATION.
+ROUTINES AND PROGRAMS FOR EXACT SUMMATION.
 
 Written by Radford M. Neal.
 
@@ -7,18 +7,23 @@ Minor fixes and license update: 2018-12-02.
 Current revisions in progress: 2021.
 
 
-These programs implement the methods described in the paper "Fast
-Exact Summation Using Small and Large Superaccumulators", by Radford
-M. Neal, available at https://arxiv.org/abs/1505.05571, and also here
-as xsum-paper.pdf, and can be used to reproduce the results therein.
+These routines and programs implement the methods described in the
+paper "Fast Exact Summation Using Small and Large Superaccumulators",
+by Radford M. Neal, available at https://arxiv.org/abs/1505.05571, and
+also here as xsum-paper.pdf, and can be used to reproduce the results
+therein.  The routines may also be of practical use.
 
-The programs are licensed under the "MIT" license, which is in the
-file "LICENSE".
+The routines and programs are licensed under the "MIT" license, which
+is in the file "LICENSE".
 
 
-The programs can be built using one of the several Makefiles included.
-For instance, the following should work on Intel/AMD Linux systems
-with gcc installed:
+See the 'api-doc' file for documentation on how to use the routines in
+an application program.
+
+
+The various test and timing programs can be built using one of the
+several Makefiles included.  For instance, the following should work
+on Intel/AMD Linux systems with gcc installed:
 
     make -f Makefile-gcc-intel
 
