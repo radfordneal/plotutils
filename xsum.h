@@ -150,11 +150,13 @@ void xsum_large_add_dot (xsum_large_accumulator *restrict,
                          const xsum_flt *, const xsum_flt *, xsum_length);
 void xsum_large_add_accumulator (xsum_large_accumulator *restrict, 
                                  xsum_large_accumulator *restrict);
-void xsum_large_to_small_accumulator (xsum_small_accumulator *restrict, 
-                                      xsum_large_accumulator *restrict);
 xsum_flt xsum_large_round (xsum_large_accumulator *restrict);
 void xsum_large_display (xsum_large_accumulator *restrict);
 int xsum_large_chunks_used (xsum_large_accumulator *restrict);
+void xsum_large_to_small_accumulator (xsum_small_accumulator *restrict, 
+                                      xsum_large_accumulator *restrict);
+void xsum_small_to_large_accumulator (xsum_large_accumulator *restrict, 
+                                      xsum_small_accumulator *restrict);
 
 
 /* FUNCTIONS FOR DOUBLE AND OTHER INEXACT SUMMATION. */

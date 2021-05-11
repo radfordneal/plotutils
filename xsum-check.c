@@ -750,6 +750,12 @@ int main (int argc, char **argv)
       { double v[3] = { 5100, s, -5100 };
         xsum_large_addv (&lacc, v, 3);
         xsum_large_to_small_accumulator (&sacc, &lacc);
+        break;
+      }
+      case 6:  /* test transfer to large accumulator */
+      { double v[3] = { 5100, s, -5100 };
+        xsum_small_addv (&sacc, v, 3);
+        xsum_small_to_large_accumulator (&lacc, &sacc);
         done = 1;
       }
     }

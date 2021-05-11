@@ -92,10 +92,12 @@ functions.  Additional values can be added to the superaccumulator,
 and then the result of rounding it can again be obtained, etc.
 
 The value in a large superaccumulator can be stored in a small
-superaccumulator with the following procedure:
+superaccumulator, or vice versa, with the following procedures:
 
   xsum_large_to_small_accumulator (pointer_to_small_accumulator,
                                    pointer_to_large_accumulator)
+  xsum_small_to_large_accumulator (pointer_to_large_accumulator,
+                                   pointer_to_small_accumulator)
 
 The value in the large accumulator is stored in the small accumulator,
 replacing any value it previously contained.  The value in the large

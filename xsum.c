@@ -1048,9 +1048,9 @@ done_rounding: ;
 }
 
 
-/* INITIALIZE A LARGE ACCUMULATOR TO ZERO. */
+/* INITIALIZE LARGE ACCUMULATOR CHUNKS. */
 
-void xsum_large_init (xsum_large_accumulator *restrict lacc)
+void xsum_large_init_chunks (xsum_large_accumulator *restrict lacc)
 { 
 # if USE_MEMSET_LARGE
   {
@@ -1082,7 +1082,14 @@ void xsum_large_init (xsum_large_accumulator *restrict lacc)
 #   endif
     lacc->used_used = 0;
 # endif
+}
 
+
+/* INITIALIZE A LARGE ACCUMULATOR TO ZERO. */
+
+void xsum_large_init (xsum_large_accumulator *restrict lacc)
+{ 
+  xsum_large_init_chunks (lacc);
   xsum_small_init (&lacc->sacc);
 }
 
@@ -1831,17 +1838,6 @@ void xsum_large_add_accumulator (xsum_large_accumulator *restrict dst_lacc,
 }
 
 
-/* TRANSFER NUMBER FROM A LARGE ACCUMULATOR TO A SMALL ACCUMULATOR. */
-
-void xsum_large_to_small_accumulator (xsum_small_accumulator *restrict sacc, 
-                                      xsum_large_accumulator *restrict lacc)
-{
-  if (xsum_debug) printf("Transferring from large to small accumulator\n");
-  xsum_large_transfer_to_small (lacc);
-  *sacc = lacc->sacc;
-}
-
-
 /* RETURN RESULT OF ROUNDING A LARGE ACCUMULATOR.  Rounding mode is to nearest,
    with ties to even.  
 
@@ -1896,6 +1892,28 @@ int xsum_large_chunks_used (xsum_large_accumulator *restrict lacc)
     }
   }
   return c;
+}
+
+
+/* TRANSFER NUMBER FROM A LARGE ACCUMULATOR TO A SMALL ACCUMULATOR. */
+
+void xsum_large_to_small_accumulator (xsum_small_accumulator *restrict sacc, 
+                                      xsum_large_accumulator *restrict lacc)
+{
+  if (xsum_debug) printf("Transferring from large to small accumulator\n");
+  xsum_large_transfer_to_small (lacc);
+  *sacc = lacc->sacc;
+}
+
+
+/* TRANSFER NUMBER FROM A SMALL ACCUMULATOR TO A LARGE ACCUMULATOR. */
+
+void xsum_small_to_large_accumulator (xsum_large_accumulator *restrict lacc, 
+                                      xsum_small_accumulator *restrict sacc)
+{
+  if (xsum_debug) printf("Transferring from small to large accumulator\n");
+  xsum_large_init_chunks (lacc);
+  lacc->sacc = *sacc;
 }
 
 
