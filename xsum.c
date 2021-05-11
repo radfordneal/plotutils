@@ -28,6 +28,9 @@
 #include "xsum.h"
 
 
+/* --------------------------- CONFIGURATION ------------------------------- */
+
+
 /* OPTIONAL INCLUSION OF PBINARY MODULE.  Used for debug output. */
 
 #ifdef PBINARY
@@ -82,23 +85,7 @@ int xsum_debug = 0;
 union fpunion { xsum_flt fltv; xsum_int intv; xsum_uint uintv; };
 
 
-/* INITIALIZE A SMALL ACCUMULATOR TO ZERO. */
-
-void xsum_small_init (xsum_small_accumulator *restrict sacc)
-{ 
-# if USE_MEMSET_SMALL
-    memset (sacc, 0, sizeof *sacc);
-# else
-  { xsum_schunk *p;
-    int n;
-    p = sacc->chunk;
-    n = XSUM_SCHUNKS;
-    do { *p++ = 0; n -= 1; } while (n > 0);
-    sacc->Inf = sacc->NaN = 0;
-  } 
-# endif
-  sacc->adds_until_propagate = XSUM_SMALL_CARRY_TERMS;
-}
+/* ------------------------ INTERNAL ROUTINES ------------------------------- */
 
 
 /* ADD AN INF OR NAN TO A SMALL ACCUMULATOR.  This only changes the flags, 
@@ -109,8 +96,8 @@ void xsum_small_init (xsum_small_accumulator *restrict sacc)
    being positive.  This ensures that the order of summing NaN values doesn't
    matter. */
 
-void xsum_small_add_inf_nan (xsum_small_accumulator *restrict sacc, 
-                             xsum_int ivalue)
+static void xsum_small_add_inf_nan (xsum_small_accumulator *restrict sacc, 
+                                    xsum_int ivalue)
 { 
   xsum_int mantissa;
   union fpunion u;
@@ -150,7 +137,7 @@ void xsum_small_add_inf_nan (xsum_small_accumulator *restrict sacc,
    Lower chunks will be non-negative, and in the range from 0 up to 
    2^XSUM_LOW_MANTISSA_BITS - 1. */
 
-int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
+static int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
 {
   xsum_schunk c, clow, chigh;
   int i, u, uix;
@@ -331,51 +318,309 @@ done:
 }
 
 
-/* DISPLAY A SMALL ACCUMULATOR. */
+/* INITIALIZE LARGE ACCUMULATOR CHUNKS. */
 
-void xsum_small_display (xsum_small_accumulator *restrict sacc)
-{
-  int i, dots;
-  printf("Small accumulator:");
-  if (sacc->Inf) 
-  { printf (" %cInf", sacc->Inf>0 ? '+' : '-');
+static void xsum_large_init_chunks (xsum_large_accumulator *restrict lacc)
+{ 
+# if USE_MEMSET_LARGE
+  {
+    /* Since in two's complement representation, -1 consists of all 1 bits,
+       we can initialize 16-bit values to -1 by initializing their component
+       bytes to 0xff. */
+
+    memset (lacc->count, 0xff, XSUM_LCHUNKS * sizeof *lacc->count);
   }
-  if (sacc->NaN)
-  { printf (" NaN (%lx)", sacc->NaN);
+# else
+  { xsum_lcount *p;
+    int n;
+    p = lacc->count;
+    n = XSUM_LCHUNKS;
+    do { *p++ = -1; n -= 1; } while (n > 0);
   }
-  printf("\n");
-  dots = 0;
-  for (i = XSUM_SCHUNKS-1; i >= 0; i--)
-  { if (sacc->chunk[i] == 0)
-    { if (!dots) printf("            ...\n");
-      dots = 1;
+# endif
+
+# if USE_USED_LARGE
+#   if USE_MEMSET_SMALL
+      memset(lacc->chunks_used, 0, XSUM_LCHUNKS/64 * sizeof *lacc->chunks_used);
+#   else
+    { xsum_lchunk *p;
+      int n;
+      p = lacc->chunks_used;
+      n = XSUM_LCHUNKS/64;
+      do { *p++ = 0; n -= 1; } while (n > 0);
     }
-    else
-    { printf ("%5d %5d ", i, (int)
-       ((i<<XSUM_LOW_EXP_BITS) - XSUM_EXP_BIAS - XSUM_MANTISSA_BITS));
-      pbinary_int64 ((int64_t) sacc->chunk[i] >> 32, XSUM_SCHUNK_BITS-32);
-      printf(" ");
-      pbinary_int64 ((int64_t) sacc->chunk[i] & 0xffffffff, 32);
-      printf ("\n");
-      dots = 0;
-    }
-  }
-  printf("\n");
+#   endif
+    lacc->used_used = 0;
+# endif
 }
 
 
-/* RETURN NUMBER OF CHUNKS IN USE IN SMALL ACCUMULATOR. */
+/* ADD CHUNK FROM A LARGE ACCUMULATOR TO THE SMALL ACCUMULATOR WITHIN IT. 
+   The large accumulator chunk to add is indexed by ix.  This chunk will
+   be cleared to zero and its count reset after it has been added to the
+   small accumulator (except no add is done for a new chunk being initialized).
+   This procedure should not be called for the special chunks correspnding to
+   Inf or NaN, whose counts should always remain at -1. */
 
-int xsum_small_chunks_used (xsum_small_accumulator *restrict sacc)
+#if INLINE_LARGE
+static inline 
+#endif
+void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
+                               xsum_expint ix)
 {
-  int i, c;
-  c = 0;
-  for (i = 0; i < XSUM_SCHUNKS; i++)
-  { if (sacc->chunk[i] != 0)
-    { c += 1;
+  xsum_expint exp, low_exp, high_exp;
+  xsum_uint low_chunk, mid_chunk, high_chunk;
+  xsum_lchunk chunk;
+  
+  const xsum_expint count = lacc->count[ix];
+
+  /* Add to the small accumulator only if the count is not -1, which
+     indicates a chunk that contains nothing yet. */
+
+  if (count >= 0)
+  {
+    /* Propagate carries in the small accumulator if necessary. */
+
+    if (lacc->sacc.adds_until_propagate == 0)
+    { (void) xsum_carry_propagate(&lacc->sacc);
+    }
+
+    /* Get the chunk we will add.  Note that this chunk is the integer sum
+       of entire 64-bit floating-point representations, with sign, exponent, 
+       and mantissa, but we want only the sum of the mantissas. */
+
+    chunk = lacc->chunk[ix];
+
+    if (xsum_debug)
+    { printf("Adding chunk %d to small accumulator (count %d, chunk %016llx)\n",
+              (int) ix, (int) count, (long long) chunk);
+    }
+
+    /* If we added the maximum number of values to 'chunk', the sum of
+       the sign and exponent parts (all the same, equal to the index) will 
+       have overflowed out the top, leaving only the sum of the mantissas.
+       If the count of how many more terms we could have summed is greater
+       than zero, we therefore add this count times the index (shifted to
+       the position of the sign and exponent) to get the unwanted bits to 
+       overflow out the top. */
+
+    if (count > 0)
+    { chunk += (xsum_lchunk)(count*ix) << XSUM_MANTISSA_BITS;
+    }
+
+    /* Find the exponent for this chunk from the low bits of the index, 
+       and split it into low and high parts, for accessing the small 
+       accumulator.  Noting that for denormalized numbers where the
+       exponent part is zero, the actual exponent is 1 (before subtracting
+       the bias), not zero. */
+
+    exp = ix & XSUM_EXP_MASK;
+    if (exp == 0)
+    { low_exp = 1;
+      high_exp = 0;
+    }
+    else
+    { low_exp = exp & XSUM_LOW_EXP_MASK;
+      high_exp = exp >> XSUM_LOW_EXP_BITS;
+    }
+
+    /* Split the mantissa into three parts, for three consecutive chunks in
+       the small accumulator.  Except for denormalized numbers, add in the sum
+       of all the implicit 1 bits that are above the actual mantissa bits. */
+
+    low_chunk = (chunk << low_exp) & XSUM_LOW_MANTISSA_MASK;
+    mid_chunk = chunk >> (XSUM_LOW_MANTISSA_BITS - low_exp);
+    if (exp != 0) /* normalized */
+    { mid_chunk += (xsum_lchunk)((1 << XSUM_LCOUNT_BITS) - count)
+         << (XSUM_MANTISSA_BITS - XSUM_LOW_MANTISSA_BITS + low_exp);
+    }
+    high_chunk = mid_chunk >> XSUM_LOW_MANTISSA_BITS;
+    mid_chunk &= XSUM_LOW_MANTISSA_MASK;
+
+    if (xsum_debug)
+    { printf("chunk div: low "); pbinary_int64(low_chunk,64); printf("\n");
+      printf("           mid "); pbinary_int64(mid_chunk,64); printf("\n");
+      printf("          high "); pbinary_int64(high_chunk,64); printf("\n");
+    }
+
+    /* Add or subtract the three parts of the mantissa from three small
+       accumulator chunks, according to the sign that is part of the index. */
+
+    if (xsum_debug)
+    { printf("Small chunks %d, %d, %d before add or subtract:\n",
+              (int)high_exp, (int)high_exp+1, (int)high_exp+2);
+      pbinary_int64 (lacc->sacc.chunk[high_exp], 64); printf("\n");
+      pbinary_int64 (lacc->sacc.chunk[high_exp+1], 64); printf("\n");
+      pbinary_int64 (lacc->sacc.chunk[high_exp+2], 64); printf("\n");
+    }
+
+    if (ix & (1 << XSUM_EXP_BITS))
+    { lacc->sacc.chunk[high_exp] -= low_chunk;
+      lacc->sacc.chunk[high_exp+1] -= mid_chunk;
+      lacc->sacc.chunk[high_exp+2] -= high_chunk;
+    }
+    else
+    { lacc->sacc.chunk[high_exp] += low_chunk;
+      lacc->sacc.chunk[high_exp+1] += mid_chunk;
+      lacc->sacc.chunk[high_exp+2] += high_chunk;
+    }
+
+    if (xsum_debug)
+    { printf("Small chunks %d, %d, %d after add or subtract:\n",
+              (int)high_exp, (int)high_exp+1, (int)high_exp+2);
+      pbinary_int64 (lacc->sacc.chunk[high_exp], 64); printf("\n");
+      pbinary_int64 (lacc->sacc.chunk[high_exp+1], 64); printf("\n");
+      pbinary_int64 (lacc->sacc.chunk[high_exp+2], 64); printf("\n");
+    }
+
+    /* The above additions/subtractions reduce by one the number we can
+       do before we need to do carry propagation again. */
+  
+    lacc->sacc.adds_until_propagate -= 1;
+  }
+
+  /* We now clear the chunk to zero, and set the count to the number
+     of adds we can do before the mantissa would overflow.  We also
+     set the bit in chunks_used to indicate that this chunk is in use
+     (if that is enabled). */
+
+  lacc->chunk[ix] = 0;
+  lacc->count[ix] = 1 << XSUM_LCOUNT_BITS;
+
+# if USE_USED_LARGE
+    lacc->chunks_used[ix>>6] |= (xsum_used)1 << (ix & 0x3f);
+    lacc->used_used |= (xsum_used)1 << (ix>>6);
+# endif
+}
+
+
+/* ADD A CHUNK TO THE LARGE ACCUMULATOR OR PROCESS NAN OR INF.  This routine
+   is called when the count for a chunk is negative after decrementing, which 
+   indicates either inf/nan, or that the chunk has not been initialized, or
+   that the chunk needs to be transferred to the small accumulator. */
+
+#if INLINE_LARGE
+static inline 
+#endif
+void xsum_large_add_value_inf_nan (xsum_large_accumulator *restrict lacc,
+                                   xsum_expint ix, xsum_lchunk uintv)
+{
+  if ((ix & XSUM_EXP_MASK) == XSUM_EXP_MASK)
+  { xsum_small_add_inf_nan (&lacc->sacc, uintv);
+  }
+  else
+  { xsum_add_lchunk_to_small (lacc, ix);
+    lacc->count[ix] -= 1;
+    lacc->chunk[ix] += uintv;
+  }
+}
+
+
+/* TRANSFER ALL CHUNKS IN LARGE ACCUMULATOR TO ITS SMALL ACCUMULATOR. */
+
+static void xsum_large_transfer_to_small (xsum_large_accumulator *restrict lacc)
+{
+  if (xsum_debug) printf("Transferring chunks in large accumulator\n");
+
+# if USE_USED_LARGE
+  { 
+    xsum_used *p, *e;
+    xsum_used u, uu;
+    int ix;
+
+    p = lacc->chunks_used;
+    e = p + XSUM_LCHUNKS/64;
+
+    /* Very quickly skip some unused low-order blocks of chunks by looking 
+       at the used_used flags. */
+
+    uu = lacc->used_used;
+    if ((uu & 0xffffffff) == 0) { uu >>= 32; p += 32; }
+    if ((uu & 0xffff) == 0) { uu >>= 16; p += 16; }
+    if ((uu & 0xff) == 0) p += 8;
+
+    /* Loop over remaining blocks of chunks. */
+
+    do 
+    { 
+      /* Loop to quickly find the next non-zero block of used flags, or finish
+         up if we've added all the used blocks to the small accumulator. */
+
+      for (;;)
+      { u = *p;
+        if (u != 0) break;
+        p += 1;
+        if (p == e) return;
+        u = *p;
+        if (u != 0) break;
+        p += 1;
+        if (p == e) return;
+        u = *p;
+        if (u != 0) break;
+        p += 1;
+        if (p == e) return;
+        u = *p;
+        if (u != 0) break;
+        p += 1;
+        if (p == e) return;
+      }
+
+      /* Find and process the chunks in this block that are used.  We skip
+         forward based on the chunks_used flags until we're within eight
+         bits of a chunk that is in use. */
+
+      ix = (p - lacc->chunks_used) << 6;
+      if ((u & 0xffffffff) == 0) { u >>= 32; ix += 32; }
+      if ((u & 0xffff) == 0) { u >>= 16; ix += 16; }
+      if ((u & 0xff) == 0) { u >>= 8; ix += 8; }
+
+      do
+      { if (lacc->count[ix] >= 0)
+        { xsum_add_lchunk_to_small (lacc, ix); 
+        }
+        ix += 1;
+        u >>= 1;
+      } while (u != 0);
+
+      p += 1;
+
+    } while (p != e);
+  }
+# else
+  { xsum_expint ix;
+
+    /* When there are no used flags, we scan sequentially for chunks that
+       need to be added to the small accumulator. */
+
+    for (ix = 0; ix < XSUM_LCHUNKS; ix++)
+    { if (lacc->count[ix] >= 0)
+      { xsum_add_lchunk_to_small (lacc, ix);
+      }
     }
   }
-  return c;
+# endif
+}
+
+
+/* ------------------------ EXTERNAL ROUTINES ------------------------------- */
+
+
+/* INITIALIZE A SMALL ACCUMULATOR TO ZERO. */
+
+void xsum_small_init (xsum_small_accumulator *restrict sacc)
+{ 
+# if USE_MEMSET_SMALL
+    memset (sacc, 0, sizeof *sacc);
+# else
+  { xsum_schunk *p;
+    int n;
+    p = sacc->chunk;
+    n = XSUM_SCHUNKS;
+    do { *p++ = 0; n -= 1; } while (n > 0);
+    sacc->Inf = sacc->NaN = 0;
+  } 
+# endif
+  sacc->adds_until_propagate = XSUM_SMALL_CARRY_TERMS;
 }
 
 
@@ -492,7 +737,7 @@ static inline void xsum_add1_no_carry (xsum_small_accumulator *restrict sacc,
 
 /* ADD ONE DOUBLE TO A SMALL ACCUMULATOR.  This is equivalent to, but 
    somewhat faster than, calling xsum_small_addv with a vector of one
-   value (which in fact will call this function). */
+   value. */
 
 void xsum_small_add1 (xsum_small_accumulator *restrict sacc, xsum_flt value)
 { 
@@ -1048,210 +1293,12 @@ done_rounding: ;
 }
 
 
-/* INITIALIZE LARGE ACCUMULATOR CHUNKS. */
-
-void xsum_large_init_chunks (xsum_large_accumulator *restrict lacc)
-{ 
-# if USE_MEMSET_LARGE
-  {
-    /* Since in two's complement representation, -1 consists of all 1 bits,
-       we can initialize 16-bit values to -1 by initializing their component
-       bytes to 0xff. */
-
-    memset (lacc->count, 0xff, XSUM_LCHUNKS * sizeof *lacc->count);
-  }
-# else
-  { xsum_lcount *p;
-    int n;
-    p = lacc->count;
-    n = XSUM_LCHUNKS;
-    do { *p++ = -1; n -= 1; } while (n > 0);
-  }
-# endif
-
-# if USE_USED_LARGE
-#   if USE_MEMSET_SMALL
-      memset(lacc->chunks_used, 0, XSUM_LCHUNKS/64 * sizeof *lacc->chunks_used);
-#   else
-    { xsum_lchunk *p;
-      int n;
-      p = lacc->chunks_used;
-      n = XSUM_LCHUNKS/64;
-      do { *p++ = 0; n -= 1; } while (n > 0);
-    }
-#   endif
-    lacc->used_used = 0;
-# endif
-}
-
-
 /* INITIALIZE A LARGE ACCUMULATOR TO ZERO. */
 
 void xsum_large_init (xsum_large_accumulator *restrict lacc)
 { 
   xsum_large_init_chunks (lacc);
   xsum_small_init (&lacc->sacc);
-}
-
-
-/* ADD CHUNK FROM A LARGE ACCUMULATOR TO THE SMALL ACCUMULATOR WITHIN IT. 
-   The large accumulator chunk to add is indexed by ix.  This chunk will
-   be cleared to zero and its count reset after it has been added to the
-   small accumulator (except no add is done for a new chunk being initialized).
-   This procedure should not be called for the special chunks correspnding to
-   Inf or NaN, whose counts should always remain at -1. */
-
-#if INLINE_LARGE
-static inline 
-#endif
-void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
-                               xsum_expint ix)
-{
-  xsum_expint exp, low_exp, high_exp;
-  xsum_uint low_chunk, mid_chunk, high_chunk;
-  xsum_lchunk chunk;
-  
-  const xsum_expint count = lacc->count[ix];
-
-  /* Add to the small accumulator only if the count is not -1, which
-     indicates a chunk that contains nothing yet. */
-
-  if (count >= 0)
-  {
-    /* Propagate carries in the small accumulator if necessary. */
-
-    if (lacc->sacc.adds_until_propagate == 0)
-    { (void) xsum_carry_propagate(&lacc->sacc);
-    }
-
-    /* Get the chunk we will add.  Note that this chunk is the integer sum
-       of entire 64-bit floating-point representations, with sign, exponent, 
-       and mantissa, but we want only the sum of the mantissas. */
-
-    chunk = lacc->chunk[ix];
-
-    if (xsum_debug)
-    { printf("Adding chunk %d to small accumulator (count %d, chunk %016llx)\n",
-              (int) ix, (int) count, (long long) chunk);
-    }
-
-    /* If we added the maximum number of values to 'chunk', the sum of
-       the sign and exponent parts (all the same, equal to the index) will 
-       have overflowed out the top, leaving only the sum of the mantissas.
-       If the count of how many more terms we could have summed is greater
-       than zero, we therefore add this count times the index (shifted to
-       the position of the sign and exponent) to get the unwanted bits to 
-       overflow out the top. */
-
-    if (count > 0)
-    { chunk += (xsum_lchunk)(count*ix) << XSUM_MANTISSA_BITS;
-    }
-
-    /* Find the exponent for this chunk from the low bits of the index, 
-       and split it into low and high parts, for accessing the small 
-       accumulator.  Noting that for denormalized numbers where the
-       exponent part is zero, the actual exponent is 1 (before subtracting
-       the bias), not zero. */
-
-    exp = ix & XSUM_EXP_MASK;
-    if (exp == 0)
-    { low_exp = 1;
-      high_exp = 0;
-    }
-    else
-    { low_exp = exp & XSUM_LOW_EXP_MASK;
-      high_exp = exp >> XSUM_LOW_EXP_BITS;
-    }
-
-    /* Split the mantissa into three parts, for three consecutive chunks in
-       the small accumulator.  Except for denormalized numbers, add in the sum
-       of all the implicit 1 bits that are above the actual mantissa bits. */
-
-    low_chunk = (chunk << low_exp) & XSUM_LOW_MANTISSA_MASK;
-    mid_chunk = chunk >> (XSUM_LOW_MANTISSA_BITS - low_exp);
-    if (exp != 0) /* normalized */
-    { mid_chunk += (xsum_lchunk)((1 << XSUM_LCOUNT_BITS) - count)
-         << (XSUM_MANTISSA_BITS - XSUM_LOW_MANTISSA_BITS + low_exp);
-    }
-    high_chunk = mid_chunk >> XSUM_LOW_MANTISSA_BITS;
-    mid_chunk &= XSUM_LOW_MANTISSA_MASK;
-
-    if (xsum_debug)
-    { printf("chunk div: low "); pbinary_int64(low_chunk,64); printf("\n");
-      printf("           mid "); pbinary_int64(mid_chunk,64); printf("\n");
-      printf("          high "); pbinary_int64(high_chunk,64); printf("\n");
-    }
-
-    /* Add or subtract the three parts of the mantissa from three small
-       accumulator chunks, according to the sign that is part of the index. */
-
-    if (xsum_debug)
-    { printf("Small chunks %d, %d, %d before add or subtract:\n",
-              (int)high_exp, (int)high_exp+1, (int)high_exp+2);
-      pbinary_int64 (lacc->sacc.chunk[high_exp], 64); printf("\n");
-      pbinary_int64 (lacc->sacc.chunk[high_exp+1], 64); printf("\n");
-      pbinary_int64 (lacc->sacc.chunk[high_exp+2], 64); printf("\n");
-    }
-
-    if (ix & (1 << XSUM_EXP_BITS))
-    { lacc->sacc.chunk[high_exp] -= low_chunk;
-      lacc->sacc.chunk[high_exp+1] -= mid_chunk;
-      lacc->sacc.chunk[high_exp+2] -= high_chunk;
-    }
-    else
-    { lacc->sacc.chunk[high_exp] += low_chunk;
-      lacc->sacc.chunk[high_exp+1] += mid_chunk;
-      lacc->sacc.chunk[high_exp+2] += high_chunk;
-    }
-
-    if (xsum_debug)
-    { printf("Small chunks %d, %d, %d after add or subtract:\n",
-              (int)high_exp, (int)high_exp+1, (int)high_exp+2);
-      pbinary_int64 (lacc->sacc.chunk[high_exp], 64); printf("\n");
-      pbinary_int64 (lacc->sacc.chunk[high_exp+1], 64); printf("\n");
-      pbinary_int64 (lacc->sacc.chunk[high_exp+2], 64); printf("\n");
-    }
-
-    /* The above additions/subtractions reduce by one the number we can
-       do before we need to do carry propagation again. */
-  
-    lacc->sacc.adds_until_propagate -= 1;
-  }
-
-  /* We now clear the chunk to zero, and set the count to the number
-     of adds we can do before the mantissa would overflow.  We also
-     set the bit in chunks_used to indicate that this chunk is in use
-     (if that is enabled). */
-
-  lacc->chunk[ix] = 0;
-  lacc->count[ix] = 1 << XSUM_LCOUNT_BITS;
-
-# if USE_USED_LARGE
-    lacc->chunks_used[ix>>6] |= (xsum_used)1 << (ix & 0x3f);
-    lacc->used_used |= (xsum_used)1 << (ix>>6);
-# endif
-}
-
-
-/* ADD A CHUNK TO THE LARGE ACCUMULATOR OR PROCESS NAN OR INF.  This routine
-   is called when the count for a chunk is negative after decrementing, which 
-   indicates either inf/nan, or that the chunk has not been initialized, or
-   that the chunk needs to be transferred to the small accumulator. */
-
-#if INLINE_LARGE
-static inline 
-#endif
-void xsum_large_add_value_inf_nan (xsum_large_accumulator *restrict lacc,
-                                   xsum_expint ix, xsum_lchunk uintv)
-{
-  if ((ix & XSUM_EXP_MASK) == XSUM_EXP_MASK)
-  { xsum_small_add_inf_nan (&lacc->sacc, uintv);
-  }
-  else
-  { xsum_add_lchunk_to_small (lacc, ix);
-    lacc->count[ix] -= 1;
-    lacc->chunk[ix] += uintv;
-  }
 }
 
 
@@ -1736,92 +1783,6 @@ void xsum_large_add_dot (xsum_large_accumulator *restrict lacc,
 }
 
 
-/* TRANSFER ALL CHUNKS IN LARGE ACCUMULATOR TO ITS SMALL ACCUMULATOR. */
-
-void xsum_large_transfer_to_small (xsum_large_accumulator *restrict lacc)
-{
-  if (xsum_debug) printf("Transferring chunks in large accumulator\n");
-
-# if USE_USED_LARGE
-  { 
-    xsum_used *p, *e;
-    xsum_used u, uu;
-    int ix;
-
-    p = lacc->chunks_used;
-    e = p + XSUM_LCHUNKS/64;
-
-    /* Very quickly skip some unused low-order blocks of chunks by looking 
-       at the used_used flags. */
-
-    uu = lacc->used_used;
-    if ((uu & 0xffffffff) == 0) { uu >>= 32; p += 32; }
-    if ((uu & 0xffff) == 0) { uu >>= 16; p += 16; }
-    if ((uu & 0xff) == 0) p += 8;
-
-    /* Loop over remaining blocks of chunks. */
-
-    do 
-    { 
-      /* Loop to quickly find the next non-zero block of used flags, or finish
-         up if we've added all the used blocks to the small accumulator. */
-
-      for (;;)
-      { u = *p;
-        if (u != 0) break;
-        p += 1;
-        if (p == e) return;
-        u = *p;
-        if (u != 0) break;
-        p += 1;
-        if (p == e) return;
-        u = *p;
-        if (u != 0) break;
-        p += 1;
-        if (p == e) return;
-        u = *p;
-        if (u != 0) break;
-        p += 1;
-        if (p == e) return;
-      }
-
-      /* Find and process the chunks in this block that are used.  We skip
-         forward based on the chunks_used flags until we're within eight
-         bits of a chunk that is in use. */
-
-      ix = (p - lacc->chunks_used) << 6;
-      if ((u & 0xffffffff) == 0) { u >>= 32; ix += 32; }
-      if ((u & 0xffff) == 0) { u >>= 16; ix += 16; }
-      if ((u & 0xff) == 0) { u >>= 8; ix += 8; }
-
-      do
-      { if (lacc->count[ix] >= 0)
-        { xsum_add_lchunk_to_small (lacc, ix); 
-        }
-        ix += 1;
-        u >>= 1;
-      } while (u != 0);
-
-      p += 1;
-
-    } while (p != e);
-  }
-# else
-  { xsum_expint ix;
-
-    /* When there are no used flags, we scan sequentially for chunks that
-       need to be added to the small accumulator. */
-
-    for (ix = 0; ix < XSUM_LCHUNKS; ix++)
-    { if (lacc->count[ix] >= 0)
-      { xsum_add_lchunk_to_small (lacc, ix);
-      }
-    }
-  }
-# endif
-}
-
-
 /* ADD A LARGE ACCUMULATOR TO ANOTHER LARGE ACCUMULATOR.  The first argument
    is the destination, which is modified.  The second is the accumulator to
    add, which may also be modified, but should still represent the same
@@ -1854,47 +1815,6 @@ xsum_flt xsum_large_round (xsum_large_accumulator *restrict lacc)
 }
 
 
-/* DISPLAY A LARGE ACCUMULATOR. */
-
-void xsum_large_display (xsum_large_accumulator *restrict lacc)
-{
-  int i, dots;
-  printf("Large accumulator:\n");
-  dots = 0;
-  for (i = XSUM_LCHUNKS-1; i >= 0; i--)
-  { if (lacc->count[i] < 0)
-    { if (!dots) printf("            ...\n");
-      dots = 1;
-    }
-    else
-    { printf ("%c%4d %5d ", i & 0x800 ? '-' : '+', i & 0x7ff, lacc->count[i]);
-      pbinary_int64 ((int64_t) lacc->chunk[i] >> 32, XSUM_LCHUNK_BITS-32);
-      printf(" ");
-      pbinary_int64 ((int64_t) lacc->chunk[i] & 0xffffffff, 32);
-      printf ("\n");
-      dots = 0;
-    }
-  }
-  printf("\nWithin large accumulator:  ");
-  xsum_small_display (&lacc->sacc);
-
-}
-
-/* RETURN NUMBER OF CHUNKS IN USE IN LARGE ACCUMULATOR. */
-
-int xsum_large_chunks_used (xsum_large_accumulator *restrict lacc)
-{
-  int i, c;
-  c = 0;
-  for (i = 0; i < XSUM_LCHUNKS; i++)
-  { if (lacc->count[i] >= 0)
-    { c += 1;
-    }
-  }
-  return c;
-}
-
-
 /* TRANSFER NUMBER FROM A LARGE ACCUMULATOR TO A SMALL ACCUMULATOR. */
 
 void xsum_large_to_small_accumulator (xsum_small_accumulator *restrict sacc, 
@@ -1915,6 +1835,9 @@ void xsum_small_to_large_accumulator (xsum_large_accumulator *restrict lacc,
   xsum_large_init_chunks (lacc);
   lacc->sacc = *sacc;
 }
+
+
+/* ------------------- ROUTINES FOR NON-EXACT SUMMATION --------------------- */
 
 
 /* SUM A VECTOR WITH DOUBLE FP ACCUMULATOR. */
@@ -2126,4 +2049,97 @@ xsum_flt xsum_dot_double_not_ordered (const xsum_flt *vec1,
   { s1 += vec1[j-1] * vec2[j-1];
   }
   return (xsum_flt) (s1+s2);
+}
+
+
+/* ------------------------- DEBUGGING ROUTINES ----------------------------- */
+
+
+/* DISPLAY A SMALL ACCUMULATOR. */
+
+void xsum_small_display (xsum_small_accumulator *restrict sacc)
+{
+  int i, dots;
+  printf("Small accumulator:");
+  if (sacc->Inf) 
+  { printf (" %cInf", sacc->Inf>0 ? '+' : '-');
+  }
+  if (sacc->NaN)
+  { printf (" NaN (%lx)", sacc->NaN);
+  }
+  printf("\n");
+  dots = 0;
+  for (i = XSUM_SCHUNKS-1; i >= 0; i--)
+  { if (sacc->chunk[i] == 0)
+    { if (!dots) printf("            ...\n");
+      dots = 1;
+    }
+    else
+    { printf ("%5d %5d ", i, (int)
+       ((i<<XSUM_LOW_EXP_BITS) - XSUM_EXP_BIAS - XSUM_MANTISSA_BITS));
+      pbinary_int64 ((int64_t) sacc->chunk[i] >> 32, XSUM_SCHUNK_BITS-32);
+      printf(" ");
+      pbinary_int64 ((int64_t) sacc->chunk[i] & 0xffffffff, 32);
+      printf ("\n");
+      dots = 0;
+    }
+  }
+  printf("\n");
+}
+
+
+/* RETURN NUMBER OF CHUNKS IN USE IN SMALL ACCUMULATOR. */
+
+int xsum_small_chunks_used (xsum_small_accumulator *restrict sacc)
+{
+  int i, c;
+  c = 0;
+  for (i = 0; i < XSUM_SCHUNKS; i++)
+  { if (sacc->chunk[i] != 0)
+    { c += 1;
+    }
+  }
+  return c;
+}
+
+
+/* DISPLAY A LARGE ACCUMULATOR. */
+
+void xsum_large_display (xsum_large_accumulator *restrict lacc)
+{
+  int i, dots;
+  printf("Large accumulator:\n");
+  dots = 0;
+  for (i = XSUM_LCHUNKS-1; i >= 0; i--)
+  { if (lacc->count[i] < 0)
+    { if (!dots) printf("            ...\n");
+      dots = 1;
+    }
+    else
+    { printf ("%c%4d %5d ", i & 0x800 ? '-' : '+', i & 0x7ff, lacc->count[i]);
+      pbinary_int64 ((int64_t) lacc->chunk[i] >> 32, XSUM_LCHUNK_BITS-32);
+      printf(" ");
+      pbinary_int64 ((int64_t) lacc->chunk[i] & 0xffffffff, 32);
+      printf ("\n");
+      dots = 0;
+    }
+  }
+  printf("\nWithin large accumulator:  ");
+  xsum_small_display (&lacc->sacc);
+
+}
+
+
+/* RETURN NUMBER OF CHUNKS IN USE IN LARGE ACCUMULATOR. */
+
+int xsum_large_chunks_used (xsum_large_accumulator *restrict lacc)
+{
+  int i, c;
+  c = 0;
+  for (i = 0; i < XSUM_LCHUNKS; i++)
+  { if (lacc->count[i] >= 0)
+    { c += 1;
+    }
+  }
+  return c;
 }
