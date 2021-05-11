@@ -26,7 +26,16 @@
 #include <stdio.h>
 #include <string.h>
 #include "xsum.h"
-#include "pbinary.h"
+
+
+/* OPTIONAL INCLUSION OF PBINARY MODULE.  Used for debug output. */
+
+#ifdef PBINARY
+# include "pbinary.h"
+#else
+# define pbinary_int64(x,y) 0
+# define pbinary_double(x) 0
+#endif
 
 
 /* SET UP DEBUG FLAG.  It's a variable if debuging is enabled, and a

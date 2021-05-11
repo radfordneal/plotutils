@@ -1,6 +1,6 @@
 # Makefile for a Solaris SPARC system. 
 
-CFLAGS=-O3 -g -xtarget=native
+CFLAGS=-O3 -g -xtarget=native -DPBINARY
 LDLIBS=-lm
 CC=cc -xc99
 LDC=$(CC)

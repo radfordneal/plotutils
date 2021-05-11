@@ -6,7 +6,7 @@
 SANITIZE=#-fsanitize=undefined -fsanitize=address  # can uncomment for testing
 
 CFLAGS=-O3 -g -march=native -mtune=native -mfpmath=sse $(SANITIZE) \
-       -fno-inline-functions -Wall -Wno-parentheses -DFLOAT128 -DDOUBLE
+     -fno-inline-functions -Wall -Wno-parentheses -DFLOAT128 -DDOUBLE -DPBINARY
 LDLIBS=-lm -lquadmath
 CC=gcc$(GCC) -std=c99
 LDC=$(CC) $(SANITIZE)

@@ -4,7 +4,7 @@
 # (for example, GCC=-4.8 make -f Makefile-gcc).
 
 CFLAGS=-O3 -g -march=native -mtune=native \
-       -fno-inline-functions -Wall -Wno-parentheses
+       -fno-inline-functions -Wall -Wno-parentheses -DPBINARY
 LDLIBS=-lm
 CC=gcc$(GCC) -std=c99
 LDC=$(CC)

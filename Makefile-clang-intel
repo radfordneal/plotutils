@@ -4,7 +4,7 @@
 # For example:  CLANG=-3.5 make -f Makefile-clang-intel
 
 CFLAGS=-O3 -g -march=native -mtune=native -mfpmath=sse \
-       -fno-inline-functions -Wall -Wno-parentheses -DDOUBLE
+       -fno-inline-functions -Wall -Wno-parentheses -DDOUBLE -DPBINARY
 LDLIBS=-lm
 CC=clang$(CLANG)
 LDC=$(CC)
