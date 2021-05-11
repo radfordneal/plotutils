@@ -1,7 +1,12 @@
+ExactSum.cpp
+ExactSum.h
+908.zip
 *.o
 .R*
 core
 gmon.out
+perf.data
+perf.data.old
 *.gcda
 *.gcno
 *.gcov
@@ -9,5 +14,8 @@ xsum-test
 xsum-check
 xsum-time
 xsum-time-zhu
+example-small
+example-large
+example-zhu
 show
 Make-info
