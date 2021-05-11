@@ -85,7 +85,7 @@ value it contains to a double-precision value can be obtained with one
 of the following functions:
 
   xsum_small_round (pointer_to_small_accumulator)
-  xsum_large_round (pointer_to_small_accumulator)
+  xsum_large_round (pointer_to_large_accumulator)
 
 The value stored in the superaccumulator is not changed by these
 functions.  Additional values can be added to the superaccumulator,
@@ -120,3 +120,6 @@ xsum.c.  They are mainly meant for debugging and for producing results
 in the paper, but the procedures for adding a vector dot product or
 squared vector norm to a superaccumulator may be of use for
 applications.
+
+The programs in 'example-small.c' and 'example-large.c' illustrate
+simple uses of some of the routines.
