@@ -663,11 +663,7 @@ static INLINE void xsum_add1_no_carry (xsum_small_accumulator *restrict sacc,
   /* Categorize number as normal, denormalized, or Inf/NaN according to 
      the value of the exponent field. */
 
-  if (exp != 0 && exp != XSUM_EXP_MASK) /* normalized */
-  { /* OR in implicit 1 bit at top of mantissa */
-    mantissa |= (xsum_int)1 << XSUM_MANTISSA_BITS;
-  }
-  else if (exp == 0) /* zero or denormalized */
+  if (exp == 0) /* zero or denormalized */
   { /* If it's a zero (positive or negative), we do nothing. */
     if (mantissa == 0) 
     { return;
@@ -675,10 +671,14 @@ static INLINE void xsum_add1_no_carry (xsum_small_accumulator *restrict sacc,
     /* Denormalized mantissa has no implicit 1, but exponent is 1 not 0. */
     exp = 1;
   }
-  else /* Inf or NaN */
+  else if (exp == XSUM_EXP_MASK)  /* Inf or NaN */
   { /* Just update flags in accumulator structure. */
     xsum_small_add_inf_nan (sacc, ivalue);
     return;
+  }
+  else /* normalized */
+  { /* OR in implicit 1 bit at top of mantissa */
+    mantissa |= (xsum_int)1 << XSUM_MANTISSA_BITS;
   }
 
   /* Separate high part of exponent, used as index of chunk, and low
