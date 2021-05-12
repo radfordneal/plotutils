@@ -120,6 +120,9 @@ macbookpro2_clang_9_0_0 <- read_times ("results-macbookpro2-clang-9.0.0")
 
 macbookpro2 <- macbookpro2_clang_9_0_0
 macbookpro2[,"sacc",] <- macbookpro2_gcc_10_2_0[,"sacc",]
+macbookpro2[,"ifast",] <- macbookpro2_gcc_10_2_0[,"ifast",]
+macbookpro2[,"udbl",] <- macbookpro2_gcc_10_2_0[,"udbl",]
+macbookpro2[,"lacc",] <- macbookpro2_gcc_10_2_0[,"lacc",]
 
 plot_times(macbookpro2[,,"sum"],  "macbookpro2-sum",  cache/8)
 plot_times(macbookpro2[,,"norm"], "macbookpro2-norm", cache/8)
