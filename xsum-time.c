@@ -111,7 +111,7 @@ int main (int argc, char **argv)
   int perm, inf;
 
   task = 0;
-  if (argc>0 && (strcmp(argv[1],"sum")==0 
+  if (argc>1 && (strcmp(argv[1],"sum")==0 
                   || strcmp(argv[1],"norm")==0 || strcmp(argv[1],"dot")==0))
   { task = argv[1];
     argv += 1;
@@ -119,7 +119,7 @@ int main (int argc, char **argv)
   }
 
   method = 0;
-  if (argc>0 && (argv[1][0]>='a' && argv[1][0]<='z'
+  if (argc>1 && (argv[1][0]>='a' && argv[1][0]<='z'
                   || argv[1][0]>='A' && argv[1][0]<='Z'))
   { method = argv[1];
     argv += 1;
@@ -127,13 +127,13 @@ int main (int argc, char **argv)
   }
 
   perm = 0;
-  if (argc>0 && strcmp(argv[argc-1],"perm")==0)
+  if (argc>1 && strcmp(argv[argc-1],"perm")==0)
   { perm = 1;
     argc -= 1;
   }
 
   inf = 0;
-  if (argc>0 && strcmp(argv[argc-1],"inf")==0)
+  if (argc>1 && strcmp(argv[argc-1],"inf")==0)
   { inf = 1;
     argc -= 1;
   }
