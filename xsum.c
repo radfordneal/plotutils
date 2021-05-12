@@ -2072,7 +2072,7 @@ void xsum_small_display (xsum_small_accumulator *restrict sacc)
   { printf (" %cInf", sacc->Inf>0 ? '+' : '-');
   }
   if (sacc->NaN)
-  { printf (" NaN (%lx)", sacc->NaN);
+  { printf (" NaN (%llx)", (long long) sacc->NaN);
   }
   printf("\n");
   dots = 0;
