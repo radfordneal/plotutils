@@ -89,9 +89,9 @@ thinkstation_gcc_10_2_0 <- read_times ("results-thinkstation-gcc-10.2.0")
 thinkstation_clang_10_0_0 <- read_times ("results-thinkstation-clang-10.0.0")
 
 thinkstation <- thinkstation_clang_10_0_0
-thinkstation[,"ifast",] <- thinkstation_gcc_10_2_0[,"ifast",]
 thinkstation[,"dbl",] <- thinkstation_gcc_10_2_0[,"dbl",]
 thinkstation[,"udbl",] <- thinkstation_gcc_10_2_0[,"udbl",]
+thinkstation[,"lacc",] <- thinkstation_gcc_10_2_0[,"lacc",]
 
 plot_times(thinkstation[,,"sum"],  "thinkstation-sum",  cache/8)
 plot_times(thinkstation[,,"norm"], "thinkstation-norm", cache/8)
@@ -103,8 +103,8 @@ thinkstation_clang_10_0_0_no_opt <-
   read_times ("results-thinkstation-clang-10.0.0-no-opt")
 
 thinkstation_no_opt <- thinkstation_clang_10_0_0_no_opt
-thinkstation_no_opt[,"ifast",] <- thinkstation_gcc_10_2_0_no_opt[,"ifast",]
 thinkstation_no_opt[,"dbl",] <- thinkstation_gcc_10_2_0_no_opt[,"dbl",]
+thinkstation_no_opt[,"udbl",] <- thinkstation_gcc_10_2_0_no_opt[,"udbl",]
 
 plot_times(thinkstation_no_opt[,,"sum"],  "thinkstation-no-opt-sum",  cache/8)
 plot_times(thinkstation_no_opt[,,"norm"], "thinkstation-no-opt-norm", cache/8)
