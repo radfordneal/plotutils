@@ -42,7 +42,7 @@
 
 #define OPT_SMALL_SUM 1     /* Should manually optimized routines be used for */
 #define OPT_SMALL_SQNORM 1  /*   operations using the small accumulator?      */
-#define OPT_SMALL_DOT 1
+#define OPT_SMALL_DOT 1     /*     (Not currently used)                       */
 
 #define OPT_LARGE_SUM 1     /* Should manually optimized routines be used for */
 #define OPT_LARGE_SQNORM 1  /*   operations using the large accumulator?      */
@@ -53,6 +53,7 @@
 #define OPT_SIMPLE_DOT 1
 
 #define INLINE_SMALL 1      /* Inline more of the small accumulator routines? */
+                            /*   (Not currently used)                         */
 #define INLINE_LARGE 1      /* Inline more of the large accumulator routines? */
 
 
@@ -758,202 +759,73 @@ void xsum_small_add1 (xsum_small_accumulator *restrict sacc, xsum_flt value)
 }
 
 
-/* ADD A VECTOR TO A SMALL ACCUMULATOR, ASSUMING NO CARRY PROPAGATION NEEDED.
-   Adds n-1 numbers from vec, which must have at least n elements; n must
-   be at least 1.  This odd specificiation is designed so that in the OPT
-   version we can pre-fetch the next value to allow some time for memory 
-   response before the value is used. */
-
-#if INLINE_SMALL
-  INLINE
-#endif
-static void xsum_addv_no_carry (xsum_small_accumulator *restrict sacc, 
-                                const xsum_flt *restrict vec, 
-                                xsum_length n)
-{ 
-# if OPT_SMALL_SUM
-  { xsum_flt f;
-    for (;;)
-    { f = *vec;
-      vec += 1; 
-      n -= 1;
-      if (n == 0) break;
-      xsum_add1_no_carry (sacc, f);
-    }
-  }
-# else
-  { xsum_length i;
-    n -= 1;
-    for (i = 0; i < n; i++)
-    { xsum_add1_no_carry (sacc, vec[i]);
-    }
-  }
-# endif
-}
-
-
 /* ADD A VECTOR OF FLOATING-POINT NUMBERS TO A SMALL ACCUMULATOR.  Mixes
-   calls of xsum_carry_propagate with calls of xsum_addv_no_carry to add 
-   parts that are small enough that no carry will result.  Note that
-   xsum_addv_no_carry may pre-fetch one beyond the last value it sums, 
-   so to be safe, adding the last value has to be done separately at
-   the end. */
+   calls of xsum_carry_propagate with calls of xsum_add1_no_carry. */
 
 void xsum_small_addv (xsum_small_accumulator *restrict sacc, 
                       const xsum_flt *restrict vec, 
                       xsum_length n)
-{ xsum_length m;
+{ xsum_length m, i;
 
-  if (n == 0) return;
-
-  while (n > 1)
+  while (n > 0)
   { if (sacc->adds_until_propagate == 0)
     { (void) xsum_carry_propagate(sacc);
     }
-    m = n-1 <= sacc->adds_until_propagate ? n-1 : sacc->adds_until_propagate;
-    xsum_addv_no_carry (sacc, vec, m+1);
+    m = n <= sacc->adds_until_propagate ? n : sacc->adds_until_propagate;
+    for (i = 0; i < m; i++)
+    { xsum_add1_no_carry (sacc, vec[i]);
+    }
     sacc->adds_until_propagate -= m;
     vec += m; 
     n -= m;
   }
-
-  xsum_small_add1 (sacc, *vec);
-}
-
-
-/* ADD SQUARED NORM OF VECTOR TO SMALL ACCUMULATOR, ASSUME NO CARRY NEEDED.
-   Adds n-1 squares of numbers from vec, which must have at least n elements; 
-   n must be at least 1.  This odd specificiation is designed so that in the 
-   OPT version we can pre-fetch the next value to allow some time for memory 
-   response before the value is used. */
-
-#if INLINE_SMALL
-  INLINE
-#endif
-static void xsum_add_sqnorm_no_carry (xsum_small_accumulator *restrict sacc, 
-                                      const xsum_flt *restrict vec, 
-                                      xsum_length n)
-{ 
-# if OPT_SMALL_SQNORM
-  { xsum_flt f, g;
-    f = *vec;
-    for (;;)
-    { vec += 1; 
-      n -= 1;
-      if (n == 0) break;
-      g = f*f;
-      f = *vec;
-      xsum_add1_no_carry (sacc, g);
-    }
-  }
-# else
-  { xsum_flt f;
-    xsum_length i;
-    n -= 1;
-    for (i = 0; i < n; i++)
-    { f = vec[i];
-      xsum_add1_no_carry (sacc, f*f);
-    }
-  }
-# endif
 }
 
 
 /* ADD SQUARED NORM OF VECTOR OF FLOATING-POINT NUMBERS TO SMALL ACCUMULATOR.
-   Mixes calls of xsum_carry_propagate with calls of xsum_add_sqnorm_no_carry 
-   to add parts that are small enough that no carry will result.  Note that
-   xsum_add_sqnorm_no_carry may pre-fetch one beyond the last value it sums, 
-   so to be safe, adding the last value has to be done separately at
-   the end. */
+   Mixes calls of xsum_carry_propagate with calls of xsum_add1_no_carry. */
 
 void xsum_small_add_sqnorm (xsum_small_accumulator *restrict sacc, 
                             const xsum_flt *restrict vec, 
                             xsum_length n)
-{ xsum_length m;
+{ xsum_length m, i;
 
-  if (n == 0) return;
-
-  while (n > 1)
+  while (n > 0)
   { if (sacc->adds_until_propagate == 0)
     { (void) xsum_carry_propagate(sacc);
     }
-    m = n-1 <= sacc->adds_until_propagate ? n-1 : sacc->adds_until_propagate;
-    xsum_add_sqnorm_no_carry (sacc, vec, m+1);
+    m = n <= sacc->adds_until_propagate ? n : sacc->adds_until_propagate;
+    for (i = 0; i < m; i++)
+    { xsum_add1_no_carry (sacc, vec[i] * vec[i]);
+    }
     sacc->adds_until_propagate -= m;
     vec += m; 
     n -= m;
   }
-
-  xsum_small_add1 (sacc, *vec * *vec);
-}
-
-
-/* ADD DOT PRODUCT OF VECTORS TO SMALL ACCUMULATOR, ASSUME NO CARRY NEEDED.
-   Adds n-1 products of numbers from vec1 and vec2, which must have at least
-   n elements; n must be at least 1.  This odd specificiation is designed so 
-   that in the OPT version we can pre-fetch the next values to allow some time
-   for memory response before the value is used. */
-
-#if INLINE_SMALL
-  INLINE
-#endif
-static void xsum_add_dot_no_carry (xsum_small_accumulator *restrict sacc, 
-                                   const xsum_flt *vec1, const xsum_flt *vec2, 
-                                   xsum_length n)
-{ 
-# if OPT_SMALL_DOT
-  { xsum_flt f1, f2, g;
-    f1 = *vec1;
-    f2 = *vec2;
-    for (;;)
-    { vec1 += 1; 
-      vec2 += 1; 
-      n -= 1;
-      if (n == 0) break;
-      g = f1*f2;
-      f1 = *vec1;
-      f2 = *vec2;
-      xsum_add1_no_carry (sacc, g);
-    }
-  }
-# else
-  { xsum_length i;
-    n -= 1;
-    for (i = 0; i < n; i++)
-    { xsum_add1_no_carry (sacc, vec1[i] * vec2[i]);
-    }
-  }
-# endif
 }
 
 
 /* ADD DOT PRODUCT OF VECTORS FLOATING-POINT NUMBERS TO SMALL ACCUMULATOR.
-   Mixes calls of xsum_carry_propagate with calls of xsum_add_dot_no_carry 
-   to add parts that are small enough that no carry will result.  Note that
-   xsum_add_dot_no_carry may pre-fetch one beyond the last value it sums, 
-   so to be safe, adding the last value has to be done separately at
-   the end. */
+   Mixes calls of xsum_carry_propagate with calls of xsum_add1_no_carry. */
 
 void xsum_small_add_dot (xsum_small_accumulator *restrict sacc, 
                          const xsum_flt *vec1, const xsum_flt *vec2, 
                          xsum_length n)
-{ xsum_length m;
-
-  if (n == 0) return;
+{ xsum_length m, i;
 
   while (n > 1)
   { if (sacc->adds_until_propagate == 0)
     { (void) xsum_carry_propagate(sacc);
     }
-    m = n-1 <= sacc->adds_until_propagate ? n-1 : sacc->adds_until_propagate;
-    xsum_add_dot_no_carry (sacc, vec1, vec2, m+1);
+    m = n <= sacc->adds_until_propagate ? n : sacc->adds_until_propagate;
+    for (i = 0; i < m; i++)
+    { xsum_add1_no_carry (sacc, vec1[i] * vec2[i]);
+    }
     sacc->adds_until_propagate -= m;
     vec1 += m; 
     vec2 += m; 
     n -= m;
   }
-
-  xsum_small_add1 (sacc, *vec1 * *vec2);
 }
 
 
