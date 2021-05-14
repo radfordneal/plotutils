@@ -227,12 +227,11 @@ static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
        chunks may not be as large. */
 
     int e = u-3;
-    while (i <= e)
-    { if (sacc->chunk[i] | sacc->chunk[i+1]
-                         | sacc->chunk[i+2]
-                         | sacc->chunk[i+3]) break;
+    do
+    { if ((sacc->chunk[i] | sacc->chunk[i+1])
+            | (sacc->chunk[i+2] | sacc->chunk[i+3])) break;
       i += 4;
-    }
+    } while (i < e);
   }
 # endif
 
