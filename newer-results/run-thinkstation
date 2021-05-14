@@ -9,15 +9,15 @@ TOP=`git rev-parse --show-toplevel`
 (cd $TOP; GCC=-10 compile-zhu gcc-intel)
 time ../run-tests-zhu >results-thinkstation-gcc-10.2.0
 
-(cd $TOP; GCC=-10 compile-zhu clang-intel)
+(cd $TOP; compile-zhu clang-intel)
 time ../run-tests-zhu >results-thinkstation-clang-10.0.0
 
 (cd $TOP; ed xsum.c <no-opt-script)
 
-(cd $TOP; cp xsum.c-no-opt xsum.c; GCC=-10 compile-zhu gcc-intel)
+(cd $TOP; GCC=-10 compile-zhu gcc-intel)
 time ../run-tests-zhu >results-thinkstation-gcc-10.2.0-no-opt
 
-(cd $TOP; GCC=-10 compile-zhu clang-intel)
+(cd $TOP; compile-zhu clang-intel)
 time ../run-tests-zhu >results-thinkstation-clang-10.0.0-no-opt
 
 (cd $TOP; git checkout xsum.c)
