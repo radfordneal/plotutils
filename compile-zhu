@@ -3,7 +3,7 @@
 # Compile programs, including those for Zhu and Hayes methods.
 
 (echo -n "COMMIT: "; git rev-parse HEAD) >Make-info
-git diff HEAD >>Make-info
+git diff HEAD *.h *.c Makefile-* >>Make-info
 
 (echo " "; echo Compiled with Makefile-$1) >>Make-info
 make -B -f Makefile-$1 with-zhu
