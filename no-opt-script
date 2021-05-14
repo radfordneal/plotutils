@@ -1,0 +1,8 @@
+1,$s/define OPT_LARGE_SUM 1/define OPT_LARGE_SUM 0/
+1,$s/define OPT_LARGE_SQNORM 1/define OPT_LARGE_SQNORM 0/
+1,$s/define OPT_LARGE_DOT 1/define OPT_LARGE_DOT 0/
+1,$s/define OPT_SIMPLE_SUM 1/define OPT_SIMPLE_SUM 0/
+1,$s/define OPT_SIMPLE_SQNORM 1/define OPT_SIMPLE_SQNORM 0/
+1,$s/define OPT_SIMPLE_DOT 1/define OPT_SIMPLE_DOT 0/
+w
+q
