@@ -1778,17 +1778,16 @@ xsum_flt xsum_sum_float128 (const xsum_flt *restrict vec,
 
 xsum_flt xsum_sum_double_not_ordered (const xsum_flt *restrict vec, 
                                       xsum_length n)
-{ double s1, s2;
+{ double s[2] = { 0, 0 };
   xsum_length j;
-  s1 = s2 = 0.0;
   for (j = 1; j < n; j += 2) 
-  { s1 += vec[j-1];
-    s2 += vec[j];
+  { s[0] += vec[j-1];
+    s[1] += vec[j];
   }
   if (j == n)
-  { s1 += vec[j-1];
+  { s[0] += vec[j-1];
   }
-  return (xsum_flt) (s1+s2);
+  return (xsum_flt) (s[0]+s[1]);
 }
 
 
@@ -1872,20 +1871,20 @@ xsum_flt xsum_sqnorm_double (const xsum_flt *restrict vec,
 
 xsum_flt xsum_sqnorm_double_not_ordered (const xsum_flt *restrict vec, 
                                          xsum_length n)
-{ double s1, s2, a, b;
+{ double s[2] = { 0, 0 };
+  double a[2];
   xsum_length j;
-  s1 = s2 = 0.0;
   for (j = 1; j < n; j += 2) 
-  { a = vec[j-1];
-    b = vec[j];
-    s1 += a*a;
-    s2 += b*b;
+  { a[0] = vec[j-1];
+    a[1] = vec[j];
+    s[0] += a[0]*a[0];
+    s[1] += a[1]*a[1];
   }
   if (j == n)
-  { a = vec[j-1];
-    s1 += a*a;
+  { a[0] = vec[j-1];
+    s[0] += a[0]*a[0];
   }
-  return (xsum_flt) (s1+s2);
+  return (xsum_flt) (s[0]+s[1]);
 }
 
 
@@ -1924,17 +1923,16 @@ xsum_flt xsum_dot_double (const xsum_flt *vec1,
 xsum_flt xsum_dot_double_not_ordered (const xsum_flt *vec1, 
                                       const xsum_flt *vec2, 
                                       xsum_length n)
-{ double s1, s2;
+{ double s[2] = { 0, 0 };
   xsum_length j;
-  s1 = s2 = 0.0;
   for (j = 1; j < n; j += 2) 
-  { s1 += vec1[j-1] * vec2[j-1];
-    s2 += vec1[j] * vec2[j];
+  { s[0] += vec1[j-1] * vec2[j-1];
+    s[1] += vec1[j] * vec2[j];
   }
   if (j == n)
-  { s1 += vec1[j-1] * vec2[j-1];
+  { s[0] += vec1[j-1] * vec2[j-1];
   }
-  return (xsum_flt) (s1+s2);
+  return (xsum_flt) (s[0]+s[1]);
 }
 
 
