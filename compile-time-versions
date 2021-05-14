@@ -4,12 +4,8 @@ cp xsum.c xsum.c-opt
 compile clang-intel; cp xsum-time xsum-time-clang
 GCC=-10 compile gcc-intel; cp xsum-time xsum-time-gcc
 
-cp xsum.c-no-opt xsum.c
+ed xsum.c <no-opt-script
 compile clang-intel; cp xsum-time xsum-time-clang-no-opt
 GCC=-10 compile gcc-intel; cp xsum-time xsum-time-gcc-no-opt
-
-cp xsum.c-no-opt2 xsum.c
-compile clang-intel; cp xsum-time xsum-time-clang-no-opt2
-GCC=-10 compile gcc-intel; cp xsum-time xsum-time-gcc-no-opt2
 
 cp xsum.c-opt xsum.c
