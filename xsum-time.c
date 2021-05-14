@@ -28,7 +28,7 @@
 
    Run with a command of the form:
 
-       xsum-time [ task ] [ method ] N M R [ data ... ] [ "inf" ] [ "perm" ]
+       xsum-time [task] [method] N M R [ data ... ] ["inf"] ["perm"] ["warm"]
 
    Here, N is the size of the vectors that are summed, M is the number
    of such vectors, and R is the number of times these M vectors of
@@ -80,7 +80,9 @@
 #define START_CLOCK ( start_clock = clock() )
 #define END_CLOCK ( clock_dur = (double)(clock()-start_clock)/CLOCKS_PER_SEC )
 
-int different (double a, double b)
+double xsum_warm_value;  /* external variable so code won't be optimized away */
+
+int different (double a, double b) /* Test whether double values are different*/
 { 
   return isnan(a) != isnan(b) || !isnan(a) && !isnan(b) && a != b;
 }
@@ -108,7 +110,7 @@ int main (int argc, char **argv)
   char **data;
   char *task;
   char *method;
-  int perm, inf;
+  int perm, inf, warm;
 
   task = 0;
   if (argc>1 && (strcmp(argv[1],"sum")==0 
@@ -138,12 +140,18 @@ int main (int argc, char **argv)
     argc -= 1;
   }
 
+  warm = 0;
+  if (argc>1 && strcmp(argv[argc-1],"warm")==0)
+  { warm = 1;
+    argc -= 1;
+  }
+
   ndata = argc-4;
 
   if (argc<4 || (N=atoi(argv[1]))<1 || ndata>N
              || (M=atoi(argv[2]))<1 || (R=atoi(argv[3]))<1)
   { fprintf(stderr,
-     "Usage: xsum-time [ task ] [ method ] N M R [ data ... ] [ \"inf\" ] [ \"perm\" ]\n");
+     "Usage: xsum-time [task] [method] N M R [ data ... ] [\"inf\"] [\"perm\"] [\"warm\"]\n");
     exit(1);
   }
 
@@ -168,6 +176,8 @@ int main (int argc, char **argv)
     if (inf) printf(" inf"); 
   }
   printf("\n");
+
+  /* Generate data to use. */
  
   a = (xsum_flt *) calloc (2*N*M, sizeof *a);  /* Put a and a2 into one block */
   a2 = a + N*M;        /* to suppress possible variation in cache performance */
@@ -209,6 +219,19 @@ int main (int argc, char **argv)
   }
 
   for (i = 0; i < N*M; i++) a2[i] = a[i];
+
+  /* Do warmup computations if asked (to try to get the processor into its
+     highest-performance state). */
+
+  if (warm)
+  { int i;
+    xsum_warm_value = 0;
+    for (i = 0; i < 100000000; i++)
+    { xsum_warm_value = (xsum_warm_value + 1.1) / i;
+    }
+  }
+
+  /* Do summation task, if requested. */
 
   if (task==0 || strcmp(task,"sum")==0)
   {
@@ -391,6 +414,8 @@ int main (int argc, char **argv)
     }
   }
 
+  /* Do vector norm task, if requested. */
+
   if (task==0 || strcmp(task,"norm")==0)
   { 
     printf("\nVECTOR NORM\n\n");
@@ -483,6 +508,8 @@ int main (int argc, char **argv)
       printf("Large accumulator chunks used: %d\n", used_large);
     }
   }
+
+  /* Do vector dot product task, if requested. */
 
   if (task==0 || strcmp(task,"dot")==0)
   {
