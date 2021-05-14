@@ -52,6 +52,8 @@
 #define OPT_SIMPLE_SQNORM 1 /*   operations done with simple FP arithmetic?   */
 #define OPT_SIMPLE_DOT 1
 
+#define OPT_KAHAN_SUM 0     /* Use manually optimized routine for Kahan sum?  */
+
 #define INLINE_SMALL 1      /* Inline more of the small accumulator routines? */
                             /*   (Not currently used)                         */
 #define INLINE_LARGE 1      /* Inline more of the large accumulator routines? */
