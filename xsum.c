@@ -157,7 +157,7 @@ static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
      return with value 0 if there is none. */
 
 # if OPT_CARRY
-  { xsum_schunk c1, c1f, c2, c2f;
+  { xsum_schunk c0123;
 
     u = XSUM_SCHUNKS-1;
     switch (XSUM_SCHUNKS & 0x7)   /* get u to be a multiple of 8 minus 1  */
@@ -179,12 +179,11 @@ static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
       case 0: ;
     }
 
-    do  /* u should be at least 7 here */
-    { c1f = sacc->chunk[u] | sacc->chunk[u-1];
-      c1 = c1f | sacc->chunk[u-2] | sacc->chunk[u-3];
-      c2f = sacc->chunk[u-4] | sacc->chunk[u-5];
-      c2 = c2f | sacc->chunk[u-6] | sacc->chunk[u-7];
-      if (c1 | c2) goto found;
+    do  /* here, u should be a multiple of 8 minus one, and at least 7 */
+    { c0123 = (sacc->chunk[u] | sacc->chunk[u-1])
+               | (sacc->chunk[u-2] | sacc->chunk[u-3]);
+      if (c0123 | (sacc->chunk[u-4] | sacc->chunk[u-5])
+                | (sacc->chunk[u-6] | sacc->chunk[u-7]) ) goto found;
       u -= 8;
     } while (u >= 0);
   
@@ -193,6 +192,7 @@ static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
     goto done;
   
   found:
+    if (c0123 == 0) u -= 4;
     while (sacc->chunk[u] == 0)
     { u -= 1;
     }
