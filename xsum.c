@@ -149,7 +149,6 @@ static NOINLINE void xsum_small_add_inf_nan
 
 static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
 {
-  xsum_schunk c, clow, chigh;
   int i, u, uix;
 
   if (xsum_debug) printf("Carry propagating in small accumulator\n");
@@ -158,21 +157,35 @@ static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
      return with value 0 if there is none. */
 
 # if OPT_CARRY
-  { u = XSUM_SCHUNKS-1;
-    switch (XSUM_SCHUNKS & 0x3) 
-    { case 3: if (sacc->chunk[u] != 0) goto found;
+  { xsum_schunk c1, c1f, c2, c2f;
+
+    u = XSUM_SCHUNKS-1;
+    switch (XSUM_SCHUNKS & 0x7)   /* get u to be a multiple of 8 minus 1  */
+    { 
+      case 7: if (sacc->chunk[u] != 0) goto found2;  
+              u -= 1;                                /* XSUM_SCHUNKS is a */
+      case 6: if (sacc->chunk[u] != 0) goto found2;  /* constant, so the  */
+              u -= 1;                                /* compiler will do  */
+      case 5: if (sacc->chunk[u] != 0) goto found2;  /* simple code here  */
               u -= 1;
-      case 2: if (sacc->chunk[u] != 0) goto found;
+      case 4: if (sacc->chunk[u] != 0) goto found2;
               u -= 1;
-      case 1: if (sacc->chunk[u] != 0) goto found;
+      case 3: if (sacc->chunk[u] != 0) goto found2;
+              u -= 1;
+      case 2: if (sacc->chunk[u] != 0) goto found2;
+              u -= 1;
+      case 1: if (sacc->chunk[u] != 0) goto found2;
               u -= 1;
       case 0: ;
     }
-    do
-    { if (sacc->chunk[u-3] | sacc->chunk[u-2] 
-                           | sacc->chunk[u-1] 
-                           | sacc->chunk[u]) goto found;
-      u -= 4;
+
+    do  /* u should be at least 7 here */
+    { c1f = sacc->chunk[u] | sacc->chunk[u-1];
+      c1 = c1f | sacc->chunk[u-2] | sacc->chunk[u-3];
+      c2f = sacc->chunk[u-4] | sacc->chunk[u-5];
+      c2 = c2f | sacc->chunk[u-6] | sacc->chunk[u-7];
+      if (c1 | c2) goto found;
+      u -= 8;
     } while (u >= 0);
   
     if (xsum_debug) printf ("number is zero (1)\n");
@@ -183,6 +196,8 @@ static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
     while (sacc->chunk[u] == 0)
     { u -= 1;
     }
+
+  found2: ;
   }
 # else
   { for (u = XSUM_SCHUNKS-1; sacc->chunk[u] == 0; u--)
@@ -222,7 +237,8 @@ static NOINLINE int xsum_carry_propagate (xsum_small_accumulator *restrict sacc)
 # endif
 
   do
-  { 
+  { xsum_schunk c, clow, chigh;
+
     /* Find the next non-zero chunk, or break out of loop if there is none. */
 
 #   if OPT_CARRY
