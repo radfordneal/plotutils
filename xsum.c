@@ -380,7 +380,8 @@ static void xsum_large_init_chunks (xsum_large_accumulator *restrict lacc)
 }
 
 
-/* ADD CHUNK FROM A LARGE ACCUMULATOR TO THE SMALL ACCUMULATOR WITHIN IT. 
+/* ADD CHUNK FROM A LARGE ACCUMULATOR TO A SMALL ACCUMULATOR.  The small
+   accumulator may or may not be the one within the large accumulator.
    The large accumulator chunk to add is indexed by ix.  This chunk will
    be cleared to zero and its count reset after it has been added to the
    small accumulator (except no add is done for a new chunk being initialized).
@@ -390,7 +391,8 @@ static void xsum_large_init_chunks (xsum_large_accumulator *restrict lacc)
 #if INLINE_LARGE
   INLINE
 #endif
-static void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
+static void xsum_add_lchunk_to_small (xsum_large_accumulator *lacc,
+                                      xsum_small_accumulator *sacc,
                                       xsum_expint ix)
 {
   xsum_expint exp, low_exp, high_exp;
@@ -406,7 +408,7 @@ static void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
   {
     /* Propagate carries in the small accumulator if necessary. */
 
-    if (lacc->sacc.adds_until_propagate == 0)
+    if (sacc->adds_until_propagate == 0)
     { (void) xsum_carry_propagate(&lacc->sacc);
     }
 
@@ -474,34 +476,34 @@ static void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
     if (xsum_debug)
     { printf("Small chunks %d, %d, %d before add or subtract:\n",
               (int)high_exp, (int)high_exp+1, (int)high_exp+2);
-      pbinary_int64 (lacc->sacc.chunk[high_exp], 64); printf("\n");
-      pbinary_int64 (lacc->sacc.chunk[high_exp+1], 64); printf("\n");
-      pbinary_int64 (lacc->sacc.chunk[high_exp+2], 64); printf("\n");
+      pbinary_int64 (sacc->chunk[high_exp], 64); printf("\n");
+      pbinary_int64 (sacc->chunk[high_exp+1], 64); printf("\n");
+      pbinary_int64 (sacc->chunk[high_exp+2], 64); printf("\n");
     }
 
     if (ix & (1 << XSUM_EXP_BITS))
-    { lacc->sacc.chunk[high_exp] -= low_chunk;
-      lacc->sacc.chunk[high_exp+1] -= mid_chunk;
-      lacc->sacc.chunk[high_exp+2] -= high_chunk;
+    { sacc->chunk[high_exp] -= low_chunk;
+      sacc->chunk[high_exp+1] -= mid_chunk;
+      sacc->chunk[high_exp+2] -= high_chunk;
     }
     else
-    { lacc->sacc.chunk[high_exp] += low_chunk;
-      lacc->sacc.chunk[high_exp+1] += mid_chunk;
-      lacc->sacc.chunk[high_exp+2] += high_chunk;
+    { sacc->chunk[high_exp] += low_chunk;
+      sacc->chunk[high_exp+1] += mid_chunk;
+      sacc->chunk[high_exp+2] += high_chunk;
     }
 
     if (xsum_debug)
     { printf("Small chunks %d, %d, %d after add or subtract:\n",
               (int)high_exp, (int)high_exp+1, (int)high_exp+2);
-      pbinary_int64 (lacc->sacc.chunk[high_exp], 64); printf("\n");
-      pbinary_int64 (lacc->sacc.chunk[high_exp+1], 64); printf("\n");
-      pbinary_int64 (lacc->sacc.chunk[high_exp+2], 64); printf("\n");
+      pbinary_int64 (sacc->chunk[high_exp], 64); printf("\n");
+      pbinary_int64 (sacc->chunk[high_exp+1], 64); printf("\n");
+      pbinary_int64 (sacc->chunk[high_exp+2], 64); printf("\n");
     }
 
     /* The above additions/subtractions reduce by one the number we can
        do before we need to do carry propagation again. */
   
-    lacc->sacc.adds_until_propagate -= 1;
+    sacc->adds_until_propagate -= 1;
   }
 
   /* We now clear the chunk to zero, and set the count to the number
@@ -522,28 +524,32 @@ static void xsum_add_lchunk_to_small (xsum_large_accumulator *restrict lacc,
 /* ADD A CHUNK TO THE LARGE ACCUMULATOR OR PROCESS NAN OR INF.  This routine
    is called when the count for a chunk is negative after decrementing, which 
    indicates either inf/nan, or that the chunk has not been initialized, or
-   that the chunk needs to be transferred to the small accumulator. */
+   that the chunk needs to be transferred to the small accumulator.  The
+   small accumulator may or may not be the one in the large accumulator. */
 
 #if INLINE_LARGE
   INLINE
 #endif
-static void xsum_large_add_value_inf_nan (xsum_large_accumulator *restrict lacc,
+static void xsum_large_add_value_inf_nan (xsum_large_accumulator *lacc,
+                                          xsum_small_accumulator *sacc,
                                           xsum_expint ix, xsum_lchunk uintv)
 {
   if ((ix & XSUM_EXP_MASK) == XSUM_EXP_MASK)
-  { xsum_small_add_inf_nan (&lacc->sacc, uintv);
+  { xsum_small_add_inf_nan (sacc, uintv);
   }
   else
-  { xsum_add_lchunk_to_small (lacc, ix);
+  { xsum_add_lchunk_to_small (lacc, sacc, ix);
     lacc->count[ix] -= 1;
     lacc->chunk[ix] += uintv;
   }
 }
 
 
-/* TRANSFER ALL CHUNKS IN LARGE ACCUMULATOR TO ITS SMALL ACCUMULATOR. */
+/* TRANSFER ALL CHUNKS IN A LARGE ACCUMULATOR TO A SMALL ACCUMULATOR.  The
+   small accumulator may or may not be the one inside the large accumulator. */
 
-static void xsum_large_transfer_to_small (xsum_large_accumulator *restrict lacc)
+static void xsum_large_transfer_to_small (xsum_large_accumulator *lacc,
+                                          xsum_small_accumulator *sacc)
 {
   if (xsum_debug) printf("Transferring chunks in large accumulator\n");
 
@@ -601,7 +607,7 @@ static void xsum_large_transfer_to_small (xsum_large_accumulator *restrict lacc)
 
       do
       { if (lacc->count[ix] >= 0)
-        { xsum_add_lchunk_to_small (lacc, ix); 
+        { xsum_add_lchunk_to_small (lacc, sacc, ix); 
         }
         ix += 1;
         u >>= 1;
@@ -619,7 +625,7 @@ static void xsum_large_transfer_to_small (xsum_large_accumulator *restrict lacc)
 
     for (ix = 0; ix < XSUM_LCHUNKS; ix++)
     { if (lacc->count[ix] >= 0)
-      { xsum_add_lchunk_to_small (lacc, ix);
+      { xsum_add_lchunk_to_small (lacc, sacc, ix);
       }
     }
   }
@@ -1200,7 +1206,8 @@ void xsum_large_init (xsum_large_accumulator *restrict lacc)
 
 /* ADD A VECTOR OF FLOATING-POINT NUMBERS TO A LARGE ACCUMULATOR. */
 
-void xsum_large_addv (xsum_large_accumulator *restrict lacc,
+//void xsum_large_addv (xsum_large_accumulator *restrict lacc,
+void xsum_large_addv1 (xsum_large_accumulator *restrict lacc,
                       const xsum_flt *restrict vec, 
                       xsum_length n)
 {
@@ -1267,11 +1274,11 @@ void xsum_large_addv (xsum_large_accumulator *restrict lacc,
         if (count1 < 0)
         { lacc->count[ix1] = count1 + 1;
           lacc->chunk[ix1] -= u1.uintv;
-          xsum_large_add_value_inf_nan (lacc, ix1, u1.uintv);
+          xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix1, u1.uintv);
           count2 = lacc->count[ix2] - 1;
         }
         if (count2 < 0)
-        { xsum_large_add_value_inf_nan (lacc, ix2, u2.uintv);
+        { xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix2, u2.uintv);
         }
         else
         { lacc->count[ix2] = count2;
@@ -1288,7 +1295,7 @@ void xsum_large_addv (xsum_large_accumulator *restrict lacc,
       ix1 = u1.uintv >> XSUM_MANTISSA_BITS;
       count1 = lacc->count[ix1] - 1;
       if (count1 < 0)
-      { xsum_large_add_value_inf_nan (lacc, ix1, u1.uintv);
+      { xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix1, u1.uintv);
       }
       else
       { lacc->count[ix1] = count1;
@@ -1326,7 +1333,7 @@ void xsum_large_addv (xsum_large_accumulator *restrict lacc,
            needs to be transferred to the small accumulator, or one that
            has never been used before and needs to be initialized. */
 
-        xsum_large_add_value_inf_nan (lacc, ix, u.uintv);
+        xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix, u.uintv);
       }
       else
       { 
@@ -1342,6 +1349,184 @@ void xsum_large_addv (xsum_large_accumulator *restrict lacc,
     } while (n > 0);
   }
 # endif
+}
+
+
+/* ADD A VECTOR OF FLOATING-POINT NUMBERS TO A LARGE ACCUMULATOR
+   - TWO ACCUMULATOR VERSION. */
+
+//void xsum_large_addv2 (xsum_large_accumulator *restrict lacc,
+void xsum_large_addv (xsum_large_accumulator *restrict lacc,
+                       const xsum_flt *restrict vec, 
+                       xsum_length n)
+{
+  if (n < 10) 
+  { xsum_large_addv1 (lacc, vec, n);
+    return;
+  }
+
+  if (xsum_debug) printf("LARGE ADDV OF %ld VALUES\n",(long)n);
+
+  if (n == 0) return;
+
+  xsum_large_accumulator lacc2;
+  xsum_large_init_chunks (&lacc2);
+
+# if OPT_LARGE_SUM
+  { 
+    /* Version that's been manually optimized:  Loop unrolled, branches
+       branches eliminated, ... */
+
+    union fpunion u1, u2;
+    int count1, count2;
+    xsum_expint ix1, ix2;
+    const xsum_flt *v;
+    xsum_length m;
+
+    v = vec;
+
+    /* Unrolled loop processing two values each time around.  The loop is
+       done as two nested loops, arranged so that the inner one will have
+       no branches except for the one looping back.  This is achieved by
+       a trick for combining three tests for negativity into one. */
+
+    m = n-2;  /* may leave out last one */
+    while (m >= 0)
+    { 
+      /* Loop processing two values at a time until we're done, or until 
+         one (or both) of the values result in a chunk needing to be processed. 
+         Updates are done here for both of these chunks, even though it is not
+         yet known whether these updates ought to have been done.  We hope
+         this allows for better memory pre-fetch and instruction scheduling. */
+
+      xsum_length c12m;
+      do
+      { 
+        u1.fltv = *v++;
+        u2.fltv = *v++;
+
+        m -= 2;
+
+        ix1 = u1.uintv >> XSUM_MANTISSA_BITS;
+        count1 = lacc->count[ix1] - 1;
+        lacc->chunk[ix1] += u1.uintv;
+        lacc->count[ix1] = count1;
+
+        ix2 = u2.uintv >> XSUM_MANTISSA_BITS;
+        count2 = lacc2.count[ix2] - 1;
+        c12m = m | (xsum_length)count1 | (xsum_length)count2;
+        lacc2.chunk[ix2] += u2.uintv;
+        lacc2.count[ix2] = count2;
+
+      } while (c12m >= 0);
+           /* ... equivalent to while (count1 >= 0 && count2 >= 0 && m >= 0) */
+
+      /* See if we were actually supposed to update these chunks.  If not,
+         back out the changes and then process the chunks as they ought to
+         have been processed. */
+
+      if (count1 < 0)
+      { lacc->count[ix1] = count1 + 1;
+        lacc->chunk[ix1] -= u1.uintv;
+        xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix1, u1.uintv);
+      }
+      if (count2 < 0)
+      { lacc2.count[ix2] = count2 + 1;
+        lacc2.chunk[ix2] -= u2.uintv;
+        xsum_large_add_value_inf_nan (&lacc2, &lacc->sacc, ix2, u2.uintv);
+      }
+    }
+
+    /* May have to process the last value. */
+
+    if (m == -1)
+    { u1.fltv = *v;
+      ix1 = u1.uintv >> XSUM_MANTISSA_BITS;
+      count1 = lacc->count[ix1] - 1;
+      if (count1 < 0)
+      { xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix1, u1.uintv);
+      }
+      else
+      { lacc->count[ix1] = count1;
+        lacc->chunk[ix1] += u1.uintv;
+      }
+    }
+  }
+# else
+  { 
+    /* Version not manually optimized - maybe the compiler can do better. */
+
+    union fpunion u;
+    xsum_lcount count;
+    xsum_expint ix;
+
+    do
+    { 
+      /* Fetch the next number, and convert to integer form in u.uintv. */
+
+      u.fltv = *vec;
+      vec += 1;
+
+      /* Isolate the upper sign+exponent bits that index the chunk. */
+
+      ix = u.uintv >> XSUM_MANTISSA_BITS;
+
+      if (n & 1)
+      {
+        /* Find the count for this chunk, and subtract one. */
+
+        count = lacc->count[ix] - 1;
+
+        if (count < 0)
+        { 
+          /* If the decremented count is negative, it's either a special 
+             Inf/NaN chunk (in which case count will stay at -1), or one that 
+             needs to be transferred to the small accumulator, or one that
+             has never been used before and needs to be initialized. */
+
+          xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix, u.uintv);
+        }
+        else
+        { 
+          /* Store the decremented count of additions allowed before transfer,
+             and add this value to the chunk. */
+
+          lacc->count[ix] = count;
+          lacc->chunk[ix] += u.uintv;
+        }
+      }
+      else
+      {
+        /* Find the count for this chunk, and subtract one. */
+
+        count = lacc2.count[ix] - 1;
+
+        if (count < 0)
+        { 
+          /* If the decremented count is negative, it's either a special 
+             Inf/NaN chunk (in which case count will stay at -1), or one that 
+             needs to be transferred to the small accumulator, or one that
+             has never been used before and needs to be initialized. */
+
+          xsum_large_add_value_inf_nan (&lacc2, &lacc->sacc, ix, u.uintv);
+        }
+        else
+        { 
+          /* Store the decremented count of additions allowed before transfer,
+             and add this value to the chunk. */
+
+          lacc2.count[ix] = count;
+          lacc2.chunk[ix] += u.uintv;
+        }
+      }
+
+      n -= 1;
+
+    } while (n > 0);
+  }
+# endif
+
+  xsum_large_transfer_to_small (&lacc2, &lacc->sacc);
 }
 
 
@@ -1422,11 +1607,11 @@ void xsum_large_add_sqnorm (xsum_large_accumulator *restrict lacc,
         if (count1 < 0)
         { lacc->count[ix1] = count1 + 1;
           lacc->chunk[ix1] -= u1.uintv;
-          xsum_large_add_value_inf_nan (lacc, ix1, u1.uintv);
+          xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix1, u1.uintv);
           count2 = lacc->count[ix2] - 1;
         }
         if (count2 < 0)
-        { xsum_large_add_value_inf_nan (lacc, ix2, u2.uintv);
+        { xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix2, u2.uintv);
         }
         else
         { lacc->count[ix2] = count2;
@@ -1444,7 +1629,7 @@ void xsum_large_add_sqnorm (xsum_large_accumulator *restrict lacc,
       ix1 = u1.uintv >> XSUM_MANTISSA_BITS;
       count1 = lacc->count[ix1] - 1;
       if (count1 < 0)
-      { xsum_large_add_value_inf_nan (lacc, ix1, u1.uintv);
+      { xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix1, u1.uintv);
       }
       else
       { lacc->count[ix1] = count1;
@@ -1484,7 +1669,7 @@ void xsum_large_add_sqnorm (xsum_large_accumulator *restrict lacc,
            needs to be transferred to the small accumulator, or one that
            has never been used before and needs to be initialized. */
 
-        xsum_large_add_value_inf_nan (lacc, ix, u.uintv);
+        xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix, u.uintv);
       }
       else
       {
@@ -1573,11 +1758,11 @@ void xsum_large_add_dot (xsum_large_accumulator *restrict lacc,
         if (count1 < 0)
         { lacc->count[ix1] = count1 + 1;
           lacc->chunk[ix1] -= u1.uintv;
-          xsum_large_add_value_inf_nan (lacc, ix1, u1.uintv);
+          xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix1, u1.uintv);
           count2 = lacc->count[ix2] - 1;
         }
         if (count2 < 0)
-        { xsum_large_add_value_inf_nan (lacc, ix2, u2.uintv);
+        { xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix2, u2.uintv);
         }
         else
         { lacc->count[ix2] = count2;
@@ -1595,7 +1780,7 @@ void xsum_large_add_dot (xsum_large_accumulator *restrict lacc,
       ix1 = u1.uintv >> XSUM_MANTISSA_BITS;
       count1 = lacc->count[ix1] - 1;
       if (count1 < 0)
-      { xsum_large_add_value_inf_nan (lacc, ix1, u1.uintv);
+      { xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix1, u1.uintv);
       }
       else
       { lacc->count[ix1] = count1;
@@ -1634,7 +1819,7 @@ void xsum_large_add_dot (xsum_large_accumulator *restrict lacc,
            needs to be transferred to the small accumulator, or one that
            has never been used before and needs to be initialized. */
 
-        xsum_large_add_value_inf_nan (lacc, ix, u.uintv);
+        xsum_large_add_value_inf_nan (lacc, &lacc->sacc, ix, u.uintv);
       }
       else
       { 
@@ -1662,7 +1847,7 @@ void xsum_large_add_accumulator (xsum_large_accumulator *restrict dst_lacc,
   if (xsum_debug) printf("Adding accumulator to a large accumulator\n");
   if (dst_lacc == src_lacc) abort();
 
-  xsum_large_transfer_to_small (src_lacc);
+  xsum_large_transfer_to_small (src_lacc, &src_lacc->sacc);
   xsum_small_add_accumulator (&dst_lacc->sacc, &src_lacc->sacc);
 }
 
@@ -1677,7 +1862,7 @@ xsum_flt xsum_large_round (xsum_large_accumulator *restrict lacc)
 {
   if (xsum_debug) printf("Rounding large accumulator\n");
 
-  xsum_large_transfer_to_small (lacc);
+  xsum_large_transfer_to_small (lacc, &lacc->sacc);
 
   return xsum_small_round (&lacc->sacc);
 }
@@ -1689,7 +1874,7 @@ void xsum_large_to_small_accumulator (xsum_small_accumulator *restrict sacc,
                                       xsum_large_accumulator *restrict lacc)
 {
   if (xsum_debug) printf("Transferring from large to small accumulator\n");
-  xsum_large_transfer_to_small (lacc);
+  xsum_large_transfer_to_small (lacc, &lacc->sacc);
   *sacc = lacc->sacc;
 }
 
