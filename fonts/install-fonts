@@ -11,6 +11,6 @@ cp pfb/*.pfb /usr/share/fonts/X11/Type1
 cat fonts.append >>/usr/share/fonts/X11/Type1/fonts.scale
 cd /usr/share/fonts/X11/Type1
 n=`sed 1d fonts.scale | wc -l`
-qq(echo "1,1s/.*/$n/"; echo w) | ed /usr/share/fonts/X11/Type1/fonts.scale
+(echo "1,1s/.*/$n/"; echo w) | ed /usr/share/fonts/X11/Type1/fonts.scale
 mkfontdir
 xset fp rehash
