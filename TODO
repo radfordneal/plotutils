@@ -1,3 +1,28 @@
+TODO FOR PLOTUTILS+
+
+* Make the recommended config options --enable-ps-fonts-in-pcl,
+  --enable-lj-fonts-in-ps, and --enable-lj-fonts-in-x be defaults.
+
+* Make new default options the default, with -n giving the old defaults.
+
+* Fix problems with ticks.
+
+* Fix error messages.
+
+* Avoid problem with getting wrong plotutils library in graph when old
+  plotutils is installed.  Static linking?
+
+* Extension to get dot shade from third input.
+
+* Extension to allow for rectangular plots (not always square).
+
+* Extension to dynamically rescale as more input is obtained.
+
+* Extension to allow for multi-column input (plotting more than one line).
+
+
+THE TODO FILE FROM THE ORIGINAL PLOTUTILS
+
 Greater priority
 ----------------
 
