@@ -9,9 +9,6 @@ TODO FOR PLOTUTILS+
 
 * Fix error messages.
 
-* Avoid problem with getting wrong plotutils library in graph when old
-  plotutils is installed.  Static linking?
-
 * Extension to get dot shade from third input.
 
 * Extension to allow for rectangular plots (not always square).
