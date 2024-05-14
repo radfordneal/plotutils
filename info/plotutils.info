@@ -549,22 +549,24 @@ will produce a plot in which the font size of the x axis label, and each
 of the numerical tick labels, is very large (0.1 times the size of the
 plotting box, i.e., the square within which the plot is drawn).
 
-   The font in which the labels specified with the '-X', '-Y', and '-L'
-options are drawn can be specified with the '-F' option.  For example,
-'-F Times-Roman' will make the labels appear in Times-Roman instead of
-the default font (which is Helvetica, unless '-T png', '-T pnm', '-T
-gif', '-T pcl', '-T hpgl', '-T regis', or '-T tek' is specified).  Font
-names are case-insensitive, so '-F times-roman' will work equally well.
-The available fonts include 35 Postscript fonts (for all variants of
-'graph' other than 'graph -T png', 'graph -T pnm', 'graph -T gif',
-'graph -T pcl', 'graph -T hpgl', 'graph -T regis', and 'graph -T tek'),
-45 PCL 5 fonts (for 'graph -T svg', 'graph -T ai', 'graph -T pcl' and
-'graph -T hpgl'), a number of Hewlett-Packard vector fonts (for 'graph
--T pcl' and 'graph -T hpgl'), and 22 Hershey vector fonts.  The Hershey
-fonts include HersheyCyrillic, for Russian, and HersheyEUC, for
-Japanese.  For a discussion of the available fonts, see *note Text
-Fonts::.  The 'plotfont' utility will produce a character map of any
-available font.  *Note plotfont::.
+   The font in which the labels specified with the '-X', '-Y', and
+'-L' options are drawn can be specified with the '-F' option.  For
+example, '-F Times-Roman' will make the labels appear in Times-Roman
+instead of the default font (which is HersheySerif-Bold with new
+defaults; for old defaults, it is is Helvetica, unless '-T png', '-T
+pnm', '-T -gif', '-T pcl', '-T hpgl', '-T regis', or '-T tek' is
+specified).  Font names are case-insensitive, so '-F times-roman' will
+work equally well.  The available fonts include 35 Postscript fonts
+(for all variants of 'graph' other than 'graph -T png', 'graph -T
+pnm', 'graph -T gif', 'graph -T pcl', 'graph -T hpgl', 'graph -T
+regis', and 'graph -T tek'), 45 PCL 5 fonts (for 'graph -T svg',
+'graph -T ai', 'graph -T pcl' and 'graph -T hpgl'), a number of
+Hewlett-Packard vector fonts (for 'graph -T pcl' and 'graph -T hpgl'),
+and 22 Hershey vector fonts.  The Hershey fonts include
+HersheyCyrillic, for Russian, and HersheyEUC, for Japanese.  For a
+discussion of the available fonts, see *note Text Fonts::.  The
+'plotfont' utility will produce a character map of any available font.
+*Note plotfont::.
 
    The format of the labels drawn with the '-X', '-Y', and '-L' options
 may be quite intricate.  Subscripts, superscripts, square roots, and
@@ -1036,22 +1038,20 @@ occurrences should be placed on the command line immediately after each
 
 '-F FONT_NAME'
 '--font-name FONT_NAME'
-     (String, default depends on output format, and whether old or new
-     defaults are used.  For '-TX', it is "Helvetica" with old defaults
-     and "Helvetica-Bold" with new defaults.  For '-Tpng', '-Tpnm', and
-     '-Tgif', it is "HersheySerif" with old defaults and
-     "HersheySerif-Bold" with new defaults.  For 'pcl' it is "Univers".
-     For '-Thpgl', '-Tregis', '-Ttek', and raw output, it is
-     "HersheySerif".  For all other output formats, the default is
-     "Helvetica".)  Set the font initially used for axis and tick
-     labels, and for the plot title (if any), to be FONT_NAME.  The
-     choice of font for the plot title may be overridden with the
-     '--title-font-name' option (see below).  Font names are
-     case-insensitive.  If the specified font is not available, the
-     default font will be used.  Which fonts are available depends on
-     which '-T' option is used.  For a list of all fonts, see *note Text
-     Fonts::.  The 'plotfont' utility will produce a character map of
-     any available font.  *Note plotfont::.
+     (String, default is HersheySerif-Bold with new defaults.  With
+     old defaults, it depends on output format: For '-TX', it is
+     "Helvetica", for '-Tpng', '-Tpnm', and '-Tgif', it is
+     "HersheySerif", for 'pcl' it is "Univers", for '-Thpgl',
+     '-Tregis', '-Ttek', and raw output, it is "HersheySerif", and for
+     all other output formats, the default is "Helvetica".)  Set the
+     font initially used for axis and tick labels, and for the plot
+     title (if any), to be FONT_NAME.  The choice of font for the plot
+     title may be overridden with the '--title-font-name' option (see
+     below).  Font names are case-insensitive.  If the specified font
+     is not available, the default font will be used.  Which fonts are
+     available depends on which '-T' option is used.  For a list of
+     all fonts, see *note Text Fonts::.  The 'plotfont' utility will
+     produce a character map of any available font.  *Note plotfont::.
 
 '-g GRID_STYLE'
 '--grid-style GRID_STYLE'
@@ -1408,19 +1408,21 @@ occurrences should be placed on the command line immediately after each
      respectively.  Postmodernists may also find it useful.
 
 '--title-font-name FONT_NAME'
-     (String, default "Helvetica" except for 'graph -T pcl', for which
-     "Univers" is the default, and 'graph -T png', 'graph -T pnm',
-     'graph -T gif', 'graph -T hpgl', 'graph -T regis', and 'graph -T
-     tek', for all of which "HersheySerif" is the default.)  Set the
-     font used for the plot title to be FONT_NAME.  Normally the font
-     used for the plot title is the same as that used for labeling the
-     axes and the ticks along the axes, as specified by the '-F' option.
-     But the '--title-font-name' option can be used to override this.
-     Font names are case-insensitive.  If the specified font is not
-     available, the default font will be used.  Which fonts are
-     available depends on which '-T' option is used.  For a list of all
-     fonts, see *note Text Fonts::.  The 'plotfont' utility will produce
-     a character map of any available font.  *Note plotfont::.
+     (String, default with new defaults is "HersheySerif-Bold".
+     Default with old defaults is "Helvetica" except for 'graph -T
+     pcl', for which "Univers" is the default, and 'graph -T png',
+     'graph -T pnm', 'graph -T gif', 'graph -T hpgl', 'graph -T
+     regis', and 'graph -T tek', for all of which "HersheySerif" is
+     the default.)  Set the font used for the plot title to be
+     FONT_NAME.  Normally the font used for the plot title is the same
+     as that used for labeling the axes and the ticks along the axes,
+     as specified by the '-F' option.  But the '--title-font-name'
+     option can be used to override this.  Font names are
+     case-insensitive.  If the specified font is not available, the
+     default font will be used.  Which fonts are available depends on
+     which '-T' option is used.  For a list of all fonts, see *note
+     Text Fonts::.  The 'plotfont' utility will produce a character
+     map of any available font.  *Note plotfont::.
 
 '--title-font-size SIZE'
      (Float, old default 0.07, new default 0.0385.)  Set the size of the

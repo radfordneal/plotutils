@@ -4,6 +4,10 @@ for even older news.
 
 Versions 3.2, in development:
 
+* With new defaults, the default font is always HersheySerif-Bold.
+  This avoids problems that can arise with other fonts, and provides
+  more consistent output across devices.
+
 * By default, disabled creation of a shared libplot library (now
   static only).  This may reduce possible conflicts with the 
   old version of plotutils that may be installed.  The shared library

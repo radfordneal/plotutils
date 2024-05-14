@@ -122,11 +122,7 @@ static bool parse_pen_string (const char *pen_s);
    the new defaults.  NULL means the device default. */
 static char *new_default_font (const char *output_format)
 {
-  return strcmp(output_format,"X") == 0 ? "Helvetica-Bold"
-       : strcmp(output_format,"png") == 0 ? "HersheySerif-Bold"
-       : strcmp(output_format,"gif") == 0 ? "HersheySerif-Bold" 
-       : strcmp(output_format,"pnm") == 0 ? "HersheySerif-Bold"
-       : NULL;
+  return "HersheySerif-Bold";
 }
 
 /* Return a fixed-up bitmap-size option. */
