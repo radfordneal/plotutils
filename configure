@@ -1483,7 +1483,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
-  --enable-shared[=PKGS]  build shared libraries [default=yes]
+  --enable-shared[=PKGS]  build shared libraries [default=no]
   --enable-static[=PKGS]  build static libraries [default=yes]
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
@@ -8677,16 +8677,7 @@ fi
 
 
 # Set options
-
-
-
-        enable_dlopen=no
-
-
-  enable_win32_dll=no
-
-
-            # Check whether --enable-shared was given.
+# Check whether --enable-shared was given.
 if test ${enable_shared+y}
 then :
   enableval=$enable_shared; p=${PACKAGE-default}
@@ -8707,7 +8698,7 @@ then :
       ;;
     esac
 else $as_nop
-  enable_shared=yes
+  enable_shared=no
 fi
 
 
@@ -8715,6 +8706,14 @@ fi
 
 
 
+
+
+
+
+        enable_dlopen=no
+
+
+  enable_win32_dll=no
 
 
 

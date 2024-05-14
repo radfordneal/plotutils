@@ -4,6 +4,11 @@ for even older news.
 
 Versions 3.2, in development:
 
+* By default, disabled creation of a shared libplot library (now
+  static only).  This may reduce possible conflicts with the 
+  old version of plotutils that may be installed.  The shared library
+  an be re-enabled with an --enable-shared argument to ./configure.
+
 * Created an install-fonts shell file in 'fonts', to handle installation
   of the supplied fonts for Ubuntu-like systems.
 
@@ -102,7 +107,7 @@ graph:
 * Fixed a bug in which optional arguments immediately after one-letter 
   options were not handled properly.  (E.g, -S17 now works properly.)
 
-# Fixed bugs regarding "bumping" of colours from one dataset to another,
+* Fixed bugs regarding "bumping" of colours from one dataset to another,
   when no lines are drawn (eg, -m0 or -m-1).
 
 libplot: 

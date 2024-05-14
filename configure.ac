@@ -65,7 +65,7 @@ fi
 # AC_PROG_MAKE_SET, or equivalents, so we don't perform them explicitly.
 # Note: this can apparently alter CFLAGS, on a few platforms, e.g., on
 # SCO OpenServer 5 (i.e. *-*-sco3.2v5*), "-belf" is added.
-AC_PROG_LIBTOOL
+AC_PROG_LIBTOOL([disable-shared])
 AC_PROG_CXX
 
 # Determine extension (e.g. ".exe") on executables, if any.
