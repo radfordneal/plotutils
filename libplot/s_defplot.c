@@ -191,6 +191,10 @@ _pl_s_initialize (S___(Plotter *_plotter))
 void
 _pl_s_terminate (S___(Plotter *_plotter))
 {
+  /* free the Plotter's copies of the class parameters and its color name
+     cache; every other Plotter type chains up to the generic terminate
+     method, but this one did not and so leaked them */
+  _pl_g_terminate (S___(_plotter));
 }
 
 #ifdef LIBPLOTTER
